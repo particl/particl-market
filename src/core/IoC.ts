@@ -14,7 +14,6 @@ import { events, EventEmitter } from './api/events';
 import { Logger } from './Logger';
 import { IocConfig } from '../config/IocConfig';
 
-
 export class IoC {
 
     public container: Container;

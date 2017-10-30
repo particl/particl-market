@@ -13,6 +13,7 @@ import { Environment } from './helpers/Environment';
 import { SwaggerUI } from './SwaggerUI';
 import { ApiMonitor } from './ApiMonitor';
 import { ApiInfo } from './ApiInfo';
+import { CliIndex } from './CliIndex';
 
 
 export class Server {
@@ -78,9 +79,14 @@ export class Server {
         if (Environment.isTruthy(process.env.SWAGGER_ENABLED)) {
             this.log.debug(`Swagger      : ${app.get('host')}:${app.get('port')}${SwaggerUI.getRoute()}`);
         }
+        if (Environment.isTruthy(process.env.CLI_ENABLED)) {
+            this.log.debug(`CLI          : ${app.get('host')}:${app.get('port')}${CliIndex.getRoute()}`);
+        }
         if (Environment.isTruthy(process.env.MONITOR_ENABLED)) {
             this.log.debug(`Monitor      : ${app.get('host')}:${app.get('port')}${ApiMonitor.getRoute()}`);
         }
+
+        this.log.debug(`RPCServer    : ${app.get('host')}:${app.get('port')}/api/rpc`);
         this.log.debug('-------------------------------------------------------');
         this.log.debug('');
     }
