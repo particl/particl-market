@@ -1,5 +1,3 @@
-# @w3tec
-
 # Logs #
 /logs
 *.log
@@ -33,3 +31,5 @@ test/**/*.js
 test/**/*.js.map
 coverage/
 !test/preprocessor.js
+
+marketplace.db

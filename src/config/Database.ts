@@ -25,7 +25,10 @@ export const DatabaseConfig = {
     },
     seeds: {
         directory: process.env.DB_SEEDS_DIR
-    }
+    },
+    useNullAsDefault: true,
+    // debug: true
+    debug: false
 };
 
 export const Knex = (): knex => knex(DatabaseConfig);

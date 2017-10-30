@@ -1,7 +1,7 @@
 {
-  "name": "express-typescript-boilerplate",
-  "version": "2.0.0-beta.3",
-  "description": "A delightful way to building a RESTful API with NodeJs & TypeScript",
+  "name": "particl-marketplace",
+  "version": "0.0.1",
+  "description": "",
   "main": "src/app.ts",
   "scripts": {
     "setup": "yarn install && npm run banner setup && npm run db:migrate && npm run db:seed",
@@ -33,15 +33,9 @@
     "ts-node": "./node_modules/.bin/ts-node",
     "ts-node:fast": "./node_modules/.bin/ts-node -F"
   },
-  "repository": "git+ssh://git@github.com/w3tec/express-typescript-boilerplate.git",
+  "repository": "git+ssh://git@github.com:xludx/dapp-shell.git",
   "keywords": [
-    "NodeJS",
-    "TypeScript",
-    "express",
-    "boilerplate",
-    "skeleton",
-    "starter-kit",
-    "w3tec.ch"
+    "particl"
   ],
   "homepage": "https://github.com/w3tec/express-typescript-boilerplate#readme",
   "author": "w3tec.ch <info@w3tec.ch>",
@@ -103,10 +97,9 @@
     "inversify": "^4.2.0",
     "inversify-express-utils": "^4.0.0",
     "jsonwebtoken": "^7.4.1",
-    "knex": "^0.12.0",
+    "knex": "^0.12.9",
     "lodash": "^4.17.4",
     "morgan": "^1.7.0",
-    "mysql": "^2.13.0",
     "nodemon": "^1.11.0",
     "path": "^0.12.7",
     "pluralize": "^5.0.0",
@@ -114,6 +107,7 @@
     "request": "^2.81.0",
     "request-promise": "^4.2.1",
     "serve-favicon": "^2.4.3",
+    "sqlite3": "^3.1.13",
     "swagger-jsdoc": "^1.9.6",
     "swagger-ui-express": "^2.0.1",
     "trash-cli": "^1.4.0",
@@ -136,7 +130,7 @@
     "testEnvironment": "node",
     "setupTestFrameworkScriptFile": "./test/unit/lib/setup.ts"
   },
-  "license": "MIT",
+  "license": "GPL-2.0",
   "devDependencies": {
     "cross-env": "^5.0.1",
     "jest": "^20.0.3",
