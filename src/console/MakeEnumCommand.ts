@@ -64,7 +64,7 @@ export class MakeEnumCommand extends AbstractMakeCommand {
                     type: 'input',
                     name: 'name',
                     message: 'Property name:',
-                    filter: (value: any) => _.upperCase(value)
+                    filter: (value: string) => value.toUpperCase()
                 }, {
                     type: 'list',
                     name: 'type',
