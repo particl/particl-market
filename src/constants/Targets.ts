@@ -31,6 +31,7 @@ export const Targets = {
         }
     },
     Controller:     {
+        RpcController: 'RpcController',
         UserController: 'UserController'
     }
 };
