@@ -8,7 +8,9 @@ import { Bootstrap } from './Bootstrap';
 import { Server } from './Server';
 import { IoC } from './IoC';
 import { AppConfig } from '../config/AppConfig';
-
+import { Types, Core } from '../constants';
+import { EventEmitter } from './api/events';
+import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
 
 export interface Configurable {
     configure(app: App): void;
@@ -75,6 +77,9 @@ export class App {
         this.server = new Server(this.bootstrapApp.startServer(this.express));
         this.server.use(this.express);
         this.log.info('App is ready!');
+
+        const eventEmitter = this.ioc.container.getNamed<EventEmitter>(Types.Core, Core.Events);
+        eventEmitter.emit(ServerStartedListener.Event, this.express);
     }
 
 }

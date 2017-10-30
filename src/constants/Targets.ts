@@ -25,6 +25,7 @@ export const Targets = {
         RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {
+        ServerStartedListener: 'ServerStartedListener',
         user: {
             UserAuthenticatedListener: 'UserAuthenticatedListener',
             UserCreatedListener: 'UserCreatedListener'

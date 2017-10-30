@@ -61,7 +61,7 @@ export class RpcController {
     public async handleRPC(@response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
 
         const rpcRequest = this.createRequest(body.method, body.params);
-        this.log.info('controller.handleRPC() rpcRequest:', JSON.stringify(rpcRequest, null, 2));
+        this.log.debug('controller.handleRPC() rpcRequest:', JSON.stringify(rpcRequest, null, 2));
 
         // check that we have exposed the method
         if (this.exposedMethods.hasOwnProperty(body.method)) {
@@ -71,7 +71,7 @@ export class RpcController {
             // make sure we have an instance of the service and it contains the function we want to call
             if (this.hasOwnProperty(callPath[0]) && typeof this[callPath[0]][callPath[1]] === 'function') {
 
-                this.log.info('controller.handleRPC(), CALL: ' + rpcRequest.method + ' -> ' + this.exposedMethods[rpcRequest.method]);
+                this.log.debug('controller.handleRPC(), CALL: ' + rpcRequest.method + ' -> ' + this.exposedMethods[rpcRequest.method]);
                 return this[callPath[0]][callPath[1]](rpcRequest);
             } else {
                 return res.failed(400, this.getErrorMessage(RpcErrorCode.InternalError), new JsonRpcError(RpcErrorCode.InternalError,
