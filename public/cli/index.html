@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Particl Marketplace CLI</title>
+
+    <link rel="stylesheet" media="all" href="https://rawgit.com/jcubic/jquery.terminal/master/css/jquery.terminal.css">
+    <style>
+/*
+ * style based on http://js13kgames.com/entries/lost-in-cyberspace
+ */
+        body {
+            margin: 0;
+        }
+        #term {
+            height: 100vh;
+            --background: #031e11;
+            --size: 1.5;
+        }
+        /*
+         * reference: https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-within
+         */
+        .cmd:focus-within .prompt {
+            color: red;
+        }
+        .terminal {
+            text-shadow: 0 0.2rem 1rem #0c7b46;
+        }
+        .terminal a:hover {
+            background: #0F60FF;
+            color: var(--background, #aaa);
+            text-decoration: none;
+        }
+        .scanlines {
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,.2) 70%,
+                rgba(0,0,0,.6)
+            );
+            background-size: 100% .3rem;
+            position: fixed;
+            pointer-events: none;
+        }
+        /* based on
+        https://blog.carbonfive.com/2015/01/07/vintage-terminal-effect-in-css3/
+        */
+        .scanlines:before {
+            position: absolute;
+            top: 0px;
+            width: 100%;
+            height: 5px;
+            background: #fff;
+            background: linear-gradient(to bottom,
+            rgba(255,0,0,0) 0%,
+            rgba(255,250,250,1) 50%,
+            rgba(255,255,255,0.98) 51%,
+            rgba(255,0,0,0) 100%
+            ); /* W3C */
+            opacity: .1;
+        }
+        .scanlines:after {
+            box-shadow: 0 2px 6px rgba(25,25,25,0.2),
+            inset 0 1px rgba(50,50,50,0.1),
+            inset 0 3px rgba(50,50,50,0.05),
+            inset 0 3px 8px rgba(64,64,64,0.05),
+            inset 0 -5px 10px rgba(25,25,25,0.1);
+        }
+
+        #term:focus-within + .scanlines:before {
+            content: '';
+            animation: vline calc(var(--time, 2) * 1s) linear infinite;
+        }
+        @keyframes vline {
+            to { transform: translate(0, 100vh)}
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://rawgit.com/jcubic/jquery.terminal/master/js/jquery.terminal.js"></script>
+    <script src="https://rawgit.com/jcubic/jquery.terminal/master/js/jquery.mousewheel-min.js"></script>
+    <script src="https://rawgit.com/cvan/keyboardevent-key-polyfill/master/index.js"></script>
+
+
+</head>
+<body>
+
+<div id="term" class="terminal"></div>
+<div class="scanlines"></div>
+<script>
+
+    // for browsers that don't support key property
+    keyboardeventKeyPolyfill.polyfill();
+    var scanlines = $('.scanlines');
+    var term = $('#term').terminal(function(command, term) {
+        if (command !== '') {
+
+            var data = {
+                method: command,
+                params: [],
+                id: 1,
+                jsonrpc: "2.0"
+            };
+
+            $.ajax({
+                url: '/api/rpc/cli',
+                type: 'POST',
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    console.log('result: ', data);
+                    if(data.result){
+                        term.echo(JSON.stringify(data.result, null, 4));
+                    } else {
+                        term.echo('The computer says no.');
+                    }
+                },
+                failure: function (err) {
+                    console.error('error: ', err);
+                },
+                data: JSON.stringify(data)
+            });
+
+
+        } else {
+            term.echo('');
+        }
+    }, {
+        prompt: '>> ',
+        greetings: null,
+        onResize: set_time,
+        onInit: function(term) {
+            greetings(term);
+            set_time;
+        }
+    });
+
+    function set_time() {
+        // for window heihgt of 170 it should be 2s
+        var time = ($(window).height() * 2) / 170;
+        scanlines[0].style.setProperty("--time", time);
+    }
+
+    function greetings(term) {
+        term.echo('PARTICL MARKETPLACE CLI\n'+
+            'type "help" for commands. ');
+    }
+</script>
+
+</body>
+</html>

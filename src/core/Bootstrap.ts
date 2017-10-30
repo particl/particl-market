@@ -9,7 +9,7 @@ import { exceptionHandler } from './api/exceptionHandler';
 import { extendExpressResponse } from './api/extendExpressResponse';
 import { SwaggerUI } from './SwaggerUI';
 import { IoC } from './IoC';
-
+import { CliIndex } from './CliIndex';
 
 export class Bootstrap {
 
@@ -29,6 +29,9 @@ export class Bootstrap {
     public setupCoreTools(app: express.Application): void {
         const apiInfo = new ApiInfo();
         apiInfo.setup(app);
+
+        const cliIndex = new CliIndex();
+        cliIndex.setup(app);
 
         const swaggerUI = new SwaggerUI();
         swaggerUI.setup(app);
