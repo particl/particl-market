@@ -20,7 +20,8 @@ export const Targets = {
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
-        PopulateUserMiddleware: 'PopulateUserMiddleware'
+        PopulateUserMiddleware: 'PopulateUserMiddleware',
+        RestApiMiddleware: 'RestApiMiddleware'
     },
     Listener:     {
         user: {
