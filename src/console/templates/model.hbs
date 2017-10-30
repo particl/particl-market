@@ -4,7 +4,17 @@ import { Bookshelf } from '../../{{deepness}}config/Database';
 export class {{name.capitalize}} extends Bookshelf.Model<{{name.capitalize}}> {
 
     public static async fetchById(value: number): Promise<{{name.capitalize}}> {
-        return await {{name.capitalize}}.where<{{name.capitalize}}>({ id: value }).fetch();
+        if (withRelated) {
+            return await {{name.capitalize}}.where<{{name.capitalize}}>({ id: value }).fetch({
+                withRelated: [
+                    // TODO:
+                    // '{{name.capitalize}}Related',
+                    // '{{name.capitalize}}Related.Related'
+                ]
+            });
+        } else {
+            return await {{name.capitalize}}.where<{{name.capitalize}}>({ id: value }).fetch();
+        }
     }
 
     public get tableName(): string { return '{{tableName}}'; }

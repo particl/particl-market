@@ -1,28 +1,33 @@
 {{#if isResourceTemplate}}
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
-import { Types, Targets } from '../../{{deepness}}constants';
+import { Types, Core, Targets } from '../../{{deepness}}constants';
 import { {{name.capitalize}} } from '../{{deepness}}models/{{name.capitalize}}';
 import { DatabaseException } from '../{{deepness}}exceptions/DatabaseException';
 import { NotFoundException } from '../{{deepness}}exceptions/NotFoundException';
 {{else}}
 // import { Knex } from '../../config/Database';
 {{/if}}
-
+import { Logger as LoggerType } from '../../core/Logger';
 
 export class {{name.capitalize}}Repository {
 
+    public log: LoggerType;
+
     {{#if isResourceTemplate}}constructor(
-        @inject(Types.Model) @named(Targets.Model.{{name.capitalize}}) public {{name.capitalize}}Model: typeof {{name.capitalize}}
-    ) { }
+        @inject(Types.Model) @named(Targets.Model.{{name.capitalize}}) public {{name.capitalize}}Model: typeof {{name.capitalize}},
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+    ) {
+        this.log = new Logger(__filename);
+    }
 
     public async findAll(): Promise<Bookshelf.Collection<{{name.capitalize}}>> {
         const list = await this.{{name.capitalize}}Model.fetchAll();
         return list as Bookshelf.Collection<{{name.capitalize}}>;
     }
 
-    public async findOne(id: number): Promise<{{name.capitalize}}> {
-        return this.{{name.capitalize}}Model.fetchById(id);
+    public async findOne(id: number, withRelated: boolean = true): Promise<{{name.capitalize}}> {
+        return this.{{name.capitalize}}Model.fetchById(id, withRelated);
     }
 
     public async create(data: any): Promise<{{name.capitalize}}> {

@@ -43,8 +43,8 @@ export class {{name.capitalize}}Service {
         return this.findOne(data.params[0]);
     }
 
-    public async findOne(id: number): Promise<{{name.capitalize}}> {
-        const {{name.camelCase}} = await this.{{name.camelCase}}Repo.findOne(id);
+    public async findOne(id: number, withRelated: boolean = true): Promise<{{name.capitalize}}> {
+        const {{name.camelCase}} = await this.{{name.camelCase}}Repo.findOne(id, withRelated);
         if ({{name.camelCase}} === null) {
             this.log.warn(`{{name.capitalize}} with the id=${id} was not found!`);
             throw new NotFoundException(id);
