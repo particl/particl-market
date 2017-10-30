@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as swaggerUi from 'swagger-ui-express';
 import { Environment } from './helpers/Environment';
 
-
 export class SwaggerUI {
 
     public static getRoute(): string {

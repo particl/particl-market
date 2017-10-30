@@ -4,7 +4,7 @@ import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../{{deepness}}core/Logger';
 {{#unless isResourceTemplate}}
-import { Types, Core } from '../../{{deepness}}constants';
+import { Types, Core, Targets } from '../../{{deepness}}constants';
 {{/unless}}
 {{#if isResourceTemplate}}
 import { Types, Core, Targets } from '../../{{deepness}}constants';
@@ -14,6 +14,7 @@ import { {{name.capitalize}}Repository } from '../{{deepness}}repositories/{{nam
 import { {{name.capitalize}} } from '../{{deepness}}models/{{name.capitalize}}';
 import { {{name.capitalize}}CreateRequest } from '../{{deepness}}requests/{{name.capitalize}}CreateRequest';
 import { {{name.capitalize}}UpdateRequest } from '../{{deepness}}requests/{{name.capitalize}}UpdateRequest';
+import { RpcRequest } from '../requests/RpcRequest';
 {{/if}}
 
 
@@ -28,8 +29,18 @@ export class {{name.capitalize}}Service {
         this.log = new Logger(__filename);
     }
 
+    @validate()
+    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<{{name.capitalize}}>> {
+        return this.findAll();
+    }
+
     public async findAll(): Promise<Bookshelf.Collection<{{name.capitalize}}>> {
         return this.{{name.camelCase}}Repo.findAll();
+    }
+
+    @validate()
+    public async rpcFindOne( @request(RpcRequest) data: any): Promise<{{name.capitalize}}> {
+        return this.findOne(data.params[0]);
     }
 
     public async findOne(id: number): Promise<{{name.capitalize}}> {
@@ -42,30 +53,77 @@ export class {{name.capitalize}}Service {
     }
 
     @validate()
+    public async rpcCreate( @request(RpcRequest) data: any): Promise<Escrow> {
+        return this.create({
+            data: data.params // TODO: convert your params to {{name.capitalize}}CreateRequest
+        });
+    }
+
+    @validate()
     public async create( @request({{name.capitalize}}CreateRequest) body: any): Promise<{{name.capitalize}}> {
+
+        // TODO: extract and remove related models from request
+        // const {{name.camelCase}}Related = body.related;
+        // delete body.related;
+
         // If the request body was valid we will create the {{name.camelCase}}
         const {{name.camelCase}} = await this.{{name.camelCase}}Repo.create(body);
-        return {{name.camelCase}};
+
+        // TODO: create related models
+        // {{name.camelCase}}Related.{{name.lowercase}}_id = {{name.camelCase}}.Id;
+        // await this.{{name.camelCase}}RelatedService.create({{name.camelCase}}Related);
+
+        // finally find and return the created {{name.camelCase}}
+        const new{{name.capitalize}} = await this.findOne({{name.camelCase}}.id);
+        return new{{name.capitalize}};
+    }
+
+    @validate()
+    public async rpcUpdate( @request(RpcRequest) data: any): Promise<{{name.capitalize}}> {
+        return this.update(data.params[0], {
+            data: data.params[1] // TODO: convert your params to {{name.capitalize}}UpdateRequest
+        });
     }
 
     @validate()
     public async update(id: number, @request({{name.capitalize}}UpdateRequest) body: any): Promise<{{name.capitalize}}> {
-        // Find or fail
-        const {{name.camelCase}} = await this.findOne(id);
 
-        // Set new values
+        // find the existing one without related
+        const {{name.camelCase}} = await this.findOne(id, false);
+
+        // set new values
         {{#if hasProperties}}
         {{#each properties}}
         {{../name.camelCase}}.{{name.capitalize}} = body.{{name.camelCase}};
         {{/each}}
         {{else}}
-        // TODO asign correct values
+        // TODO: assign correct values
         // {{name.camelCase}}.Value = body.value;
         {{/if}}
 
-        // Update {{name.camelCase}} record
+        // update {{name.camelCase}} record
         const updated{{name.capitalize}} = await this.{{name.camelCase}}Repo.update(id, {{name.camelCase}}.toJSON());
+
+        // TODO: yes, this is stupid
+        // TODO: find related record and delete it
+        // let {{name.camelCase}}Related = updated{{name.capitalize}}.related('{{name.capitalize}}Related').toJSON();
+        // await this.{{name.camelCase}}Service.destroy({{name.camelCase}}Related.id);
+
+        // TODO: recreate related data
+        // {{name.camelCase}}Related = body.{{name.camelCase}}Related;
+        // {{name.camelCase}}Related.{{name.lowercase}}_id = {{name.camelCase}}.Id;
+        // const created{{name.capitalize}} = await this.{{name.camelCase}}Service.create({{name.camelCase}}Related);
+
+        // TODO: finally find and return the updated {{name.camelCase}}
+        // const new{{name.capitalize}} = await this.findOne(id);
+        // return new{{name.capitalize}};
+
         return updated{{name.capitalize}};
+    }
+
+    @validate()
+    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
+        return this.destroy(data.params[0]);
     }
 
     public async destroy(id: number): Promise<void> {
