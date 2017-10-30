@@ -1,0 +1,12 @@
+/**
+* {{name.capitalize}}Enum
+*
+*/
+
+export enum {{name.capitalize}} {
+
+    {{#each properties}}
+    {{name.upperCase}} = '{{name.upperCase}}'{{#unless @last}},{{/unless}}
+    {{/each}}
+
+}

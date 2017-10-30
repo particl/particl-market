@@ -35,4 +35,9 @@ export class {{name.capitalize}} extends Bookshelf.Model<{{name.capitalize}}> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
     {{/if}}
+
+    // TODO: add related
+    // public {{name.capitalize}}Related(): {{name.capitalize}}Related {
+    //    return this.hasOne({{name.capitalize}}Related());
+    // }
 }

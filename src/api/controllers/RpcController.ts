@@ -1,6 +1,5 @@
 import { inject, named } from 'inversify';
 import { controller, httpPost, response, requestBody } from 'inversify-express-utils';
-import { Types, Core, Targets } from '../../constants';
 import { app } from '../../app';
 import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
