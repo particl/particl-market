@@ -21,7 +21,8 @@ export const Targets = {
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
         PopulateUserMiddleware: 'PopulateUserMiddleware',
-        RestApiMiddleware: 'RestApiMiddleware'
+        RestApiMiddleware: 'RestApiMiddleware',
+        RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {
         user: {

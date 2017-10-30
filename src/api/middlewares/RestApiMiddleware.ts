@@ -14,7 +14,8 @@ export class RestApiMiddleware implements interfaces.Middleware {
     }
 
     public use = (req: myExpress.Request, res: myExpress.Response, next: myExpress.NextFunction): void => {
-        // TODO add your middleware logic here
+        // TODO: we don't really use the rest api for anything else than testing,
+        // so block requests from elsewhere than localhost
         next();
     }
 
