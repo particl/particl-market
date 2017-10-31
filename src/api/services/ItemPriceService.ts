@@ -9,13 +9,16 @@ import { ItemPrice } from '../models/ItemPrice';
 import { ItemPriceCreateRequest } from '../requests/ItemPriceCreateRequest';
 import { ItemPriceUpdateRequest } from '../requests/ItemPriceUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
-
+import { ShippingPriceService } from './ShippingPriceService';
+import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 
 export class ItemPriceService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) private cryptocurrencyaddressService: CryptocurrencyAddressService,
+        @inject(Types.Service) @named(Targets.Service.ShippingPriceService) private shippingpriceService: ShippingPriceService,
         @inject(Types.Repository) @named(Targets.Repository.ItemPriceRepository) public itemPriceRepo: ItemPriceRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -48,23 +51,39 @@ export class ItemPriceService {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemPrice> {
         return this.create({
-            data: data.params[0] // TODO: convert your params to ItemPriceCreateRequest
+            currency: data.params[0],
+            basePrice: data.params[1],
+            shippingPrice: {
+                domestic: data.params[2],
+                international: data.params[3]
+            },
+            address: {
+                type: data.params[4],
+                address: data.params[5]
+            }
         });
     }
 
     @validate()
     public async create( @request(ItemPriceCreateRequest) body: any): Promise<ItemPrice> {
 
-        // TODO: extract and remove related models from request
-        // const itemPriceRelated = body.related;
-        // delete body.related;
+        const shippingPrice = body.shippingPrice;
+        const cryptocurrencyAddress = body.address;
+
+        delete body.shippingPrice;
+        delete body.address;
 
         // If the request body was valid we will create the itemPrice
         const itemPrice = await this.itemPriceRepo.create(body);
+        this.log.debug('itemprice created: ', JSON.stringify(itemPrice));
 
-        // TODO: create related models
-        // itemPriceRelated._id = itemPrice.Id;
-        // await this.itemPriceRelatedService.create(itemPriceRelated);
+        // then create shippingPrice
+        shippingPrice.item_price_id = itemPrice.Id;
+        await this.shippingpriceService.create(shippingPrice);
+
+        // then create address
+        cryptocurrencyAddress.item_price_id = itemPrice.Id;
+        await this.cryptocurrencyaddressService.create(cryptocurrencyAddress);
 
         // finally find and return the created itemPrice
         const newItemPrice = await this.findOne(itemPrice.id);
@@ -74,7 +93,16 @@ export class ItemPriceService {
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemPrice> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to ItemPriceUpdateRequest
+            currency: data.params[1],
+            basePrice: data.params[2],
+            shippingPrice: {
+                domestic: data.params[3],
+                international: data.params[4]
+            },
+            address: {
+                type: data.params[5],
+                address: data.params[6]
+            }
         });
     }
 
@@ -91,21 +119,33 @@ export class ItemPriceService {
         // update itemPrice record
         const updatedItemPrice = await this.itemPriceRepo.update(id, itemPrice.toJSON());
 
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let itemPriceRelated = updatedItemPrice.related('ItemPriceRelated').toJSON();
-        // await this.itemPriceService.destroy(itemPriceRelated.id);
+        // ---
+        // find related ShippingPrice
+        let relatedShippingPrice = updatedItemPrice.related('ShippingPrice').toJSON();
 
-        // TODO: recreate related data
-        // itemPriceRelated = body.itemPriceRelated;
-        // itemPriceRelated._id = itemPrice.Id;
-        // const createdItemPrice = await this.itemPriceService.create(itemPriceRelated);
+        // delete it
+        await this.shippingpriceService.destroy(relatedShippingPrice.id);
 
-        // TODO: finally find and return the updated itemPrice
-        // const newItemPrice = await this.findOne(id);
-        // return newItemPrice;
+        // and create new related data
+        relatedShippingPrice = body.shippingPrice;
+        relatedShippingPrice.item_price_id = id;
+        await this.shippingpriceService.create(relatedShippingPrice);
 
-        return updatedItemPrice;
+        // ---
+        // find related CryptocurrencyAddress
+        let relatedCryptocurrencyAddress = updatedItemPrice.related('Address').toJSON();
+
+        // delete it
+        await this.cryptocurrencyaddressService.destroy(relatedCryptocurrencyAddress.id);
+
+        // and create new related data
+        relatedCryptocurrencyAddress = body.address;
+        relatedCryptocurrencyAddress.item_price_id = id;
+        await this.cryptocurrencyaddressService.create(relatedCryptocurrencyAddress);
+
+        // finally find and return the updated item price
+        const newItemPrice = await this.findOne(id);
+        return newItemPrice;
     }
 
     @validate()

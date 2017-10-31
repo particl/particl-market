@@ -7,7 +7,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('currency').notNullable();
-            table.integer('basePrice').notNullable();
+            table.integer('base_price').notNullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

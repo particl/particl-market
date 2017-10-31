@@ -5,7 +5,9 @@ import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
 import { JsonRpc2Request, RpcErrorCode } from '../../core/api/jsonrpc';
 import { JsonRpcError } from '../../core/api/JsonRpcError';
-import {ItemCategoryService} from '../services/ItemCategoryService';
+import { ItemCategoryService } from '../services/ItemCategoryService';
+// import { EscrowService } from '../services/EscrowService';
+import { ItemPriceService } from '../services/ItemPriceService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -22,7 +24,7 @@ export class RpcController {
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         // @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
-        // @inject(Types.Service) @named(Targets.Service.ItemPriceService) private itemPriceService: ItemPriceService,
+        @inject(Types.Service) @named(Targets.Service.ItemPriceService) private itemPriceService: ItemPriceService,
         // @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         // @inject(Types.Service) @named(Targets.Service.ImageDataService) private imageDataService: ImageDataService,
         // @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,

@@ -28,6 +28,7 @@ export class ItemPriceController {
 
     @httpPost('/')
     public async create( @response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
+        this.log.debug('create, body: ', JSON.stringify(body, null, 2));
         const itemPrice = await this.itemPriceService.create(body);
         this.log.debug('create: ', JSON.stringify(itemPrice, null, 2));
         return res.created(itemPrice.toJSON());

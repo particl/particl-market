@@ -1,24 +1,42 @@
 import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { Currency } from '../../src/api/enums/Currency';
+import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 
 describe('/item-prices', () => {
 
     const keys = [
-        'id', 'updatedAt', 'createdAt', 'currency', 'basePrice' // , 'Related'
+        'currency', 'basePrice', 'updatedAt', 'createdAt', 'id', /*'paymentInformationId', */'ShippingPrice', 'Address'
     ];
 
-    // const keysWithoutRelated = [
-    //    'id', 'updatedAt', 'createdAt', 'currency', 'basePrice'
-    // ];
+    const keysWithoutRelated = [
+        'currency', 'basePrice', 'updatedAt', 'createdAt', 'id'/*, 'paymentInformationId'*/
+    ];
 
     const testData = {
-        currency: undefined, // TODO: Add test value
-        basePrice: undefined // TODO: Add test value
+        currency: Currency.BITCOIN,
+        basePrice: 0.0001,
+        shippingPrice: {
+            domestic: 0.123,
+            international: 1.234
+        },
+        address: {
+            type: CryptocurrencyAddressType.NORMAL,
+            address: '1234'
+        }
     };
 
     const testDataUpdated = {
-        currency: undefined, // TODO: Add test value
-        basePrice: undefined // TODO: Add test value
+        currency: Currency.PARTICL,
+        basePrice: 0.002,
+        shippingPrice: {
+            domestic: 1.234,
+            international: 2.345
+        },
+        address: {
+            type: CryptocurrencyAddressType.STEALTH,
+            address: '4567'
+        }
     };
 
     let createdId;
@@ -39,6 +57,11 @@ describe('/item-prices', () => {
         const result: any = res.getData();
         expect(result.currency).toBe(testData.currency);
         expect(result.basePrice).toBe(testData.basePrice);
+        expect(result.ShippingPrice.domestic).toBe(testData.shippingPrice.domestic);
+        expect(result.ShippingPrice.international).toBe(testData.shippingPrice.international);
+        expect(result.Address.type).toBe(testData.address.type);
+        expect(result.Address.address).toBe(testData.address.address);
+
     });
 
     test('POST      /item-prices        Should fail because we want to create a empty item price', async () => {
@@ -53,13 +76,16 @@ describe('/item-prices', () => {
         const res = await api('GET', '/api/item-prices');
         res.expectJson();
         res.expectStatusCode(200);
-        res.expectData(keys); // keysWithoutRelated
+        res.expectData(keysWithoutRelated);
         const data = res.getData<any[]>();
         expect(data.length).toBe(1);
 
         const result = data[0];
         expect(result.currency).toBe(testData.currency);
         expect(result.basePrice).toBe(testData.basePrice);
+        expect(result.ShippingPrice).toBe(undefined); // doesnt fetch related
+        expect(result.Address).toBe(undefined); // doesnt fetch related
+
     });
 
     test('GET       /item-prices/:id    Should return one item price', async () => {
@@ -71,6 +97,10 @@ describe('/item-prices', () => {
         const result: any = res.getData();
         expect(result.currency).toBe(testData.currency);
         expect(result.basePrice).toBe(testData.basePrice);
+        expect(result.ShippingPrice.domestic).toBe(testData.shippingPrice.domestic);
+        expect(result.ShippingPrice.international).toBe(testData.shippingPrice.international);
+        expect(result.Address.type).toBe(testData.address.type);
+        expect(result.Address.address).toBe(testData.address.address);
     });
 
     test('PUT       /item-prices/:id    Should update the item price', async () => {
@@ -84,6 +114,10 @@ describe('/item-prices', () => {
         const result: any = res.getData();
         expect(result.currency).toBe(testDataUpdated.currency);
         expect(result.basePrice).toBe(testDataUpdated.basePrice);
+        expect(result.ShippingPrice.domestic).toBe(testDataUpdated.shippingPrice.domestic);
+        expect(result.ShippingPrice.international).toBe(testDataUpdated.shippingPrice.international);
+        expect(result.Address.type).toBe(testDataUpdated.address.type);
+        expect(result.Address.address).toBe(testDataUpdated.address.address);
     });
 
     test('PUT       /item-prices/:id    Should fail because we want to update the item price with a invalid email', async () => {

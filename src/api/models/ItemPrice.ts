@@ -1,5 +1,6 @@
 import { Bookshelf } from '../../config/Database';
-
+import { CryptocurrencyAddress } from './CryptocurrencyAddress';
+import { ShippingPrice } from './ShippingPrice';
 
 export class ItemPrice extends Bookshelf.Model<ItemPrice> {
 
@@ -7,9 +8,8 @@ export class ItemPrice extends Bookshelf.Model<ItemPrice> {
         if (withRelated) {
             return await ItemPrice.where<ItemPrice>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'ItemPriceRelated',
-                    // 'ItemPriceRelated.Related'
+                    'ShippingPrice',
+                    'Address'
                 ]
             });
         } else {
@@ -35,8 +35,11 @@ export class ItemPrice extends Bookshelf.Model<ItemPrice> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public ItemPriceRelated(): ItemPriceRelated {
-    //    return this.hasOne(ItemPriceRelated);
-    // }
+    public ShippingPrice(): ShippingPrice {
+        return this.hasOne(ShippingPrice);
+    }
+
+    public Address(): CryptocurrencyAddress {
+        return this.hasOne(CryptocurrencyAddress);
+    }
 }

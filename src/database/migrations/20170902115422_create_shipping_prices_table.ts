@@ -9,6 +9,9 @@ exports.up = (db: Knex): Promise<any> => {
             table.integer('domestic').notNullable();
             table.integer('international').notNullable();
 
+            table.integer('item_price_id').unsigned();
+            table.foreign('item_price_id').references('id').inTable('item_prices').onDelete('cascade');
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })
