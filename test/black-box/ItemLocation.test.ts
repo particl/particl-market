@@ -1,5 +1,6 @@
 import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { Country } from '../../src/api/enums/Country';
 
 describe('/item-locations', () => {
 
@@ -12,7 +13,7 @@ describe('/item-locations', () => {
     // ];
 
     const testData = {
-        region: 'EU',
+        region: Country.SOUTH_AFRICA,
         address: 'asdf, asdf, asdf',
         locationMarker: {
             markerTitle: 'Helsinki',
@@ -23,7 +24,7 @@ describe('/item-locations', () => {
     };
 
     const testDataUpdated = {
-        region: 'ASIA',
+        region: Country.EU,
         address: 'zxcv, zxcv, zxcv',
         locationMarker: {
             markerTitle: 'Stockholm',
