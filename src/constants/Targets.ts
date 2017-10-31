@@ -10,14 +10,17 @@
 
 export const Targets = {
     Model:     {
+        EscrowRatio: 'EscrowRatio',
         ItemCategory: 'ItemCategory',
         User: 'User'
     },
     Repository:     {
+        EscrowRatioRepository: 'EscrowRatioRepository',
         ItemCategoryRepository: 'ItemCategoryRepository',
         UserRepository: 'UserRepository'
     },
     Service:     {
+        EscrowRatioService: 'EscrowRatioService',
         ItemCategoryService: 'ItemCategoryService',
         UserService: 'UserService'
     },
@@ -35,6 +38,7 @@ export const Targets = {
         }
     },
     Controller:     {
+        EscrowRatioController: 'EscrowRatioController',
         ItemCategoryController: 'ItemCategoryController',
         RpcController: 'RpcController',
         UserController: 'UserController'
