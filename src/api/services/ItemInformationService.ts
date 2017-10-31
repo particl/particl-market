@@ -9,13 +9,23 @@ import { ItemInformation } from '../models/ItemInformation';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
 import { ItemInformationUpdateRequest } from '../requests/ItemInformationUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
-
+import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
+import { ShippingAvailability } from '../enums/ShippingAvailability';
+import { Country } from '../enums/Country';
+import { ItemLocationService } from './ItemLocationService';
+import { ItemImageService } from './ItemImageService';
+import { ShippingDestinationService } from './ShippingDestinationService';
+import { ItemCategoryService } from './ItemCategoryService';
 
 export class ItemInformationService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageService) public itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.ShippingDestinationService) public shippingDestinationService: ShippingDestinationService,
+        @inject(Types.Service) @named(Targets.Service.ItemLocationService) public itemLocationService: ItemLocationService,
         @inject(Types.Repository) @named(Targets.Repository.ItemInformationRepository) public itemInformationRepo: ItemInformationRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -48,33 +58,135 @@ export class ItemInformationService {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemInformation> {
         return this.create({
-            data: data.params[0] // TODO: convert your params to ItemInformationCreateRequest
+            title: 'item title1',
+            shortDescription: 'item short desc1',
+            longDescription: 'item long desc1',
+            itemCategory: {
+                name: 'item category name 1',
+                description: 'item category description 1'
+            },
+            itemLocation: {
+                region: Country.SOUTH_AFRICA,
+                address: 'asdf, asdf, asdf',
+                locationMarker: {
+                    markerTitle: 'Helsinki',
+                    markerText: 'Helsinki',
+                    lat: 12.1234,
+                    lng: 23.2314
+                }
+            },
+            shippingDestinations: [{
+                country: Country.UNITED_KINGDOM,
+                shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
+            }, {
+                country: Country.ASIA,
+                shippingAvailability: ShippingAvailability.SHIPS
+            }, {
+                country: Country.SOUTH_AFRICA,
+                shippingAvailability: ShippingAvailability.ASK
+            }],
+            itemImages: [{
+                hash: 'imagehash1',
+                data: {
+                    dataId: 'dataid1',
+                    protocol: ImageDataProtocolType.IPFS,
+                    encoding: null,
+                    data: null
+                }
+            }, {
+                hash: 'imagehash2',
+                data: {
+                    dataId: 'dataid2',
+                    protocol: ImageDataProtocolType.LOCAL,
+                    encoding: 'BASE64',
+                    data: 'BASE64 encoded image data'
+                }
+            }, {
+                hash: 'imagehash3',
+                data: {
+                    dataId: 'dataid3',
+                    protocol: ImageDataProtocolType.SMSG,
+                    encoding: null,
+                    data: 'smsgdata'
+                }
+            }]
         });
     }
 
     @validate()
     public async create( @request(ItemInformationCreateRequest) body: any): Promise<ItemInformation> {
 
-        // TODO: extract and remove related models from request
-        // const itemInformationRelated = body.related;
-        // delete body.related;
+        this.log.debug('create, body: ', JSON.stringify(body, null, 2));
+
+        // extract and remove related models from request
+        let itemCategory = body.itemCategory;
+        delete body.itemCategory;
+        const itemLocation = body.itemLocation;
+        delete body.itemLocation;
+        const shippingDestinations = body.shippingDestinations;
+        delete body.shippingDestinations;
+        const itemImages = body.itemImages;
+        delete body.itemImages;
+
+        // todo: check if item category exists
+        itemCategory = await this.itemCategoryService.create(itemCategory);
+        body.item_category_id = itemCategory.Id;
 
         // If the request body was valid we will create the itemInformation
         const itemInformation = await this.itemInformationRepo.create(body);
 
-        // TODO: create related models
-        // itemInformationRelated._id = itemInformation.Id;
-        // await this.itemInformationRelatedService.create(itemInformationRelated);
+        // create related models
+        itemLocation.item_information_id = itemInformation.Id;
+        await this.itemLocationService.create(itemLocation);
+
+        for (const shippingDestination of shippingDestinations) {
+            shippingDestination.item_information_id = itemInformation.Id;
+            await this.shippingDestinationService.create(shippingDestination);
+        }
+
+        for (const itemImage of itemImages) {
+            itemImage.item_information_id = itemInformation.Id;
+            await this.itemImageService.create(itemImage);
+        }
 
         // finally find and return the created itemInformation
-        const newItemInformation = await this.findOne(itemInformation.id);
+        const newItemInformation = await this.findOne(itemInformation.Id);
         return newItemInformation;
     }
 
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemInformation> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to ItemInformationUpdateRequest
+            title: 'item title1 UPDATED',
+            shortDescription: 'item short desc1 UPDATED',
+            longDescription: 'item long desc1 UPDATED',
+            itemCategory: {
+                name: 'item category name 2',
+                description: 'item category description 2'
+            },
+            itemLocation: {
+                region: Country.FINLAND,
+                address: 'asdf, UPDATED',
+                locationMarker: {
+                    markerTitle: 'Helsinki UPDATED',
+                    markerText: 'Helsinki UPDATED',
+                    lat: 3.234,
+                    lng: 23.4
+                }
+            },
+            shippingDestinations: [{
+                country: Country.UNITED_KINGDOM,
+                shippingAvailability: ShippingAvailability.SHIPS
+            }],
+            itemImages: [{
+                hash: 'imagehash1',
+                data: {
+                    dataId: 'dataid1',
+                    protocol: ImageDataProtocolType.IPFS,
+                    encoding: null,
+                    data: null
+                }
+            }]
         });
     }
 
@@ -92,21 +204,44 @@ export class ItemInformationService {
         // update itemInformation record
         const updatedItemInformation = await this.itemInformationRepo.update(id, itemInformation.toJSON());
 
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let itemInformationRelated = updatedItemInformation.related('ItemInformationRelated').toJSON();
-        // await this.itemInformationService.destroy(itemInformationRelated.id);
+        // find related record and delete it
+        let itemLocation = updatedItemInformation.related('ItemLocation').toJSON();
+        await this.itemLocationService.destroy(itemLocation.id);
 
-        // TODO: recreate related data
-        // itemInformationRelated = body.itemInformationRelated;
-        // itemInformationRelated._id = itemInformation.Id;
-        // const createdItemInformation = await this.itemInformationService.create(itemInformationRelated);
+        // recreate related data
+        itemLocation = body.itemLocation;
+        itemLocation.item_information_id = id;
+        await this.itemLocationService.create(itemLocation);
 
-        // TODO: finally find and return the updated itemInformation
-        // const newItemInformation = await this.findOne(id);
-        // return newItemInformation;
+        // find related record and delete it
+        let shippingDestinations = updatedItemInformation.related('ShippingDestinations').toJSON();
+        for (const shippingDestination of shippingDestinations) {
+            await this.shippingDestinationService.destroy(shippingDestination.id);
+        }
 
-        return updatedItemInformation;
+        // recreate related data
+        shippingDestinations = body.shippingDestinations;
+        for (const shippingDestination of shippingDestinations) {
+            shippingDestination.item_information_id = id;
+            await this.shippingDestinationService.create(shippingDestination);
+        }
+
+        // find related record and delete it
+        let itemImages = updatedItemInformation.related('ItemImages').toJSON();
+        for (const itemImage of itemImages) {
+            await this.itemImageService.destroy(itemImage.id);
+        }
+
+        // recreate related data
+        itemImages = body.itemImages;
+        for (const itemImage of itemImages) {
+            itemImage.item_information_id = id;
+            await this.itemImageService.create(itemImage);
+        }
+
+        // finally find and return the updated itemInformation
+        const newItemInformation = await this.findOne(id);
+        return newItemInformation;
     }
 
     @validate()

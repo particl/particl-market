@@ -1,5 +1,9 @@
 import { Bookshelf } from '../../config/Database';
-
+import { Collection } from 'bookshelf';
+import { ItemLocation } from './ItemLocation';
+import { ItemImage } from './ItemImage';
+import { ShippingDestination } from './ShippingDestination';
+import { ItemCategory } from './ItemCategory';
 
 export class ItemInformation extends Bookshelf.Model<ItemInformation> {
 
@@ -7,9 +11,11 @@ export class ItemInformation extends Bookshelf.Model<ItemInformation> {
         if (withRelated) {
             return await ItemInformation.where<ItemInformation>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'ItemInformationRelated',
-                    // 'ItemInformationRelated.Related'
+                    'ItemCategory',
+                    'ItemLocation',
+                    'ItemLocation.LocationMarker',
+                    'ItemImages',
+                    'ShippingDestinations'
                 ]
             });
         } else {
@@ -38,8 +44,19 @@ export class ItemInformation extends Bookshelf.Model<ItemInformation> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public ItemInformationRelated(): ItemInformationRelated {
-    //    return this.hasOne(ItemInformationRelated);
-    // }
+    public ItemCategory(): ItemCategory {
+        return this.belongsTo(ItemCategory);
+    }
+
+    public ItemLocation(): ItemLocation {
+        return this.hasOne(ItemLocation);
+    }
+
+    public ItemImages(): Collection<ItemImage> {
+        return this.hasMany(ItemImage, 'item_information_id', 'id');
+    }
+
+    public ShippingDestinations(): Collection<ShippingDestination> {
+        return this.hasMany(ShippingDestination, 'item_information_id', 'id');
+    }
 }

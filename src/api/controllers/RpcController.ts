@@ -14,6 +14,7 @@ import { ItemImageService } from '../services/ItemImageService';
 import { LocationMarkerService } from '../services/LocationMarkerService';
 import { ItemLocationService } from '../services/ItemLocationService';
 import { ShippingDestinationService } from '../services/ShippingDestinationService';
+import { ItemInformationService } from '../services/ItemInformationService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -37,6 +38,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.LocationMarkerService) private locationMarkerService: LocationMarkerService,
         @inject(Types.Service) @named(Targets.Service.ItemLocationService) private itemLocationService: ItemLocationService,
         @inject(Types.Service) @named(Targets.Service.ShippingDestinationService) private shippingDestinationService: ShippingDestinationService,
+        @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -91,7 +93,12 @@ export class RpcController {
             'shipping.find': 'shippingDestinationService.rpcFindOne',
             'shipping.findall': 'shippingDestinationService.rpcFindAll',
             'shipping.update': 'shippingDestinationService.rpcUpdate',
-            'shipping.destroy': 'shippingDestinationService.rpcDestroy'
+            'shipping.destroy': 'shippingDestinationService.rpcDestroy',
+            'iteminformation.create': 'itemInformationService.rpcCreate',
+            'iteminformation.find': 'itemInformationService.rpcFindOne',
+            'iteminformation.findall': 'itemInformationService.rpcFindAll',
+            'iteminformation.update': 'itemInformationService.rpcUpdate',
+            'iteminformation.destroy': 'itemInformationService.rpcDestroy'
         };
     }
 

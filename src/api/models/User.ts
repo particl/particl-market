@@ -6,7 +6,6 @@
 import { Bookshelf } from '../../config/Database';
 import { Tables } from '../../constants';
 
-
 export class User extends Bookshelf.Model<User> {
 
     public static async fetchById(id: number): Promise<User> {

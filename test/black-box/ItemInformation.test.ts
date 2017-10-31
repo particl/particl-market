@@ -1,5 +1,8 @@
 import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { Country } from '../../src/api/enums/Country';
+import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
+import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 
 describe('/item-informations', () => {
 
@@ -12,15 +15,114 @@ describe('/item-informations', () => {
     // ];
 
     const testData = {
-        title: undefined, // TODO: Add test value
-        shortDescription: undefined, // TODO: Add test value
-        longDescription: undefined // TODO: Add test value
+        title: 'item title1',
+        shortDescription: 'item short desc1',
+        longDescription: 'item long desc1',
+        itemCategory: {
+            name: 'item category name 1',
+            description: 'item category description 1'
+        },
+        itemLocation: {
+            region: Country.SOUTH_AFRICA,
+            address: 'asdf, asdf, asdf',
+            locationMarker: {
+                markerTitle: 'Helsinki',
+                markerText: 'Helsinki',
+                lat: 12.1234,
+                lng: 23.2314
+            }
+        },
+        shippingDestinations: [{
+            country: Country.UNITED_KINGDOM,
+            shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
+        }, {
+            country: Country.ASIA,
+            shippingAvailability: ShippingAvailability.SHIPS
+        }, {
+            country: Country.SOUTH_AFRICA,
+            shippingAvailability: ShippingAvailability.ASK
+        }],
+        itemImages: [{
+            hash: 'imagehash1',
+            data: {
+                dataId: 'dataid1',
+                protocol: ImageDataProtocolType.IPFS,
+                encoding: null,
+                data: null
+            }
+        }, {
+            hash: 'imagehash2',
+            data: {
+                dataId: 'dataid2',
+                protocol: ImageDataProtocolType.LOCAL,
+                encoding: 'BASE64',
+                data: 'BASE64 encoded image data'
+            }
+        }, {
+            hash: 'imagehash3',
+            data: {
+                dataId: 'dataid3',
+                protocol: ImageDataProtocolType.SMSG,
+                encoding: null,
+                data: 'smsgdata'
+            }
+        }]
     };
 
     const testDataUpdated = {
-        title: undefined, // TODO: Add test value
-        shortDescription: undefined, // TODO: Add test value
-        longDescription: undefined // TODO: Add test value
+        title: 'item title2',
+        shortDescription: 'item short desc2',
+        longDescription: 'item long desc2',
+        itemCategory: {
+            name: 'item category name 2',
+            description: 'item category description 2'
+        },
+        itemLocation: {
+            region: Country.EU,
+            address: 'zxcv, zxcv, zxcv',
+            locationMarker: {
+                markerTitle: 'Stockholm',
+                markerText: 'Stockholm',
+                lat: 34.2314,
+                lng: 11.1234
+            }
+        },
+        shippingDestinations: [{
+            country: Country.SWEDEN,
+            shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
+        }, {
+            country: Country.EU,
+            shippingAvailability: ShippingAvailability.SHIPS
+        }, {
+            country: Country.FINLAND,
+            shippingAvailability: ShippingAvailability.ASK
+        }],
+        itemImages: [{
+            hash: 'imagehash4',
+            data: {
+                dataId: 'dataid4',
+                protocol: ImageDataProtocolType.IPFS,
+                encoding: null,
+                data: null
+            }
+        }, {
+            hash: 'imagehash5',
+            data: {
+                dataId: 'dataid5',
+                protocol: ImageDataProtocolType.LOCAL,
+                encoding: 'BASE64',
+                data: 'BASE64 encoded image data'
+            }
+        }, {
+            hash: 'imagehash6',
+            data: {
+                dataId: 'dataid6',
+                protocol: ImageDataProtocolType.SMSG,
+                encoding: null,
+                data: 'smsgdata'
+            }
+        }]
+
     };
 
     let createdId;

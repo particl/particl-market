@@ -86,7 +86,8 @@ export class ItemCategoryService {
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemCategory> {
         return this.update(data.params[0], {
             name: data.params[1],
-            description: data.params[2]
+            description: data.params[2],
+            parentItemCategoryId: data.params[3] || null
         });
     }
 

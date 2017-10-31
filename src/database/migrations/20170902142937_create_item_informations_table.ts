@@ -7,8 +7,12 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('title').notNullable();
-            table.text('shortDescription').notNullable();
-            table.text('longDescription').notNullable();
+            table.text('short_description').notNullable();
+            table.text('long_description').notNullable();
+
+            table.integer('item_category_id').unsigned().nullable();
+            table.foreign('item_category_id').references('id')
+                .inTable('item_categories');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
