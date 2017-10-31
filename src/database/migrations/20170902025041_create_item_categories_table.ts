@@ -9,6 +9,10 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('name').notNullable();
             table.text('description').notNullable();
 
+            table.integer('parent_item_category_id').unsigned();
+            table.foreign('parent_item_category_id').references('id')
+                .inTable('item_categories').onDelete('cascade');
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })

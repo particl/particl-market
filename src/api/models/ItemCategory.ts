@@ -7,9 +7,7 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
         if (withRelated) {
             return await ItemCategory.where<ItemCategory>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'ItemCategoryRelated',
-                    // 'ItemCategoryRelated.Related'
+                    'ItemCategory'
                 ]
             });
         } else {
@@ -35,8 +33,8 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public ItemCategoryRelated(): ItemCategoryRelated {
-    //    return this.hasOne(ItemCategoryRelated());
-    // }
+    // ItemCategory can have a parent ItemCategory
+    public ItemCategory(): ItemCategory {
+        return this.hasOne(ItemCategory);
+    }
 }
