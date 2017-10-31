@@ -1,5 +1,6 @@
 import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
 describe('/messaging-informations', () => {
 
@@ -12,13 +13,13 @@ describe('/messaging-informations', () => {
     // ];
 
     const testData = {
-        protocol: undefined, // TODO: Add test value
-        publicKey: undefined // TODO: Add test value
+        protocol: MessagingProtocolType.SMSG,
+        publicKey: 'publickey1'
     };
 
     const testDataUpdated = {
-        protocol: undefined, // TODO: Add test value
-        publicKey: undefined // TODO: Add test value
+        protocol: MessagingProtocolType.SMSG,
+        publicKey: 'publickey1'
     };
 
     let createdId;

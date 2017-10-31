@@ -7,7 +7,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('protocol').notNullable();
-            table.text('publicKey').notNullable();
+            table.text('public_key').notNullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

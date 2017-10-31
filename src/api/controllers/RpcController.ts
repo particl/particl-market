@@ -15,6 +15,7 @@ import { LocationMarkerService } from '../services/LocationMarkerService';
 import { ItemLocationService } from '../services/ItemLocationService';
 import { ShippingDestinationService } from '../services/ShippingDestinationService';
 import { ItemInformationService } from '../services/ItemInformationService';
+import { MessagingInformationService } from '../services/MessagingInformationService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -39,6 +40,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.ItemLocationService) private itemLocationService: ItemLocationService,
         @inject(Types.Service) @named(Targets.Service.ShippingDestinationService) private shippingDestinationService: ShippingDestinationService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -98,7 +100,12 @@ export class RpcController {
             'iteminformation.find': 'itemInformationService.rpcFindOne',
             'iteminformation.findall': 'itemInformationService.rpcFindAll',
             'iteminformation.update': 'itemInformationService.rpcUpdate',
-            'iteminformation.destroy': 'itemInformationService.rpcDestroy'
+            'iteminformation.destroy': 'itemInformationService.rpcDestroy',
+            'messaginginformation.create': 'messagingInformationService.rpcCreate',
+            'messaginginformation.find': 'messagingInformationService.rpcFindOne',
+            'messaginginformation.findall': 'messagingInformationService.rpcFindAll',
+            'messaginginformation.update': 'messagingInformationService.rpcUpdate',
+            'messaginginformation.destroy': 'messagingInformationService.rpcDestroy'
         };
     }
 

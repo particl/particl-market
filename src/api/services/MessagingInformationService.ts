@@ -48,23 +48,16 @@ export class MessagingInformationService {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<MessagingInformation> {
         return this.create({
-            data: data.params[0] // TODO: convert your params to MessagingInformationCreateRequest
+            protocol: data.params[0],
+            publicKey: data.params[1]
         });
     }
 
     @validate()
     public async create( @request(MessagingInformationCreateRequest) body: any): Promise<MessagingInformation> {
 
-        // TODO: extract and remove related models from request
-        // const messagingInformationRelated = body.related;
-        // delete body.related;
-
         // If the request body was valid we will create the messagingInformation
         const messagingInformation = await this.messagingInformationRepo.create(body);
-
-        // TODO: create related models
-        // messagingInformationRelated._id = messagingInformation.Id;
-        // await this.messagingInformationRelatedService.create(messagingInformationRelated);
 
         // finally find and return the created messagingInformation
         const newMessagingInformation = await this.findOne(messagingInformation.id);
@@ -74,7 +67,8 @@ export class MessagingInformationService {
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<MessagingInformation> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to MessagingInformationUpdateRequest
+            protocol: data.params[1],
+            publicKey: data.params[2]
         });
     }
 
@@ -90,21 +84,6 @@ export class MessagingInformationService {
 
         // update messagingInformation record
         const updatedMessagingInformation = await this.messagingInformationRepo.update(id, messagingInformation.toJSON());
-
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let messagingInformationRelated = updatedMessagingInformation.related('MessagingInformationRelated').toJSON();
-        // await this.messagingInformationService.destroy(messagingInformationRelated.id);
-
-        // TODO: recreate related data
-        // messagingInformationRelated = body.messagingInformationRelated;
-        // messagingInformationRelated._id = messagingInformation.Id;
-        // const createdMessagingInformation = await this.messagingInformationService.create(messagingInformationRelated);
-
-        // TODO: finally find and return the updated messagingInformation
-        // const newMessagingInformation = await this.findOne(id);
-        // return newMessagingInformation;
-
         return updatedMessagingInformation;
     }
 
