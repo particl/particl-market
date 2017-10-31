@@ -1,5 +1,6 @@
 import { Bookshelf } from '../../config/Database';
-
+// import { Collection } from 'bookshelf';
+import { ItemImageData } from './ItemImageData';
 
 export class ItemImage extends Bookshelf.Model<ItemImage> {
 
@@ -7,9 +8,8 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
         if (withRelated) {
             return await ItemImage.where<ItemImage>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'ItemImageRelated',
-                    // 'ItemImageRelated.Related'
+//                    'ItemImageDatas'
+                    'ItemImageData'
                 ]
             });
         } else {
@@ -32,8 +32,15 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public ItemImageRelated(): ItemImageRelated {
-    //    return this.hasOne(ItemImageRelated);
-    // }
+    public ItemImageData(): ItemImageData {
+        return this.hasOne(ItemImageData);
+    }
+
+    // TODO: hasMany
+    /*
+    public ImageDatas(): Collection<ItemImageData> {
+        // model.hasMany(Target, [foreignKey], [foreignKeyTarget])
+        return this.hasMany(ItemImageData); // , 'image_data_id', 'id');
+    }
+    */
 }

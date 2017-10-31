@@ -1,5 +1,6 @@
 import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 
 describe('/item-images', () => {
 
@@ -12,11 +13,23 @@ describe('/item-images', () => {
     // ];
 
     const testData = {
-        hash: undefined // TODO: Add test value
+        hash: 'asdfasdfasdfasdf',
+        data: {
+            dataId: 'QmUwHMFY9GSiKgjqyZpgAv2LhBrh7GV8rtLuagbry9wmMU',
+            protocol: ImageDataProtocolType.IPFS,
+            encoding: null,
+            data: null
+        }
     };
 
     const testDataUpdated = {
-        hash: undefined // TODO: Add test value
+        hash: 'wqerqwerqwerqwerqwer',
+        data: {
+            dataId: null,
+            protocol: ImageDataProtocolType.LOCAL,
+            encoding: 'BASE64',
+            data: 'BASE64 encoded image data'
+        }
     };
 
     let createdId;
@@ -36,6 +49,10 @@ describe('/item-images', () => {
 
         const result: any = res.getData();
         expect(result.hash).toBe(testData.hash);
+        expect(result.ItemImageData.dataId).toBe(testData.data.dataId);
+        expect(result.ItemImageData.protocol).toBe(testData.data.protocol);
+        expect(result.ItemImageData.encoding).toBe(testData.data.encoding);
+        expect(result.ItemImageData.data).toBe(testData.data.data);
     });
 
     test('POST      /item-images        Should fail because we want to create a empty item image', async () => {
@@ -56,6 +73,7 @@ describe('/item-images', () => {
 
         const result = data[0];
         expect(result.hash).toBe(testData.hash);
+        expect(result.ItemImageData).toBe(undefined); // doesnt fetch related
     });
 
     test('GET       /item-images/:id    Should return one item image', async () => {
@@ -66,6 +84,10 @@ describe('/item-images', () => {
 
         const result: any = res.getData();
         expect(result.hash).toBe(testData.hash);
+        expect(result.ItemImageData.dataId).toBe(testData.data.dataId);
+        expect(result.ItemImageData.protocol).toBe(testData.data.protocol);
+        expect(result.ItemImageData.encoding).toBe(testData.data.encoding);
+        expect(result.ItemImageData.data).toBe(testData.data.data);
     });
 
     test('PUT       /item-images/:id    Should update the item image', async () => {
@@ -78,6 +100,10 @@ describe('/item-images', () => {
 
         const result: any = res.getData();
         expect(result.hash).toBe(testDataUpdated.hash);
+        expect(result.ItemImageData.dataId).toBe(testDataUpdated.data.dataId);
+        expect(result.ItemImageData.protocol).toBe(testDataUpdated.data.protocol);
+        expect(result.ItemImageData.encoding).toBe(testDataUpdated.data.encoding);
+        expect(result.ItemImageData.data).toBe(testDataUpdated.data.data);
     });
 
     test('PUT       /item-images/:id    Should fail because we want to update the item image with a invalid email', async () => {

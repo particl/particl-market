@@ -9,8 +9,8 @@ import { ItemCategoryService } from '../services/ItemCategoryService';
 import { EscrowService } from '../services/EscrowService';
 import { ItemPriceService } from '../services/ItemPriceService';
 import { PaymentInformationService } from '../services/PaymentInformationService';
-// import { ImageDataService } from '../services/ImageDataService';
-// import { ItemImageService } from '../services/ItemImageService';
+import { ItemImageDataService } from '../services/ItemImageDataService';
+import { ItemImageService } from '../services/ItemImageService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -29,8 +29,8 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
         @inject(Types.Service) @named(Targets.Service.ItemPriceService) private itemPriceService: ItemPriceService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
-        // @inject(Types.Service) @named(Targets.Service.ImageDataService) private imageDataService: ImageDataService,
-        // @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageDataService) private imageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -46,27 +46,31 @@ export class RpcController {
             'itemcategory.findroot': 'itemCategoryService.rpcFindRoot',
             'itemcategory.update': 'itemCategoryService.rpcUpdate',
             'itemcategory.destroy': 'itemCategoryService.rpcDestroy',
-
             'escrow.create': 'escrowService.rpcCreate',
             'escrow.find': 'escrowService.rpcFindOne',
             'escrow.findall': 'escrowService.rpcFindAll',
             'escrow.update': 'escrowService.rpcUpdate',
+            'escrow.destroy': 'escrowService.rpcDestroy',
             'itemprice.create': 'itemPriceService.rpcCreate',
             'itemprice.find': 'itemPriceService.rpcFindOne',
             'itemprice.findall': 'itemPriceService.rpcFindAll',
             'itemprice.update': 'itemPriceService.rpcUpdate',
+            'itemprice.destroy': 'itemPriceService.rpcDestroy',
             'paymentinformation.create': 'paymentInformationService.rpcCreate',
             'paymentinformation.find': 'paymentInformationService.rpcFindOne',
             'paymentinformation.findall': 'paymentInformationService.rpcFindAll',
             'paymentinformation.update': 'paymentInformationService.rpcUpdate',
-            'imagedata.create': 'imageDataService.rpcCreate',
-            'imagedata.find': 'imageDataService.rpcFindOne',
-            'imagedata.findall': 'imageDataService.rpcFindAll',
-            'imagedata.update': 'imageDataService.rpcUpdate',
+            'paymentinformation.destroy': 'paymentInformationService.rpcDestroy',
+            'itemimagedata.create': 'imageDataService.rpcCreate',
+            'itemimagedata.find': 'imageDataService.rpcFindOne',
+            'itemimagedata.findall': 'imageDataService.rpcFindAll',
+            'itemimagedata.update': 'imageDataService.rpcUpdate',
+            'itemimagedata.destroy': 'imageDataService.rpcDestroy',
             'itemimage.create': 'itemImageService.rpcCreate',
             'itemimage.find': 'itemImageService.rpcFindOne',
             'itemimage.findall': 'itemImageService.rpcFindAll',
-            'itemimage.update': 'itemImageService.rpcUpdate'
+            'itemimage.update': 'itemImageService.rpcUpdate',
+            'itemimage.destroy': 'itemCategoryService.rpcDestroy'
         };
     }
 

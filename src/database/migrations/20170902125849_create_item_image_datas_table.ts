@@ -11,6 +11,10 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('encoding'); // .notNullable();
             table.text('data'); // .notNullable();
 
+            table.integer('item_image_id').unsigned();
+            table.foreign('item_image_id').references('id')
+                .inTable('item_images').onDelete('cascade');
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })

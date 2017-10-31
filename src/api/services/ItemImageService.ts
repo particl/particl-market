@@ -9,13 +9,14 @@ import { ItemImage } from '../models/ItemImage';
 import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
 import { ItemImageUpdateRequest } from '../requests/ItemImageUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
-
+import { ItemImageDataService } from './ItemImageDataService';
 
 export class ItemImageService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
         @inject(Types.Repository) @named(Targets.Repository.ItemImageRepository) public itemImageRepo: ItemImageRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -48,33 +49,45 @@ export class ItemImageService {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemImage> {
         return this.create({
-            data: data.params[0] // TODO: convert your params to ItemImageCreateRequest
+            hash: data.params[0],
+            data: {
+                dataId: data.params[1] || '',
+                protocol: data.params[2] || '',
+                encoding: data.params[3] || '',
+                data: data.params[4] || ''
+            }
         });
     }
 
     @validate()
     public async create( @request(ItemImageCreateRequest) body: any): Promise<ItemImage> {
 
-        // TODO: extract and remove related models from request
-        // const itemImageRelated = body.related;
-        // delete body.related;
+        // extract and remove related models from request
+        const itemImageData = body.data;
+        delete body.data;
 
         // If the request body was valid we will create the itemImage
         const itemImage = await this.itemImageRepo.create(body);
 
-        // TODO: create related models
-        // itemImageRelated._id = itemImage.Id;
-        // await this.itemImageRelatedService.create(itemImageRelated);
+        // create related models
+        itemImageData.item_image_id = itemImage.Id;
+        await this.itemImageDataService.create(itemImageData);
 
         // finally find and return the created itemImage
-        const newItemImage = await this.findOne(itemImage.id);
+        const newItemImage = await this.findOne(itemImage.Id);
         return newItemImage;
     }
 
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemImage> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to ItemImageUpdateRequest
+            hash: data.params[1],
+            data: {
+                dataId: data.params[2] || '',
+                protocol: data.params[3] || '',
+                encoding: data.params[4] || '',
+                data: data.params[5] || ''
+            }
         });
     }
 
@@ -90,21 +103,18 @@ export class ItemImageService {
         // update itemImage record
         const updatedItemImage = await this.itemImageRepo.update(id, itemImage.toJSON());
 
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let itemImageRelated = updatedItemImage.related('ItemImageRelated').toJSON();
-        // await this.itemImageService.destroy(itemImageRelated.id);
+        // find related record and delete it
+        let itemImageData = updatedItemImage.related('ItemImageData').toJSON();
+        await this.itemImageDataService.destroy(itemImageData.id);
 
-        // TODO: recreate related data
-        // itemImageRelated = body.itemImageRelated;
-        // itemImageRelated._id = itemImage.Id;
-        // const createdItemImage = await this.itemImageService.create(itemImageRelated);
+        // recreate related data
+        itemImageData = body.data;
+        itemImageData.item_image_id = id;
+        await this.itemImageDataService.create(itemImageData);
 
-        // TODO: finally find and return the updated itemImage
-        // const newItemImage = await this.findOne(id);
-        // return newItemImage;
-
-        return updatedItemImage;
+        // finally find and return the updated itemImage
+        const newItemImage = await this.findOne(id);
+        return newItemImage;
     }
 
     @validate()
