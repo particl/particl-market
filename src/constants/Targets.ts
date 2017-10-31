@@ -13,18 +13,21 @@ export const Targets = {
         CryptocurrencyAddress: 'CryptocurrencyAddress',
         EscrowRatio: 'EscrowRatio',
         ItemCategory: 'ItemCategory',
+        ShippingPrice: 'ShippingPrice',
         User: 'User'
     },
     Repository:     {
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
         ItemCategoryRepository: 'ItemCategoryRepository',
+        ShippingPriceRepository: 'ShippingPriceRepository',
         UserRepository: 'UserRepository'
     },
     Service:     {
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         EscrowRatioService: 'EscrowRatioService',
         ItemCategoryService: 'ItemCategoryService',
+        ShippingPriceService: 'ShippingPriceService',
         UserService: 'UserService'
     },
     Middleware:     {
@@ -45,6 +48,7 @@ export const Targets = {
         EscrowRatioController: 'EscrowRatioController',
         ItemCategoryController: 'ItemCategoryController',
         RpcController: 'RpcController',
+        ShippingPriceController: 'ShippingPriceController',
         UserController: 'UserController'
     }
 };
