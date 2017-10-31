@@ -116,10 +116,8 @@ export class ItemInformationService {
     @validate()
     public async create( @request(ItemInformationCreateRequest) body: any): Promise<ItemInformation> {
 
-        this.log.debug('create, body: ', JSON.stringify(body, null, 2));
-
         // extract and remove related models from request
-        let itemCategory = body.itemCategory;
+        const itemCategory = body.itemCategory;
         delete body.itemCategory;
         const itemLocation = body.itemLocation;
         delete body.itemLocation;
@@ -128,11 +126,14 @@ export class ItemInformationService {
         const itemImages = body.itemImages;
         delete body.itemImages;
 
-        // todo: check if item category exists
-        itemCategory = await this.itemCategoryService.create(itemCategory);
-        body.item_category_id = itemCategory.Id;
+        // check if item category allready exists
+        let existingItemCategory = await this.itemCategoryService.findOneByName(itemCategory.name);
+        if (existingItemCategory == null) {
+            existingItemCategory = await this.itemCategoryService.create(itemCategory);
+        }
+        body.item_category_id = existingItemCategory.Id;
 
-        // If the request body was valid we will create the itemInformation
+        // If the request body was valid, create the itemInformation
         const itemInformation = await this.itemInformationRepo.create(body);
 
         // create related models
@@ -201,8 +202,16 @@ export class ItemInformationService {
         itemInformation.ShortDescription = body.shortDescription;
         itemInformation.LongDescription = body.longDescription;
 
+        // check if item category allready exists
+        let existingItemCategory = await this.itemCategoryService.findOneByName(body.itemCategory.name);
+        if (existingItemCategory == null) {
+            existingItemCategory = await this.itemCategoryService.create(body.itemCategory);
+        }
+        const itemInfoToSave = itemInformation.toJSON();
+        itemInfoToSave['itemCategoryId'] = existingItemCategory.Id;
+
         // update itemInformation record
-        const updatedItemInformation = await this.itemInformationRepo.update(id, itemInformation.toJSON());
+        const updatedItemInformation = await this.itemInformationRepo.update(id, itemInfoToSave);
 
         // find related record and delete it
         let itemLocation = updatedItemInformation.related('ItemLocation').toJSON();

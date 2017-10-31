@@ -144,6 +144,16 @@ describe('/item-informations', () => {
         expect(result.title).toBe(testData.title);
         expect(result.shortDescription).toBe(testData.shortDescription);
         expect(result.longDescription).toBe(testData.longDescription);
+        expect(result.ItemCategory.name).toBe(testData.itemCategory.name);
+        expect(result.ItemCategory.description).toBe(testData.itemCategory.description);
+        expect(result.ItemLocation.region).toBe(testData.itemLocation.region);
+        expect(result.ItemLocation.address).toBe(testData.itemLocation.address);
+        expect(result.ItemLocation.LocationMarker.markerTitle).toBe(testData.itemLocation.locationMarker.markerTitle);
+        expect(result.ItemLocation.LocationMarker.markerText).toBe(testData.itemLocation.locationMarker.markerText);
+        expect(result.ItemLocation.LocationMarker.lat).toBe(testData.itemLocation.locationMarker.lat);
+        expect(result.ItemLocation.LocationMarker.lng).toBe(testData.itemLocation.locationMarker.lng);
+        expect(result.ShippingDestinations).toHaveLength(3);
+        expect(result.ItemImages).toHaveLength(3);
     });
 
     test('POST      /item-informations        Should fail because we want to create a empty item information', async () => {
@@ -166,6 +176,11 @@ describe('/item-informations', () => {
         expect(result.title).toBe(testData.title);
         expect(result.shortDescription).toBe(testData.shortDescription);
         expect(result.longDescription).toBe(testData.longDescription);
+        expect(result.ItemCategory).toBe(undefined); // doesnt fetch related
+        expect(result.ItemLocation).toBe(undefined); // doesnt fetch related
+        expect(result.ShippingDestinations).toBe(undefined); // doesnt fetch related
+        expect(result.ItemImages).toBe(undefined); // doesnt fetch related
+
     });
 
     test('GET       /item-informations/:id    Should return one item information', async () => {
@@ -178,6 +193,17 @@ describe('/item-informations', () => {
         expect(result.title).toBe(testData.title);
         expect(result.shortDescription).toBe(testData.shortDescription);
         expect(result.longDescription).toBe(testData.longDescription);
+        expect(result.ItemCategory.name).toBe(testData.itemCategory.name);
+        expect(result.ItemCategory.description).toBe(testData.itemCategory.description);
+        expect(result.ItemLocation.region).toBe(testData.itemLocation.region);
+        expect(result.ItemLocation.address).toBe(testData.itemLocation.address);
+        expect(result.ItemLocation.LocationMarker.markerTitle).toBe(testData.itemLocation.locationMarker.markerTitle);
+        expect(result.ItemLocation.LocationMarker.markerText).toBe(testData.itemLocation.locationMarker.markerText);
+        expect(result.ItemLocation.LocationMarker.lat).toBe(testData.itemLocation.locationMarker.lat);
+        expect(result.ItemLocation.LocationMarker.lng).toBe(testData.itemLocation.locationMarker.lng);
+        expect(result.ShippingDestinations).toHaveLength(3);
+        expect(result.ItemImages).toHaveLength(3);
+
     });
 
     test('PUT       /item-informations/:id    Should update the item information', async () => {
@@ -192,6 +218,17 @@ describe('/item-informations', () => {
         expect(result.title).toBe(testDataUpdated.title);
         expect(result.shortDescription).toBe(testDataUpdated.shortDescription);
         expect(result.longDescription).toBe(testDataUpdated.longDescription);
+        expect(result.ItemCategory.name).toBe(testDataUpdated.itemCategory.name);
+        expect(result.ItemCategory.description).toBe(testDataUpdated.itemCategory.description);
+        expect(result.ItemLocation.region).toBe(testDataUpdated.itemLocation.region);
+        expect(result.ItemLocation.address).toBe(testDataUpdated.itemLocation.address);
+        expect(result.ItemLocation.LocationMarker.markerTitle).toBe(testDataUpdated.itemLocation.locationMarker.markerTitle);
+        expect(result.ItemLocation.LocationMarker.markerText).toBe(testDataUpdated.itemLocation.locationMarker.markerText);
+        expect(result.ItemLocation.LocationMarker.lat).toBe(testDataUpdated.itemLocation.locationMarker.lat);
+        expect(result.ItemLocation.LocationMarker.lng).toBe(testDataUpdated.itemLocation.locationMarker.lng);
+        expect(result.ShippingDestinations).toHaveLength(3);
+        expect(result.ItemImages).toHaveLength(3);
+
     });
 
     test('PUT       /item-informations/:id    Should fail because we want to update the item information with a invalid email', async () => {

@@ -6,7 +6,7 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('item_categories', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('name').notNullable();
+            table.string('name').notNullable().unique();
             table.text('description').nullable();
 
             table.integer('parent_item_category_id').unsigned().nullable();

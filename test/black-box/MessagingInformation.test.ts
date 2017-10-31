@@ -19,7 +19,7 @@ describe('/messaging-informations', () => {
 
     const testDataUpdated = {
         protocol: MessagingProtocolType.SMSG,
-        publicKey: 'publickey1'
+        publicKey: 'publickey2'
     };
 
     let createdId;

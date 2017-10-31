@@ -45,7 +45,7 @@ export class ItemInformation extends Bookshelf.Model<ItemInformation> {
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
     public ItemCategory(): ItemCategory {
-        return this.belongsTo(ItemCategory);
+        return this.belongsTo(ItemCategory, 'item_category_id', 'id');
     }
 
     public ItemLocation(): ItemLocation {
