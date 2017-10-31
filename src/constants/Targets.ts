@@ -11,6 +11,7 @@
 export const Targets = {
     Model:     {
         CryptocurrencyAddress: 'CryptocurrencyAddress',
+        Escrow: 'Escrow',
         EscrowRatio: 'EscrowRatio',
         ItemCategory: 'ItemCategory',
         ItemPrice: 'ItemPrice',
@@ -20,6 +21,7 @@ export const Targets = {
     Repository:     {
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
+        EscrowRepository: 'EscrowRepository',
         ItemCategoryRepository: 'ItemCategoryRepository',
         ItemPriceRepository: 'ItemPriceRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
@@ -28,6 +30,7 @@ export const Targets = {
     Service:     {
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         EscrowRatioService: 'EscrowRatioService',
+        EscrowService: 'EscrowService',
         ItemCategoryService: 'ItemCategoryService',
         ItemPriceService: 'ItemPriceService',
         ShippingPriceService: 'ShippingPriceService',
@@ -48,6 +51,7 @@ export const Targets = {
     },
     Controller:     {
         CryptocurrencyAddressController: 'CryptocurrencyAddressController',
+        EscrowController: 'EscrowController',
         EscrowRatioController: 'EscrowRatioController',
         ItemCategoryController: 'ItemCategoryController',
         ItemPriceController: 'ItemPriceController',
