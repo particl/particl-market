@@ -12,13 +12,13 @@ describe('/item-categories', () => {
     // ];
 
     const testData = {
-        name: undefined, // TODO: Add test value
-        description: undefined // TODO: Add test value
+        name: 'Electronics and Technology',
+        description: 'Electronics and Technology description'
     };
 
     const testDataUpdated = {
-        name: undefined, // TODO: Add test value
-        description: undefined // TODO: Add test value
+        name: 'Computer Systems and Parts',
+        description: 'Computer Systems and Parts description'
     };
 
     let createdId;
