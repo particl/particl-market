@@ -12,13 +12,13 @@ describe('/escrow-ratios', () => {
     // ];
 
     const testData = {
-        buyer: undefined, // TODO: Add test value
-        seller: undefined // TODO: Add test value
+        buyer: 50,
+        seller: 50
     };
 
     const testDataUpdated = {
-        buyer: undefined, // TODO: Add test value
-        seller: undefined // TODO: Add test value
+        buyer: 100,
+        seller: 100
     };
 
     let createdId;
