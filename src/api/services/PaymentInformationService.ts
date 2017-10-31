@@ -9,13 +9,16 @@ import { PaymentInformation } from '../models/PaymentInformation';
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
 import { PaymentInformationUpdateRequest } from '../requests/PaymentInformationUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
-
+import { EscrowService } from './EscrowService';
+import { ItemPriceService } from './ItemPriceService';
 
 export class PaymentInformationService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.ItemPriceService) private itemPriceService: ItemPriceService,
+        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
         @inject(Types.Repository) @named(Targets.Repository.PaymentInformationRepository) public paymentInformationRepo: PaymentInformationRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -48,33 +51,77 @@ export class PaymentInformationService {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<PaymentInformation> {
         return this.create({
-            data: data.params[0] // TODO: convert your params to PaymentInformationCreateRequest
+            type: data.params[0],
+            escrow: {
+                type: data.params[1],
+                ratio: {
+                    buyer: data.params[2],
+                    seller: data.params[3]
+                }
+            },
+            itemPrice: {
+                currency: data.params[4],
+                basePrice: data.params[5],
+                shippingPrice: {
+                    domestic: data.params[6],
+                    international: data.params[7]
+                },
+                address: {
+                    type: data.params[8],
+                    address: data.params[9]
+                }
+            }
         });
     }
 
     @validate()
     public async create( @request(PaymentInformationCreateRequest) body: any): Promise<PaymentInformation> {
 
-        // TODO: extract and remove related models from request
-        // const paymentInformationRelated = body.related;
-        // delete body.related;
+        const escrow = body.escrow;
+        const itemPrice = body.itemPrice;
+
+        delete body.escrow;
+        delete body.itemPrice;
 
         // If the request body was valid we will create the paymentInformation
         const paymentInformation = await this.paymentInformationRepo.create(body);
 
-        // TODO: create related models
-        // paymentInformationRelated._id = paymentInformation.Id;
-        // await this.paymentInformationRelatedService.create(paymentInformationRelated);
+        // then create escrow
+        escrow.payment_information_id = paymentInformation.Id;
+        await this.escrowService.create(escrow);
+
+        // then create item price
+        itemPrice.payment_information_id = paymentInformation.Id;
+        await this.itemPriceService.create(itemPrice);
 
         // finally find and return the created paymentInformation
-        const newPaymentInformation = await this.findOne(paymentInformation.id);
+        const newPaymentInformation = await this.findOne(paymentInformation.Id);
         return newPaymentInformation;
     }
 
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<PaymentInformation> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to PaymentInformationUpdateRequest
+            type: data.params[1],
+            escrow: {
+                type: data.params[2],
+                ratio: {
+                    buyer: data.params[3],
+                    seller: data.params[4]
+                }
+            },
+            itemPrice: {
+                currency: data.params[5],
+                basePrice: data.params[6],
+                shippingPrice: {
+                    domestic: data.params[7],
+                    international: data.params[8]
+                },
+                address: {
+                    type: data.params[9],
+                    address: data.params[10]
+                }
+            }
         });
     }
 
@@ -90,21 +137,28 @@ export class PaymentInformationService {
         // update paymentInformation record
         const updatedPaymentInformation = await this.paymentInformationRepo.update(id, paymentInformation.toJSON());
 
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let paymentInformationRelated = updatedPaymentInformation.related('PaymentInformationRelated').toJSON();
-        // await this.paymentInformationService.destroy(paymentInformationRelated.id);
+        // find related record and delete it
+        let relatedEscrow = updatedPaymentInformation.related('Escrow').toJSON();
+        await this.escrowService.destroy(relatedEscrow.id);
 
-        // TODO: recreate related data
-        // paymentInformationRelated = body.paymentInformationRelated;
-        // paymentInformationRelated._id = paymentInformation.Id;
-        // const createdPaymentInformation = await this.paymentInformationService.create(paymentInformationRelated);
+        // recreate related data
+        relatedEscrow = body.escrow;
+        relatedEscrow.payment_information_id = id;
+        await this.escrowService.create(relatedEscrow);
 
-        // TODO: finally find and return the updated paymentInformation
-        // const newPaymentInformation = await this.findOne(id);
-        // return newPaymentInformation;
+        // find related record and delete it
+        let relatedItemPrice = updatedPaymentInformation.related('ItemPrice').toJSON();
+        await this.itemPriceService.destroy(relatedItemPrice.id);
 
-        return updatedPaymentInformation;
+        // recreate related data
+        relatedItemPrice = body.itemPrice;
+        relatedItemPrice.payment_information_id = id;
+        await this.itemPriceService.create(relatedItemPrice);
+
+        // finally find and return the updated paymentInformation
+        const newPaymentInformation = await this.findOne(id);
+        return newPaymentInformation;
+
     }
 
     @validate()

@@ -1,5 +1,9 @@
 import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { PaymentType } from '../../src/api/enums/PaymentType';
+import { EscrowType } from '../../src/api/enums/EscrowType';
+import { Currency } from '../../src/api/enums/Currency';
+import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 
 describe('/payment-informations', () => {
 
@@ -12,11 +16,49 @@ describe('/payment-informations', () => {
     // ];
 
     const testData = {
-        type: undefined // TODO: Add test value
+        type: PaymentType.SALE,
+        escrow: {
+            type: EscrowType.MAD,
+            ratio: {
+                buyer: 100,
+                seller: 100
+            }
+        },
+        itemPrice: {
+            currency: Currency.BITCOIN,
+            basePrice: 0.0001,
+            shippingPrice: {
+                domestic: 0.123,
+                international: 1.234
+            },
+            address: {
+                type: CryptocurrencyAddressType.NORMAL,
+                address: '1234'
+            }
+        }
     };
 
     const testDataUpdated = {
-        type: undefined // TODO: Add test value
+        type: PaymentType.FREE,
+        escrow: {
+            type: EscrowType.NOP,
+            ratio: {
+                buyer: 0,
+                seller: 0
+            }
+        },
+        itemPrice: {
+            currency: Currency.PARTICL,
+            basePrice: 0.002,
+            shippingPrice: {
+                domestic: 1.234,
+                international: 2.345
+            },
+            address: {
+                type: CryptocurrencyAddressType.STEALTH,
+                address: '4567'
+            }
+        }
     };
 
     let createdId;
