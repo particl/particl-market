@@ -14,8 +14,8 @@ export class ServerStartedListener implements interfaces.Listener {
         this.log = new Logger(__filename);
     }
 
-    public act(user: any): void {
-        this.log.info('Receive event ServerStartedListener', user);
+    public act(payload: any): void {
+        this.log.info('Receive event ServerStartedListenerEvent', payload);
     }
 
 }

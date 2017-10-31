@@ -79,7 +79,7 @@ export class App {
         this.log.info('App is ready!');
 
         const eventEmitter = this.ioc.container.getNamed<EventEmitter>(Types.Core, Core.Events);
-        eventEmitter.emit(ServerStartedListener.Event, this.express);
+        eventEmitter.emit(ServerStartedListener.Event, 'Hello!');
     }
 
 }

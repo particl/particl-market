@@ -15,8 +15,8 @@ export class {{name.capitalize}}Listener implements interfaces.Listener {
         this.log = new Logger(__filename);
     }
 
-    public act(user: any): void {
-        this.log.info('Receive event {{name.capitalize}}Listener', user);
+    public act(payload: any): void {
+        this.log.info('Receive event {{name.normal}}Event', payload);
     }
 
 }
