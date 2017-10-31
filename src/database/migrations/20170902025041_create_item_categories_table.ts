@@ -7,9 +7,9 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('name').notNullable();
-            table.text('description').notNullable();
+            table.text('description').nullable();
 
-            table.integer('parent_item_category_id').unsigned();
+            table.integer('parent_item_category_id').unsigned().nullable();
             table.foreign('parent_item_category_id').references('id')
                 .inTable('item_categories').onDelete('cascade');
 

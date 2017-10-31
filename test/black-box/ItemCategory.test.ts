@@ -4,12 +4,14 @@ import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
 describe('/item-categories', () => {
 
     const keys = [
-        'id', 'updatedAt', 'createdAt', 'name', 'description' // , 'Related'
+        'id', 'updatedAt', 'createdAt', 'name', 'description',
+        'parentItemCategoryId', 'ItemCategory'
     ];
 
-    // const keysWithoutRelated = [
-    //    'id', 'updatedAt', 'createdAt', 'name', 'description'
-    // ];
+    const keysWithoutRelated = [
+        'id', 'updatedAt', 'createdAt', 'name', 'description',
+        'parentItemCategoryId'
+    ];
 
     const testData = {
         name: 'Electronics and Technology',
@@ -49,11 +51,11 @@ describe('/item-categories', () => {
         res.expectStatusCode(400);
     });
 
-    test('GET       /item-categories        Should list of item categorys with our new create one', async () => {
+    test('GET       /item-categories        Should list item categorys with our new create one', async () => {
         const res = await api('GET', '/api/item-categories');
         res.expectJson();
         res.expectStatusCode(200);
-        res.expectData(keys); // keysWithoutRelated
+        res.expectData(keysWithoutRelated);
         const data = res.getData<any[]>();
         expect(data.length).toBe(1);
 

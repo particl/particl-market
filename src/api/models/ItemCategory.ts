@@ -35,6 +35,7 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
 
     // ItemCategory can have a parent ItemCategory
     public ItemCategory(): ItemCategory {
-        return this.hasOne(ItemCategory);
+        // model.hasOne(Target, [foreignKey], [foreignKeyTarget])
+        return this.hasOne(ItemCategory, 'parent_item_category_id', 'id');
     }
 }

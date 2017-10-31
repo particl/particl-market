@@ -53,7 +53,7 @@ describe('/{{name.pluralize}}', () => {
         res.expectStatusCode(400);
     });
 
-    test('GET       /{{name.pluralize}}        Should list of {{name.lowerCase}}s with our new create one', async () => {
+    test('GET       /{{name.pluralize}}        Should list {{name.lowerCase}}s with our new create one', async () => {
         const res = await api('GET', '/api/{{name.pluralize}}');
         res.expectJson();
         res.expectStatusCode(200);
