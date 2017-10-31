@@ -12,13 +12,25 @@ describe('/item-locations', () => {
     // ];
 
     const testData = {
-        region: undefined, // TODO: Add test value
-        address: undefined // TODO: Add test value
+        region: 'EU',
+        address: 'asdf, asdf, asdf',
+        locationMarker: {
+            markerTitle: 'Helsinki',
+            markerText: 'Helsinki',
+            lat: 12.1234,
+            lng: 23.2314
+        }
     };
 
     const testDataUpdated = {
-        region: undefined, // TODO: Add test value
-        address: undefined // TODO: Add test value
+        region: 'ASIA',
+        address: 'zxcv, zxcv, zxcv',
+        locationMarker: {
+            markerTitle: 'Stockholm',
+            markerText: 'Stockholm',
+            lat: 34.2314,
+            lng: 11.1234
+        }
     };
 
     let createdId;
@@ -39,6 +51,10 @@ describe('/item-locations', () => {
         const result: any = res.getData();
         expect(result.region).toBe(testData.region);
         expect(result.address).toBe(testData.address);
+        expect(result.LocationMarker.markerTitle).toBe(testData.locationMarker.markerTitle);
+        expect(result.LocationMarker.markerText).toBe(testData.locationMarker.markerText);
+        expect(result.LocationMarker.lat).toBe(testData.locationMarker.lat);
+        expect(result.LocationMarker.lng).toBe(testData.locationMarker.lng);
     });
 
     test('POST      /item-locations        Should fail because we want to create a empty item location', async () => {
@@ -60,6 +76,7 @@ describe('/item-locations', () => {
         const result = data[0];
         expect(result.region).toBe(testData.region);
         expect(result.address).toBe(testData.address);
+        expect(result.LocationMarker).toBe(undefined); // doesnt fetch related
     });
 
     test('GET       /item-locations/:id    Should return one item location', async () => {
@@ -84,6 +101,11 @@ describe('/item-locations', () => {
         const result: any = res.getData();
         expect(result.region).toBe(testDataUpdated.region);
         expect(result.address).toBe(testDataUpdated.address);
+        expect(result.LocationMarker.markerTitle).toBe(testDataUpdated.locationMarker.markerTitle);
+        expect(result.LocationMarker.markerText).toBe(testDataUpdated.locationMarker.markerText);
+        expect(result.LocationMarker.lat).toBe(testDataUpdated.locationMarker.lat);
+        expect(result.LocationMarker.lng).toBe(testDataUpdated.locationMarker.lng);
+
     });
 
     test('PUT       /item-locations/:id    Should fail because we want to update the item location with a invalid email', async () => {

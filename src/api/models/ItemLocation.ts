@@ -1,5 +1,5 @@
 import { Bookshelf } from '../../config/Database';
-
+import { LocationMarker } from './LocationMarker';
 
 export class ItemLocation extends Bookshelf.Model<ItemLocation> {
 
@@ -7,9 +7,7 @@ export class ItemLocation extends Bookshelf.Model<ItemLocation> {
         if (withRelated) {
             return await ItemLocation.where<ItemLocation>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'ItemLocationRelated',
-                    // 'ItemLocationRelated.Related'
+                    'LocationMarker'
                 ]
             });
         } else {
@@ -35,8 +33,7 @@ export class ItemLocation extends Bookshelf.Model<ItemLocation> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public ItemLocationRelated(): ItemLocationRelated {
-    //    return this.hasOne(ItemLocationRelated);
-    // }
+    public LocationMarker(): LocationMarker {
+        return this.hasOne(LocationMarker);
+    }
 }

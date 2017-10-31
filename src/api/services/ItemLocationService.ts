@@ -9,6 +9,7 @@ import { ItemLocation } from '../models/ItemLocation';
 import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
 import { ItemLocationUpdateRequest } from '../requests/ItemLocationUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
+import { LocationMarkerService } from './LocationMarkerService';
 
 
 export class ItemLocationService {
@@ -16,6 +17,7 @@ export class ItemLocationService {
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.LocationMarkerService) public locationMarkerService: LocationMarkerService,
         @inject(Types.Repository) @named(Targets.Repository.ItemLocationRepository) public itemLocationRepo: ItemLocationRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -48,33 +50,47 @@ export class ItemLocationService {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemLocation> {
         return this.create({
-            data: data.params[0] // TODO: convert your params to ItemLocationCreateRequest
+            region: data.params[0],
+            address: data.params[1],
+            locationMarker: {
+                markerTitle: data.params[2],
+                markerText: data.params[3],
+                lat: data.params[4],
+                lng: data.params[5]
+            }
         });
     }
 
     @validate()
     public async create( @request(ItemLocationCreateRequest) body: any): Promise<ItemLocation> {
 
-        // TODO: extract and remove related models from request
-        // const itemLocationRelated = body.related;
-        // delete body.related;
+        // extract and remove related models from request
+        const locationMarker = body.locationMarker;
+        delete body.locationMarker;
 
         // If the request body was valid we will create the itemLocation
         const itemLocation = await this.itemLocationRepo.create(body);
 
-        // TODO: create related models
-        // itemLocationRelated._id = itemLocation.Id;
-        // await this.itemLocationRelatedService.create(itemLocationRelated);
+        // create related models
+        locationMarker.item_location_id = itemLocation.Id;
+        await this.locationMarkerService.create(locationMarker);
 
         // finally find and return the created itemLocation
-        const newItemLocation = await this.findOne(itemLocation.id);
+        const newItemLocation = await this.findOne(itemLocation.Id);
         return newItemLocation;
     }
 
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemLocation> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to ItemLocationUpdateRequest
+            region: data.params[1],
+            address: data.params[2],
+            locationMarker: {
+                markerTitle: data.params[3],
+                markerText: data.params[4],
+                lat: data.params[5],
+                lng: data.params[6]
+            }
         });
     }
 
@@ -91,21 +107,18 @@ export class ItemLocationService {
         // update itemLocation record
         const updatedItemLocation = await this.itemLocationRepo.update(id, itemLocation.toJSON());
 
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let itemLocationRelated = updatedItemLocation.related('ItemLocationRelated').toJSON();
-        // await this.itemLocationService.destroy(itemLocationRelated.id);
+        // find related record and delete it
+        let locationMarker = updatedItemLocation.related('LocationMarker').toJSON();
+        await this.locationMarkerService.destroy(locationMarker.id);
 
-        // TODO: recreate related data
-        // itemLocationRelated = body.itemLocationRelated;
-        // itemLocationRelated._id = itemLocation.Id;
-        // const createdItemLocation = await this.itemLocationService.create(itemLocationRelated);
+        // recreate related data
+        locationMarker = body.locationMarker;
+        locationMarker.item_location_id = id;
+        await this.locationMarkerService.create(locationMarker);
 
-        // TODO: finally find and return the updated itemLocation
-        // const newItemLocation = await this.findOne(id);
-        // return newItemLocation;
-
-        return updatedItemLocation;
+        // finally find and return the updated itemLocation
+        const newItemLocation = await this.findOne(id);
+        return newItemLocation;
     }
 
     @validate()

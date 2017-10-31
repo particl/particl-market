@@ -11,6 +11,10 @@ exports.up = (db: Knex): Promise<any> => {
             table.float('lat').notNullable();
             table.float('lng').notNullable();
 
+            table.integer('item_location_id').unsigned();
+            table.foreign('item_location_id').references('id')
+                .inTable('item_locations').onDelete('cascade');
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })
