@@ -4,16 +4,16 @@ import { RequestBody } from '../../core/api/RequestBody';
 
 export class ItemImageDataUpdateRequest extends RequestBody {
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public dataId: string;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public protocol: string;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public encoding: string;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public data: string;
 
 }

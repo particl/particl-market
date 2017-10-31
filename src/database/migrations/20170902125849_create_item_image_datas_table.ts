@@ -6,10 +6,10 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('item_image_datas', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('dataId').notNullable();
-            table.string('protocol').notNullable();
-            table.string('encoding').notNullable();
-            table.text('data').notNullable();
+            table.string('data_id'); // .notNullable();
+            table.string('protocol'); // .notNullable();
+            table.string('encoding'); // .notNullable();
+            table.text('data'); // .notNullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

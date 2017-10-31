@@ -1,5 +1,6 @@
 import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 
 describe('/item-image-data', () => {
 
@@ -12,17 +13,17 @@ describe('/item-image-data', () => {
     // ];
 
     const testData = {
-        dataId: undefined, // TODO: Add test value
-        protocol: undefined, // TODO: Add test value
-        encoding: undefined, // TODO: Add test value
-        data: undefined // TODO: Add test value
+        dataId: 'QmUwHMFY9GSiKgjqyZpgAv2LhBrh7GV8rtLuagbry9wmMU',
+        protocol: ImageDataProtocolType.IPFS,
+        encoding: null,
+        data: null
     };
 
     const testDataUpdated = {
-        dataId: undefined, // TODO: Add test value
-        protocol: undefined, // TODO: Add test value
-        encoding: undefined, // TODO: Add test value
-        data: undefined // TODO: Add test value
+        dataId: null,
+        protocol: ImageDataProtocolType.LOCAL,
+        encoding: 'BASE64',
+        data: 'BASE64 encoded image data'
     };
 
     let createdId;
@@ -47,13 +48,17 @@ describe('/item-image-data', () => {
         expect(result.data).toBe(testData.data);
     });
 
-    test('POST      /item-image-data        Should fail because we want to create a empty item image data', async () => {
+    /*
+     does not fail because all the fields can be null
+
+     test('POST      /item-image-data        Should fail because we want to create a empty item image data', async () => {
         const res = await api('POST', '/api/item-image-data', {
             body: {}
         });
         res.expectJson();
         res.expectStatusCode(400);
     });
+     */
 
     test('GET       /item-image-data        Should list item image datas with our new create one', async () => {
         const res = await api('GET', '/api/item-image-data');
@@ -98,6 +103,7 @@ describe('/item-image-data', () => {
         expect(result.data).toBe(testDataUpdated.data);
     });
 
+    /*
     test('PUT       /item-image-data/:id    Should fail because we want to update the item image data with a invalid email', async () => {
         const res = await api('PUT', `/api/item-image-data/${createdId}`, {
             body: {
@@ -107,6 +113,7 @@ describe('/item-image-data', () => {
         res.expectJson();
         res.expectStatusCode(400);
     });
+    */
 
     test('DELETE    /item-image-data/:id    Should delete the item image data', async () => {
         const res = await api('DELETE', `/api/item-image-data/${createdId}`);

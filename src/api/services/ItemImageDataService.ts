@@ -48,23 +48,18 @@ export class ItemImageDataService {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemImageData> {
         return this.create({
-            data: data.params[0] // TODO: convert your params to ItemImageDataCreateRequest
+            dataId: data.params[0] || '',
+            protocol: data.params[1] || '',
+            encoding: data.params[2] || '',
+            data: data.params[3] || ''
         });
     }
 
     @validate()
     public async create( @request(ItemImageDataCreateRequest) body: any): Promise<ItemImageData> {
 
-        // TODO: extract and remove related models from request
-        // const itemImageDataRelated = body.related;
-        // delete body.related;
-
         // If the request body was valid we will create the itemImageData
         const itemImageData = await this.itemImageDataRepo.create(body);
-
-        // TODO: create related models
-        // itemImageDataRelated._id = itemImageData.Id;
-        // await this.itemImageDataRelatedService.create(itemImageDataRelated);
 
         // finally find and return the created itemImageData
         const newItemImageData = await this.findOne(itemImageData.id);
@@ -74,7 +69,10 @@ export class ItemImageDataService {
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemImageData> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to ItemImageDataUpdateRequest
+            dataId: data.params[1] || '',
+            protocol: data.params[2] || '',
+            encoding: data.params[3] || '',
+            data: data.params[4] || ''
         });
     }
 
@@ -92,21 +90,6 @@ export class ItemImageDataService {
 
         // update itemImageData record
         const updatedItemImageData = await this.itemImageDataRepo.update(id, itemImageData.toJSON());
-
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let itemImageDataRelated = updatedItemImageData.related('ItemImageDataRelated').toJSON();
-        // await this.itemImageDataService.destroy(itemImageDataRelated.id);
-
-        // TODO: recreate related data
-        // itemImageDataRelated = body.itemImageDataRelated;
-        // itemImageDataRelated._id = itemImageData.Id;
-        // const createdItemImageData = await this.itemImageDataService.create(itemImageDataRelated);
-
-        // TODO: finally find and return the updated itemImageData
-        // const newItemImageData = await this.findOne(id);
-        // return newItemImageData;
-
         return updatedItemImageData;
     }
 
