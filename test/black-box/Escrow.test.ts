@@ -1,5 +1,6 @@
 import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { EscrowType } from '../../src/api/enums/EscrowType';
 
 describe('/escrows', () => {
 
@@ -12,11 +13,19 @@ describe('/escrows', () => {
     // ];
 
     const testData = {
-        type: undefined // TODO: Add test value
+        type: EscrowType.MAD,
+        ratio: {
+            buyer: 50,
+            seller: 50
+        }
     };
 
     const testDataUpdated = {
-        type: undefined // TODO: Add test value
+        type: EscrowType.NOP,
+        ratio: {
+            buyer: 100,
+            seller: 100
+        }
     };
 
     let createdId;
@@ -36,6 +45,8 @@ describe('/escrows', () => {
 
         const result: any = res.getData();
         expect(result.type).toBe(testData.type);
+        expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
+        expect(result.Ratio.seller).toBe(testData.ratio.seller);
     });
 
     test('POST      /escrows        Should fail because we want to create a empty escrow', async () => {
@@ -56,6 +67,7 @@ describe('/escrows', () => {
 
         const result = data[0];
         expect(result.type).toBe(testData.type);
+        expect(result.Ratio).toBe(undefined); // doesnt fetch related
     });
 
     test('GET       /escrows/:id    Should return one escrow', async () => {
@@ -66,6 +78,8 @@ describe('/escrows', () => {
 
         const result: any = res.getData();
         expect(result.type).toBe(testData.type);
+        expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
+        expect(result.Ratio.seller).toBe(testData.ratio.seller);
     });
 
     test('PUT       /escrows/:id    Should update the escrow', async () => {
@@ -78,6 +92,8 @@ describe('/escrows', () => {
 
         const result: any = res.getData();
         expect(result.type).toBe(testDataUpdated.type);
+        expect(result.Ratio.buyer).toBe(testDataUpdated.ratio.buyer);
+        expect(result.Ratio.seller).toBe(testDataUpdated.ratio.seller);
     });
 
     test('PUT       /escrows/:id    Should fail because we want to update the escrow with a invalid email', async () => {
