@@ -17,6 +17,7 @@ export const Targets = {
         ItemImage: 'ItemImage',
         ItemImageData: 'ItemImageData',
         ItemPrice: 'ItemPrice',
+        LocationMarker: 'LocationMarker',
         PaymentInformation: 'PaymentInformation',
         ShippingPrice: 'ShippingPrice',
         User: 'User'
@@ -29,6 +30,7 @@ export const Targets = {
         ItemImageDataRepository: 'ItemImageDataRepository',
         ItemImageRepository: 'ItemImageRepository',
         ItemPriceRepository: 'ItemPriceRepository',
+        LocationMarkerRepository: 'LocationMarkerRepository',
         PaymentInformationRepository: 'PaymentInformationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
         UserRepository: 'UserRepository'
@@ -41,6 +43,7 @@ export const Targets = {
         ItemImageDataService: 'ItemImageDataService',
         ItemImageService: 'ItemImageService',
         ItemPriceService: 'ItemPriceService',
+        LocationMarkerService: 'LocationMarkerService',
         PaymentInformationService: 'PaymentInformationService',
         ShippingPriceService: 'ShippingPriceService',
         UserService: 'UserService'
@@ -66,6 +69,7 @@ export const Targets = {
         ItemImageController: 'ItemImageController',
         ItemImageDataController: 'ItemImageDataController',
         ItemPriceController: 'ItemPriceController',
+        LocationMarkerController: 'LocationMarkerController',
         PaymentInformationController: 'PaymentInformationController',
         RpcController: 'RpcController',
         ShippingPriceController: 'ShippingPriceController',
