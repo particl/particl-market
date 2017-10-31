@@ -15,6 +15,7 @@ export const Targets = {
         EscrowRatio: 'EscrowRatio',
         ItemCategory: 'ItemCategory',
         ItemPrice: 'ItemPrice',
+        PaymentInformation: 'PaymentInformation',
         ShippingPrice: 'ShippingPrice',
         User: 'User'
     },
@@ -24,6 +25,7 @@ export const Targets = {
         EscrowRepository: 'EscrowRepository',
         ItemCategoryRepository: 'ItemCategoryRepository',
         ItemPriceRepository: 'ItemPriceRepository',
+        PaymentInformationRepository: 'PaymentInformationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
         UserRepository: 'UserRepository'
     },
@@ -33,6 +35,7 @@ export const Targets = {
         EscrowService: 'EscrowService',
         ItemCategoryService: 'ItemCategoryService',
         ItemPriceService: 'ItemPriceService',
+        PaymentInformationService: 'PaymentInformationService',
         ShippingPriceService: 'ShippingPriceService',
         UserService: 'UserService'
     },
@@ -55,6 +58,7 @@ export const Targets = {
         EscrowRatioController: 'EscrowRatioController',
         ItemCategoryController: 'ItemCategoryController',
         ItemPriceController: 'ItemPriceController',
+        PaymentInformationController: 'PaymentInformationController',
         RpcController: 'RpcController',
         ShippingPriceController: 'ShippingPriceController',
         UserController: 'UserController'
