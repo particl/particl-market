@@ -12,17 +12,17 @@ describe('/location-markers', () => {
     // ];
 
     const testData = {
-        markerTitle: undefined, // TODO: Add test value
-        markerText: undefined, // TODO: Add test value
-        lat: undefined, // TODO: Add test value
-        lng: undefined // TODO: Add test value
+        markerTitle: 'Helsinki',
+        markerText: 'Helsinki',
+        lat: 12.1234,
+        lng: 23.2314
     };
 
     const testDataUpdated = {
-        markerTitle: undefined, // TODO: Add test value
-        markerText: undefined, // TODO: Add test value
-        lat: undefined, // TODO: Add test value
-        lng: undefined // TODO: Add test value
+        markerTitle: 'Stockholm',
+        markerText: 'Stockholm',
+        lat: 34.2314,
+        lng: 11.1234
     };
 
     let createdId;

@@ -48,33 +48,31 @@ export class LocationMarkerService {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<LocationMarker> {
         return this.create({
-            data: data.params[0] // TODO: convert your params to LocationMarkerCreateRequest
+            markerTitle: data.params[0],
+            markerText: data.params[1],
+            lat: data.params[2],
+            lng: data.params[3]
         });
     }
 
     @validate()
     public async create( @request(LocationMarkerCreateRequest) body: any): Promise<LocationMarker> {
 
-        // TODO: extract and remove related models from request
-        // const locationMarkerRelated = body.related;
-        // delete body.related;
-
         // If the request body was valid we will create the locationMarker
         const locationMarker = await this.locationMarkerRepo.create(body);
 
-        // TODO: create related models
-        // locationMarkerRelated._id = locationMarker.Id;
-        // await this.locationMarkerRelatedService.create(locationMarkerRelated);
-
         // finally find and return the created locationMarker
-        const newLocationMarker = await this.findOne(locationMarker.id);
+        const newLocationMarker = await this.findOne(locationMarker.Id);
         return newLocationMarker;
     }
 
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<LocationMarker> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to LocationMarkerUpdateRequest
+            markerTitle: data.params[1],
+            markerText: data.params[2],
+            lat: data.params[3],
+            lng: data.params[4]
         });
     }
 
@@ -92,21 +90,6 @@ export class LocationMarkerService {
 
         // update locationMarker record
         const updatedLocationMarker = await this.locationMarkerRepo.update(id, locationMarker.toJSON());
-
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let locationMarkerRelated = updatedLocationMarker.related('LocationMarkerRelated').toJSON();
-        // await this.locationMarkerService.destroy(locationMarkerRelated.id);
-
-        // TODO: recreate related data
-        // locationMarkerRelated = body.locationMarkerRelated;
-        // locationMarkerRelated._id = locationMarker.Id;
-        // const createdLocationMarker = await this.locationMarkerService.create(locationMarkerRelated);
-
-        // TODO: finally find and return the updated locationMarker
-        // const newLocationMarker = await this.findOne(id);
-        // return newLocationMarker;
-
         return updatedLocationMarker;
     }
 

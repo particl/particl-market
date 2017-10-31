@@ -41,8 +41,4 @@ export class LocationMarker extends Bookshelf.Model<LocationMarker> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public LocationMarkerRelated(): LocationMarkerRelated {
-    //    return this.hasOne(LocationMarkerRelated);
-    // }
 }

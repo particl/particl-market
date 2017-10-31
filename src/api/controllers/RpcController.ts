@@ -11,6 +11,7 @@ import { ItemPriceService } from '../services/ItemPriceService';
 import { PaymentInformationService } from '../services/PaymentInformationService';
 import { ItemImageDataService } from '../services/ItemImageDataService';
 import { ItemImageService } from '../services/ItemImageService';
+import { LocationMarkerService } from '../services/LocationMarkerService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -31,6 +32,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.ItemImageDataService) private imageDataService: ItemImageDataService,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.LocationMarkerService) private locationMarkerService: LocationMarkerService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -70,7 +72,12 @@ export class RpcController {
             'itemimage.find': 'itemImageService.rpcFindOne',
             'itemimage.findall': 'itemImageService.rpcFindAll',
             'itemimage.update': 'itemImageService.rpcUpdate',
-            'itemimage.destroy': 'itemCategoryService.rpcDestroy'
+            'itemimage.destroy': 'itemCategoryService.rpcDestroy',
+            'locationmarker.create': 'locationMarkerService.rpcCreate',
+            'locationmarker.find': 'locationMarkerService.rpcFindOne',
+            'locationmarker.findall': 'locationMarkerService.rpcFindAll',
+            'locationmarker.update': 'locationMarkerService.rpcUpdate',
+            'locationmarker.destroy': 'locationMarkerService.rpcDestroy'
         };
     }
 
