@@ -13,6 +13,7 @@ export const Targets = {
         CryptocurrencyAddress: 'CryptocurrencyAddress',
         EscrowRatio: 'EscrowRatio',
         ItemCategory: 'ItemCategory',
+        ItemPrice: 'ItemPrice',
         ShippingPrice: 'ShippingPrice',
         User: 'User'
     },
@@ -20,6 +21,7 @@ export const Targets = {
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
         ItemCategoryRepository: 'ItemCategoryRepository',
+        ItemPriceRepository: 'ItemPriceRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
         UserRepository: 'UserRepository'
     },
@@ -27,6 +29,7 @@ export const Targets = {
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         EscrowRatioService: 'EscrowRatioService',
         ItemCategoryService: 'ItemCategoryService',
+        ItemPriceService: 'ItemPriceService',
         ShippingPriceService: 'ShippingPriceService',
         UserService: 'UserService'
     },
@@ -47,6 +50,7 @@ export const Targets = {
         CryptocurrencyAddressController: 'CryptocurrencyAddressController',
         EscrowRatioController: 'EscrowRatioController',
         ItemCategoryController: 'ItemCategoryController',
+        ItemPriceController: 'ItemPriceController',
         RpcController: 'RpcController',
         ShippingPriceController: 'ShippingPriceController',
         UserController: 'UserController'
