@@ -6,7 +6,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { JsonRpc2Request, RpcErrorCode } from '../../core/api/jsonrpc';
 import { JsonRpcError } from '../../core/api/JsonRpcError';
 import { ItemCategoryService } from '../services/ItemCategoryService';
-// import { EscrowService } from '../services/EscrowService';
+import { EscrowService } from '../services/EscrowService';
 import { ItemPriceService } from '../services/ItemPriceService';
 
 // Get middlewares
@@ -23,7 +23,7 @@ export class RpcController {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        // @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
+        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
         @inject(Types.Service) @named(Targets.Service.ItemPriceService) private itemPriceService: ItemPriceService,
         // @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         // @inject(Types.Service) @named(Targets.Service.ImageDataService) private imageDataService: ImageDataService,

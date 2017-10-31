@@ -9,13 +9,14 @@ import { Escrow } from '../models/Escrow';
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../requests/EscrowUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
-
+import { EscrowRatioService } from '../services/EscrowRatioService';
 
 export class EscrowService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.EscrowRatioService) private escrowratioService: EscrowRatioService,
         @inject(Types.Repository) @named(Targets.Repository.EscrowRepository) public escrowRepo: EscrowRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -48,33 +49,40 @@ export class EscrowService {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<Escrow> {
         return this.create({
-            data: data.params[0] // TODO: convert your params to EscrowCreateRequest
+            type: data.params[0],
+            ratio: {
+                buyer: data.params[1],
+                seller: data.params[2]
+            }
         });
     }
 
     @validate()
     public async create( @request(EscrowCreateRequest) body: any): Promise<Escrow> {
 
-        // TODO: extract and remove related models from request
-        // const escrowRelated = body.related;
-        // delete body.related;
+        const escrowRatio = body.ratio;
+        delete body.ratio;
 
         // If the request body was valid we will create the escrow
         const escrow = await this.escrowRepo.create(body);
 
-        // TODO: create related models
-        // escrowRelated._id = escrow.Id;
-        // await this.escrowRelatedService.create(escrowRelated);
+        // then create escrowratio
+        escrowRatio.escrow_id = escrow.Id;
+        await this.escrowratioService.create(escrowRatio);
 
         // finally find and return the created escrow
-        const newEscrow = await this.findOne(escrow.id);
+        const newEscrow = await this.findOne(escrow.Id);
         return newEscrow;
     }
 
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<Escrow> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to EscrowUpdateRequest
+            type: data.params[1],
+            ratio: {
+                buyer: data.params[2],
+                seller: data.params[3]
+            }
         });
     }
 
@@ -90,21 +98,20 @@ export class EscrowService {
         // update escrow record
         const updatedEscrow = await this.escrowRepo.update(id, escrow.toJSON());
 
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let escrowRelated = updatedEscrow.related('EscrowRelated').toJSON();
-        // await this.escrowService.destroy(escrowRelated.id);
+        // find related escrowratio
+        let relatedRatio = updatedEscrow.related('Ratio').toJSON();
 
-        // TODO: recreate related data
-        // escrowRelated = body.escrowRelated;
-        // escrowRelated._id = escrow.Id;
-        // const createdEscrow = await this.escrowService.create(escrowRelated);
+        // delete it
+        await this.escrowratioService.destroy(relatedRatio.id);
 
-        // TODO: finally find and return the updated escrow
-        // const newEscrow = await this.findOne(id);
-        // return newEscrow;
+        // and create new related data
+        relatedRatio = body.ratio;
+        relatedRatio.escrow_id = id;
+        await this.escrowratioService.create(relatedRatio);
 
-        return updatedEscrow;
+        // finally find and return the updated escrow
+        const newEscrow = await this.findOne(id);
+        return newEscrow;
     }
 
     @validate()
