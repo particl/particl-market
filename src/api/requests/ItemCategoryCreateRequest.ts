@@ -10,5 +10,7 @@ export class ItemCategoryCreateRequest extends RequestBody {
     @IsNotEmpty()
     public description: string;
 
+    public parentItemCategoryId: number;
+
 }
 

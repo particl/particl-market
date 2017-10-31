@@ -26,6 +26,14 @@ export class ItemCategoryRepository {
         return this.ItemCategoryModel.fetchById(id, withRelated);
     }
 
+    public async findOneByName(name: string, withRelated: boolean = true): Promise<ItemCategory> {
+        return this.ItemCategoryModel.fetchByName(name);
+    }
+
+    public async findRoot(): Promise<ItemCategory> {
+        return this.ItemCategoryModel.fetchRoot();
+    }
+
     public async create(data: any): Promise<ItemCategory> {
         const itemCategory = this.ItemCategoryModel.forge<ItemCategory>(data);
         try {

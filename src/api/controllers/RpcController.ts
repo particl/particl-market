@@ -5,6 +5,7 @@ import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
 import { JsonRpc2Request, RpcErrorCode } from '../../core/api/jsonrpc';
 import { JsonRpcError } from '../../core/api/JsonRpcError';
+import {ItemCategoryService} from '../services/ItemCategoryService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -19,6 +20,7 @@ export class RpcController {
     private exposedMethods = {};
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         // @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
         // @inject(Types.Service) @named(Targets.Service.ItemPriceService) private itemPriceService: ItemPriceService,
         // @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
@@ -33,6 +35,13 @@ export class RpcController {
         this.exposedMethods = {
             // todo: figure out a working way to pass for example: this.escrowService.create
             //
+            'itemcategory.create': 'itemCategoryService.rpcCreate',
+            'itemcategory.find': 'itemCategoryService.rpcFindOne',
+            'itemcategory.findall': 'itemCategoryService.rpcFindAll',
+            'itemcategory.findroot': 'itemCategoryService.rpcFindRoot',
+            'itemcategory.update': 'itemCategoryService.rpcUpdate',
+            'itemcategory.destroy': 'itemCategoryService.rpcDestroy',
+
             'escrow.create': 'escrowService.rpcCreate',
             'escrow.find': 'escrowService.rpcFindOne',
             'escrow.findall': 'escrowService.rpcFindAll',

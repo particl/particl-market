@@ -55,7 +55,7 @@ export class {{name.capitalize}}Service {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<{{name.capitalize}}> {
         return this.create({
-            data: data.params // TODO: convert your params to {{name.capitalize}}CreateRequest
+            data: data.params[0] // TODO: convert your params to {{name.capitalize}}CreateRequest
         });
     }
 

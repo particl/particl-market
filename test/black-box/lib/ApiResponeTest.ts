@@ -39,8 +39,12 @@ export class ApiResponeTest {
     public expectData(keys: string[]): ApiResponeTest {
         const a = keys.sort();
         const d = _.isArray(this.getData()) ? this.getData()[0] : this.getData();
-        const b = Object.keys(d).sort();
-        expect(_.isEqual(a, b)).toBeTruthy();
+        // const b = Object.keys(d).sort();
+        // expect(_.isEqual(a, b)).toBeTruthy();
+
+        for (const key of keys) {
+            expect(d).toHaveProperty(key);
+        }
         expect(this.getBody()['success']).toBeTruthy();
         return this;
     }

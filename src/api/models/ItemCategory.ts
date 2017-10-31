@@ -1,5 +1,5 @@
 import { Bookshelf } from '../../config/Database';
-
+import { Collection } from 'bookshelf';
 
 export class ItemCategory extends Bookshelf.Model<ItemCategory> {
 
@@ -7,12 +7,39 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
         if (withRelated) {
             return await ItemCategory.where<ItemCategory>({ id: value }).fetch({
                 withRelated: [
-                    'ItemCategory'
+                    'ParentItemCategory',
+                    'ParentItemCategory.ParentItemCategory',
+                    'ParentItemCategory.ParentItemCategory.ParentItemCategory',
+                    'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+                    'ChildItemCategories'
                 ]
             });
         } else {
             return await ItemCategory.where<ItemCategory>({ id: value }).fetch();
         }
+    }
+
+    public static async fetchByName(name: string): Promise<ItemCategory> {
+        return await ItemCategory.where<ItemCategory>({ name }).fetch({
+            withRelated: [
+                'ParentItemCategory',
+                'ParentItemCategory.ParentItemCategory',
+                'ParentItemCategory.ParentItemCategory.ParentItemCategory',
+                'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+                'ChildItemCategories'
+            ]
+        });
+    }
+
+    public static async fetchRoot(): Promise<ItemCategory> {
+        return await ItemCategory.where<ItemCategory>({ name: 'root' }).fetch({
+            withRelated: [
+                'ChildItemCategories',
+                'ChildItemCategories.ChildItemCategories',
+                'ChildItemCategories.ChildItemCategories.ChildItemCategories',
+                'ChildItemCategories.ChildItemCategories.ChildItemCategories.ChildItemCategories'
+            ]
+        });
     }
 
     public get tableName(): string { return 'item_categories'; }
@@ -33,9 +60,16 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // ItemCategory can have a parent ItemCategory
-    public ItemCategory(): ItemCategory {
+    // ItemCategory can haz a parent ItemCategory
+    public ParentItemCategory(): ItemCategory {
         // model.hasOne(Target, [foreignKey], [foreignKeyTarget])
-        return this.hasOne(ItemCategory, 'parent_item_category_id', 'id');
+        // return this.hasOne(ItemCategory, 'parent_item_category_id', 'id');
+        // model.belongsTo(Target, [foreignKey], [foreignKeyTarget])
+        return this.belongsTo(ItemCategory, 'parent_item_category_id', 'id');
+    }
+
+    public ChildItemCategories(): Collection<ItemCategory> {
+        // model.hasMany(Target, [foreignKey], [foreignKeyTarget])
+        return this.hasMany(ItemCategory, 'parent_item_category_id', 'id');
     }
 }

@@ -46,9 +46,20 @@ export class ItemCategoryService {
     }
 
     @validate()
+    public async rpcFindRoot( @request(RpcRequest) data: any): Promise<ItemCategory> {
+        return this.findRoot();
+    }
+
+    public async findRoot(): Promise<ItemCategory> {
+        return this.itemCategoryRepo.findRoot();
+    }
+
+    @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemCategory> {
         return this.create({
-            data: data.params // TODO: convert your params to ItemCategoryCreateRequest
+            name: data.params[0],
+            description: data.params[1],
+            parentItemCategoryId: data.params[2] || null
         });
     }
 
@@ -56,8 +67,8 @@ export class ItemCategoryService {
     public async create( @request(ItemCategoryCreateRequest) body: any): Promise<ItemCategory> {
 
         // TODO: extract and remove related models from request
-        // const itemCategoryRelated = body.related;
-        // delete body.related;
+        // const parentItemCategoryId = body.parentItemCategoryId;
+        // delete body.parentItemCategoryId;
 
         // If the request body was valid we will create the itemCategory
         const itemCategory = await this.itemCategoryRepo.create(body);
@@ -67,14 +78,15 @@ export class ItemCategoryService {
         // await this.itemCategoryRelatedService.create(itemCategoryRelated);
 
         // finally find and return the created itemCategory
-        const newItemCategory = await this.findOne(itemCategory.id);
+        const newItemCategory = await this.findOne(itemCategory.Id);
         return newItemCategory;
     }
 
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemCategory> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to ItemCategoryUpdateRequest
+            name: data.params[1],
+            description: data.params[2]
         });
     }
 
@@ -84,6 +96,7 @@ export class ItemCategoryService {
         // find the existing one without related
         const itemCategory = await this.findOne(id, false);
 
+        this.log.debug('service, itemCategory to update: ', itemCategory);
         // set new values
         itemCategory.Name = body.name;
         itemCategory.Description = body.description;
@@ -116,5 +129,4 @@ export class ItemCategoryService {
     public async destroy(id: number): Promise<void> {
         await this.itemCategoryRepo.destroy(id);
     }
-
 }
