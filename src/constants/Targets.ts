@@ -10,16 +10,19 @@
 
 export const Targets = {
     Model:     {
+        CryptocurrencyAddress: 'CryptocurrencyAddress',
         EscrowRatio: 'EscrowRatio',
         ItemCategory: 'ItemCategory',
         User: 'User'
     },
     Repository:     {
+        CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
         ItemCategoryRepository: 'ItemCategoryRepository',
         UserRepository: 'UserRepository'
     },
     Service:     {
+        CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         EscrowRatioService: 'EscrowRatioService',
         ItemCategoryService: 'ItemCategoryService',
         UserService: 'UserService'
@@ -38,6 +41,7 @@ export const Targets = {
         }
     },
     Controller:     {
+        CryptocurrencyAddressController: 'CryptocurrencyAddressController',
         EscrowRatioController: 'EscrowRatioController',
         ItemCategoryController: 'ItemCategoryController',
         RpcController: 'RpcController',
