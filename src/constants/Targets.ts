@@ -10,12 +10,15 @@
 
 export const Targets = {
     Model:     {
+        ItemCategory: 'ItemCategory',
         User: 'User'
     },
     Repository:     {
+        ItemCategoryRepository: 'ItemCategoryRepository',
         UserRepository: 'UserRepository'
     },
     Service:     {
+        ItemCategoryService: 'ItemCategoryService',
         UserService: 'UserService'
     },
     Middleware:     {
@@ -32,6 +35,7 @@ export const Targets = {
         }
     },
     Controller:     {
+        ItemCategoryController: 'ItemCategoryController',
         RpcController: 'RpcController',
         UserController: 'UserController'
     }

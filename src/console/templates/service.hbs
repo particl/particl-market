@@ -53,7 +53,7 @@ export class {{name.capitalize}}Service {
     }
 
     @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<Escrow> {
+    public async rpcCreate( @request(RpcRequest) data: any): Promise<{{name.capitalize}}> {
         return this.create({
             data: data.params // TODO: convert your params to {{name.capitalize}}CreateRequest
         });
