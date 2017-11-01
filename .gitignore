@@ -32,5 +32,5 @@ test/**/*.js.map
 coverage/
 !test/preprocessor.js
 
+data/marketplace.db
 *.paw
-marketplace.db
