@@ -13,7 +13,18 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             return await ListingItem.where<ListingItem>({ id: value }).fetch({
                 withRelated: [
                     'ItemInformation',
+                    'ItemInformation.ItemCategory',
+                    'ItemInformation.ItemLocation',
+                    'ItemInformation.ItemLocation.LocationMarker',
+                    'ItemInformation.ItemImages',
+                    'ItemInformation.ItemImages.ItemImageData',
+                    'ItemInformation.ShippingDestinations',
                     'PaymentInformation',
+                    'PaymentInformation.Escrow',
+                    'PaymentInformation.Escrow.Ratio',
+                    'PaymentInformation.ItemPrice',
+                    'PaymentInformation.ItemPrice.ShippingPrice',
+                    'PaymentInformation.ItemPrice.Address',
                     'MessagingInformation',
                     'ListingItemObjects'
                 ]

@@ -78,6 +78,16 @@ describe('/payment-informations', () => {
 
         const result: any = res.getData();
         expect(result.type).toBe(testData.type);
+        expect(result.Escrow.type).toBe(testData.escrow.type);
+        expect(result.Escrow.Ratio.buyer).toBe(testData.escrow.ratio.buyer);
+        expect(result.Escrow.Ratio.seller).toBe(testData.escrow.ratio.seller);
+        expect(result.ItemPrice.currency).toBe(testData.itemPrice.currency);
+        expect(result.ItemPrice.basePrice).toBe(testData.itemPrice.basePrice);
+        expect(result.ItemPrice.ShippingPrice.domestic).toBe(testData.itemPrice.shippingPrice.domestic);
+        expect(result.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
+        expect(result.ItemPrice.Address.type).toBe(testData.itemPrice.address.type);
+        expect(result.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
+
     });
 
     test('POST      /payment-informations        Should fail because we want to create a empty payment information', async () => {
@@ -98,6 +108,7 @@ describe('/payment-informations', () => {
 
         const result = data[0];
         expect(result.type).toBe(testData.type);
+        expect(result.Escrow).toBe(undefined); // doesnt fetch related
     });
 
     test('GET       /payment-informations/:id    Should return one payment information', async () => {
@@ -108,6 +119,16 @@ describe('/payment-informations', () => {
 
         const result: any = res.getData();
         expect(result.type).toBe(testData.type);
+        expect(result.Escrow.type).toBe(testData.escrow.type);
+        expect(result.Escrow.Ratio.buyer).toBe(testData.escrow.ratio.buyer);
+        expect(result.Escrow.Ratio.seller).toBe(testData.escrow.ratio.seller);
+        expect(result.ItemPrice.currency).toBe(testData.itemPrice.currency);
+        expect(result.ItemPrice.basePrice).toBe(testData.itemPrice.basePrice);
+        expect(result.ItemPrice.ShippingPrice.domestic).toBe(testData.itemPrice.shippingPrice.domestic);
+        expect(result.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
+        expect(result.ItemPrice.Address.type).toBe(testData.itemPrice.address.type);
+        expect(result.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
+
     });
 
     test('PUT       /payment-informations/:id    Should update the payment information', async () => {
@@ -120,6 +141,15 @@ describe('/payment-informations', () => {
 
         const result: any = res.getData();
         expect(result.type).toBe(testDataUpdated.type);
+        expect(result.Escrow.type).toBe(testDataUpdated.escrow.type);
+        expect(result.Escrow.Ratio.buyer).toBe(testDataUpdated.escrow.ratio.buyer);
+        expect(result.Escrow.Ratio.seller).toBe(testDataUpdated.escrow.ratio.seller);
+        expect(result.ItemPrice.currency).toBe(testDataUpdated.itemPrice.currency);
+        expect(result.ItemPrice.basePrice).toBe(testDataUpdated.itemPrice.basePrice);
+        expect(result.ItemPrice.ShippingPrice.domestic).toBe(testDataUpdated.itemPrice.shippingPrice.domestic);
+        expect(result.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.itemPrice.shippingPrice.international);
+        expect(result.ItemPrice.Address.type).toBe(testDataUpdated.itemPrice.address.type);
+        expect(result.ItemPrice.Address.address).toBe(testDataUpdated.itemPrice.address.address);
     });
 
     test('PUT       /payment-informations/:id    Should fail because we want to update the payment information with a invalid email', async () => {

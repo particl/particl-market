@@ -16,6 +16,7 @@ import { ItemLocationService } from '../services/ItemLocationService';
 import { ShippingDestinationService } from '../services/ShippingDestinationService';
 import { ItemInformationService } from '../services/ItemInformationService';
 import { MessagingInformationService } from '../services/MessagingInformationService';
+import { ListingItemService } from '../services/ListingItemService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -41,6 +42,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.ShippingDestinationService) private shippingDestinationService: ShippingDestinationService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -105,7 +107,12 @@ export class RpcController {
             'messaginginformation.find': 'messagingInformationService.rpcFindOne',
             'messaginginformation.findall': 'messagingInformationService.rpcFindAll',
             'messaginginformation.update': 'messagingInformationService.rpcUpdate',
-            'messaginginformation.destroy': 'messagingInformationService.rpcDestroy'
+            'messaginginformation.destroy': 'messagingInformationService.rpcDestroy',
+            'listingitem.create': 'listingItemService.rpcCreate',
+            'listingitem.find': 'listingItemService.rpcFindOne',
+            'listingitem.findall': 'listingItemService.rpcFindAll',
+            'listingitem.update': 'listingItemService.rpcUpdate',
+            'listingitem.destroy': 'listingItemService.rpcDestroy'
         };
     }
 
