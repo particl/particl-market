@@ -6,5 +6,5 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./data:/app/data
+      - data-volume:/app/data
     command: npm run serve
