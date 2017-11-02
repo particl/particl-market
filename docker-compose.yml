@@ -1,10 +1,13 @@
 version: '2'
-services:
 
+services:
   app:
     build: .
     ports:
       - 3000:3000
     volumes:
-      - data-volume:/app/data
+      - data-volume:/app/data:rw
     command: npm run serve
+
+volumes:
+  data-volume:
