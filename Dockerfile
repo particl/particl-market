@@ -7,9 +7,7 @@ RUN mkdir data
 RUN yarn install
 COPY ./ ./
 
-RUN npm test
-
 EXPOSE 3000
-VOLUME ["/app/data"]
+VOLUME /app/data
 
 CMD npm run serve
