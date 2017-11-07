@@ -14,21 +14,25 @@ describe('/item-categories', () => {
     ];
 */
     const rootData = {
-        name: 'root',
+        key: 'cat_ROOT',
+        name: 'ROOT',
         description: 'root'
     };
 
     const testData = {
+        key: 'cat_electronics',
         name: 'Electronics and Technologyyyyyy',
         description: 'Electronics and Technology descriptionnnnnnn'
     };
 
     const testDataUpdated = {
+        key: 'cat_technology',
         name: 'Electronics and Technology',
         description: 'Electronics and Technology description'
     };
 
     const testDataChild = {
+        key: 'cat_computer_systems_parts',
         name: 'Computer Systems and Parts',
         description: 'Computer Systems and Parts description'
     };

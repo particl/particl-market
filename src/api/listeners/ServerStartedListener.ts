@@ -16,6 +16,9 @@ export class ServerStartedListener implements interfaces.Listener {
 
     public act(payload: any): void {
         this.log.info('Receive event ServerStartedListenerEvent', payload);
+
+        // todo: later seed the default categories here
+
     }
 
 }

@@ -32,7 +32,7 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
     }
 
     public static async fetchRoot(): Promise<ItemCategory> {
-        return await ItemCategory.where<ItemCategory>({ name: 'root' }).fetch({
+        return await ItemCategory.where<ItemCategory>({ name: 'ROOT' }).fetch({
             withRelated: [
                 'ChildItemCategories',
                 'ChildItemCategories.ChildItemCategories',
@@ -50,6 +50,9 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
 
     public get Name(): string { return this.get('name'); }
     public set Name(value: string) { this.set('name', value); }
+
+    public get Key(): string { return this.get('key'); }
+    public set Key(value: string) { this.set('key', value); }
 
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
