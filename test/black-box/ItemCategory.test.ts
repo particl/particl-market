@@ -31,6 +31,11 @@ describe('/item-categories', () => {
         description: 'Electronics and Technology description'
     };
 
+    const testDataNullKey = {
+        name: 'nullkey1',
+        description: 'nullkey1'
+    };
+
     const testDataChild = {
         key: 'cat_computer_systems_parts',
         name: 'Computer Systems and Parts',
@@ -96,6 +101,33 @@ describe('/item-categories', () => {
 
     });
 
+    test('POST      /item-categories        Should create a two item categories with null keys', async () => {
+
+        let res = await api('POST', '/api/item-categories', {
+            body: testDataNullKey
+        });
+        res.expectJson();
+        res.expectStatusCode(201);
+        res.expectData(keys);
+
+        let result: any = res.getData();
+        expect(result.key).toBe(null);
+        expect(result.name).toBe(testDataNullKey.name);
+        expect(result.description).toBe(testDataNullKey.description);
+
+        res = await api('POST', '/api/item-categories', {
+            body: testDataNullKey
+        });
+        res.expectJson();
+        res.expectStatusCode(201);
+        res.expectData(keys);
+
+        result = res.getData();
+        expect(result.key).toBe(null);
+        expect(result.name).toBe(testDataNullKey.name);
+        expect(result.description).toBe(testDataNullKey.description);
+    });
+
     test('POST      /item-categories        Should fail because we want to create a empty item category', async () => {
         const res = await api('POST', '/api/item-categories', {
             body: {}
@@ -110,7 +142,7 @@ describe('/item-categories', () => {
         res.expectStatusCode(200);
         res.expectData(keys);
         const data = res.getData<any[]>();
-        expect(data.length).toBe(3);
+        expect(data.length).toBe(5);
 
         const result = data[1];
         expect(result.name).toBe(testData.name);

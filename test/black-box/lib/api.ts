@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import * as request from 'request-promise';
 import { Options } from 'request-promise';
-import { ApiResponeTest } from './ApiResponeTest';
+import { ApiResponseTest } from './ApiResponseTest';
 
 
 export interface ApiOptions<T> {
@@ -33,7 +33,8 @@ export const api = async <T> (method: string, path: string, options: ApiOptions<
         res = await request(o);
     } catch (e) {
         error = e;
+        // console.log('error: ', error.error.message);
     }
 
-    return new ApiResponeTest(error, res);
+    return new ApiResponseTest(error, res);
 };

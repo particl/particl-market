@@ -1,7 +1,7 @@
 import * as _ from 'lodash';
 
 
-export class ApiResponeTest {
+export class ApiResponseTest {
 
     constructor(private error: any, private res: any) {
     }
@@ -22,7 +22,7 @@ export class ApiResponeTest {
         }
     }
 
-    public expectStatusCode(code: number): ApiResponeTest {
+    public expectStatusCode(code: number): ApiResponseTest {
         if (this.res) {
             expect(this.res['statusCode']).toBe(code);
         } else {
@@ -31,12 +31,12 @@ export class ApiResponeTest {
         return this;
     }
 
-    public expectJson(): ApiResponeTest {
+    public expectJson(): ApiResponseTest {
         expect(this.getHeaders()['content-type']).toContain('json');
         return this;
     }
 
-    public expectData(keys: string[]): ApiResponeTest {
+    public expectData(keys: string[]): ApiResponseTest {
         const a = keys.sort();
         const d = _.isArray(this.getData()) ? this.getData()[0] : this.getData();
         // const b = Object.keys(d).sort();
