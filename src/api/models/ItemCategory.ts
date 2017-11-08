@@ -19,16 +19,20 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
         }
     }
 
-    public static async fetchByName(name: string): Promise<ItemCategory> {
-        return await ItemCategory.where<ItemCategory>({ name }).fetch({
-            withRelated: [
-                'ParentItemCategory',
-                'ParentItemCategory.ParentItemCategory',
-                'ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                'ChildItemCategories'
-            ]
-        });
+    public static async fetchByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
+        if (withRelated) {
+            return await ItemCategory.where<ItemCategory>({ key }).fetch({
+                withRelated: [
+                    'ParentItemCategory',
+                    'ParentItemCategory.ParentItemCategory',
+                    'ParentItemCategory.ParentItemCategory.ParentItemCategory',
+                    'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+                    'ChildItemCategories'
+                ]
+            });
+        } else {
+            return await ItemCategory.where<ItemCategory>({ key }).fetch();
+        }
     }
 
     public static async fetchRoot(): Promise<ItemCategory> {

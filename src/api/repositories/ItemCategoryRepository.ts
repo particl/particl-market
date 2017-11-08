@@ -26,8 +26,8 @@ export class ItemCategoryRepository {
         return this.ItemCategoryModel.fetchById(id, withRelated);
     }
 
-    public async findOneByName(name: string, withRelated: boolean = true): Promise<ItemCategory> {
-        return this.ItemCategoryModel.fetchByName(name);
+    public async findOneByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
+        return this.ItemCategoryModel.fetchByKey(key, withRelated);
     }
 
     public async findRoot(): Promise<ItemCategory> {

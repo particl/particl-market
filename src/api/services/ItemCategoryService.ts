@@ -32,16 +32,12 @@ export class ItemCategoryService {
     }
 
     @validate()
-    public async rpcFindOneByName( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        return this.findOneByName(data.params[0]);
+    public async rpcFindOneByKey( @request(RpcRequest) data: any): Promise<ItemCategory> {
+        return this.findOneByKey(data.params[0]);
     }
 
-    public async findOneByName(name: string, withRelated: boolean = true): Promise<ItemCategory> {
-        const itemCategory = await this.itemCategoryRepo.findOneByName(name, withRelated);
-        // if (itemCategory === null) {
-        //    this.log.warn(`ItemCategory with the name=${name} was not found!`);
-        //    throw new NotFoundException(name);
-        // }
+    public async findOneByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
+        const itemCategory = await this.itemCategoryRepo.findOneByKey(key, withRelated);
         return itemCategory;
     }
 
@@ -79,6 +75,17 @@ export class ItemCategoryService {
 
     @validate()
     public async create( @request(ItemCategoryCreateRequest) body: any): Promise<ItemCategory> {
+
+        // If the request body was valid we will create the itemCategory
+        const itemCategory = await this.itemCategoryRepo.create(body);
+
+        // finally find and return the created itemCategory
+        const newItemCategory = await this.findOne(itemCategory.Id);
+        return newItemCategory;
+    }
+
+    @validate()
+    public async createOrReplace( @request(ItemCategoryCreateRequest) body: any): Promise<ItemCategory> {
 
         // If the request body was valid we will create the itemCategory
         const itemCategory = await this.itemCategoryRepo.create(body);

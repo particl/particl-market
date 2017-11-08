@@ -127,7 +127,9 @@ export class ItemInformationService {
         delete body.itemImages;
 
         // check if item category allready exists
-        let existingItemCategory = await this.itemCategoryService.findOneByName(itemCategory.name);
+        // TODO: this needs some refactoring
+        // TODO: for now supports only default category key but we need to support user generated categories too
+        let existingItemCategory = await this.itemCategoryService.findOneByKey(itemCategory.key);
         if (existingItemCategory == null) {
             existingItemCategory = await this.itemCategoryService.create(itemCategory);
         }
@@ -203,7 +205,9 @@ export class ItemInformationService {
         itemInformation.LongDescription = body.longDescription;
 
         // check if item category allready exists
-        let existingItemCategory = await this.itemCategoryService.findOneByName(body.itemCategory.name);
+        // TODO: this needs some refactoring
+        // TODO: for now supports only default category key but we need to support user generated categories too
+        let existingItemCategory = await this.itemCategoryService.findOneByKey(body.itemCategory.key);
         if (existingItemCategory == null) {
             existingItemCategory = await this.itemCategoryService.create(body.itemCategory);
         }

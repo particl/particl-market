@@ -8,17 +8,19 @@ export class ServerStartedListener implements interfaces.Listener {
 
     public log: LoggerType;
 
-    constructor(
-        @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
-    ) {
+    constructor(@inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
     }
 
     public act(payload: any): void {
         this.log.info('Receive event ServerStartedListenerEvent', payload);
 
-        // todo: later seed the default categories here
-
+        // seed the default categories
+        this.seedDefaultCategories();
     }
 
+    public seedDefaultCategories(): void {
+        //
+
+    }
 }
