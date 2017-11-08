@@ -33,4 +33,6 @@ coverage/
 !test/preprocessor.js
 
 data/marketplace.db
+data/particl
+
 *.paw
