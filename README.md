@@ -1,45 +1,4 @@
-# Express Typescript Boilerplate
-[![Dependency Status](https://david-dm.org/w3tecch/express-typescript-boilerplate/status.svg?style=flat)](https://david-dm.org/w3tecch/express-typescript-boilerplate)
-[![Build Status](https://travis-ci.org/w3tecch/express-typescript-boilerplate.svg?branch=master)](https://travis-ci.org/w3tecch/express-typescript-boilerplate)
-[![Build status](https://ci.appveyor.com/api/projects/status/f8e7jdm8v58hcwpq/branch/master?svg=true&passingText=Windows%20passing&pendingText=Windows%20pending&failingText=Windows%20failing)](https://ci.appveyor.com/project/dweber019/express-typescript-boilerplate/branch/master)
-
-> A delightful way to building a RESTful API with NodeJs & TypeScript.
-
-> An Node.js RESTful API boilerplate featuring
-[Express](https://expressjs.com/),
-[Inversify](http://inversify.io/),
-[Winston](https://github.com/winstonjs/winston),
-[TypeScript](https://www.typescriptlang.org/),
-[TsLint](http://palantir.github.io/tslint/),
-[@types](https://www.npmjs.com/~types),
-[Jest](https://facebook.github.io/jest/),
-[Swagger](http://swagger.io/),
-[validatejs](https://validatejs.org/),
-[knex](http://knexjs.org/) and
-[bookshelf](http://bookshelfjs.org/)
-by [w3tech](https://github.com/w3tecch)
-
-## Why
-Our main goal with this project is a feature complete server application.
-We like you to be focused on your business and not spending hours in project configuration.
-
-Try it!! We are happy to hear your feedback or any kind of new features.
-
-## Features
-- **Beautiful Syntax** thanks to the awesome annotations from [Inversify Express Utils](https://github.com/inversify/inversify-express-utils).
-- **Easy API Testing** with included black-box testing.
-- **Dependency Injection** done with the nice framework from [Inversify](http://inversify.io/).
-- **Fast Database Building** with simple migration and seeding from [Knex](http://knexjs.org/).
-- **Simplified Database Query** with the ORM of [Knex](http://knexjs.org/) called [Bookshelf](http://bookshelfjs.org/).
-- **Clear Structure** with controllers, services, repositories, models, middlewares...
-- **Easy Exception Handling** with our own simple and easy to adopt logic. You will love it.
-- **Easy Data Seeding** with our own factories.
-- **Custom Commands** are also available in our setup and really easy to use or even extend.
-- **Scaffolding Commands** will speed up your development tremendously as you should focus on business code and not scaffolding.
-- **Smart Validation** thanks to [class-validator](https://github.com/pleerock/class-validator) with some nice annotations.
-- **API Documentation** thanks to [swagger](http://swagger.io/).
-- **API Monitoring** thanks to [express-status-monitor](https://github.com/RafalWilinski/express-status-monitor).
-- **Integrated Testing Tool** thanks to [Wallaby.js](https://wallabyjs.com/)
+# dapp-shell
 
 ## Getting Started
 ### Step 1:  Set up the Development Environment
@@ -54,16 +13,18 @@ Install yarn globally
 npm install yarn -g
 ```
 
-Install a MySQL database.
+If you want to use Docker
+```
+TODO install docker
+```
 
 > If you work with a mac, we recommend to use homebrew for the installation.
 
-### Step 2: Create new Project
-Fork or download this project. Configure your package.json for your new project.
 
-Then copy the `.env.example` file and rename it to `.env`. In this file you have to add your database connection information.
+### Step 2: Set up the Project
+Fork this project.
 
-Create a new database with the name you have in your `.env`-file.
+Then copy the `.env.example` file and rename it to `.env`. In this file you can edit your database connection information among other stuff, but everything should really work out of the box.
 
 Then setup your application environment.
 ```
@@ -80,6 +41,16 @@ npm run serve
 
 > This starts a local server using `nodemon`, which will watch for any file changes and will restart the sever according to these changes.
 > The server address will be displayed to you as `http://0.0.0.0:3000`.
+
+
+### Step 3b: Or serve your App using Docker
+```
+docker-compose up
+```
+
+> This will also start particld for you.
+
+
 
 ### Step 4: Create a new Resource
 Go to the project dir and hit this command in your terminal.
@@ -248,6 +219,50 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 | .env.example                  | Environment configurations |
 | knexfile.ts                   | This file is used for the migrations and seed task of knex |
 
+
+
+
+
+
+
+# About
+
+This project is based on Express Typescript Boilerplate
+[![Dependency Status](https://david-dm.org/w3tecch/express-typescript-boilerplate/status.svg?style=flat)](https://david-dm.org/w3tecch/express-typescript-boilerplate)
+[![Build Status](https://travis-ci.org/w3tecch/express-typescript-boilerplate.svg?branch=master)](https://travis-ci.org/w3tecch/express-typescript-boilerplate)
+[![Build status](https://ci.appveyor.com/api/projects/status/f8e7jdm8v58hcwpq/branch/master?svg=true&passingText=Windows%20passing&pendingText=Windows%20pending&failingText=Windows%20failing)](https://ci.appveyor.com/project/dweber019/express-typescript-boilerplate/branch/master)
+
+> A delightful way to building a RESTful API with NodeJs & TypeScript.
+> An Node.js RESTful API boilerplate featuring
+[Express](https://expressjs.com/),
+[Inversify](http://inversify.io/),
+[Winston](https://github.com/winstonjs/winston),
+[TypeScript](https://www.typescriptlang.org/),
+[TsLint](http://palantir.github.io/tslint/),
+[@types](https://www.npmjs.com/~types),
+[Jest](https://facebook.github.io/jest/),
+[Swagger](http://swagger.io/),
+[validatejs](https://validatejs.org/),
+[knex](http://knexjs.org/) and
+[bookshelf](http://bookshelfjs.org/)
+by [w3tech](https://github.com/w3tecch)
+
+## Features
+- **Beautiful Syntax** thanks to the awesome annotations from [Inversify Express Utils](https://github.com/inversify/inversify-express-utils).
+- **Easy API Testing** with included black-box testing.
+- **Dependency Injection** done with the nice framework from [Inversify](http://inversify.io/).
+- **Fast Database Building** with simple migration and seeding from [Knex](http://knexjs.org/).
+- **Simplified Database Query** with the ORM of [Knex](http://knexjs.org/) called [Bookshelf](http://bookshelfjs.org/).
+- **Clear Structure** with controllers, services, repositories, models, middlewares...
+- **Easy Exception Handling** with our own simple and easy to adopt logic. You will love it.
+- **Easy Data Seeding** with our own factories.
+- **Custom Commands** are also available in our setup and really easy to use or even extend.
+- **Scaffolding Commands** will speed up your development tremendously as you should focus on business code and not scaffolding.
+- **Smart Validation** thanks to [class-validator](https://github.com/pleerock/class-validator) with some nice annotations.
+- **API Documentation** thanks to [swagger](http://swagger.io/).
+- **API Monitoring** thanks to [express-status-monitor](https://github.com/RafalWilinski/express-status-monitor).
+- **Integrated Testing Tool** thanks to [Wallaby.js](https://wallabyjs.com/)
+
 ## Related Projects
 * [Microsoft/TypeScript-Node-Starter](https://github.com/Microsoft/TypeScript-Node-Starter) - A starter template for TypeScript and Node with a detailed README describing how to use the two together.
 * [express-graphql-typescript-boilerplate](https://github.com/w3tecch/express-graphql-typescript-boilerplate) - A starter kit for building amazing GraphQL API's with TypeScript and express by @w3tecch
@@ -265,9 +280,3 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 * [Jest](http://facebook.github.io/jest/)
 * [Auth0 API Documentation](https://auth0.com/docs/api/management/v2)
 * [swagger Documentation](http://swagger.io/)
-
-## License
- [MIT](/LICENSE)
-
----
-Made with ♥ by w3tech ([w3tech](https://github.com/w3tecch)), Gery Hirschfeld ([@GeryHirschfeld1](https://twitter.com/GeryHirschfeld1)) and [contributors](https://github.com/w3tecch/express-typescript-boilerplate/graphs/contributors)
