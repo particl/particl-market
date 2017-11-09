@@ -19,20 +19,24 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
         }
     }
 
-    public static async fetchByName(name: string): Promise<ItemCategory> {
-        return await ItemCategory.where<ItemCategory>({ name }).fetch({
-            withRelated: [
-                'ParentItemCategory',
-                'ParentItemCategory.ParentItemCategory',
-                'ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
-                'ChildItemCategories'
-            ]
-        });
+    public static async fetchByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
+        if (withRelated) {
+            return await ItemCategory.where<ItemCategory>({ key }).fetch({
+                withRelated: [
+                    'ParentItemCategory',
+                    'ParentItemCategory.ParentItemCategory',
+                    'ParentItemCategory.ParentItemCategory.ParentItemCategory',
+                    'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+                    'ChildItemCategories'
+                ]
+            });
+        } else {
+            return await ItemCategory.where<ItemCategory>({ key }).fetch();
+        }
     }
 
     public static async fetchRoot(): Promise<ItemCategory> {
-        return await ItemCategory.where<ItemCategory>({ name: 'ROOT' }).fetch({
+        return await ItemCategory.where<ItemCategory>({ key: 'ROOT' }).fetch({
             withRelated: [
                 'ChildItemCategories',
                 'ChildItemCategories.ChildItemCategories',
@@ -47,6 +51,9 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
 
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
+
+    public get ParentItemCategoryId(): number { return this.get('parent_item_category_id'); }
+    public set ParentItemCategoryId(value: number) { this.set('parent_item_category_id', value); }
 
     public get Name(): string { return this.get('name'); }
     public set Name(value: string) { this.set('name', value); }

@@ -32,16 +32,12 @@ export class ItemCategoryService {
     }
 
     @validate()
-    public async rpcFindOneByName( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        return this.findOneByName(data.params[0]);
+    public async rpcFindOneByKey( @request(RpcRequest) data: any): Promise<ItemCategory> {
+        return this.findOneByKey(data.params[0]);
     }
 
-    public async findOneByName(name: string, withRelated: boolean = true): Promise<ItemCategory> {
-        const itemCategory = await this.itemCategoryRepo.findOneByName(name, withRelated);
-        // if (itemCategory === null) {
-        //    this.log.warn(`ItemCategory with the name=${name} was not found!`);
-        //    throw new NotFoundException(name);
-        // }
+    public async findOneByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
+        const itemCategory = await this.itemCategoryRepo.findOneByKey(key, withRelated);
         return itemCategory;
     }
 
@@ -98,18 +94,19 @@ export class ItemCategoryService {
     }
 
     @validate()
-    public async update(id: number, @request(ItemCategoryUpdateRequest) body: any): Promise<ItemCategory> {
+    public async update(id: number, @request(ItemCategoryUpdateRequest) body: any, patching: boolean = true): Promise<ItemCategory> {
 
         // find the existing one without related
         const itemCategory = await this.findOne(id, false);
 
-        this.log.debug('service, itemCategory to update: ', itemCategory);
         // set new values
         itemCategory.Name = body.name;
         itemCategory.Description = body.description;
+        // need to set this to null, otherwise it won't get updated
+        itemCategory.ParentItemCategoryId = body.parentItemCategoryId === undefined ? null : body.parentItemCategoryId;
 
         // update itemCategory record
-        const updatedItemCategory = await this.itemCategoryRepo.update(id, itemCategory.toJSON());
+        const updatedItemCategory = await this.itemCategoryRepo.update(id, itemCategory.toJSON(), patching);
         return updatedItemCategory;
     }
 

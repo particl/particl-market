@@ -20,7 +20,7 @@ describe('/listing-items', () => {
     // ];
 
     const testData = {
-        hash: 'Test Hash',
+        hash: 'hash1',
         itemInformation: {
             title: 'item title1',
             shortDescription: 'item short desc1',
@@ -105,7 +105,7 @@ describe('/listing-items', () => {
     };
 
     const testDataUpdated = {
-        hash: 'Test Hash',
+        hash: 'hash2',
         itemInformation: {
             title: 'title UPDATED',
             shortDescription: 'item UPDATED',
@@ -183,6 +183,7 @@ describe('/listing-items', () => {
         createdId = res.getData()['id'];
 
         const result: any = res.getData();
+        expect(result.hash).toBe(testData.hash);
         expect(result.ItemInformation.title).toBe(testData.itemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(testData.itemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(testData.itemInformation.longDescription);
@@ -210,7 +211,6 @@ describe('/listing-items', () => {
         expect(result.MessagingInformation.publicKey).toBe(testData.messagingInformation.publicKey);
     });
 
-/*
     test('POST      /listing-items        Should fail because we want to create a empty listing item', async () => {
         const res = await api('POST', '/api/listing-items', {
             body: {}
@@ -218,7 +218,7 @@ describe('/listing-items', () => {
         res.expectJson();
         res.expectStatusCode(400);
     });
-*/
+
     test('GET       /listing-items        Should list listing items with our new create one', async () => {
         const res = await api('GET', '/api/listing-items');
         res.expectJson();
@@ -226,6 +226,9 @@ describe('/listing-items', () => {
         res.expectData(keys); // keysWithoutRelated
         const data = res.getData<any[]>();
         expect(data.length).toBe(1);
+
+        const result = data[0];
+        expect(result.hash).toBe(testData.hash);
     });
 
     test('GET       /listing-items/:id    Should return one listing item', async () => {
@@ -235,6 +238,7 @@ describe('/listing-items', () => {
         res.expectData(keys);
 
         const result: any = res.getData();
+        expect(result.hash).toBe(testData.hash);
         expect(result.ItemInformation.title).toBe(testData.itemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(testData.itemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(testData.itemInformation.longDescription);
@@ -270,7 +274,7 @@ describe('/listing-items', () => {
             body: {
                 method: 'rpclistingitem.getitem',
                 params:  [
-                  'Test Hash'
+                  'hash1'
                 ],
                 id: 1,
                 jsonrpc: '2.0'
@@ -319,6 +323,7 @@ describe('/listing-items', () => {
         res.expectData(keys);
 
         const result: any = res.getData();
+        expect(result.hash).toBe(testDataUpdated.hash);
         expect(result.ItemInformation.title).toBe(testDataUpdated.itemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(testDataUpdated.itemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(testDataUpdated.itemInformation.longDescription);

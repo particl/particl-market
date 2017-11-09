@@ -21,7 +21,6 @@ import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemInformationService } from './ItemInformationService';
 
-
 export class ListingItemService {
 
     public log: LoggerType;
@@ -62,7 +61,7 @@ export class ListingItemService {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<ListingItem> {
         return this.create({
-            hash: 'Test Hash',
+            hash: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
             itemInformation: {
                 title: 'item title1',
                 shortDescription: 'item short desc1',
@@ -177,7 +176,7 @@ export class ListingItemService {
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<ListingItem> {
         return this.update(data.params[0], {
-            hash: 'Test Hash',
+            hash: 'abc',
             itemInformation: {
                 title: 'title UPDATED',
                 shortDescription: 'item UPDATED',
@@ -244,25 +243,29 @@ export class ListingItemService {
     public async update(id: number, @request(ListingItemUpdateRequest) body: any): Promise<ListingItem> {
 
         // find the existing one without related
-        const listingItem = await this.findOne(id, true);
+        const listingItem = await this.findOne(id, false);
 
-        // theres nothing to update !!!
-        // const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
+        // set new values
+        listingItem.Hash = body.hash;
+
+        this.log.info('listingItem.toJSON():', listingItem.toJSON());
+        // update listingItem record
+        const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
 
         // find related record and delete it and recreate related data
-        const itemInformation = listingItem.related('ItemInformation').toJSON();
+        const itemInformation = updatedListingItem.related('ItemInformation').toJSON();
         await this.itemInformationService.destroy(itemInformation.id);
         body.itemInformation.listing_item_id = id;
         await this.itemInformationService.create(body.itemInformation);
 
         // find related record and delete it and recreate related data
-        const paymentInformation = listingItem.related('PaymentInformation').toJSON();
+        const paymentInformation = updatedListingItem.related('PaymentInformation').toJSON();
         await this.paymentInformationService.destroy(paymentInformation.id);
         body.paymentInformation.listing_item_id = id;
         await this.paymentInformationService.create(body.paymentInformation);
 
         // find related record and delete it and recreate related data
-        const messagingInformation = listingItem.related('MessagingInformation').toJSON();
+        const messagingInformation = updatedListingItem.related('MessagingInformation').toJSON();
         await this.messagingInformationService.destroy(messagingInformation.id);
         body.messagingInformation.listing_item_id = id;
         await this.messagingInformationService.create(body.messagingInformation);

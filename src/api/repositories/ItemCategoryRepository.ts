@@ -26,8 +26,8 @@ export class ItemCategoryRepository {
         return this.ItemCategoryModel.fetchById(id, withRelated);
     }
 
-    public async findOneByName(name: string, withRelated: boolean = true): Promise<ItemCategory> {
-        return this.ItemCategoryModel.fetchByName(name);
+    public async findOneByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
+        return this.ItemCategoryModel.fetchByKey(key, withRelated);
     }
 
     public async findRoot(): Promise<ItemCategory> {
@@ -44,11 +44,14 @@ export class ItemCategoryRepository {
         }
     }
 
-    public async update(id: number, data: any): Promise<ItemCategory> {
+    public async update(id: number, data: any, patching: boolean = true): Promise<ItemCategory> {
         const itemCategory = this.ItemCategoryModel.forge<ItemCategory>({ id });
         try {
-            const itemCategoryUpdated = await itemCategory.save(data, { patch: true });
-            return this.ItemCategoryModel.fetchById(itemCategoryUpdated.id);
+           // this.log.debug('data: ', data);
+
+            const itemCategoryUpdated = await itemCategory.save(data, { defaults: true, patch: patching });
+            return await this.ItemCategoryModel.fetchById(itemCategoryUpdated.id);
+
         } catch (error) {
             throw new DatabaseException('Could not update the itemCategory!', error);
         }

@@ -4,5 +4,8 @@ import { RequestBody } from '../../core/api/RequestBody';
 
 export class ListingItemUpdateRequest extends RequestBody {
 
+    @IsNotEmpty()
+    public hash: string;
+
 }
 
