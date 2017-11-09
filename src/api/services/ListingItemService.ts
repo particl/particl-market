@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import * as crypto from 'crypto-js';
 import { ListingItemRepository } from '../repositories/ListingItemRepository';
 import { ListingItem } from '../models/ListingItem';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
@@ -45,6 +46,16 @@ export class ListingItemService {
     }
 
     @validate()
+    public async rpcFindByCategory( @request(RpcRequest) data: any): Promise<any> {
+        return this.findByCategory(data.params[0]);
+    }
+
+    public async findByCategory( categoryId: number ): Promise<Bookshelf.Collection<ListingItem>> {
+        this.log.debug('find by category:', categoryId)
+        return this.findAll();
+    }
+
+    @validate()
     public async rpcFindOne( @request(RpcRequest) data: any): Promise<ListingItem> {
         return this.findOne(data.params[0]);
     }
@@ -60,14 +71,16 @@ export class ListingItemService {
 
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<ListingItem> {
+        const hash = crypto.SHA256(new Date().getTime().toString()).toString();
         return this.create({
-            hash: 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
+            hash,
             itemInformation: {
                 title: 'item title1',
                 shortDescription: 'item short desc1',
                 longDescription: 'item long desc1',
                 itemCategory: {
-                    name: 'item category name 1',
+                    key: 'cat_TESTROOT',
+                    name: 'TESTROOT',
                     description: 'item category description 1'
                 },
                 itemLocation: {
@@ -157,6 +170,7 @@ export class ListingItemService {
         const messagingInformation = body.messagingInformation;
         delete body.messagingInformation;
 
+        this.log.debug('body: ', body);
         // If the request body was valid we will create the listingItem
         const listingItem = await this.listingItemRepo.create(body);
 
@@ -182,8 +196,7 @@ export class ListingItemService {
                 shortDescription: 'item UPDATED',
                 longDescription: 'item UPDATED',
                 itemCategory: {
-                    name: 'item UPDATED',
-                    description: 'item UPDATED'
+                    key: 'cat_TESTROOT'
                 },
                 itemLocation: {
                     region: Country.FINLAND,
