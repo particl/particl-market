@@ -28,7 +28,6 @@ export class ProfileController {
 
     @httpPost('/')
     public async create( @response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
-        console.log('/profiles-----', body);
         const profile = await this.profileService.create(body);
         this.log.debug('create: ', JSON.stringify(profile, null, 2));
         return res.created(profile.toJSON());
