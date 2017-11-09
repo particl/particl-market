@@ -47,12 +47,17 @@ export class ListingItemService {
 
     @validate()
     public async rpcFindByCategory( @request(RpcRequest) data: any): Promise<any> {
-        return this.findByCategory(data.params[0]);
+        const listingItems = await this.findByCategory(data.params[0]);
+        // this.log.debug('listingItems:', listingItems.toJSON());
+        listingItems.toJSON().forEach( item => {
+            this.log.debug('item:', item.ItemInformation.title);
+        });
+        return listingItems;
     }
 
     public async findByCategory( categoryId: number ): Promise<Bookshelf.Collection<ListingItem>> {
-        this.log.debug('find by category:', categoryId)
-        return this.findAll();
+        this.log.debug('find by category:', categoryId);
+        return this.listingItemRepo.findByCategory(categoryId);
     }
 
     @validate()
