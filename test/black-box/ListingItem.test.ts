@@ -20,6 +20,7 @@ describe('/listing-items', () => {
     // ];
 
     const testData = {
+        hash: 'Test Hash',
         itemInformation: {
             title: 'item title1',
             shortDescription: 'item short desc1',
@@ -104,6 +105,7 @@ describe('/listing-items', () => {
     };
 
     const testDataUpdated = {
+        hash: 'Test Hash',
         itemInformation: {
             title: 'title UPDATED',
             shortDescription: 'item UPDATED',
@@ -234,6 +236,53 @@ describe('/listing-items', () => {
 
         const result: any = res.getData();
         expect(result.ItemInformation.title).toBe(testData.itemInformation.title);
+        expect(result.ItemInformation.shortDescription).toBe(testData.itemInformation.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(testData.itemInformation.longDescription);
+        expect(result.ItemInformation.ItemCategory.name).toBe(testData.itemInformation.itemCategory.name);
+        expect(result.ItemInformation.ItemCategory.description).toBe(testData.itemInformation.itemCategory.description);
+        expect(result.ItemInformation.ItemLocation.region).toBe(testData.itemInformation.itemLocation.region);
+        expect(result.ItemInformation.ItemLocation.address).toBe(testData.itemInformation.itemLocation.address);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(testData.itemInformation.itemLocation.locationMarker.markerTitle);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(testData.itemInformation.itemLocation.locationMarker.markerText);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(testData.itemInformation.itemLocation.locationMarker.lat);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testData.itemInformation.itemLocation.locationMarker.lng);
+        expect(result.ItemInformation.ShippingDestinations).toHaveLength(3);
+        expect(result.ItemInformation.ItemImages).toHaveLength(3);
+        expect(result.PaymentInformation.type).toBe(testData.paymentInformation.type);
+        expect(result.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
+        expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
+        expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testData.paymentInformation.escrow.ratio.seller);
+        expect(result.PaymentInformation.ItemPrice.currency).toBe(testData.paymentInformation.itemPrice.currency);
+        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
+        expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
+        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
+        expect(result.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
+        expect(result.MessagingInformation.publicKey).toBe(testData.messagingInformation.publicKey);
+
+    });
+
+
+
+    test('POST     /listing-items/getitembyhash    Should return one listing item', async () => {
+        const res = await api('POST', `/api/listing-items/getitembyhash`, {
+            body: {
+                method: 'rpclistingitem.getitem',
+                params:  [
+                  'Test Hash'
+                ],
+                id: 1,
+                jsonrpc: '2.0'
+            }
+        });
+        res.expectJson();
+        res.expectStatusCode(200);
+        res.expectData(keys);
+
+        const result: any = res.getData();
+        expect(result.ItemInformation.title).toBe(testData.itemInformation.title);
+        expect(result.hash).toBe(testData.hash);
         expect(result.ItemInformation.shortDescription).toBe(testData.itemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(testData.itemInformation.longDescription);
         expect(result.ItemInformation.ItemCategory.name).toBe(testData.itemInformation.itemCategory.name);

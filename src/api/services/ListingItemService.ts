@@ -62,6 +62,7 @@ export class ListingItemService {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<ListingItem> {
         return this.create({
+            hash: 'Test Hash',
             itemInformation: {
                 title: 'item title1',
                 shortDescription: 'item short desc1',
@@ -176,6 +177,7 @@ export class ListingItemService {
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<ListingItem> {
         return this.update(data.params[0], {
+            hash: 'Test Hash',
             itemInformation: {
                 title: 'title UPDATED',
                 shortDescription: 'item UPDATED',
@@ -278,6 +280,19 @@ export class ListingItemService {
 
     public async destroy(id: number): Promise<void> {
         await this.listingItemRepo.destroy(id);
+    }
+
+    public async getListingItems(data: any): Promise<Bookshelf.Collection<ListingItem>> {
+        return this.listingItemRepo.findAllItems({id: data.params[0] || 1 , page: data.params[1] || 1 , pageLimit: data.params[2] || 5, order: data.params[3] || 'ASC'});
+    }
+
+    public async findOneByHash(hash: string): Promise<ListingItem> {
+        const listingItem = await this.listingItemRepo.findOneByHsh(hash);
+        if (listingItem === null) {
+            this.log.warn(`ListingItem with the hash=${hash} was not found!`);
+            throw new NotFoundException(hash);
+        }
+        return listingItem;
     }
 
 }

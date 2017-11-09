@@ -34,11 +34,38 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         }
     }
 
+    public static async fetchByHash(value: string): Promise<ListingItem> {
+        return await ListingItem.where<ListingItem>({ hash: value }).fetch({
+            withRelated: [
+                'ItemInformation',
+                'ItemInformation.ItemCategory',
+                'ItemInformation.ItemLocation',
+                'ItemInformation.ItemLocation.LocationMarker',
+                'ItemInformation.ItemImages',
+                'ItemInformation.ItemImages.ItemImageData',
+                'ItemInformation.ShippingDestinations',
+                'PaymentInformation',
+                'PaymentInformation.Escrow',
+                'PaymentInformation.Escrow.Ratio',
+                'PaymentInformation.ItemPrice',
+                'PaymentInformation.ItemPrice.ShippingPrice',
+                'PaymentInformation.ItemPrice.Address',
+                'MessagingInformation',
+                'ListingItemObjects'
+            ]
+        });
+
+    }
+
     public get tableName(): string { return 'listing_items'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
+
+    public get Hash(): string { return this.get('hash'); }
+    public set Hash(value: string) { this.set('hash', value); }
+
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

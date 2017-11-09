@@ -64,7 +64,8 @@ export const Targets = {
         PaymentInformationService: 'PaymentInformationService',
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
-        UserService: 'UserService'
+        UserService: 'UserService',
+        RpcListingItemService: 'RpcListingItemService'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',

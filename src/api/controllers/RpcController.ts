@@ -17,6 +17,7 @@ import { ShippingDestinationService } from '../services/ShippingDestinationServi
 import { ItemInformationService } from '../services/ItemInformationService';
 import { MessagingInformationService } from '../services/MessagingInformationService';
 import { ListingItemService } from '../services/ListingItemService';
+import { RpcListingItemService } from '../services/RpcListingItemService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -43,6 +44,8 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
+
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -112,7 +115,11 @@ export class RpcController {
             'listingitem.find': 'listingItemService.rpcFindOne',
             'listingitem.findall': 'listingItemService.rpcFindAll',
             'listingitem.update': 'listingItemService.rpcUpdate',
-            'listingitem.destroy': 'listingItemService.rpcDestroy'
+            'listingitem.destroy': 'listingItemService.rpcDestroy',
+            'rpclistingitem.getitems': 'rpcListingItemService.getItems',
+            'rpclistingitem.getitem': 'rpcListingItemService.getItem'
+
+
         };
     }
 

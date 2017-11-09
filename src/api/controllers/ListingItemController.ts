@@ -3,6 +3,8 @@ import { controller, httpGet, httpPost, httpPut, httpDelete, response, requestBo
 import { Types, Core, Targets } from '../../constants';
 import { app } from '../../app';
 import { ListingItemService } from '../services/ListingItemService';
+import { RpcListingItemService } from '../services/RpcListingItemService';
+
 import { Logger as LoggerType } from '../../core/Logger';
 
 // Get middlewares
@@ -15,6 +17,7 @@ export class ListingItemController {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
     }
@@ -54,4 +57,13 @@ export class ListingItemController {
         return res.destroyed();
     }
     // Implement your routes here
+
+
+    @httpPost('/getitembyhash')
+    public async getItem( @response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
+        const listingItems = await this.rpcListingItemService.getItem(body);
+        this.log.debug('findAll: ', JSON.stringify(listingItems, null, 2));
+        return res.found(listingItems.toJSON());
+    }
+
 }
