@@ -1,5 +1,6 @@
 import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { DatabaseSeedCommand } from '../../src/console/DatabaseSeedCommand';
 import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
@@ -77,6 +78,7 @@ describe('/item-informations', () => {
             name: 'item category name 2',
             description: 'item category description 2'
         },
+
         itemLocation: {
             region: Country.EU,
             address: 'zxcv, zxcv, zxcv',
@@ -127,11 +129,16 @@ describe('/item-informations', () => {
 
     let createdId;
     beforeAll(async () => {
-        const command = new DatabaseResetCommand();
+        let command = new DatabaseResetCommand();
+        await command.run();
+
+        command = new DatabaseSeedCommand();
         await command.run();
     });
 
     test('POST      /item-informations        Should create a new item information', async () => {
+
+
         const res = await api('POST', '/api/item-informations', {
             body: testData
         });

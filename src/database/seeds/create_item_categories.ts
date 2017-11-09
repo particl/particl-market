@@ -102,14 +102,14 @@ exports.seed = async (db: Knex) => {
                     await db('item_categories').insert({key: 'cat_home_other', name: 'Other', description: '', parent_item_category_id: parseInt(parentId, 10)});
                 });
 
-            await db('item_categories').insert({key: 'cat_services_corporate', name: 'Services / Corporate ', description: '', parent_item_category_id: parseInt(rootId, 10)}).returning('id')
+            await db('item_categories').insert({key: 'cat_services_corporate', name: 'Services / Corporate', description: '', parent_item_category_id: parseInt(rootId, 10)}).returning('id')
                 .then( async parentId => {
                     await db('item_categories').insert({key: 'cat_services_commercial', name: 'Commercial Services', description: '', parent_item_category_id: parseInt(parentId, 10)});
                     await db('item_categories').insert({key: 'cat_services_freelance', name: 'Freelance Services', description: '', parent_item_category_id: parseInt(parentId, 10)});
                     await db('item_categories').insert({key: 'cat_services_labor_talent', name: 'Labor and Talent Services', description: '', parent_item_category_id: parseInt(parentId, 10)});
                     await db('item_categories').insert({key: 'cat_services_transport_logistics', name: 'Transport Logistics and Trucking', description: '', parent_item_category_id: parseInt(parentId, 10)});
                     await db('item_categories').insert({key: 'cat_services_escrow', name: 'Escrow Services', description: '', parent_item_category_id: parseInt(parentId, 10)});
-                    await db('item_categories').insert({key: 'cat_services_endoflife_estate_inheritance', name: 'End of life, Estate & Inheritence Services ', description: '', parent_item_category_id: parseInt(parentId, 10)});
+                    await db('item_categories').insert({key: 'cat_services_endoflife_estate_inheritance', name: 'End of life, Estate & Inheritence Services', description: '', parent_item_category_id: parseInt(parentId, 10)});
                     await db('item_categories').insert({key: 'cat_services_legal_admin', name: 'Legal & Admin Services', description: '', parent_item_category_id: parseInt(parentId, 10)});
                     await db('item_categories').insert({key: 'cat_services_other', name: 'Other', description: '', parent_item_category_id: parseInt(parentId, 10)});
                 });

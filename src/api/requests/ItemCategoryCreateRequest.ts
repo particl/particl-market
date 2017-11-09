@@ -4,10 +4,11 @@ import { RequestBody } from '../../core/api/RequestBody';
 
 export class ItemCategoryCreateRequest extends RequestBody {
 
+    public key: string;
+
     @IsNotEmpty()
     public name: string;
 
-    @IsNotEmpty()
     public description: string;
 
     public parentItemCategoryId: number;

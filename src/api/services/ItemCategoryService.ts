@@ -85,17 +85,6 @@ export class ItemCategoryService {
     }
 
     @validate()
-    public async createOrReplace( @request(ItemCategoryCreateRequest) body: any): Promise<ItemCategory> {
-
-        // If the request body was valid we will create the itemCategory
-        const itemCategory = await this.itemCategoryRepo.create(body);
-
-        // finally find and return the created itemCategory
-        const newItemCategory = await this.findOne(itemCategory.Id);
-        return newItemCategory;
-    }
-
-    @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemCategory> {
         return this.update(data.params[0], {
             name: data.params[1],
@@ -105,18 +94,19 @@ export class ItemCategoryService {
     }
 
     @validate()
-    public async update(id: number, @request(ItemCategoryUpdateRequest) body: any): Promise<ItemCategory> {
+    public async update(id: number, @request(ItemCategoryUpdateRequest) body: any, patching: boolean = true): Promise<ItemCategory> {
 
         // find the existing one without related
         const itemCategory = await this.findOne(id, false);
 
-        this.log.debug('service, itemCategory to update: ', itemCategory);
         // set new values
         itemCategory.Name = body.name;
         itemCategory.Description = body.description;
+        // need to set this to null, otherwise it won't get updated
+        itemCategory.ParentItemCategoryId = body.parentItemCategoryId === undefined ? null : body.parentItemCategoryId;
 
         // update itemCategory record
-        const updatedItemCategory = await this.itemCategoryRepo.update(id, itemCategory.toJSON());
+        const updatedItemCategory = await this.itemCategoryRepo.update(id, itemCategory.toJSON(), patching);
         return updatedItemCategory;
     }
 

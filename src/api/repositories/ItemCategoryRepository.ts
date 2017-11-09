@@ -44,11 +44,14 @@ export class ItemCategoryRepository {
         }
     }
 
-    public async update(id: number, data: any): Promise<ItemCategory> {
+    public async update(id: number, data: any, patching: boolean = true): Promise<ItemCategory> {
         const itemCategory = this.ItemCategoryModel.forge<ItemCategory>({ id });
         try {
-            const itemCategoryUpdated = await itemCategory.save(data, { patch: true });
-            return this.ItemCategoryModel.fetchById(itemCategoryUpdated.id);
+           // this.log.debug('data: ', data);
+
+            const itemCategoryUpdated = await itemCategory.save(data, { defaults: true, patch: patching });
+            return await this.ItemCategoryModel.fetchById(itemCategoryUpdated.id);
+
         } catch (error) {
             throw new DatabaseException('Could not update the itemCategory!', error);
         }

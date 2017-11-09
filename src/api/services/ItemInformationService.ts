@@ -16,6 +16,7 @@ import { ItemLocationService } from './ItemLocationService';
 import { ItemImageService } from './ItemImageService';
 import { ShippingDestinationService } from './ShippingDestinationService';
 import { ItemCategoryService } from './ItemCategoryService';
+import { ItemCategory } from '../models/ItemCategory';
 
 export class ItemInformationService {
 
@@ -119,6 +120,7 @@ export class ItemInformationService {
         // extract and remove related models from request
         const itemCategory = body.itemCategory;
         delete body.itemCategory;
+
         const itemLocation = body.itemLocation;
         delete body.itemLocation;
         const shippingDestinations = body.shippingDestinations;
@@ -127,10 +129,12 @@ export class ItemInformationService {
         delete body.itemImages;
 
         // check if item category allready exists
-        // TODO: this needs some refactoring
-        // TODO: for now supports only default category key but we need to support user generated categories too
-        let existingItemCategory = await this.itemCategoryService.findOneByKey(itemCategory.key);
-        if (existingItemCategory == null) {
+        let existingItemCategory;
+        if (itemCategory.key) {
+            existingItemCategory = await this.itemCategoryService.findOneByKey(itemCategory.key);
+        } else if (itemCategory.id) {
+            existingItemCategory = await this.itemCategoryService.findOne(itemCategory.id);
+        } else {
             existingItemCategory = await this.itemCategoryService.create(itemCategory);
         }
         body.item_category_id = existingItemCategory.Id;
@@ -205,12 +209,15 @@ export class ItemInformationService {
         itemInformation.LongDescription = body.longDescription;
 
         // check if item category allready exists
-        // TODO: this needs some refactoring
-        // TODO: for now supports only default category key but we need to support user generated categories too
-        let existingItemCategory = await this.itemCategoryService.findOneByKey(body.itemCategory.key);
-        if (existingItemCategory == null) {
+        let existingItemCategory;
+        if (body.itemCategory.key) {
+            existingItemCategory = await this.itemCategoryService.findOneByKey(body.itemCategory.key);
+        } else if (body.itemCategory.id) {
+            existingItemCategory = await this.itemCategoryService.findOne(body.itemCategory.id);
+        } else {
             existingItemCategory = await this.itemCategoryService.create(body.itemCategory);
         }
+
         const itemInfoToSave = itemInformation.toJSON();
         itemInfoToSave['itemCategoryId'] = existingItemCategory.Id;
 
