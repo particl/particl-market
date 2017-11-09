@@ -22,6 +22,31 @@ export class ListingItemRepository {
         return list as Bookshelf.Collection<ListingItem>;
     }
 
+    public async findByCategory(categoryId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
+        return this.ListingItemModel.fetchByCategory(categoryId, withRelated);
+        /*
+        const listingCollection = this.ListingItemModel.forge<Bookshelf.Collection<ListingItem>>()
+            .query( qb => {
+                qb.innerJoin('item_informations', 'listing_items.id', 'item_informations.listing_item_id');
+                // qb.groupBy('listing_items.id');
+                qb.where('item_informations.item_category_id', '=', categoryId);
+                qb.andWhere('item_informations.item_category_id', '>', 0);
+            })
+            .orderBy('item_informations.title', 'DESC');
+            // .where('item_informations.item_category_id', '=', categoryId);
+
+        const rows = await listingCollection.fetchAll({
+            withRelated: ['ItemInformation']
+        });
+
+        rows.forEach(item => {
+             this.log.debug('item:', item.toJSON() );
+        });
+
+        return rows as Bookshelf.Collection<ListingItem>;
+        */
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<ListingItem> {
         return this.ListingItemModel.fetchById(id, withRelated);
     }

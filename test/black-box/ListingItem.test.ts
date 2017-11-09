@@ -26,7 +26,7 @@ describe('/listing-items', () => {
             shortDescription: 'item short desc1',
             longDescription: 'item long desc1',
             itemCategory: {
-                name: 'item category name 1',
+                name: 'ROOT',
                 description: 'item category description 1'
             },
             itemLocation: {
@@ -111,7 +111,7 @@ describe('/listing-items', () => {
             shortDescription: 'item UPDATED',
             longDescription: 'item UPDATED',
             itemCategory: {
-                name: 'item UPDATED',
+                name: 'CHILD',
                 description: 'item UPDATED'
             },
             itemLocation: {

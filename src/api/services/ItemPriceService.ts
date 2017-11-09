@@ -75,7 +75,7 @@ export class ItemPriceService {
 
         // If the request body was valid we will create the itemPrice
         const itemPrice = await this.itemPriceRepo.create(body);
-        this.log.debug('itemprice created: ', JSON.stringify(itemPrice));
+        // this.log.debug('itemprice created: ', JSON.stringify(itemPrice));
 
         // then create shippingPrice
         shippingPrice.item_price_id = itemPrice.Id;

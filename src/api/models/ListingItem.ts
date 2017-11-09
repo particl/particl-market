@@ -54,7 +54,43 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 'ListingItemObjects'
             ]
         });
+    }
 
+    public static async fetchByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {
+
+        const listingCollection = ListingItem.forge<Collection<ListingItem>>()
+            .query( qb => {
+                qb.innerJoin('item_informations', 'listing_items.id', 'item_informations.listing_item_id');
+                // qb.groupBy('listing_items.id');
+                qb.where('item_informations.item_category_id', '=', categoryId);
+                qb.andWhere('item_informations.item_category_id', '>', 0);
+            })
+            .orderBy('item_informations.title', 'ASC');
+        // .where('item_informations.item_category_id', '=', categoryId);
+
+        if (withRelated) {
+            return await listingCollection.fetchAll({
+                withRelated: [
+                    'ItemInformation',
+                    'ItemInformation.ItemCategory',
+                    'ItemInformation.ItemLocation',
+                    'ItemInformation.ItemLocation.LocationMarker',
+                    'ItemInformation.ItemImages',
+                    'ItemInformation.ItemImages.ItemImageData',
+                    'ItemInformation.ShippingDestinations',
+                    'PaymentInformation',
+                    'PaymentInformation.Escrow',
+                    'PaymentInformation.Escrow.Ratio',
+                    'PaymentInformation.ItemPrice',
+                    'PaymentInformation.ItemPrice.ShippingPrice',
+                    'PaymentInformation.ItemPrice.Address',
+                    'MessagingInformation',
+                    'ListingItemObjects'
+                ]
+            });
+        } else {
+            return await listingCollection.fetchAll();
+        }
     }
 
     public get tableName(): string { return 'listing_items'; }

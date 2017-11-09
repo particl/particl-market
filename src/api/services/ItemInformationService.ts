@@ -63,7 +63,8 @@ export class ItemInformationService {
             shortDescription: 'item short desc1',
             longDescription: 'item long desc1',
             itemCategory: {
-                name: 'item category name 1',
+                key: 'cat_TESTROOT',
+                name: 'ROOT',
                 description: 'item category description 1'
             },
             itemLocation: {
@@ -132,6 +133,9 @@ export class ItemInformationService {
         let existingItemCategory;
         if (itemCategory.key) {
             existingItemCategory = await this.itemCategoryService.findOneByKey(itemCategory.key);
+            if (existingItemCategory === null) { // key not found -> create new
+                existingItemCategory = await this.itemCategoryService.create(itemCategory);
+            }
         } else if (itemCategory.id) {
             existingItemCategory = await this.itemCategoryService.findOne(itemCategory.id);
         } else {
@@ -168,8 +172,7 @@ export class ItemInformationService {
             shortDescription: 'item short desc1 UPDATED',
             longDescription: 'item long desc1 UPDATED',
             itemCategory: {
-                name: 'item category name 2',
-                description: 'item category description 2'
+                key: 'cat_TESTROOT'
             },
             itemLocation: {
                 region: Country.FINLAND,
