@@ -15,6 +15,7 @@ export class ApiResponseTest {
     }
 
     public getHeaders<T>(): T {
+        console.log('res:', this.res);
         if (this.res) {
             return this.res['headers'];
         } else {
