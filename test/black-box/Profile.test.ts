@@ -10,7 +10,9 @@ describe('/profiles', () => {
     // const keysWithoutRelated = [
     //    'id', 'updatedAt', 'createdAt',
     // ];
-
+    let createdId;
+    let addressId1;
+    let addressId2;
     const testData = {
         params: {
             userAddress: [{
@@ -30,9 +32,26 @@ describe('/profiles', () => {
     };
 
     const testDataUpdated = {
+        params: {
+            userAddress: [{
+                title: 'Title New',
+                address_line1: 'Add New',
+                address_line2: 'ADD 22 New',
+                city: 'city New',
+                country: 'Country New',
+                id: `${addressId1}`,
+                profileId: `${createdId}`
+            }, {
+                title: 'Title 2',
+                address_line1: 'Add 2',
+                address_line2: 'ADD 22 22',
+                city: 'city 22',
+                country: 'Country 22',
+                id: `${addressId2}`,
+                profileId: `${createdId}`
+            }]
+        }
     };
-
-    let createdId;
     beforeAll(async () => {
         const command = new DatabaseResetCommand();
         await command.run();
@@ -45,17 +64,19 @@ describe('/profiles', () => {
         res.expectJson();
         res.expectStatusCode(201);
         res.expectData(keys);
-        createdId = res.getData()['id'];
 
+        createdId = res.getData()['id'];
+        addressId1 = res.getData()['Address'][0]['id'];
+        addressId2 = res.getData()['Address'][1]['id'];
         const result: any = res.getData();
     });
 
     test('POST      /profiles        Should fail because we want to create a empty profile', async () => {
         const res = await api('POST', '/api/profiles', {
-            body: { params: {} }
+            body: {}
         });
         res.expectJson();
-        res.expectStatusCode(400);
+        res.expectStatusCode(500);
     });
 
     test('GET       /profiles        Should list profiles with our new create one', async () => {
@@ -78,26 +99,16 @@ describe('/profiles', () => {
         const result: any = res.getData();
     });
 
-    // test('PUT       /profiles/:id    Should update the profile', async () => {
-    //     const res = await api('PUT', `/api/profiles/${createdId}`, {
-    //         body: testDataUpdated
-    //     });
-    //     res.expectJson();
-    //     res.expectStatusCode(200);
-    //     res.expectData(keys);
+    test('PUT       /profiles/:id    Should update the profile', async () => {
+        const res = await api('PUT', `/api/profiles/${createdId}`, {
+            body: testDataUpdated
+        });
+        res.expectJson();
+        res.expectStatusCode(200);
+        res.expectData(keys);
 
-    //     const result: any = res.getData();
-    // });
-
-    // test('PUT       /profiles/:id    Should fail because we want to update the profile with a invalid email', async () => {
-    //     const res = await api('PUT', `/api/profiles/${createdId}`, {
-    //         body: {
-    //             email: 'abc'
-    //         }
-    //     });
-    //     res.expectJson();
-    //     res.expectStatusCode(400);
-    // });
+        const result: any = res.getData();
+    });
 
     test('DELETE    /profiles/:id    Should delete the profile', async () => {
         const res = await api('DELETE', `/api/profiles/${createdId}`);

@@ -27,16 +27,11 @@ export class AddressRepository {
         return this.AddressModel.fetchById(id, withRelated);
     }
 
-    public async create(profile: any, data: any): Promise<any> {
+    public async create(data: any): Promise<Address> {
+        const address = this.AddressModel.forge<Address>(data);
         try {
-            const saveAddress = (count) => {
-                if (count < data.length) {
-                    profile.related('Address').create(data[count]).then((address) => {
-                        saveAddress(count + 1);
-                    });
-                }
-            };
-            return saveAddress(0);
+            const addressCreated = await address.save();
+            return this.AddressModel.fetchById(addressCreated.id);
         } catch (error) {
             throw new DatabaseException('Could not create the address!', error);
         }

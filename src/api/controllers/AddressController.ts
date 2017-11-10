@@ -27,8 +27,8 @@ export class AddressController {
     }
 
     @httpPost('/')
-    public async create( @response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
-        const address = await this.addressService.saveAddress(body);
+    public async create( @response() res: myExpress.Response,  @requestBody() body: any): Promise<any> {
+        const address = await this.addressService.create(body);
         this.log.debug('create: ', JSON.stringify(address, null, 2));
         return res.created(address.toJSON());
     }

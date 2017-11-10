@@ -45,20 +45,20 @@ export class AddressService {
         return address;
     }
 
-    // @validate()
-    // public async rpcCreate( @request(RpcRequest) profile: any, data: any): Promise<Address> {
-    //     return this.saveAddress({
-    //         profile,
-    //         data: data.params
-    //     });
-    // }
+    @validate()
+    public async rpcCreate( @request(RpcRequest) data: any): Promise<Address> {
+        return this.create(data.params);
+    }
 
     @validate()
-    public async saveAddress(  profile: any, @request(AddressCreateRequest) body: any): Promise<Address> {
-        // If the request body was valid we will create the address
-        const address = await this.addressRepo.create(profile, body);
-        // finally find and return the created addresses for profile
-        return address;
+    public async create( @request(AddressCreateRequest) body: any): Promise<Address> {
+        console.log('data--------',body);
+        // extract and remove related models from request
+        const data = body;
+        const address = await this.addressRepo.create(data);
+        // finally find and return the created addressId
+        const newAddress = await this.findOne(address.Id);
+        return newAddress;
     }
 
     @validate()
