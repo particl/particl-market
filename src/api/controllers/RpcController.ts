@@ -118,11 +118,20 @@ export class RpcController {
             'listingitem.findbycategory': 'listingItemService.rpcFindByCategory',
             'listingitem.update': 'listingItemService.rpcUpdate',
             'listingitem.destroy': 'listingItemService.rpcDestroy',
-            'profile.saveprofile': 'profileService.rpcSaveProfile',
-            'profile.updateprofile': 'profileService.rpcUpdateProfile',
-            'profile.getprofile': 'profileService.rpcFindAll',
-            'address.saveaddress': 'addressService.rpcCreate',
-            'address.updateaddress': 'addressService.rpcUpdate'
+            'profile.create': 'profileService.rpcCreate',
+            'profile.update': 'profileService.rpcUpdate',
+            'profile.find': 'profileService.rpcFindOne',
+            'address.create': 'addressService.rpcCreate',
+            'address.update': 'addressService.rpcUpdate',
+            // everything above is/was used for testing
+
+            // mappings below are for the final/real rpc api
+            'createprofile': 'profileService.rpcCreate',
+            'updateprofile': 'profileService.rpcUpdate',
+            'getprofile': 'profileService.rpcFindOne',
+            'createaddress': 'addressService.rpcCreate',
+            'updateaddress': 'addressService.rpcUpdate'
+
         };
     }
 
