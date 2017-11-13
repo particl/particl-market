@@ -120,7 +120,7 @@ export class RpcController {
             'listingitem.destroy': 'listingItemService.rpcDestroy',
             'profile.saveprofile': 'profileService.rpcSaveProfile',
             'profile.updateprofile': 'profileService.rpcUpdateProfile',
-            'profile.getprofile': 'profileService.rpcFindAll',
+            'profile.getprofile': 'profileService.rpcGetProfile',
             'address.saveaddress': 'addressService.rpcCreate',
             'address.updateaddress': 'addressService.rpcUpdate'
         };
