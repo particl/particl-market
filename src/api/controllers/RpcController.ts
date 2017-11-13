@@ -115,6 +115,7 @@ export class RpcController {
             'listingitem.create': 'listingItemService.rpcCreate',
             'listingitem.find': 'listingItemService.rpcFindOne',
             'listingitem.findall': 'listingItemService.rpcFindAll',
+            'listingitem.findbycategory': 'listingItemService.rpcFindByCategory',
             'listingitem.update': 'listingItemService.rpcUpdate',
             'listingitem.destroy': 'listingItemService.rpcDestroy',
             'profile.saveprofile': 'profileService.rpcSaveProfile',
