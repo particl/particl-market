@@ -87,4 +87,39 @@ export class ListingItemRepository {
         }
     }
 
+    /**
+     * options: Object.
+     * params: page, pageLimit, order.
+     * Example: {page: 1, pageLimit: 1, order: 'DESC'}
+     */
+
+    public async findAllItems(options: any): Promise<Bookshelf.Collection<ListingItem>> {
+        const list = await this.ListingItemModel.forge<ListingItem>().query((qb: any) => {
+                qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id');
+                qb.groupBy('listing_items.id');
+
+            }).orderBy('item_informations.title', options.order).query({
+              limit: options.pageLimit,
+              offset: (options.page - 1) * options.pageLimit
+
+            }).fetchAll({withRelated: ['ItemInformation', 'ItemInformation.ItemCategory']});
+
+        return list as Bookshelf.Collection<ListingItem>;
+    }
+
+
+    public async findOneByHash(hash: string): Promise<ListingItem> {
+        return this.ListingItemModel.fetchByHash(hash);
+    }
+
+    /**
+     * options: Array.
+     * params: categoryId, searchTerm, withRelated
+     * Example: [1, "category name", true]
+     */
+
+    public async searchByCategoryIdOrName(options: any): Promise<Bookshelf.Collection<ListingItem>> {
+        return this.ListingItemModel.searchByCategoryOrName(options[0], options[1], options[2]);
+    }
+
 }

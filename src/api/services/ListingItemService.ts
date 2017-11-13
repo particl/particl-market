@@ -303,4 +303,42 @@ export class ListingItemService {
         await this.listingItemRepo.destroy(id);
     }
 
+    /**
+     * options: Object.
+     * params: id, page, pageLimit, order.
+     * Example: {id: options.params[0], page: options.params[1], pageLimit:
+     * options.params[2], order: options.params[3]}
+     */
+
+    public async getListingItems(options: any): Promise<Bookshelf.Collection<ListingItem>> {
+        return this.listingItemRepo.findAllItems({id: options.params[0] || 1, page: options.params[1] || 1 , pageLimit: options.params[2] || 5, order: options.params[3] || 'ASC'});
+    }
+
+    /** hash: It is a hash of the listing Item. */
+
+    public async findOneByHash(hash: string): Promise<ListingItem> {
+        const listingItem = await this.listingItemRepo.findOneByHash(hash);
+        if (listingItem === null) {
+            this.log.warn(`ListingItem with the hash=${hash} was not found!`);
+            throw new NotFoundException(hash);
+        }
+        return listingItem;
+    }
+
+
+    /**
+     * options: Array.
+     * params: categoryId, searchTerm, withRelated.
+     * Example: [1, 'test', true]
+     */
+
+     public async searchByCategoryIdOrName(options: any): Promise<Bookshelf.Collection<ListingItem>> {
+        const listingItem = await this.listingItemRepo.searchByCategoryIdOrName(options);
+        if (listingItem === null) {
+            this.log.warn(`ListingItem with the category=${options[0]} was not found!`);
+            throw new NotFoundException(options[0]);
+        }
+        return listingItem;
+    }
+
 }

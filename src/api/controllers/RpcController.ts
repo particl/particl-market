@@ -17,6 +17,7 @@ import { ShippingDestinationService } from '../services/ShippingDestinationServi
 import { ItemInformationService } from '../services/ItemInformationService';
 import { MessagingInformationService } from '../services/MessagingInformationService';
 import { ListingItemService } from '../services/ListingItemService';
+import { RpcListingItemService } from '../services/RpcListingItemService';
 import { ProfileService } from '../services/ProfileService';
 import { AddressService } from '../services/AddressService';
 
@@ -45,6 +46,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -118,6 +120,9 @@ export class RpcController {
             'listingitem.findbycategory': 'listingItemService.rpcFindByCategory',
             'listingitem.update': 'listingItemService.rpcUpdate',
             'listingitem.destroy': 'listingItemService.rpcDestroy',
+            'listingitem.getitems': 'rpcListingItemService.getItems',
+            'listingitem.getitembyhash': 'rpcListingItemService.getItemByHash',
+            'listingitem.rpcsearchbycategoryidorname': 'rpcListingItemService.rpcSearchByCategoryIdOrName',
             'profile.saveprofile': 'profileService.rpcSaveProfile',
             'profile.updateprofile': 'profileService.rpcUpdateProfile',
             'profile.getprofile': 'profileService.rpcGetProfile',

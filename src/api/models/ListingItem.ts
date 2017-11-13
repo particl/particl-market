@@ -34,6 +34,28 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         }
     }
 
+    public static async fetchByHash(value: string): Promise<ListingItem> {
+        return await ListingItem.where<ListingItem>({ hash: value }).fetch({
+            withRelated: [
+                'ItemInformation',
+                'ItemInformation.ItemCategory',
+                'ItemInformation.ItemLocation',
+                'ItemInformation.ItemLocation.LocationMarker',
+                'ItemInformation.ItemImages',
+                'ItemInformation.ItemImages.ItemImageData',
+                'ItemInformation.ShippingDestinations',
+                'PaymentInformation',
+                'PaymentInformation.Escrow',
+                'PaymentInformation.Escrow.Ratio',
+                'PaymentInformation.ItemPrice',
+                'PaymentInformation.ItemPrice.ShippingPrice',
+                'PaymentInformation.ItemPrice.Address',
+                'MessagingInformation',
+                'ListingItemObjects'
+            ]
+        });
+    }
+
     public static async fetchByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {
 
         const listingCollection = ListingItem.forge<Collection<ListingItem>>()
@@ -70,6 +92,44 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             return await listingCollection.fetchAll();
         }
     }
+
+    public static async searchByCategoryOrName(categoryId: number, searchTerm: string = '', withRelated: boolean = true): Promise<Collection<ListingItem>> {
+
+        const listingCollection = ListingItem.forge<Collection<ListingItem>>()
+            .query( qb => {
+                qb.innerJoin('item_informations', 'listing_items.id', 'item_informations.listing_item_id');
+                qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
+                qb.where('item_informations.item_category_id', '=', categoryId);
+                qb.where('item_categories.name', 'LIKE', '%' + searchTerm + '%');
+                qb.andWhere('item_informations.item_category_id', '>', 0);
+            })
+            .orderBy('item_informations.title', 'ASC');
+
+        if (withRelated) {
+            return await listingCollection.fetchAll({
+                withRelated: [
+                    'ItemInformation',
+                    'ItemInformation.ItemCategory',
+                    'ItemInformation.ItemLocation',
+                    'ItemInformation.ItemLocation.LocationMarker',
+                    'ItemInformation.ItemImages',
+                    'ItemInformation.ItemImages.ItemImageData',
+                    'ItemInformation.ShippingDestinations',
+                    'PaymentInformation',
+                    'PaymentInformation.Escrow',
+                    'PaymentInformation.Escrow.Ratio',
+                    'PaymentInformation.ItemPrice',
+                    'PaymentInformation.ItemPrice.ShippingPrice',
+                    'PaymentInformation.ItemPrice.Address',
+                    'MessagingInformation',
+                    'ListingItemObjects'
+                ]
+            });
+        } else {
+            return await listingCollection.fetchAll();
+        }
+    }
+
 
     public get tableName(): string { return 'listing_items'; }
     public get hasTimestamps(): boolean { return true; }

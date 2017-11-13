@@ -2,60 +2,56 @@ import { inject, named } from 'inversify';
 import { controller, httpGet, httpPost, httpPut, httpDelete, response, requestBody, requestParam } from 'inversify-express-utils';
 import { Types, Core, Targets } from '../../constants';
 import { app } from '../../app';
-import { ListingItemService } from '../services/ListingItemService';
-import { RpcListingItemService } from '../services/RpcListingItemService';
-
+import { ListingItemTemplateService } from '../services/ListingItemTemplateService';
 import { Logger as LoggerType } from '../../core/Logger';
 
 // Get middlewares
 const restApi = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RestApiMiddleware);
 
-@controller('/listing-items', restApi.use)
-export class ListingItemController {
+@controller('/listing-item-templates', restApi.use)
+export class ListingItemTemplateController {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
     }
 
     @httpGet('/')
     public async findAll( @response() res: myExpress.Response): Promise<any> {
-        const listingItems = await this.listingItemService.findAll();
-        this.log.debug('findAll: ', JSON.stringify(listingItems, null, 2));
-        return res.found(listingItems.toJSON());
+        const listingItemTemplates = await this.listingItemTemplateService.findAll();
+        this.log.debug('findAll: ', JSON.stringify(listingItemTemplates, null, 2));
+        return res.found(listingItemTemplates.toJSON());
     }
 
     @httpPost('/')
     public async create( @response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
-        const listingItem = await this.listingItemService.create(body);
-        this.log.debug('create: ', JSON.stringify(listingItem, null, 2));
-        return res.created(listingItem.toJSON());
+        const listingItemTemplate = await this.listingItemTemplateService.create(body);
+        this.log.debug('create: ', JSON.stringify(listingItemTemplate, null, 2));
+        return res.created(listingItemTemplate.toJSON());
     }
 
     @httpGet('/:id')
     public async findOne( @response() res: myExpress.Response, @requestParam('id') id: string): Promise<any> {
-        const listingItem = await this.listingItemService.findOne(parseInt(id, 10));
-        this.log.debug('findOne: ', JSON.stringify(listingItem, null, 2));
-        return res.found(listingItem.toJSON());
+        const listingItemTemplate = await this.listingItemTemplateService.findOne(parseInt(id, 10));
+        this.log.debug('findOne: ', JSON.stringify(listingItemTemplate, null, 2));
+        return res.found(listingItemTemplate.toJSON());
     }
 
     @httpPut('/:id')
     public async update( @response() res: myExpress.Response, @requestParam('id') id: string, @requestBody() body: any): Promise<any> {
-        const listingItem = await this.listingItemService.update(parseInt(id, 10), body);
-        this.log.debug('update: ', JSON.stringify(listingItem, null, 2));
-        return res.updated(listingItem.toJSON());
+        const listingItemTemplate = await this.listingItemTemplateService.update(parseInt(id, 10), body);
+        this.log.debug('update: ', JSON.stringify(listingItemTemplate, null, 2));
+        return res.updated(listingItemTemplate.toJSON());
     }
 
     @httpDelete('/:id')
     public async destroy( @response() res: myExpress.Response, @requestParam('id') id: string): Promise<any> {
-        await this.listingItemService.destroy(parseInt(id, 10));
+        await this.listingItemTemplateService.destroy(parseInt(id, 10));
         this.log.debug('destroy: ', parseInt(id, 10));
         return res.destroyed();
     }
     // Implement your routes here
-
 }
