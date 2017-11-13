@@ -3,7 +3,7 @@ import { controller, httpPost, response, requestBody } from 'inversify-express-u
 import { app } from '../../app';
 import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
-import {JsonRpc2Request, JsonRpc2Response, RpcErrorCode} from '../../core/api/jsonrpc';
+import { JsonRpc2Request, JsonRpc2Response, RpcErrorCode } from '../../core/api/jsonrpc';
 import { JsonRpcError } from '../../core/api/JsonRpcError';
 import { ItemCategoryService } from '../services/ItemCategoryService';
 import { EscrowService } from '../services/EscrowService';
@@ -17,9 +17,10 @@ import { ShippingDestinationService } from '../services/ShippingDestinationServi
 import { ItemInformationService } from '../services/ItemInformationService';
 import { MessagingInformationService } from '../services/MessagingInformationService';
 import { ListingItemService } from '../services/ListingItemService';
+
 import { RpcListingItemService } from '../services/RpcListingItemService';
-import { ProfileService } from '../services/ProfileService';
-import { AddressService } from '../services/AddressService';
+import { RpcProfileService } from '../services/RpcProfileService';
+import { RpcAddressService } from '../services/RpcAddressService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -46,9 +47,9 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
 
+        @inject(Types.Service) @named(Targets.Service.RpcProfileService) private rpcProfileService: RpcProfileService,
+        @inject(Types.Service) @named(Targets.Service.RpcAddressService) private rpcAddressService: RpcAddressService,
         @inject(Types.Service) @named(Targets.Service.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -122,19 +123,19 @@ export class RpcController {
             'listingitem.update': 'listingItemService.update',
             'listingitem.destroy': 'listingItemService.destroy',
 
-            'profile.create': 'profileService.rpcCreate',
-            'profile.update': 'profileService.rpcUpdate',
-            'profile.find': 'profileService.rpcFindOne',
-            'address.create': 'addressService.rpcCreate',
-            'address.update': 'addressService.rpcUpdate',
+            'profile.create': 'rpcProfileService.rpcCreate',
+            'profile.update': 'rpcProfileService.rpcUpdate',
+            'profile.find': 'rpcProfileService.rpcFindOne',
+            'address.create': 'rpcAddressService.rpcCreate',
+            'address.update': 'rpcAddressService.rpcUpdate',
             // everything above is/was used for testing
 
             // mappings below are for the final/real rpc api
-            'createprofile': 'profileService.rpcCreate',
-            'updateprofile': 'profileService.rpcUpdate',
-            'getprofile': 'profileService.rpcFindOneByName',
-            'createaddress': 'addressService.rpcCreate',
-            'updateaddress': 'addressService.rpcUpdate',
+            'createprofile': 'rpcProfileService.create',
+            'updateprofile': 'rpcProfileService.update',
+            'getprofile': 'rpcProfileService.findOneByName',
+            'createaddress': 'rpcAddressService.create',
+            'updateaddress': 'rpcAddressService.update',
 
             'finditems': 'rpcListingItemService.search',
             'getitem': 'rpcListingItemService.findOne'

@@ -24,37 +24,8 @@ export class ProfileService {
         this.log = new Logger(__filename);
     }
 
-    /**
-     * params: none
-     *
-     * @param data
-     * @returns {Promise<Bookshelf.Collection<Profile>>}
-     */
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Profile>> {
-        return this.findAll();
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<Profile>> {
         return this.profileRepo.findAll();
-    }
-
-    /**
-     * data.params[]:
-     *  [0]: id or name
-     *
-     * when data.params[0] is number then findById, else findByName
-     *
-     * @param data
-     * @returns {Promise<Profile>}
-     */
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<Profile> {
-        if (typeof data.params[0] === 'number') {
-            return await this.findOne(data.params[0]);
-        } else {
-            return await this.findOneByName(data.params[0]);
-        }
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Profile> {
@@ -73,20 +44,6 @@ export class ProfileService {
             throw new NotFoundException(name);
         }
         return profile;
-    }
-
-    /**
-     * data.params[]:
-     *  [0]: profile name
-     *
-     * @param data
-     * @returns {Promise<Profile>}
-     */
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<Profile> {
-        return this.create({
-            name : data.params[0]
-        });
     }
 
     @validate()
@@ -108,21 +65,6 @@ export class ProfileService {
         // finally find and return the created profileId
         const newProfile = await this.findOne(profile.Id);
         return newProfile;
-    }
-
-    /**
-     * data.params[]:
-     *  [0]: profile id
-     *  [1]: new name
-     *
-     * @param data
-     * @returns {Promise<Profile>}
-     */
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<Profile> {
-        return this.update(data.params[0], {
-            name: data.params[1]
-        });
     }
 
     @validate()
@@ -154,11 +96,6 @@ export class ProfileService {
         // finally find and return the updated itemInformation
         const newProfile = await this.findOne(id);
         return newProfile;
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
     }
 
     public async destroy(id: number): Promise<void> {
