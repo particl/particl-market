@@ -13,7 +13,7 @@ export class ListingItemSearchParams extends RequestBody {
 
     @IsNotEmpty()
     @IsEnum(SearchOrder)
-    public order: string;
+    public order: SearchOrder;
 
     public category: string | number;
 

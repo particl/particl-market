@@ -4,11 +4,11 @@ import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
 describe('/listing-item-templates', () => {
 
     const keys = [
-        'id', 'updatedAt', 'createdAt',  // , 'Related'
+        'id', 'updatedAt', 'createdAt' // , 'Related'
     ];
 
     // const keysWithoutRelated = [
-    //    'id', 'updatedAt', 'createdAt', 
+    //    'id', 'updatedAt', 'createdAt',
     // ];
 
     const testData = {
