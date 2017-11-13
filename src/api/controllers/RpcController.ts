@@ -3,7 +3,7 @@ import { controller, httpPost, response, requestBody } from 'inversify-express-u
 import { app } from '../../app';
 import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
-import { JsonRpc2Request, RpcErrorCode } from '../../core/api/jsonrpc';
+import {JsonRpc2Request, JsonRpc2Response, RpcErrorCode} from '../../core/api/jsonrpc';
 import { JsonRpcError } from '../../core/api/JsonRpcError';
 import { ItemCategoryService } from '../services/ItemCategoryService';
 import { EscrowService } from '../services/EscrowService';
@@ -18,6 +18,8 @@ import { ItemInformationService } from '../services/ItemInformationService';
 import { MessagingInformationService } from '../services/MessagingInformationService';
 import { ListingItemService } from '../services/ListingItemService';
 import { RpcListingItemService } from '../services/RpcListingItemService';
+import { ProfileService } from '../services/ProfileService';
+import { AddressService } from '../services/AddressService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -45,7 +47,8 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
-
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -119,16 +122,19 @@ export class RpcController {
             'listingitem.destroy': 'listingItemService.rpcDestroy',
             'listingitem.getitems': 'rpcListingItemService.getItems',
             'listingitem.getitembyhash': 'rpcListingItemService.getItemByHash',
-            'listingitem.rpcsearchbycategoryidorname': 'rpcListingItemService.rpcSearchByCategoryIdOrName'
-
-
+            'listingitem.rpcsearchbycategoryidorname': 'rpcListingItemService.rpcSearchByCategoryIdOrName',
+            'profile.saveprofile': 'profileService.rpcSaveProfile',
+            'profile.updateprofile': 'profileService.rpcUpdateProfile',
+            'profile.getprofile': 'profileService.rpcFindAll',
+            'address.saveaddress': 'addressService.rpcCreate',
+            'address.updateaddress': 'addressService.rpcUpdate'
         };
     }
 
     @httpPost('/')
     public async handleRPC(@response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
 
-        const rpcRequest = this.createRequest(body.method, body.params);
+        const rpcRequest = this.createRequest(body.method, body.params, body.id);
         this.log.debug('controller.handleRPC() rpcRequest:', JSON.stringify(rpcRequest, null, 2));
 
         // check that we have exposed the method
@@ -140,7 +146,10 @@ export class RpcController {
             if (this.hasOwnProperty(callPath[0]) && typeof this[callPath[0]][callPath[1]] === 'function') {
 
                 this.log.debug('controller.handleRPC(), CALL: ' + rpcRequest.method + ' -> ' + this.exposedMethods[rpcRequest.method]);
-                return this[callPath[0]][callPath[1]](rpcRequest);
+                const result = await this[callPath[0]][callPath[1]](rpcRequest);
+                // todo: no error handling here yet
+                // todo: return this.createResponse(rpcRequest.id, null, error);
+                return this.createResponse(rpcRequest.id, result);
             } else {
                 return res.failed(400, this.getErrorMessage(RpcErrorCode.InternalError), new JsonRpcError(RpcErrorCode.InternalError,
                     'method: ' + body.method + ' routing failed.'));
@@ -160,6 +169,14 @@ export class RpcController {
             id = String(id);
         }
         return { jsonrpc: this.VERSION, method: method.toLowerCase(), params, id };
+    }
+
+    private createResponse(id: string | number = '', result?: any, error?: any ): JsonRpc2Response {
+        if (error) {
+            return { id, jsonrpc: this.VERSION, error};
+        } else {
+            return { id, jsonrpc: this.VERSION, result};
+        }
     }
 
     private generateId(): number {

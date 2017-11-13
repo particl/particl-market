@@ -10,7 +10,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('name').nullable();
             table.text('description').nullable();
 
-            table.integer('parent_item_category_id').unsigned().nullable().defaultTo(null);
+            table.integer('parent_item_category_id').unsigned().nullable();
             table.foreign('parent_item_category_id').references('id')
                 .inTable('item_categories').onDelete('cascade');
 
