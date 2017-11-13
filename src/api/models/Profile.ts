@@ -9,7 +9,7 @@ export class Profile extends Bookshelf.Model<Profile> {
         if (withRelated) {
             return await Profile.where<Profile>({ id: value }).fetch({
                 withRelated: [
-                    'Address'
+                    'Addresses'
                 ]
             });
         } else {
@@ -23,13 +23,16 @@ export class Profile extends Bookshelf.Model<Profile> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
+    public get Name(): string { return this.get('name'); }
+    public set Name(value: string) { this.set('name', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    public Address(): Collection<Address> {
+    public Addresses(): Collection<Address> {
         // model.hasMany(Target, [foreignKey], [foreignKeyTarget])
         return this.hasMany(Address , 'profile_id', 'id');
     }

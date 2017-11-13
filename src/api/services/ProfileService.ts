@@ -50,28 +50,17 @@ export class ProfileService {
 
     @validate()
     public async rpcSaveProfile( @request(RpcRequest) data: any): Promise<Profile> {
-        return this.create(data);
+        return this.create({
+            name : data.params[0]
+        });
     }
 
     @validate()
     public async create( @request(ProfileCreateRequest) body: any): Promise<Profile> {
         // extract and remove related models from request
-        const data = body.params;
-        const userAddresses = data.userAddress;
-        delete data.userAddress;
+        const data = body;
         // If the request body was valid we will create the profile
         const profile = await this.profileRepo.create(data);
-        if (typeof userAddresses !== 'undefined' && userAddresses.length > 0) {
-            const saveAddress = (count) => {
-                if (count < userAddresses.length) {
-                    userAddresses[count].profile_id = profile.id;
-                    this.addressService.create(userAddresses[count]).then((address) => {
-                        saveAddress(count + 1);
-                    });
-                }
-            };
-            saveAddress(0);
-        }
         // finally find and return the created profileId
         const newProfile = await this.findOne(profile.Id);
         return newProfile;
@@ -79,32 +68,22 @@ export class ProfileService {
 
 
     @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<Profile> {
+    public async rpcUpdateProfile( @request(RpcRequest) data: any): Promise<Profile> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to ProfileUpdateRequest
+            name: data.params[1] // TODO: convert your params to ProfileUpdateRequest
         });
     }
 
     @validate()
     public async update(id: number, @request(ProfileUpdateRequest) body: any): Promise<Profile> {
-        const data = body.params;
+        const data = body;
         // find the existing one without related
         const profile = await this.findOne(id, false);
-        const userAddresses = data.userAddress;
-        if (typeof userAddresses !== 'undefined' && userAddresses.length > 0) {
-            const updateAddress = (count) => {
-                if (count < userAddresses.length) {
-                    userAddresses[count].profile_id = profile.id;
-                    this.addressService.update(userAddresses[count].id, userAddresses[count]).then((address) => {
-                        updateAddress(count + 1);
-                    });
-                }
-            };
-            updateAddress(0);
-        }
-        // const updatedProfile = await this.profileRepo.update(id, profile.toJSON());
-        // return updatedProfile;
-        return profile;
+        // set new values
+        profile.Name = body.name;
+        // update address record
+        const updatedProfile = await this.profileRepo.update(id, profile.toJSON());
+        return updatedProfile;
     }
 
     @validate()

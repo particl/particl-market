@@ -3,13 +3,12 @@ import { RequestBody } from '../../core/api/RequestBody';
 
 
 export class AddressCreateRequest extends RequestBody {
-    
     public title: string;
 
     @IsNotEmpty()
-    public address_line1: string;
+    public addressLine1: string;
 
-    public address_line2: string;
+    public addressLine2: string;
 
     @IsNotEmpty()
     public city: string;
@@ -18,5 +17,5 @@ export class AddressCreateRequest extends RequestBody {
     public country: string;
 
     @IsNotEmpty()
-    public profile_id: string;
+    public profileId: string;
 }
