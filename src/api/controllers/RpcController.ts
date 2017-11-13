@@ -117,8 +117,9 @@ export class RpcController {
             'listingitem.findbycategory': 'listingItemService.rpcFindByCategory',
             'listingitem.update': 'listingItemService.rpcUpdate',
             'listingitem.destroy': 'listingItemService.rpcDestroy',
-            'rpclistingitem.getitems': 'rpcListingItemService.getItems',
-            'rpclistingitem.getitem': 'rpcListingItemService.getItem'
+            'listingitem.getitems': 'rpcListingItemService.getItems',
+            'listingitem.getitembyhash': 'rpcListingItemService.getItemByHash',
+            'listingitem.rpcsearchbycategoryidorname': 'rpcListingItemService.rpcSearchByCategoryIdOrName'
 
 
         };

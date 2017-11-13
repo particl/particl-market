@@ -87,15 +87,20 @@ export class ListingItemRepository {
         }
     }
 
-    public async findAllItems(data: any): Promise<Bookshelf.Collection<ListingItem>> {
+    /**
+     * options: Object.
+     * params: page, pageLimit, order.
+     * Example: {page: 1, pageLimit: 1, order: 'DESC'}
+     */
+
+    public async findAllItems(options: any): Promise<Bookshelf.Collection<ListingItem>> {
         const list = await this.ListingItemModel.forge<ListingItem>().query((qb: any) => {
-                qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id')
-                .innerJoin('item_categories', 'item_informations.item_category_id', 'item_categories.id');
+                qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id');
                 qb.groupBy('listing_items.id');
 
-            }).orderBy('item_categories.name', data.order).query({
-              limit: data.pageLimit,
-              offset: (data.page - 1) * data.pageLimit
+            }).orderBy('item_informations.title', options.order).query({
+              limit: options.pageLimit,
+              offset: (options.page - 1) * options.pageLimit
 
             }).fetchAll({withRelated: ['ItemInformation', 'ItemInformation.ItemCategory']});
 
@@ -103,8 +108,18 @@ export class ListingItemRepository {
     }
 
 
-    public async findOneByHsh(hash: string): Promise<ListingItem> {
+    public async findOneByHash(hash: string): Promise<ListingItem> {
         return this.ListingItemModel.fetchByHash(hash);
+    }
+
+    /**
+     * options: Array.
+     * params: categoryId, searchTerm, withRelated
+     * Example: [1, "category name", true]
+     */
+
+    public async searchByCategoryIdOrName(options: any): Promise<Bookshelf.Collection<ListingItem>> {
+        return this.ListingItemModel.searchByCategoryOrName(options[0], options[1], options[2]);
     }
 
 }

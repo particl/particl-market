@@ -25,11 +25,21 @@ export class RpcListingItemService {
     }
 
     @validate()
-    public async getItem(@request(RpcRequest) data: any): Promise<ListingItem> {
-        const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
+    public async getItemByHash(@request(RpcRequest) body: any): Promise<ListingItem> {
+        const listingItem = await this.listingItemService.findOneByHash(body.params[0]);
         if (listingItem === null) {
-            this.log.warn(`ListingItem with the hash=${data.params[0]} was not found!`);
-            throw new NotFoundException(data.params[0]);
+            this.log.warn(`ListingItem with the hash=${body.params[0]} was not found!`);
+            throw new NotFoundException(body.params[0]);
+        }
+        return listingItem;
+    }
+
+    @validate()
+    public async rpcSearchByCategoryIdOrName(@request(RpcRequest) body: any): Promise<Bookshelf.Collection<ListingItem>> {
+        const listingItem = await this.listingItemService.searchByCategoryIdOrName(body.params);
+        if (listingItem === null) {
+            this.log.warn(`ListingItem with the category=${body.params[0]} was not found!`);
+            throw new NotFoundException(body.params[0]);
         }
         return listingItem;
     }

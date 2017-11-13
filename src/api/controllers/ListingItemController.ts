@@ -58,12 +58,4 @@ export class ListingItemController {
     }
     // Implement your routes here
 
-
-    @httpPost('/getitembyhash')
-    public async getItem( @response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
-        const listingItems = await this.rpcListingItemService.getItem(body);
-        this.log.debug('findAll: ', JSON.stringify(listingItems, null, 2));
-        return res.found(listingItems.toJSON());
-    }
-
 }
