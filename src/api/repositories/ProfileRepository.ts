@@ -20,7 +20,7 @@ export class ProfileRepository {
     public async findAll(data: any): Promise<Bookshelf.Collection<Profile>> {
         const list = await this.ProfileModel.forge<Profile>().fetchAll(
             {
-                withRelated: ['Address']
+                withRelated: ['Addresses']
             });
 
         return list as Bookshelf.Collection<Profile>;

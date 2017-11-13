@@ -3,7 +3,6 @@ import { RequestBody } from '../../core/api/RequestBody';
 
 
 export class AddressUpdateRequest extends RequestBody {
-
     public title: string;
 
     @IsNotEmpty()
@@ -19,5 +18,4 @@ export class AddressUpdateRequest extends RequestBody {
 
     @IsNotEmpty()
     public profileId: string;
-
 }
