@@ -6,6 +6,7 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('profile', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
+            table.string('name').notNullable().unique();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

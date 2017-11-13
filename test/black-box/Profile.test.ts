@@ -1,5 +1,6 @@
 import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { Country } from '../../src/api/enums/Country';
 
 describe('/profiles', () => {
 
@@ -11,47 +12,47 @@ describe('/profiles', () => {
     //    'id', 'updatedAt', 'createdAt',
     // ];
     let createdId;
-    let addressId1;
-    let addressId2;
+
     const testData = {
-        params: {
-            userAddress: [{
-                title: 'Title',
-                address_line1: 'Add',
-                address_line2: 'ADD 22',
-                city: 'city',
-                country: 'Country'
-            }, {
-                title: 'Title',
-                address_line1: 'Add',
-                address_line2: 'ADD 22',
-                city: 'city',
-                country: 'Country'
-            }]
-        }
+        name: 'DEFAULT',
+        addresses: [{
+            title: 'Title',
+            addressLine1: 'Add',
+            addressLine2: 'ADD 22',
+            city: 'city',
+            country: Country.SWEDEN
+        }, {
+            title: 'Tite',
+            addressLine1: 'Ad',
+            addressLine2: 'ADD 222',
+            city: 'city',
+            country: Country.FINLAND
+        }]
     };
 
     const testDataUpdated = {
-        params: {
-            userAddress: [{
-                title: 'Title New',
-                address_line1: 'Add New',
-                address_line2: 'ADD 22 New',
-                city: 'city New',
-                country: 'Country New',
-                id: `${addressId1}`,
-                profileId: `${createdId}`
-            }, {
-                title: 'Title 2',
-                address_line1: 'Add 2',
-                address_line2: 'ADD 22 22',
-                city: 'city 22',
-                country: 'Country 22',
-                id: `${addressId2}`,
-                profileId: `${createdId}`
-            }]
-        }
+        name: 'DEFAULT2',
+        addresses: [{
+            title: 'Title New',
+            addressLine1: 'Add New',
+            addressLine2: 'ADD 22 New',
+            city: 'city New',
+            country: Country.UNITED_KINGDOM
+        }, {
+            title: 'Title 2',
+            addressLine1: 'Add 2',
+            addressLine2: 'ADD 22 22',
+            city: 'city 22',
+            country: Country.USA
+        }, {
+            title: 'Title 3',
+            addressLine1: 'Add 3',
+            addressLine2: 'ADD 3',
+            city: 'city 3',
+            country: Country.SOUTH_AFRICA
+        }]
     };
+
     beforeAll(async () => {
         const command = new DatabaseResetCommand();
         await command.run();
@@ -66,9 +67,10 @@ describe('/profiles', () => {
         res.expectData(keys);
 
         createdId = res.getData()['id'];
-        addressId1 = res.getData()['Address'][0]['id'];
-        addressId2 = res.getData()['Address'][1]['id'];
+
         const result: any = res.getData();
+        expect(result.name).toBe(testData.name);
+        expect(result.Addresses).toHaveLength(2);
     });
 
     test('POST      /profiles        Should fail because we want to create a empty profile', async () => {
@@ -76,18 +78,20 @@ describe('/profiles', () => {
             body: {}
         });
         res.expectJson();
-        res.expectStatusCode(500);
+        res.expectStatusCode(400);
     });
 
     test('GET       /profiles        Should list profiles with our new create one', async () => {
         const res = await api('GET', '/api/profiles');
         res.expectJson();
         res.expectStatusCode(200);
-        res.expectData(keys); // keysWithoutRelated
+        res.expectData(keys);
         const data = res.getData<any[]>();
-        expect(data.length).not.toBe(0);
+        expect(data.length).toBe(1);
 
         const result = data[0];
+        expect(result.name).toBe(testData.name);
+        expect(result.Addresses).toBe(undefined); // doesnt fetch related
     });
 
     test('GET       /profiles/:id    Should return one profile', async () => {
@@ -97,6 +101,8 @@ describe('/profiles', () => {
         res.expectData(keys);
 
         const result: any = res.getData();
+        expect(result.name).toBe(testData.name);
+        expect(result.Addresses).toHaveLength(2);
     });
 
     test('PUT       /profiles/:id    Should update the profile', async () => {
@@ -108,6 +114,9 @@ describe('/profiles', () => {
         res.expectData(keys);
 
         const result: any = res.getData();
+        expect(result.name).toBe(testDataUpdated.name);
+        expect(result.Addresses).toHaveLength(3);
+
     });
 
     test('DELETE    /profiles/:id    Should delete the profile', async () => {

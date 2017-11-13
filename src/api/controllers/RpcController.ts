@@ -52,10 +52,10 @@ export class RpcController {
         this.log = new Logger(__filename);
 
         // expose/"route" the rpc methods here
-        // injectedInstanceName.function
+        // rpcmethod: injectedInstanceName.function
         this.exposedMethods = {
+
             // todo: figure out a working way to pass for example: this.escrowService.create
-            //
             'itemcategory.create': 'itemCategoryService.rpcCreate',
             'itemcategory.find': 'itemCategoryService.rpcFindOne',
             'itemcategory.findall': 'itemCategoryService.rpcFindAll',
@@ -128,7 +128,8 @@ export class RpcController {
             // mappings below are for the final/real rpc api
             'createprofile': 'profileService.rpcCreate',
             'updateprofile': 'profileService.rpcUpdate',
-            'getprofile': 'profileService.rpcFindOne',
+            'getprofile': 'profileService.rpcFindOneByName',
+
             'createaddress': 'addressService.rpcCreate',
             'updateaddress': 'addressService.rpcUpdate'
 

@@ -45,12 +45,6 @@ export class Profile extends Bookshelf.Model<Profile> {
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
     public Addresses(): Collection<Address> {
-        // model.hasMany(Target, [foreignKey], [foreignKeyTarget])
         return this.hasMany(Address , 'profile_id', 'id');
     }
-
-    // TODO: add related
-    // public ProfileRelated(): ProfileRelated {
-    //    return this.hasOne(ProfileRelated);
-    // }
 }

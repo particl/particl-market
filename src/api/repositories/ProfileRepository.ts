@@ -17,12 +17,8 @@ export class ProfileRepository {
         this.log = new Logger(__filename);
     }
 
-    public async findAll(data: any): Promise<Bookshelf.Collection<Profile>> {
-        const list = await this.ProfileModel.forge<Profile>().fetchAll(
-            {
-                withRelated: ['Addresses']
-            });
-
+    public async findAll(): Promise<Bookshelf.Collection<Profile>> {
+        const list = await this.ProfileModel.fetchAll();
         return list as Bookshelf.Collection<Profile>;
     }
 
@@ -30,7 +26,7 @@ export class ProfileRepository {
         return this.ProfileModel.fetchById(id, withRelated);
     }
 
-    public async findOneByProfile(name: string, withRelated: boolean = true): Promise<Profile> {
+    public async findOneByName(name: string, withRelated: boolean = true): Promise<Profile> {
         return this.ProfileModel.fetchByName(name, withRelated);
     }
 

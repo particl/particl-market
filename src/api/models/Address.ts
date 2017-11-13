@@ -38,14 +38,14 @@ export class Address extends Bookshelf.Model<Address> {
     public get Country(): string { return this.get('country'); }
     public set Country(value: string) { this.set('country', value); }
 
-    public Profile(): Profile {
-        return this.belongsTo(Profile, 'profile_id', 'id');
-    }
-
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
+
+    public Profile(): Profile {
+        return this.belongsTo(Profile, 'profile_id', 'id');
+    }
 
 }
