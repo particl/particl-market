@@ -17,6 +17,18 @@ export class Profile extends Bookshelf.Model<Profile> {
         }
     }
 
+    public static async fetchByName(value: string, withRelated: boolean = true): Promise<Profile> {
+        if (withRelated) {
+            return await Profile.where<Profile>({ name: value }).fetch({
+                withRelated: [
+                    'Addresses'
+                ]
+            });
+        } else {
+            return await Profile.where<Profile>({ name: value }).fetch();
+        }
+    }
+
     public get tableName(): string { return 'profile'; }
     public get hasTimestamps(): boolean { return true; }
 
