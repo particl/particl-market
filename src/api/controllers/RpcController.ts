@@ -3,7 +3,7 @@ import { controller, httpPost, response, requestBody } from 'inversify-express-u
 import { app } from '../../app';
 import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
-import { JsonRpc2Request, RpcErrorCode } from '../../core/api/jsonrpc';
+import {JsonRpc2Request, JsonRpc2Response, RpcErrorCode} from '../../core/api/jsonrpc';
 import { JsonRpcError } from '../../core/api/JsonRpcError';
 import { ItemCategoryService } from '../services/ItemCategoryService';
 import { EscrowService } from '../services/EscrowService';
@@ -120,7 +120,7 @@ export class RpcController {
     @httpPost('/')
     public async handleRPC(@response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
 
-        const rpcRequest = this.createRequest(body.method, body.params);
+        const rpcRequest = this.createRequest(body.method, body.params, body.id);
         this.log.debug('controller.handleRPC() rpcRequest:', JSON.stringify(rpcRequest, null, 2));
 
         // check that we have exposed the method
@@ -132,7 +132,10 @@ export class RpcController {
             if (this.hasOwnProperty(callPath[0]) && typeof this[callPath[0]][callPath[1]] === 'function') {
 
                 this.log.debug('controller.handleRPC(), CALL: ' + rpcRequest.method + ' -> ' + this.exposedMethods[rpcRequest.method]);
-                return this[callPath[0]][callPath[1]](rpcRequest);
+                const result = await this[callPath[0]][callPath[1]](rpcRequest);
+                // todo: no error handling here yet
+                // todo: return this.createResponse(rpcRequest.id, null, error);
+                return this.createResponse(rpcRequest.id, result);
             } else {
                 return res.failed(400, this.getErrorMessage(RpcErrorCode.InternalError), new JsonRpcError(RpcErrorCode.InternalError,
                     'method: ' + body.method + ' routing failed.'));
@@ -152,6 +155,14 @@ export class RpcController {
             id = String(id);
         }
         return { jsonrpc: this.VERSION, method: method.toLowerCase(), params, id };
+    }
+
+    private createResponse(id: string | number = '', result?: any, error?: any ): JsonRpc2Response {
+        if (error) {
+            return { id, jsonrpc: this.VERSION, error};
+        } else {
+            return { id, jsonrpc: this.VERSION, result};
+        }
     }
 
     private generateId(): number {
