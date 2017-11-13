@@ -5,6 +5,7 @@ import { ListingItem } from '../models/ListingItem';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
 
 export class ListingItemRepository {
 
@@ -23,32 +24,51 @@ export class ListingItemRepository {
     }
 
     public async findByCategory(categoryId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
-        return this.ListingItemModel.fetchByCategory(categoryId, withRelated);
-        /*
-        const listingCollection = this.ListingItemModel.forge<Bookshelf.Collection<ListingItem>>()
-            .query( qb => {
-                qb.innerJoin('item_informations', 'listing_items.id', 'item_informations.listing_item_id');
-                // qb.groupBy('listing_items.id');
-                qb.where('item_informations.item_category_id', '=', categoryId);
-                qb.andWhere('item_informations.item_category_id', '>', 0);
-            })
-            .orderBy('item_informations.title', 'DESC');
-            // .where('item_informations.item_category_id', '=', categoryId);
+        return await this.ListingItemModel.fetchByCategory(categoryId, withRelated);
+    }
 
-        const rows = await listingCollection.fetchAll({
-            withRelated: ['ItemInformation']
-        });
-
-        rows.forEach(item => {
-             this.log.debug('item:', item.toJSON() );
-        });
-
-        return rows as Bookshelf.Collection<ListingItem>;
-        */
+    /**
+     * TODO: remove
+     */
+    public async searchByCategoryIdOrName(options: any): Promise<Bookshelf.Collection<ListingItem>> {
+        return this.ListingItemModel.searchByCategoryOrName(options[0], options[1], options[2]);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ListingItem> {
         return this.ListingItemModel.fetchById(id, withRelated);
+    }
+
+    /**
+     *
+     * @param hash
+     * @returns {Promise<ListingItem>}
+     */
+    public async findOneByHash(hash: string): Promise<ListingItem> {
+        return this.ListingItemModel.fetchByHash(hash);
+    }
+
+    /**
+     * todo: optionally fetch withRelated
+     *
+     * @param options, ListingItemSearchParams
+     * @returns {Promise<Bookshelf.Collection<ListingItem>>}
+     */
+    public async search(options: ListingItemSearchParams): Promise<Bookshelf.Collection<ListingItem>> {
+        const list = await this.ListingItemModel.forge<ListingItem>()
+            .query((qb: any) => {
+                qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id');
+                qb.groupBy('listing_items.id');
+            })
+
+            .orderBy('item_informations.title', options.order).query({
+                limit: options.pageLimit,
+                offset: (options.page - 1) * options.pageLimit
+
+            })
+
+            .fetchAll({withRelated: ['ItemInformation', 'ItemInformation.ItemCategory']});
+
+        return list as Bookshelf.Collection<ListingItem>;
     }
 
     public async create(data: any): Promise<ListingItem> {

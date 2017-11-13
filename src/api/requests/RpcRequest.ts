@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsArray, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 
 
@@ -14,6 +14,7 @@ export class RpcRequest extends RequestBody {
     public method: string;
 
     @IsNotEmpty()
+    @IsArray()
     public params: any[];
 
 }
