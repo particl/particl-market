@@ -52,7 +52,7 @@ export class AddressService {
 
     @validate()
     public async create( @request(AddressCreateRequest) body: any): Promise<Address> {
-        console.log('data--------',body);
+        console.log('data--------', body);
         // extract and remove related models from request
         const data = body;
         const address = await this.addressRepo.create(data);
