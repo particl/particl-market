@@ -47,12 +47,18 @@ export class AddressService {
 
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<Address> {
-        return this.create(data.params);
+        return this.create({
+            title : data.params[0],
+            addressLine1 : data.params[1],
+            addressLine2 : data.params[2],
+            city : data.params[3],
+            country : data.params[4],
+            profileId : data.params[5]
+        });
     }
 
     @validate()
     public async create( @request(AddressCreateRequest) body: any): Promise<Address> {
-        console.log('data--------',body);
         // extract and remove related models from request
         const data = body;
         const address = await this.addressRepo.create(data);
@@ -64,7 +70,12 @@ export class AddressService {
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<Address> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to AddressUpdateRequest
+            title : data.params[1],
+            addressLine1 : data.params[2],
+            addressLine2 : data.params[3],
+            city : data.params[4],
+            country : data.params[5],
+            profileId : data.params[6] // TODO: convert your params to AddressUpdateRequest
         });
     }
 
@@ -73,27 +84,20 @@ export class AddressService {
 
         // find the existing one without related
         const address = await this.findOne(id, false);
-
         // set new values
+        address.Title = body.title;
+        address.AddressLine1 = body.addressLine1;
+        address.AddressLine2 = body.addressLine2;
+        address.City = body.city;
+        address.Country = body.country;
+        address.Profile = body.profileId;
 
         // update address record
         const updatedAddress = await this.addressRepo.update(id, address.toJSON());
 
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let addressRelated = updatedAddress.related('AddressRelated').toJSON();
-        // await this.addressService.destroy(addressRelated.id);
-
-        // TODO: recreate related data
-        // addressRelated = body.addressRelated;
-        // addressRelated._id = address.Id;
-        // const createdAddress = await this.addressService.create(addressRelated);
-
         // TODO: finally find and return the updated address
-        // const newAddress = await this.findOne(id);
-        // return newAddress;
-
-        return updatedAddress;
+        const newAddress = await this.findOne(id);
+        return newAddress;
     }
 
     @validate()
