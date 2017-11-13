@@ -49,6 +49,20 @@ export class ProfileService {
     }
 
     @validate()
+    public async rpcGetProfile( @request(RpcRequest) data: any): Promise<Profile> {
+        return this.findOneByProfile(data.params[0]);
+    }
+
+    public async findOneByProfile(name: string, withRelated: boolean = true): Promise<Profile> {
+        const profile = await this.profileRepo.findOneByProfile(name, withRelated);
+        if (profile === null) {
+            this.log.warn(`Profile with the name=${name} was not found!`);
+            throw new NotFoundException(name);
+        }
+        return profile;
+    }
+
+    @validate()
     public async rpcSaveProfile( @request(RpcRequest) data: any): Promise<Profile> {
         return this.create({
             name : data.params[0]
