@@ -133,7 +133,6 @@ export class RpcController {
             'createprofile': 'profileService.rpcCreate',
             'updateprofile': 'profileService.rpcUpdate',
             'getprofile': 'profileService.rpcFindOneByName',
-
             'createaddress': 'addressService.rpcCreate',
             'updateaddress': 'addressService.rpcUpdate',
 

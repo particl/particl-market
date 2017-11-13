@@ -12,7 +12,7 @@ import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType
 describe('/listing-items', () => {
 
     const keys = [
-        'id', 'updatedAt', 'createdAt'  // , 'Related'
+        'id', 'updatedAt', 'createdAt', 'hash' // , 'Related'
     ];
 
     // const keysWithoutRelated = [

@@ -35,6 +35,9 @@ describe('/listing-item-templates', () => {
         const result: any = res.getData();
     });
 
+    /*
+    actually this should not fail :)
+
     test('POST      /listing-item-templates        Should fail because we want to create a empty listing item template', async () => {
         const res = await api('POST', '/api/listing-item-templates', {
             body: {}
@@ -42,6 +45,7 @@ describe('/listing-item-templates', () => {
         res.expectJson();
         res.expectStatusCode(400);
     });
+    */
 
     test('GET       /listing-item-templates        Should list listing item templates with our new create one', async () => {
         const res = await api('GET', '/api/listing-item-templates');
@@ -72,16 +76,6 @@ describe('/listing-item-templates', () => {
         res.expectData(keys);
 
         const result: any = res.getData();
-    });
-
-    test('PUT       /listing-item-templates/:id    Should fail because we want to update the listing item template with a invalid email', async () => {
-        const res = await api('PUT', `/api/listing-item-templates/${createdId}`, {
-            body: {
-                email: 'abc'
-            }
-        });
-        res.expectJson();
-        res.expectStatusCode(400);
     });
 
     test('DELETE    /listing-item-templates/:id    Should delete the listing item template', async () => {

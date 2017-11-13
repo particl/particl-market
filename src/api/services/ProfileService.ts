@@ -51,9 +51,9 @@ export class ProfileService {
     @validate()
     public async rpcFindOne( @request(RpcRequest) data: any): Promise<Profile> {
         if (typeof data.params[0] === 'number') {
-            return this.findOne(data.params[0]);
+            return await this.findOne(data.params[0]);
         } else {
-            return this.findOneByName(data.params[0]);
+            return await this.findOneByName(data.params[0]);
         }
     }
 
