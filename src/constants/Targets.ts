@@ -10,6 +10,7 @@
 
 export const Targets = {
     Model:     {
+        Address: 'Address',
         CryptocurrencyAddress: 'CryptocurrencyAddress',
         Escrow: 'Escrow',
         EscrowRatio: 'EscrowRatio',
@@ -24,11 +25,13 @@ export const Targets = {
         LocationMarker: 'LocationMarker',
         MessagingInformation: 'MessagingInformation',
         PaymentInformation: 'PaymentInformation',
+        Profile: 'Profile',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
         User: 'User'
     },
     Repository:     {
+        AddressRepository: 'AddressRepository',
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
         EscrowRepository: 'EscrowRepository',
@@ -43,11 +46,13 @@ export const Targets = {
         LocationMarkerRepository: 'LocationMarkerRepository',
         MessagingInformationRepository: 'MessagingInformationRepository',
         PaymentInformationRepository: 'PaymentInformationRepository',
+        ProfileRepository: 'ProfileRepository',
         ShippingDestinationRepository: 'ShippingDestinationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
         UserRepository: 'UserRepository'
     },
     Service:     {
+        AddressService: 'AddressService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         EscrowRatioService: 'EscrowRatioService',
@@ -63,6 +68,7 @@ export const Targets = {
         LocationMarkerService: 'LocationMarkerService',
         MessagingInformationService: 'MessagingInformationService',
         PaymentInformationService: 'PaymentInformationService',
+        ProfileService: 'ProfileService',
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
         UserService: 'UserService'
@@ -81,6 +87,7 @@ export const Targets = {
         }
     },
     Controller:     {
+        AddressController: 'AddressController',
         CryptocurrencyAddressController: 'CryptocurrencyAddressController',
         EscrowController: 'EscrowController',
         EscrowRatioController: 'EscrowRatioController',
@@ -95,6 +102,7 @@ export const Targets = {
         LocationMarkerController: 'LocationMarkerController',
         MessagingInformationController: 'MessagingInformationController',
         PaymentInformationController: 'PaymentInformationController',
+        ProfileController: 'ProfileController',
         RpcController: 'RpcController',
         ShippingDestinationController: 'ShippingDestinationController',
         ShippingPriceController: 'ShippingPriceController',
