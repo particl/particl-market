@@ -132,14 +132,23 @@ export class RpcController {
             // everything above is/was used for testing
 
             // mappings below are for the final/real rpc api
+            // profile
             'createprofile': 'rpcProfileService.create',
             'updateprofile': 'rpcProfileService.update',
             'getprofile': 'rpcProfileService.findOneByName',
+
+            // profile / addresses
             'createaddress': 'rpcAddressService.create',
             'updateaddress': 'rpcAddressService.update',
 
+            // listing items
             'finditems': 'rpcListingItemService.search',
-            'getitem': 'rpcListingItemService.findOne'
+            'getitem': 'rpcListingItemService.findOne',
+
+            // categories
+            'getcategories': 'rpcItemCategoryService.findRoot',
+            'getcategory': 'rpcItemCategoryService.findOne'
+
         };
     }
 
