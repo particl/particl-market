@@ -57,6 +57,7 @@ export const Targets = {
         AddressService: 'AddressService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
+        DefaultProfileService: 'DefaultProfileService',
         EscrowRatioService: 'EscrowRatioService',
         EscrowService: 'EscrowService',
         ItemCategoryService: 'ItemCategoryService',

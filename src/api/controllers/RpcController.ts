@@ -133,7 +133,7 @@ export class RpcController {
             // mappings below are for the final/real rpc api
             'createprofile': 'rpcProfileService.create',
             'updateprofile': 'rpcProfileService.update',
-            'getprofile': 'rpcProfileService.findOneByName',
+            'getprofile': 'rpcProfileService.findOne',
             'createaddress': 'rpcAddressService.create',
             'updateaddress': 'rpcAddressService.update',
 
