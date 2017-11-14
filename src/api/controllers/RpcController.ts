@@ -138,7 +138,7 @@ export class RpcController {
             'help': 'rpcCliHelpService.help',
             'createprofile': 'rpcProfileService.create',
             'updateprofile': 'rpcProfileService.update',
-            'getprofile': 'rpcProfileService.findOneByName',
+            'getprofile': 'rpcProfileService.findOne',
 
             // profile / addresses
             'createaddress': 'rpcAddressService.create',
