@@ -1,11 +1,11 @@
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
-import { validate, request } from '../../core/api/Validate';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
-import { AddressService } from './AddressService';
-import { RpcRequest } from '../requests/RpcRequest';
-import { Address } from '../models/Address';
+import { validate, request } from '../../../core/api/Validate';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Types, Core, Targets } from '../../../constants';
+import { AddressService } from '../AddressService';
+import { RpcRequest } from '../../requests/RpcRequest';
+import { Address } from '../../models/Address';
 
 export class RpcAddressService {
 

@@ -72,9 +72,12 @@ export const Targets = {
         MessagingInformationService: 'MessagingInformationService',
         PaymentInformationService: 'PaymentInformationService',
         ProfileService: 'ProfileService',
-        RpcAddressService: 'RpcAddressService',
-        RpcListingItemService: 'RpcListingItemService',
-        RpcProfileService: 'RpcProfileService',
+        rpc: {
+            RpcAddressService: 'RpcAddressService',
+            RpcListingItemService: 'RpcListingItemService',
+            RpcProfileService: 'RpcProfileService',
+            RpcItemCategoryService: 'RpcItemCategoryService'
+        },
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
         UserService: 'UserService'

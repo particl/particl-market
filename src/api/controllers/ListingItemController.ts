@@ -3,7 +3,6 @@ import { controller, httpGet, httpPost, httpPut, httpDelete, response, requestBo
 import { Types, Core, Targets } from '../../constants';
 import { app } from '../../app';
 import { ListingItemService } from '../services/ListingItemService';
-import { RpcListingItemService } from '../services/RpcListingItemService';
 
 import { Logger as LoggerType } from '../../core/Logger';
 
@@ -17,7 +16,6 @@ export class ListingItemController {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
     }
