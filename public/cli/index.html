@@ -99,27 +99,35 @@
     var term = $('#term').terminal(function(command, term) {
         if (command !== '') {
 
+            var params = command.split(' ');
+            var method = params.shift();
+
             var data = {
-                method: command,
-                params: [],
+                method: method,
+                params: params,
                 id: 1,
-                jsonrpc: "2.0"
+                jsonrpc: '2.0'
             };
 
             $.ajax({
-                url: '/api/rpc/cli',
+                url: '/api/rpc',
                 type: 'POST',
                 contentType: "application/json; charset=utf-8",
                 success: function (data) {
                     console.log('result: ', data);
-                    if(data.result){
-                        term.echo(JSON.stringify(data.result, null, 4));
+                    if (data.result) {
+                        if (typeof data.result === 'object'){
+                            term.echo(JSON.stringify(data.result, null, 4));
+                        } else {
+                            term.echo('\n' + data.result);
+                        }
                     } else {
-                        term.echo('The computer says no.');
+                        term.echo('\n' + 'The computer says no.');
                     }
                 },
-                failure: function (err) {
-                    console.error('error: ', err);
+                error: function (err) {
+                    term.echo('\n' + 'The computer says no.\n\nError: ' + err.statusText);
+                    // console.error('error: ', err);
                 },
                 data: JSON.stringify(data)
             });

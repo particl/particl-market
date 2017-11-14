@@ -36,7 +36,7 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
     }
 
     public static async fetchRoot(): Promise<ItemCategory> {
-        return await ItemCategory.where<ItemCategory>({ key: 'ROOT' }).fetch({
+        return await ItemCategory.where<ItemCategory>({ key: 'cat_ROOT' }).fetch({
             withRelated: [
                 'ChildItemCategories',
                 'ChildItemCategories.ChildItemCategories',

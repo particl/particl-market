@@ -21,6 +21,7 @@ import { RpcItemCategoryService } from '../services/rpc/RpcItemCategoryService';
 import { RpcListingItemService } from '../services/rpc/RpcListingItemService';
 import { RpcProfileService } from '../services/rpc/RpcProfileService';
 import { RpcAddressService } from '../services/rpc/RpcAddressService';
+import { RpcCliHelpService } from '../services/rpc/RpcCliHelpService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -47,6 +48,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
 
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcCliHelpService) private rpcCliHelpService: RpcCliHelpService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemCategoryService) private rpcItemCategoryService: RpcItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcProfileService) private rpcProfileService: RpcProfileService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcAddressService) private rpcAddressService: RpcAddressService,
@@ -133,6 +135,7 @@ export class RpcController {
 
             // mappings below are for the final/real rpc api
             // profile
+            'help': 'rpcCliHelpService.help',
             'createprofile': 'rpcProfileService.create',
             'updateprofile': 'rpcProfileService.update',
             'getprofile': 'rpcProfileService.findOneByName',

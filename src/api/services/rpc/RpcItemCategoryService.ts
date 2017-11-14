@@ -20,7 +20,7 @@ export class RpcItemCategoryService {
 
     @validate()
     public async findAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemCategory>> {
-        return this.itemCategoryService.findAll();
+        return await this.itemCategoryService.findAll();
     }
 
     /**
@@ -48,7 +48,7 @@ export class RpcItemCategoryService {
      */
     @validate()
     public async findRoot( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        return this.itemCategoryService.findRoot();
+        return await this.itemCategoryService.findRoot();
     }
 
     /**
@@ -66,7 +66,7 @@ export class RpcItemCategoryService {
      */
     @validate()
     public async create( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        return this.itemCategoryService.create({
+        return await this.itemCategoryService.create({
             name: data.params[0],
             description: data.params[1],
             parentItemCategoryId: data.params[2] || null
@@ -87,7 +87,7 @@ export class RpcItemCategoryService {
      */
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        return this.itemCategoryService.update(data.params[0], {
+        return await this.itemCategoryService.update(data.params[0], {
             name: data.params[1],
             description: data.params[2],
             parentItemCategoryId: data.params[3] || null
@@ -96,6 +96,6 @@ export class RpcItemCategoryService {
 
     @validate()
     public async destroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.itemCategoryService.destroy(data.params[0]);
+        return await this.itemCategoryService.destroy(data.params[0]);
     }
 }

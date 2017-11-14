@@ -41,7 +41,7 @@ export class ItemCategoryService {
     }
 
     public async findRoot(): Promise<ItemCategory> {
-        return this.itemCategoryRepo.findRoot();
+        return await this.itemCategoryRepo.findRoot();
     }
 
     @validate()

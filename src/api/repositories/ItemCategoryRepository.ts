@@ -31,7 +31,7 @@ export class ItemCategoryRepository {
     }
 
     public async findRoot(): Promise<ItemCategory> {
-        return this.ItemCategoryModel.fetchRoot();
+        return await this.ItemCategoryModel.fetchRoot();
     }
 
     public async create(data: any): Promise<ItemCategory> {
