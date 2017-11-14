@@ -79,6 +79,7 @@
         @keyframes vline {
             to { transform: translate(0, 100vh)}
         }
+        #player {pointer-events: none;}
     </style>
     <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
     <script src="https://rawgit.com/jcubic/jquery.terminal/master/js/jquery.terminal.js"></script>
@@ -126,8 +127,13 @@
                     }
                 },
                 error: function (err) {
-                    term.echo('\n' + 'The computer says no.\n\nError: ' + err.statusText + ', but don\'t give up.');
-                    term.echo('<br/><iframe width="420" height="345" src="http://www.youtube.com/embed/oHg5SJYRHA0?autoplay=1" frameborder="0" allowfullscreen></iframe>', { raw: true });
+                    if(Math.random()<.2){
+                        term.echo('\n' + 'The computer says no.\n\nError: ' + err.statusText + ', but don\'t give up.');
+                        term.echo('<br/><iframe width="420" height="345" src="http://www.youtube.com/embed/oHg5SJYRHA0?wmode=transparent&autoplay=1" frameborder="0" allowfullscreen id="player"></iframe>', { raw: true });
+                    } else {
+                        term.echo('\n' + 'The computer says no.\n\nError: ' + err.statusText);
+                    }
+
 
                     // console.error('error: ', err);
                 },
