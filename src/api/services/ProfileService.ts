@@ -39,10 +39,6 @@ export class ProfileService {
 
     public async findOneByName(name: string, withRelated: boolean = true): Promise<Profile> {
         const profile = await this.profileRepo.findOneByName(name, withRelated);
-        if (profile === null) {
-            this.log.warn(`Profile with the name=${name} was not found!`);
-            throw new NotFoundException(name);
-        }
         return profile;
     }
 
@@ -50,7 +46,7 @@ export class ProfileService {
     public async create( @request(ProfileCreateRequest) body: any): Promise<Profile> {
 
         // extract and remove related models from request
-        const addresses = body.addresses;
+        const addresses = body.addresses || [];
         delete body.addresses;
 
         // If the request body was valid we will create the profile
@@ -87,7 +83,7 @@ export class ProfileService {
         }
 
         // recreate related data
-        addresses = body.addresses;
+        addresses = body.addresses || [];
         for (const address of addresses) {
             address.profileId = id;
             await this.addressService.create(address);
