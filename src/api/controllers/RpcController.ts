@@ -5,7 +5,6 @@ import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
 import { JsonRpc2Request, JsonRpc2Response, RpcErrorCode } from '../../core/api/jsonrpc';
 import { JsonRpcError } from '../../core/api/JsonRpcError';
-import { ItemCategoryService } from '../services/ItemCategoryService';
 import { EscrowService } from '../services/EscrowService';
 import { ItemPriceService } from '../services/ItemPriceService';
 import { PaymentInformationService } from '../services/PaymentInformationService';
@@ -18,9 +17,11 @@ import { ItemInformationService } from '../services/ItemInformationService';
 import { MessagingInformationService } from '../services/MessagingInformationService';
 import { ListingItemService } from '../services/ListingItemService';
 
-import { RpcListingItemService } from '../services/RpcListingItemService';
-import { RpcProfileService } from '../services/RpcProfileService';
-import { RpcAddressService } from '../services/RpcAddressService';
+import { RpcItemCategoryService } from '../services/rpc/RpcItemCategoryService';
+import { RpcListingItemService } from '../services/rpc/RpcListingItemService';
+import { RpcProfileService } from '../services/rpc/RpcProfileService';
+import { RpcAddressService } from '../services/rpc/RpcAddressService';
+import { RpcCliHelpService } from '../services/rpc/RpcCliHelpService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -35,7 +36,6 @@ export class RpcController {
     private exposedMethods = {};
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
         @inject(Types.Service) @named(Targets.Service.ItemPriceService) private itemPriceService: ItemPriceService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
@@ -48,9 +48,11 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
 
-        @inject(Types.Service) @named(Targets.Service.RpcProfileService) private rpcProfileService: RpcProfileService,
-        @inject(Types.Service) @named(Targets.Service.RpcAddressService) private rpcAddressService: RpcAddressService,
-        @inject(Types.Service) @named(Targets.Service.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcCliHelpService) private rpcCliHelpService: RpcCliHelpService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcItemCategoryService) private rpcItemCategoryService: RpcItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcProfileService) private rpcProfileService: RpcProfileService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcAddressService) private rpcAddressService: RpcAddressService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -60,12 +62,13 @@ export class RpcController {
         this.exposedMethods = {
 
             // todo: figure out a working way to pass for example: this.escrowService.create
-            'itemcategory.create': 'itemCategoryService.rpcCreate',
-            'itemcategory.find': 'itemCategoryService.rpcFindOne',
-            'itemcategory.findall': 'itemCategoryService.rpcFindAll',
-            'itemcategory.findroot': 'itemCategoryService.rpcFindRoot',
-            'itemcategory.update': 'itemCategoryService.rpcUpdate',
-            'itemcategory.destroy': 'itemCategoryService.rpcDestroy',
+            'itemcategory.create': 'rpcItemCategoryService.create',
+            'itemcategory.find': 'rpcItemCategoryService.findOne',
+            'itemcategory.findall': 'rpcItemCategoryService.findAll',
+            'itemcategory.findroot': 'rpcItemCategoryService.findRoot',
+            'itemcategory.update': 'rpcItemCategoryService.update',
+            'itemcategory.destroy': 'rpcItemCategoryService.destroy',
+
             'escrow.create': 'escrowService.rpcCreate',
             'escrow.find': 'escrowService.rpcFindOne',
             'escrow.findall': 'escrowService.rpcFindAll',
@@ -131,14 +134,24 @@ export class RpcController {
             // everything above is/was used for testing
 
             // mappings below are for the final/real rpc api
+            // profile
+            'help': 'rpcCliHelpService.help',
             'createprofile': 'rpcProfileService.create',
             'updateprofile': 'rpcProfileService.update',
             'getprofile': 'rpcProfileService.findOne',
+
+            // profile / addresses
             'createaddress': 'rpcAddressService.create',
             'updateaddress': 'rpcAddressService.update',
 
+            // listing items
             'finditems': 'rpcListingItemService.search',
-            'getitem': 'rpcListingItemService.findOne'
+            'getitem': 'rpcListingItemService.findOne',
+
+            // categories
+            'getcategories': 'rpcItemCategoryService.findRoot',
+            'getcategory': 'rpcItemCategoryService.findOne'
+
         };
     }
 

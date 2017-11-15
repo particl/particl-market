@@ -22,28 +22,13 @@ export class ItemCategoryService {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemCategory>> {
-        return this.findAll();
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<ItemCategory>> {
         return this.itemCategoryRepo.findAll();
-    }
-
-    @validate()
-    public async rpcFindOneByKey( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        return this.findOneByKey(data.params[0]);
     }
 
     public async findOneByKey(key: string, withRelated: boolean = true): Promise<ItemCategory> {
         const itemCategory = await this.itemCategoryRepo.findOneByKey(key, withRelated);
         return itemCategory;
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        return this.findOne(data.params[0]);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ItemCategory> {
@@ -55,22 +40,8 @@ export class ItemCategoryService {
         return itemCategory;
     }
 
-    @validate()
-    public async rpcFindRoot( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        return this.findRoot();
-    }
-
     public async findRoot(): Promise<ItemCategory> {
-        return this.itemCategoryRepo.findRoot();
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        return this.create({
-            name: data.params[0],
-            description: data.params[1],
-            parentItemCategoryId: data.params[2] || null
-        });
+        return await this.itemCategoryRepo.findRoot();
     }
 
     @validate()
@@ -82,15 +53,6 @@ export class ItemCategoryService {
         // finally find and return the created itemCategory
         const newItemCategory = await this.findOne(itemCategory.Id);
         return newItemCategory;
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        return this.update(data.params[0], {
-            name: data.params[1],
-            description: data.params[2],
-            parentItemCategoryId: data.params[3] || null
-        });
     }
 
     @validate()
@@ -108,11 +70,6 @@ export class ItemCategoryService {
         // update itemCategory record
         const updatedItemCategory = await this.itemCategoryRepo.update(id, itemCategory.toJSON(), patching);
         return updatedItemCategory;
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
     }
 
     public async destroy(id: number): Promise<void> {

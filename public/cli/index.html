@@ -79,6 +79,7 @@
         @keyframes vline {
             to { transform: translate(0, 100vh)}
         }
+        #player {pointer-events: none;}
     </style>
     <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
     <script src="https://rawgit.com/jcubic/jquery.terminal/master/js/jquery.terminal.js"></script>
@@ -99,27 +100,42 @@
     var term = $('#term').terminal(function(command, term) {
         if (command !== '') {
 
+            var params = command.split(' ');
+            var method = params.shift();
+
             var data = {
-                method: command,
-                params: [],
+                method: method,
+                params: params,
                 id: 1,
-                jsonrpc: "2.0"
+                jsonrpc: '2.0'
             };
 
             $.ajax({
-                url: '/api/rpc/cli',
+                url: '/api/rpc',
                 type: 'POST',
                 contentType: "application/json; charset=utf-8",
                 success: function (data) {
                     console.log('result: ', data);
-                    if(data.result){
-                        term.echo(JSON.stringify(data.result, null, 4));
+                    if (data.result) {
+                        if (typeof data.result === 'object'){
+                            term.echo(JSON.stringify(data.result, null, 4));
+                        } else {
+                            term.echo('\n' + data.result);
+                        }
                     } else {
-                        term.echo('The computer says no.');
+                        term.echo('\n' + 'The computer says no.');
                     }
                 },
-                failure: function (err) {
-                    console.error('error: ', err);
+                error: function (err) {
+                    if(Math.random()<.2){
+                        term.echo('\n' + 'The computer says no.\n\nError: ' + err.statusText + ', but don\'t give up.');
+                        term.echo('<br/><iframe width="420" height="345" src="http://www.youtube.com/embed/oHg5SJYRHA0?wmode=transparent&autoplay=1" frameborder="0" allowfullscreen id="player"></iframe>', { raw: true });
+                    } else {
+                        term.echo('\n' + 'The computer says no.\n\nError: ' + err.statusText);
+                    }
+
+
+                    // console.error('error: ', err);
                 },
                 data: JSON.stringify(data)
             });
@@ -145,7 +161,7 @@
     }
 
     function greetings(term) {
-        term.echo('PARTICL MARKETPLACE CLI\n'+
+        term.echo('PARTICL MARKETPLACE CLI v0.1\n\n'+
             'type "help" for commands. ');
     }
 </script>
