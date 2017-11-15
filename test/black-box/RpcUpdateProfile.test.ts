@@ -16,23 +16,22 @@ describe('/RpcUpdateProfile', () => {
         jsonrpc: '2.0'
     };
 
-    const testDataUpdated = {
+    const testDataUpdate = {
         method: 'updateprofile',
         params: [
-            ,
+            0,
             'NEW-DEFAULT-PROFILE'
         ],
         jsonrpc: '2.0'
     };
-
-    let createdId;
 
     beforeAll(async () => {
         const command = new DatabaseResetCommand();
         await command.run();
     });
 
-    test('POST      /profiles        Should create a new profile by RPC', async () => {
+    test('Should update the profile by RPC', async () => {
+        // create profile
         const res = await api('POST', '/api/rpc', {
             body: testData
         });
@@ -40,20 +39,18 @@ describe('/RpcUpdateProfile', () => {
         res.expectStatusCode(200);
         res.expectDataRpc(keys);
         const result: any = res.getBody()['result'];
-        createdId = result.id;
-        expect(result.name).toBe(testData.params[0]);
-    });
+        const createdId = result.id;
 
-    test('POST      /profiles        Should update the profile by RPC', async () => {
-        testDataUpdated.params[0] = createdId;
-        const res = await api('POST', '/api/rpc', {
-            body: testDataUpdated
+        // update profile
+        testDataUpdate.params[0] = createdId;
+        const resMain = await api('POST', '/api/rpc', {
+            body: testDataUpdate
         });
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectDataRpc(keys);
-        const result: any = res.getBody()['result'];
-        expect(result.name).toBe(testDataUpdated.params[1]);
+        resMain.expectJson();
+        resMain.expectStatusCode(200);
+        resMain.expectDataRpc(keys);
+        const resultMain: any = resMain.getBody()['result'];
+        expect(resultMain.name).toBe(testDataUpdate.params[1]);
     });
 
 });

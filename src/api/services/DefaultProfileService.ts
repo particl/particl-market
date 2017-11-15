@@ -48,7 +48,7 @@ export class DefaultProfileService {
     }
 
     public async insertOrUpdateProfile(profile: any): Promise<Profile> {
-        let newProfile = await this.profileService.findOneByKey(profile.name);
+        let newProfile = await this.profileService.findOneByName(profile.name);
         if (newProfile === null) {
             newProfile = await this.profileService.create(profile);
             this.log.debug('created new default profile');

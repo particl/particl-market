@@ -37,17 +37,8 @@ export class ProfileService {
         return profile;
     }
 
-    public async findOneByKey(name: string, withRelated: boolean = true): Promise<Profile> {
-        const profile = await this.profileRepo.findOneByName(name, withRelated);
-        return profile;
-    }
-
     public async findOneByName(name: string, withRelated: boolean = true): Promise<Profile> {
         const profile = await this.profileRepo.findOneByName(name, withRelated);
-        if (profile === null) {
-            this.log.warn(`Profile with the name=${name} was not found!`);
-            throw new NotFoundException(name);
-        }
         return profile;
     }
 

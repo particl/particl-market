@@ -16,13 +16,22 @@ describe('/RpcGetProfile', () => {
         jsonrpc: '2.0'
     };
 
+    const testDataGet = {
+        method: 'getprofile',
+        params: [
+            '0'
+        ],
+        jsonrpc: '2.0'
+    };
+
     let createdId;
     beforeAll(async () => {
         const command = new DatabaseResetCommand();
         await command.run();
     });
 
-    test('POST      /profiles        Should create a new profile by RPC', async () => {
+    test('Should return one profile by ID', async () => {
+        // created profile
         const res = await api('POST', '/api/rpc', {
             body: testData
         });
@@ -31,27 +40,23 @@ describe('/RpcGetProfile', () => {
         res.expectDataRpc(keys);
         const result: object = res.getBody()['result'];
         createdId = result['id'];
-        expect(result['name']).toBe(testData.params[0]);
-    });
 
-    test('GET       /profiles/:id    Should return one profile by ID', async () => {
-        testData.method = 'getprofile';
-        testData.params[0] = createdId;
-        const res = await api('POST', '/api/rpc', {
-            body: testData
+        // get profile
+        testDataGet.params[0] = createdId;
+        const resMain = await api('POST', '/api/rpc', {
+            body: testDataGet
         });
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectDataRpc(keys);
-        const result: any = res.getBody()['result'];
-        expect(result.id).toBe(testData.params[0]);
+        resMain.expectJson();
+        resMain.expectStatusCode(200);
+        resMain.expectDataRpc(keys);
+        const resultMain: any = resMain.getBody()['result'];
+        expect(resultMain.id).toBe(testDataGet.params[0]);
     });
 
-    test('GET       /profiles/:name    Should return one profile by Name', async () => {
-        testData.method = 'getprofile';
-        testData.params[0] = 'DEFAULT-PROFILE';
+    test('Should return one profile by Name', async () => {
+        testDataGet.params[0] = 'DEFAULT-PROFILE';
         const res = await api('POST', '/api/rpc', {
-            body: testData
+            body: testDataGet
         });
         res.expectJson();
         res.expectStatusCode(200);

@@ -27,7 +27,7 @@ describe('/RpcCreateAddress', () => {
         await command.run();
     });
 
-    test('POST      /addresses        Should create a new profile by RPC', async () => {
+    test('Should create a new address by RPC', async () => {
         const res = await api('POST', '/api/rpc', {
             body: testData
         });
@@ -40,5 +40,23 @@ describe('/RpcCreateAddress', () => {
         expect(result.addressLine2).toBe(testData.params[2]);
         expect(result.city).toBe(testData.params[3]);
         expect(result.country).toBe(testData.params[4]);
+    });
+
+    test('Should fail because we want to create an empty address without required fields', async () => {
+        testData.params[1] = '';
+        const res = await api('POST', '/api/rpc', {
+            body: testData
+        });
+        res.expectJson();
+        res.expectStatusCode(400);
+    });
+
+    test('Should fail because we want to create an empty address', async () => {
+        testData.params = [];
+        const res = await api('POST', '/api/rpc', {
+            body: testData
+        });
+        res.expectJson();
+        res.expectStatusCode(400);
     });
 });

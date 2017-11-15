@@ -21,7 +21,7 @@ describe('/RpcCreateProfile', () => {
         await command.run();
     });
 
-    test('POST      /profiles        Should create a new profile by RPC', async () => {
+    test('Should create a new profile by RPC', async () => {
         const res = await api('POST', '/api/rpc', {
             body: testData
         });
@@ -30,5 +30,14 @@ describe('/RpcCreateProfile', () => {
         res.expectDataRpc(keys);
         const result: any = res.getBody()['result'];
         expect(result.name).toBe(testData.params[0]);
+    });
+
+    test('Should fail because we want to create an empty profile', async () => {
+        testData.params = [];
+        const res = await api('POST', '/api/rpc', {
+            body: testData
+        });
+        res.expectJson();
+        res.expectStatusCode(400);
     });
 });
