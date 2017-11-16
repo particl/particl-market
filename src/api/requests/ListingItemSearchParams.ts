@@ -19,5 +19,7 @@ export class ListingItemSearchParams extends RequestBody {
 
     public searchString: string;
 
+    public withRelated: boolean;
+
 }
 

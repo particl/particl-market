@@ -71,18 +71,6 @@ export class ListingItemService {
         return this.listingItemRepo.search(options);
     }
 
-    /**
-     * TODO: remove this and add the category as a search param to search
-     */
-    public async searchByCategoryIdOrName(options: any): Promise<Bookshelf.Collection<ListingItem>> {
-        const listingItem = await this.listingItemRepo.searchByCategoryIdOrName(options);
-        if (listingItem === null) {
-            this.log.warn(`ListingItem with the category=${options[0]} was not found!`);
-            throw new NotFoundException(options[0]);
-        }
-        return listingItem;
-    }
-
     @validate()
     public async create(@request(ListingItemCreateRequest) body: any): Promise<ListingItem> {
 

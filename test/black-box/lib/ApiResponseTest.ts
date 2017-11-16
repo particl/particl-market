@@ -50,7 +50,7 @@ export class ApiResponseTest {
     }
 
     public expectDataRpc(keys: string[]): ApiResponseTest {
-        const result: object = this.getBody()['result'];
+        const result: object = _.isArray(this.getBody()['result']) ? this.getBody()['result'][0] : this.getBody()['result'];
         expect(_.every(keys, _.partial(_.has, result))).toBe(true);
         return this;
     }
