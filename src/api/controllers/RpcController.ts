@@ -19,6 +19,8 @@ import { ListingItemService } from '../services/ListingItemService';
 
 import { RpcItemCategoryService } from '../services/rpc/RpcItemCategoryService';
 import { RpcListingItemService } from '../services/rpc/RpcListingItemService';
+import { RpcListingItemTemplateService } from '../services/rpc/RpcListingItemTemplateService';
+import { RpcItemInformationService } from '../services/rpc/RpcItemInformationService';
 import { RpcProfileService } from '../services/rpc/RpcProfileService';
 import { RpcAddressService } from '../services/rpc/RpcAddressService';
 import { RpcCliHelpService } from '../services/rpc/RpcCliHelpService';
@@ -53,6 +55,8 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcProfileService) private rpcProfileService: RpcProfileService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcAddressService) private rpcAddressService: RpcAddressService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemTemplateService) private rpcListingItemTemplateService: RpcListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcItemInformationService) private rpcItemInformationService: RpcItemInformationService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -148,6 +152,12 @@ export class RpcController {
             'finditems': 'rpcListingItemService.search',
             'getitem': 'rpcListingItemService.findOne',
 
+            // listing items
+            'createlistingitemtemplate': 'rpcListingItemTemplateService.create',
+
+            // item information
+            'createiteminformation': 'rpcItemInformationService.create',
+
             // categories
             'getcategories': 'rpcItemCategoryService.findRoot',
             'getcategory': 'rpcItemCategoryService.findOne'
@@ -156,7 +166,7 @@ export class RpcController {
     }
 
     @httpPost('/')
-    public async handleRPC(@response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
+    public async handleRPC( @response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
 
         const rpcRequest = this.createRequest(body.method, body.params, body.id);
         this.log.debug('controller.handleRPC() rpcRequest:', JSON.stringify(rpcRequest, null, 2));
@@ -195,11 +205,11 @@ export class RpcController {
         return { jsonrpc: this.VERSION, method: method.toLowerCase(), params, id };
     }
 
-    private createResponse(id: string | number = '', result?: any, error?: any ): JsonRpc2Response {
+    private createResponse(id: string | number = '', result?: any, error?: any): JsonRpc2Response {
         if (error) {
-            return { id, jsonrpc: this.VERSION, error};
+            return { id, jsonrpc: this.VERSION, error };
         } else {
-            return { id, jsonrpc: this.VERSION, result};
+            return { id, jsonrpc: this.VERSION, result };
         }
     }
 
