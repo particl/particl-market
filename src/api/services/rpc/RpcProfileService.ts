@@ -39,6 +39,10 @@ export class RpcProfileService {
      */
     @validate()
     public async findOne( @request(RpcRequest) data: any): Promise<Profile> {
+        if (data.params.length === 0) {
+            data.params[0] = 'DEFAULT';
+        }
+
         if (typeof data.params[0] === 'number') {
             return await this.profileService.findOne(data.params[0]);
         } else {
