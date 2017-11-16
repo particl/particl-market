@@ -103,15 +103,18 @@
             var params = command.split(' ');
             var method = params.shift();
 
-            /*
             for (var i=0; i < params.length; i++) {
-                var param = c(params[i]);
-
-                console.log('params[' + i + ']:', param);
-                // to save back onto array
-                // data[i] = current;
+                var param = parseFloat(params[i]);
+                if (!isNaN(param)){
+                    params[i] = param;
+                }
+                if (params[i] === 'true' || params[i] === 'false') {
+                    params[i] = (params[i] === 'true');
+                }
             }
-*/
+
+            console.log(method + ', params:', params);
+
             var data = {
                 method: method,
                 params: params,
