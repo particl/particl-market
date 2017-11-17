@@ -99,8 +99,8 @@ export class RpcListingItemService {
             pageLimit: data.params[1] || 5,
             order: data.params[2] || 'ASC',
             category: data.params[3],
-            searchString: data.params[4]
-        } as ListingItemSearchParams);
+            searchString: data.params[4] || ''
+        } as ListingItemSearchParams, data.params[5]);
     }
 
     /**

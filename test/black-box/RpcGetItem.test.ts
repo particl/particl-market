@@ -111,87 +111,105 @@ describe('/listing-items', () => {
         await command.run();
     });
 
-    test('POST      /listing-items        Should create a new listing item', async () => {
+
+    test('Should get the listing item by hash', async () => {
+        // create listing item
         const res = await api('POST', '/api/listing-items', {
             body: testData
         });
         res.expectJson();
         res.expectStatusCode(201);
         res.expectData(keys);
-        createdId = res.getData()['id'];
         createdHash = res.getData()['hash'];
-        const result: any = res.getData();
-        expect(result.hash).toBe(testData.hash);
-        expect(result.ItemInformation.title).toBe(testData.itemInformation.title);
-        expect(result.ItemInformation.shortDescription).toBe(testData.itemInformation.shortDescription);
-        expect(result.ItemInformation.longDescription).toBe(testData.itemInformation.longDescription);
-        expect(result.ItemInformation.ItemCategory.name).toBe(testData.itemInformation.itemCategory.name);
-        expect(result.ItemInformation.ItemCategory.description).toBe(testData.itemInformation.itemCategory.description);
-        expect(result.ItemInformation.ItemLocation.region).toBe(testData.itemInformation.itemLocation.region);
-        expect(result.ItemInformation.ItemLocation.address).toBe(testData.itemInformation.itemLocation.address);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(testData.itemInformation.itemLocation.locationMarker.markerTitle);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(testData.itemInformation.itemLocation.locationMarker.markerText);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(testData.itemInformation.itemLocation.locationMarker.lat);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testData.itemInformation.itemLocation.locationMarker.lng);
-        expect(result.ItemInformation.ShippingDestinations).toHaveLength(3);
-        expect(result.ItemInformation.ItemImages).toHaveLength(3);
-        expect(result.PaymentInformation.type).toBe(testData.paymentInformation.type);
-        expect(result.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
-        expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
-        expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testData.paymentInformation.escrow.ratio.seller);
-        expect(result.PaymentInformation.ItemPrice.currency).toBe(testData.paymentInformation.itemPrice.currency);
-        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
-        expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
-        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
-        expect(result.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
-        expect(result.MessagingInformation.publicKey).toBe(testData.messagingInformation.publicKey);
-    });
-
-    test('POST     /listing-items/hash/:hash    Should return one listing item', async () => {
-        const res = await api('POST', `/api/rpc`, {
-              body: {
-                  method: 'listingitem.getitembyhash',
-                  params:  [createdHash],
-                  id: 1,
-                  jsonrpc: '2.0'
-              }
+        createdId = res.getData()['id'];
+        // find listing item by hash
+        const resMain = await api('POST', `/api/rpc`, {
+            body: {
+                method: 'getitem',
+                params:  [createdHash],
+                id: 1,
+                jsonrpc: '2.0'
+            }
 
         });
-        // res.expectJson();
-        // res.expectStatusCode(201);
-        // const result: any = res.getData();
-        const result = res.res.body;
 
-        expect(result.hash).toBe(testData.hash);
-        expect(createdHash).toBe(result.hash);
-        expect(result.ItemInformation.title).toBe(testData.itemInformation.title);
-        expect(result.ItemInformation.shortDescription).toBe(testData.itemInformation.shortDescription);
-        expect(result.ItemInformation.longDescription).toBe(testData.itemInformation.longDescription);
-        expect(result.ItemInformation.ItemCategory.name).toBe(testData.itemInformation.itemCategory.name);
-        expect(result.ItemInformation.ItemCategory.description).toBe(testData.itemInformation.itemCategory.description);
-        expect(result.ItemInformation.ItemLocation.region).toBe(testData.itemInformation.itemLocation.region);
-        expect(result.ItemInformation.ItemLocation.address).toBe(testData.itemInformation.itemLocation.address);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(testData.itemInformation.itemLocation.locationMarker.markerTitle);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(testData.itemInformation.itemLocation.locationMarker.markerText);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(testData.itemInformation.itemLocation.locationMarker.lat);
-        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testData.itemInformation.itemLocation.locationMarker.lng);
-        expect(result.ItemInformation.ShippingDestinations).toHaveLength(3);
-        expect(result.ItemInformation.ItemImages).toHaveLength(3);
-        expect(result.PaymentInformation.type).toBe(testData.paymentInformation.type);
-        expect(result.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
-        expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
-        expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testData.paymentInformation.escrow.ratio.seller);
-        expect(result.PaymentInformation.ItemPrice.currency).toBe(testData.paymentInformation.itemPrice.currency);
-        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
-        expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
-        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
-        expect(result.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
-        expect(result.MessagingInformation.publicKey).toBe(testData.messagingInformation.publicKey);
+        resMain.expectJson();
+        resMain.expectStatusCode(200);
+        resMain.expectDataRpc(keys);
+        const resultMain: any = resMain.getBody()['result'];
 
+        expect(resultMain.hash).toBe(testData.hash);
+        expect(createdHash).toBe(resultMain.hash);
+        expect(resultMain.ItemInformation.title).toBe(testData.itemInformation.title);
+        expect(resultMain.ItemInformation.shortDescription).toBe(testData.itemInformation.shortDescription);
+        expect(resultMain.ItemInformation.longDescription).toBe(testData.itemInformation.longDescription);
+        expect(resultMain.ItemInformation.ItemCategory.name).toBe(testData.itemInformation.itemCategory.name);
+        expect(resultMain.ItemInformation.ItemCategory.description).toBe(testData.itemInformation.itemCategory.description);
+        expect(resultMain.ItemInformation.ItemLocation.region).toBe(testData.itemInformation.itemLocation.region);
+        expect(resultMain.ItemInformation.ItemLocation.address).toBe(testData.itemInformation.itemLocation.address);
+        expect(resultMain.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(testData.itemInformation.itemLocation.locationMarker.markerTitle);
+        expect(resultMain.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(testData.itemInformation.itemLocation.locationMarker.markerText);
+        expect(resultMain.ItemInformation.ItemLocation.LocationMarker.lat).toBe(testData.itemInformation.itemLocation.locationMarker.lat);
+        expect(resultMain.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testData.itemInformation.itemLocation.locationMarker.lng);
+        expect(resultMain.ItemInformation.ShippingDestinations).toHaveLength(3);
+        expect(resultMain.ItemInformation.ItemImages).toHaveLength(3);
+        expect(resultMain.PaymentInformation.type).toBe(testData.paymentInformation.type);
+        expect(resultMain.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
+        expect(resultMain.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
+        expect(resultMain.PaymentInformation.Escrow.Ratio.seller).toBe(testData.paymentInformation.escrow.ratio.seller);
+        expect(resultMain.PaymentInformation.ItemPrice.currency).toBe(testData.paymentInformation.itemPrice.currency);
+        expect(resultMain.PaymentInformation.ItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
+        expect(resultMain.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
+        expect(resultMain.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
+        expect(resultMain.PaymentInformation.ItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
+        expect(resultMain.PaymentInformation.ItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
+        expect(resultMain.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
+        expect(resultMain.MessagingInformation.publicKey).toBe(testData.messagingInformation.publicKey);
+    });
+
+    test('Should get the listing item by id', async () => {
+        // find listing item by id
+        const resMainById = await api('POST', `/api/rpc`, {
+            body: {
+                method: 'getitem',
+                params:  [createdId],
+                id: 1,
+                jsonrpc: '2.0'
+            }
+        });
+
+        resMainById.expectJson();
+        resMainById.expectStatusCode(200);
+        resMainById.expectDataRpc(keys);
+        const resultMainById: any = resMainById.getBody()['result'];
+
+        expect(resultMainById.hash).toBe(testData.hash);
+        expect(createdHash).toBe(resultMainById.hash);
+        expect(resultMainById.ItemInformation.title).toBe(testData.itemInformation.title);
+        expect(resultMainById.ItemInformation.shortDescription).toBe(testData.itemInformation.shortDescription);
+        expect(resultMainById.ItemInformation.longDescription).toBe(testData.itemInformation.longDescription);
+        expect(resultMainById.ItemInformation.ItemCategory.name).toBe(testData.itemInformation.itemCategory.name);
+        expect(resultMainById.ItemInformation.ItemCategory.description).toBe(testData.itemInformation.itemCategory.description);
+        expect(resultMainById.ItemInformation.ItemLocation.region).toBe(testData.itemInformation.itemLocation.region);
+        expect(resultMainById.ItemInformation.ItemLocation.address).toBe(testData.itemInformation.itemLocation.address);
+        expect(resultMainById.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(testData.itemInformation.itemLocation.locationMarker.markerTitle);
+        expect(resultMainById.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(testData.itemInformation.itemLocation.locationMarker.markerText);
+        expect(resultMainById.ItemInformation.ItemLocation.LocationMarker.lat).toBe(testData.itemInformation.itemLocation.locationMarker.lat);
+        expect(resultMainById.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testData.itemInformation.itemLocation.locationMarker.lng);
+        expect(resultMainById.ItemInformation.ShippingDestinations).toHaveLength(3);
+        expect(resultMainById.ItemInformation.ItemImages).toHaveLength(3);
+        expect(resultMainById.PaymentInformation.type).toBe(testData.paymentInformation.type);
+        expect(resultMainById.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
+        expect(resultMainById.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
+        expect(resultMainById.PaymentInformation.Escrow.Ratio.seller).toBe(testData.paymentInformation.escrow.ratio.seller);
+        expect(resultMainById.PaymentInformation.ItemPrice.currency).toBe(testData.paymentInformation.itemPrice.currency);
+        expect(resultMainById.PaymentInformation.ItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
+        expect(resultMainById.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
+        expect(resultMainById.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
+        expect(resultMainById.PaymentInformation.ItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
+        expect(resultMainById.PaymentInformation.ItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
+        expect(resultMainById.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
+        expect(resultMainById.MessagingInformation.publicKey).toBe(testData.messagingInformation.publicKey);
 
     });
 
