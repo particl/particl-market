@@ -15,6 +15,18 @@ describe('/listing-items', () => {
         'id', 'hash', 'updatedAt', 'createdAt'  // , 'Related'
     ];
 
+    const rootData = {
+        key: 'cat_ROOT',
+        name: 'ROOT',
+        description: 'root'
+    };
+
+    const testCategoryData = {
+        key: 'cat_electronics',
+        name: 'Electronics and Technology',
+        description: 'Electronics and Technology description'
+    };
+
     const testData = {
         hash: 'hash1',
         itemInformation: {
@@ -168,16 +180,41 @@ describe('/listing-items', () => {
     let createdHashTwo;
     let createdCategory;
     let createdItemInformation;
+
     beforeAll(async () => {
         const command = new DatabaseResetCommand();
         await command.run();
     });
 
 
-    test('Should list listing items with our new create one', async () => {
+    test('Should get all listing items', async () => {
+        // create root category
+        const categoryRes = await api('POST', '/api/item-categories', {
+            body: rootData
+        });
+
+        categoryRes.expectJson();
+        categoryRes.expectStatusCode(201);
+        const rootId = categoryRes.getData()['id'];
+
+        testCategoryData['parentItemCategoryId'] = rootId;
+
+        // create category
+        const childCategoryRes = await api('POST', '/api/item-categories', {
+            body: testCategoryData
+        });
+
+        childCategoryRes.expectJson();
+        childCategoryRes.expectStatusCode(201);
+        const createdCategoryKey = childCategoryRes.getData()['key'];
+
+        testData['itemInformation']['itemCategory']['key'] = createdCategoryKey;
+
+        // create listing item
         const res = await api('POST', '/api/listing-items', {
             body: testData
         });
+
         res.expectJson();
         res.expectStatusCode(201);
         res.expectData(keys);
@@ -187,17 +224,21 @@ describe('/listing-items', () => {
         createdCategory = createdItemInformation.ItemCategory;
 
         // create second listing item
+        testDataTwo['itemInformation']['itemCategory']['key'] = createdCategoryKey;
+
         const resTwo = await api('POST', '/api/listing-items', {
             body: testDataTwo
         });
 
-    });
+        res.expectJson();
+        res.expectStatusCode(201);
+        res.expectData(keys);
 
-    test('Should get all listing items', async () => {
+        // get all listing items
         const resMain = await api('POST', `/api/rpc`, {
             body: {
                 method: 'finditems',
-                params:  [1, 2, 'ASC'],
+                params:  [1, 2, 'ASC', '', '', true],
                 id: 1,
                 jsonrpc: '2.0'
             }
@@ -279,8 +320,9 @@ describe('/listing-items', () => {
         resByCategoryName.expectJson();
         resByCategoryName.expectStatusCode(200);
         const listingCategoryResults: any = resByCategoryName.getBody()['result'];
+
         const category = listingCategoryResults[0].ItemInformation.ItemCategory;
-        expect(listingCategoryResults.length).toBe(1);
+        expect(listingCategoryResults.length).toBe(2);
         expect(createdCategory.key).toBe(category.key);
 
     });
@@ -300,10 +342,9 @@ describe('/listing-items', () => {
         const listingCategoryByIdResults: any = resByCategoryId.getBody()['result'];
 
         const categoryById = listingCategoryByIdResults[0].ItemInformation.ItemCategory;
-        expect(listingCategoryByIdResults.length).toBe(1);
+        expect(listingCategoryByIdResults.length).toBe(2);
         expect(createdCategory.id).toBe(categoryById.id);
     });
-
 
     test('Should search listing items by ItemInformation title', async () => {
         const resByCategoryByTitle = await api('POST', `/api/rpc`, {

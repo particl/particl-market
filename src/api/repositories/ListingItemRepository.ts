@@ -46,8 +46,8 @@ export class ListingItemRepository {
      * @param options, ListingItemSearchParams
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */
-    public async search(options: ListingItemSearchParams): Promise<Bookshelf.Collection<ListingItem>> {
-        return this.ListingItemModel.searchBy(options);
+    public async search(options: ListingItemSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<ListingItem>> {
+        return this.ListingItemModel.searchBy(options, withRelated);
 
     }
 

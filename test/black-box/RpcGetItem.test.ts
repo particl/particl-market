@@ -112,7 +112,7 @@ describe('/listing-items', () => {
     });
 
 
-    test('Should get the listing item by hash and id', async () => {
+    test('Should get the listing item by hash', async () => {
         // create listing item
         const res = await api('POST', '/api/listing-items', {
             body: testData
@@ -120,17 +120,16 @@ describe('/listing-items', () => {
         res.expectJson();
         res.expectStatusCode(201);
         res.expectData(keys);
-        createdId = res.getData()['id'];
         createdHash = res.getData()['hash'];
-
+        createdId = res.getData()['id'];
         // find listing item by hash
         const resMain = await api('POST', `/api/rpc`, {
-              body: {
-                  method: 'getitem',
-                  params:  [createdHash],
-                  id: 1,
-                  jsonrpc: '2.0'
-              }
+            body: {
+                method: 'getitem',
+                params:  [createdHash],
+                id: 1,
+                jsonrpc: '2.0'
+            }
 
         });
 
@@ -166,8 +165,9 @@ describe('/listing-items', () => {
         expect(resultMain.PaymentInformation.ItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
         expect(resultMain.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
         expect(resultMain.MessagingInformation.publicKey).toBe(testData.messagingInformation.publicKey);
+    });
 
-
+    test('Should get the listing item by id', async () => {
         // find listing item by id
         const resMainById = await api('POST', `/api/rpc`, {
             body: {

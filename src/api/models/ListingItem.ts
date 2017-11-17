@@ -4,6 +4,7 @@ import { ItemInformation } from './ItemInformation';
 import { PaymentInformation } from './PaymentInformation';
 import { MessagingInformation } from './MessagingInformation';
 import { ListingItemObject } from './ListingItemObject';
+import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
 
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
@@ -93,7 +94,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         }
     }
 
-    public static async searchBy(options: any): Promise<Collection<ListingItem>> {
+    public static async searchBy(options: ListingItemSearchParams, withRelated: boolean = false): Promise<Collection<ListingItem>> {
 
         const listingCollection = ListingItem.forge<Collection<ListingItem>>()
             .query( qb => {
@@ -114,7 +115,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
             });
 
-        if (options.withRelated) {
+        if (withRelated) {
             return await listingCollection.fetchAll({
                 withRelated: [
                     'ItemInformation',
