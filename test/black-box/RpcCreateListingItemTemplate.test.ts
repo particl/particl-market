@@ -2,7 +2,7 @@ import * as _ from 'lodash';
 import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
 
-describe('/RpcListingItemTemplate', () => {
+describe('/RpcCreateListingItemTemplate', () => {
 
     const keys = [
         'id', 'updatedAt', 'createdAt'
@@ -10,7 +10,9 @@ describe('/RpcListingItemTemplate', () => {
 
     const testData = {
         method: 'createlistingitemtemplate',
-        params: [],
+        params: [
+            0
+        ],
         jsonrpc: '2.0'
     };
 

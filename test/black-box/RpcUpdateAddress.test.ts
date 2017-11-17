@@ -3,7 +3,7 @@ import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
 import { Country } from '../../src/api/enums/Country';
 
-describe('/RpcCreateAddress', () => {
+describe('/RpcUpdateAddress', () => {
 
     const keys = [
         'id', 'updatedAt', 'createdAt', 'title', 'addressLine1', 'addressLine2', 'city', 'country'

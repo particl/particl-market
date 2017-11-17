@@ -36,13 +36,16 @@ export class RpcListingItemTemplateService {
 
     /**
      * data.params[]:
+     *  [0]: profile_id
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
     public async create( @request(RpcRequest) data: any): Promise<ListingItemTemplate> {
-        return this.listingItemTemplateService.create({});
+        return this.listingItemTemplateService.create({
+            profile_id : data.params[0]
+        });
     }
 
     /**
