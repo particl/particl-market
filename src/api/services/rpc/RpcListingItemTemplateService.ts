@@ -37,15 +37,33 @@ export class RpcListingItemTemplateService {
     /**
      * data.params[]:
      *  [0]: profile_id
+     *  [1]: title
+     *  [2]: short description
+     *  [3]: long description
+     *  [4]: category
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
     public async create( @request(RpcRequest) data: any): Promise<ListingItemTemplate> {
-        return this.listingItemTemplateService.create({
-            profile_id : data.params[0]
-        });
+        if (data.params[1] && data.params[2] && data.params[3] && data.params[4]) {
+            return this.listingItemTemplateService.create({
+                profile_id: data.params[0],
+                itemInformation: {
+                    title: data.params[1],
+                    shortDescription: data.params[2],
+                    longDescription: data.params[3],
+                    itemCategory: {
+                        key: data.params[4]
+                    }
+                }
+            });
+        } else {
+            return this.listingItemTemplateService.create({
+                profile_id: data.params[0]
+            });
+        }
     }
 
     /**
