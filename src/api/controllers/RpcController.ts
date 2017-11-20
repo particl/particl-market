@@ -24,7 +24,7 @@ import { RpcItemInformationService } from '../services/rpc/RpcItemInformationSer
 import { RpcProfileService } from '../services/rpc/RpcProfileService';
 import { RpcAddressService } from '../services/rpc/RpcAddressService';
 import { RpcCliHelpService } from '../services/rpc/RpcCliHelpService';
-
+import { RpcFavoriteItemService } from '../services/rpc/RpcFavoriteItemService';
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
 let rpcIdCount = 0;
@@ -57,6 +57,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemTemplateService) private rpcListingItemTemplateService: RpcListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemInformationService) private rpcItemInformationService: RpcItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcFavoriteItemService) private rpcFavoriteItemService: RpcFavoriteItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -160,7 +161,11 @@ export class RpcController {
 
             // categories
             'getcategories': 'rpcItemCategoryService.findRoot',
-            'getcategory': 'rpcItemCategoryService.findOne'
+            'getcategory': 'rpcItemCategoryService.findOne',
+
+            // favorite items
+            'addfavorite': 'rpcFavoriteItemService.addFavorite',
+            'removefavorite': 'rpcFavoriteItemService.removeFavorite'
 
         };
     }
@@ -173,7 +178,6 @@ export class RpcController {
 
         // check that we have exposed the method
         if (this.exposedMethods.hasOwnProperty(body.method)) {
-
             const callPath = this.exposedMethods[rpcRequest.method].split('.');
 
             // make sure we have an instance of the service and it contains the function we want to call

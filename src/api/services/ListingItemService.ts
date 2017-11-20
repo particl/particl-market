@@ -64,7 +64,8 @@ export class ListingItemService {
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */
     @validate()
-    public async search(@request(ListingItemSearchParams) options: ListingItemSearchParams, withRelated: boolean = false): Promise<Bookshelf.Collection<ListingItem>> {
+    public async search(@request(ListingItemSearchParams) options: ListingItemSearchParams, withRelated: boolean = false):
+        Promise<Bookshelf.Collection<ListingItem>> {
 
         // if valid params
         // todo: check whether category is string or number, if string, try to find the Category by key
@@ -73,7 +74,6 @@ export class ListingItemService {
 
     @validate()
     public async create(@request(ListingItemCreateRequest) body: any): Promise<ListingItem> {
-
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
         delete body.itemInformation;
