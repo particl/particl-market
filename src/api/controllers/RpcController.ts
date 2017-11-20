@@ -155,6 +155,7 @@ export class RpcController {
             // listing items
             'createlistingitemtemplate': 'rpcListingItemTemplateService.create',
             'getlistingitemtemplate': 'rpcListingItemTemplateService.findOne',
+            'searchlistingitemtemplate': 'rpcListingItemTemplateService.search',
 
             // item information
             'createiteminformation': 'rpcItemInformationService.create',
