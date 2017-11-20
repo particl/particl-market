@@ -4,6 +4,8 @@ import { ItemInformation } from './ItemInformation';
 import { PaymentInformation } from './PaymentInformation';
 import { MessagingInformation } from './MessagingInformation';
 import { ListingItemObject } from './ListingItemObject';
+import { ListingItem } from './ListingItem';
+import { Profile } from './Profile';
 
 export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
 
@@ -12,8 +14,12 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
             return await ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch({
                 withRelated: [
                     // TODO:
-                    // 'ListingItemTemplateRelated',
-                    // 'ListingItemTemplateRelated.Related'
+                    'ItemInformation',
+                    'PaymentInformation',
+                    'MessagingInformation',
+                    'ListingItemObjects',
+                    'ListingItem',
+                    'Profile'
                 ]
             });
         } else {
@@ -46,8 +52,17 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
     }
 
     public ListingItemObjects(): Collection<ListingItemObject> {
-        return this.hasMany(ListingItemObject, 'listing_template_item_id', 'id');
+        return this.hasMany(ListingItemObject, 'listing_item_template_id', 'id');
     }
+
+    public ListingItem(): Collection<ListingItem> {
+        return this.hasMany(ListingItem, 'listing_item_template_id', 'id');
+    }
+
+    public Profile(): Profile {
+        return this.belongsTo(Profile, 'profile_id', 'id');
+    }
+
     // TODO: add related
     // public ListingItemTemplateRelated(): ListingItemTemplateRelated {
     //    return this.hasOne(ListingItemTemplateRelated);

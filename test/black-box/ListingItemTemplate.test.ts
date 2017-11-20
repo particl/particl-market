@@ -12,6 +12,7 @@ describe('/listing-item-templates', () => {
     // ];
 
     const testData = {
+        profileId : 0
     };
 
     const testDataUpdated = {

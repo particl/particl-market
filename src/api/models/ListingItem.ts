@@ -6,7 +6,7 @@ import { MessagingInformation } from './MessagingInformation';
 import { ListingItemObject } from './ListingItemObject';
 import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
 import { FavoriteItem } from './FavoriteItem';
-
+import { ListingItemTemplate } from './ListingItemTemplate';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -175,5 +175,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public FavoriteItems(): Collection<FavoriteItem> {
       return this.hasMany(FavoriteItem , 'listing_item_id', 'id');
+    }
+
+    public ListingItemTemplate(): ListingItemTemplate {
+        return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
     }
 }
