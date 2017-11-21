@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { MessageException } from '../exceptions/MessageException';
 import { ItemInformationRepository } from '../repositories/ItemInformationRepository';
 import { ItemInformation } from '../models/ItemInformation';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
@@ -96,7 +97,6 @@ export class ItemInformationService {
 
     @validate()
     public async update(id: number, @request(ItemInformationUpdateRequest) body: any): Promise<ItemInformation> {
-
         // find the existing one without related
         const itemInformation = await this.findOne(id, false);
 
@@ -104,6 +104,13 @@ export class ItemInformationService {
         itemInformation.Title = body.title;
         itemInformation.ShortDescription = body.shortDescription;
         itemInformation.LongDescription = body.longDescription;
+        const itemInfoToSave = itemInformation.toJSON();
+        // check item-template-id
+        if (itemInfoToSave.listingItemTemplateId == null) {
+            this.log.warn(`ItemInformation with the id=${id} not related with any item-template!`);
+            throw new MessageException(`ItemInformation with the id=${id} not related with any item-template!`);
+        }
+
 
         // check if item category allready exists
         let existingItemCategory;
@@ -115,21 +122,19 @@ export class ItemInformationService {
             existingItemCategory = await this.itemCategoryService.create(body.itemCategory);
         }
 
-        const itemInfoToSave = itemInformation.toJSON();
         itemInfoToSave['itemCategoryId'] = existingItemCategory.Id;
-
         // update itemInformation record
         const updatedItemInformation = await this.itemInformationRepo.update(id, itemInfoToSave);
 
-        // find related record and delete it
-        let itemLocation = updatedItemInformation.related('ItemLocation').toJSON();
-        await this.itemLocationService.destroy(itemLocation.id);
-
-        // recreate related data
-        itemLocation = body.itemLocation;
-        itemLocation.item_information_id = id;
-        await this.itemLocationService.create(itemLocation);
-
+        if (body.itemLocation) {
+            // find related record and delete it
+            let itemLocation = updatedItemInformation.related('ItemLocation').toJSON();
+            await this.itemLocationService.destroy(itemLocation.id);
+            // recreate related data
+            itemLocation = body.itemLocation;
+            itemLocation.item_information_id = id;
+            await this.itemLocationService.create(itemLocation);
+        }
         // find related record and delete it
         let shippingDestinations = updatedItemInformation.related('ShippingDestinations').toJSON();
         for (const shippingDestination of shippingDestinations) {
@@ -137,20 +142,20 @@ export class ItemInformationService {
         }
 
         // recreate related data
-        shippingDestinations = body.shippingDestinations;
+        shippingDestinations = body.shippingDestinations || [];
         for (const shippingDestination of shippingDestinations) {
             shippingDestination.item_information_id = id;
             await this.shippingDestinationService.create(shippingDestination);
         }
 
         // find related record and delete it
-        let itemImages = updatedItemInformation.related('ItemImages').toJSON();
+        let itemImages = updatedItemInformation.related('ItemImages').toJSON() || [];
         for (const itemImage of itemImages) {
             await this.itemImageService.destroy(itemImage.id);
         }
 
         // recreate related data
-        itemImages = body.itemImages;
+        itemImages = body.itemImages || [];
         for (const itemImage of itemImages) {
             itemImage.item_information_id = id;
             await this.itemImageService.create(itemImage);
