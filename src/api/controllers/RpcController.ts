@@ -159,6 +159,7 @@ export class RpcController {
 
             // item information
             'createiteminformation': 'rpcItemInformationService.create',
+            'updateiteminformation': 'rpcItemInformationService.update',
 
             // categories
             'getcategories': 'rpcItemCategoryService.findRoot',
