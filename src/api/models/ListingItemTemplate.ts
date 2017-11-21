@@ -6,6 +6,7 @@ import { MessagingInformation } from './MessagingInformation';
 import { ListingItemObject } from './ListingItemObject';
 import { ListingItem } from './ListingItem';
 import { Profile } from './Profile';
+import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
 
 export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
 
@@ -24,6 +25,40 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
             });
         } else {
             return await ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch();
+        }
+    }
+
+    public static async searchBy(options: ListingItemTemplateSearchParams, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
+        const listingCollection = ListingItemTemplate.forge<Collection<ListingItemTemplate>>()
+            .query(qb => {
+                if (typeof options.category === 'number') {
+                    qb.where('item_informations.item_category_id', '=', options.category);
+                } else if (options.category && typeof options.category === 'string') {
+                    qb.where('item_categories.key', '=', options.category);
+                    qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
+                }
+                qb.innerJoin('item_informations', 'item_informations.listing_item_template_id', 'listing_item_templates.id');
+                qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
+                qb.where('profile_id', '=', options.profileId);
+            })
+            .orderBy('item_informations.title', options.order).query({
+                limit: options.pageLimit,
+                offset: (options.page - 1) * options.pageLimit
+            });
+
+        if (withRelated) {
+            return await listingCollection.fetchAll({
+                withRelated: [
+                    'ItemInformation',
+                    'PaymentInformation',
+                    'MessagingInformation',
+                    'ListingItemObjects',
+                    'ListingItem',
+                    'Profile'
+                ]
+            });
+        } else {
+            return await listingCollection.fetchAll();
         }
     }
 

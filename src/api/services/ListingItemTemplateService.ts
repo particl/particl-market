@@ -9,6 +9,7 @@ import { ItemInformationService } from '../services/ItemInformationService';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplateUpdateRequest } from '../requests/ListingItemTemplateUpdateRequest';
+import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
 import { RpcRequest } from '../requests/RpcRequest';
 
 
@@ -35,6 +36,18 @@ export class ListingItemTemplateService {
             throw new NotFoundException(id);
         }
         return listingItemTemplate;
+    }
+
+    /**
+     * search ListingItemTemplates using given ListingItemTemplateSearchParams
+     *
+     * @param options
+     * @returns {Promise<Bookshelf.Collection<ListingItemTemplate>>}
+     */
+    @validate()
+    public async search(
+        @request(ListingItemTemplateSearchParams) options: ListingItemTemplateSearchParams): Promise<Bookshelf.Collection<ListingItemTemplate>> {
+        return this.listingItemTemplateRepo.search(options);
     }
 
     @validate()
