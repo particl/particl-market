@@ -26,7 +26,7 @@ describe('/RpcFindItemTemplates', () => {
     const firstItemInformation = {
         method: 'createlistingitemtemplate',
         params: [
-            0, 'First Title', 'First Short Description', 'First Long Description', '0'
+            0, 'First Title', 'First Short Description', 'First Long Description', '0', 'payment', 'USD', 10, 2, 4, 'testing-address'
         ],
         jsonrpc: '2.0'
     };
@@ -34,7 +34,7 @@ describe('/RpcFindItemTemplates', () => {
     const secondItemInformation = {
         method: 'createlistingitemtemplate',
         params: [
-            0, 'Second Title', 'Second Short Description', 'Second Long Description', '0'
+            0, 'Second Title', 'Second Short Description', 'Second Long Description', '0', 'payment', 'USD', 10, 2, 4, 'testing-address'
         ],
         jsonrpc: '2.0'
     };

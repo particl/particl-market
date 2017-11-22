@@ -131,26 +131,26 @@ describe('/payment-informations', () => {
 
     });
 
-    test('PUT       /payment-informations/:id    Should update the payment information', async () => {
-        const res = await api('PUT', `/api/payment-informations/${createdId}`, {
-            body: testDataUpdated
-        });
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys);
+    // test('PUT       /payment-informations/:id    Should update the payment information', async () => {
+    //     const res = await api('PUT', `/api/payment-informations/${createdId}`, {
+    //         body: testDataUpdated
+    //     });
+    //     res.expectJson();
+    //     res.expectStatusCode(200);
+    //     res.expectData(keys);
 
-        const result: any = res.getData();
-        expect(result.type).toBe(testDataUpdated.type);
-        expect(result.Escrow.type).toBe(testDataUpdated.escrow.type);
-        expect(result.Escrow.Ratio.buyer).toBe(testDataUpdated.escrow.ratio.buyer);
-        expect(result.Escrow.Ratio.seller).toBe(testDataUpdated.escrow.ratio.seller);
-        expect(result.ItemPrice.currency).toBe(testDataUpdated.itemPrice.currency);
-        expect(result.ItemPrice.basePrice).toBe(testDataUpdated.itemPrice.basePrice);
-        expect(result.ItemPrice.ShippingPrice.domestic).toBe(testDataUpdated.itemPrice.shippingPrice.domestic);
-        expect(result.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.itemPrice.shippingPrice.international);
-        expect(result.ItemPrice.Address.type).toBe(testDataUpdated.itemPrice.address.type);
-        expect(result.ItemPrice.Address.address).toBe(testDataUpdated.itemPrice.address.address);
-    });
+    //     const result: any = res.getData();
+    //     expect(result.type).toBe(testDataUpdated.type);
+    //     expect(result.Escrow.type).toBe(testDataUpdated.escrow.type);
+    //     expect(result.Escrow.Ratio.buyer).toBe(testDataUpdated.escrow.ratio.buyer);
+    //     expect(result.Escrow.Ratio.seller).toBe(testDataUpdated.escrow.ratio.seller);
+    //     expect(result.ItemPrice.currency).toBe(testDataUpdated.itemPrice.currency);
+    //     expect(result.ItemPrice.basePrice).toBe(testDataUpdated.itemPrice.basePrice);
+    //     expect(result.ItemPrice.ShippingPrice.domestic).toBe(testDataUpdated.itemPrice.shippingPrice.domestic);
+    //     expect(result.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.itemPrice.shippingPrice.international);
+    //     expect(result.ItemPrice.Address.type).toBe(testDataUpdated.itemPrice.address.type);
+    //     expect(result.ItemPrice.Address.address).toBe(testDataUpdated.itemPrice.address.address);
+    // });
 
     test('PUT       /payment-informations/:id    Should fail because we want to update the payment information with a invalid email', async () => {
         const res = await api('PUT', `/api/payment-informations/${createdId}`, {

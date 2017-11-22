@@ -38,10 +38,20 @@ export class RpcListingItemTemplateService {
     /**
      * data.params[]:
      *  [0]: profile_id
+     *
+     *  itemInformation
      *  [1]: title
      *  [2]: short description
      *  [3]: long description
      *  [4]: category
+     *
+     *  paymentInformation
+     *  [5]: payment type
+     *  [6]: currency
+     *  [7]: base price
+     *  [8]: domestic shipping price
+     *  [9]: international shipping price
+     *  [10]: payment address
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -57,6 +67,21 @@ export class RpcListingItemTemplateService {
                     longDescription: data.params[3],
                     itemCategory: {
                         key: data.params[4]
+                    }
+                },
+                paymentInformation: {
+                    type: data.params[5],
+                    itemPrice: {
+                        currency: data.params[6],
+                        basePrice: data.params[7],
+                        shippingPrice: {
+                            domestic: data.params[8],
+                            international: data.params[9]
+                        },
+                        address: {
+                            type: 'address-type',
+                            address: data.params[10]
+                        }
                     }
                 }
             });
