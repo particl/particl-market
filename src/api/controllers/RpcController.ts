@@ -25,6 +25,7 @@ import { RpcProfileService } from '../services/rpc/RpcProfileService';
 import { RpcAddressService } from '../services/rpc/RpcAddressService';
 import { RpcCliHelpService } from '../services/rpc/RpcCliHelpService';
 import { RpcPaymentInformationService } from '../services/rpc/RpcPaymentInformationService';
+import { RpcEscrowService } from '../services/rpc/RpcEscrowService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -59,6 +60,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemTemplateService) private rpcListingItemTemplateService: RpcListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemInformationService) private rpcItemInformationService: RpcItemInformationService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcPaymentInformationService) private rpcPaymentInformationService: RpcPaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcEscrowService) private rpcEscrowService: RpcEscrowService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -168,7 +170,10 @@ export class RpcController {
             'getcategory': 'rpcItemCategoryService.findOne',
 
             // paymentInformation
-            'updatepaymentinformation': 'rpcPaymentInformationService.update'
+            'updatepaymentinformation': 'rpcPaymentInformationService.update',
+
+            // escrow
+            'createescrow': 'rpcEscrowService.create'
 
         };
     }
