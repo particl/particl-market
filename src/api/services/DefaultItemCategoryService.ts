@@ -112,6 +112,7 @@ export class DefaultItemCategoryService {
         await this.insertOrUpdateCategory({key: 'cat_wholesale_scientific_lab_services', name: 'Scientific / Lab Services', description: '', parentItemCategoryId: LEVEL1CHILD.Id} as ItemCategoryCreateRequest);
         await this.insertOrUpdateCategory({key: 'cat_wholesale_other', name: 'Other', description: '', parentItemCategoryId: LEVEL1CHILD.Id} as ItemCategoryCreateRequest);
 
+        this.log.debug('updated default categories');
     }
     // tslint:enable:max-line-length
 
@@ -120,10 +121,10 @@ export class DefaultItemCategoryService {
         let newItemCategory = await this.itemCategoryService.findOneByKey(category.key);
         if (newItemCategory === null) {
             newItemCategory = await this.itemCategoryService.create(category);
-            this.log.debug('created new default category: ', await this.getPath( newItemCategory ));
+            // this.log.debug('created new default category: ', await this.getPath( newItemCategory ));
         } else {
             newItemCategory = await this.itemCategoryService.update(newItemCategory.Id, category);
-            this.log.debug('updated new default category: ', await this.getPath( newItemCategory ));
+            // this.log.debug('updated new default category: ', await this.getPath( newItemCategory ));
         }
         return newItemCategory;
     }

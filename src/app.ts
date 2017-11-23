@@ -16,9 +16,9 @@ import { CustomConfig } from './config/CustomConfig';
 
 export const app = new App();
 
-
-// Here you can add more custom configurations
-app.configure(new CustomConfig());
-
-// Launch the server with all his awesome features.
-app.bootstrap();
+if (process.env.NODE_ENV !== 'test') {
+    // Here you can add more custom configurations
+    app.configure(new CustomConfig());
+    // Launch the server with all his awesome features.
+    app.bootstrap();
+}
