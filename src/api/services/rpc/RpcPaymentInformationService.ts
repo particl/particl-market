@@ -82,7 +82,7 @@ export class RpcPaymentInformationService {
      */
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<PaymentInformation> {
-        return this.paymentInformationService.update(data.params[0], {
+        return this.paymentInformationService.updateByListingId(data.params[0], {
             type: data.params[1],
             // escrow: {
             //     type: data.params[2],

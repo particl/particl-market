@@ -39,13 +39,13 @@ export class PaymentInformationService {
         return paymentInformation;
     }
 
-    public async findOneByListingItemTemplateId(id: number): Promise<PaymentInformation> {
+    public async updateByListingId(id: number, @request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
         const paymentInformation = await this.paymentInformationRepo.findOneByListingItemTemplateId(id);
         if (paymentInformation === null) {
             this.log.warn(`PaymentInformation with the listing_item_template_id=${id} was not found!`);
             throw new MessageException(`PaymentInformation with the listing_item_template_id=${id} was not found!`);
         }
-        return paymentInformation;
+        return this.update(paymentInformation.id, body);
     }
 
     @validate()
@@ -79,7 +79,7 @@ export class PaymentInformationService {
     public async update(id: number, @request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
 
         // find the existing one without related
-        const paymentInformation = await this.findOneByListingItemTemplateId(id);
+        const paymentInformation = await this.findOne(id, false);
         // set new values
         paymentInformation.Type = body.type;
 

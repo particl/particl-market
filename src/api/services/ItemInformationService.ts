@@ -96,6 +96,17 @@ export class ItemInformationService {
     }
 
     @validate()
+    public async updateWithCheckListingTemplate(id: number, @request(ItemInformationUpdateRequest) body: any): Promise<ItemInformation> {
+        const itemInformation = await this.findOne(id, false);
+        const listingItemTemplateId = itemInformation.toJSON().listingItemTemplateId;
+        if (listingItemTemplateId == null) {
+            this.log.warn(`ItemInformation with the id=${id} not related with any item-template!`);
+            throw new MessageException(`ItemInformation with the id=${id} not related with any item-template!`);
+        }
+        return this.update(id, body);
+    }
+
+    @validate()
     public async update(id: number, @request(ItemInformationUpdateRequest) body: any): Promise<ItemInformation> {
         // find the existing one without related
         const itemInformation = await this.findOne(id, false);
@@ -105,12 +116,6 @@ export class ItemInformationService {
         itemInformation.ShortDescription = body.shortDescription;
         itemInformation.LongDescription = body.longDescription;
         const itemInfoToSave = itemInformation.toJSON();
-        // check item-template-id
-        if (itemInfoToSave.listingItemTemplateId == null) {
-            this.log.warn(`ItemInformation with the id=${id} not related with any item-template!`);
-            throw new MessageException(`ItemInformation with the id=${id} not related with any item-template!`);
-        }
-
 
         // check if item category allready exists
         let existingItemCategory;

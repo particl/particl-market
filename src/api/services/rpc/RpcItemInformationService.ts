@@ -71,7 +71,7 @@ export class RpcItemInformationService {
      */
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<ItemInformation> {
-        return this.itemInformationService.update(data.params[0], {
+        return this.itemInformationService.updateWithCheckListingTemplate(data.params[0], {
             title: data.params[1],
             shortDescription: data.params[2],
             longDescription: data.params[3],
