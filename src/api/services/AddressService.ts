@@ -65,4 +65,8 @@ export class AddressService {
         await this.addressRepo.destroy(id);
     }
 
+    public async destroyAll(): Promise<void> {
+        await this.addressRepo.destroyAll();
+    }
+
 }

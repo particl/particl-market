@@ -16,6 +16,7 @@ import { ShippingDestinationService } from '../services/ShippingDestinationServi
 import { ItemInformationService } from '../services/ItemInformationService';
 import { MessagingInformationService } from '../services/MessagingInformationService';
 import { ListingItemService } from '../services/ListingItemService';
+import { TestDataService } from '../services/TestDataService';
 
 import { RpcItemCategoryService } from '../services/rpc/RpcItemCategoryService';
 import { RpcListingItemService } from '../services/rpc/RpcListingItemService';
@@ -49,6 +50,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.TestDataService) private testDataService: TestDataService,
 
         @inject(Types.Service) @named(Targets.Service.rpc.RpcCliHelpService) private rpcCliHelpService: RpcCliHelpService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemCategoryService) private rpcItemCategoryService: RpcItemCategoryService,
@@ -129,6 +131,7 @@ export class RpcController {
             'listingitem.findbycategory': 'listingItemService.findByCategory',
             'listingitem.update': 'listingItemService.update',
             'listingitem.destroy': 'listingItemService.destroy',
+            'clean': 'testDataService.clean',
 
             'profile.create': 'rpcProfileService.rpcCreate',
             'profile.update': 'rpcProfileService.rpcUpdate',
