@@ -75,15 +75,16 @@ export const Targets = {
         ProfileService: 'ProfileService',
         rpc: {
             RpcAddressService: 'RpcAddressService',
+            RpcCliHelpService: 'RpcCliHelpService',
             RpcItemCategoryService: 'RpcItemCategoryService',
             RpcItemInformationService: 'RpcItemInformationService',
             RpcListingItemService: 'RpcListingItemService',
             RpcListingItemTemplateService: 'RpcListingItemTemplateService',
-            RpcProfileService: 'RpcProfileService',
-            RpcCliHelpService: 'RpcCliHelpService'
+            RpcProfileService: 'RpcProfileService'
         },
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
+        TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
     Middleware:     {
