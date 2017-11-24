@@ -169,7 +169,8 @@ export class RpcController {
             'getcategory': 'rpcItemCategoryService.findOne',
 
             // test data management
-            'clean': 'rpcTestDataService.clean'
+            'cleandb': 'rpcTestDataService.clean',
+            'adddata': 'rpcTestDataService.create'
 
         };
     }

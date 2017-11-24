@@ -30,7 +30,21 @@ export class RpcTestDataService {
      */
     @validate()
     public async clean( @request(RpcRequest) data: any): Promise<void> {
-        this.log.info('data.params: ', JSON.stringify(data.params));
         return await this.testDataService.clean(data.params);
     }
+
+    /**
+     * rpc command to create test data
+     *
+     * data.params[]:
+     *  [0]: ListingItem in json
+     *
+     * @param data
+     * @returns {Promise<void>}
+     */
+    public async create( @request(RpcRequest) data: any): Promise<any> {
+        this.log.info('data.params[0]: ', data.params[0]);
+        return await this.testDataService.create(JSON.parse(data.params[0]));
+    }
+
 }
