@@ -23,18 +23,19 @@ export class TestDataService {
     /**
      * clean up the database
      *
-     * @param tables to ignore
+     * @param ignoreTables to ignore
      * @returns {Promise<void>}
      */
-    public async clean(tables: string[]): Promise<void> {
+    public async clean(ignoreTables: string[]): Promise<void> {
 
         // by default ignore these
-        this.ignoreTables = this.ignoreTables.concat(tables);
+        ignoreTables = this.ignoreTables.concat(ignoreTables);
         this.log.info('cleaning up the db, ignoring tables: ', this.ignoreTables);
         const options = {
             mode: 'delete',
-            ignoreTables: this.ignoreTables
+            ignoreTables
         };
+        this.log.debug('ignoreTables: ', ignoreTables);
 
         const existingTables = await this.getTableNames(Bookshelf.knex);
         const tablesToClean = existingTables
@@ -42,13 +43,12 @@ export class TestDataService {
                 return table.name; // [Object.keys(table)[0]];
             })
             .filter( (tableName) => {
-                return !_.includes(this.ignoreTables, tableName);
+                return !_.includes(ignoreTables, tableName);
             });
 
-        this.log.info('tablesToClean: ', tablesToClean);
 
+        // this.log.debug('tablesToClean: ', tablesToClean);
         for (const table of tablesToClean) {
-            this.log.info('table: ', table);
             await Bookshelf.knex.select().from(table).del();
         }
         return;

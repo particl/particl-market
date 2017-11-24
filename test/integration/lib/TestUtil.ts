@@ -26,13 +26,13 @@ export class TestUtil {
         if (this.serverStarted === false) {
             throw Error('Not started.');
         } else {
-            this.log.info('SERVER READY!');
+            this.log.debug('SERVER READY!');
         }
         return true;
     }
 
     private waitFor(timeout: number): Promise<void> {
-        this.log.info('waiting for ' + timeout + 'ms');
+        this.log.debug('waiting for ' + timeout + 'ms');
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve();
@@ -48,7 +48,7 @@ export class TestUtil {
             } catch (err) {
                 const timeout = 1000;
                 await this.waitFor(timeout);
-                this.log.info('error: ' + err.message);
+                this.log.debug('error: ' + err.message);
             }
         }
     }
