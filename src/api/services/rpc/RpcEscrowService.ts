@@ -76,8 +76,14 @@ export class RpcEscrowService {
         });
     }
 
+    /**
+     * data.params[]:
+     *  [0]: ListingItemTemplate.id
+     * @param data
+     * @returns {Promise<Escrow>}
+     */
     @validate()
     public async destroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.escrowService.destroy(data.params[0]);
+        return this.escrowService.destroyCheckByListingItem(data.params[0]);
     }
 }

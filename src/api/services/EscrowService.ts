@@ -144,6 +144,28 @@ export class EscrowService {
         return newEscrow;
     }
 
+    public async destroyCheckByListingItem(listingItemTemplateId: any): Promise<void> {
+        // check listingItem by listingItemTemplateId
+        const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
+        let escrowId;
+        if (listingItemTemplate.ListingItem.length === 0) {
+            // creates an Escrow related to PaymentInformation related to ListingItemTemplate
+            const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
+            if (paymentInformation === null) {
+                this.log.warn(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
+                throw new MessageException(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
+            }
+            const escrow = await this.findOneByPaymentInformation(paymentInformation.Id, false);
+            escrowId = escrow.Id;
+        } else {
+            this.log.warn(`Escrow cannot be updated becuase Listing
+            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
+            throw new MessageException(`Escrow cannot be updated becuase Listing
+            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
+        }
+        return this.destroy(escrowId);
+    }
+
     public async destroy(id: number): Promise<void> {
         await this.escrowRepo.destroy(id);
     }
