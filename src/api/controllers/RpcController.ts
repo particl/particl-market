@@ -25,6 +25,7 @@ import { RpcProfileService } from '../services/rpc/RpcProfileService';
 import { RpcAddressService } from '../services/rpc/RpcAddressService';
 import { RpcCliHelpService } from '../services/rpc/RpcCliHelpService';
 import { RpcPaymentInformationService } from '../services/rpc/RpcPaymentInformationService';
+import { RpcTestDataService } from '../services/rpc/RpcTestDataService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -59,6 +60,8 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemTemplateService) private rpcListingItemTemplateService: RpcListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemInformationService) private rpcItemInformationService: RpcItemInformationService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcPaymentInformationService) private rpcPaymentInformationService: RpcPaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcTestDataService) private rpcTestDataService: RpcTestDataService,
+
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -169,6 +172,10 @@ export class RpcController {
 
             // paymentInformation
             'updatepaymentinformation': 'rpcPaymentInformationService.update'
+
+            // test data management
+            'cleandb': 'rpcTestDataService.clean',
+            'adddata': 'rpcTestDataService.create'
 
         };
     }

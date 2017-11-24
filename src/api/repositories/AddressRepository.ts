@@ -62,5 +62,4 @@ export class AddressRepository {
             throw new DatabaseException('Could not delete the address!', error);
         }
     }
-
 }

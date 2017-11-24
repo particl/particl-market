@@ -1,9 +1,6 @@
 ## TODO
 
 - Swagger generated docs for RPC api
-- figure out the proper way to handle cascade save/update using the orm
-- fix rpc command access from shell (npm run console rpc:getinfo, etc)
-- fix rpc command access from webcli
 
 ## Model/Db related
 - add paging support, searching, sorting, filtering
@@ -13,6 +10,7 @@
 - listingitemobject needs some thinking
 - separate own listings, these could be also active/inactive
 - hash of listing
+- rename Country enum to Region
 
 ## Marketplace related
 - handle incoming marketplace messages

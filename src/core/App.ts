@@ -11,6 +11,7 @@ import { AppConfig } from '../config/AppConfig';
 import { Types, Core } from '../constants';
 import { EventEmitter } from './api/events';
 import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
+import { Environment } from './helpers/Environment';
 
 export interface Configurable {
     configure(app: App): void;
@@ -27,14 +28,19 @@ export class App {
     private configurations: Configurable[] = [];
 
     constructor() {
-        // It also loads the .env file into the 'process.env' variable.
-        dotenv.config();
+
+        // loads the .env file into the 'process.env' variable.
+        Environment.isTest() ? dotenv.config({path: './test/.env.test'}) : dotenv.config();
+
         // Configure the logger, because we need it already.
         const loggerConfig = new LoggerConfig();
         loggerConfig.configure();
         // Create express app
+        this.log.info('NODE_ENV: ' + process.env.NODE_ENV);
         this.log.info('Defining app...');
-        this.bootstrapApp.defineExpressApp(this.express);
+        if (!Environment.isTest()) {
+            this.bootstrapApp.defineExpressApp(this.express);
+        }
     }
 
     get IoC(): Container {
@@ -57,29 +63,45 @@ export class App {
         this.configurations.push(configurations);
     }
 
-    public async bootstrap(): Promise<void> {
+    /**
+     * TODO:
+     * - no rest api in prod
+     *
+     * @returns {Promise<EventEmitter>}
+     */
+    public async bootstrap(): Promise<any> {
         this.log.info('Configuring app...');
-        // Add express monitor app
-        this.bootstrapApp.setupMonitor(this.express);
-        // Configure the app config for all the middlewares
-        const appConfig = new AppConfig();
-        appConfig.configure(this);
-        // Configure all custom configurations
-        this.configurations.forEach((c) => c.configure(this));
+
+        if (!Environment.isTest()) {
+            // Add express monitor app
+            this.bootstrapApp.setupMonitor(this.express);
+            // Configure the app config for all the middlewares
+            const appConfig = new AppConfig();
+            appConfig.configure(this);
+            // Configure all custom configurations
+            this.configurations.forEach((c) => c.configure(this));
+        }
+
         // Setup the ioc of inversify
         this.log.info('Binding IoC modules...');
         await this.ioc.bindModules();
-        this.log.info('Setting up IoC...');
-        this.inversifyExpressServer = this.bootstrapApp.setupInversifyExpressServer(this.express, this.ioc);
-        this.express = this.bootstrapApp.bindInversifyExpressServer(this.express, this.inversifyExpressServer);
-        this.bootstrapApp.setupCoreTools(this.express);
-        this.log.info('Starting app...');
-        this.server = new Server(this.bootstrapApp.startServer(this.express));
-        this.server.use(this.express);
+
+        if (!Environment.isTest()) {
+            this.log.info('Setting up IoC...');
+            this.inversifyExpressServer = this.bootstrapApp.setupInversifyExpressServer(this.express, this.ioc);
+            this.express = this.bootstrapApp.bindInversifyExpressServer(this.express, this.inversifyExpressServer);
+            this.bootstrapApp.setupCoreTools(this.express);
+            this.log.info('Starting app...');
+            this.server = new Server(this.bootstrapApp.startServer(this.express));
+            this.server.use(this.express);
+        }
+
         this.log.info('App is ready!');
 
         const eventEmitter = this.ioc.container.getNamed<EventEmitter>(Types.Core, Core.Events);
         eventEmitter.emit(ServerStartedListener.Event, 'Hello!');
+
+        return eventEmitter;
     }
 
 }
