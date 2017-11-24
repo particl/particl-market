@@ -8,6 +8,7 @@ node_modules/
 npm-debug.log
 yarn-error.log
 .env
+test/.env.test
 
 # OS generated files #
 .DS_Store

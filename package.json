@@ -5,7 +5,7 @@
   "main": "src/app.ts",
   "scripts": {
     "setup": "yarn install && npm run banner setup && npm run db:migrate && npm run db:seed",
-    "serve": "npm run banner serve && \"./node_modules/.bin/nodemon\" --watch src --watch .env",
+    "serve": "npm run banner serve && NODE_ENV=development \"./node_modules/.bin/nodemon\" --watch src --watch .env",
     "build": "npm run banner build && npm run lint && npm run clean:dist && npm run transpile && npm run copy:assets",
     "start": "node dist/app.js",
     "pretest": "./node_modules/.bin/tslint -c ./tslint.json -t stylish './test/unit/**/*.ts'",
@@ -15,6 +15,9 @@
     "pretest:black-box": "./node_modules/.bin/tslint -c ./tslint.json -t stylish './test/black-box/**/*.ts'",
     "test:black-box": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --testPathPattern=black-box -i",
     "test:black-box:pretty": "npm run test:black-box -- --verbose",
+    "pretest:integration": "./node_modules/.bin/tslint -c ./tslint.json -t stylish './test/integration/**/*.ts'",
+    "test:integration": "npm run banner test && cross-env \"./node_modules/.bin/jest\" --testPathPattern=integration -i",
+    "test:integration:pretty": "NODE_ENV=test npm run test:integration -- --verbose",
     "db:migrate": "npm run banner migrate && \"./node_modules/.bin/knex\" migrate:latest",
     "db:migrate:rollback": "npm run banner rollback && \"./node_modules/.bin/knex\" migrate:rollback",
     "db:seed": "npm run banner seed && \"./node_modules/.bin/knex\" seed:run",

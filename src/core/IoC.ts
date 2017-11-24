@@ -13,6 +13,7 @@ import { Types, Core, Targets } from '../constants';
 import { events, EventEmitter } from './api/events';
 import { Logger } from './Logger';
 import { IocConfig } from '../config/IocConfig';
+import { Environment } from './helpers/Environment';
 
 export class IoC {
 
@@ -37,19 +38,26 @@ export class IoC {
     }
 
     public async bindModules(): Promise<void> {
+
+        this.log.info('binding core');
         this.bindCore();
 
         if (this.libConfiguration) {
             this.container = this.libConfiguration(this.container);
         }
 
+        this.log.info('binding models');
         await this.bindModels();
+        this.log.info('binding repositories');
         await this.bindRepositories();
+        this.log.info('binding services');
         await this.bindServices();
-
         await this.bindListeners();
-        await this.bindMiddlewares();
-        await this.bindControllers();
+
+        if (!Environment.isTest()) {
+            await this.bindMiddlewares();
+            await this.bindControllers();
+        }
 
         if (this.customConfiguration) {
             this.container = this.customConfiguration(this.container);
@@ -123,6 +131,8 @@ export class IoC {
     private bindFiles(filePath: string, target: any, callback: (name: any, value: any) => void): Promise<void> {
         return new Promise<void>((resolve) => {
             this.getFiles(filePath, (files: string[]) => {
+                // this.log.info('bindFiles, filePath:', filePath);
+                // this.log.info('bindFiles, files:', files);
                 files.forEach((file: any) => {
                     let fileExport;
                     let fileClass;
@@ -178,22 +188,30 @@ export class IoC {
     private getTargetOfFile(name: string, target: any): any {
         const fileParts = name.split('.');
         let fileTarget = target;
-        fileParts.forEach((part) => fileTarget = fileTarget[part]);
+        fileParts.forEach((part) => {
+            fileTarget = fileTarget[part];
+        });
         return fileTarget;
     }
 
     private getBasePath(): string {
-        const baseFolder = __dirname.indexOf(`${path.sep}src${path.sep}`) >= 0 ? `${path.sep}src${path.sep}` : `${path.sep}dist${path.sep}`;
-        const baseRoot = __dirname.substring(0, __dirname.indexOf(baseFolder));
+        const baseFolder = __dirname.indexOf(`${path.sep}src${path.sep}`) >= 0 || __dirname.indexOf(`${path.sep}test${path.sep}`) >= 0
+            ? `${path.sep}src${path.sep}`
+            : `${path.sep}dist${path.sep}`;
+        const baseRoot = __dirname.substring(0, __dirname.indexOf(baseFolder)); // path.normalize(__dirname + '/../../..')
+        // this.log.info('baseFolder: ', baseFolder);
+        // this.log.info('baseRoot: ', baseFolder);
         return path.join(baseRoot, baseFolder, 'api');
     }
 
     private getFiles(filePath: string, done: (files: any[]) => void): void {
-        const isTypeScript = __dirname.indexOf(`${path.sep}src${path.sep}`) >= 0;
+        const isTypeScript = __dirname.indexOf(`${path.sep}src${path.sep}`) >= 0 || __dirname.indexOf(`${path.sep}test${path.sep}`) >= 0;
         if (!isTypeScript) {
             filePath = filePath.replace('.ts', '.js');
         }
-        glob(this.getBasePath() + filePath, (err: any, files: string[]) => {
+
+        const pattern = this.getBasePath() + filePath;
+        glob(pattern, (err: any, files: string[]) => {
             if (err) {
                 this.log.warn(`Could not read the folder ${filePath}!`);
                 return;
