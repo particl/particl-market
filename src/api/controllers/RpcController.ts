@@ -16,7 +16,6 @@ import { ShippingDestinationService } from '../services/ShippingDestinationServi
 import { ItemInformationService } from '../services/ItemInformationService';
 import { MessagingInformationService } from '../services/MessagingInformationService';
 import { ListingItemService } from '../services/ListingItemService';
-import { TestDataService } from '../services/TestDataService';
 
 import { RpcItemCategoryService } from '../services/rpc/RpcItemCategoryService';
 import { RpcListingItemService } from '../services/rpc/RpcListingItemService';
@@ -25,6 +24,7 @@ import { RpcItemInformationService } from '../services/rpc/RpcItemInformationSer
 import { RpcProfileService } from '../services/rpc/RpcProfileService';
 import { RpcAddressService } from '../services/rpc/RpcAddressService';
 import { RpcCliHelpService } from '../services/rpc/RpcCliHelpService';
+import { RpcTestDataService } from '../services/rpc/RpcTestDataService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -50,7 +50,6 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.TestDataService) private testDataService: TestDataService,
 
         @inject(Types.Service) @named(Targets.Service.rpc.RpcCliHelpService) private rpcCliHelpService: RpcCliHelpService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemCategoryService) private rpcItemCategoryService: RpcItemCategoryService,
@@ -59,6 +58,8 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemTemplateService) private rpcListingItemTemplateService: RpcListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemInformationService) private rpcItemInformationService: RpcItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcTestDataService) private rpcTestDataService: RpcTestDataService,
+
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -131,7 +132,6 @@ export class RpcController {
             'listingitem.findbycategory': 'listingItemService.findByCategory',
             'listingitem.update': 'listingItemService.update',
             'listingitem.destroy': 'listingItemService.destroy',
-            'clean': 'testDataService.clean',
 
             'profile.create': 'rpcProfileService.rpcCreate',
             'profile.update': 'rpcProfileService.rpcUpdate',
@@ -166,7 +166,10 @@ export class RpcController {
 
             // categories
             'getcategories': 'rpcItemCategoryService.findRoot',
-            'getcategory': 'rpcItemCategoryService.findOne'
+            'getcategory': 'rpcItemCategoryService.findOne',
+
+            // test data management
+            'clean': 'rpcTestDataService.clean'
 
         };
     }

@@ -8,7 +8,6 @@ import { AddressRepository } from '../repositories/AddressRepository';
 import { Address } from '../models/Address';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
 import { AddressUpdateRequest } from '../requests/AddressUpdateRequest';
-import { RpcRequest } from '../requests/RpcRequest';
 
 export class AddressService {
 
@@ -63,10 +62,6 @@ export class AddressService {
 
     public async destroy(id: number): Promise<void> {
         await this.addressRepo.destroy(id);
-    }
-
-    public async destroyAll(): Promise<void> {
-        await this.addressRepo.destroyAll();
     }
 
 }
