@@ -42,6 +42,15 @@ export class EscrowService {
         return escrow;
     }
 
+    public async findOneByPaymentInformation(id: number, withRelated: boolean = true): Promise<Escrow> {
+        const escrow = await this.escrowRepo.findOneByPaymentInformation(id, withRelated);
+        if (escrow === null) {
+            this.log.warn(`Escrow with the id=${id} was not found!`);
+            throw new NotFoundException(id);
+        }
+        return escrow;
+    }
+
     public async createCheckByListingItem(body: any): Promise<Escrow> {
         // check listingItem by listingItemTemplateId
         const listingItemTemplateId = body.listingItemTemplateId;
@@ -56,9 +65,9 @@ export class EscrowService {
             body.payment_information_id = paymentInformation.Id;
         } else {
             this.log.warn(`Escrow cannot be created becuase Listing
-            Item has allready been posted with this is listing-item-template-id ${listingItemTemplateId}`);
+            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
             throw new MessageException(`Escrow cannot be created becuase Listing
-            Item has allready been posted with this is listing-item-template-id ${listingItemTemplateId}`);
+            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
         }
         delete body.listingItemTemplateId;
         return this.create(body);
@@ -80,6 +89,31 @@ export class EscrowService {
         // finally find and return the created escrow
         const newEscrow = await this.findOne(escrow.Id);
         return newEscrow;
+    }
+
+    public async updateCheckByListingItem(body: any): Promise<Escrow> {
+        // check listingItem by listingItemTemplateId
+        const listingItemTemplateId = body.listingItemTemplateId;
+        const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
+        let escrowId;
+        if (listingItemTemplate.ListingItem.length === 0) {
+            // creates an Escrow related to PaymentInformation related to ListingItemTemplate
+            const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
+            if (paymentInformation === null) {
+                this.log.warn(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
+                throw new MessageException(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
+            }
+            const escrow = await this.findOneByPaymentInformation(paymentInformation.Id, false);
+            escrowId = escrow.Id;
+            body.payment_information_id = paymentInformation.Id;
+        } else {
+            this.log.warn(`Escrow cannot be updated becuase Listing
+            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
+            throw new MessageException(`Escrow cannot be updated becuase Listing
+            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
+        }
+        delete body.listingItemTemplateId;
+        return this.update(escrowId, body);
     }
 
     @validate()

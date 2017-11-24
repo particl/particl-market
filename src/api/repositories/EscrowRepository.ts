@@ -26,6 +26,10 @@ export class EscrowRepository {
         return this.EscrowModel.fetchById(id, withRelated);
     }
 
+    public async findOneByPaymentInformation(id: number, withRelated: boolean = true): Promise<Escrow> {
+        return this.EscrowModel.fetchByPaymentInformationId(id, withRelated);
+    }
+
     public async create(data: any): Promise<Escrow> {
         const escrow = this.EscrowModel.forge<Escrow>(data);
         try {

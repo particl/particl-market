@@ -43,11 +43,6 @@ export class ListingItemService {
         return listingItem;
     }
 
-    public async findByListingItemTemplateId(listingItemTemplateId: number): Promise<ListingItem> {
-        const listingItem = await this.listingItemRepo.findByListingItemTemplateId(listingItemTemplateId);
-        return listingItem;
-    }
-
     /**
      *
      * @param hash, hash of the listing Item.
