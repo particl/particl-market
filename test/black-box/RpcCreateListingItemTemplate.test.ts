@@ -19,7 +19,7 @@ describe('/RpcCreateListingItemTemplate', () => {
     const testDataIteminformation = {
         method: 'createlistingitemtemplate',
         params: [
-            0, 'Test Title', 'test short description', 'Long description', '0'
+            0, 'Test Title', 'test short description', 'Long description', '0', 'payment', 'USD', 10, 2, 4, 'testing-address'
         ],
         jsonrpc: '2.0'
     };
@@ -58,7 +58,7 @@ describe('/RpcCreateListingItemTemplate', () => {
         expect(res).hasOwnProperty('ListingItem');
     });
 
-    test('Should create a new Listing Item Template by RPC with Profile and Item', async () => {
+    test('Should create a new Listing Item Template by RPC with Profile + Item-information + Payment-information', async () => {
         // create root category
         const resrc = await api('POST', '/api/item-categories', {
             body: rootData
@@ -93,6 +93,8 @@ describe('/RpcCreateListingItemTemplate', () => {
         expect(result['ItemInformation']['shortDescription']).toBe(testDataIteminformation.params[2]);
         expect(result['ItemInformation']['longDescription']).toBe(testDataIteminformation.params[3]);
         expect(result).hasOwnProperty('PaymentInformation');
+        expect(result['PaymentInformation']['type']).toBe(testDataIteminformation.params[5]);
+
         expect(result).hasOwnProperty('MessagingInformation');
         expect(result).hasOwnProperty('ListingItemObjects');
         expect(result).hasOwnProperty('ListingItem');

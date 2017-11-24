@@ -24,6 +24,7 @@ import { RpcItemInformationService } from '../services/rpc/RpcItemInformationSer
 import { RpcProfileService } from '../services/rpc/RpcProfileService';
 import { RpcAddressService } from '../services/rpc/RpcAddressService';
 import { RpcCliHelpService } from '../services/rpc/RpcCliHelpService';
+import { RpcPaymentInformationService } from '../services/rpc/RpcPaymentInformationService';
 import { RpcTestDataService } from '../services/rpc/RpcTestDataService';
 
 // Get middlewares
@@ -58,6 +59,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemTemplateService) private rpcListingItemTemplateService: RpcListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemInformationService) private rpcItemInformationService: RpcItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcPaymentInformationService) private rpcPaymentInformationService: RpcPaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcTestDataService) private rpcTestDataService: RpcTestDataService,
 
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -167,6 +169,9 @@ export class RpcController {
             // categories
             'getcategories': 'rpcItemCategoryService.findRoot',
             'getcategory': 'rpcItemCategoryService.findOne',
+
+            // paymentInformation
+            'updatepaymentinformation': 'rpcPaymentInformationService.update'
 
             // test data management
             'cleandb': 'rpcTestDataService.clean',

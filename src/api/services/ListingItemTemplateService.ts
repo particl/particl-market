@@ -6,6 +6,7 @@ import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { ItemInformationService } from '../services/ItemInformationService';
+import { PaymentInformationService } from '../services/PaymentInformationService';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplateUpdateRequest } from '../requests/ListingItemTemplateUpdateRequest';
@@ -19,6 +20,7 @@ export class ListingItemTemplateService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
+        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -55,12 +57,20 @@ export class ListingItemTemplateService {
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
         delete body.itemInformation;
+
+        const paymentInformation = body.paymentInformation;
+        delete body.paymentInformation;
         // If the request body was valid we will create the listingItemTemplate
         const listingItemTemplate = await this.listingItemTemplateRepo.create(body);
 
-        if (itemInformation) { // will remove after confirmation that title always be there
+        if (itemInformation) {
             itemInformation.listing_item_template_id = listingItemTemplate.Id;
             await this.itemInformationService.create(itemInformation);
+        }
+
+        if (paymentInformation) {
+            paymentInformation.listing_item_template_id = listingItemTemplate.Id;
+            await this.paymentInformationService.create(paymentInformation);
         }
 
         // finally find and return the created listingItemTemplate
