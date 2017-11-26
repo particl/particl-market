@@ -1,15 +1,27 @@
 import { api } from './lib/api';
+import { Logger as LoggerType } from '../../src/core/Logger';
+import { Types, Core, Targets } from '../../src/constants';
+import { TestUtil } from './lib/TestUtil';
+import { TestDataService } from '../../src/api/services/TestDataService';
 
-describe('/{{name.pluralize}}', () => {
+import { ValidationException } from '../../src/api/exceptions/ValidationException';
+import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
+
+import { {{name.capitalize}} } from '../../src/api/models/{{name.capitalize}}';
+
+import { {{name.capitalize}}Service } from '../../src/api/services/{{name.capitalize}}Service';
+
+describe('{{name.capitalize}}', () => {
 
     {{#if isResourceTemplate}}
-    const keys = [
-        'id', 'updatedAt', 'createdAt', {{#each properties}}'{{name.camelCase}}'{{#unless @last}}, {{/unless}}{{/each}} // , 'Related'
-    ];
 
-    // const keysWithoutRelated = [
-    //    'id', 'updatedAt', 'createdAt', {{#each properties}}'{{name.camelCase}}'{{#unless @last}}, {{/unless}}{{/each}}
-    // ];
+    const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new TestUtil();
+
+    let testDataService: TestDataService;
+    let {{name.camelCase}}Service: {{name.capitalize}}Service;
+
+    let createdId;
 
     const testData = {
         {{#each properties}}
@@ -23,20 +35,25 @@ describe('/{{name.pluralize}}', () => {
         {{/each}}
     };
 
-    let createdId;
     beforeAll(async () => {
-        // use the cleandb and adddata rpc commands to set up the db as you like
+        await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
+        testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        {{name.camelCase}}Service = app.IoC.getNamed<{{name.capitalize}}Service>(Types.Service, Targets.Service.{{name.capitalize}}Service);
+
+        // clean up the db, first removes all data and then seeds the db with default data
+        await testDataService.clean([]);
     });
 
-    test('POST      /{{name.pluralize}}        Should create a new {{name.lowerCase}}', async () => {
-        const res = await api('POST', '/api/{{name.pluralize}}', {
-            body: testData
-        });
-        res.expectJson();
-        res.expectStatusCode(201);
-        res.expectData(keys);
-        createdId = res.getData()['id'];
+    afterAll(async () => {
+        //
+    });
+
+    test('Should create a new {{name.lowerCase}}', async () => {
+        const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.create(testData);
+        createdId = {{name.camelCase}}Model.Id;
+
+        const result = {{name.camelCase}}Model.toJSON();
 
         const result: any = res.getData();
         {{#each properties}}
@@ -44,90 +61,49 @@ describe('/{{name.pluralize}}', () => {
         {{/each}}
     });
 
-    test('POST      /{{name.pluralize}}        Should fail because we want to create a empty {{name.lowerCase}}', async () => {
-        const res = await api('POST', '/api/{{name.pluralize}}', {
-            body: {}
-        });
-        res.expectJson();
-        res.expectStatusCode(400);
+    test('Should throw ValidationException because we want to create a empty {{name.lowerCase}}', async () => {
+        expect.assertions(1);
+        await {{name.camelCase}}Service.create({}).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
     });
 
-    test('GET       /{{name.pluralize}}        Should list {{name.lowerCase}}s with our new create one', async () => {
-        const res = await api('GET', '/api/{{name.pluralize}}');
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys); // keysWithoutRelated
-        const data = res.getData<any[]>();
-        expect(data.length).toBe(1);
+    test('Should list {{name.lowerCase}}s with our new create one', async () => {
+        const {{name.camelCase}}Collection = await {{name.lowerCase}}Service.findAll();
+        const {{name.camelCase}} = {{name.camelCase}}Collection.toJSON();
+        expect({{name.camelCase}}.length).toBe(1);
 
-        const result = data[0];
+        const result = {{name.camelCase}}[0];
+
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
         {{/each}}
     });
 
-    test('GET       /{{name.pluralize}}/:id    Should return one {{name.lowerCase}}', async () => {
-        const res = await api('GET', `/api/{{name.pluralize}}/${createdId}`);
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys);
+    test('Should return one {{name.lowerCase}}', async () => {
+        const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.findOne(createdId);
+        const result = {{name.camelCase}}Model.toJSON();
 
-        const result: any = res.getData();
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
         {{/each}}
     });
 
-    test('PUT       /{{name.pluralize}}/:id    Should update the {{name.lowerCase}}', async () => {
-        const res = await api('PUT', `/api/{{name.pluralize}}/${createdId}`, {
-            body: testDataUpdated
-        });
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys);
+    test('Should update the {{name.lowerCase}}', async () => {
+        const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.update(createdId, testDataUpdated);
+        const result = {{name.camelCase}}Model.toJSON();
 
-        const result: any = res.getData();
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testDataUpdated.{{name.camelCase}});
         {{/each}}
     });
 
-    test('PUT       /{{name.pluralize}}/:id    Should fail because we want to update the {{name.lowerCase}} with a invalid email', async () => {
-        const res = await api('PUT', `/api/{{name.pluralize}}/${createdId}`, {
-            body: {
-                email: 'abc'
-            }
-        });
-        res.expectJson();
-        res.expectStatusCode(400);
-    });
+    test('Should delete the {{name.lowerCase}}', async () => {
+        await {{name.camelCase}}Service.destroy(createdId);
 
-    test('DELETE    /{{name.pluralize}}/:id    Should delete the {{name.lowerCase}}', async () => {
-        const res = await api('DELETE', `/api/{{name.pluralize}}/${createdId}`);
-        res.expectStatusCode(200);
+        await {{name.camelCase}}Service.findOne(createdId).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
     });
-
-    /**
-     * 404 - NotFound Testing
-     */
-    test('GET       /{{name.pluralize}}/:id    Should return with a 404, because we just deleted the {{name.lowerCase}}', async () => {
-        const res = await api('GET', `/api/{{name.pluralize}}/${createdId}`);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('DELETE    /{{name.pluralize}}/:id    Should return with a 404, because we just deleted the {{name.lowerCase}}', async () => {
-        const res = await api('DELETE', `/api/{{name.pluralize}}/${createdId}`);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('PUT       /{{name.pluralize}}/:id    Should return with a 404, because we just deleted the {{name.lowerCase}}', async () => {
-        const res = await api('PUT', `/api/{{name.pluralize}}/${createdId}`, {
-            body: testDataUpdated
-        });
-        res.expectJson();
-        res.expectStatusCode(404);
-    });{{/if}}
 
 });
