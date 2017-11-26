@@ -25,18 +25,8 @@ export class PaymentInformationService {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<PaymentInformation>> {
-        return this.findAll();
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<PaymentInformation>> {
         return this.paymentInformationRepo.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<PaymentInformation> {
-        return this.findOne(data.params[0]);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<PaymentInformation> {
@@ -49,34 +39,9 @@ export class PaymentInformationService {
     }
 
     @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<PaymentInformation> {
-        return this.create({
-            type: data.params[0],
-            escrow: {
-                type: data.params[1],
-                ratio: {
-                    buyer: data.params[2],
-                    seller: data.params[3]
-                }
-            },
-            itemPrice: {
-                currency: data.params[4],
-                basePrice: data.params[5],
-                shippingPrice: {
-                    domestic: data.params[6],
-                    international: data.params[7]
-                },
-                address: {
-                    type: data.params[8],
-                    address: data.params[9]
-                }
-            }
-        });
-    }
+    public async create( @request(PaymentInformationCreateRequest) data: any): Promise<PaymentInformation> {
 
-    @validate()
-    public async create( @request(PaymentInformationCreateRequest) body: any): Promise<PaymentInformation> {
-
+        const body = JSON.parse(JSON.stringify(data));
         const escrow = body.escrow;
         const itemPrice = body.itemPrice;
 
@@ -100,33 +65,9 @@ export class PaymentInformationService {
     }
 
     @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<PaymentInformation> {
-        return this.update(data.params[0], {
-            type: data.params[1],
-            escrow: {
-                type: data.params[2],
-                ratio: {
-                    buyer: data.params[3],
-                    seller: data.params[4]
-                }
-            },
-            itemPrice: {
-                currency: data.params[5],
-                basePrice: data.params[6],
-                shippingPrice: {
-                    domestic: data.params[7],
-                    international: data.params[8]
-                },
-                address: {
-                    type: data.params[9],
-                    address: data.params[10]
-                }
-            }
-        });
-    }
+    public async update(id: number, @request(PaymentInformationUpdateRequest) data: any): Promise<PaymentInformation> {
 
-    @validate()
-    public async update(id: number, @request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
+        const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const paymentInformation = await this.findOne(id, false);
@@ -161,13 +102,78 @@ export class PaymentInformationService {
 
     }
 
+    public async destroy(id: number): Promise<void> {
+        await this.paymentInformationRepo.destroy(id);
+    }
+
+    // -----------------------------------------------------
+    // TODO: used for testing, remove...
+
+    @validate()
+    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<PaymentInformation>> {
+        return this.findAll();
+    }
+
+    @validate()
+    public async rpcFindOne( @request(RpcRequest) data: any): Promise<PaymentInformation> {
+        return this.findOne(data.params[0]);
+    }
+
+    @validate()
+    public async rpcCreate( @request(RpcRequest) data: any): Promise<PaymentInformation> {
+        return this.create({
+            type: data.params[0],
+            escrow: {
+                type: data.params[1],
+                ratio: {
+                    buyer: data.params[2],
+                    seller: data.params[3]
+                }
+            },
+            itemPrice: {
+                currency: data.params[4],
+                basePrice: data.params[5],
+                shippingPrice: {
+                    domestic: data.params[6],
+                    international: data.params[7]
+                },
+                address: {
+                    type: data.params[8],
+                    address: data.params[9]
+                }
+            }
+        });
+    }
+
+    @validate()
+    public async rpcUpdate( @request(RpcRequest) data: any): Promise<PaymentInformation> {
+        return this.update(data.params[0], {
+            type: data.params[1],
+            escrow: {
+                type: data.params[2],
+                ratio: {
+                    buyer: data.params[3],
+                    seller: data.params[4]
+                }
+            },
+            itemPrice: {
+                currency: data.params[5],
+                basePrice: data.params[6],
+                shippingPrice: {
+                    domestic: data.params[7],
+                    international: data.params[8]
+                },
+                address: {
+                    type: data.params[9],
+                    address: data.params[10]
+                }
+            }
+        });
+    }
+
     @validate()
     public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
         return this.destroy(data.params[0]);
-    }
-
-    public async destroy(id: number): Promise<void> {
-        await this.paymentInformationRepo.destroy(id);
     }
 
 }
