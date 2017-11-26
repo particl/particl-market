@@ -46,7 +46,6 @@ export class MakeResourceCommand extends AbstractMakeCommand {
         this.makeCreateRequestCommand = new MakeRequestCommand(this.context, 'Create');
         this.makeUpdateRequestCommand = new MakeRequestCommand(this.context, 'Update');
         this.makeIntegrationTestCommand = new MakeIntegrationTestCommand(this.context);
-        // this.makeApiTestCommand = new MakeApiTestCommand(this.context);
 
         // Ask all meta-data
         await this.makeModelCommand.run();

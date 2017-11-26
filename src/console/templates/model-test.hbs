@@ -1,4 +1,4 @@
-import { api } from './lib/api';
+import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
@@ -12,8 +12,6 @@ import { {{name.capitalize}} } from '../../src/api/models/{{name.capitalize}}';
 import { {{name.capitalize}}Service } from '../../src/api/services/{{name.capitalize}}Service';
 
 describe('{{name.capitalize}}', () => {
-
-    {{#if isResourceTemplate}}
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
@@ -55,7 +53,8 @@ describe('{{name.capitalize}}', () => {
 
         const result = {{name.camelCase}}Model.toJSON();
 
-        const result: any = res.getData();
+        // test the values
+        // expect(result.value).toBe(testData.value);
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
         {{/each}}
@@ -75,6 +74,8 @@ describe('{{name.capitalize}}', () => {
 
         const result = {{name.camelCase}}[0];
 
+        // test the values
+        // expect(result.value).toBe(testData.value);
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
         {{/each}}
@@ -84,6 +85,8 @@ describe('{{name.capitalize}}', () => {
         const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.findOne(createdId);
         const result = {{name.camelCase}}Model.toJSON();
 
+        // test the values
+        // expect(result.value).toBe(testData.value);
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
         {{/each}}
@@ -93,6 +96,8 @@ describe('{{name.capitalize}}', () => {
         const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.update(createdId, testDataUpdated);
         const result = {{name.camelCase}}Model.toJSON();
 
+        // test the values
+        // expect(result.value).toBe(testData.value);
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testDataUpdated.{{name.camelCase}});
         {{/each}}
