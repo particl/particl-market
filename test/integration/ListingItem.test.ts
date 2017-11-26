@@ -1,5 +1,13 @@
-import { api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { app } from '../../src/app';
+import { Logger as LoggerType } from '../../src/core/Logger';
+import { Types, Core, Targets } from '../../src/constants';
+import { TestUtil } from './lib/TestUtil';
+import { TestDataService } from '../../src/api/services/TestDataService';
+
+import { ValidationException } from '../../src/api/exceptions/ValidationException';
+import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
+
+import { ListingItem } from '../../src/api/models/ListingItem';
 import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
@@ -9,15 +17,17 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
-describe('/listing-items', () => {
+import { ListingItemService } from '../../src/api/services/ListingItemService';
 
-    const keys = [
-        'id', 'updatedAt', 'createdAt', 'hash' // , 'Related'
-    ];
+describe('ListingItem', () => {
 
-    // const keysWithoutRelated = [
-    //    'id', 'updatedAt', 'createdAt',
-    // ];
+    const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new TestUtil();
+
+    let testDataService: TestDataService;
+    let listingItemService: ListingItemService;
+
+    let createdId;
 
     const testData = {
         hash: 'hash1',
@@ -26,8 +36,9 @@ describe('/listing-items', () => {
             shortDescription: 'item short desc1',
             longDescription: 'item long desc1',
             itemCategory: {
-                name: 'ROOT',
-                description: 'item category description 1'
+                key: 'cat_high_luxyry_items',
+                name: 'Luxury Items',
+                description: ''
             },
             itemLocation: {
                 region: Country.SOUTH_AFRICA,
@@ -111,8 +122,9 @@ describe('/listing-items', () => {
             shortDescription: 'item UPDATED',
             longDescription: 'item UPDATED',
             itemCategory: {
-                name: 'CHILD',
-                description: 'item UPDATED'
+                key: 'cat_apparel_adult',
+                name: 'Adult',
+                description: ''
             },
             itemLocation: {
                 region: Country.FINLAND,
@@ -167,24 +179,28 @@ describe('/listing-items', () => {
         // TODO: ignoring listingitemobjects for now
     };
 
-    let createdId;
-    let createdHash;
     beforeAll(async () => {
-        const command = new DatabaseResetCommand();
-        await command.run();
+        await testUtil.bootstrapAppContainer(app);  // bootstrap the app
+
+        testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+
+        // clean up the db, first removes all data and then seeds the db with default data
+        await testDataService.clean([]);
     });
 
-    test('POST      /listing-items        Should create a new listing item', async () => {
-        const res = await api('POST', '/api/listing-items', {
-            body: testData
-        });
-        res.expectJson();
-        res.expectStatusCode(201);
-        res.expectData(keys);
-        createdId = res.getData()['id'];
-        createdHash = res.getData()['hash'];
-        const result: any = res.getData();
+    afterAll(async () => {
+        //
+    });
+
+    test('Should create a new listing item', async () => {
+        const listingItemModel: ListingItem = await listingItemService.create(testData);
+        createdId = listingItemModel.Id;
+
+        const result = listingItemModel.toJSON();
+
         expect(result.hash).toBe(testData.hash);
+
         expect(result.ItemInformation.title).toBe(testData.itemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(testData.itemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(testData.itemInformation.longDescription);
@@ -198,6 +214,8 @@ describe('/listing-items', () => {
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testData.itemInformation.itemLocation.locationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toHaveLength(3);
         expect(result.ItemInformation.ItemImages).toHaveLength(3);
+        expect(result.ItemInformation.listingItemTemplateId).toBe(null);
+
         expect(result.PaymentInformation.type).toBe(testData.paymentInformation.type);
         expect(result.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
         expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
@@ -208,38 +226,37 @@ describe('/listing-items', () => {
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
         expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
         expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
+        expect(result.PaymentInformation.listingItemTemplateId).toBe(null);
+
         expect(result.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
         expect(result.MessagingInformation.publicKey).toBe(testData.messagingInformation.publicKey);
+        expect(result.MessagingInformation.listingItemTemplateId).toBe(null);
+
     });
 
-    test('POST      /listing-items        Should fail because we want to create a empty listing item', async () => {
-        const res = await api('POST', '/api/listing-items', {
-            body: {}
-        });
-        res.expectJson();
-        res.expectStatusCode(400);
+    test('Should throw ValidationException because we want to create a empty listing item', async () => {
+        expect.assertions(1);
+        await listingItemService.create({}).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
     });
 
-    test('GET       /listing-items        Should list listing items with our new create one', async () => {
-        const res = await api('GET', '/api/listing-items');
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys); // keysWithoutRelated
-        const data = res.getData<any[]>();
-        expect(data.length).toBe(1);
+    test('Should list listing items with our new create one', async () => {
+        const listingItemCollection = await listingItemService.findAll();
+        const listingItem = listingItemCollection.toJSON();
+        expect(listingItem.length).toBe(1);
 
-        const result = data[0];
+        const result = listingItem[0];
+
         expect(result.hash).toBe(testData.hash);
     });
 
-    test('GET       /listing-items/:id    Should return one listing item', async () => {
-        const res = await api('GET', `/api/listing-items/${createdId}`);
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys);
+    test('Should return one listing item', async () => {
+        const listingItemModel: ListingItem = await listingItemService.findOne(createdId);
+        const result = listingItemModel.toJSON();
 
-        const result: any = res.getData();
         expect(result.hash).toBe(testData.hash);
+
         expect(result.ItemInformation.title).toBe(testData.itemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(testData.itemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(testData.itemInformation.longDescription);
@@ -253,6 +270,8 @@ describe('/listing-items', () => {
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testData.itemInformation.itemLocation.locationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toHaveLength(3);
         expect(result.ItemInformation.ItemImages).toHaveLength(3);
+        expect(result.ItemInformation.listingItemTemplateId).toBe(null);
+
         expect(result.PaymentInformation.type).toBe(testData.paymentInformation.type);
         expect(result.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
         expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
@@ -263,21 +282,20 @@ describe('/listing-items', () => {
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
         expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
         expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
+        expect(result.PaymentInformation.listingItemTemplateId).toBe(null);
+
         expect(result.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
         expect(result.MessagingInformation.publicKey).toBe(testData.messagingInformation.publicKey);
+        expect(result.MessagingInformation.listingItemTemplateId).toBe(null);
 
     });
 
-    test('PUT       /listing-items/:id    Should update the listing item', async () => {
-        const res = await api('PUT', `/api/listing-items/${createdId}`, {
-            body: testDataUpdated
-        });
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys);
+    test('Should update the listing item', async () => {
+        const listingItemModel: ListingItem = await listingItemService.update(createdId, testDataUpdated);
+        const result = listingItemModel.toJSON();
 
-        const result: any = res.getData();
         expect(result.hash).toBe(testDataUpdated.hash);
+
         expect(result.ItemInformation.title).toBe(testDataUpdated.itemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(testDataUpdated.itemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(testDataUpdated.itemInformation.longDescription);
@@ -291,6 +309,8 @@ describe('/listing-items', () => {
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toHaveLength(1);
         expect(result.ItemInformation.ItemImages).toHaveLength(1);
+        expect(result.ItemInformation.listingItemTemplateId).toBe(null);
+
         expect(result.PaymentInformation.type).toBe(testDataUpdated.paymentInformation.type);
         expect(result.PaymentInformation.Escrow.type).toBe(testDataUpdated.paymentInformation.escrow.type);
         expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testDataUpdated.paymentInformation.escrow.ratio.buyer);
@@ -301,47 +321,20 @@ describe('/listing-items', () => {
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.international);
         expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testDataUpdated.paymentInformation.itemPrice.address.type);
         expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testDataUpdated.paymentInformation.itemPrice.address.address);
+        expect(result.PaymentInformation.listingItemTemplateId).toBe(null);
+
         expect(result.MessagingInformation.protocol).toBe(testDataUpdated.messagingInformation.protocol);
         expect(result.MessagingInformation.publicKey).toBe(testDataUpdated.messagingInformation.publicKey);
+        expect(result.MessagingInformation.listingItemTemplateId).toBe(null);
 
     });
-/*
-    test('PUT       /listing-items/:id    Should fail because we want to update the listing item with a invalid email', async () => {
-        const res = await api('PUT', `/api/listing-items/${createdId}`, {
-            body: {
-                email: 'abc'
-            }
-        });
-        res.expectJson();
-        res.expectStatusCode(400);
-    });
-*/
-    test('DELETE    /listing-items/:id    Should delete the listing item', async () => {
-        const res = await api('DELETE', `/api/listing-items/${createdId}`);
-        res.expectStatusCode(200);
-    });
 
-    /**
-     * 404 - NotFound Testing
-     */
-    test('GET       /listing-items/:id    Should return with a 404, because we just deleted the listing item', async () => {
-        const res = await api('GET', `/api/listing-items/${createdId}`);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('DELETE    /listing-items/:id    Should return with a 404, because we just deleted the listing item', async () => {
-        const res = await api('DELETE', `/api/listing-items/${createdId}`);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('PUT       /listing-items/:id    Should return with a 404, because we just deleted the listing item', async () => {
-        const res = await api('PUT', `/api/listing-items/${createdId}`, {
-            body: testDataUpdated
-        });
-        res.expectJson();
-        res.expectStatusCode(404);
+    test('Should delete the listing item', async () => {
+        expect.assertions(1);
+        await listingItemService.destroy(createdId);
+        await listingItemService.findOne(createdId).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
     });
 
 });
