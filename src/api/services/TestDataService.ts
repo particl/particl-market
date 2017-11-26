@@ -28,14 +28,17 @@ export class TestDataService {
      * clean up the database
      * insert the default data
      *
-     * @param ignoreTables to ignore
+     * @param ignoreTables
+     * @param seed
      * @returns {Promise<void>}
      */
-    public async clean(ignoreTables: string[]): Promise<void> {
+    public async clean(ignoreTables: string[], seed: boolean = true): Promise<void> {
 
         await this.cleanDb(ignoreTables);
-        await this.defaultItemCategoryService.seedDefaultCategories();
-        await this.defaultProfileService.seedDefaultProfile();
+        if (seed) {
+            await this.defaultItemCategoryService.seedDefaultCategories();
+            await this.defaultProfileService.seedDefaultProfile();
+        }
 
         return;
     }
