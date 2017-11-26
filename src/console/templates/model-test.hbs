@@ -97,7 +97,7 @@ describe('{{name.capitalize}}', () => {
         const result = {{name.camelCase}}Model.toJSON();
 
         // test the values
-        // expect(result.value).toBe(testData.value);
+        // expect(result.value).toBe(testDataUpdated.value);
         {{#each properties}}
         expect(result.{{name.camelCase}}).toBe(testDataUpdated.{{name.camelCase}});
         {{/each}}
