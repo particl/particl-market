@@ -42,6 +42,7 @@ export class PaymentInformationService {
     public async create( @request(PaymentInformationCreateRequest) data: any): Promise<PaymentInformation> {
 
         const body = JSON.parse(JSON.stringify(data));
+
         const escrow = body.escrow;
         const itemPrice = body.itemPrice;
 

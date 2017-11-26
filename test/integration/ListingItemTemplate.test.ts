@@ -18,6 +18,7 @@ import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAdd
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+import { ProfileService } from '../../src/api/services/ProfileService';
 
 describe('ListingItemTemplate', () => {
 
@@ -26,8 +27,10 @@ describe('ListingItemTemplate', () => {
 
     let testDataService: TestDataService;
     let listingItemTemplateService: ListingItemTemplateService;
+    let profileService: ProfileService;
 
     let createdId;
+    let defaultProfile;
 
     const testData = {
         hash: 'hash1',
@@ -36,8 +39,9 @@ describe('ListingItemTemplate', () => {
             shortDescription: 'item short desc1',
             longDescription: 'item long desc1',
             itemCategory: {
-                name: 'ROOT',
-                description: 'item category description 1'
+                key: 'cat_high_luxyry_items',
+                name: 'Luxury Items',
+                description: ''
             },
             itemLocation: {
                 region: Country.SOUTH_AFRICA,
@@ -121,8 +125,9 @@ describe('ListingItemTemplate', () => {
             shortDescription: 'item UPDATED',
             longDescription: 'item UPDATED',
             itemCategory: {
-                name: 'CHILD',
-                description: 'item UPDATED'
+                key: 'cat_apparel_adult',
+                name: 'Adult',
+                description: ''
             },
             itemLocation: {
                 region: Country.FINLAND,
@@ -182,9 +187,11 @@ describe('ListingItemTemplate', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
+        defaultProfile = await profileService.getDefault();
     });
 
     afterAll(async () => {
@@ -192,12 +199,19 @@ describe('ListingItemTemplate', () => {
     });
 
     test('Should create a new listing item template', async () => {
+
+        testData.profile_id = defaultProfile.Id;
+        // log.info('testData:', JSON.stringify(testData, null, 2));
+
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testData);
         createdId = listingItemTemplateModel.Id;
 
         const result = listingItemTemplateModel.toJSON();
+        // log.info('result:', JSON.stringify(result, null, 2));
 
         expect(result.hash).toBe(testData.hash);
+        expect(result.Profile.name).toBe(defaultProfile.Name);
+
         expect(result.ItemInformation.title).toBe(testData.itemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(testData.itemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(testData.itemInformation.longDescription);
@@ -211,6 +225,8 @@ describe('ListingItemTemplate', () => {
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testData.itemInformation.itemLocation.locationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toHaveLength(3);
         expect(result.ItemInformation.ItemImages).toHaveLength(3);
+        expect(result.ItemInformation.listingItemId).toBe(null);
+
         expect(result.PaymentInformation.type).toBe(testData.paymentInformation.type);
         expect(result.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
         expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
@@ -221,8 +237,11 @@ describe('ListingItemTemplate', () => {
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
         expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
         expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
+        expect(result.PaymentInformation.listingItemId).toBe(null);
+
         expect(result.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
         expect(result.MessagingInformation.publicKey).toBe(testData.messagingInformation.publicKey);
+        expect(result.MessagingInformation.listingItemId).toBe(null);
 
     });
 
@@ -240,29 +259,91 @@ describe('ListingItemTemplate', () => {
 
         const result = listingItemTemplate[0];
 
-        // test the values
-        // expect(result.value).toBe(testData.value);
+        expect(result.hash).toBe(testData.hash);
     });
 
     test('Should return one listing item template', async () => {
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.findOne(createdId);
         const result = listingItemTemplateModel.toJSON();
 
-        // test the values
-        // expect(result.value).toBe(testData.value);
+        expect(result.hash).toBe(testData.hash);
+        expect(result.Profile.name).toBe(defaultProfile.Name);
+
+        expect(result.ItemInformation.title).toBe(testData.itemInformation.title);
+        expect(result.ItemInformation.shortDescription).toBe(testData.itemInformation.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(testData.itemInformation.longDescription);
+        expect(result.ItemInformation.ItemCategory.name).toBe(testData.itemInformation.itemCategory.name);
+        expect(result.ItemInformation.ItemCategory.description).toBe(testData.itemInformation.itemCategory.description);
+        expect(result.ItemInformation.ItemLocation.region).toBe(testData.itemInformation.itemLocation.region);
+        expect(result.ItemInformation.ItemLocation.address).toBe(testData.itemInformation.itemLocation.address);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(testData.itemInformation.itemLocation.locationMarker.markerTitle);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(testData.itemInformation.itemLocation.locationMarker.markerText);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(testData.itemInformation.itemLocation.locationMarker.lat);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testData.itemInformation.itemLocation.locationMarker.lng);
+        expect(result.ItemInformation.ShippingDestinations).toHaveLength(3);
+        expect(result.ItemInformation.ItemImages).toHaveLength(3);
+        expect(result.ItemInformation.listingItemId).toBe(null);
+
+        expect(result.PaymentInformation.type).toBe(testData.paymentInformation.type);
+        expect(result.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
+        expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
+        expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testData.paymentInformation.escrow.ratio.seller);
+        expect(result.PaymentInformation.ItemPrice.currency).toBe(testData.paymentInformation.itemPrice.currency);
+        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
+        expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
+        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
+        expect(result.PaymentInformation.listingItemId).toBe(null);
+
+        expect(result.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
+        expect(result.MessagingInformation.publicKey).toBe(testData.messagingInformation.publicKey);
+        expect(result.MessagingInformation.listingItemId).toBe(null);
     });
 
     test('Should update the listing item template', async () => {
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.update(createdId, testDataUpdated);
         const result = listingItemTemplateModel.toJSON();
 
-        // test the values
-        // expect(result.value).toBe(testDataUpdated.value);
+        expect(result.hash).toBe(testDataUpdated.hash);
+        expect(result.Profile.name).toBe(defaultProfile.Name);
+
+        expect(result.ItemInformation.title).toBe(testDataUpdated.itemInformation.title);
+        expect(result.ItemInformation.shortDescription).toBe(testDataUpdated.itemInformation.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(testDataUpdated.itemInformation.longDescription);
+        expect(result.ItemInformation.ItemCategory.name).toBe(testDataUpdated.itemInformation.itemCategory.name);
+        expect(result.ItemInformation.ItemCategory.description).toBe(testDataUpdated.itemInformation.itemCategory.description);
+        expect(result.ItemInformation.ItemLocation.region).toBe(testDataUpdated.itemInformation.itemLocation.region);
+        expect(result.ItemInformation.ItemLocation.address).toBe(testDataUpdated.itemInformation.itemLocation.address);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.markerTitle);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.markerText);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.lat);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.lng);
+        expect(result.ItemInformation.ShippingDestinations).toHaveLength(1);
+        expect(result.ItemInformation.ItemImages).toHaveLength(1);
+        expect(result.ItemInformation.listingItemId).toBe(null);
+
+        expect(result.PaymentInformation.type).toBe(testDataUpdated.paymentInformation.type);
+        expect(result.PaymentInformation.Escrow.type).toBe(testDataUpdated.paymentInformation.escrow.type);
+        expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testDataUpdated.paymentInformation.escrow.ratio.buyer);
+        expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testDataUpdated.paymentInformation.escrow.ratio.seller);
+        expect(result.PaymentInformation.ItemPrice.currency).toBe(testDataUpdated.paymentInformation.itemPrice.currency);
+        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testDataUpdated.paymentInformation.itemPrice.basePrice);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.domestic);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.international);
+        expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testDataUpdated.paymentInformation.itemPrice.address.type);
+        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testDataUpdated.paymentInformation.itemPrice.address.address);
+        expect(result.PaymentInformation.listingItemId).toBe(null);
+
+        expect(result.MessagingInformation.protocol).toBe(testDataUpdated.messagingInformation.protocol);
+        expect(result.MessagingInformation.publicKey).toBe(testDataUpdated.messagingInformation.publicKey);
+        expect(result.MessagingInformation.listingItemId).toBe(null);
+
     });
 
     test('Should delete the listing item template', async () => {
+        expect.assertions(1);
         await listingItemTemplateService.destroy(createdId);
-
         await listingItemTemplateService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );

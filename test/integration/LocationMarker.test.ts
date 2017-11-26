@@ -102,8 +102,8 @@ describe('LocationMarker', () => {
     });
 
     test('Should delete the location marker', async () => {
+        expect.assertions(1);
         await locationMarkerService.destroy(createdId);
-
         await locationMarkerService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );

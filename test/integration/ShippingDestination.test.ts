@@ -92,8 +92,8 @@ describe('ShippingDestination', () => {
     });
 
     test('Should delete the shipping destination', async () => {
+        expect.assertions(1);
         await shippingDestinationService.destroy(createdId);
-
         await shippingDestinationService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );

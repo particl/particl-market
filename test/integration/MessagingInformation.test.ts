@@ -91,8 +91,8 @@ describe('MessagingInformation', () => {
     });
 
     test('Should delete the messaging information', async () => {
+        expect.assertions(1);
         await messagingInformationService.destroy(createdId);
-
         await messagingInformationService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );

@@ -17,6 +17,10 @@ export class ProfileRepository {
         this.log = new Logger(__filename);
     }
 
+    public async getDefault(withRelated: boolean = true): Promise<Profile> {
+        return this.findOneByName('DEFAULT', withRelated);
+    }
+
     public async findAll(): Promise<Bookshelf.Collection<Profile>> {
         const list = await this.ProfileModel.fetchAll();
         return list as Bookshelf.Collection<Profile>;

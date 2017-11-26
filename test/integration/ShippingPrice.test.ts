@@ -90,8 +90,8 @@ describe('ShippingPrice', () => {
     });
 
     test('Should delete the shipping price', async () => {
+        expect.assertions(1);
         await shippingPriceService.destroy(createdId);
-
         await shippingPriceService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );

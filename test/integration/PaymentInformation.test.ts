@@ -155,8 +155,8 @@ describe('PaymentInformation', () => {
     });
 
     test('Should delete the payment information', async () => {
+        expect.assertions(1);
         await paymentInformationService.destroy(createdId);
-
         await paymentInformationService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );

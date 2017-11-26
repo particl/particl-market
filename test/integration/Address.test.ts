@@ -115,8 +115,8 @@ describe('Address', () => {
     });
 
     test('Should delete the address', async () => {
+        expect.assertions(1);
         await addressService.destroy(createdId);
-
         await addressService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );

@@ -11,6 +11,7 @@ import { Profile } from '../../src/api/models/Profile';
 import { Country } from '../../src/api/enums/Country';
 
 import { ProfileService } from '../../src/api/services/ProfileService';
+import { AddressService } from '../../src/api/services/AddressService';
 
 describe('Profile', () => {
 
@@ -19,6 +20,7 @@ describe('Profile', () => {
 
     let testDataService: TestDataService;
     let profileService: ProfileService;
+    let addressService: AddressService;
 
     let createdId;
 
@@ -67,6 +69,7 @@ describe('Profile', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([], false);
@@ -121,11 +124,24 @@ describe('Profile', () => {
     });
 
     test('Should delete the profile', async () => {
-        await profileService.destroy(createdId);
+        expect.assertions(3);
 
-        await profileService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
-        );
+        const profileModel: Profile = await profileService.findOne(createdId);
+        const result = profileModel.toJSON();
+        expect(result.Addresses).toHaveLength(3);
+
+        const addressId1 = result.Addresses[0].id;
+
+        await profileService.destroy(createdId);
+        await profileService.findOne(createdId).catch( e => {
+            expect(e).toEqual(new NotFoundException(createdId));
+        });
+
+        // make sure addresses were also deleted
+        await profileService.findOne(addressId1).catch( e => {
+            expect(e).toEqual(new NotFoundException(addressId1));
+        });
+
     });
 
 });

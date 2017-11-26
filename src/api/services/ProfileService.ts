@@ -24,6 +24,15 @@ export class ProfileService {
         this.log = new Logger(__filename);
     }
 
+    public async getDefault(withRelated: boolean = true): Promise<Profile> {
+        const profile = await this.profileRepo.getDefault(withRelated);
+        if (profile === null) {
+            this.log.warn(`Default Profile was not found!`);
+            throw new NotFoundException('DEFAULT');
+        }
+        return profile;
+    }
+
     public async findAll(): Promise<Bookshelf.Collection<Profile>> {
         return this.profileRepo.findAll();
     }
@@ -75,7 +84,7 @@ export class ProfileService {
         // update address record
         const updatedProfile = await this.profileRepo.update(id, profile.toJSON());
 
-        // todo: loop through addresses, add new ones that have no idea, update the new ones with id and delete the removed
+        // todo: loop through addresses, add new ones that have no id, update the new ones with id and delete the removed
         // find related records and delete them
         let addresses = updatedProfile.related('Addresses').toJSON();
         for (const address of addresses) {

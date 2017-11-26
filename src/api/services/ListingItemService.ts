@@ -17,11 +17,13 @@ export class ListingItemService {
 
     public log: LoggerType;
 
-    constructor(@inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
-                @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
-                @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
-                @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
-                @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+    constructor(
+        @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
+        @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+    ) {
         this.log = new Logger(__filename);
     }
 
@@ -73,7 +75,9 @@ export class ListingItemService {
     }
 
     @validate()
-    public async create(@request(ListingItemCreateRequest) body: any): Promise<ListingItem> {
+    public async create(@request(ListingItemCreateRequest) data: any): Promise<ListingItem> {
+
+        const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
@@ -107,7 +111,9 @@ export class ListingItemService {
     }
 
     @validate()
-    public async update(id: number, @request(ListingItemUpdateRequest) body: any): Promise<ListingItem> {
+    public async update(id: number, @request(ListingItemUpdateRequest) data: any): Promise<ListingItem> {
+
+        const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const listingItem = await this.findOne(id, false);
@@ -140,7 +146,6 @@ export class ListingItemService {
         // finally find and return the updated listingItem
         const newListingItem = await this.findOne(id);
         return newListingItem;
-
     }
 
     public async destroy(id: number): Promise<void> {

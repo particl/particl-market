@@ -104,8 +104,8 @@ describe('{{name.capitalize}}', () => {
     });
 
     test('Should delete the {{name.lowerCase}}', async () => {
+        expect.assertions(1);
         await {{name.camelCase}}Service.destroy(createdId);
-
         await {{name.camelCase}}Service.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );
