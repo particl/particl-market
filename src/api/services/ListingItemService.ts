@@ -88,12 +88,18 @@ export class ListingItemService {
         const listingItem = await this.listingItemRepo.create(body);
 
         // create related models
-        itemInformation.listing_item_id = listingItem.Id;
-        await this.itemInformationService.create(itemInformation);
-        paymentInformation.listing_item_id = listingItem.Id;
-        await this.paymentInformationService.create(paymentInformation);
-        messagingInformation.listing_item_id = listingItem.Id;
-        await this.messagingInformationService.create(messagingInformation);
+        if (itemInformation) {
+            itemInformation.listing_item_id = listingItem.Id;
+            await this.itemInformationService.create(itemInformation);
+        }
+        if (paymentInformation) {
+            paymentInformation.listing_item_id = listingItem.Id;
+            await this.paymentInformationService.create(paymentInformation);
+        }
+        if (messagingInformation) {
+            messagingInformation.listing_item_id = listingItem.Id;
+            await this.messagingInformationService.create(messagingInformation);
+        }
 
         // finally find and return the created listingItem
         const newListingItem = await this.findOne(listingItem.Id);
