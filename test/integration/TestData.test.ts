@@ -58,6 +58,7 @@ describe('TestDataService', () => {
 
         const categories = await itemCategoryService.findAll();
         expect(categories).toHaveLength(80);
+        // default profile should not contain addresses
         const addresses = await addressService.findAll();
         expect(addresses).toHaveLength(0);
 
