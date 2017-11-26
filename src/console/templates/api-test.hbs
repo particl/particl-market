@@ -1,5 +1,4 @@
 import { api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
 
 describe('/{{name.pluralize}}', () => {
 
@@ -26,8 +25,8 @@ describe('/{{name.pluralize}}', () => {
 
     let createdId;
     beforeAll(async () => {
-        const command = new DatabaseResetCommand();
-        await command.run();
+        // use the cleandb and adddata rpc commands to set up the db as you like
+
     });
 
     test('POST      /{{name.pluralize}}        Should create a new {{name.lowerCase}}', async () => {
