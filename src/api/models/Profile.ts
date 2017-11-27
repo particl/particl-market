@@ -1,7 +1,7 @@
 import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { Address } from './Address';
-
+import { FavoriteItem } from './FavoriteItem';
 
 export class Profile extends Bookshelf.Model<Profile> {
 
@@ -45,6 +45,10 @@ export class Profile extends Bookshelf.Model<Profile> {
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
     public Addresses(): Collection<Address> {
-        return this.hasMany(Address , 'profile_id', 'id');
+      return this.hasMany(Address , 'profile_id', 'id');
+    }
+
+    public FavoriteItems(): Collection<FavoriteItem> {
+      return this.hasMany(FavoriteItem , 'profile_id', 'id');
     }
 }

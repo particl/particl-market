@@ -24,6 +24,7 @@ import { RpcItemInformationService } from '../services/rpc/RpcItemInformationSer
 import { RpcProfileService } from '../services/rpc/RpcProfileService';
 import { RpcAddressService } from '../services/rpc/RpcAddressService';
 import { RpcCliHelpService } from '../services/rpc/RpcCliHelpService';
+import { RpcFavoriteItemService } from '../services/rpc/RpcFavoriteItemService';
 import { RpcPaymentInformationService } from '../services/rpc/RpcPaymentInformationService';
 import { RpcEscrowService } from '../services/rpc/RpcEscrowService';
 import { RpcTestDataService } from '../services/rpc/RpcTestDataService';
@@ -60,6 +61,9 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemTemplateService) private rpcListingItemTemplateService: RpcListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemInformationService) private rpcItemInformationService: RpcItemInformationService,
+
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcFavoriteItemService) private rpcFavoriteItemService: RpcFavoriteItemService,
+
         @inject(Types.Service) @named(Targets.Service.rpc.RpcPaymentInformationService) private rpcPaymentInformationService: RpcPaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcEscrowService) private rpcEscrowService: RpcEscrowService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcTestDataService) private rpcTestDataService: RpcTestDataService,
@@ -172,6 +176,10 @@ export class RpcController {
             'getcategories': 'rpcItemCategoryService.findRoot',
             'getcategory': 'rpcItemCategoryService.findOne',
 
+            // favorite items
+            'addfavorite': 'rpcFavoriteItemService.addFavorite',
+            'removefavorite': 'rpcFavoriteItemService.removeFavorite',
+
             // paymentInformation
             'updatepaymentinformation': 'rpcPaymentInformationService.update',
 
@@ -193,7 +201,6 @@ export class RpcController {
 
         // check that we have exposed the method
         if (this.exposedMethods.hasOwnProperty(body.method)) {
-
             const callPath = this.exposedMethods[rpcRequest.method].split('.');
 
             // make sure we have an instance of the service and it contains the function we want to call
