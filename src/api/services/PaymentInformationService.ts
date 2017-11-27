@@ -74,16 +74,14 @@ export class PaymentInformationService {
         return newPaymentInformation;
     }
 
-    /* conflicted code
-     public async updateByListingId(id: number, @request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
-     const paymentInformation = await this.paymentInformationRepo.findOneByListingItemTemplateId(id);
-     if (paymentInformation === null) {
-     this.log.warn(`PaymentInformation with the listing_item_template_id=${id} was not found!`);
-     throw new MessageException(`PaymentInformation with the listing_item_template_id=${id} was not found!`);
-     }
-     return this.update(paymentInformation.id, body);
-     }
-     */
+    public async updateByListingId(id: number, @request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
+        const paymentInformation = await this.paymentInformationRepo.findOneByListingItemTemplateId(id);
+        if (paymentInformation === null) {
+            this.log.warn(`PaymentInformation with the listing_item_template_id=${id} was not found!`);
+            throw new MessageException(`PaymentInformation with the listing_item_template_id=${id} was not found!`);
+        }
+        return this.update(paymentInformation.id, body);
+    }
 
     @validate()
     public async update(id: number, @request(PaymentInformationUpdateRequest) data: any): Promise<PaymentInformation> {

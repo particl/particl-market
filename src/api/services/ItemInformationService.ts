@@ -5,6 +5,7 @@ import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ValidationException } from '../exceptions/ValidationException';
+import { MessageException } from '../exceptions/MessageException';
 
 import { ItemInformationRepository } from '../repositories/ItemInformationRepository';
 import { ItemInformation } from '../models/ItemInformation';
@@ -100,17 +101,15 @@ export class ItemInformationService {
         return newItemInformation;
     }
 
-    /* conflicted code
-     public async updateWithCheckListingTemplate(id: number, @request(ItemInformationUpdateRequest) body: any): Promise<ItemInformation> {
-     const itemInformation = await this.findOne(id, false);
-     const listingItemTemplateId = itemInformation.toJSON().listingItemTemplateId;
-     if (listingItemTemplateId == null) {
-     this.log.warn(`ItemInformation with the id=${id} not related with any item-template!`);
-     throw new MessageException(`ItemInformation with the id=${id} not related with any item-template!`);
-     }
-     return this.update(id, body);
-     }
-     */
+    public async updateWithCheckListingTemplate(id: number, @request(ItemInformationUpdateRequest) body: any): Promise<ItemInformation> {
+        const itemInformation = await this.findOne(id, false);
+        const listingItemTemplateId = itemInformation.toJSON().listingItemTemplateId;
+        if (listingItemTemplateId == null) {
+            this.log.warn(`ItemInformation with the id=${id} not related with any item-template!`);
+            throw new MessageException(`ItemInformation with the id=${id} not related with any item-template!`);
+        }
+        return this.update(id, body);
+    }
 
     @validate()
     public async update(id: number, @request(ItemInformationUpdateRequest) data: any): Promise<ItemInformation> {

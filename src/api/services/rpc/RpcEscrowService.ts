@@ -45,11 +45,6 @@ export class RpcEscrowService {
      */
     @validate()
     public async create( @request(RpcRequest) data: any): Promise<Escrow> {
-        /*
-        TODO: FIX, no code like this in dev!
-
-         warn: [core:IoC] ⨯ Unable to compile TypeScript
-         src/api/services/rpc/RpcEscrowService.ts (48,35): Property 'createCheckByListingItem' does not exist on type 'EscrowService'. (2339)
         return this.escrowService.createCheckByListingItem({
             listingItemTemplateId: data.params[0],
             type: data.params[1],
@@ -58,20 +53,21 @@ export class RpcEscrowService {
                 seller: data.params[3]
             }
         });
-         */
-        return new Escrow();
     }
 
     /**
      * data.params[]:
-     *  [0]: id to fetch
-     *
+     *  [0]: ListingItemTemplate.id
+     *  [1]: escrowtype
+     *  [2]: buyer ratio
+     *  [3]: seller ratio
      * @param data
      * @returns {Promise<Escrow>}
      */
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<Escrow> {
-        return this.escrowService.update(data.params[0], {
+        return this.escrowService.updateCheckByListingItem({
+            listingItemTemplateId: data.params[0],
             type: data.params[1],
             ratio: {
                 buyer: data.params[2],
@@ -80,8 +76,14 @@ export class RpcEscrowService {
         });
     }
 
+    /**
+     * data.params[]:
+     *  [0]: ListingItemTemplate.id
+     * @param data
+     * @returns {Promise<Escrow>}
+     */
     @validate()
     public async destroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.escrowService.destroy(data.params[0]);
+        return this.escrowService.destroyCheckByListingItem(data.params[0]);
     }
 }
