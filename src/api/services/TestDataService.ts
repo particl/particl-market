@@ -4,11 +4,13 @@ import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import * as _ from 'lodash';
-import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
+import { MessageException } from '../exceptions/MessageException';
+import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
 import { ListingItem } from '../models/ListingItem';
 import { ListingItemService } from './ListingItemService';
 import { DefaultItemCategoryService } from './DefaultItemCategoryService';
 import { DefaultProfileService } from './DefaultProfileService';
+import { ProfileService } from './ProfileService';
 
 export class TestDataService {
 
@@ -18,6 +20,7 @@ export class TestDataService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -44,14 +47,24 @@ export class TestDataService {
     }
 
     /**
-     * creates ListingItems
+     * creates testdata
      *
      * @param data
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async create(@request(ListingItemCreateRequest) data: any): Promise<ListingItem> {
-        return await this.listingItemService.create(data);
+    public async create(@request(TestDataCreateRequest) body: any): Promise<any> {
+        switch (body.model) {
+            case 'listingitem': {
+                return await this.listingItemService.create(body.data);
+            }
+            case 'profile': {
+                return await this.profileService.create(body.data);
+            }
+            default: {
+                throw new MessageException('Not implemented');
+            }
+        }
     }
 
     /**

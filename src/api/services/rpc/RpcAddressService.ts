@@ -54,7 +54,7 @@ export class RpcAddressService {
             addressLine2 : data.params[2],
             city : data.params[3],
             country : data.params[4],
-            profileId : data.params[5]
+            profile_id : data.params[5]
         });
     }
 
@@ -80,7 +80,7 @@ export class RpcAddressService {
             addressLine2 : data.params[3],
             city : data.params[4],
             country : data.params[5],
-            profileId : data.params[6]
+            profile_id : data.params[6]
         });
     }
 

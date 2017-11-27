@@ -1,61 +1,50 @@
-import * as _ from 'lodash';
-import { api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { rpc, api } from './lib/api';
+
+import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Country } from '../../src/api/enums/Country';
 
-describe('/RpcCreateAddress', () => {
+describe('CreateAddress', () => {
 
-    const keys = [
-        'id', 'updatedAt', 'createdAt', 'title', 'addressLine1', 'addressLine2', 'city', 'country'
-    ];
+    const testUtil = new BlackBoxTestUtil();
+    const method = 'createaddress';
 
     const testData = {
-        method: 'createaddress',
-        params: [
-            'Work',
-            '123 6th St',
-            'Melbourne, FL 32904',
-            'Melbourne',
-            Country.FINLAND,
-            0
-        ],
-        jsonrpc: '2.0'
+        title: 'Work',
+        addressLine1: '123 6th St',
+        addressLine2: 'Melbourne, FL 32904',
+        city: 'Melbourne',
+        country: Country.FINLAND
     };
 
     beforeAll(async () => {
-        const command = new DatabaseResetCommand();
-        await command.run();
+        await testUtil.cleanDb();
     });
 
     test('Should create a new address by RPC', async () => {
-        const res = await api('POST', '/api/rpc', {
-            body: testData
-        });
+        const addDataRes: any = await testUtil.addData('profile', { name: 'TESTING-ADDRESS-PROFILE-NAME' });
+        const profileId = addDataRes.getBody()['result'].id;
+
+        console.log('profileId: ', profileId);
+        const res = await rpc(method, [testData.title, testData.addressLine1, testData.addressLine2, testData.city, testData.country, profileId]);
         res.expectJson();
         res.expectStatusCode(200);
-        res.expectDataRpc(keys);
+
         const result: any = res.getBody()['result'];
-        expect(result.title).toBe(testData.params[0]);
-        expect(result.addressLine1).toBe(testData.params[1]);
-        expect(result.addressLine2).toBe(testData.params[2]);
-        expect(result.city).toBe(testData.params[3]);
-        expect(result.country).toBe(testData.params[4]);
+        expect(result.title).toBe(testData.title);
+        expect(result.addressLine1).toBe(testData.addressLine1);
+        expect(result.addressLine2).toBe(testData.addressLine2);
+        expect(result.city).toBe(testData.city);
+        expect(result.country).toBe(testData.country);
     });
 
     test('Should fail because we want to create an empty address without required fields', async () => {
-        testData.params[1] = '';
-        const res = await api('POST', '/api/rpc', {
-            body: testData
-        });
+        const res = await rpc(method, [testData.title, testData.addressLine1, testData.addressLine2, testData.city, testData.country]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
     test('Should fail because we want to create an empty address', async () => {
-        testData.params = [];
-        const res = await api('POST', '/api/rpc', {
-            body: testData
-        });
+        const res = await rpc(method, []);
         res.expectJson();
         res.expectStatusCode(400);
     });

@@ -38,3 +38,9 @@ export const api = async <T> (method: string, path: string, options: ApiOptions<
 
     return new ApiResponseTest(error, res);
 };
+
+
+export const rpc = async (method: string, params: any[] = [] ): any => {
+    const body = { method, params, jsonrpc: '2.0' };
+    return await api('POST', '/api/rpc', { body });
+};

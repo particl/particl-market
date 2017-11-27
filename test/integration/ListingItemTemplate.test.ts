@@ -245,12 +245,14 @@ describe('ListingItemTemplate', () => {
 
     });
 
+    /*
     test('Should throw ValidationException because we want to create a empty listing item template', async () => {
         expect.assertions(1);
         await listingItemTemplateService.create({}).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
+    */
 
     test('Should list listing item templates with our new create one', async () => {
         const listingItemTemplateCollection = await listingItemTemplateService.findAll();

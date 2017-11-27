@@ -1,77 +1,60 @@
-import * as _ from 'lodash';
-import { api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { rpc, api } from './lib/api';
+
+import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Country } from '../../src/api/enums/Country';
 
 describe('/RpcUpdateAddress', () => {
 
-    const keys = [
-        'id', 'updatedAt', 'createdAt', 'title', 'addressLine1', 'addressLine2', 'city', 'country'
-    ];
+    const testUtil = new BlackBoxTestUtil();
+    const method = 'updateaddress';
 
     const testData = {
-        method: 'createaddress',
-        params: [
-            'Work',
-            '123 6th St',
-            'Melbourne, FL 32904',
-            'Melbourne',
-            Country.FINLAND,
-            0
-        ],
-        jsonrpc: '2.0'
+        name: 'TESTING-ADDRESS-PROFILE-NAME',
+        addresses: [{
+            title: 'Title',
+            addressLine1: 'Add',
+            addressLine2: 'ADD 22',
+            city: 'city',
+            country: Country.SWEDEN
+        }]
     };
 
-    let createdId;
     const testDataUpdated = {
-        method: 'updateaddress',
-        params: [
-            0,
-            'Home',
-            '456 9th St',
-            'Melb, FL 32904',
-            'Melb',
-            Country.SWEDEN,
-            0
-        ],
-        jsonrpc: '2.0'
+        title: 'Work',
+        addressLine1: '123 6th St',
+        addressLine2: 'Melbourne, FL 32904',
+        city: 'Melbourne',
+        country: Country.FINLAND
     };
-
 
     beforeAll(async () => {
-        const command = new DatabaseResetCommand();
-        await command.run();
+        await testUtil.cleanDb();
     });
 
     test('Should update the address', async () => {
-        // create address
-        const res = await api('POST', '/api/rpc', {
-            body: testData
-        });
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectDataRpc(keys);
-        const result: any = res.getBody()['result'];
-        createdId = result.id;
-        expect(result.title).toBe(testData.params[0]);
-        expect(result.addressLine1).toBe(testData.params[1]);
-        expect(result.addressLine2).toBe(testData.params[2]);
-        expect(result.city).toBe(testData.params[3]);
-        expect(result.country).toBe(testData.params[4]);
+
+        // set up the test data, create profile + addresses
+        const addDataRes: any = await testUtil.addData('profile', testData);
+        const profileId = addDataRes.getBody()['result'].id;
+        const addressId = addDataRes.getBody()['result'].Addresses[0].id;
 
         // update address
-        testDataUpdated.params[0] = createdId;
-        const resMain = await api('POST', '/api/rpc', {
-            body: testDataUpdated
-        });
-        resMain.expectJson();
-        resMain.expectStatusCode(200);
-        resMain.expectDataRpc(keys);
-        const resultMain: any = resMain.getBody()['result'];
-        expect(resultMain.title).toBe(testDataUpdated.params[1]);
-        expect(resultMain.addressLine1).toBe(testDataUpdated.params[2]);
-        expect(resultMain.addressLine2).toBe(testDataUpdated.params[3]);
-        expect(resultMain.city).toBe(testDataUpdated.params[4]);
-        expect(resultMain.country).toBe(testDataUpdated.params[5]);
+        const res = await rpc(method, [
+            addressId,
+            testDataUpdated.title,
+            testDataUpdated.addressLine1,
+            testDataUpdated.addressLine2,
+            testDataUpdated.city,
+            testDataUpdated.country,
+            profileId
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        expect(result.title).toBe(testDataUpdated.title);
+        expect(result.addressLine1).toBe(testDataUpdated.addressLine1);
+        expect(result.addressLine2).toBe(testDataUpdated.addressLine2);
+        expect(result.city).toBe(testDataUpdated.city);
+        expect(result.country).toBe(testDataUpdated.country);
     });
 });
