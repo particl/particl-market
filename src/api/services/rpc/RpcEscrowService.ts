@@ -64,14 +64,17 @@ export class RpcEscrowService {
 
     /**
      * data.params[]:
-     *  [0]: id to fetch
-     *
+     *  [0]: ListingItemTemplate.id
+     *  [1]: escrowtype
+     *  [2]: buyer ratio
+     *  [3]: seller ratio
      * @param data
      * @returns {Promise<Escrow>}
      */
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<Escrow> {
-        return this.escrowService.update(data.params[0], {
+        return this.escrowService.updateCheckByListingItem({
+            listingItemTemplateId: data.params[0],
             type: data.params[1],
             ratio: {
                 buyer: data.params[2],

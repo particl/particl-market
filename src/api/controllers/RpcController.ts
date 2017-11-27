@@ -185,6 +185,7 @@ export class RpcController {
 
             // escrow
             'createescrow': 'rpcEscrowService.create',
+            'updateescrow': 'rpcEscrowService.update',
 
             // test data management
             'cleandb': 'rpcTestDataService.clean',
