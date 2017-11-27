@@ -4,6 +4,9 @@ import { RequestBody } from '../../core/api/RequestBody';
 
 export class ItemImageDataCreateRequest extends RequestBody {
 
+    @IsNotEmpty()
+    public item_image_id: number;
+
     // @IsNotEmpty()
     public dataId: string;
 
