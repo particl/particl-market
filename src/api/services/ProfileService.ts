@@ -55,12 +55,10 @@ export class ProfileService {
     public async create( @request(ProfileCreateRequest) data: any): Promise<Profile> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.info('body:', JSON.stringify(body, null, 2));
 
         // extract and remove related models from request
         const addresses = body.addresses || [];
         delete body.addresses;
-        this.log.info('body2:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the profile
         const profile = await this.profileRepo.create(body);
@@ -68,8 +66,6 @@ export class ProfileService {
         // create related models
         for (const address of addresses) {
             address.profile_id = profile.Id;
-            this.log.info('address:', JSON.stringify(address, null, 2));
-
             await this.addressService.create(address);
         }
 
