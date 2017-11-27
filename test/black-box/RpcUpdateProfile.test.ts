@@ -3,7 +3,7 @@ import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Country } from '../../src/api/enums/Country';
 
-describe('RpcUpdateProfile', () => {
+describe('UpdateProfile', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const method = 'updateprofile';
