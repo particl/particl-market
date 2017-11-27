@@ -29,8 +29,9 @@ describe('ItemInformation', () => {
         shortDescription: 'item short desc1',
         longDescription: 'item long desc1',
         itemCategory: {
-            name: 'item category name 1',
-            description: 'item category description 1'
+            key: 'cat_apparel_adult',
+            name: 'Adult',
+            description: ''
         },
         itemLocation: {
             region: Country.SOUTH_AFRICA,
@@ -84,10 +85,10 @@ describe('ItemInformation', () => {
         shortDescription: 'item short desc2',
         longDescription: 'item long desc2',
         itemCategory: {
-            name: 'item category name 2',
-            description: 'item category description 2'
+            key: 'cat_high_luxyry_items',
+            name: 'Luxury Items',
+            description: ''
         },
-
         itemLocation: {
             region: Country.EU,
             address: 'zxcv, zxcv, zxcv',
