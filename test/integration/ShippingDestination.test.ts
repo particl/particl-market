@@ -47,7 +47,15 @@ describe('ShippingDestination', () => {
         //
     });
 
+    test('Should throw ValidationException because there is no item_information_id', async () => {
+        expect.assertions(1);
+        await shippingDestinationService.create(testData).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should create a new shipping destination', async () => {
+        testData['item_information_id'] = 0;
         const shippingDestinationModel: ShippingDestination = await shippingDestinationService.create(testData);
         createdId = shippingDestinationModel.Id;
 
@@ -83,7 +91,15 @@ describe('ShippingDestination', () => {
         expect(result.shippingAvailability).toBe(testData.shippingAvailability);
     });
 
+    test('Should throw ValidationException because there is no item_information_id', async () => {
+        expect.assertions(1);
+        await shippingDestinationService.update(createdId, testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should update the shipping destination', async () => {
+        testDataUpdated['item_information_id'] = 0;
         const shippingDestinationModel: ShippingDestination = await shippingDestinationService.update(createdId, testDataUpdated);
         const result = shippingDestinationModel.toJSON();
 
