@@ -45,7 +45,15 @@ describe('ShippingPrice', () => {
         //
     });
 
+    test('Should throw ValidationException because there is no item_price_id', async () => {
+        expect.assertions(1);
+        await shippingPriceService.create(testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should create a new shipping price', async () => {
+        testData['item_price_id'] = 0;
         const shippingPriceModel: ShippingPrice = await shippingPriceService.create(testData);
         createdId = shippingPriceModel.Id;
 
@@ -81,7 +89,15 @@ describe('ShippingPrice', () => {
         expect(result.international).toBe(testData.international);
     });
 
+    test('Should throw ValidationException because there is no item_price_id', async () => {
+        expect.assertions(1);
+        await shippingPriceService.update(createdId, testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should update the shipping price', async () => {
+        testDataUpdated['item_price_id'] = 0;
         const shippingPriceModel: ShippingPrice = await shippingPriceService.update(createdId, testDataUpdated);
         const result = shippingPriceModel.toJSON();
 
