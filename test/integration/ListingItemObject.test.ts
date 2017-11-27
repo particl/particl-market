@@ -48,7 +48,15 @@ describe('ListingItemObject', () => {
         //
     });
 
+    test('Should throw ValidationException because we want to create a empty messaging information', async () => {
+        expect.assertions(1);
+        await listingItemObjectService.create({}).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should create a new listing item object', async () => {
+        testData['listing_item_template_id'] = 0;
         const listingItemObjectModel: ListingItemObject = await listingItemObjectService.create(testData);
         createdId = listingItemObjectModel.Id;
 
@@ -87,7 +95,15 @@ describe('ListingItemObject', () => {
         expect(result.order).toBe(testData.order);
     });
 
+    test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
+        expect.assertions(1);
+        await listingItemObjectService.update(createdId, testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should update the listing item object', async () => {
+        testDataUpdated['listing_item_template_id'] = 0;
         const listingItemObjectModel: ListingItemObject = await listingItemObjectService.update(createdId, testDataUpdated);
         const result = listingItemObjectModel.toJSON();
 
