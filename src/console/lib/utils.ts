@@ -7,16 +7,16 @@ import { UpdateTargetsCommand } from '../UpdateTargetsCommand';
 
 
 export const parseName = (name: string, suffix: string) => ({
-    camelCase: _.camelCase(removeSufix(suffix, name)),
-    snakeCase: _.snakeCase(removeSufix(suffix, name)),
-    capitalize: _.upperFirst(_.camelCase(removeSufix(suffix, name))),
-    lowerCase: _.lowerCase(removeSufix(suffix, name)),
-    kebabCase: _.kebabCase(removeSufix(suffix, name)),
-    pluralize: pluralize(_.kebabCase(removeSufix(suffix, name))),
+    camelCase: _.camelCase(removeSuffix(suffix, name)),
+    snakeCase: _.snakeCase(removeSuffix(suffix, name)),
+    capitalize: _.upperFirst(_.camelCase(removeSuffix(suffix, name))),
+    lowerCase: _.lowerCase(removeSuffix(suffix, name)),
+    kebabCase: _.kebabCase(removeSuffix(suffix, name)),
+    pluralize: pluralize(_.kebabCase(removeSuffix(suffix, name))),
     normal: name
 });
 
-export const removeSufix = (suffix: string, value: string) => {
+export const removeSuffix = (suffix: string, value: string) => {
     return value.replace(suffix, '');
 };
 

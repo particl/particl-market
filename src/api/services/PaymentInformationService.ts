@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { ValidationException } from '../exceptions/ValidationException';
 import { MessageException } from '../exceptions/MessageException';
 import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
 import { PaymentInformation } from '../models/PaymentInformation';
@@ -39,17 +40,15 @@ export class PaymentInformationService {
         return paymentInformation;
     }
 
-    public async updateByListingId(id: number, @request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
-        const paymentInformation = await this.paymentInformationRepo.findOneByListingItemTemplateId(id);
-        if (paymentInformation === null) {
-            this.log.warn(`PaymentInformation with the listing_item_template_id=${id} was not found!`);
-            throw new MessageException(`PaymentInformation with the listing_item_template_id=${id} was not found!`);
-        }
-        return this.update(paymentInformation.id, body);
-    }
-
     @validate()
-    public async create( @request(PaymentInformationCreateRequest) body: any): Promise<PaymentInformation> {
+    public async create( @request(PaymentInformationCreateRequest) data: any): Promise<PaymentInformation> {
+
+        const body = JSON.parse(JSON.stringify(data));
+
+        // todo: could this be annotated in PaymentInformationCreateRequest?
+        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
+        }
 
         const escrow = body.escrow;
         const itemPrice = body.itemPrice;
@@ -75,8 +74,26 @@ export class PaymentInformationService {
         return newPaymentInformation;
     }
 
+    /* conflicted code
+     public async updateByListingId(id: number, @request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
+     const paymentInformation = await this.paymentInformationRepo.findOneByListingItemTemplateId(id);
+     if (paymentInformation === null) {
+     this.log.warn(`PaymentInformation with the listing_item_template_id=${id} was not found!`);
+     throw new MessageException(`PaymentInformation with the listing_item_template_id=${id} was not found!`);
+     }
+     return this.update(paymentInformation.id, body);
+     }
+     */
+
     @validate()
-    public async update(id: number, @request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
+    public async update(id: number, @request(PaymentInformationUpdateRequest) data: any): Promise<PaymentInformation> {
+
+        const body = JSON.parse(JSON.stringify(data));
+
+        // todo: could this be annotated in PaymentInformationCreateRequest?
+        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
+        }
 
         // find the existing one without related
         const paymentInformation = await this.findOne(id, false);
@@ -108,10 +125,81 @@ export class PaymentInformationService {
         // finally find and return the updated paymentInformation
         const newPaymentInformation = await this.findOne(id);
         return newPaymentInformation;
+
     }
 
     public async destroy(id: number): Promise<void> {
         await this.paymentInformationRepo.destroy(id);
+    }
+
+    // -----------------------------------------------------
+    // TODO: used for testing, remove...
+
+    @validate()
+    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<PaymentInformation>> {
+        return this.findAll();
+    }
+
+    @validate()
+    public async rpcFindOne( @request(RpcRequest) data: any): Promise<PaymentInformation> {
+        return this.findOne(data.params[0]);
+    }
+
+    @validate()
+    public async rpcCreate( @request(RpcRequest) data: any): Promise<PaymentInformation> {
+        return this.create({
+            type: data.params[0],
+            escrow: {
+                type: data.params[1],
+                ratio: {
+                    buyer: data.params[2],
+                    seller: data.params[3]
+                }
+            },
+            itemPrice: {
+                currency: data.params[4],
+                basePrice: data.params[5],
+                shippingPrice: {
+                    domestic: data.params[6],
+                    international: data.params[7]
+                },
+                address: {
+                    type: data.params[8],
+                    address: data.params[9]
+                }
+            }
+        });
+    }
+
+    @validate()
+    public async rpcUpdate( @request(RpcRequest) data: any): Promise<PaymentInformation> {
+        return this.update(data.params[0], {
+            type: data.params[1],
+            escrow: {
+                type: data.params[2],
+                ratio: {
+                    buyer: data.params[3],
+                    seller: data.params[4]
+                }
+            },
+            itemPrice: {
+                currency: data.params[5],
+                basePrice: data.params[6],
+                shippingPrice: {
+                    domestic: data.params[7],
+                    international: data.params[8]
+                },
+                address: {
+                    type: data.params[9],
+                    address: data.params[10]
+                }
+            }
+        });
+    }
+
+    @validate()
+    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
+        return this.destroy(data.params[0]);
     }
 
 }

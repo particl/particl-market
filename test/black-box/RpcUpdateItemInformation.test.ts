@@ -1,4 +1,3 @@
-import * as _ from 'lodash';
 import { api } from './lib/api';
 import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
 

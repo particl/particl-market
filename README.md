@@ -104,6 +104,7 @@ All the templates for the commands are located in `src/console/templates`.
 * `npm run console make:exception` - Generates a basic exception.
 * `npm run console make:enum` - Generates a basic enum.
 * `npm run console make:api-test` - Generates an api test.
+* `npm run console make:integration-test` - Generates an integration test.
 * `npm run console make:seed` - Generates a seeder.
 * `npm run console update:targets` - Reads all the API files and generate a new `constants/Targets.ts` file out of it.
 

@@ -11,8 +11,7 @@ import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplateUpdateRequest } from '../requests/ListingItemTemplateUpdateRequest';
 import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
-import { RpcRequest } from '../requests/RpcRequest';
-
+import { MessagingInformationService } from './MessagingInformationService';
 
 export class ListingItemTemplateService {
 
@@ -20,8 +19,9 @@ export class ListingItemTemplateService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
-        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -53,57 +53,85 @@ export class ListingItemTemplateService {
     }
 
     @validate()
-    public async create( @request(ListingItemTemplateCreateRequest) body: any): Promise<ListingItemTemplate> {
+    public async create( @request(ListingItemTemplateCreateRequest) data: any): Promise<ListingItemTemplate> {
+
+        const body = JSON.parse(JSON.stringify(data));
+
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
         delete body.itemInformation;
-
         const paymentInformation = body.paymentInformation;
         delete body.paymentInformation;
+        const messagingInformation = body.messagingInformation;
+        delete body.messagingInformation;
+
+        // this.log.info('save itemInformation: ', itemInformation);
+        // this.log.info('save paymentInformation: ', paymentInformation);
+        // this.log.info('save messagingInformation: ', messagingInformation);
+
         // If the request body was valid we will create the listingItemTemplate
         const listingItemTemplate = await this.listingItemTemplateRepo.create(body);
+        this.log.info('saved listingItemTemplate.Id: ', listingItemTemplate.Id);
+
 
         if (itemInformation) {
             itemInformation.listing_item_template_id = listingItemTemplate.Id;
-            await this.itemInformationService.create(itemInformation);
+            const result = await this.itemInformationService.create(itemInformation);
+            // this.log.info('saved itemInformation: ', result.toJSON());
         }
-
         if (paymentInformation) {
             paymentInformation.listing_item_template_id = listingItemTemplate.Id;
-            await this.paymentInformationService.create(paymentInformation);
+            const result = await this.paymentInformationService.create(paymentInformation);
+            // this.log.info('saved paymentInformation: ', result.toJSON());
+        }
+        if (messagingInformation) {
+            messagingInformation.listing_item_template_id = listingItemTemplate.Id;
+            const result = await this.messagingInformationService.create(messagingInformation);
+            // this.log.info('saved messagingInformation: ', result.toJSON());
         }
 
         // finally find and return the created listingItemTemplate
         const newListingItemTemplate = await this.findOne(listingItemTemplate.Id);
+        // this.log.info('newListingItemTemplate: ', newListingItemTemplate.toJSON());
         return newListingItemTemplate;
     }
 
     @validate()
-    public async update(id: number, @request(ListingItemTemplateUpdateRequest) body: any): Promise<ListingItemTemplate> {
+    public async update(id: number, @request(ListingItemTemplateUpdateRequest) data: any): Promise<ListingItemTemplate> {
+
+        const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const listingItemTemplate = await this.findOne(id, false);
 
         // set new values
+        listingItemTemplate.Hash = body.hash;
 
+        this.log.info('listingItemTemplate.toJSON():', listingItemTemplate.toJSON());
         // update listingItemTemplate record
         const updatedListingItemTemplate = await this.listingItemTemplateRepo.update(id, listingItemTemplate.toJSON());
 
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let listingItemTemplateRelated = updatedListingItemTemplate.related('ListingItemTemplateRelated').toJSON();
-        // await this.listingItemTemplateService.destroy(listingItemTemplateRelated.id);
+        // find related record and delete it and recreate related data
+        const itemInformation = updatedListingItemTemplate.related('ItemInformation').toJSON();
+        await this.itemInformationService.destroy(itemInformation.id);
+        body.itemInformation.listing_item_template_id = id;
+        await this.itemInformationService.create(body.itemInformation);
 
-        // TODO: recreate related data
-        // listingItemTemplateRelated = body.listingItemTemplateRelated;
-        // listingItemTemplateRelated._id = listingItemTemplate.Id;
-        // const createdListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplateRelated);
+        // find related record and delete it and recreate related data
+        const paymentInformation = updatedListingItemTemplate.related('PaymentInformation').toJSON();
+        await this.paymentInformationService.destroy(paymentInformation.id);
+        body.paymentInformation.listing_item_template_id = id;
+        await this.paymentInformationService.create(body.paymentInformation);
 
-        // TODO: finally find and return the updated listingItemTemplate
-        // const newListingItemTemplate = await this.findOne(id);
-        // return newListingItemTemplate;
+        // find related record and delete it and recreate related data
+        const messagingInformation = updatedListingItemTemplate.related('MessagingInformation').toJSON();
+        await this.messagingInformationService.destroy(messagingInformation.id);
+        body.messagingInformation.listing_item_template_id = id;
+        await this.messagingInformationService.create(body.messagingInformation);
 
-        return updatedListingItemTemplate;
+        // finally find and return the updated listingItem
+        const newListingItemTemplate = await this.findOne(id);
+        return newListingItemTemplate;
     }
 
     public async destroy(id: number): Promise<void> {

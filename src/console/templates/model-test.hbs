@@ -1,0 +1,134 @@
+import { app } from '../../src/app';
+import { Logger as LoggerType } from '../../src/core/Logger';
+import { Types, Core, Targets } from '../../src/constants';
+import { TestUtil } from './lib/TestUtil';
+import { TestDataService } from '../../src/api/services/TestDataService';
+
+import { ValidationException } from '../../src/api/exceptions/ValidationException';
+import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
+
+import { {{name.capitalize}} } from '../../src/api/models/{{name.capitalize}}';
+
+import { {{name.capitalize}}Service } from '../../src/api/services/{{name.capitalize}}Service';
+
+describe('{{name.capitalize}}', () => {
+
+    const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new TestUtil();
+
+    let testDataService: TestDataService;
+    let {{name.camelCase}}Service: {{name.capitalize}}Service;
+
+    let createdId;
+
+    const testData = {
+        {{#each properties}}
+        {{name.camelCase}}: undefined{{#unless @last}},{{/unless}} // TODO: Add test value
+        {{/each}}
+    };
+
+    const testDataUpdated = {
+        {{#each properties}}
+        {{name.camelCase}}: undefined{{#unless @last}},{{/unless}} // TODO: Add test value
+        {{/each}}
+    };
+
+    beforeAll(async () => {
+        await testUtil.bootstrapAppContainer(app);  // bootstrap the app
+
+        testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        {{name.camelCase}}Service = app.IoC.getNamed<{{name.capitalize}}Service>(Types.Service, Targets.Service.{{name.capitalize}}Service);
+
+        // clean up the db, first removes all data and then seeds the db with default data
+        await testDataService.clean([]);
+    });
+
+    afterAll(async () => {
+        //
+    });
+
+    /*
+    test('Should throw ValidationException because there is no related_id', async () => {
+        expect.assertions(1);
+        await {{name.camelCase}}Service.create(testData).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+    */
+
+    test('Should create a new {{name.lowerCase}}', async () => {
+        // testData['related_id'] = 0;
+        const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.create(testData);
+        createdId = {{name.camelCase}}Model.Id;
+
+        const result = {{name.camelCase}}Model.toJSON();
+
+        // test the values
+        // expect(result.value).toBe(testData.value);
+        {{#each properties}}
+        expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
+        {{/each}}
+    });
+
+    test('Should throw ValidationException because we want to create a empty {{name.lowerCase}}', async () => {
+        expect.assertions(1);
+        await {{name.camelCase}}Service.create({}).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
+    test('Should list {{name.lowerCase}}s with our new create one', async () => {
+        const {{name.camelCase}}Collection = await {{name.camelCase}}Service.findAll();
+        const {{name.camelCase}} = {{name.camelCase}}Collection.toJSON();
+        expect({{name.camelCase}}.length).toBe(1);
+
+        const result = {{name.camelCase}}[0];
+
+        // test the values
+        // expect(result.value).toBe(testData.value);
+        {{#each properties}}
+        expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
+        {{/each}}
+    });
+
+    test('Should return one {{name.lowerCase}}', async () => {
+        const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.findOne(createdId);
+        const result = {{name.camelCase}}Model.toJSON();
+
+        // test the values
+        // expect(result.value).toBe(testData.value);
+        {{#each properties}}
+        expect(result.{{name.camelCase}}).toBe(testData.{{name.camelCase}});
+        {{/each}}
+    });
+
+    /*
+    test('Should throw ValidationException because there is no related_id', async () => {
+        expect.assertions(1);
+        await {{name.camelCase}}Service.update(createdId, testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+    */
+
+    test('Should update the {{name.lowerCase}}', async () => {
+        // testDataUpdated['related_id'] = 0;
+        const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.update(createdId, testDataUpdated);
+        const result = {{name.camelCase}}Model.toJSON();
+
+        // test the values
+        // expect(result.value).toBe(testDataUpdated.value);
+        {{#each properties}}
+        expect(result.{{name.camelCase}}).toBe(testDataUpdated.{{name.camelCase}});
+        {{/each}}
+    });
+
+    test('Should delete the {{name.lowerCase}}', async () => {
+        expect.assertions(1);
+        await {{name.camelCase}}Service.destroy(createdId);
+        await {{name.camelCase}}Service.findOne(createdId).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
+    });
+
+});

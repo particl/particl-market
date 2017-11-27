@@ -7,6 +7,8 @@ import * as _ from 'lodash';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ListingItem } from '../models/ListingItem';
 import { ListingItemService } from './ListingItemService';
+import { DefaultItemCategoryService } from './DefaultItemCategoryService';
+import { DefaultProfileService } from './DefaultProfileService';
 
 export class TestDataService {
 
@@ -14,6 +16,8 @@ export class TestDataService {
     public ignoreTables: string[] = ['sqlite_sequence', 'version', 'version_lock', 'knex_migrations', 'knex_migrations_lock'];
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -22,11 +26,41 @@ export class TestDataService {
 
     /**
      * clean up the database
+     * insert the default data
      *
-     * @param ignoreTables to ignore
+     * @param ignoreTables
+     * @param seed
      * @returns {Promise<void>}
      */
-    public async clean(ignoreTables: string[]): Promise<void> {
+    public async clean(ignoreTables: string[], seed: boolean = true): Promise<void> {
+
+        await this.cleanDb(ignoreTables);
+        if (seed) {
+            await this.defaultItemCategoryService.seedDefaultCategories();
+            await this.defaultProfileService.seedDefaultProfile();
+        }
+
+        return;
+    }
+
+    /**
+     * creates ListingItems
+     *
+     * @param data
+     * @returns {Promise<ListingItem>}
+     */
+    @validate()
+    public async create(@request(ListingItemCreateRequest) data: any): Promise<ListingItem> {
+        return await this.listingItemService.create(data);
+    }
+
+    /**
+     * clean up the db
+     *
+     * @param ignoreTables
+     * @returns {Promise<void>}
+     */
+    private async cleanDb(ignoreTables: string[]): Promise<void> {
 
         // by default ignore these
         ignoreTables = this.ignoreTables.concat(ignoreTables);
@@ -52,11 +86,6 @@ export class TestDataService {
             await Bookshelf.knex.select().from(table).del();
         }
         return;
-    }
-
-    @validate()
-    public async create(@request(ListingItemCreateRequest) data: any): Promise<ListingItem> {
-        return await this.listingItemService.create(data);
     }
 
     private async getTableNames(knex: any): Promise<any> {

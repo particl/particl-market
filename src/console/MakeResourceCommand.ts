@@ -10,7 +10,7 @@ import { MakeRepoCommand } from './MakeRepoCommand';
 import { MakeServiceCommand } from './MakeServiceCommand';
 import { MakeControllerCommand } from './MakeControllerCommand';
 import { MakeRequestCommand } from './MakeRequestCommand';
-import { MakeApiTestCommand } from './MakeApiTestCommand';
+import { MakeIntegrationTestCommand } from './MakeIntegrationTestCommand';
 
 
 export class MakeResourceCommand extends AbstractMakeCommand {
@@ -30,7 +30,7 @@ export class MakeResourceCommand extends AbstractMakeCommand {
     public makeControllerCommand: AbstractMakeCommand;
     public makeCreateRequestCommand: MakeRequestCommand;
     public makeUpdateRequestCommand: MakeRequestCommand;
-    public makeApiTestCommand: MakeApiTestCommand;
+    public makeIntegrationTestCommand: MakeIntegrationTestCommand;
 
     public async run(): Promise<void> {
         this.context = await this.askFileName(this.context, this.type, this.suffix, this.prefix);
@@ -45,7 +45,7 @@ export class MakeResourceCommand extends AbstractMakeCommand {
         this.makeControllerCommand = new MakeControllerCommand(this.context);
         this.makeCreateRequestCommand = new MakeRequestCommand(this.context, 'Create');
         this.makeUpdateRequestCommand = new MakeRequestCommand(this.context, 'Update');
-        this.makeApiTestCommand = new MakeApiTestCommand(this.context);
+        this.makeIntegrationTestCommand = new MakeIntegrationTestCommand(this.context);
 
         // Ask all meta-data
         await this.makeModelCommand.run();
@@ -54,7 +54,7 @@ export class MakeResourceCommand extends AbstractMakeCommand {
         await this.makeControllerCommand.run();
         await this.makeCreateRequestCommand.run();
         await this.makeUpdateRequestCommand.run();
-        await this.makeApiTestCommand.run();
+        await this.makeIntegrationTestCommand.run();
     }
 
     public async write(): Promise<void> {
@@ -64,7 +64,7 @@ export class MakeResourceCommand extends AbstractMakeCommand {
         await this.makeControllerCommand.write();
         await this.makeCreateRequestCommand.write();
         await this.makeUpdateRequestCommand.write();
-        await this.makeApiTestCommand.write();
+        await this.makeIntegrationTestCommand.write();
     }
 
 }

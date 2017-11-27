@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { ValidationException } from '../exceptions/ValidationException';
 import { ItemImageRepository } from '../repositories/ItemImageRepository';
 import { ItemImage } from '../models/ItemImage';
 import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
@@ -23,18 +24,8 @@ export class ItemImageService {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemImage>> {
-        return this.findAll();
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<ItemImage>> {
         return this.itemImageRepo.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ItemImage> {
-        return this.findOne(data.params[0]);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ItemImage> {
@@ -47,20 +38,9 @@ export class ItemImageService {
     }
 
     @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemImage> {
-        return this.create({
-            hash: data.params[0],
-            data: {
-                dataId: data.params[1] || '',
-                protocol: data.params[2] || '',
-                encoding: data.params[3] || '',
-                data: data.params[4] || ''
-            }
-        });
-    }
+    public async create( @request(ItemImageCreateRequest) data: any): Promise<ItemImage> {
 
-    @validate()
-    public async create( @request(ItemImageCreateRequest) body: any): Promise<ItemImage> {
+        const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
         const itemImageData = body.data;
@@ -79,20 +59,9 @@ export class ItemImageService {
     }
 
     @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemImage> {
-        return this.update(data.params[0], {
-            hash: data.params[1],
-            data: {
-                dataId: data.params[2] || '',
-                protocol: data.params[3] || '',
-                encoding: data.params[4] || '',
-                data: data.params[5] || ''
-            }
-        });
-    }
+    public async update(id: number, @request(ItemImageUpdateRequest) data: any): Promise<ItemImage> {
 
-    @validate()
-    public async update(id: number, @request(ItemImageUpdateRequest) body: any): Promise<ItemImage> {
+        const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const itemImage = await this.findOne(id, false);
@@ -117,13 +86,50 @@ export class ItemImageService {
         return newItemImage;
     }
 
+    public async destroy(id: number): Promise<void> {
+        await this.itemImageRepo.destroy(id);
+    }
+
+    // TODO: remove
+    @validate()
+    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemImage>> {
+        return this.findAll();
+    }
+
+    @validate()
+    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ItemImage> {
+        return this.findOne(data.params[0]);
+    }
+
+    @validate()
+    public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemImage> {
+        return this.create({
+            hash: data.params[0],
+            data: {
+                dataId: data.params[1] || '',
+                protocol: data.params[2] || '',
+                encoding: data.params[3] || '',
+                data: data.params[4] || ''
+            }
+        });
+    }
+
+    @validate()
+    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemImage> {
+        return this.update(data.params[0], {
+            hash: data.params[1],
+            data: {
+                dataId: data.params[2] || '',
+                protocol: data.params[3] || '',
+                encoding: data.params[4] || '',
+                data: data.params[5] || ''
+            }
+        });
+    }
+
     @validate()
     public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
         return this.destroy(data.params[0]);
-    }
-
-    public async destroy(id: number): Promise<void> {
-        await this.itemImageRepo.destroy(id);
     }
 
 }

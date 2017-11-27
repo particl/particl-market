@@ -2,7 +2,7 @@ import { IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { SearchOrder } from '../enums/SearchOrder';
 
-
+// tslint:disable:variable-name
 export class ListingItemTemplateSearchParams extends RequestBody {
 
     @IsNotEmpty()
@@ -23,4 +23,4 @@ export class ListingItemTemplateSearchParams extends RequestBody {
     public searchString: string;
 
 }
-
+// tslint:enable:variable-name

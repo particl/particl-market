@@ -22,18 +22,8 @@ export class LocationMarkerService {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<LocationMarker>> {
-        return this.findAll();
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<LocationMarker>> {
         return this.locationMarkerRepo.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<LocationMarker> {
-        return this.findOne(data.params[0]);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<LocationMarker> {
@@ -46,16 +36,6 @@ export class LocationMarkerService {
     }
 
     @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<LocationMarker> {
-        return this.create({
-            markerTitle: data.params[0],
-            markerText: data.params[1],
-            lat: data.params[2],
-            lng: data.params[3]
-        });
-    }
-
-    @validate()
     public async create( @request(LocationMarkerCreateRequest) body: any): Promise<LocationMarker> {
 
         // If the request body was valid we will create the locationMarker
@@ -64,16 +44,6 @@ export class LocationMarkerService {
         // finally find and return the created locationMarker
         const newLocationMarker = await this.findOne(locationMarker.Id);
         return newLocationMarker;
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<LocationMarker> {
-        return this.update(data.params[0], {
-            markerTitle: data.params[1],
-            markerText: data.params[2],
-            lat: data.params[3],
-            lng: data.params[4]
-        });
     }
 
     @validate()
@@ -93,13 +63,44 @@ export class LocationMarkerService {
         return updatedLocationMarker;
     }
 
+    public async destroy(id: number): Promise<void> {
+        await this.locationMarkerRepo.destroy(id);
+    }
+
+    // TODO: REMOVE
+    @validate()
+    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<LocationMarker>> {
+        return this.findAll();
+    }
+
+    @validate()
+    public async rpcFindOne( @request(RpcRequest) data: any): Promise<LocationMarker> {
+        return this.findOne(data.params[0]);
+    }
+
+    @validate()
+    public async rpcCreate( @request(RpcRequest) data: any): Promise<LocationMarker> {
+        return this.create({
+            markerTitle: data.params[0],
+            markerText: data.params[1],
+            lat: data.params[2],
+            lng: data.params[3]
+        });
+    }
+
+    @validate()
+    public async rpcUpdate( @request(RpcRequest) data: any): Promise<LocationMarker> {
+        return this.update(data.params[0], {
+            markerTitle: data.params[1],
+            markerText: data.params[2],
+            lat: data.params[3],
+            lng: data.params[4]
+        });
+    }
+
     @validate()
     public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
         return this.destroy(data.params[0]);
-    }
-
-    public async destroy(id: number): Promise<void> {
-        await this.locationMarkerRepo.destroy(id);
     }
 
 }
