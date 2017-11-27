@@ -5,7 +5,7 @@ import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ValidationException } from '../exceptions/ValidationException';
-
+import { MessageException } from '../exceptions/MessageException';
 import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
 import { PaymentInformation } from '../models/PaymentInformation';
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
@@ -60,8 +60,10 @@ export class PaymentInformationService {
         const paymentInformation = await this.paymentInformationRepo.create(body);
 
         // then create escrow
-        escrow.payment_information_id = paymentInformation.Id;
-        await this.escrowService.create(escrow);
+        if (escrow) {
+            escrow.payment_information_id = paymentInformation.Id;
+            await this.escrowService.create(escrow);
+        }
 
         // then create item price
         itemPrice.payment_information_id = paymentInformation.Id;
@@ -71,6 +73,17 @@ export class PaymentInformationService {
         const newPaymentInformation = await this.findOne(paymentInformation.Id);
         return newPaymentInformation;
     }
+
+    /* conflicted code
+     public async updateByListingId(id: number, @request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
+     const paymentInformation = await this.paymentInformationRepo.findOneByListingItemTemplateId(id);
+     if (paymentInformation === null) {
+     this.log.warn(`PaymentInformation with the listing_item_template_id=${id} was not found!`);
+     throw new MessageException(`PaymentInformation with the listing_item_template_id=${id} was not found!`);
+     }
+     return this.update(paymentInformation.id, body);
+     }
+     */
 
     @validate()
     public async update(id: number, @request(PaymentInformationUpdateRequest) data: any): Promise<PaymentInformation> {
@@ -84,22 +97,22 @@ export class PaymentInformationService {
 
         // find the existing one without related
         const paymentInformation = await this.findOne(id, false);
-
         // set new values
         paymentInformation.Type = body.type;
 
         // update paymentInformation record
         const updatedPaymentInformation = await this.paymentInformationRepo.update(id, paymentInformation.toJSON());
 
-        // find related record and delete it
-        let relatedEscrow = updatedPaymentInformation.related('Escrow').toJSON();
-        await this.escrowService.destroy(relatedEscrow.id);
+        if (body.escrow) {
+            // find related record and delete it
+            let relatedEscrow = updatedPaymentInformation.related('Escrow').toJSON();
+            await this.escrowService.destroy(relatedEscrow.id);
 
-        // recreate related data
-        relatedEscrow = body.escrow;
-        relatedEscrow.payment_information_id = id;
-        await this.escrowService.create(relatedEscrow);
-
+            // recreate related data
+            relatedEscrow = body.escrow;
+            relatedEscrow.payment_information_id = id;
+            await this.escrowService.create(relatedEscrow);
+        }
         // find related record and delete it
         let relatedItemPrice = updatedPaymentInformation.related('ItemPrice').toJSON();
         await this.itemPriceService.destroy(relatedItemPrice.id);

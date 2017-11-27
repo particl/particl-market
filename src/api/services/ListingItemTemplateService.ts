@@ -6,12 +6,11 @@ import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { ItemInformationService } from '../services/ItemInformationService';
+import { PaymentInformationService } from '../services/PaymentInformationService';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplateUpdateRequest } from '../requests/ListingItemTemplateUpdateRequest';
 import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
-import { RpcRequest } from '../requests/RpcRequest';
-
 
 export class ListingItemTemplateService {
 
@@ -19,6 +18,7 @@ export class ListingItemTemplateService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
+        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
@@ -74,7 +74,7 @@ export class ListingItemTemplateService {
         this.log.info('saved listingItemTemplate.Id: ', listingItemTemplate.Id);
 
 
-        if (itemInformation) { // will remove after confirmation that title always be there
+        if (itemInformation) {
             itemInformation.listing_item_template_id = listingItemTemplate.Id;
             const result = await this.itemInformationService.create(itemInformation);
             // this.log.info('saved itemInformation: ', result.toJSON());
@@ -90,6 +90,7 @@ export class ListingItemTemplateService {
             // this.log.info('saved messagingInformation: ', result.toJSON());
         }
 
+        // finally find and return the created listingItemTemplate
         const newListingItemTemplate = await this.findOne(listingItemTemplate.Id);
         // this.log.info('newListingItemTemplate: ', newListingItemTemplate.toJSON());
         return newListingItemTemplate;

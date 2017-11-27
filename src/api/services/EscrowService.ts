@@ -4,12 +4,16 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { MessageException } from '../exceptions/MessageException';
 import { EscrowRepository } from '../repositories/EscrowRepository';
 import { Escrow } from '../models/Escrow';
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../requests/EscrowUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
+import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
+import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
 import { EscrowRatioService } from '../services/EscrowRatioService';
+
 
 export class EscrowService {
 
@@ -18,6 +22,8 @@ export class EscrowService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.EscrowRatioService) private escrowratioService: EscrowRatioService,
         @inject(Types.Repository) @named(Targets.Repository.EscrowRepository) public escrowRepo: EscrowRepository,
+        @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
+        @inject(Types.Repository) @named(Targets.Repository.PaymentInformationRepository) private paymentInfoRepo: PaymentInformationRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -36,6 +42,29 @@ export class EscrowService {
         return escrow;
     }
 
+/* conflict
+    public async createCheckByListingItem(body: any): Promise<Escrow> {
+        // check listingItem by listingItemTemplateId
+        const listingItemTemplateId = body.listingItemTemplateId;
+        const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
+        if (listingItemTemplate.ListingItem.length === 0) {
+            // creates an Escrow related to PaymentInformation related to ListingItemTemplate
+            const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
+            if (paymentInformation === null) {
+                this.log.warn(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
+                throw new MessageException(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
+            }
+            body.payment_information_id = paymentInformation.Id;
+        } else {
+            this.log.warn(`Escrow cannot be created becuase Listing
+            Item has allready been posted with this is listing-item-template-id ${listingItemTemplateId}`);
+            throw new MessageException(`Escrow cannot be created becuase Listing
+            Item has allready been posted with this is listing-item-template-id ${listingItemTemplateId}`);
+        }
+        delete body.listingItemTemplateId;
+        return this.create(body);
+    }
+*/
     @validate()
     public async create( @request(EscrowCreateRequest) data: any): Promise<Escrow> {
 
