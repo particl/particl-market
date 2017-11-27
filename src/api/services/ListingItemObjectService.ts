@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { ValidationException } from '../exceptions/ValidationException';
 import { ListingItemObjectRepository } from '../repositories/ListingItemObjectRepository';
 import { ListingItemObject } from '../models/ListingItemObject';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
@@ -22,18 +23,8 @@ export class ListingItemObjectService {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ListingItemObject>> {
-        return this.findAll();
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<ListingItemObject>> {
         return this.listingItemObjectRepo.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ListingItemObject> {
-        return this.findOne(data.params[0]);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ListingItemObject> {
@@ -46,14 +37,12 @@ export class ListingItemObjectService {
     }
 
     @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ListingItemObject> {
-        return this.create({
-            data: data.params[0] // TODO: convert your params to ListingItemObjectCreateRequest
-        });
-    }
-
-    @validate()
     public async create( @request(ListingItemObjectCreateRequest) body: any): Promise<ListingItemObject> {
+
+        // todo: could this be annotated in ListingItemObjectCreateRequest?
+        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
+        }
 
         // TODO: extract and remove related models from request
         // const listingItemObjectRelated = body.related;
@@ -72,14 +61,12 @@ export class ListingItemObjectService {
     }
 
     @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ListingItemObject> {
-        return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to ListingItemObjectUpdateRequest
-        });
-    }
-
-    @validate()
     public async update(id: number, @request(ListingItemObjectUpdateRequest) body: any): Promise<ListingItemObject> {
+
+        // todo: could this be annotated in ListingItemObjectUpdateRequest?
+        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
+        }
 
         // find the existing one without related
         const listingItemObject = await this.findOne(id, false);
@@ -92,30 +79,43 @@ export class ListingItemObjectService {
         // update listingItemObject record
         const updatedListingItemObject = await this.listingItemObjectRepo.update(id, listingItemObject.toJSON());
 
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let listingItemObjectRelated = updatedListingItemObject.related('ListingItemObjectRelated').toJSON();
-        // await this.listingItemObjectService.destroy(listingItemObjectRelated.id);
-
-        // TODO: recreate related data
-        // listingItemObjectRelated = body.listingItemObjectRelated;
-        // listingItemObjectRelated._id = listingItemObject.Id;
-        // const createdListingItemObject = await this.listingItemObjectService.create(listingItemObjectRelated);
-
-        // TODO: finally find and return the updated listingItemObject
-        // const newListingItemObject = await this.findOne(id);
-        // return newListingItemObject;
+        // TODO:
 
         return updatedListingItemObject;
+    }
+
+    public async destroy(id: number): Promise<void> {
+        await this.listingItemObjectRepo.destroy(id);
+    }
+
+    // TODO: remove
+    @validate()
+    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ListingItemObject> {
+        return this.findOne(data.params[0]);
+    }
+
+    @validate()
+    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ListingItemObject>> {
+        return this.findAll();
+    }
+
+    @validate()
+    public async rpcCreate( @request(RpcRequest) data: any): Promise<ListingItemObject> {
+        return this.create({
+            data: data.params[0] // TODO: convert your params to ListingItemObjectCreateRequest
+        });
+    }
+
+    @validate()
+    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ListingItemObject> {
+        return this.update(data.params[0], {
+            data: data.params[1] // TODO: convert your params to ListingItemObjectUpdateRequest
+        });
     }
 
     @validate()
     public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
         return this.destroy(data.params[0]);
-    }
-
-    public async destroy(id: number): Promise<void> {
-        await this.listingItemObjectRepo.destroy(id);
     }
 
 }

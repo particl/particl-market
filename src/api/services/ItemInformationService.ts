@@ -4,19 +4,16 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { ValidationException } from '../exceptions/ValidationException';
+
 import { ItemInformationRepository } from '../repositories/ItemInformationRepository';
 import { ItemInformation } from '../models/ItemInformation';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
 import { ItemInformationUpdateRequest } from '../requests/ItemInformationUpdateRequest';
-import { RpcRequest } from '../requests/RpcRequest';
-import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
-import { ShippingAvailability } from '../enums/ShippingAvailability';
-import { Country } from '../enums/Country';
 import { ItemLocationService } from './ItemLocationService';
 import { ItemImageService } from './ItemImageService';
 import { ShippingDestinationService } from './ShippingDestinationService';
 import { ItemCategoryService } from './ItemCategoryService';
-import { ItemCategory } from '../models/ItemCategory';
 
 export class ItemInformationService {
 
@@ -47,7 +44,14 @@ export class ItemInformationService {
     }
 
     @validate()
-    public async create( @request(ItemInformationCreateRequest) body: any): Promise<ItemInformation> {
+    public async create( @request(ItemInformationCreateRequest) data: any): Promise<ItemInformation> {
+
+        const body = JSON.parse(JSON.stringify(data));
+
+        // todo: could this be annotated in ItemInformationUpdateRequest?
+        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
+        }
 
         // extract and remove related models from request
         const itemCategory = body.itemCategory;
@@ -59,6 +63,7 @@ export class ItemInformationService {
         delete body.shippingDestinations;
         const itemImages = body.itemImages || [];
         delete body.itemImages;
+
         // check if item category allready exists
         let existingItemCategory;
         if (itemCategory.key) {
@@ -68,6 +73,7 @@ export class ItemInformationService {
         } else {
             existingItemCategory = await this.itemCategoryService.create(itemCategory);
         }
+
         body.item_category_id = existingItemCategory.Id;
 
         // If the request body was valid, create the itemInformation
@@ -94,8 +100,27 @@ export class ItemInformationService {
         return newItemInformation;
     }
 
+    /* conflicted code
+     public async updateWithCheckListingTemplate(id: number, @request(ItemInformationUpdateRequest) body: any): Promise<ItemInformation> {
+     const itemInformation = await this.findOne(id, false);
+     const listingItemTemplateId = itemInformation.toJSON().listingItemTemplateId;
+     if (listingItemTemplateId == null) {
+     this.log.warn(`ItemInformation with the id=${id} not related with any item-template!`);
+     throw new MessageException(`ItemInformation with the id=${id} not related with any item-template!`);
+     }
+     return this.update(id, body);
+     }
+     */
+
     @validate()
-    public async update(id: number, @request(ItemInformationUpdateRequest) body: any): Promise<ItemInformation> {
+    public async update(id: number, @request(ItemInformationUpdateRequest) data: any): Promise<ItemInformation> {
+
+        const body = JSON.parse(JSON.stringify(data));
+
+        // todo: could this be annotated in ItemInformationUpdateRequest?
+        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
+        }
 
         // find the existing one without related
         const itemInformation = await this.findOne(id, false);
@@ -104,6 +129,7 @@ export class ItemInformationService {
         itemInformation.Title = body.title;
         itemInformation.ShortDescription = body.shortDescription;
         itemInformation.LongDescription = body.longDescription;
+        const itemInfoToSave = itemInformation.toJSON();
 
         // check if item category allready exists
         let existingItemCategory;
@@ -115,21 +141,19 @@ export class ItemInformationService {
             existingItemCategory = await this.itemCategoryService.create(body.itemCategory);
         }
 
-        const itemInfoToSave = itemInformation.toJSON();
         itemInfoToSave['itemCategoryId'] = existingItemCategory.Id;
-
         // update itemInformation record
         const updatedItemInformation = await this.itemInformationRepo.update(id, itemInfoToSave);
 
-        // find related record and delete it
-        let itemLocation = updatedItemInformation.related('ItemLocation').toJSON();
-        await this.itemLocationService.destroy(itemLocation.id);
-
-        // recreate related data
-        itemLocation = body.itemLocation;
-        itemLocation.item_information_id = id;
-        await this.itemLocationService.create(itemLocation);
-
+        if (body.itemLocation) {
+            // find related record and delete it
+            let itemLocation = updatedItemInformation.related('ItemLocation').toJSON();
+            await this.itemLocationService.destroy(itemLocation.id);
+            // recreate related data
+            itemLocation = body.itemLocation;
+            itemLocation.item_information_id = id;
+            await this.itemLocationService.create(itemLocation);
+        }
         // find related record and delete it
         let shippingDestinations = updatedItemInformation.related('ShippingDestinations').toJSON();
         for (const shippingDestination of shippingDestinations) {
@@ -137,20 +161,20 @@ export class ItemInformationService {
         }
 
         // recreate related data
-        shippingDestinations = body.shippingDestinations;
+        shippingDestinations = body.shippingDestinations || [];
         for (const shippingDestination of shippingDestinations) {
             shippingDestination.item_information_id = id;
             await this.shippingDestinationService.create(shippingDestination);
         }
 
         // find related record and delete it
-        let itemImages = updatedItemInformation.related('ItemImages').toJSON();
+        let itemImages = updatedItemInformation.related('ItemImages').toJSON() || [];
         for (const itemImage of itemImages) {
             await this.itemImageService.destroy(itemImage.id);
         }
 
         // recreate related data
-        itemImages = body.itemImages;
+        itemImages = body.itemImages || [];
         for (const itemImage of itemImages) {
             itemImage.item_information_id = id;
             await this.itemImageService.create(itemImage);

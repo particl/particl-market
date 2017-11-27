@@ -1,19 +1,30 @@
-import { api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { app } from '../../src/app';
+import { Logger as LoggerType } from '../../src/core/Logger';
+import { Types, Core, Targets } from '../../src/constants';
+import * as _ from 'lodash';
+import { TestUtil } from './lib/TestUtil';
+import { TestDataService } from '../../src/api/services/TestDataService';
+
+import { ValidationException } from '../../src/api/exceptions/ValidationException';
+import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
+
+import { PaymentInformation } from '../../src/api/models/PaymentInformation';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 
-describe('/payment-informations', () => {
+import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
 
-    const keys = [
-        'id', 'updatedAt', 'createdAt', 'type' // , 'Related'
-    ];
+describe('PaymentInformation', () => {
 
-    // const keysWithoutRelated = [
-    //    'id', 'updatedAt', 'createdAt', 'type'
-    // ];
+    const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new TestUtil();
+
+    let testDataService: TestDataService;
+    let paymentInformationService: PaymentInformationService;
+
+    let createdId;
 
     const testData = {
         type: PaymentType.SALE,
@@ -61,22 +72,35 @@ describe('/payment-informations', () => {
         }
     };
 
-    let createdId;
     beforeAll(async () => {
-        const command = new DatabaseResetCommand();
-        await command.run();
+        await testUtil.bootstrapAppContainer(app);  // bootstrap the app
+
+        testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
+
+        // clean up the db, first removes all data and then seeds the db with default data
+        await testDataService.clean([]);
     });
 
-    test('POST      /payment-informations        Should create a new payment information', async () => {
-        const res = await api('POST', '/api/payment-informations', {
-            body: testData
-        });
-        res.expectJson();
-        res.expectStatusCode(201);
-        res.expectData(keys);
-        createdId = res.getData()['id'];
+    afterAll(async () => {
+        //
+    });
 
-        const result: any = res.getData();
+    test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
+        expect.assertions(1);
+        await paymentInformationService.create(testData).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
+    test('Should create a new payment information', async () => {
+        testData['listing_item_template_id'] = 0;
+
+        const paymentInformationModel: PaymentInformation = await paymentInformationService.create(testData);
+        createdId = paymentInformationModel.Id;
+
+        const result = paymentInformationModel.toJSON();
+
         expect(result.type).toBe(testData.type);
         expect(result.Escrow.type).toBe(testData.escrow.type);
         expect(result.Escrow.Ratio.buyer).toBe(testData.escrow.ratio.buyer);
@@ -87,37 +111,28 @@ describe('/payment-informations', () => {
         expect(result.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
         expect(result.ItemPrice.Address.type).toBe(testData.itemPrice.address.type);
         expect(result.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
-
     });
 
-    test('POST      /payment-informations        Should fail because we want to create a empty payment information', async () => {
-        const res = await api('POST', '/api/payment-informations', {
-            body: {}
-        });
-        res.expectJson();
-        res.expectStatusCode(400);
+    test('Should throw ValidationException because we want to create a empty payment information', async () => {
+        expect.assertions(1);
+        await paymentInformationService.create({}).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
     });
 
-    test('GET       /payment-informations        Should list payment informations with our new create one', async () => {
-        const res = await api('GET', '/api/payment-informations');
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys); // keysWithoutRelated
-        const data = res.getData<any[]>();
-        expect(data.length).toBe(1);
+    test('Should list payment informations with our new create one', async () => {
+        const paymentInformationCollection = await paymentInformationService.findAll();
+        const paymentInformation = paymentInformationCollection.toJSON();
+        expect(paymentInformation.length).toBe(1);
 
-        const result = data[0];
-        expect(result.type).toBe(testData.type);
-        expect(result.Escrow).toBe(undefined); // doesnt fetch related
+        const result = paymentInformation[0];
+        expect(result.type).toBe(testData.type); // findall doesnt return relations by default
     });
 
-    test('GET       /payment-informations/:id    Should return one payment information', async () => {
-        const res = await api('GET', `/api/payment-informations/${createdId}`);
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys);
+    test('Should return one payment information', async () => {
+        const paymentInformationModel: PaymentInformation = await paymentInformationService.findOne(createdId);
+        const result = paymentInformationModel.toJSON();
 
-        const result: any = res.getData();
         expect(result.type).toBe(testData.type);
         expect(result.Escrow.type).toBe(testData.escrow.type);
         expect(result.Escrow.Ratio.buyer).toBe(testData.escrow.ratio.buyer);
@@ -128,18 +143,20 @@ describe('/payment-informations', () => {
         expect(result.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
         expect(result.ItemPrice.Address.type).toBe(testData.itemPrice.address.type);
         expect(result.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
-
     });
 
-    test('PUT       /payment-informations/:id    Should update the payment information', async () => {
-        const res = await api('PUT', `/api/payment-informations/${createdId}`, {
-            body: testDataUpdated
-        });
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys);
+    test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
+        expect.assertions(1);
+        await paymentInformationService.update(createdId, testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
 
-        const result: any = res.getData();
+    test('Should update the payment information', async () => {
+        testDataUpdated['listing_item_template_id'] = 0;
+        const paymentInformationModel: PaymentInformation = await paymentInformationService.update(createdId, testDataUpdated);
+        const result = paymentInformationModel.toJSON();
+
         expect(result.type).toBe(testDataUpdated.type);
         expect(result.Escrow.type).toBe(testDataUpdated.escrow.type);
         expect(result.Escrow.Ratio.buyer).toBe(testDataUpdated.escrow.ratio.buyer);
@@ -152,42 +169,12 @@ describe('/payment-informations', () => {
         expect(result.ItemPrice.Address.address).toBe(testDataUpdated.itemPrice.address.address);
     });
 
-    test('PUT       /payment-informations/:id    Should fail because we want to update the payment information with a invalid email', async () => {
-        const res = await api('PUT', `/api/payment-informations/${createdId}`, {
-            body: {
-                email: 'abc'
-            }
-        });
-        res.expectJson();
-        res.expectStatusCode(400);
-    });
-
-    test('DELETE    /payment-informations/:id    Should delete the payment information', async () => {
-        const res = await api('DELETE', `/api/payment-informations/${createdId}`);
-        res.expectStatusCode(200);
-    });
-
-    /**
-     * 404 - NotFound Testing
-     */
-    test('GET       /payment-informations/:id    Should return with a 404, because we just deleted the payment information', async () => {
-        const res = await api('GET', `/api/payment-informations/${createdId}`);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('DELETE    /payment-informations/:id    Should return with a 404, because we just deleted the payment information', async () => {
-        const res = await api('DELETE', `/api/payment-informations/${createdId}`);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('PUT       /payment-informations/:id    Should return with a 404, because we just deleted the payment information', async () => {
-        const res = await api('PUT', `/api/payment-informations/${createdId}`, {
-            body: testDataUpdated
-        });
-        res.expectJson();
-        res.expectStatusCode(404);
+    test('Should delete the payment information', async () => {
+        expect.assertions(1);
+        await paymentInformationService.destroy(createdId);
+        await paymentInformationService.findOne(createdId).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
     });
 
 });

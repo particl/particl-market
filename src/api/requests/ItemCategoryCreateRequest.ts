@@ -1,8 +1,11 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 
-
+// tslint:disable:variable-name
 export class ItemCategoryCreateRequest extends RequestBody {
+
+    @IsNotEmpty()
+    public parent_item_category_id: number;
 
     public key: string;
 
@@ -10,8 +13,5 @@ export class ItemCategoryCreateRequest extends RequestBody {
     public name: string;
 
     public description: string;
-
-    public parentItemCategoryId: number;
-
 }
-
+// tslint:enable:variable-name

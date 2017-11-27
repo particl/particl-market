@@ -84,10 +84,14 @@ export const Targets = {
             RpcListingItemService: 'RpcListingItemService',
             RpcListingItemTemplateService: 'RpcListingItemTemplateService',
             RpcProfileService: 'RpcProfileService',
-            RpcFavoriteItemService: 'RpcFavoriteItemService'
+            RpcFavoriteItemService: 'RpcFavoriteItemService',
+            RpcEscrowService: 'RpcEscrowService',
+            RpcPaymentInformationService: 'RpcPaymentInformationService',
+            RpcTestDataService: 'RpcTestDataService'
         },
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
+        TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
     Middleware:     {

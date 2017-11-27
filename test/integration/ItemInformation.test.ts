@@ -1,27 +1,37 @@
-import { api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
-import { DatabaseSeedCommand } from '../../src/console/DatabaseSeedCommand';
+import { app } from '../../src/app';
+import { Logger as LoggerType } from '../../src/core/Logger';
+import { Types, Core, Targets } from '../../src/constants';
+import { TestUtil } from './lib/TestUtil';
+import { TestDataService } from '../../src/api/services/TestDataService';
+
+import { ValidationException } from '../../src/api/exceptions/ValidationException';
+import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
+
+import { ItemInformation } from '../../src/api/models/ItemInformation';
 import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 
-describe('/item-informations', () => {
+import { ItemInformationService } from '../../src/api/services/ItemInformationService';
 
-    const keys = [
-        'id', 'updatedAt', 'createdAt', 'title', 'shortDescription', 'longDescription' // , 'Related'
-    ];
+describe('ItemInformation', () => {
 
-    // const keysWithoutRelated = [
-    //    'id', 'updatedAt', 'createdAt', 'title', 'shortDescription', 'longDescription'
-    // ];
+    const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new TestUtil();
+
+    let testDataService: TestDataService;
+    let itemInformationService: ItemInformationService;
+
+    let createdId;
 
     const testData = {
         title: 'item title1',
         shortDescription: 'item short desc1',
         longDescription: 'item long desc1',
         itemCategory: {
-            name: 'item category name 1',
-            description: 'item category description 1'
+            key: 'cat_apparel_adult',
+            name: 'Adult',
+            description: ''
         },
         itemLocation: {
             region: Country.SOUTH_AFRICA,
@@ -75,10 +85,10 @@ describe('/item-informations', () => {
         shortDescription: 'item short desc2',
         longDescription: 'item long desc2',
         itemCategory: {
-            name: 'item category name 2',
-            description: 'item category description 2'
+            key: 'cat_high_luxyry_items',
+            name: 'Luxury Items',
+            description: ''
         },
-
         itemLocation: {
             region: Country.EU,
             address: 'zxcv, zxcv, zxcv',
@@ -124,30 +134,36 @@ describe('/item-informations', () => {
                 data: 'smsgdata'
             }
         }]
-
     };
 
-    let createdId;
     beforeAll(async () => {
-        let command = new DatabaseResetCommand();
-        await command.run();
+        await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
-        command = new DatabaseSeedCommand();
-        await command.run();
+        testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
+
+        // clean up the db, first removes all data and then seeds the db with default data
+        await testDataService.clean([]);
     });
 
-    test('POST      /item-informations        Should create a new item information', async () => {
+    afterAll(async () => {
+        //
+    });
 
+    test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
+        expect.assertions(1);
+        await itemInformationService.create(testData).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
 
-        const res = await api('POST', '/api/item-informations', {
-            body: testData
-        });
-        res.expectJson();
-        res.expectStatusCode(201);
-        res.expectData(keys);
-        createdId = res.getData()['id'];
+    test('Should create a new item information', async () => {
+        testData['listing_item_template_id'] = 0;
+        const itemInformationModel: ItemInformation = await itemInformationService.create(testData);
+        createdId = itemInformationModel.Id;
 
-        const result: any = res.getData();
+        const result = itemInformationModel.toJSON();
+
         expect(result.title).toBe(testData.title);
         expect(result.shortDescription).toBe(testData.shortDescription);
         expect(result.longDescription).toBe(testData.longDescription);
@@ -161,25 +177,23 @@ describe('/item-informations', () => {
         expect(result.ItemLocation.LocationMarker.lng).toBe(testData.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(3);
         expect(result.ItemImages).toHaveLength(3);
+
     });
 
-    test('POST      /item-informations        Should fail because we want to create a empty item information', async () => {
-        const res = await api('POST', '/api/item-informations', {
-            body: {}
-        });
-        res.expectJson();
-        res.expectStatusCode(400);
+    test('Should throw ValidationException because we want to create a empty item information', async () => {
+        expect.assertions(1);
+        await itemInformationService.create({}).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
     });
 
-    test('GET       /item-informations        Should list item informations with our new create one', async () => {
-        const res = await api('GET', '/api/item-informations');
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys); // keysWithoutRelated
-        const data = res.getData<any[]>();
-        expect(data.length).toBe(1);
+    test('Should list item informations with our new create one', async () => {
+        const itemInformationCollection = await itemInformationService.findAll();
+        const itemInformation = itemInformationCollection.toJSON();
+        expect(itemInformation.length).toBe(1);
 
-        const result = data[0];
+        const result = itemInformation[0];
+
         expect(result.title).toBe(testData.title);
         expect(result.shortDescription).toBe(testData.shortDescription);
         expect(result.longDescription).toBe(testData.longDescription);
@@ -187,16 +201,12 @@ describe('/item-informations', () => {
         expect(result.ItemLocation).toBe(undefined); // doesnt fetch related
         expect(result.ShippingDestinations).toBe(undefined); // doesnt fetch related
         expect(result.ItemImages).toBe(undefined); // doesnt fetch related
-
     });
 
-    test('GET       /item-informations/:id    Should return one item information', async () => {
-        const res = await api('GET', `/api/item-informations/${createdId}`);
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys);
+    test('Should return one item information', async () => {
+        const itemInformationModel: ItemInformation = await itemInformationService.findOne(createdId);
+        const result = itemInformationModel.toJSON();
 
-        const result: any = res.getData();
         expect(result.title).toBe(testData.title);
         expect(result.shortDescription).toBe(testData.shortDescription);
         expect(result.longDescription).toBe(testData.longDescription);
@@ -210,18 +220,20 @@ describe('/item-informations', () => {
         expect(result.ItemLocation.LocationMarker.lng).toBe(testData.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(3);
         expect(result.ItemImages).toHaveLength(3);
-
     });
 
-    test('PUT       /item-informations/:id    Should update the item information', async () => {
-        const res = await api('PUT', `/api/item-informations/${createdId}`, {
-            body: testDataUpdated
-        });
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectData(keys);
+    test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
+        expect.assertions(1);
+        await itemInformationService.update(createdId, testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
 
-        const result: any = res.getData();
+    test('Should update the item information', async () => {
+        testDataUpdated['listing_item_template_id'] = 0;
+        const itemInformationModel: ItemInformation = await itemInformationService.update(createdId, testDataUpdated);
+        const result = itemInformationModel.toJSON();
+
         expect(result.title).toBe(testDataUpdated.title);
         expect(result.shortDescription).toBe(testDataUpdated.shortDescription);
         expect(result.longDescription).toBe(testDataUpdated.longDescription);
@@ -235,45 +247,14 @@ describe('/item-informations', () => {
         expect(result.ItemLocation.LocationMarker.lng).toBe(testDataUpdated.itemLocation.locationMarker.lng);
         expect(result.ShippingDestinations).toHaveLength(3);
         expect(result.ItemImages).toHaveLength(3);
-
     });
 
-    test('PUT       /item-informations/:id    Should fail because we want to update the item information with a invalid email', async () => {
-        const res = await api('PUT', `/api/item-informations/${createdId}`, {
-            body: {
-                email: 'abc'
-            }
-        });
-        res.expectJson();
-        res.expectStatusCode(400);
-    });
-
-    test('DELETE    /item-informations/:id    Should delete the item information', async () => {
-        const res = await api('DELETE', `/api/item-informations/${createdId}`);
-        res.expectStatusCode(200);
-    });
-
-    /**
-     * 404 - NotFound Testing
-     */
-    test('GET       /item-informations/:id    Should return with a 404, because we just deleted the item information', async () => {
-        const res = await api('GET', `/api/item-informations/${createdId}`);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('DELETE    /item-informations/:id    Should return with a 404, because we just deleted the item information', async () => {
-        const res = await api('DELETE', `/api/item-informations/${createdId}`);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('PUT       /item-informations/:id    Should return with a 404, because we just deleted the item information', async () => {
-        const res = await api('PUT', `/api/item-informations/${createdId}`, {
-            body: testDataUpdated
-        });
-        res.expectJson();
-        res.expectStatusCode(404);
+    test('Should delete the item information', async () => {
+        expect.assertions(1);
+        await itemInformationService.destroy(createdId);
+        await itemInformationService.findOne(createdId).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
     });
 
 });

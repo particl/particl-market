@@ -17,11 +17,13 @@ export class ListingItemService {
 
     public log: LoggerType;
 
-    constructor(@inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
-                @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
-                @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
-                @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
-                @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+    constructor(
+        @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
+        @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+    ) {
         this.log = new Logger(__filename);
     }
 
@@ -42,6 +44,14 @@ export class ListingItemService {
         }
         return listingItem;
     }
+
+    /*
+    TODO: theres no such method as findByListingItemTemplateId in the repo wtf
+    public async findByListingItemTemplateId(listingItemTemplateId: number): Promise<ListingItem> {
+        const listingItem = await this.listingItemRepo.findByListingItemTemplateId(listingItemTemplateId);
+        return listingItem;
+    }
+     */
 
     /**
      *
@@ -73,7 +83,11 @@ export class ListingItemService {
     }
 
     @validate()
-    public async create(@request(ListingItemCreateRequest) body: any): Promise<ListingItem> {
+
+    public async create(@request(ListingItemCreateRequest) data: any): Promise<ListingItem> {
+
+        const body = JSON.parse(JSON.stringify(data));
+
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
         delete body.itemInformation;
@@ -87,12 +101,18 @@ export class ListingItemService {
         const listingItem = await this.listingItemRepo.create(body);
 
         // create related models
-        itemInformation.listing_item_id = listingItem.Id;
-        await this.itemInformationService.create(itemInformation);
-        paymentInformation.listing_item_id = listingItem.Id;
-        await this.paymentInformationService.create(paymentInformation);
-        messagingInformation.listing_item_id = listingItem.Id;
-        await this.messagingInformationService.create(messagingInformation);
+        if (itemInformation) {
+            itemInformation.listing_item_id = listingItem.Id;
+            await this.itemInformationService.create(itemInformation);
+        }
+        if (paymentInformation) {
+            paymentInformation.listing_item_id = listingItem.Id;
+            await this.paymentInformationService.create(paymentInformation);
+        }
+        if (messagingInformation) {
+            messagingInformation.listing_item_id = listingItem.Id;
+            await this.messagingInformationService.create(messagingInformation);
+        }
 
         // finally find and return the created listingItem
         const newListingItem = await this.findOne(listingItem.Id);
@@ -100,7 +120,9 @@ export class ListingItemService {
     }
 
     @validate()
-    public async update(id: number, @request(ListingItemUpdateRequest) body: any): Promise<ListingItem> {
+    public async update(id: number, @request(ListingItemUpdateRequest) data: any): Promise<ListingItem> {
+
+        const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const listingItem = await this.findOne(id, false);
@@ -133,7 +155,6 @@ export class ListingItemService {
         // finally find and return the updated listingItem
         const newListingItem = await this.findOne(id);
         return newListingItem;
-
     }
 
     public async destroy(id: number): Promise<void> {

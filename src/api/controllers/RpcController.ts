@@ -25,6 +25,10 @@ import { RpcProfileService } from '../services/rpc/RpcProfileService';
 import { RpcAddressService } from '../services/rpc/RpcAddressService';
 import { RpcCliHelpService } from '../services/rpc/RpcCliHelpService';
 import { RpcFavoriteItemService } from '../services/rpc/RpcFavoriteItemService';
+import { RpcPaymentInformationService } from '../services/rpc/RpcPaymentInformationService';
+import { RpcEscrowService } from '../services/rpc/RpcEscrowService';
+import { RpcTestDataService } from '../services/rpc/RpcTestDataService';
+
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
 let rpcIdCount = 0;
@@ -57,7 +61,13 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemService) private rpcListingItemService: RpcListingItemService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcListingItemTemplateService) private rpcListingItemTemplateService: RpcListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemInformationService) private rpcItemInformationService: RpcItemInformationService,
+
         @inject(Types.Service) @named(Targets.Service.rpc.RpcFavoriteItemService) private rpcFavoriteItemService: RpcFavoriteItemService,
+
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcPaymentInformationService) private rpcPaymentInformationService: RpcPaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcEscrowService) private rpcEscrowService: RpcEscrowService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcTestDataService) private rpcTestDataService: RpcTestDataService,
+
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -156,9 +166,11 @@ export class RpcController {
             // listing items
             'createlistingitemtemplate': 'rpcListingItemTemplateService.create',
             'getlistingitemtemplate': 'rpcListingItemTemplateService.findOne',
+            'searchlistingitemtemplate': 'rpcListingItemTemplateService.search',
 
             // item information
             'createiteminformation': 'rpcItemInformationService.create',
+            'updateiteminformation': 'rpcItemInformationService.update',
 
             // categories
             'getcategories': 'rpcItemCategoryService.findRoot',
@@ -166,7 +178,17 @@ export class RpcController {
 
             // favorite items
             'addfavorite': 'rpcFavoriteItemService.addFavorite',
-            'removefavorite': 'rpcFavoriteItemService.removeFavorite'
+            'removefavorite': 'rpcFavoriteItemService.removeFavorite',
+
+            // paymentInformation
+            'updatepaymentinformation': 'rpcPaymentInformationService.update',
+
+            // escrow
+            'createescrow': 'rpcEscrowService.create',
+
+            // test data management
+            'cleandb': 'rpcTestDataService.clean',
+            'adddata': 'rpcTestDataService.create'
 
         };
     }

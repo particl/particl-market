@@ -22,18 +22,8 @@ export class ShippingDestinationService {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ShippingDestination>> {
-        return this.findAll();
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<ShippingDestination>> {
         return this.shippingDestinationRepo.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ShippingDestination> {
-        return this.findOne(data.params[0]);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ShippingDestination> {
@@ -46,14 +36,6 @@ export class ShippingDestinationService {
     }
 
     @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ShippingDestination> {
-        return this.create({
-            country: data.params[0],
-            shippingAvailability: data.params[1]
-        });
-    }
-
-    @validate()
     public async create( @request(ShippingDestinationCreateRequest) body: any): Promise<ShippingDestination> {
 
         // If the request body was valid we will create the shippingDestination
@@ -62,14 +44,6 @@ export class ShippingDestinationService {
         // finally find and return the created shippingDestination
         const newShippingDestination = await this.findOne(shippingDestination.id);
         return newShippingDestination;
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ShippingDestination> {
-        return this.update(data.params[0], {
-            country: data.params[1],
-            shippingAvailability: data.params[2]
-        });
     }
 
     @validate()
@@ -87,13 +61,40 @@ export class ShippingDestinationService {
         return updatedShippingDestination;
     }
 
+    public async destroy(id: number): Promise<void> {
+        await this.shippingDestinationRepo.destroy(id);
+    }
+
+    // TODO: REMOVE
+    @validate()
+    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ShippingDestination>> {
+        return this.findAll();
+    }
+
+    @validate()
+    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ShippingDestination> {
+        return this.findOne(data.params[0]);
+    }
+
+    @validate()
+    public async rpcCreate( @request(RpcRequest) data: any): Promise<ShippingDestination> {
+        return this.create({
+            country: data.params[0],
+            shippingAvailability: data.params[1]
+        });
+    }
+
+    @validate()
+    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ShippingDestination> {
+        return this.update(data.params[0], {
+            country: data.params[1],
+            shippingAvailability: data.params[2]
+        });
+    }
+
     @validate()
     public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
         return this.destroy(data.params[0]);
-    }
-
-    public async destroy(id: number): Promise<void> {
-        await this.shippingDestinationRepo.destroy(id);
     }
 
 }

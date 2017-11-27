@@ -22,11 +22,30 @@ export class RpcItemInformationService {
         return this.itemInformationService.findAll();
     }
 
+    /**
+     * data.params[]:
+     *  [0]: id
+     *
+     * when data.params[0] is number then findById, else findOneByKey
+     *
+     * @param data
+     * @returns {Promise<Profile>}
+     */
     @validate()
     public async findOne( @request(RpcRequest) data: any): Promise<ItemInformation> {
         return this.itemInformationService.findOne(data.params[0]);
     }
 
+    /**
+     * data.params[]:
+     *  [0]: title
+     *  [1]: short-description
+     *  [2]: long-description
+     *  [3]: category
+     *
+     * @param data
+     * @returns {Promise<Profile>}
+     */
     @validate()
     public async create( @request(RpcRequest) data: any): Promise<ItemInformation> {
         return this.itemInformationService.create({
@@ -39,41 +58,35 @@ export class RpcItemInformationService {
         });
     }
 
+    /**
+     * data.params[]:
+     *  [0]: id
+     *  [1]: title
+     *  [2]: short-description
+     *  [3]: long-description
+     *  [4]: category
+     *
+     * @param data
+     * @returns {Promise<Profile>}
+     */
+    @validate()
+    public async update( @request(RpcRequest) data: any): Promise<ItemInformation> {
+        /*
+        TODO: FIX
+         src/api/services/rpc/RpcItemInformationService.ts (74,44): Property 'updateWithCheckListingTemplate'
+         does not exist on type 'ItemInformationService'. (2339)
 
-    // @validate()
-    // public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemInformation> {
-    //     return this.update(data.params[0], {
-    //         title: 'item title1 UPDATED',
-    //         shortDescription: 'item short desc1 UPDATED',
-    //         longDescription: 'item long desc1 UPDATED',
-    //         itemCategory: {
-    //             key: 'cat_TESTROOT'
-    //         },
-    //         itemLocation: {
-    //             region: Country.FINLAND,
-    //             address: 'asdf, UPDATED',
-    //             locationMarker: {
-    //                 markerTitle: 'Helsinki UPDATED',
-    //                 markerText: 'Helsinki UPDATED',
-    //                 lat: 3.234,
-    //                 lng: 23.4
-    //             }
-    //         },
-    //         shippingDestinations: [{
-    //             country: Country.UNITED_KINGDOM,
-    //             shippingAvailability: ShippingAvailability.SHIPS
-    //         }],
-    //         itemImages: [{
-    //             hash: 'imagehash1',
-    //             data: {
-    //                 dataId: 'dataid1',
-    //                 protocol: ImageDataProtocolType.IPFS,
-    //                 encoding: null,
-    //                 data: null
-    //             }
-    //         }]
-    //     });
-    // }
+        return this.itemInformationService.updateWithCheckListingTemplate(data.params[0], {
+            title: data.params[1],
+            shortDescription: data.params[2],
+            longDescription: data.params[3],
+            itemCategory: {
+                key: data.params[4]
+            }
+        });
+        */
+        return new ItemInformation();
+    }
 
     @validate()
     public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {

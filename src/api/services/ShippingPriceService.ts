@@ -22,18 +22,8 @@ export class ShippingPriceService {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ShippingPrice>> {
-        return this.findAll();
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<ShippingPrice>> {
         return this.shippingPriceRepo.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ShippingPrice> {
-        return this.findOne(data.params[0]);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ShippingPrice> {
@@ -46,40 +36,22 @@ export class ShippingPriceService {
     }
 
     @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ShippingPrice> {
-        return this.create({
-            data: data.params[0] // TODO: convert your params to ShippingPriceCreateRequest
-        });
-    }
+    public async create( @request(ShippingPriceCreateRequest) data: any): Promise<ShippingPrice> {
 
-    @validate()
-    public async create( @request(ShippingPriceCreateRequest) body: any): Promise<ShippingPrice> {
-
-        // TODO: extract and remove related models from request
-        // const shippingPriceRelated = body.related;
-        // delete body.related;
+        const body = JSON.parse(JSON.stringify(data));
 
         // If the request body was valid we will create the shippingPrice
         const shippingPrice = await this.shippingPriceRepo.create(body);
 
-        // TODO: create related models
-        // shippingPriceRelated._id = shippingPrice.Id;
-        // await this.shippingPriceRelatedService.create(shippingPriceRelated);
-
         // finally find and return the created shippingPrice
-        const newShippingPrice = await this.findOne(shippingPrice.id);
+        const newShippingPrice = await this.findOne(shippingPrice.Id);
         return newShippingPrice;
     }
 
     @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ShippingPrice> {
-        return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to ShippingPriceUpdateRequest
-        });
-    }
+    public async update(id: number, @request(ShippingPriceUpdateRequest) data: any): Promise<ShippingPrice> {
 
-    @validate()
-    public async update(id: number, @request(ShippingPriceUpdateRequest) body: any): Promise<ShippingPrice> {
+        const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const shippingPrice = await this.findOne(id, false);
@@ -91,30 +63,41 @@ export class ShippingPriceService {
         // update shippingPrice record
         const updatedShippingPrice = await this.shippingPriceRepo.update(id, shippingPrice.toJSON());
 
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let shippingPriceRelated = updatedShippingPrice.related('ShippingPriceRelated').toJSON();
-        // await this.shippingPriceService.destroy(shippingPriceRelated.id);
-
-        // TODO: recreate related data
-        // shippingPriceRelated = body.shippingPriceRelated;
-        // shippingPriceRelated._id = shippingPrice.Id;
-        // const createdShippingPrice = await this.shippingPriceService.create(shippingPriceRelated);
-
-        // TODO: finally find and return the updated shippingPrice
-        // const newShippingPrice = await this.findOne(id);
-        // return newShippingPrice;
-
         return updatedShippingPrice;
+    }
+
+    public async destroy(id: number): Promise<void> {
+        await this.shippingPriceRepo.destroy(id);
+    }
+
+    // TODO: remove
+    @validate()
+    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ShippingPrice>> {
+        return this.findAll();
+    }
+
+    @validate()
+    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ShippingPrice> {
+        return this.findOne(data.params[0]);
+    }
+
+    @validate()
+    public async rpcCreate( @request(RpcRequest) data: any): Promise<ShippingPrice> {
+        return this.create({
+            data: data.params[0] // TODO: convert your params to ShippingPriceCreateRequest
+        });
+    }
+
+    @validate()
+    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ShippingPrice> {
+        return this.update(data.params[0], {
+            data: data.params[1] // TODO: convert your params to ShippingPriceUpdateRequest
+        });
     }
 
     @validate()
     public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
         return this.destroy(data.params[0]);
-    }
-
-    public async destroy(id: number): Promise<void> {
-        await this.shippingPriceRepo.destroy(id);
     }
 
 }

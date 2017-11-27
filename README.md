@@ -14,9 +14,8 @@ npm install yarn -g
 ```
 
 If you want to use Docker
-```
-TODO install docker
-```
+* Installation instructions on [docs.docker.com](https://docs.docker.com/engine/installation/)
+
 
 > If you work with a mac, we recommend to use homebrew for the installation.
 
@@ -52,66 +51,6 @@ docker-compose up
 
 
 
-### Step 4: Create a new Resource
-Go to the project dir and hit this command in your terminal.
-```
-npm run console make:resource
-```
-
-Apply the same information like you see in the screenshot below.
-
-![console](console.png)
-
-> With that you just have created a complete new endpoint in your api for the resource pets.
-
-Normally a pet belogns to a user, so we have to add the relationship between users an pets. Open the created migration file and replace the user property with these lines.
-```
-table.integer('user_id').unsigned();
-table.foreign('user_id').references('id').inTable('users').onDelete('cascade');
-```
-
-Next we have to add this relationship also in the pets model.
-```
-public user(): User {
-    return this.belongsTo(User);
-}
-```
-
-> The relationship between the users and pets are set and ready. So you can migrate your database with `npm run db:migrate`
-
-### Step 5: Create a Seeder
-To seed some cute pets we need a smart factory. So open the ./src/database/factories/index.ts and add this code.
-```
-/**
- * PET - Factory
- */
-factory.define(Pet, (faker: Faker.FakerStatic, args: any[]) => {
-    const type = args[0];
-    return {
-        name: faker.name.firstName(),
-        type: type || 'dog',
-        userId: factory.get(User).returning('id')
-    };
-});
-```
-
-> This factory helps us to create a fake pet to seed to the database.
-
-Run this command in your terminal and call the new seeder `create pets`.
-```
-npm run console make:seed
-```
-
-Open the file and place this code into it.
-```
-await factory.get(Pet)
-    .create(10);
-```
-
-> Now we can seed some nice cats into the database with `npm run db:seed`.
-
-> That was easy! Now its your turn to make something great out of it.
-
 ## Scripts / Tasks
 All script are defined in the package.json file, but the most important ones are listed here.
 
@@ -124,7 +63,8 @@ All script are defined in the package.json file, but the most important ones are
 
 ### Tests
 * Run the unit tests using `npm test` (There is also a vscode task for this called `test`).
-* Run the black-box tests using `npm run test:black-box` and don't forget to start your application and your [Auth0 Mock Server](https://github.com/hirsch88/auth0-mock-server).
+* Run the integration tests using `npm run test:integration:pretty` and don't forget to start your application.
+* Run the black-box tests using `npm run test:black-box:pretty` and don't forget to start your application.
 
 ### Running in dev mode
 * Run `npm run serve` to start nodemon with ts-node, to serve the app.
@@ -132,7 +72,7 @@ All script are defined in the package.json file, but the most important ones are
 
 ### Building the project and run it
 * Run `npm run build` to generated all JavaScript files from the TypeScript sources (There is also a vscode task for this called `build`).
-* To start the builded app located in `dist` use `npm start`.
+* To start the built app located in `dist` use `npm start`.
 
 ### Database
 * Run `npm run db:migrate` to migrate schema changes to the database
@@ -144,26 +84,35 @@ All script are defined in the package.json file, but the most important ones are
 * To run your own created command enter `npm run console <command-name>`.
 * This list all your created commands `npm run console:help`.
 
+### WEB CLI
+* This CLI gives you easy access to the RPC commands.
+* Run `npm run serve` to serve the app.
+* Go to `http://localhost:3000/cli` to access the CLI.
+* Type `help` to get a list of supported commands.
+
 ### Scaffolding Commands
 All the templates for the commands are located in `src/console/templates`.
 
-* `npm run console make:resource <file>` - Generates a controller, service, requests, repo, model and a migration with CRUD operations.
-* `npm run console make:controller <file>` - Generates a controller.
-* `npm run console make:service <file>` - Generates a service.
-* `npm run console make:repo <file>` - Generates a repository.
-* `npm run console make:model <file>` - Generates a model with the props and configurations.
-* `npm run console make:middleware <file>` - Generates a basic middleware.
-* `npm run console make:request <file>` - Generates a basic request.
-* `npm run console make:listener <file>` - Generates a basic listener.
-* `npm run console make:exception <file>` - Generates a basic exception.
-* `npm run console make:enum <file>` - Generates a basic enum.
-* `npm run console make:api-test <file>` - Generates an api test.
-* `npm run console update:targets <file>` - Reads all the API files and generate a new `constants/Targets.ts` file out of it.
+* `npm run console make:resource` - Generates a controller, service, requests, repo, model and a migration with CRUD operations.
+* `npm run console make:controller` - Generates a controller.
+* `npm run console make:service` - Generates a service.
+* `npm run console make:repo` - Generates a repository.
+* `npm run console make:model` - Generates a model with the props and configurations.
+* `npm run console make:middleware` - Generates a basic middleware.
+* `npm run console make:request` - Generates a basic request.
+* `npm run console make:listener` - Generates a basic listener.
+* `npm run console make:exception` - Generates a basic exception.
+* `npm run console make:enum` - Generates a basic enum.
+* `npm run console make:api-test` - Generates an api test.
+* `npm run console make:integration-test` - Generates an integration test.
+* `npm run console make:seed` - Generates a seeder.
+* `npm run console update:targets` - Reads all the API files and generate a new `constants/Targets.ts` file out of it.
+
 
 **Example**
 ```
-$ npm run console make:controller auth/auth
-// -> creates `api/controllers/auth/AuthController.ts
+$ npm run console make:service ExampleService
+// -> creates `api/services/ExampleService.ts
 
 $ npm run console make:model user
 // -> creates `api/models/User.ts
@@ -176,48 +125,52 @@ Our IoC automatically looks through the `controllers`, `listeners` , `middleware
 **However it is very important to keep the naming right, because otherwise our IoC will not find your
 created files!!**
 
-## Using the debugger in VS Code
-Just set a breakpoint and hit `F5` in your Visual Studio Code.
 
 ## API Routes
-The route prefix is `/api` by default, but you can change this in the .env file.
+The route prefix is `/api` by default, but you can change this in the .env file. The route for the RPC API is `/api`.
 
 | Route       | Description |
 | ----------- | ----------- |
-| **/api/info**   | Shows us the name, description and the version of the package.json |
-| **/api/docs**   | This is the Swagger UI with our API documentation |
-| **/status** | Shows a small monitor page for the server |
+| **/api/info** | Shows us the name, description and the version of the package.json |
+| **/api/docs** | This is the Swagger UI with our API documentation |
+| **/status**   | Shows a small monitor page for the server |
+| **/cli**      | Web based CLI to use the RPC commands |
+| **/api/rpc**  | RPC Server endpoint |
+
 
 ## Project Structure
 
-| Name                          | Description |
-| ----------------------------- | ----------- |
-| **.vscode/**                  | VSCode tasks, launch configuration and some other settings |
-| **dist/**                     | Compiled source files will be placed here |
-| **src/**                      | Source files |
-| **src/api/controllers/**      | REST API Controllers |
-| **src/api/exceptions/**       | Exceptions like 404 NotFound |
-| **src/api/listeners/**        | Event listeners |
-| **src/api/middlewares/**      | Express Middlewares like populateUser |
-| **src/api/models/**           | Bookshelf Models |
-| **src/api/repositories/**     | Repository / DB layer |
-| **src/api/requests/**         | Request bodys with validations |
-| **src/api/services/**         | Service layer |
-| **src/api/** swagger.json     | Swagger documentation |
-| **src/console/**              | Command line scripts |
-| **src/config/**               | Configurations like database or logger |
-| **src/constants/**            | Global Constants |
-| **src/core/**                 | The core framework |
-| **src/database/factories/**   | Model factories to generate database records |
-| **src/database/migrations/**  | Migrations scripts to build up the database schema |
-| **src/database/seeds/**       | Seed scripts to fake sample data into the database |
-| **src/public/**               | Static assets (fonts, css, js, img). |
-| **src/types/** *.d.ts         | Custom type definitions and files that aren't on DefinitelyTyped |
-| **test**                      | Tests |
-| **test/black-box/** *.test.ts | Black-Box tests (like e2e) |
-| **test/unit/** *.test.ts      | Unit tests |
-| .env.example                  | Environment configurations |
-| knexfile.ts                   | This file is used for the migrations and seed task of knex |
+| Name                            | Description |
+| ------------------------------- | ----------- |
+| **.vscode/**                    | VSCode tasks, launch configuration and some other settings |
+| **dist/**                       | Compiled source files will be placed here |
+| **src/**                        | Source files |
+| **src/api/controllers/**        | REST API Controllers |
+| **src/api/exceptions/**         | Exceptions like 404 NotFound |
+| **src/api/listeners/**          | Event listeners |
+| **src/api/middlewares/**        | Express Middlewares like populateUser |
+| **src/api/models/**             | Bookshelf Models |
+| **src/api/repositories/**       | Repository / DB layer |
+| **src/api/requests/**           | Request bodys with validations |
+| **src/api/services/**           | Service layer |
+| **src/api/services/rpc/**       | RPC Service layer |
+| **src/api/** swagger.json       | Swagger documentation |
+| **src/console/**                | Command line scripts |
+| **src/config/**                 | Configurations like database or logger |
+| **src/constants/**              | Global Constants |
+| **src/core/**                   | The core framework |
+| **src/database/factories/**     | Model factories to generate database records |
+| **src/database/migrations/**    | Migrations scripts to build up the database schema |
+| **src/database/seeds/**         | Seed scripts to fake sample data into the database |
+| **src/public/**                 | Static assets (fonts, css, js, img). |
+| **src/types/** *.d.ts           | Custom type definitions and files that aren't on DefinitelyTyped |
+| **test**                        | Tests |
+| **test/black-box/** *.test.ts   | Black-Box tests (rpc endpoint tests) |
+| **test/integration/** *.test.ts | Integration tests |
+| **test/unit/** *.test.ts        | Unit tests |
+| .env.example                    | Environment configurations |
+| **test/** .env.test.example     | Test environment configurations |
+| knexfile.ts                     | This file is used for the migrations and seed task of knex |
 
 
 
@@ -262,12 +215,6 @@ by [w3tech](https://github.com/w3tecch)
 - **API Documentation** thanks to [swagger](http://swagger.io/).
 - **API Monitoring** thanks to [express-status-monitor](https://github.com/RafalWilinski/express-status-monitor).
 - **Integrated Testing Tool** thanks to [Wallaby.js](https://wallabyjs.com/)
-
-## Related Projects
-* [Microsoft/TypeScript-Node-Starter](https://github.com/Microsoft/TypeScript-Node-Starter) - A starter template for TypeScript and Node with a detailed README describing how to use the two together.
-* [express-graphql-typescript-boilerplate](https://github.com/w3tecch/express-graphql-typescript-boilerplate) - A starter kit for building amazing GraphQL API's with TypeScript and express by @w3tecch
-* [aurelia-typescript-boilerplate](https://github.com/w3tecch/aurelia-typescript-boilerplate) - An Aurelia starter kit with TypeScript
-* [Auth0 Mock Server](https://github.com/hirsch88/auth0-mock-server) - Useful for black-box testing or faking an oAuth server
 
 ## Documentations of our main dependencies
 * [Express](https://expressjs.com/)
