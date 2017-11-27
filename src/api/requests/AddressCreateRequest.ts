@@ -4,6 +4,9 @@ import { RequestBody } from '../../core/api/RequestBody';
 
 export class AddressCreateRequest extends RequestBody {
 
+    @IsNotEmpty()
+    public profile_id: number;
+
     public title: string;
 
     @IsNotEmpty()

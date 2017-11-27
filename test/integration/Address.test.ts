@@ -57,7 +57,15 @@ describe('Address', () => {
         // log.info('afterAll');
     });
 
+    test('Should throw ValidationException because there is no profile_id', async () => {
+        expect.assertions(1);
+        await addressService.create(testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should create a new address', async () => {
+        testData['profile_id'] = 0;
         const addressModel: Address = await addressService.create(testData);
         createdId = addressModel.Id;
 
@@ -103,7 +111,15 @@ describe('Address', () => {
         expect(result.country).toBe(testData.country);
     });
 
+    test('Should throw ValidationException because there is no profile_id', async () => {
+        expect.assertions(1);
+        await addressService.update(createdId, testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should update the address', async () => {
+        testDataUpdated['profile_id'] = 0;
         const addressModel: Address = await addressService.update(createdId, testDataUpdated);
         const result = addressModel.toJSON();
 
