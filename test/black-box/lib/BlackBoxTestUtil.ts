@@ -21,21 +21,20 @@ export class BlackBoxTestUtil {
         return res;
     }
 
-    public async addTestProfile(): any {
-        const res: any = await this.addData('profile', { name: 'TESTING-' + Faker.name.firstName() });
-        return res.getBody()['result'];
+    /**
+     * generate "real" looking test data
+     *
+     * @param model - listingitemtemplate, listingitem or profile
+     * @param amount - amount of models to create
+     * @param withRelated - return full related model data or just id's, defaults to true
+     * @returns {Promise<any>}
+     */
+    public async generateData(model: string, amount: number, withRelated: boolean): any {
+        const res: any = await  rpc('adddata', [model, amount, withRelated]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        return res;
     }
-/*
-    // add profile for testing
-    const addDataRes: any = await testUtil.addData('profile', { name: 'TESTING-ADDRESS-PROFILE-NAME' });
-profile = addDataRes.getBody()['result'];
-
-// add listingitemtemplate for testing
-const addDataRes: any = await testUtil.addData('listingitemtemplate', { name: 'TESTING-ADDRESS-PROFILE-NAME' });
-profile = addDataRes.getBody()['result'];
-
-
-*/
 
 }
 
