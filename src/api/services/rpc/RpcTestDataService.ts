@@ -44,7 +44,8 @@ export class RpcTestDataService {
      */
     public async create( @request(RpcRequest) data: any): Promise<any> {
         this.log.info('data.params[0]: ', data.params[0]);
-        return await this.testDataService.create(JSON.parse(data.params[0]));
+        this.log.info('data.params[1]: ', data.params[1]);
+        return await this.testDataService.create(data.params[0], JSON.parse(data.params[1]));
     }
 
 }

@@ -1,12 +1,10 @@
-import * as _ from 'lodash';
-import { api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { rpc, api } from './lib/api';
+import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 
 describe('/RpcUpdateProfile', () => {
 
-    const keys = [
-        'id', 'name', 'updatedAt', 'createdAt'
-    ];
+    const testUtil = new BlackBoxTestUtil();
+    const method = 'createprofile';
 
     const testData = {
         method: 'createprofile',
@@ -26,8 +24,7 @@ describe('/RpcUpdateProfile', () => {
     };
 
     beforeAll(async () => {
-        const command = new DatabaseResetCommand();
-        await command.run();
+        await testUtil.cleanDb();
     });
 
     test('Should update the profile by RPC', async () => {
