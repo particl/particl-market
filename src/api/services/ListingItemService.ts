@@ -83,6 +83,7 @@ export class ListingItemService {
     }
 
     @validate()
+
     public async create(@request(ListingItemCreateRequest) data: any): Promise<ListingItem> {
 
         const body = JSON.parse(JSON.stringify(data));
