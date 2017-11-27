@@ -145,6 +145,13 @@ describe('PaymentInformation', () => {
         expect(result.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
     });
 
+    test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
+        expect.assertions(1);
+        await paymentInformationService.update(createdId, testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should update the payment information', async () => {
         testDataUpdated['listing_item_template_id'] = 0;
         const paymentInformationModel: PaymentInformation = await paymentInformationService.update(createdId, testDataUpdated);
