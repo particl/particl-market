@@ -25,7 +25,7 @@ describe('Profile', () => {
     let createdId;
 
     const testData = {
-        name: 'DEFAULT',
+        name: 'DEFAULT1',
         addresses: [{
             title: 'Title',
             addressLine1: 'Add',

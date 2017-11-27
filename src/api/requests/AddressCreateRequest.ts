@@ -20,6 +20,4 @@ export class AddressCreateRequest extends RequestBody {
     @IsNotEmpty()
     public country: string;
 
-    @IsNotEmpty()
-    public profileId: string;
 }

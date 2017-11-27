@@ -36,18 +36,22 @@ export class ShippingPriceService {
     }
 
     @validate()
-    public async create( @request(ShippingPriceCreateRequest) body: any): Promise<ShippingPrice> {
+    public async create( @request(ShippingPriceCreateRequest) data: any): Promise<ShippingPrice> {
+
+        const body = JSON.parse(JSON.stringify(data));
 
         // If the request body was valid we will create the shippingPrice
         const shippingPrice = await this.shippingPriceRepo.create(body);
 
         // finally find and return the created shippingPrice
-        const newShippingPrice = await this.findOne(shippingPrice.id);
+        const newShippingPrice = await this.findOne(shippingPrice.Id);
         return newShippingPrice;
     }
 
     @validate()
-    public async update(id: number, @request(ShippingPriceUpdateRequest) body: any): Promise<ShippingPrice> {
+    public async update(id: number, @request(ShippingPriceUpdateRequest) data: any): Promise<ShippingPrice> {
+
+        const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const shippingPrice = await this.findOne(id, false);

@@ -48,7 +48,7 @@ export class ItemImageDataService {
         const itemImageData = await this.itemImageDataRepo.create(body);
 
         // finally find and return the created itemImageData
-        const newItemImageData = await this.findOne(itemImageData.id);
+        const newItemImageData = await this.findOne(itemImageData.Id);
         return newItemImageData;
     }
 

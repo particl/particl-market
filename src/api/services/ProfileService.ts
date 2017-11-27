@@ -52,18 +52,24 @@ export class ProfileService {
     }
 
     @validate()
-    public async create( @request(ProfileCreateRequest) body: any): Promise<Profile> {
+    public async create( @request(ProfileCreateRequest) data: any): Promise<Profile> {
+
+        const body = JSON.parse(JSON.stringify(data));
+        this.log.info('body:', JSON.stringify(body, null, 2));
 
         // extract and remove related models from request
         const addresses = body.addresses || [];
         delete body.addresses;
+        this.log.info('body2:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the profile
         const profile = await this.profileRepo.create(body);
 
         // create related models
         for (const address of addresses) {
-            address.profileId = profile.Id;
+            address.profile_id = profile.Id;
+            this.log.info('address:', JSON.stringify(address, null, 2));
+
             await this.addressService.create(address);
         }
 
@@ -73,7 +79,9 @@ export class ProfileService {
     }
 
     @validate()
-    public async update(id: number, @request(ProfileUpdateRequest) body: any): Promise<Profile> {
+    public async update(id: number, @request(ProfileUpdateRequest) data: any): Promise<Profile> {
+
+        const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const profile = await this.findOne(id, false);
@@ -94,7 +102,7 @@ export class ProfileService {
         // recreate related data
         addresses = body.addresses || [];
         for (const address of addresses) {
-            address.profileId = id;
+            address.profile_id = id;
             await this.addressService.create(address);
         }
 
