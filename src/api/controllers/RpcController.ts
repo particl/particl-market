@@ -177,8 +177,8 @@ export class RpcController {
             'getcategory': 'rpcItemCategoryService.findOne',
 
             // favorite items
-            'addfavorite': 'rpcFavoriteItemService.addFavorite',
-            'removefavorite': 'rpcFavoriteItemService.removeFavorite',
+            'addfavorite': 'rpcFavoriteItemService.create',
+            'removefavorite': 'rpcFavoriteItemService.destroy',
 
             // paymentInformation
             'updatepaymentinformation': 'rpcPaymentInformationService.update',

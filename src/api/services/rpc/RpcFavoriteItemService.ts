@@ -57,10 +57,9 @@ export class RpcFavoriteItemService {
      * @param data
      * @returns {Promise<FavoriteItem>}
      */
-
     @validate()
-    public async addFavorite( @request(RpcRequest) data: any): Promise<FavoriteItem> {
-        const favoriteParams = await this.checkParams(data);
+    public async create( @request(RpcRequest) data: any): Promise<FavoriteItem> {
+        const favoriteParams = await this.getSearchParams(data);
         // Check if favorite Item already exist
         let favoriteItem = await this.favoriteItemService.search({itemId: favoriteParams[0], profileId: favoriteParams[1] } as FavoriteSearchParams);
 
@@ -77,13 +76,30 @@ export class RpcFavoriteItemService {
     /**
      * data.params[]:
      *  [0]: item_id or hash
+     *  [1]: profile_id or null if null then use the default profile
+     *
+     */
+    @validate()
+    public async destroy( @request(RpcRequest) data: any): Promise<void> {
+        const favoriteParams = await this.getSearchParams(data);
+        const favoriteItem = await this.favoriteItemService.search(favoriteParams);
+        if (favoriteItem === null) {
+            this.log.warn(`FavoriteItem with the item id=${favoriteParams.itemId} was not found!`);
+            throw new NotFoundException(favoriteParams.itemId);
+        }
+
+        return this.favoriteItemService.destroy(favoriteItem.Id);
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: item_id or hash
      *  [1]: profile_id or null
      *
      * when data.params[0] is number then findById, else findOneByHash
      *
      */
-
-    public async checkParams(data: any): Promise<any> {
+    private async getSearchParams(data: any): Promise<any> {
         let itemId = data.params[0] || 0;
         let profileId = data.params[1];
 
@@ -107,17 +123,4 @@ export class RpcFavoriteItemService {
         }
         return [item.id, profileId];
     }
-
-    /**
-     * data.params[]:
-     *  [0]: item_id or hash
-     *  [1]: profile_id or null if null then use the default profile
-     *
-     */
-    @validate()
-    public async removeFavorite( @request(RpcRequest) data: any): Promise<void> {
-        const favoriteParams = await this.checkParams(data);
-        return this.favoriteItemService.destroy({itemId: favoriteParams[0], profileId: favoriteParams[1]} as FavoriteSearchParams);
-    }
-
 }
