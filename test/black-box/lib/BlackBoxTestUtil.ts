@@ -12,10 +12,11 @@ export class BlackBoxTestUtil {
         res.expectStatusCode(200);
     }
 
-    public async addData(data: any): void {
-        const res = await rpc('adddata');
+    public async addData(model: string, data: any): any {
+        const res = await rpc('adddata', [model, JSON.stringify(data)]);
         res.expectJson();
         res.expectStatusCode(200);
+        return res;
     }
 
 }
