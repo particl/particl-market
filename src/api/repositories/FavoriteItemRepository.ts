@@ -5,6 +5,7 @@ import { FavoriteItem } from '../models/FavoriteItem';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { FavoriteSearchParams  } from '../requests/FavoriteSearchParams';
 
 export class FavoriteItemRepository {
 
@@ -26,8 +27,14 @@ export class FavoriteItemRepository {
         return this.FavoriteItemModel.fetchById(id, withRelated);
     }
 
-    public async findByItemAndProfile(data: any): Promise<FavoriteItem> {
-        return this.FavoriteItemModel.fetchByItemAndProfile(data[0], data[1]);
+    /**
+     * search favorite item by profile id and item id
+     * @param options, FavoriteSearchParams
+     * @returns {Promise<FavoriteItem> }
+     */
+
+    public async search(options: FavoriteSearchParams): Promise<FavoriteItem> {
+      return this.FavoriteItemModel.search(options);
     }
 
     public async create(data: any): Promise<FavoriteItem> {

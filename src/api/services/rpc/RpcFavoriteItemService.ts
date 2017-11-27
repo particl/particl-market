@@ -8,8 +8,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { FavoriteItem } from '../../models/FavoriteItem';
 import { ListingItemService } from '../ListingItemService';
 import { ProfileService } from '../ProfileService';
-import { FavoriteItemRepository } from '../../repositories/FavoriteItemRepository';
 import { NotFoundException } from '../../exceptions/NotFoundException';
+import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
 
 export class RpcFavoriteItemService {
 
@@ -19,7 +19,6 @@ export class RpcFavoriteItemService {
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Repository) @named(Targets.Repository.FavoriteItemRepository) public favoriteItemRepository: FavoriteItemRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
     }
@@ -63,7 +62,8 @@ export class RpcFavoriteItemService {
     public async addFavorite( @request(RpcRequest) data: any): Promise<FavoriteItem> {
         const favoriteParams = await this.checkParams(data);
         // Check if favorite Item already exist
-        let favoriteItem = await this.favoriteItemRepository.findByItemAndProfile(favoriteParams);
+        let favoriteItem = await this.favoriteItemService.search({itemId: favoriteParams[0], profileId: favoriteParams[1] } as FavoriteSearchParams);
+
         // favorite item not already exist then create
         if (favoriteItem === null) {
             favoriteItem = await this.favoriteItemService.create({
@@ -111,13 +111,13 @@ export class RpcFavoriteItemService {
     /**
      * data.params[]:
      *  [0]: item_id or hash
-     *  [1]: profile_id or null
+     *  [1]: profile_id or null if null then use the default profile
      *
      */
     @validate()
     public async removeFavorite( @request(RpcRequest) data: any): Promise<void> {
         const favoriteParams = await this.checkParams(data);
-        return this.favoriteItemService.removeFavorite(favoriteParams);
+        return this.favoriteItemService.destroy({itemId: favoriteParams[0], profileId: favoriteParams[1]} as FavoriteSearchParams);
     }
 
 }

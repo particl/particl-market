@@ -1,6 +1,7 @@
 import { Bookshelf } from '../../config/Database';
 import { Profile } from './Profile';
 import { ListingItem } from './ListingItem';
+import { FavoriteSearchParams } from '../requests/FavoriteSearchParams';
 
 export class FavoriteItem extends Bookshelf.Model<FavoriteItem> {
 
@@ -19,8 +20,8 @@ export class FavoriteItem extends Bookshelf.Model<FavoriteItem> {
     }
 
     // find favorite by profile id and listing item id
-    public static async fetchByItemAndProfile(itemId: number, profileId: number): Promise<FavoriteItem> {
-        return await FavoriteItem.where<FavoriteItem>({ listing_item_id: itemId, profile_id: profileId }).fetch();
+    public static async search(options: FavoriteSearchParams): Promise<FavoriteItem> {
+        return await FavoriteItem.where<FavoriteItem>({ listing_item_id: options.itemId, profile_id: options.profileId }).fetch();
     }
 
     public get tableName(): string { return 'favorite_items'; }

@@ -8,8 +8,7 @@ import { FavoriteItemRepository } from '../repositories/FavoriteItemRepository';
 import { FavoriteItem } from '../models/FavoriteItem';
 import { FavoriteItemCreateRequest } from '../requests/FavoriteItemCreateRequest';
 import { FavoriteItemUpdateRequest } from '../requests/FavoriteItemUpdateRequest';
-import { RpcRequest } from '../requests/RpcRequest';
-
+import { FavoriteSearchParams } from '../requests/FavoriteSearchParams';
 
 export class FavoriteItemService {
 
@@ -22,18 +21,8 @@ export class FavoriteItemService {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
-        return this.findAll();
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<FavoriteItem>> {
         return this.favoriteItemRepo.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<FavoriteItem> {
-        return this.findOne(data.params[0]);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<FavoriteItem> {
@@ -45,16 +34,19 @@ export class FavoriteItemService {
         return favoriteItem;
     }
 
-    public async findByItemAndProfile(data: any): Promise<FavoriteItem> {
-        return this.favoriteItemRepo.findByItemAndProfile(data);
-    }
+    /**
+     * search favorite item using given FavoriteSearchParams
+     *
+     * @param options
+     * @returns {Promise<FavoriteItem> }
+     */
 
     @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<FavoriteItem> {
-        return this.create({
-            data: data.params[0] // TODO: convert your params to FavoriteItemCreateRequest
-        });
+    public async search(
+        @request(FavoriteSearchParams) options: FavoriteSearchParams): Promise<FavoriteItem> {
+        return this.favoriteItemRepo.search(options);
     }
+
 
     @validate()
     public async create( @request(FavoriteItemCreateRequest) body: any): Promise<FavoriteItem> {
@@ -73,12 +65,6 @@ export class FavoriteItemService {
         return newFavoriteItem;
     }
 
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<FavoriteItem> {
-        return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to FavoriteItemUpdateRequest
-        });
-    }
 
     @validate()
     public async update(id: number, @request(FavoriteItemUpdateRequest) body: any): Promise<FavoriteItem> {
@@ -108,29 +94,21 @@ export class FavoriteItemService {
         return updatedFavoriteItem;
     }
 
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
-    }
-
-    public async destroy(id: number): Promise<void> {
-        await this.favoriteItemRepo.destroy(id);
-    }
-
     /**
-     * data[]:
-     *  [0]: item_id
-     *  [1]: profile_id
+     * options:
+     *  options.item_id
+     *  options.profile_id
      *
-     * remove favorite by listing id and profile id
+     * remove favorite by item id and profile id
      */
-    public async removeFavorite(data: any): Promise<void> {
-        const favoriteItem = await this.findByItemAndProfile(data);
+
+    @validate()
+    public async destroy(@request(FavoriteSearchParams) options: FavoriteSearchParams): Promise<void> {
+        const favoriteItem = await this.favoriteItemRepo.search(options);
         if (favoriteItem === null) {
-            this.log.warn(`FavoriteItem with the id=${data[0]} was not found!`);
-            throw new NotFoundException(data[0]);
+            this.log.warn(`FavoriteItem with the id=${options.itemId} was not found!`);
+            throw new NotFoundException(options.itemId);
         }
         await this.favoriteItemRepo.destroy(favoriteItem.id);
     }
-
 }
