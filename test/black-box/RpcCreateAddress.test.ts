@@ -8,7 +8,6 @@ describe('CreateAddress', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = 'createaddress';
 
-
     const testData = {
         title: 'Work',
         addressLine1: '123 6th St',
