@@ -1,7 +1,7 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../{{deepness}}core/api/RequestBody';
 
-
+// tslint:disable:variable-name
 export class {{name.capitalize}}Request extends RequestBody {
     {{#if hasProperties}}
     {{#each properties}}
@@ -17,4 +17,4 @@ export class {{name.capitalize}}Request extends RequestBody {
     {{/if}}
 
 }
-
+// tslint:enable:variable-name
