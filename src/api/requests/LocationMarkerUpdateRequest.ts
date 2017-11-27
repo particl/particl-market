@@ -5,6 +5,9 @@ import { RequestBody } from '../../core/api/RequestBody';
 export class LocationMarkerUpdateRequest extends RequestBody {
 
     @IsNotEmpty()
+    public item_location_id: number;
+
+    @IsNotEmpty()
     public markerTitle: string;
 
     @IsNotEmpty()

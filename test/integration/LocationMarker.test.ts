@@ -49,7 +49,15 @@ describe('LocationMarker', () => {
         //
     });
 
+    test('Should throw ValidationException because there is no item_location_id', async () => {
+        expect.assertions(1);
+        await locationMarkerService.create(testData).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should create a new location marker', async () => {
+        testData['item_location_id'] = 0;
         const locationMarkerModel: LocationMarker = await locationMarkerService.create(testData);
         createdId = locationMarkerModel.Id;
 
@@ -91,7 +99,15 @@ describe('LocationMarker', () => {
         expect(result.lng).toBe(testData.lng);
     });
 
+    test('Should throw ValidationException because there is no item_location_id', async () => {
+        expect.assertions(1);
+        await locationMarkerService.update(createdId, testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should update the location marker', async () => {
+        testDataUpdated['item_location_id'] = 0;
         const locationMarkerModel: LocationMarker = await locationMarkerService.update(createdId, testDataUpdated);
         const result = locationMarkerModel.toJSON();
 
