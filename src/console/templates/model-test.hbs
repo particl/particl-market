@@ -47,7 +47,17 @@ describe('{{name.capitalize}}', () => {
         //
     });
 
+    /*
+    test('Should throw ValidationException because there is no related_id', async () => {
+        expect.assertions(1);
+        await {{name.camelCase}}Service.create(testData).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+    */
+
     test('Should create a new {{name.lowerCase}}', async () => {
+        // testData['related_id'] = 0;
         const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.create(testData);
         createdId = {{name.camelCase}}Model.Id;
 
@@ -92,7 +102,17 @@ describe('{{name.capitalize}}', () => {
         {{/each}}
     });
 
+    /*
+    test('Should throw ValidationException because there is no related_id', async () => {
+        expect.assertions(1);
+        await {{name.camelCase}}Service.update(createdId, testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+    */
+
     test('Should update the {{name.lowerCase}}', async () => {
+        // testDataUpdated['related_id'] = 0;
         const {{name.camelCase}}Model: {{name.capitalize}} = await {{name.camelCase}}Service.update(createdId, testDataUpdated);
         const result = {{name.camelCase}}Model.toJSON();
 
