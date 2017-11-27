@@ -46,7 +46,15 @@ describe('MessagingInformation', () => {
         //
     });
 
+    test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
+        expect.assertions(1);
+        await messagingInformationService.create(testData).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should create a new messaging information', async () => {
+        testData['listing_item_template_id'] = 0;
         const messagingInformationModel: MessagingInformation = await messagingInformationService.create(testData);
         createdId = messagingInformationModel.Id;
 
@@ -83,6 +91,7 @@ describe('MessagingInformation', () => {
     });
 
     test('Should update the messaging information', async () => {
+        testDataUpdated['listing_item_template_id'] = 0;
         const messagingInformationModel: MessagingInformation = await messagingInformationService.update(createdId, testDataUpdated);
         const result = messagingInformationModel.toJSON();
 

@@ -86,8 +86,15 @@ describe('PaymentInformation', () => {
         //
     });
 
+    test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
+        expect.assertions(1);
+        await paymentInformationService.create(testData).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should create a new payment information', async () => {
-        log.debug('testData:', JSON.stringify(testData));
+        testData['listing_item_template_id'] = 0;
 
         const paymentInformationModel: PaymentInformation = await paymentInformationService.create(testData);
         createdId = paymentInformationModel.Id;
@@ -139,6 +146,7 @@ describe('PaymentInformation', () => {
     });
 
     test('Should update the payment information', async () => {
+        testDataUpdated['listing_item_template_id'] = 0;
         const paymentInformationModel: PaymentInformation = await paymentInformationService.update(createdId, testDataUpdated);
         const result = paymentInformationModel.toJSON();
 

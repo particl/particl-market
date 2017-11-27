@@ -4,6 +4,8 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { ValidationException } from '../exceptions/ValidationException';
+
 import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
 import { PaymentInformation } from '../models/PaymentInformation';
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
@@ -43,6 +45,11 @@ export class PaymentInformationService {
 
         const body = JSON.parse(JSON.stringify(data));
 
+        // todo: could this be annotated in PaymentInformationCreateRequest?
+        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
+        }
+
         const escrow = body.escrow;
         const itemPrice = body.itemPrice;
 
@@ -69,6 +76,11 @@ export class PaymentInformationService {
     public async update(id: number, @request(PaymentInformationUpdateRequest) data: any): Promise<PaymentInformation> {
 
         const body = JSON.parse(JSON.stringify(data));
+
+        // todo: could this be annotated in PaymentInformationCreateRequest?
+        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
+        }
 
         // find the existing one without related
         const paymentInformation = await this.findOne(id, false);

@@ -4,7 +4,6 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
-import { MessageException } from '../exceptions/MessageException';
 import { ValidationException } from '../exceptions/ValidationException';
 
 import { ItemInformationRepository } from '../repositories/ItemInformationRepository';
