@@ -50,7 +50,15 @@ describe('ItemImageData', () => {
         //
     });
 
+    test('Should throw ValidationException because there is no item_image_id', async () => {
+        expect.assertions(1);
+        await itemImageDataService.create(testData).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should create a new item image data', async () => {
+        testData['item_image_id'] = 0;
         const itemImageDataModel: ItemImageData = await itemImageDataService.create(testData);
         createdId = itemImageDataModel.Id;
 
@@ -92,7 +100,15 @@ describe('ItemImageData', () => {
         expect(result.data).toBe(testData.data);
     });
 
+    test('Should throw ValidationException because there is no item_image_id', async () => {
+        expect.assertions(1);
+        await itemImageDataService.update(createdId, testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should update the item image data', async () => {
+        testDataUpdated['item_image_id'] = 0;
         const itemImageDataModel: ItemImageData = await itemImageDataService.update(createdId, testDataUpdated);
         const result = itemImageDataModel.toJSON();
 
