@@ -59,7 +59,9 @@ export class ItemLocationService {
     }
 
     @validate()
-    public async update(id: number, @request(ItemLocationUpdateRequest) body: any): Promise<ItemLocation> {
+    public async update(id: number, @request(ItemLocationUpdateRequest) data: any): Promise<ItemLocation> {
+
+        const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const itemLocation = await this.findOne(id, false);

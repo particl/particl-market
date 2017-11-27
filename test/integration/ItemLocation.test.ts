@@ -58,14 +58,15 @@ describe('ItemLocation', () => {
         //
     });
 
-    test('Should throw ValidationException because there is no item_image_id', async () => {
+    test('Should throw ValidationException because there is no item_information_id', async () => {
         expect.assertions(1);
-        await itemImageDataService.create(testData).catch(e =>
+        await itemLocationService.create(testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should create a new item location', async () => {
+        testData['item_information_id'] = 0;
         const itemLocationModel: ItemLocation = await itemLocationService.create(testData);
         createdId = itemLocationModel.Id;
 
@@ -110,7 +111,15 @@ describe('ItemLocation', () => {
         expect(result.LocationMarker.lng).toBe(testData.locationMarker.lng);
     });
 
+    test('Should throw ValidationException because there is no item_information_id', async () => {
+        expect.assertions(1);
+        await itemLocationService.update(createdId, testDataUpdated).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should update the item location', async () => {
+        testDataUpdated['item_information_id'] = 0;
         const itemLocationModel: ItemLocation = await itemLocationService.update(createdId, testDataUpdated);
         const result = itemLocationModel.toJSON();
 
