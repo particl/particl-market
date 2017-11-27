@@ -4,6 +4,8 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { ValidationException } from '../exceptions/ValidationException';
+
 import { MessagingInformationRepository } from '../repositories/MessagingInformationRepository';
 import { MessagingInformation } from '../models/MessagingInformation';
 import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
@@ -56,6 +58,11 @@ export class MessagingInformationService {
     @validate()
     public async create( @request(MessagingInformationCreateRequest) body: any): Promise<MessagingInformation> {
 
+        // todo: could this be annotated in MessagingInformationCreateRequest?
+        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
+        }
+
         // If the request body was valid we will create the messagingInformation
         const messagingInformation = await this.messagingInformationRepo.create(body);
 
@@ -74,6 +81,11 @@ export class MessagingInformationService {
 
     @validate()
     public async update(id: number, @request(MessagingInformationUpdateRequest) body: any): Promise<MessagingInformation> {
+
+        // todo: could this be annotated in MessagingInformationCreateRequest?
+        if (body.listing_item_id == null && body.listing_item_template_id == null) {
+            throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
+        }
 
         // find the existing one without related
         const messagingInformation = await this.findOne(id, false);

@@ -14,9 +14,19 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         if (withRelated) {
             return await ListingItemTemplate.where<ListingItemTemplate>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
                     'ItemInformation',
+                    'ItemInformation.ItemCategory',
+                    'ItemInformation.ItemLocation',
+                    'ItemInformation.ItemLocation.LocationMarker',
+                    'ItemInformation.ItemImages',
+                    'ItemInformation.ItemImages.ItemImageData',
+                    'ItemInformation.ShippingDestinations',
                     'PaymentInformation',
+                    'PaymentInformation.Escrow',
+                    'PaymentInformation.Escrow.Ratio',
+                    'PaymentInformation.ItemPrice',
+                    'PaymentInformation.ItemPrice.ShippingPrice',
+                    'PaymentInformation.ItemPrice.Address',
                     'MessagingInformation',
                     'ListingItemObjects',
                     'ListingItem',
@@ -50,7 +60,18 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
             return await listingCollection.fetchAll({
                 withRelated: [
                     'ItemInformation',
+                    'ItemInformation.ItemCategory',
+                    'ItemInformation.ItemLocation',
+                    'ItemInformation.ItemLocation.LocationMarker',
+                    'ItemInformation.ItemImages',
+                    'ItemInformation.ItemImages.ItemImageData',
+                    'ItemInformation.ShippingDestinations',
                     'PaymentInformation',
+                    'PaymentInformation.Escrow',
+                    'PaymentInformation.Escrow.Ratio',
+                    'PaymentInformation.ItemPrice',
+                    'PaymentInformation.ItemPrice.ShippingPrice',
+                    'PaymentInformation.ItemPrice.Address',
                     'MessagingInformation',
                     'ListingItemObjects',
                     'ListingItem',
@@ -67,6 +88,9 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
 
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
+
+    public get Hash(): string { return this.get('hash'); }
+    public set Hash(value: string) { this.set('hash', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

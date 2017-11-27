@@ -1,8 +1,11 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 
-
+// tslint:disable:variable-name
 export class ItemImageDataUpdateRequest extends RequestBody {
+
+    @IsNotEmpty()
+    public item_image_id: number;
 
     // @IsNotEmpty()
     public dataId: string;
@@ -17,4 +20,4 @@ export class ItemImageDataUpdateRequest extends RequestBody {
     public data: string;
 
 }
-
+// tslint:enable:variable-name

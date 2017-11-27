@@ -24,18 +24,8 @@ export class ItemLocationService {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemLocation>> {
-        return this.findAll();
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<ItemLocation>> {
         return this.itemLocationRepo.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ItemLocation> {
-        return this.findOne(data.params[0]);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ItemLocation> {
@@ -48,21 +38,9 @@ export class ItemLocationService {
     }
 
     @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemLocation> {
-        return this.create({
-            region: data.params[0],
-            address: data.params[1],
-            locationMarker: {
-                markerTitle: data.params[2],
-                markerText: data.params[3],
-                lat: data.params[4],
-                lng: data.params[5]
-            }
-        });
-    }
+    public async create( @request(ItemLocationCreateRequest) data: any): Promise<ItemLocation> {
 
-    @validate()
-    public async create( @request(ItemLocationCreateRequest) body: any): Promise<ItemLocation> {
+        const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
         const locationMarker = body.locationMarker;
@@ -81,21 +59,9 @@ export class ItemLocationService {
     }
 
     @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemLocation> {
-        return this.update(data.params[0], {
-            region: data.params[1],
-            address: data.params[2],
-            locationMarker: {
-                markerTitle: data.params[3],
-                markerText: data.params[4],
-                lat: data.params[5],
-                lng: data.params[6]
-            }
-        });
-    }
+    public async update(id: number, @request(ItemLocationUpdateRequest) data: any): Promise<ItemLocation> {
 
-    @validate()
-    public async update(id: number, @request(ItemLocationUpdateRequest) body: any): Promise<ItemLocation> {
+        const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const itemLocation = await this.findOne(id, false);
@@ -121,13 +87,52 @@ export class ItemLocationService {
         return newItemLocation;
     }
 
+    public async destroy(id: number): Promise<void> {
+        await this.itemLocationRepo.destroy(id);
+    }
+
+    // TODO: remove
+    @validate()
+    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemLocation>> {
+        return this.findAll();
+    }
+
+    @validate()
+    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ItemLocation> {
+        return this.findOne(data.params[0]);
+    }
+
+    @validate()
+    public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemLocation> {
+        return this.create({
+            region: data.params[0],
+            address: data.params[1],
+            locationMarker: {
+                markerTitle: data.params[2],
+                markerText: data.params[3],
+                lat: data.params[4],
+                lng: data.params[5]
+            }
+        });
+    }
+
+    @validate()
+    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemLocation> {
+        return this.update(data.params[0], {
+            region: data.params[1],
+            address: data.params[2],
+            locationMarker: {
+                markerTitle: data.params[3],
+                markerText: data.params[4],
+                lat: data.params[5],
+                lng: data.params[6]
+            }
+        });
+    }
+
     @validate()
     public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
         return this.destroy(data.params[0]);
-    }
-
-    public async destroy(id: number): Promise<void> {
-        await this.itemLocationRepo.destroy(id);
     }
 
 }

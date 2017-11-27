@@ -14,7 +14,6 @@ import { {{name.capitalize}}Repository } from '../{{deepness}}repositories/{{nam
 import { {{name.capitalize}} } from '../{{deepness}}models/{{name.capitalize}}';
 import { {{name.capitalize}}CreateRequest } from '../{{deepness}}requests/{{name.capitalize}}CreateRequest';
 import { {{name.capitalize}}UpdateRequest } from '../{{deepness}}requests/{{name.capitalize}}UpdateRequest';
-import { RpcRequest } from '../requests/RpcRequest';
 {{/if}}
 
 
@@ -29,18 +28,8 @@ export class {{name.capitalize}}Service {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<{{name.capitalize}}>> {
-        return this.findAll();
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<{{name.capitalize}}>> {
         return this.{{name.camelCase}}Repo.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<{{name.capitalize}}> {
-        return this.findOne(data.params[0]);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<{{name.capitalize}}> {
@@ -50,13 +39,6 @@ export class {{name.capitalize}}Service {
             throw new NotFoundException(id);
         }
         return {{name.camelCase}};
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<{{name.capitalize}}> {
-        return this.create({
-            data: data.params[0] // TODO: convert your params to {{name.capitalize}}CreateRequest
-        });
     }
 
     @validate()
@@ -79,13 +61,6 @@ export class {{name.capitalize}}Service {
     }
 
     @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<{{name.capitalize}}> {
-        return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to {{name.capitalize}}UpdateRequest
-        });
-    }
-
-    @validate()
     public async update(id: number, @request({{name.capitalize}}UpdateRequest) body: any): Promise<{{name.capitalize}}> {
 
         // find the existing one without related
@@ -104,26 +79,13 @@ export class {{name.capitalize}}Service {
         // update {{name.camelCase}} record
         const updated{{name.capitalize}} = await this.{{name.camelCase}}Repo.update(id, {{name.camelCase}}.toJSON());
 
-        // TODO: yes, this is stupid
-        // TODO: find related record and delete it
-        // let {{name.camelCase}}Related = updated{{name.capitalize}}.related('{{name.capitalize}}Related').toJSON();
-        // await this.{{name.camelCase}}Service.destroy({{name.camelCase}}Related.id);
-
-        // TODO: recreate related data
-        // {{name.camelCase}}Related = body.{{name.camelCase}}Related;
-        // {{name.camelCase}}Related.{{name.lowercase}}_id = {{name.camelCase}}.Id;
-        // const created{{name.capitalize}} = await this.{{name.camelCase}}Service.create({{name.camelCase}}Related);
+        // TODO: find related record and update it
 
         // TODO: finally find and return the updated {{name.camelCase}}
         // const new{{name.capitalize}} = await this.findOne(id);
         // return new{{name.capitalize}};
 
         return updated{{name.capitalize}};
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
     }
 
     public async destroy(id: number): Promise<void> {

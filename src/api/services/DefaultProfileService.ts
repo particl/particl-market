@@ -29,22 +29,10 @@ export class DefaultProfileService {
 
     public async seedDefaultProfile(): Promise<void> {
         const defaultProfile = {
-            name: 'DEFAULT',
-            addresses: [{
-                title: 'Work',
-                addressLine1: '123 6th St',
-                addressLine2: 'Melbourne, FL 32904',
-                city: 'Melbourne',
-                country: Country.SWEDEN
-            }, {
-                title: 'Home',
-                addressLine1: '123 6th St',
-                addressLine2: 'FINLAND, FL 32904',
-                city: 'FINLAND',
-                country: Country.FINLAND
-            }]
+            name: 'DEFAULT'
         };
-        const ROOT = await this.insertOrUpdateProfile(defaultProfile);
+        await this.insertOrUpdateProfile(defaultProfile);
+        return;
     }
 
     public async insertOrUpdateProfile(profile: any): Promise<Profile> {

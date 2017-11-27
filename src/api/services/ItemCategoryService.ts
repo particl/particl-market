@@ -47,6 +47,9 @@ export class ItemCategoryService {
     @validate()
     public async create( @request(ItemCategoryCreateRequest) body: any): Promise<ItemCategory> {
 
+        if (body.parent_item_category_id === 0) {
+            delete body.parent_item_category_id;
+        }
         // If the request body was valid we will create the itemCategory
         const itemCategory = await this.itemCategoryRepo.create(body);
 
@@ -58,14 +61,17 @@ export class ItemCategoryService {
     @validate()
     public async update(id: number, @request(ItemCategoryUpdateRequest) body: any, patching: boolean = true): Promise<ItemCategory> {
 
+        // parent_item_category_id
+
         // find the existing one without related
         const itemCategory = await this.findOne(id, false);
 
         // set new values
         itemCategory.Name = body.name;
         itemCategory.Description = body.description;
+
         // need to set this to null, otherwise it won't get updated
-        itemCategory.ParentItemCategoryId = body.parentItemCategoryId === undefined ? null : body.parentItemCategoryId;
+        // itemCategory.parent_item_category_id = body.parentItemCategoryId === undefined ? null : body.parent_item_category_id;
 
         // update itemCategory record
         const updatedItemCategory = await this.itemCategoryRepo.update(id, itemCategory.toJSON(), patching);
