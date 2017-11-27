@@ -8,6 +8,7 @@ import { MessageException } from '../exceptions/MessageException';
 import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
 import { ListingItem } from '../models/ListingItem';
 import { ListingItemService } from './ListingItemService';
+import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { DefaultItemCategoryService } from './DefaultItemCategoryService';
 import { DefaultProfileService } from './DefaultProfileService';
 import { ProfileService } from './ProfileService';
@@ -22,6 +23,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -60,6 +62,9 @@ export class TestDataService {
             }
             case 'profile': {
                 return await this.profileService.create(body.data);
+            }
+            case 'listingitemtemplate': {
+                return await this.listingItemTemplateService.create(body.data);
             }
             default: {
                 throw new MessageException('Not implemented');
