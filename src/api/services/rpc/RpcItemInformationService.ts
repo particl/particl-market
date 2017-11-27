@@ -71,11 +71,6 @@ export class RpcItemInformationService {
      */
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<ItemInformation> {
-        /*
-        TODO: FIX
-         src/api/services/rpc/RpcItemInformationService.ts (74,44): Property 'updateWithCheckListingTemplate'
-         does not exist on type 'ItemInformationService'. (2339)
-
         return this.itemInformationService.updateWithCheckListingTemplate(data.params[0], {
             title: data.params[1],
             shortDescription: data.params[2],
@@ -84,8 +79,6 @@ export class RpcItemInformationService {
                 key: data.params[4]
             }
         });
-        */
-        return new ItemInformation();
     }
 
     @validate()

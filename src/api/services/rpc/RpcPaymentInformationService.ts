@@ -82,11 +82,6 @@ export class RpcPaymentInformationService {
      */
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<PaymentInformation> {
-        /*
-        TODO: FIX
-         warn: [core:IoC] ⨯ Unable to compile TypeScript
-         src/api/services/rpc/RpcPaymentInformationService.ts (85,47): Property 'updateByListingId' does not exist on type 'PaymentInformationService'. (2339)
-
         return this.paymentInformationService.updateByListingId(data.params[0], {
             type: data.params[1],
             // escrow: {
@@ -109,8 +104,6 @@ export class RpcPaymentInformationService {
                 }
             }
         });
-        */
-        return new PaymentInformation();
     }
 
     @validate()
