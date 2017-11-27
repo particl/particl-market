@@ -1,7 +1,7 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 
-
+// tslint:disable:variable-name
 export class ItemCategoryUpdateRequest extends RequestBody {
 
     @IsNotEmpty()
@@ -15,4 +15,4 @@ export class ItemCategoryUpdateRequest extends RequestBody {
     public description: string;
 
 }
-
+// tslint:enable:variable-name

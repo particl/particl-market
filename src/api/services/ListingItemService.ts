@@ -45,10 +45,13 @@ export class ListingItemService {
         return listingItem;
     }
 
+    /*
+    TODO: theres no such method as findByListingItemTemplateId in the repo wtf
     public async findByListingItemTemplateId(listingItemTemplateId: number): Promise<ListingItem> {
         const listingItem = await this.listingItemRepo.findByListingItemTemplateId(listingItemTemplateId);
         return listingItem;
     }
+     */
 
     /**
      *

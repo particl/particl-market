@@ -11,6 +11,7 @@ import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplateUpdateRequest } from '../requests/ListingItemTemplateUpdateRequest';
 import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
+import { MessagingInformationService } from './MessagingInformationService';
 
 export class ListingItemTemplateService {
 
@@ -18,7 +19,6 @@ export class ListingItemTemplateService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
-        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,

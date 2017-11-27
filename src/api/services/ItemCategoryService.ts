@@ -47,7 +47,7 @@ export class ItemCategoryService {
     @validate()
     public async create( @request(ItemCategoryCreateRequest) body: any): Promise<ItemCategory> {
 
-        if( body.parent_item_category_id === 0 ) {
+        if (body.parent_item_category_id === 0) {
             delete body.parent_item_category_id;
         }
         // If the request body was valid we will create the itemCategory

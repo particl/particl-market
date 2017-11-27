@@ -176,7 +176,7 @@ export class RpcController {
             'updatepaymentinformation': 'rpcPaymentInformationService.update',
 
             // escrow
-            'createescrow': 'rpcEscrowService.create'
+            'createescrow': 'rpcEscrowService.create',
 
             // test data management
             'cleandb': 'rpcTestDataService.clean',

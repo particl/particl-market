@@ -1,7 +1,7 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 
-
+// tslint:disable:variable-name
 export class ShippingPriceUpdateRequest extends RequestBody {
 
     @IsNotEmpty()
@@ -14,4 +14,4 @@ export class ShippingPriceUpdateRequest extends RequestBody {
     public international: number;
 
 }
-
+// tslint:enable:variable-name

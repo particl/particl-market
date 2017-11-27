@@ -1,7 +1,7 @@
 import { IsArray, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 
-
+// tslint:disable:variable-name
 export class RpcRequest extends RequestBody {
 
     @IsNotEmpty()
@@ -18,4 +18,4 @@ export class RpcRequest extends RequestBody {
     public params: any[];
 
 }
-
+// tslint:enable:variable-name

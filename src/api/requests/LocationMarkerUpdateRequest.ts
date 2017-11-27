@@ -1,7 +1,7 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 
-
+// tslint:disable:variable-name
 export class LocationMarkerUpdateRequest extends RequestBody {
 
     @IsNotEmpty()
@@ -20,4 +20,4 @@ export class LocationMarkerUpdateRequest extends RequestBody {
     public lng: number;
 
 }
-
+// tslint:enable:variable-name
