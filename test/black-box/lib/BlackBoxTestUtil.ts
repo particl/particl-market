@@ -8,12 +8,24 @@ export class BlackBoxTestUtil {
         //
     }
 
+    /**
+     * clean the db, also seeds the default data
+     *
+     * @returns {Promise<void>}
+     */
     public async cleanDb(): void {
         const res = await rpc('cleandb');
         res.expectJson();
         res.expectStatusCode(200);
     }
 
+    /**
+     * add your custom data
+     *
+     * @param model
+     * @param data
+     * @returns {Promise<any>}
+     */
     public async addData(model: string, data: any): any {
         const res = await rpc('adddata', [model, JSON.stringify(data)]);
         res.expectJson();
@@ -29,11 +41,23 @@ export class BlackBoxTestUtil {
      * @param withRelated - return full related model data or just id's, defaults to true
      * @returns {Promise<any>}
      */
-    public async generateData(model: string, amount: number, withRelated: boolean): any {
-        const res: any = await  rpc('adddata', [model, amount, withRelated]);
+    public async generateData(model: string, amount?: number = 1, withRelated?: boolean = true): any {
+        const res: any = await  rpc('generatedata', [model, amount, withRelated]);
         res.expectJson();
         res.expectStatusCode(200);
-        return res;
+        return res.getBody()['result'];
+    }
+
+    /**
+     * get default profile
+     *
+     * @returns {Promise<any>}
+     */
+    public async getDefaultProfile(): any {
+        const res: any = await  rpc('getprofile', ['DEFAULT']);
+        res.expectJson();
+        res.expectStatusCode(200);
+        return res.getBody()['result'];
     }
 
 }

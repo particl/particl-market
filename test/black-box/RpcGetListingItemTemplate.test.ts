@@ -1,8 +1,6 @@
 import { rpc, api } from './lib/api';
 
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { Currency } from '../../src/api/enums/Currency';
 
 describe('GetListingItemTemplate', () => {
 
@@ -10,72 +8,60 @@ describe('GetListingItemTemplate', () => {
     const method = 'getlistingitemtemplate';
 
     let profile;
-    // let emptyListingItem;
-
-    const testDataCreate = {
-        method: 'createlistingitemtemplate',
-        params: [
-            0
-        ],
-        jsonrpc: '2.0'
-    };
-
-    const testDataForGet = {
-        method: 'getlistingitemtemplate',
-        params: [],
-        jsonrpc: '2.0'
-    };
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-
-        profile = await testUtil.addTestProfile();
-        console.log('profile', profile);
-
-        /*
-        // add profile for testing
-        const addDataRes: any = await testUtil.addData('profile', { name: 'TESTING-ADDRESS-PROFILE-NAME' });
-        profile = addDataRes.getBody()['result'];
-
-        // add listingitemtemplate for testing
-        const addDataRes: any = await testUtil.addData('listingitemtemplate', { name: 'TESTING-ADDRESS-PROFILE-NAME' });
-        profile = addDataRes.getBody()['result'];
-*/
+        profile = await testUtil.getDefaultProfile();
 
     });
 
-    test('Should return one Item Template by Id', async () => {
-        // create item template
-        const res = await api('POST', '/api/rpc', {
-            body: testDataCreate
-        });
+    test('Should return one ListingItemTemplate by Id', async () => {
+        const listingItemTemplates = await testUtil.generateData('listingitemtemplate', 1);
+        const testData = listingItemTemplates[0];
+
+        // fetch using id
+        const res = await rpc(method, [listingItemTemplates[0].id]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: object = res.getBody()['result'];
-        const createdId = result['id'];
+        const result: any = res.getBody()['result'];
 
-        // get item template
-        testDataForGet.params[0] = createdId;
-        const resMain = await api('POST', '/api/rpc', {
-            body: testDataForGet
-        });
-        resMain.expectJson();
-        resMain.expectStatusCode(200);
-        const resultMain: object = resMain.getBody()['result'];
-        expect(resultMain['id']).toBe(testDataForGet.params[0]);
-        // check profile
-        expect(resultMain['profileId']).toBe(0);
-        // check realted models
-        expect(resultMain).hasOwnProperty('profile');
+        expect(result.Profile.id).toBe(profile.id);
+        expect(result.Profile.name).toBe(profile.name);
+        expect(result).hasOwnProperty('Profile');
+        expect(result).hasOwnProperty('ItemInformation');
+        expect(result).hasOwnProperty('PaymentInformation');
+        expect(result).hasOwnProperty('MessagingInformation');
+        expect(result).hasOwnProperty('ListingItemObjects');
+        expect(result).hasOwnProperty('ListingItem');
 
-        expect(resultMain).hasOwnProperty('ItemInformation');
+        expect(result.hash).toBe(testData.hash);
 
-        expect(resultMain).hasOwnProperty('PaymentInformation');
+        expect(result.ItemInformation.title).toBe(testData.ItemInformation.title);
+        expect(result.ItemInformation.shortDescription).toBe(testData.ItemInformation.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(testData.ItemInformation.longDescription);
+        expect(result.ItemInformation.ItemCategory.name).toBe(testData.ItemInformation.ItemCategory.name);
+        expect(result.ItemInformation.ItemCategory.description).toBe(testData.ItemInformation.ItemCategory.description);
+        expect(result.ItemInformation.ItemLocation.region).toBe(testData.ItemInformation.ItemLocation.region);
+        expect(result.ItemInformation.ItemLocation.address).toBe(testData.ItemInformation.ItemLocation.address);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(testData.ItemInformation.ItemLocation.LocationMarker.markerTitle);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(testData.ItemInformation.ItemLocation.LocationMarker.markerText);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(testData.ItemInformation.ItemLocation.LocationMarker.lat);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testData.ItemInformation.ItemLocation.LocationMarker.lng);
+        expect(result.ItemInformation.ShippingDestinations).toBeDefined();
+        expect(result.ItemInformation.ItemImages).toBeDefined();
 
-        expect(resultMain).hasOwnProperty('MessagingInformation');
+        expect(result.PaymentInformation.type).toBe(testData.PaymentInformation.type);
+        expect(result.PaymentInformation.Escrow.type).toBe(testData.PaymentInformation.Escrow.type);
+        expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.PaymentInformation.Escrow.Ratio.buyer);
+        expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testData.PaymentInformation.Escrow.Ratio.seller);
+        expect(result.PaymentInformation.ItemPrice.currency).toBe(testData.PaymentInformation.ItemPrice.currency);
+        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.PaymentInformation.ItemPrice.basePrice);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.PaymentInformation.ItemPrice.ShippingPrice.domestic);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.PaymentInformation.ItemPrice.ShippingPrice.international);
+        expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.PaymentInformation.ItemPrice.Address.type);
+        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.PaymentInformation.ItemPrice.Address.address);
 
-        expect(resultMain).hasOwnProperty('ListingItemObjects');
-
-        expect(resultMain).hasOwnProperty('ListingItem');
+        expect(result.MessagingInformation.protocol).toBe(testData.MessagingInformation.protocol);
+        expect(result.MessagingInformation.publicKey).toBe(testData.MessagingInformation.publicKey);
     });
 });

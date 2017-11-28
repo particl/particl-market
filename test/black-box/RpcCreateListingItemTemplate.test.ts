@@ -11,7 +11,6 @@ describe('CreateListingItemTemplate', () => {
 
     let profile;
 
-
     beforeAll(async () => {
         await testUtil.cleanDb();
 
