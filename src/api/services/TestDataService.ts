@@ -78,6 +78,9 @@ export class TestDataService {
             case 'profile': {
                 return await this.profileService.create(body.data);
             }
+            case 'listingitemtemplate': {
+                return await this.listingItemTemplateService.create(body.data);
+            }
             default: {
                 throw new MessageException('Not implemented');
             }

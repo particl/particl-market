@@ -54,7 +54,6 @@ export class ListingItemTemplateService {
 
     @validate()
     public async create( @request(ListingItemTemplateCreateRequest) data: any): Promise<ListingItemTemplate> {
-
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request

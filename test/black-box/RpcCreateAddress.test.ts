@@ -24,7 +24,6 @@ describe('CreateAddress', () => {
         const addDataRes: any = await testUtil.addData('profile', { name: 'TESTING-ADDRESS-PROFILE-NAME' });
         const profileId = addDataRes.getBody()['result'].id;
 
-        console.log('profileId: ', profileId);
         const res = await rpc(method, [testData.title, testData.addressLine1, testData.addressLine2, testData.city, testData.country, profileId]);
         res.expectJson();
         res.expectStatusCode(200);

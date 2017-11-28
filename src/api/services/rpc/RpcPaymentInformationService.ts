@@ -82,7 +82,8 @@ export class RpcPaymentInformationService {
      */
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<PaymentInformation> {
-        return this.paymentInformationService.updateByListingId(data.params[0], {
+        return this.paymentInformationService.updateByListingId({
+            listing_item_template_id : data.params[0],
             type: data.params[1],
             // escrow: {
             //     type: data.params[2],
@@ -104,10 +105,10 @@ export class RpcPaymentInformationService {
                 }
             }
         });
-    }
+}
 
-    @validate()
-    public async destroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.paymentInformationService.destroy(data.params[0]);
-    }
+@validate()
+public async destroy( @request(RpcRequest) data: any): Promise < void> {
+    return this.paymentInformationService.destroy(data.params[0]);
+}
 }

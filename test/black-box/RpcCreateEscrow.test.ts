@@ -1,125 +1,87 @@
-import * as _ from 'lodash';
-import { api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { rpc, api } from './lib/api';
+import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
+import { EscrowType } from '../../src/api/enums/EscrowType';
+import { Currency } from '../../src/api/enums/Currency';
+import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 
-describe('/RpcCreateEscrow', () => {
+describe('/CreateEscrow', () => {
 
-    const keys = [
-        'id', 'type', 'updatedAt', 'createdAt' // , 'Related'
-    ];
-
-    const rootData = {
-        key: 'cat_ROOT',
-        name: 'ROOT',
-        description: 'root'
-    };
-
-    const testDataCat = {
-        key: 'cat_electronics',
-        name: 'Electronics and Technology',
-        description: 'Electronics and Technology description'
-    };
-    const testDataListingItemTemplates = {
+    const testUtil = new BlackBoxTestUtil();
+    const method = 'createescrow';
+    let profileId;
+    const testDataListingItemTemplate = {
         profile_id: 0,
         itemInformation: {
             title: 'Item Information with Templates',
             shortDescription: 'Item short description with Templates',
             longDescription: 'Item long description with Templates',
             itemCategory: {
-                key: '0'
+                key: 'cat_high_luxyry_items'
             }
         },
         paymentInformation: {
             type: 'payment',
             itemPrice: {
-                currency: 'USD',
+                currency: Currency.PARTICL,
                 basePrice: 12,
                 shippingPrice: {
                     domestic: 5,
                     international: 7
                 },
                 address: {
-                    type: 'address-type',
+                    type: CryptocurrencyAddressType.STEALTH,
                     address: 'This is temp address.'
                 }
             }
         }
     };
-    const testDataEscrow = {
-        method: 'createescrow',
-        params: [
-            0, 'MAD', 100, 100
-        ],
-        jsonrpc: '2.0'
+    const testData = {
+        type: EscrowType.MAD,
+        ratio: {
+            buyer: 100,
+            seller: 100
+        }
     };
 
     beforeAll(async () => {
-        const command = new DatabaseResetCommand();
-        await command.run();
+        await testUtil.cleanDb();
+        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-ESCROW' });
+        profileId = addProfileRes.getBody()['result'].id;
     });
 
-    let catKey;
-    let catId;
     test('Should Create new Escrow by RPC', async () => {
-        // create root category
-        const res = await api('POST', '/api/item-categories', {
-            body: rootData
-        });
-        res.expectJson();
-        res.expectStatusCode(201);
-        const rootId = res.getData()['id'];
 
-        testDataCat['parentItemCategoryId'] = rootId;
-        // create category
-        const rescat = await api('POST', '/api/item-categories', {
-            body: testDataCat
-        });
-        rescat.expectJson();
-        rescat.expectStatusCode(201);
-        catId = rescat.getData()['id'];
-        catKey = rescat.getData()['key'];
+        testDataListingItemTemplate.profile_id = profileId;
 
-        testDataListingItemTemplates.itemInformation.itemCategory.key = catKey;
-        // create payment-information
-        const resItemInformation = await api('POST', '/api/listing-item-templates', {
-            body: testDataListingItemTemplates
-        });
-        resItemInformation.expectJson();
-        resItemInformation.expectStatusCode(201);
-        const createdId = resItemInformation.getBody()['data']['id'];
+        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
 
-        testDataEscrow.params[0] = createdId;
-        const resEscrow = await api('POST', '/api/rpc', {
-            body: testDataEscrow
-        });
-        resEscrow.expectJson();
-        resEscrow.expectStatusCode(200);
-        resEscrow.expectDataRpc(keys);
-        const result: any = resEscrow.getBody()['result'];
-        expect(result.paymentInformationId).toBe(testDataEscrow.params[0]);
-        expect(result.type).toBe(testDataEscrow.params[1]);
-        expect(result.Ratio.buyer).toBe(testDataEscrow.params[2]);
-        expect(result.Ratio.seller).toBe(testDataEscrow.params[3]);
+        addListingItemTempRes.expectJson();
+        addListingItemTempRes.expectStatusCode(200);
+        const addListingItemTempResult = addListingItemTempRes.getBody()['result'];
+        const createdTemplateId = addListingItemTempResult.id;
+        const paymentInformationId = addListingItemTempResult.PaymentInformation.id;
+        const addDataRes: any = await rpc(method, [createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
+        addDataRes.expectJson();
+        addDataRes.expectStatusCode(200);
+
+        const result: any = addDataRes.getBody()['result'];
+        expect(result.paymentInformationId).toBe(paymentInformationId);
+        expect(result.type).toBe(testData.type);
+        expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
+        expect(result.Ratio.seller).toBe(testData.ratio.seller);
     });
 
     test('Should fail create Escrow, payment-information is not related with item-template', async () => {
-        delete testDataListingItemTemplates.itemInformation;
-        delete testDataListingItemTemplates.paymentInformation;
-        // create listing-template-id
-        const resItemInformation = await api('POST', '/api/listing-item-templates', {
-            body: testDataListingItemTemplates
-        });
-        resItemInformation.expectJson();
-        resItemInformation.expectStatusCode(201);
-        const createdId = resItemInformation.getBody()['data']['id'];
+
+        delete testDataListingItemTemplate.itemInformation;
+        delete testDataListingItemTemplate.paymentInformation;
+
+        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
+        const createdTemplateId = addListingItemTempRes.getBody()['result'].id;
 
         // create escrow
-        testDataEscrow.params[0] = createdId;
-        const resEscrow = await api('POST', '/api/rpc', {
-            body: testDataEscrow
-        });
-        const result: any = resEscrow;
-        resEscrow.expectJson();
-        resEscrow.expectStatusCode(404);
+        const addDataRes: any = await rpc(method, [createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
+        addDataRes.expectJson();
+        addDataRes.expectStatusCode(404);
     });
 });
