@@ -96,16 +96,26 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     }
 
     public static async searchBy(options: ListingItemSearchParams, withRelated: boolean = false): Promise<Collection<ListingItem>> {
-
         const listingCollection = ListingItem.forge<Collection<ListingItem>>()
             .query( qb => {
                 if (typeof options.category === 'number') {
                     qb.where('item_informations.item_category_id', '=', options.category);
                 } else if (options.category && typeof options.category === 'string') {
                     qb.where('item_categories.key', '=', options.category);
+                    qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
                 }
+
+                // search by profile
+                if (typeof options.profileId === 'number') {
+                    qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
+                    qb.where('listing_item_templates.profile_id', '=', options.profileId);
+                } else if (typeof options.profileId === 'string') {
+                    qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
+                    qb.where('profile.name', '=', options.profileId);
+                    qb.innerJoin('profile', 'profile.id', 'listing_item_templates.profile_id');
+                }
+
                 qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id');
-                qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
                 qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 qb.groupBy('listing_items.id');
 

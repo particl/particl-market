@@ -17,6 +17,8 @@ export class ListingItemSearchParams extends RequestBody {
 
     public category: string | number;
 
+    public profileId: string | number;
+
     public searchString: string;
 
 }
