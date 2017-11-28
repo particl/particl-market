@@ -45,7 +45,7 @@ describe('/CreateEscrow', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME' });
+        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-ESCROW' });
         profileId = addProfileRes.getBody()['result'].id;
     });
 
@@ -57,14 +57,15 @@ describe('/CreateEscrow', () => {
 
         addListingItemTempRes.expectJson();
         addListingItemTempRes.expectStatusCode(200);
-        const createdTemplateId = addListingItemTempRes.getBody()['result'].id;
-
+        const addListingItemTempResult = addListingItemTempRes.getBody()['result'];
+        const createdTemplateId = addListingItemTempResult.id;
+        const paymentInformationId = addListingItemTempResult.PaymentInformation.id;
         const addDataRes: any = await rpc(method, [createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
 
         const result: any = addDataRes.getBody()['result'];
-        expect(result.paymentInformationId).toBe(createdTemplateId);
+        expect(result.paymentInformationId).toBe(paymentInformationId);
         expect(result.type).toBe(testData.type);
         expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
         expect(result.Ratio.seller).toBe(testData.ratio.seller);
@@ -80,7 +81,6 @@ describe('/CreateEscrow', () => {
 
         // create escrow
         const addDataRes: any = await rpc(method, [createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
-        // const result: any = resEscrow;
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
     });
