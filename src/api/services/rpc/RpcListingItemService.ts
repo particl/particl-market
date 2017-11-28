@@ -61,7 +61,7 @@ export class RpcListingItemService {
      * when data.params[0] is number then findById, else findOneByHash
      *
      * @param data
-     * @returns {Promise<Profile>}
+     * @returns {Promise<ListingItem>}
      */
     @validate()
     public async findOne(@request(RpcRequest) data: any): Promise<ListingItem> {
@@ -90,7 +90,7 @@ export class RpcListingItemService {
      *  [4]: searchString, string, can be null
      *
      * @param data
-     * @returns {Promise<Profile>}
+     * @returns {Promise<ListingItem>}
      */
     @validate()
     public async search( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ListingItem>> {
@@ -102,6 +102,31 @@ export class RpcListingItemService {
             searchString: data.params[4] || ''
         } as ListingItemSearchParams, data.params[5]);
     }
+
+    /**
+     * data.params[]:
+     *  [0]: page, number
+     *  [1]: pageLimit, number
+     *  [2]: order, SearchOrder
+     *  [3]: profileId, number|string, if string, try to find using name
+     *  [4]: category, number|string, if string, try to find using key, can be null
+     *  [5]: searchString, string, can be null
+     *
+     * @param data
+     * @returns {Promise<ListingItem>}
+     */
+    @validate()
+    public async findOwnItems( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ListingItem>> {
+        return this.listingItemService.search({
+            page: data.params[0] || 1,
+            pageLimit: data.params[1] || 5,
+            order: data.params[2] || 'ASC',
+            profileId: data.params[3] || 0,
+            category: data.params[4],
+            searchString: data.params[5] || ''
+        } as ListingItemSearchParams, data.params[6]);
+    }
+
 
     /**
      * THIS IS JUST FOR TESTING PURPOSES...

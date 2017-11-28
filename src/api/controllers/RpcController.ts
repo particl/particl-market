@@ -162,6 +162,7 @@ export class RpcController {
             // listing items
             'finditems': 'rpcListingItemService.search',
             'getitem': 'rpcListingItemService.findOne',
+            'findownitems': 'rpcListingItemService.findOwnItems',
 
             // listing items
             'createlistingitemtemplate': 'rpcListingItemTemplateService.create',
