@@ -190,7 +190,8 @@ export class RpcController {
 
             // test data management
             'cleandb': 'rpcTestDataService.clean',
-            'adddata': 'rpcTestDataService.create'
+            'adddata': 'rpcTestDataService.create',
+            'generatedata': 'rpcTestDataService.generate'
 
         };
     }

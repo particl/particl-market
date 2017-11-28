@@ -1,12 +1,16 @@
-import * as _ from 'lodash';
-import { api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { rpc, api } from './lib/api';
 
-describe('/RpcGetListingItemTemplate', () => {
+import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
+import { PaymentType } from '../../src/api/enums/PaymentType';
+import { Currency } from '../../src/api/enums/Currency';
 
-    const keys = [
-        'id', 'updatedAt', 'createdAt'
-    ];
+describe('GetListingItemTemplate', () => {
+
+    const testUtil = new BlackBoxTestUtil();
+    const method = 'getlistingitemtemplate';
+
+    let profile;
+    // let emptyListingItem;
 
     const testDataCreate = {
         method: 'createlistingitemtemplate',
@@ -23,8 +27,21 @@ describe('/RpcGetListingItemTemplate', () => {
     };
 
     beforeAll(async () => {
-        const command = new DatabaseResetCommand();
-        await command.run();
+        await testUtil.cleanDb();
+
+        profile = await testUtil.addTestProfile();
+        console.log('profile', profile);
+
+        /*
+        // add profile for testing
+        const addDataRes: any = await testUtil.addData('profile', { name: 'TESTING-ADDRESS-PROFILE-NAME' });
+        profile = addDataRes.getBody()['result'];
+
+        // add listingitemtemplate for testing
+        const addDataRes: any = await testUtil.addData('listingitemtemplate', { name: 'TESTING-ADDRESS-PROFILE-NAME' });
+        profile = addDataRes.getBody()['result'];
+*/
+
     });
 
     test('Should return one Item Template by Id', async () => {
@@ -34,7 +51,6 @@ describe('/RpcGetListingItemTemplate', () => {
         });
         res.expectJson();
         res.expectStatusCode(200);
-        res.expectDataRpc(keys);
         const result: object = res.getBody()['result'];
         const createdId = result['id'];
 
@@ -45,7 +61,6 @@ describe('/RpcGetListingItemTemplate', () => {
         });
         resMain.expectJson();
         resMain.expectStatusCode(200);
-        resMain.expectDataRpc(keys);
         const resultMain: object = resMain.getBody()['result'];
         expect(resultMain['id']).toBe(testDataForGet.params[0]);
         // check profile
