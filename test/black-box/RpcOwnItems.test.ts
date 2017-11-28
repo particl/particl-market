@@ -14,14 +14,6 @@ describe('/findOwnItems', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = 'findownitems';
 
-    const testCategoryData = {
-        key: 'cat_electronics',
-        name: 'Electronics and Technology',
-        description: 'Electronics and Technology description',
-        parent_item_category_id: 0
-
-    };
-
     const testData = {
         hash: 'hash1',
         itemInformation: {
