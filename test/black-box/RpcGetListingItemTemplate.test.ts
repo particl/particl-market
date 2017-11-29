@@ -39,6 +39,7 @@ describe('GetListingItemTemplate', () => {
         expect(result.ItemInformation.title).toBe(testData.ItemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(testData.ItemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(testData.ItemInformation.longDescription);
+        expect(result.ItemInformation.ItemCategory.key).toBe(testData.ItemInformation.ItemCategory.key);
         expect(result.ItemInformation.ItemCategory.name).toBe(testData.ItemInformation.ItemCategory.name);
         expect(result.ItemInformation.ItemCategory.description).toBe(testData.ItemInformation.ItemCategory.description);
         expect(result.ItemInformation.ItemLocation.region).toBe(testData.ItemInformation.ItemLocation.region);
