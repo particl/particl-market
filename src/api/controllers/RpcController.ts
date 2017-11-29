@@ -28,6 +28,7 @@ import { RpcFavoriteItemService } from '../services/rpc/RpcFavoriteItemService';
 import { RpcPaymentInformationService } from '../services/rpc/RpcPaymentInformationService';
 import { RpcEscrowService } from '../services/rpc/RpcEscrowService';
 import { RpcTestDataService } from '../services/rpc/RpcTestDataService';
+import { RpcItemLocationService } from '../services/rpc/RpcItemLocationService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -67,6 +68,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcPaymentInformationService) private rpcPaymentInformationService: RpcPaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcEscrowService) private rpcEscrowService: RpcEscrowService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcTestDataService) private rpcTestDataService: RpcTestDataService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcItemLocationService) private rpcItemLocationService: RpcItemLocationService,
 
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -192,7 +194,10 @@ export class RpcController {
             // test data management
             'cleandb': 'rpcTestDataService.clean',
             'adddata': 'rpcTestDataService.create',
-            'generatedata': 'rpcTestDataService.generate'
+            'generatedata': 'rpcTestDataService.generate',
+
+            // item location
+            'updateitemlocation': 'rpcItemLocationService.update'
 
         };
     }
