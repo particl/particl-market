@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { validate, request } from '../../../core/api/Validate';
 import { NotFoundException } from '../../exceptions/NotFoundException';
+import { MessageException } from '../../exceptions/MessageException';
 import { ItemLocation } from '../../models/ItemLocation';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemLocationService } from './../ItemLocationService';
@@ -39,24 +40,16 @@ export class RpcItemLocationService {
 
     @validate()
     public async update(@request(RpcRequest) data: any): Promise<ItemLocation> {
-        let location;
-        // find the existing listing item template
-        const listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
 
-        // find the related ItemInformation
-        const ItemInformation = listingItemTemplate.related('ItemInformation').toJSON();
-
-        // Through exception if ItemInformation or ItemLocation does not exist
-        if (_.size(ItemInformation) === 0 || _.size(ItemInformation.ItemLocation) === 0) {
-            this.log.warn(`Item Information or Item Location was not found!`);
-            throw new NotFoundException(data.params[0]);
-        }
+        const itemInformation = await this.getItemInformation(data);
 
         // ItemLocation cannot be updated if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
-        if (ItemInformation.listingItemId === null) {
+        if (itemInformation.listingItemId) {
+            throw new MessageException('ItemLocation cannot be updated because the item has allready been posted!');
+        } else {
             // set body to update
             const body = {
-                item_information_id: ItemInformation.id,
+                item_information_id: itemInformation.id,
                 region: data.params[1],
                 address: data.params[2],
                 locationMarker: {
@@ -67,32 +60,36 @@ export class RpcItemLocationService {
                 }
             };
             // update item location
-            location = this.itemLocationService.update(ItemInformation.ItemLocation.id, body);
-        } else {
-            // find item location if ItemInformation is related to ListingItem
-            location = this.itemLocationService.findOne(ItemInformation.ItemLocation.id);
+            return this.itemLocationService.update(itemInformation.ItemLocation.id, body);
         }
-
-        return location;
     }
 
     @validate()
     public async destroy( @request(RpcRequest) data: any): Promise<void> {
+        const itemInformation = await this.getItemInformation(data);
+
+        // ItemLocation cannot be removed if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
+        if (itemInformation.listingItemId) {
+            throw new MessageException('ItemLocation cannot be removed because the item has allready been posted!');
+        } else {
+            return this.itemLocationService.destroy(itemInformation.ItemLocation.id);
+        }
+    }
+
+    private async getItemInformation(data: any): Promise<any> {
         // find the existing listing item template
         const listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
 
         // find the related ItemInformation
         const ItemInformation = listingItemTemplate.related('ItemInformation').toJSON();
 
-        let location;
-        // remove ItemLocation if not related to listing item
-        if (ItemInformation.listingItemId === null) {
-            location = this.itemLocationService.destroy(ItemInformation.ItemLocation.id);
-        } else {
-            location = this.itemLocationService.findOne(ItemInformation.ItemLocation.id);
+        // Through exception if ItemInformation or ItemLocation does not exist
+        if (_.size(ItemInformation) === 0 || _.size(ItemInformation.ItemLocation) === 0) {
+            this.log.warn(`Item Information or Item Location with the listing template id=${data.params[0]} was not found!`);
+            throw new MessageException(`Item Information or Item Location with the listing template id=${data.params[0]} was not found!`);
         }
 
-        return location;
+        return ItemInformation;
     }
 
 }

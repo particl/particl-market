@@ -117,20 +117,19 @@ describe('/updateItemLocation', () => {
         const addDataRes: any = await rpc(method, [newTemplateId, 'NEW REASON', 'TEST ADDRESS', 'TEST TITLE', 'TEST DESC', 55.6, 60.8]);
 
         addDataRes.expectJson();
-        addDataRes.expectStatusCode(200);
-        const result: any = addDataRes.getBody()['result'];
-        expect(result.region).toBe('NEWYARK');
-        expect(result.address).toBe('USA');
-    });
-
-    test('Should fail because we want to update without item template', async () => {
-        // remove item tempplate id
-        testDataUpdated.shift();
-
-        const addDataRes: any = await rpc(method, testDataUpdated);
-        addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
+        expect(addDataRes.error.error.success).toBe(false);
+        expect(addDataRes.error.error.message).toBe('ItemLocation cannot be updated because the item has allready been posted!');
     });
+
+    // test('Should fail because we want to update without item template', async () => {
+    //     // remove item tempplate id
+    //     testDataUpdated.shift();
+
+    //     const addDataRes: any = await rpc(method, testDataUpdated);
+    //     addDataRes.expectJson();
+    //     addDataRes.expectStatusCode(404);
+    // });
 
 });
 

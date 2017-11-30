@@ -66,10 +66,9 @@ describe('/removeItemLocation', () => {
         const addDataRes: any = await rpc(method, [newTemplateId]);
 
         addDataRes.expectJson();
-        addDataRes.expectStatusCode(200);
-        const result: any = addDataRes.getBody()['result'];
-        expect(result.region).toBe('NEWYARK');
-        expect(result.address).toBe('USA');
+        addDataRes.expectStatusCode(404);
+        expect(addDataRes.error.error.success).toBe(false);
+        expect(addDataRes.error.error.message).toBe('ItemLocation cannot be removed because the item has allready been posted!');
     });
 
     test('Should remove item location', async () => {
