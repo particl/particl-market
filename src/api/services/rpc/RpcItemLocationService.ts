@@ -8,6 +8,7 @@ import { ItemLocation } from '../../models/ItemLocation';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemLocationService } from './../ItemLocationService';
 import { ListingItemTemplateService } from './../ListingItemTemplateService';
+import * as _ from 'lodash';
 
 
 export class RpcItemLocationService {
@@ -46,7 +47,7 @@ export class RpcItemLocationService {
         const ItemInformation = listingItemTemplate.related('ItemInformation').toJSON();
 
         // Through exception if ItemInformation or ItemLocation does not exist
-        if (Object.keys(ItemInformation).length === 0 || Object.keys(ItemInformation.ItemLocation).length === 0) {
+        if (_.size(ItemInformation) === 0 || _.size(ItemInformation.ItemLocation) === 0) {
             this.log.warn(`Item Information or Item Location was not found!`);
             throw new NotFoundException(data.params[0]);
         }
@@ -69,6 +70,25 @@ export class RpcItemLocationService {
             location = this.itemLocationService.update(ItemInformation.ItemLocation.id, body);
         } else {
             // find item location if ItemInformation is related to ListingItem
+            location = this.itemLocationService.findOne(ItemInformation.ItemLocation.id);
+        }
+
+        return location;
+    }
+
+    @validate()
+    public async destroy( @request(RpcRequest) data: any): Promise<void> {
+        // find the existing listing item template
+        const listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
+
+        // find the related ItemInformation
+        const ItemInformation = listingItemTemplate.related('ItemInformation').toJSON();
+
+        let location;
+        // remove ItemLocation if not related to listing item
+        if (ItemInformation.listingItemId === null) {
+            location = this.itemLocationService.destroy(ItemInformation.ItemLocation.id);
+        } else {
             location = this.itemLocationService.findOne(ItemInformation.ItemLocation.id);
         }
 

@@ -197,7 +197,8 @@ export class RpcController {
             'generatedata': 'rpcTestDataService.generate',
 
             // item location
-            'updateitemlocation': 'rpcItemLocationService.update'
+            'updateitemlocation': 'rpcItemLocationService.update',
+            'removeitemlocation': 'rpcItemLocationService.destroy'
 
         };
     }
