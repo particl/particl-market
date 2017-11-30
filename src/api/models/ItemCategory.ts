@@ -46,6 +46,28 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
         });
     }
 
+    public static async fetchAllByName(name: string, withRelated: boolean = true): Promise<Collection<ItemCategory>> {
+        const listingCollection = ItemCategory.forge<Collection<ItemCategory>>()
+            .query(qb => {
+                qb.where('name', 'LIKE', '%' + name + '%');
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await listingCollection.fetchAll({
+                withRelated: [
+                    'ParentItemCategory',
+                    'ParentItemCategory.ParentItemCategory',
+                    'ParentItemCategory.ParentItemCategory.ParentItemCategory',
+                    'ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+                    'ChildItemCategories'
+                ]
+            });
+        } else {
+            return await listingCollection.fetchAll();
+        }
+    }
+
     public get tableName(): string { return 'item_categories'; }
     public get hasTimestamps(): boolean { return true; }
 

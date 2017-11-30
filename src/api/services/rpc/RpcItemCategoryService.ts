@@ -94,6 +94,18 @@ export class RpcItemCategoryService {
         });
     }
 
+    /**
+     * data.params[]:
+     *  [0]: searchString, string, can be null
+     *
+     * @param data
+     * @returns {Promise<Profile>}
+     */
+    @validate()
+    public async findCategory( @request(RpcRequest) data: any): Promise<ItemCategory> {
+        return await this.itemCategoryService.findByName(data.params[0]);
+    }
+
     @validate()
     public async destroy( @request(RpcRequest) data: any): Promise<void> {
         return await this.itemCategoryService.destroy(data.params[0]);
