@@ -5,6 +5,7 @@ import { ShippingDestination } from '../models/ShippingDestination';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { ShippingDestinationSearchParams } from '../requests/ShippingDestinationSearchParams';
 
 export class ShippingDestinationRepository {
 
@@ -24,6 +25,20 @@ export class ShippingDestinationRepository {
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ShippingDestination> {
         return this.ShippingDestinationModel.fetchById(id, withRelated);
+    }
+
+     /**
+     * options:
+     *  item_information_id: options.item_information_id
+     *  country: options.options
+     *  shipping_availability: options.shipping_availability
+     *
+     * @param options
+     * @returns {Promise<ShippingDestination>}
+     */
+    public async search(options: ShippingDestinationSearchParams): Promise<ShippingDestination> {
+        return this.ShippingDestinationModel.searchBy(options);
+
     }
 
     public async create(data: any): Promise<ShippingDestination> {
