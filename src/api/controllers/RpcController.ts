@@ -174,6 +174,8 @@ export class RpcController {
             'updateiteminformation': 'rpcItemInformationService.update',
 
             // categories
+            'createcategory': 'rpcItemCategoryService.create',
+            'updatecategory': 'rpcItemCategoryService.update',
             'getcategories': 'rpcItemCategoryService.findRoot',
             'getcategory': 'rpcItemCategoryService.findOne',
 
