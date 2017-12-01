@@ -67,8 +67,8 @@ export class RpcShippingDestinationService {
         const itemInformation = searchRes[1];
 
         if (itemInformation.listingItemId) {
-           this.log.warn(`Can't delete shipping Destination because the item has allready been posted!`);
-           throw new MessageException(`Can't delete shipping Destination because the item has allready been posted!`);
+           this.log.warn(`Can't delete shipping destination because the item has allready been posted!`);
+           throw new MessageException(`Can't delete shipping destination because the item has allready been posted!`);
         }
 
         if (shippingDestination === null) {

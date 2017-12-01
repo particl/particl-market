@@ -27,7 +27,7 @@ export class ShippingDestinationRepository {
         return this.ShippingDestinationModel.fetchById(id, withRelated);
     }
 
-     /**
+    /**
      * options:
      *  item_information_id: options.item_information_id
      *  country: options.options
