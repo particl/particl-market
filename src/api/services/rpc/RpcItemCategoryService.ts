@@ -6,8 +6,10 @@ import { Types, Core, Targets } from '../../../constants';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategoryService } from '../ItemCategoryService';
+import { ListingItemTemplateService } from '../ListingItemTemplateService';
 import { ListingItemService } from '../ListingItemService';
 import { MessageException } from '../../exceptions/MessageException';
+import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
 
 export class RpcItemCategoryService {
 
@@ -16,6 +18,7 @@ export class RpcItemCategoryService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -69,14 +72,8 @@ export class RpcItemCategoryService {
      */
     @validate()
     public async create( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        let parentItemCategory = data.params[2] || 'cat_ROOT'; // if null then default_category will be parent
-        let parentItemCategoryId;
-        if (typeof parentItemCategory === 'number') {
-            parentItemCategoryId = parentItemCategory;
-        } else { // get category id by key
-            parentItemCategory = await this.itemCategoryService.findOneByKey(parentItemCategory);
-            parentItemCategoryId = parentItemCategory.id;
-        }
+        const parentItemCategory = data.params[2] || 'cat_ROOT'; // if null then default_category will be parent
+        const parentItemCategoryId = await this.getCategoryId(parentItemCategory);
         return await this.itemCategoryService.create({
             name: data.params[0],
             description: data.params[1],
@@ -98,16 +95,10 @@ export class RpcItemCategoryService {
      */
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        const isUpdateable = await this.isUpdateable(data.params[0]);
+        const isUpdateable = await this.isDoable(data.params[0]);
         if (isUpdateable) {
-            let parentItemCategory = data.params[3] || 'cat_ROOT'; // if null then default_category will be parent
-            let parentItemCategoryId;
-            if (typeof parentItemCategory === 'number') {
-                parentItemCategoryId = parentItemCategory;
-            } else { // get category id by key
-                parentItemCategory = await this.itemCategoryService.findOneByKey(parentItemCategory);
-                parentItemCategoryId = parentItemCategory.id;
-            }
+            const parentItemCategory = data.params[3] || 'cat_ROOT'; // if null then default_category will be parent
+            const parentItemCategoryId = await this.getCategoryId(parentItemCategory);
             return await this.itemCategoryService.update(data.params[0], {
                 name: data.params[1],
                 description: data.params[2],
@@ -118,24 +109,70 @@ export class RpcItemCategoryService {
         }
     }
 
+    /**
+     * remove user defined category
+     *
+     * data.params[]:
+     *  [0]: category id
+     *
+     * @param data
+     * @returns {Promise<Profile>}
+     */
     @validate()
     public async destroy( @request(RpcRequest) data: any): Promise<void> {
-        return await this.itemCategoryService.destroy(data.params[0]);
+        const categoryId = data.params[0];
+        const isDelete = await this.isDoable(categoryId);
+        if (isDelete) {
+            // check listingItemTemplate related with category
+            const listingItemTemplates = await this.listingItemTemplateService.search({
+                page: 1, pageLimit: 10, order: 'ASC', category: categoryId, profileId: 0
+            } as ListingItemTemplateSearchParams);
+            if (listingItemTemplates.toJSON().length > 0) {
+                // not be delete its a associated with listingItemTemplate
+                throw new MessageException(`Category associated with listing-item-template can't be delete. id= ${categoryId}`);
+            }
+            return await this.itemCategoryService.destroy(categoryId);
+        } else {
+            throw new MessageException(`category can't be delete. id= ${categoryId}`);
+        }
     }
 
-    public async isUpdateable(categoryId: number): Promise<boolean> {
+    /**
+     * function to check category is default, check category is not associated with listing-item
+     *
+     * @param data
+     * @returns {Promise<boolean>}
+     */
+    private async isDoable(categoryId: number): Promise<boolean> {
         const itemCategory = await this.itemCategoryService.findOne(categoryId);
         // check category has key
         if (itemCategory.Key != null) {
-            // not be update its a default category
-            throw new MessageException(`Default category can't be update. id= ${categoryId}`);
+            // not be update/delete its a default category
+            throw new MessageException(`Default category can't be update or delete. id= ${categoryId}`);
         }
         // check listingItem realted with category id
         const listingItem = await this.listingItemService.findByCategory(categoryId);
         if (listingItem.toJSON().length > 0) {
-            // not be update its a related with listing-items
-            throw new MessageException(`Category related with listing-items can't be update. id= ${categoryId}`);
+            // not be update/delete its a related with listing-items
+            throw new MessageException(`Category related with listing-items can't be update or delete. id= ${categoryId}`);
         }
         return true;
+    }
+
+    /**
+     * function to return category id
+     *
+     * @param data
+     * @returns {Promise<number>}
+     */
+    private async getCategoryId(parentItemCategory: any): Promise<number> {
+        let parentItemCategoryId;
+        if (typeof parentItemCategory === 'number') {
+            parentItemCategoryId = parentItemCategory;
+        } else { // get category id by key
+            parentItemCategory = await this.itemCategoryService.findOneByKey(parentItemCategory);
+            parentItemCategoryId = parentItemCategory.id;
+        }
+        return parentItemCategoryId;
     }
 }
