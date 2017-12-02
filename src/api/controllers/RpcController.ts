@@ -28,6 +28,7 @@ import { RpcFavoriteItemService } from '../services/rpc/RpcFavoriteItemService';
 import { RpcPaymentInformationService } from '../services/rpc/RpcPaymentInformationService';
 import { RpcEscrowService } from '../services/rpc/RpcEscrowService';
 import { RpcTestDataService } from '../services/rpc/RpcTestDataService';
+import { RpcItemImageService } from '../services/rpc/RpcItemImageService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -67,6 +68,8 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcPaymentInformationService) private rpcPaymentInformationService: RpcPaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcEscrowService) private rpcEscrowService: RpcEscrowService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcTestDataService) private rpcTestDataService: RpcTestDataService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcItemImageService) private rpcItemImageService: RpcItemImageService,
+
 
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -171,6 +174,7 @@ export class RpcController {
 
             // item information
             'createiteminformation': 'rpcItemInformationService.create',
+            'getiteminformation': 'rpcItemInformationService.findOne',
             'updateiteminformation': 'rpcItemInformationService.update',
 
             // categories
@@ -192,7 +196,11 @@ export class RpcController {
             // test data management
             'cleandb': 'rpcTestDataService.clean',
             'adddata': 'rpcTestDataService.create',
-            'generatedata': 'rpcTestDataService.generate'
+            'generatedata': 'rpcTestDataService.generate',
+
+            // itemImage
+            'additemimage': 'rpcItemImageService.create',
+            'removeitemimage': 'rpcItemImageService.destroy'
 
         };
     }
