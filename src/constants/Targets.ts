@@ -88,7 +88,7 @@ export const Targets = {
             RpcEscrowService: 'RpcEscrowService',
             RpcPaymentInformationService: 'RpcPaymentInformationService',
             RpcTestDataService: 'RpcTestDataService',
-            RpcShippingDestinationService: 'RpcShippingDestinationService'
+            RpcShippingDestinationService: 'RpcShippingDestinationService',
             RpcItemLocationService: 'RpcItemLocationService'
         },
         ShippingDestinationService: 'ShippingDestinationService',
