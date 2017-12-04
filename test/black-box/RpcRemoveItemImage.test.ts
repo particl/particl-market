@@ -50,7 +50,7 @@ describe('/removeItemImage', () => {
         createdItemInfoId = result.ItemInformation.id;
 
         // add item image
-        const addDataRes: any = await rpc('additemimage', [createdTemplateId, 'HASH1']);
+        const addDataRes: any = await rpc('additemimage', [createdTemplateId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         addDataRes.expectDataRpc(keys);
@@ -72,13 +72,13 @@ describe('/removeItemImage', () => {
 
     test('Should remove item images', async () => {
         // remove item image
-        const addDataRes: any = await rpc(method, [createdTemplateId]);
+        const addDataRes: any = await rpc(method, [createdItemImageId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
     });
 
     test('Should fail to remove itemImage because itemImage already been removed', async () => {
-        const addDataRes: any = await rpc(method, [createdTemplateId]);
+        const addDataRes: any = await rpc(method, [createdItemImageId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
     });

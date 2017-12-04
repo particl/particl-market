@@ -1,5 +1,5 @@
 import { Bookshelf } from '../../config/Database';
-
+import { ShippingDestinationSearchParams } from '../requests/ShippingDestinationSearchParams';
 
 export class ShippingDestination extends Bookshelf.Model<ShippingDestination> {
 
@@ -15,6 +15,12 @@ export class ShippingDestination extends Bookshelf.Model<ShippingDestination> {
         } else {
             return await ShippingDestination.where<ShippingDestination>({ id: value }).fetch();
         }
+    }
+
+    public static async searchBy(options: ShippingDestinationSearchParams): Promise<ShippingDestination> {
+        return await ShippingDestination.where<ShippingDestination>({
+            country: options.country, shipping_availability: options.shippingAvailability, item_information_id: options.item_information_id}).fetch();
+
     }
 
     public get tableName(): string { return 'shipping_destinations'; }

@@ -9,10 +9,9 @@ import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType
 
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
-
-describe('/RpcAddFavorite', () => {
+describe('/RpcRemoveFavorite', () => {
     const testUtil = new BlackBoxTestUtil();
-    const method = 'addfavorite';
+    const method = 'removefavorite';
 
     const testData = {
         hash: 'hash',
@@ -102,7 +101,6 @@ describe('/RpcAddFavorite', () => {
     let profileId;
     let listingItemHash;
     let listingItemId;
-
     beforeAll(async () => {
         await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
@@ -117,38 +115,27 @@ describe('/RpcAddFavorite', () => {
         listingItemId = addListingItemResult.id;
     });
 
-    test('Should add favorite item by listing id and profile id', async () => {
+    test('Should remove favorite item by listing id and profile id', async () => {
         // add favorite item
+        const addFavItem: any = await testUtil.addData('favoriteitem', { listing_item_id: listingItemId, profile_id: profileId });
+        // remove favorite item by item id and profile
         const getDataRes: any = await rpc(method, [listingItemId, profileId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result.listingItemId).toBe(listingItemId);
-        expect(result.profileId).toBe(profileId);
     });
 
-    test('Should add favorite item by listing hash and profile id', async () => {
-        // add favorite item by item hash and profile
-        const getDataRes: any = await rpc(method, [listingItemHash, profileId]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result.listingItemId).toBe(listingItemId);
-        expect(result.profileId).toBe(profileId);
-    });
-
-    test('Should add favorite item by listing id and with default profile', async () => {
-        // add favorite item without profile
+    test('Should remove favorite item by listing id and with default profile', async () => {
+        // add favorite item
+        const addFavItem: any = await testUtil.addData('favoriteitem', { listing_item_id: listingItemId, profile_id: defaultProfileId });
+        // remove favorite item by item id without passing profile
         const getDataRes: any = await rpc(method, [listingItemId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result.listingItemId).toBe(listingItemId);
-        expect(result.profileId).toBe(defaultProfileId);
     });
 
-    test('Should fail because we want to create an empty favorite', async () => {
-        const getDataRes: any = await rpc(method, []);
+    test('Should fail remove favorite because favorite already removed', async () => {
+        // remove favorite
+        const getDataRes: any = await rpc(method, [listingItemId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(404);
     });

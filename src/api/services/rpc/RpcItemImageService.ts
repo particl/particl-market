@@ -10,7 +10,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemImage } from '../../models/ItemImage';
 import { MessageException } from '../../exceptions/MessageException';
 import { NotFoundException } from '../../exceptions/NotFoundException';
-import * as _ from 'lodash';
+import * as crypto from 'crypto-js';
 
 export class RpcItemImageService {
 
@@ -27,7 +27,6 @@ export class RpcItemImageService {
     /**
      * data.params[]:
      *  [0]: listing_item_template_id
-     *  [1]: hash
      *  [2]: dataId
      *  [3]: protocol
      *  [4]: encoding
@@ -47,46 +46,25 @@ export class RpcItemImageService {
         // create item images
         return await this.itemImageService.create({
            item_information_id: itemInformation.id,
-           hash: data.params[1],
+           // we will replace this generate hash later
+           hash: crypto.SHA256(new Date().getTime().toString()).toString(),
            data: {
-               dataId: data.params[2] || '',
-               protocol: data.params[3] || '',
-               encoding: data.params[4] || '',
-               data: data.params[5] || ''
+               dataId: data.params[1] || '',
+               protocol: data.params[2] || '',
+               encoding: data.params[3] || '',
+               data: data.params[4] || ''
            }
         });
     }
 
     /**
      * data.params[]:
-     *  [0]: listing_item_template_id
+     *  [0]: ItemImage.Id
      *
      */
     @validate()
     public async destroy( @request(RpcRequest) data: any): Promise<void> {
-        // find listing item template
-        const listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
-
-        // find related itemInformation
-        const itemInformation = listingItemTemplate.related('ItemInformation').toJSON();
-        const itemImages = itemInformation.ItemImages;
-
-        // check if item already been posted
-        if (itemInformation.listingItemId) {
-            throw new MessageException(`Can't delete itemImage because the item has allready been posted!`);
-        }
-        // if itemImages does not exist
-        if (itemImages.length === 0) {
-            this.log.warn(`ListingItemTemplate with the item id=${data.params[0]} was not found!`);
-            throw new NotFoundException(data.params[0]);
-        }
-
-        for (const itemImage of itemImages) {
-           // remove itemImage
-           await this.itemImageService.destroy(itemImage.id);
-           // remove related itemImageData
-           await this.itemImageDataService.destroy(itemImage.ItemImageData.id);
-        }
+        return this.itemImageService.destroy(data.params[0]);
     }
 
 }

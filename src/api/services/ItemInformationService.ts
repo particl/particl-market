@@ -1,4 +1,5 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -14,7 +15,9 @@ import { ItemInformationUpdateRequest } from '../requests/ItemInformationUpdateR
 import { ItemLocationService } from './ItemLocationService';
 import { ItemImageService } from './ItemImageService';
 import { ShippingDestinationService } from './ShippingDestinationService';
+import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { ItemCategoryService } from './ItemCategoryService';
+
 
 export class ItemInformationService {
 
@@ -26,6 +29,7 @@ export class ItemInformationService {
         @inject(Types.Service) @named(Targets.Service.ShippingDestinationService) public shippingDestinationService: ShippingDestinationService,
         @inject(Types.Service) @named(Targets.Service.ItemLocationService) public itemLocationService: ItemLocationService,
         @inject(Types.Repository) @named(Targets.Repository.ItemInformationRepository) public itemInformationRepo: ItemInformationRepository,
+        @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepository: ListingItemTemplateRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -101,14 +105,15 @@ export class ItemInformationService {
         return newItemInformation;
     }
 
-    public async updateWithCheckListingTemplate(id: number, @request(ItemInformationUpdateRequest) body: any): Promise<ItemInformation> {
-        const itemInformation = await this.findOne(id, false);
-        const listingItemTemplateId = itemInformation.toJSON().listingItemTemplateId;
-        if (listingItemTemplateId == null) {
-            this.log.warn(`ItemInformation with the id=${id} not related with any item-template!`);
-            throw new MessageException(`ItemInformation with the id=${id} not related with any item-template!`);
+    public async updateWithCheckListingTemplate(@request(ItemInformationUpdateRequest) body: any): Promise<ItemInformation> {
+        const listingItemTemplateId = body.listing_item_template_id;
+        const listingItemTemplate = await this.listingItemTemplateRepository.findOne(listingItemTemplateId);
+        const itemInformation = listingItemTemplate.related('ItemInformation').toJSON() || {};
+        if (_.isEmpty(itemInformation)) {
+            this.log.warn(`ItemInformation with the id=${listingItemTemplateId} not related with any listing-item-template!`);
+            throw new MessageException(`ItemInformation with the id=${listingItemTemplateId} not related with any listing-item-template!`);
         }
-        return this.update(id, body);
+        return this.update(itemInformation.id, body);
     }
 
     @validate()

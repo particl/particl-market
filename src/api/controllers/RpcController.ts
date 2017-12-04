@@ -29,6 +29,8 @@ import { RpcPaymentInformationService } from '../services/rpc/RpcPaymentInformat
 import { RpcEscrowService } from '../services/rpc/RpcEscrowService';
 import { RpcTestDataService } from '../services/rpc/RpcTestDataService';
 import { RpcItemImageService } from '../services/rpc/RpcItemImageService';
+import { RpcShippingDestinationService } from '../services/rpc/RpcShippingDestinationService';
+import { RpcItemLocationService } from '../services/rpc/RpcItemLocationService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -69,7 +71,8 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcEscrowService) private rpcEscrowService: RpcEscrowService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcTestDataService) private rpcTestDataService: RpcTestDataService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemImageService) private rpcItemImageService: RpcItemImageService,
-
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcShippingDestinationService) private rpcShippingDestinationService: RpcShippingDestinationService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcItemLocationService) private rpcItemLocationService: RpcItemLocationService,
 
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -178,8 +181,12 @@ export class RpcController {
             'updateiteminformation': 'rpcItemInformationService.update',
 
             // categories
+            'createcategory': 'rpcItemCategoryService.create',
+            'updatecategory': 'rpcItemCategoryService.update',
+            'removecategory': 'rpcItemCategoryService.destroy',
             'getcategories': 'rpcItemCategoryService.findRoot',
             'getcategory': 'rpcItemCategoryService.findOne',
+            'findcategory': 'rpcItemCategoryService.search',
 
             // favorite items
             'addfavorite': 'rpcFavoriteItemService.create',
@@ -200,7 +207,14 @@ export class RpcController {
 
             // itemImage
             'additemimage': 'rpcItemImageService.create',
-            'removeitemimage': 'rpcItemImageService.destroy'
+            'removeitemimage': 'rpcItemImageService.destroy',
+            // shippingDestination
+            'addshippingdestination': 'rpcShippingDestinationService.create',
+            'removeshippingdestination': 'rpcShippingDestinationService.destroy',
+
+            // item location
+            'updateitemlocation': 'rpcItemLocationService.update',
+            'removeitemlocation': 'rpcItemLocationService.destroy'
 
         };
     }

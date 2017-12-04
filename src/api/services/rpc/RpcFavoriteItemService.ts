@@ -61,7 +61,7 @@ export class RpcFavoriteItemService {
     public async create( @request(RpcRequest) data: any): Promise<FavoriteItem> {
         const favoriteParams = await this.getSearchParams(data);
         // Check if favorite Item already exist
-        let favoriteItem = await this.favoriteItemService.search({itemId: favoriteParams[0], profileId: favoriteParams[1] } as FavoriteSearchParams);
+        let favoriteItem = await this.favoriteItemService.search({ itemId: favoriteParams[0], profileId: favoriteParams[1] } as FavoriteSearchParams);
 
         // favorite item not already exist then create
         if (favoriteItem === null) {
@@ -82,12 +82,11 @@ export class RpcFavoriteItemService {
     @validate()
     public async destroy( @request(RpcRequest) data: any): Promise<void> {
         const favoriteParams = await this.getSearchParams(data);
-        const favoriteItem = await this.favoriteItemService.search(favoriteParams);
+        const favoriteItem = await this.favoriteItemService.search({ itemId: favoriteParams[0], profileId: favoriteParams[1] } as FavoriteSearchParams);
         if (favoriteItem === null) {
             this.log.warn(`FavoriteItem with the item id=${favoriteParams.itemId} was not found!`);
             throw new NotFoundException(favoriteParams.itemId);
         }
-
         return this.favoriteItemService.destroy(favoriteItem.Id);
     }
 
