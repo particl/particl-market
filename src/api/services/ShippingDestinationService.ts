@@ -9,7 +9,7 @@ import { ShippingDestination } from '../models/ShippingDestination';
 import { ShippingDestinationCreateRequest } from '../requests/ShippingDestinationCreateRequest';
 import { ShippingDestinationUpdateRequest } from '../requests/ShippingDestinationUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
-
+import { ShippingDestinationSearchParams } from '../requests/ShippingDestinationSearchParams';
 
 export class ShippingDestinationService {
 
@@ -33,6 +33,22 @@ export class ShippingDestinationService {
             throw new NotFoundException(id);
         }
         return shippingDestination;
+    }
+
+    /**
+     * options:
+     *  item_information_id: options.item_information_id
+     *  country: options.options
+     *  shipping_availability: options.shipping_availability
+     *
+     * @param options
+     * @returns {Promise<ShippingDestination>}
+     */
+
+    @validate()
+    public async search(
+        @request(ShippingDestinationCreateRequest) options: ShippingDestinationSearchParams): Promise<ShippingDestination> {
+        return this.shippingDestinationRepo.search(options);
     }
 
     @validate()
