@@ -1,5 +1,5 @@
-import { api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { rpc, api } from './lib/api';
+import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
@@ -10,228 +10,192 @@ import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAdd
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
 describe('/RpcFindItemTemplates', () => {
+    const testUtil = new BlackBoxTestUtil();
+    const method = 'searchlistingitemtemplate';
 
-    const keys = [
-        'id', 'updatedAt', 'createdAt', 'profileId'  // , 'Related'
-    ];
-
-    // for getting item templates
-    const searchItemTemplates = {
-        method: 'searchlistingitemtemplate',
-        params: [1, 2, 'ASC', 0], // [page, pageLimit, order, profileId, category, search-string]
-        jsonrpc: '2.0'
+    const testDataListingItemTemplate1 = {
+        profile_id: 0,
+        itemInformation: {
+            title: 'Item Information with Templates First',
+            shortDescription: 'Item short description with Templates First',
+            longDescription: 'Item long description with Templates First',
+            itemCategory: {
+                key: 'cat_high_luxyry_items'
+            }
+        },
+        paymentInformation: {
+            type: PaymentType.SALE,
+            escrow: {
+                type: EscrowType.MAD,
+                ratio: {
+                    buyer: 100,
+                    seller: 100
+                }
+            },
+            itemPrice: {
+                currency: Currency.BITCOIN,
+                basePrice: 0.0001,
+                shippingPrice: {
+                    domestic: 0.123,
+                    international: 1.234
+                },
+                address: {
+                    type: CryptocurrencyAddressType.NORMAL,
+                    address: 'This is temp address.'
+                }
+            }
+        }
     };
 
-    // for creating item templates
-    const firstItemInformation = {
-        method: 'createlistingitemtemplate',
-        params: [
-            0, 'First Title', 'First Short Description', 'First Long Description', '0', 'payment', 'USD', 10, 2, 4, 'testing-address'
-        ],
-        jsonrpc: '2.0'
+    const testDataListingItemTemplate2 = {
+        profile_id: 0,
+        itemInformation: {
+            title: 'Item Information with Templates Second',
+            shortDescription: 'Item short description with Templates Second',
+            longDescription: 'Item long description with Templates Second',
+            itemCategory: {
+                key: 'cat_high_luxyry_items'
+            }
+        },
+        paymentInformation: {
+            type: PaymentType.SALE,
+            escrow: {
+                type: EscrowType.MAD,
+                ratio: {
+                    buyer: 100,
+                    seller: 100
+                }
+            },
+            itemPrice: {
+                currency: Currency.BITCOIN,
+                basePrice: 0.0001,
+                shippingPrice: {
+                    domestic: 0.123,
+                    international: 1.234
+                },
+                address: {
+                    type: CryptocurrencyAddressType.NORMAL,
+                    address: 'This is temp address.'
+                }
+            }
+        }
     };
-
-    const secondItemInformation = {
-        method: 'createlistingitemtemplate',
-        params: [
-            0, 'Second Title', 'Second Short Description', 'Second Long Description', '0', 'payment', 'USD', 10, 2, 4, 'testing-address'
-        ],
-        jsonrpc: '2.0'
-    };
-
-    // category data
-    const rootData = {
-        key: 'cat_ROOT',
-        name: 'ROOT',
-        description: 'root'
-    };
-
-    const testDataCat = {
-        key: 'cat_electronics',
-        name: 'Electronics and Technology',
-        description: 'Electronics and Technology description'
-    };
-
+    let categoryId;
+    let profileId;
     beforeAll(async () => {
-        const command = new DatabaseResetCommand();
-        await command.run();
+        await testUtil.cleanDb();
+        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME' });
+        profileId = addProfileRes.getBody()['result'].id;
+        // create listing item
+        testDataListingItemTemplate1.profile_id = profileId;
+        const addListingItemTemplate1: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate1);
+        const addListingItemTemplate1Result = addListingItemTemplate1.getBody()['result'];
+        categoryId = addListingItemTemplate1Result.ItemInformation.ItemCategory.id;
+        testDataListingItemTemplate2.profile_id = profileId;
+        const addListingItemTemplate2: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate2);
     });
 
-    let firstItemTemplateResponse;
-    let secondItemTemplateResponse;
-    let categoryId;
-    let categoryKey;
-
-
     test('Should get all Item Templates', async () => {
-        // create root category
-        const resrc = await api('POST', '/api/item-categories', {
-            body: rootData
-        });
-        resrc.expectJson();
-        resrc.expectStatusCode(201);
-        const rootId = resrc.getData()['id'];
-        testDataCat['parentItemCategoryId'] = rootId;
-        // create category
-        const rescat = await api('POST', '/api/item-categories', {
-            body: testDataCat
-        });
-        rescat.expectJson();
-        rescat.expectStatusCode(201);
-        categoryId = rescat.getData()['id'];
-        categoryKey = rescat.getData()['key'];
-        // create item template with item information
-        firstItemInformation.params[4] = categoryKey;
-        const resFirst = await api('POST', '/api/rpc', {
-            body: firstItemInformation
-        });
-        resFirst.expectJson();
-        resFirst.expectStatusCode(200);
-        resFirst.expectDataRpc(keys);
-        firstItemTemplateResponse = resFirst.getBody()['result'];
-        secondItemInformation.params[4] = categoryKey;
-        const resSecond = await api('POST', '/api/rpc', {
-            body: secondItemInformation
-        });
-        resSecond.expectJson();
-        resSecond.expectStatusCode(200);
-        resSecond.expectDataRpc(keys);
-        secondItemTemplateResponse = resSecond.getBody()['result'];
         // get all listing items
-        const resMain = await api('POST', '/api/rpc', {
-            body: searchItemTemplates
-        });
-
-        resMain.expectJson();
-        resMain.expectStatusCode(200);
-        resMain.expectDataRpc(keys);
-        const resultMain: any = resMain.getBody()['result'];
-        expect(resultMain.length).toBe(2);
+        const getDataRes: any = await rpc(method, [1, 2, 'ASC', profileId]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(2);
     });
 
     test('Should get only first item template by pagination', async () => {
-        searchItemTemplates.params[1] = 1;
-        const resPageOne = await api('POST', '/api/rpc', {
-            body: searchItemTemplates
-        });
-        resPageOne.expectJson();
-        resPageOne.expectStatusCode(200);
-        resPageOne.expectDataRpc(keys);
-        const resultPageOne: any = resPageOne.getBody()['result'];
-        expect(resultPageOne.length).toBe(1);
+        const getDataRes: any = await rpc(method, [1, 1, 'ASC', profileId]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(1);
         // check itemInformation
-        expect(resultPageOne[0]['ItemInformation'].title).toBe(firstItemInformation.params[1]);
-        expect(resultPageOne[0]['ItemInformation'].shortDescription).toBe(firstItemInformation.params[2]);
-        expect(resultPageOne[0]['ItemInformation'].longDescription).toBe(firstItemInformation.params[3]);
+        expect(result[0]['ItemInformation'].title).toBe(testDataListingItemTemplate1.itemInformation.title);
+        expect(result[0]['ItemInformation'].shortDescription).toBe(testDataListingItemTemplate1.itemInformation.shortDescription);
+        expect(result[0]['ItemInformation'].longDescription).toBe(testDataListingItemTemplate1.itemInformation.longDescription);
         // check profile
-        expect(resultPageOne[0]['profileId']).toBe(firstItemInformation.params[0]);
+        expect(result[0]['profileId']).toBe(profileId);
         // check realted models
-        expect(resultPageOne).hasOwnProperty('profile');
+        expect(result).hasOwnProperty('profile');
 
-        expect(resultPageOne).hasOwnProperty('ItemInformation');
+        expect(result).hasOwnProperty('ItemInformation');
 
-        expect(resultPageOne).hasOwnProperty('PaymentInformation');
+        expect(result).hasOwnProperty('PaymentInformation');
 
-        expect(resultPageOne).hasOwnProperty('MessagingInformation');
+        expect(result).hasOwnProperty('MessagingInformation');
 
-        expect(resultPageOne).hasOwnProperty('ListingItemObjects');
+        expect(result).hasOwnProperty('ListingItemObjects');
 
-        expect(resultPageOne).hasOwnProperty('ListingItem');
+        expect(result).hasOwnProperty('ListingItem');
     });
 
     test('Should get second item template by pagination', async () => {
-        searchItemTemplates.params[0] = 2;
-        const resPageSecond = await api('POST', '/api/rpc', {
-            body: searchItemTemplates
-        });
-        resPageSecond.expectJson();
-        resPageSecond.expectStatusCode(200);
-        resPageSecond.expectDataRpc(keys);
-        const resultPageSecond: any = resPageSecond.getBody()['result'];
-        expect(resultPageSecond.length).toBe(1);
+        const getDataRes: any = await rpc(method, [2, 1, 'ASC', profileId]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(1);
         // check itemInformation
-        expect(resultPageSecond[0]['ItemInformation'].title).toBe(secondItemInformation.params[1]);
-        expect(resultPageSecond[0]['ItemInformation'].shortDescription).toBe(secondItemInformation.params[2]);
-        expect(resultPageSecond[0]['ItemInformation'].longDescription).toBe(secondItemInformation.params[3]);
+        expect(result[0]['ItemInformation'].title).toBe(testDataListingItemTemplate2.itemInformation.title);
+        expect(result[0]['ItemInformation'].shortDescription).toBe(testDataListingItemTemplate2.itemInformation.shortDescription);
+        expect(result[0]['ItemInformation'].longDescription).toBe(testDataListingItemTemplate2.itemInformation.longDescription);
         // check profile
-        expect(resultPageSecond[0]['profileId']).toBe(secondItemInformation.params[0]);
+        expect(result[0]['profileId']).toBe(profileId);
         // check realted models
-        expect(resultPageSecond).hasOwnProperty('profile');
+        expect(result).hasOwnProperty('profile');
 
-        expect(resultPageSecond).hasOwnProperty('ItemInformation');
+        expect(result).hasOwnProperty('ItemInformation');
 
-        expect(resultPageSecond).hasOwnProperty('PaymentInformation');
+        expect(result).hasOwnProperty('PaymentInformation');
 
-        expect(resultPageSecond).hasOwnProperty('MessagingInformation');
+        expect(result).hasOwnProperty('MessagingInformation');
 
-        expect(resultPageSecond).hasOwnProperty('ListingItemObjects');
+        expect(result).hasOwnProperty('ListingItemObjects');
 
-        expect(resultPageSecond).hasOwnProperty('ListingItem');
+        expect(result).hasOwnProperty('ListingItem');
     });
 
     test('Should return empty listing items array if invalid pagination', async () => {
-        searchItemTemplates.params[1] = 2;
-        const resEmpty = await api('POST', '/api/rpc', {
-            body: searchItemTemplates
-        });
-        resEmpty.expectJson();
-        resEmpty.expectStatusCode(200);
-        const emptyResults: any = resEmpty.getBody()['result'];
+        const getDataRes: any = await rpc(method, [2, 2, 'ASC', profileId]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const emptyResults: any = getDataRes.getBody()['result'];
         expect(emptyResults.length).toBe(0);
     });
 
     test('Should search listing items by category key', async () => {
-        searchItemTemplates.params[0] = 1;
-        searchItemTemplates.params[1] = 2;
-        searchItemTemplates.params[4] = categoryKey;
-        const res = await api('POST', '/api/rpc', {
-            body: searchItemTemplates
-        });
-        res.expectJson();
-        res.expectStatusCode(200);
-        const searchResult: any = res.getBody()['result'];
-        const category = searchResult[0].ItemInformation.ItemCategory;
-        expect(searchResult.length).toBe(2);
+        const getDataRes: any = await rpc(method, [1, 2, 'ASC', profileId, 'cat_high_luxyry_items']);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        const category = result[0].ItemInformation.ItemCategory.key;
+        expect(result.length).toBe(2);
+        expect('cat_high_luxyry_items').toBe(result[0].ItemInformation.ItemCategory.key);
     });
 
     test('Should search listing items by category id', async () => {
-        searchItemTemplates.params[0] = 1;
-        searchItemTemplates.params[1] = 2;
-        searchItemTemplates.params[4] = categoryId;
-        const res = await api('POST', '/api/rpc', {
-            body: searchItemTemplates
-        });
-        res.expectJson();
-        res.expectStatusCode(200);
-        const searchResult: any = res.getBody()['result'];
-        expect(searchResult.length).toBe(2);
-        const category = searchResult[0].ItemInformation.itemCategoryId;
+        const getDataRes: any = await rpc(method, [1, 2, 'ASC', profileId, categoryId]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(2);
+        const category = result[0].ItemInformation.itemCategoryId;
         expect(category).toBe(categoryId);
     });
 
     test('Should search item templates by ItemInformation title', async () => {
-        searchItemTemplates.params[5] = firstItemInformation.params[1];
-        const res = await api('POST', '/api/rpc', {
-            body: searchItemTemplates
-        });
-        res.expectJson();
-        res.expectStatusCode(200);
-        const searchResult: any = res.getBody()['result'];
-
-        const ItemInformation = searchResult[0].ItemInformation;
-        expect(searchResult.length).toBe(1);
-        expect(firstItemInformation.params[1]).toBe(ItemInformation.title);
+        const getDataRes: any = await rpc(method, [1, 2, 'ASC', profileId, '', testDataListingItemTemplate1.itemInformation.title]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(testDataListingItemTemplate1.itemInformation.title).toBe(result[0].ItemInformation.title);
     });
 
     test('Should fail because we want to search without profileId', async () => {
-        searchItemTemplates.params[3] = '';
-        const res = await api('POST', '/api/rpc', {
-            body: searchItemTemplates
-        });
-        res.expectJson();
-        res.expectStatusCode(400);
+        const getDataRes: any = await rpc(method, [1, 2, 'ASC', '']);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(400);
     });
 });
-
-
-

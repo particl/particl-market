@@ -38,10 +38,11 @@ export class RpcItemInformationService {
 
     /**
      * data.params[]:
-     *  [0]: title
-     *  [1]: short-description
-     *  [2]: long-description
-     *  [3]: category
+     *  [0]: listing template id
+     *  [1]: title
+     *  [2]: short-description
+     *  [3]: long-description
+     *  [4]: category
      *
      * @param data
      * @returns {Promise<Profile>}
@@ -49,18 +50,19 @@ export class RpcItemInformationService {
     @validate()
     public async create( @request(RpcRequest) data: any): Promise<ItemInformation> {
         return this.itemInformationService.create({
-            title: data.params[0],
-            shortDescription: data.params[1],
-            longDescription: data.params[2],
+            listing_item_template_id: data.params[0],
+            title: data.params[1],
+            shortDescription: data.params[2],
+            longDescription: data.params[3],
             itemCategory: {
-                key: data.params[3]
+                key: data.params[4]
             }
         });
     }
 
     /**
      * data.params[]:
-     *  [0]: id
+     *  [0]: listing template id
      *  [1]: title
      *  [2]: short-description
      *  [3]: long-description
@@ -71,7 +73,8 @@ export class RpcItemInformationService {
      */
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<ItemInformation> {
-        return this.itemInformationService.updateWithCheckListingTemplate(data.params[0], {
+        return this.itemInformationService.updateWithCheckListingTemplate({
+            listing_item_template_id: data.params[0],
             title: data.params[1],
             shortDescription: data.params[2],
             longDescription: data.params[3],
