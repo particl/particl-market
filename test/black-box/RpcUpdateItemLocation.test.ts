@@ -42,6 +42,7 @@ describe('/updateItemLocation', () => {
     const testDataUpdated = ['NEWYARK', 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
 
     let createdTemplateId;
+    let createdItemInformationId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -51,7 +52,9 @@ describe('/updateItemLocation', () => {
 
         // create item template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        createdTemplateId = addListingItemTempRes.getBody()['result'].id;
+        const result: any = addListingItemTempRes.getBody()['result'];
+        createdTemplateId = result.id;
+        createdItemInformationId = result.ItemInformation.id;
         testDataUpdated.unshift(createdTemplateId);
 
     });
@@ -64,7 +67,7 @@ describe('/updateItemLocation', () => {
         const result: any = addDataRes.getBody()['result'];
         expect(result.region).toBe(testDataUpdated[1]);
         expect(result.address).toBe(testDataUpdated[2]);
-        expect(result.itemInformationId).toBe(testDataUpdated[0]);
+        expect(result.itemInformationId).toBe(createdItemInformationId);
         expect(result.LocationMarker.markerTitle).toBe(testDataUpdated[3]);
         expect(result.LocationMarker.markerText).toBe(testDataUpdated[4]);
         expect(result.LocationMarker.lat).toBe(testDataUpdated[5]);
@@ -81,7 +84,7 @@ describe('/updateItemLocation', () => {
 
         expect(result.region).toBe(testDataUpdated[1]);
         expect(result.address).toBe(testDataUpdated[2]);
-        // expect(result.itemInformationId).toBe(testDataUpdated[0]);
+        expect(result.itemInformationId).toBe(createdItemInformationId);
         expect(result.LocationMarker.markerTitle).toBe(null);
         expect(result.LocationMarker.markerText).toBe(null);
         expect(result.LocationMarker.lat).toBe(null);
@@ -121,15 +124,6 @@ describe('/updateItemLocation', () => {
         expect(addDataRes.error.error.success).toBe(false);
         expect(addDataRes.error.error.message).toBe('ItemLocation cannot be updated because the item has allready been posted!');
     });
-
-    // test('Should fail because we want to update without item template', async () => {
-    //     // remove item tempplate id
-    //     testDataUpdated.shift();
-
-    //     const addDataRes: any = await rpc(method, testDataUpdated);
-    //     addDataRes.expectJson();
-    //     addDataRes.expectStatusCode(404);
-    // });
 
 });
 
