@@ -40,6 +40,7 @@ describe('/removeItemImage', () => {
     let createdTemplateId;
     let createdItemInfoId;
     let createdItemImageId;
+    let createdItemImageIdNew;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -64,12 +65,17 @@ describe('/removeItemImage', () => {
         const result: any = addListingItemTempRes.getBody()['result'];
         const newCreatedTemplateId = result.id;
 
-        const addDataRes: any = await rpc(method, [newCreatedTemplateId]);
+        // add item image
+        const itemImageRes: any = await rpc('additemimage', [newCreatedTemplateId]);
+        itemImageRes.expectJson();
+        itemImageRes.expectStatusCode(200);
+        createdItemImageIdNew = itemImageRes.getBody()['result'].id;
+
+        const addDataRes: any = await rpc(method, [createdItemImageIdNew]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.message).toBe('Can\'t delete itemImage because the item has allready been posted!');
     });
-
     test('Should remove item images', async () => {
         // remove item image
         const addDataRes: any = await rpc(method, [createdItemImageId]);
@@ -83,11 +89,4 @@ describe('/removeItemImage', () => {
         addDataRes.expectStatusCode(404);
     });
 
-    test('Should get empty itemImages for the given ItemInformation because ItemImage already been removed!', async () => {
-        const res: any = await rpc('getiteminformation', [createdItemInfoId]);
-        const result: any = res.getBody()['result'];
-        res.expectJson();
-        res.expectStatusCode(200);
-        expect(result.ItemImages.length).toBe(0);
-    });
 });

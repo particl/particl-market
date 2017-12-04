@@ -50,13 +50,12 @@ describe('/addItemImage', () => {
 
     test('Should add item image for Item information with blank ItemImageData', async () => {
         // add item image
-        const addDataRes: any = await rpc(method, [createdTemplateId, 'HASH1']);
+        const addDataRes: any = await rpc(method, [createdTemplateId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         addDataRes.expectDataRpc(keys);
         const result: any = addDataRes.getBody()['result'];
         expect(createdItemInfoId).toBe(result.itemInformationId);
-        expect(result.hash).toBe('HASH1');
         expect(result.ItemImageData.dataId).toBe('');
         expect(result.ItemImageData.protocol).toBe('');
         expect(result.ItemImageData.encoding).toBe('');
@@ -64,23 +63,14 @@ describe('/addItemImage', () => {
         expect(result.ItemImageData.itemImageId).toBe(result.id);
     });
 
-    test('Should fail to add itemImage because empty itemImage hash', async () => {
-        // add item image
-        const addDataRes: any = await rpc(method, [createdTemplateId]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(400);
-        expect(addDataRes.error.error.message).toBe('Request body is not valid');
-    });
-
     test('Should add item image with ItemImageData', async () => {
         // add item image
-        const addDataRes: any = await rpc(method, [createdTemplateId, 'HASH1', 'TEST-DATA-ID', 'TEST-PROTOCOL', 'TEST-ENCODING', 'TEST-DATA']);
+        const addDataRes: any = await rpc(method, [createdTemplateId, 'TEST-DATA-ID', 'TEST-PROTOCOL', 'TEST-ENCODING', 'TEST-DATA']);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         addDataRes.expectDataRpc(keys);
         const result: any = addDataRes.getBody()['result'];
         expect(createdItemInfoId).toBe(result.itemInformationId);
-        expect(result.hash).toBe('HASH1');
         expect(result.ItemImageData.dataId).toBe('TEST-DATA-ID');
         expect(result.ItemImageData.protocol).toBe('TEST-PROTOCOL');
         expect(result.ItemImageData.encoding).toBe('TEST-ENCODING');

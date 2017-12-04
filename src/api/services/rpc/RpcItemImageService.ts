@@ -27,10 +27,10 @@ export class RpcItemImageService {
     /**
      * data.params[]:
      *  [0]: listing_item_template_id
-     *  [2]: dataId
-     *  [3]: protocol
-     *  [4]: encoding
-     *  [5]: data
+     *  [1]: dataId
+     *  [2]: protocol
+     *  [3]: encoding
+     *  [4]: data
      *
      * @param data
      * @returns {Promise<ItemImage>}
@@ -64,6 +64,16 @@ export class RpcItemImageService {
      */
     @validate()
     public async destroy( @request(RpcRequest) data: any): Promise<void> {
+        // find itemImage
+        const itemImage = await this.itemImageService.findOne(data.params[0]);
+
+        // find related itemInformation
+        const itemInformation = itemImage.related('ItemInformation').toJSON();
+
+        // check if item already been posted
+        if (itemInformation.listingItemId) {
+        throw new MessageException(`Can't delete itemImage because the item has allready been posted!`);
+        }
         return this.itemImageService.destroy(data.params[0]);
     }
 
