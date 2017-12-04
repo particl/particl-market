@@ -176,7 +176,7 @@ export class RpcController {
             // categories
             'getcategories': 'rpcItemCategoryService.findRoot',
             'getcategory': 'rpcItemCategoryService.findOne',
-            'findcategory': 'rpcItemCategoryService.findCategory',
+            'findcategory': 'rpcItemCategoryService.search',
 
             // favorite items
             'addfavorite': 'rpcFavoriteItemService.create',

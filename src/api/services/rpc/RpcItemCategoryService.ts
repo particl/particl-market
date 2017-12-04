@@ -102,7 +102,7 @@ export class RpcItemCategoryService {
      * @returns {Promise<Profile>}
      */
     @validate()
-    public async findCategory( @request(RpcRequest) data: any): Promise<ItemCategory> {
+    public async search( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemCategory>> {
         return await this.itemCategoryService.findByName(data.params[0]);
     }
 

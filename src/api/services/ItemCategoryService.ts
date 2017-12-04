@@ -44,7 +44,7 @@ export class ItemCategoryService {
         return await this.itemCategoryRepo.findRoot();
     }
 
-    public async findByName(name: string, withRelated: boolean = true): Promise<ItemCategory> {
+    public async findByName(name: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemCategory>> {
         return await this.itemCategoryRepo.findByName(name, withRelated);
     }
 
