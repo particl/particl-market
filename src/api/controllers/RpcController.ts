@@ -204,7 +204,7 @@ export class RpcController {
 
             // shippingDestination
             'addshippingdestination': 'rpcShippingDestinationService.create',
-            'removeshippingdestination': 'rpcShippingDestinationService.destroy'
+            'removeshippingdestination': 'rpcShippingDestinationService.destroy',
 
             // item location
             'updateitemlocation': 'rpcItemLocationService.update',
