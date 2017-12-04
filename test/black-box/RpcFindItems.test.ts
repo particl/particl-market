@@ -1,127 +1,237 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-
 import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
+import { PaymentType } from '../../src/api/enums/PaymentType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
-describe('FindItems', () => {
 
+describe('/FindItems', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = 'finditems';
 
-    const rootData = {
-        key: 'cat_ROOT',
-        name: 'ROOT',
-        description: 'root'
+    const testData = {
+        hash: 'hash1',
+        itemInformation: {
+            title: 'item title1',
+            shortDescription: 'item short desc1',
+            longDescription: 'item long desc1',
+            itemCategory: {
+                key: 'cat_high_luxyry_items'
+            },
+            itemLocation: {
+                region: Country.SOUTH_AFRICA,
+                address: 'asdf, asdf, asdf',
+                locationMarker: {
+                    markerTitle: 'Helsinki',
+                    markerText: 'Helsinki',
+                    lat: 12.1234,
+                    lng: 23.2314
+                }
+            },
+            shippingDestinations: [{
+                country: Country.UNITED_KINGDOM,
+                shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
+            }, {
+                country: Country.ASIA,
+                shippingAvailability: ShippingAvailability.SHIPS
+            }, {
+                country: Country.SOUTH_AFRICA,
+                shippingAvailability: ShippingAvailability.ASK
+            }],
+            itemImages: [{
+                hash: 'imagehash1',
+                data: {
+                    dataId: 'dataid1',
+                    protocol: ImageDataProtocolType.IPFS,
+                    encoding: null,
+                    data: null
+                }
+            }, {
+                hash: 'imagehash2',
+                data: {
+                    dataId: 'dataid2',
+                    protocol: ImageDataProtocolType.LOCAL,
+                    encoding: 'BASE64',
+                    data: 'BASE64 encoded image data'
+                }
+            }, {
+                hash: 'imagehash3',
+                data: {
+                    dataId: 'dataid3',
+                    protocol: ImageDataProtocolType.SMSG,
+                    encoding: null,
+                    data: 'smsgdata'
+                }
+            }]
+        },
+        paymentInformation: {
+            type: PaymentType.SALE,
+            escrow: {
+                type: EscrowType.MAD,
+                ratio: {
+                    buyer: 100,
+                    seller: 100
+                }
+            },
+            itemPrice: {
+                currency: Currency.BITCOIN,
+                basePrice: 0.0001,
+                shippingPrice: {
+                    domestic: 0.123,
+                    international: 1.234
+                },
+                address: {
+                    type: CryptocurrencyAddressType.NORMAL,
+                    address: '1234'
+                }
+            }
+        },
+        messagingInformation: {
+            protocol: MessagingProtocolType.SMSG,
+            publicKey: 'publickey1'
+        }
     };
 
-    const testCategoryData = {
-        key: 'cat_electronics',
-        name: 'Electronics and Technology',
-        description: 'Electronics and Technology description'
+    const testDataTwo = {
+        hash: 'hash2',
+        itemInformation: {
+            title: 'title UPDATED',
+            shortDescription: 'item UPDATED',
+            longDescription: 'item UPDATED',
+            itemCategory: {
+                key: 'cat_high_luxyry_items'
+            },
+            itemLocation: {
+                region: Country.FINLAND,
+                address: 'UPDATED',
+                locationMarker: {
+                    markerTitle: 'UPDATED',
+                    markerText: 'UPDATED',
+                    lat: 33.333,
+                    lng: 44.333
+                }
+            },
+            shippingDestinations: [{
+                country: Country.EU,
+                shippingAvailability: ShippingAvailability.SHIPS
+            }],
+            itemImages: [{
+                hash: 'imagehash1 UPDATED',
+                data: {
+                    dataId: 'dataid1 UPDATED',
+                    protocol: ImageDataProtocolType.IPFS,
+                    encoding: null,
+                    data: null
+                }
+            }]
+        },
+        paymentInformation: {
+            type: PaymentType.FREE,
+            escrow: {
+                type: EscrowType.MAD,
+                ratio: {
+                    buyer: 1,
+                    seller: 1
+                }
+            },
+            itemPrice: {
+                currency: Currency.PARTICL,
+                basePrice: 3.333,
+                shippingPrice: {
+                    domestic: 1.111,
+                    international: 2.222
+                },
+                address: {
+                    type: CryptocurrencyAddressType.STEALTH,
+                    address: 'UPDATED'
+                }
+            }
+        },
+        messagingInformation: {
+            protocol: MessagingProtocolType.SMSG,
+            publicKey: 'publickey1 UPDATED'
+        }
     };
 
-    let categories;
-
-    let testData;
-    let testDataTwo;
+    let createdHashFirst;
+    let createdHashSecond;
+    let categoryId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+        // create listing item
+        const addListingItem1: any = await testUtil.addData('listingitem', testData);
+        const addListingItem1Result = addListingItem1.getBody()['result'];
+        createdHashFirst = addListingItem1Result.hash;
+        categoryId = addListingItem1Result.ItemInformation.ItemCategory.id;
 
-        const listingItemTemplates = await testUtil.generateData('listingitem', 2);
-        testData = listingItemTemplates[0];
-        testDataTwo = listingItemTemplates[1];
-
-        // get categories
-        const res = await rpc('getcategories', []);
-        categories = res.getBody()['result'];
-
+        const addListingItem2: any = await testUtil.addData('listingitem', testDataTwo);
+        createdHashSecond = addListingItem2.getBody()['result'].hash;
     });
 
 
     test('Should get all listing items', async () => {
-
-        // [0]: page, number
-        // [1]: pageLimit, number
-        // [2]: order, SearchOrder
-        // [3]: category, number|string, if string, try to find using key, can be null
-        // [4]: searchString, string, can be null
-
-        const res = await rpc(method, [1, 2, 'ASC']);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
+        // get all listing items
+        const getDataRes: any = await rpc(method, [1, 2, 'ASC', '', '', true]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(testData.hash);
-        expect(result[1].hash).toBe(testDataTwo.hash);
-
+        expect(result[0].hash).toBe(createdHashFirst);
+        expect(result[1].hash).toBe(createdHashSecond);
     });
 
     test('Should get only first listing item by pagination', async () => {
-
-        const res = await rpc(method, [1, 1, 'ASC']);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
+        const getDataRes: any = await rpc(method, [1, 1, 'ASC']);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(testData.hash);
-
+        expect(result[0].hash).toBe(createdHashFirst);
     });
 
     test('Should get second listing item by pagination', async () => {
-
-        const res = await rpc(method, [2, 1, 'ASC']);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
+        const getDataRes: any = await rpc(method, [2, 1, 'ASC']);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(testDataTwo.hash);
-
+        expect(result[0].hash).toBe(createdHashSecond);
     });
 
     // TODO: maybe we should rather return an error?
     test('Should return empty listing items array if invalid pagination', async () => {
-
-        const res = await rpc(method, [2, 2, 'ASC']);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
+        const getDataRes: any = await rpc(method, [2, 2, 'ASC']);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(0);
     });
 
     test('Should search listing items by category key', async () => {
+        const getDataRes: any = await rpc(method, [1, 2, 'ASC', 'cat_high_luxyry_items', '', true]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(2);
 
-        const categoryKey = testData.ItemInformation.ItemCategory.key;
-
-        const res = await rpc(method, [1, 2, 'ASC', categoryKey]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBeGreaterThanOrEqual(1);
-
+        const category = result[0].ItemInformation.ItemCategory;
+        expect('cat_high_luxyry_items').toBe(category.key);
     });
 
     test('Should search listing items by category id', async () => {
-        const categoryId = testData.ItemInformation.ItemCategory.id;
-
-        const res = await rpc(method, [1, 2, 'ASC', categoryId]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result.length).toBeGreaterThanOrEqual(1);
+        const getDataRes: any = await rpc(method, [1, 2, 'ASC', categoryId, '', true]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(2);
+        const category = result[0].ItemInformation.ItemCategory;
+        expect(categoryId).toBe(category.id);
     });
 
     /**
@@ -136,17 +246,12 @@ describe('FindItems', () => {
      * ...search doesnt seem to be returning relations
      */
     test('Should search listing items by ItemInformation title', async () => {
-
-        const title = testData.ItemInformation.title;
-
-        const res = await rpc(method, [1, 2, 'ASC', null, title]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        console.log('result FIX THIS', result);
-
-        expect(result.length).toBeGreaterThanOrEqual(1);
-        expect(result[0].ItemInformation.title).toBe(testData.ItemInformation.title);
+        const getDataRes: any = await rpc(method, [1, 2, 'ASC', '', testData.itemInformation.title, true]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(testData.itemInformation.title).toBe(result[0].ItemInformation.title);
     });
 });
 

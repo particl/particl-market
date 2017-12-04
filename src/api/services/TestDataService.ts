@@ -25,6 +25,7 @@ import { DefaultItemCategoryService } from './DefaultItemCategoryService';
 import { DefaultProfileService } from './DefaultProfileService';
 import { ProfileService } from './ProfileService';
 import { ItemCategoryService } from './ItemCategoryService';
+import { FavoriteItemService } from './FavoriteItemService';
 
 export class TestDataService {
 
@@ -38,6 +39,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -82,6 +84,9 @@ export class TestDataService {
             }
             case 'itemcategory': {
                 return await this.itemCategoryService.create(body.data);
+            }
+            case 'favoriteitem': {
+                return await this.favoriteItemService.create(body.data);
             }
             default: {
                 throw new MessageException('Not implemented');

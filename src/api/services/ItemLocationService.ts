@@ -43,7 +43,7 @@ export class ItemLocationService {
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
-        const locationMarker = body.locationMarker;
+        const locationMarker = body.locationMarker || {};
         delete body.locationMarker;
 
         // If the request body was valid we will create the itemLocation
@@ -62,7 +62,6 @@ export class ItemLocationService {
     public async update(id: number, @request(ItemLocationUpdateRequest) data: any): Promise<ItemLocation> {
 
         const body = JSON.parse(JSON.stringify(data));
-
         // find the existing one without related
         const itemLocation = await this.findOne(id, false);
 

@@ -5,7 +5,7 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 
-describe('/RpcUpdateItemInformation', () => {
+describe('/UpdateItemInformation', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const method = 'updatepaymentinformation';
