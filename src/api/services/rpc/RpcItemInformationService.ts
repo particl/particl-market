@@ -29,7 +29,7 @@ export class RpcItemInformationService {
      * when data.params[0] is number then findById, else findOneByKey
      *
      * @param data
-     * @returns {Promise<Profile>}
+     * @returns {Promise<ItemInformation>}
      */
     @validate()
     public async findOne( @request(RpcRequest) data: any): Promise<ItemInformation> {
@@ -45,7 +45,7 @@ export class RpcItemInformationService {
      *  [4]: category
      *
      * @param data
-     * @returns {Promise<Profile>}
+     * @returns {Promise<ItemInformation>}
      */
     @validate()
     public async create( @request(RpcRequest) data: any): Promise<ItemInformation> {
@@ -69,7 +69,7 @@ export class RpcItemInformationService {
      *  [4]: category
      *
      * @param data
-     * @returns {Promise<Profile>}
+     * @returns {Promise<ItemInformation>}
      */
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<ItemInformation> {

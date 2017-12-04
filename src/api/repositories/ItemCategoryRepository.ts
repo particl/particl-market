@@ -34,6 +34,10 @@ export class ItemCategoryRepository {
         return await this.ItemCategoryModel.fetchRoot();
     }
 
+    public async findByName(name: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemCategory>> {
+        return this.ItemCategoryModel.fetchAllByName(name, withRelated);
+    }
+
     public async create(data: any): Promise<ItemCategory> {
         const itemCategory = this.ItemCategoryModel.forge<ItemCategory>(data);
         try {

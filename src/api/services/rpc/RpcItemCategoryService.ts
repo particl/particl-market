@@ -36,7 +36,7 @@ export class RpcItemCategoryService {
      * when data.params[0] is number then findById, else findOneByKey
      *
      * @param data
-     * @returns {Promise<Profile>}
+     * @returns {Promise<ItemCategory>}
      */
     @validate()
     public async findOne( @request(RpcRequest) data: any): Promise<ItemCategory> {
@@ -50,7 +50,7 @@ export class RpcItemCategoryService {
     /**
      *
      * @param data
-     * @returns {Promise<Profile>}
+     * @returns {Promise<ItemCategory>}
      */
     @validate()
     public async findRoot( @request(RpcRequest) data: any): Promise<ItemCategory> {
@@ -68,7 +68,7 @@ export class RpcItemCategoryService {
      *  todo: parent_item_category_id should not be null
      *
      * @param data
-     * @returns {Promise<Profile>}
+     * @returns {Promise<ItemCategory>}
      */
     @validate()
     public async create( @request(RpcRequest) data: any): Promise<ItemCategory> {
@@ -91,7 +91,7 @@ export class RpcItemCategoryService {
      *  [3]: parentItemCategoryId
      *
      * @param data
-     * @returns {Promise<Profile>}
+     * @returns {Promise<ItemCategory>}
      */
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<ItemCategory> {
@@ -110,13 +110,24 @@ export class RpcItemCategoryService {
     }
 
     /**
-     * remove user defined category
+     * data.params[]:
+     *  [0]: searchString, string, can be null
      *
+     * @param data
+     * @returns {Promise<ItemCategory>}
+     */
+    @validate()
+    public async search( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemCategory>> {
+        return await this.itemCategoryService.findByName(data.params[0]);
+    }
+
+    /**
+     * remove user defined category
      * data.params[]:
      *  [0]: category id
      *
      * @param data
-     * @returns {Promise<Profile>}
+     * @returns {Promise<ItemCategory>}
      */
     @validate()
     public async destroy( @request(RpcRequest) data: any): Promise<void> {

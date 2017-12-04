@@ -183,6 +183,7 @@ export class RpcController {
             'removecategory': 'rpcItemCategoryService.destroy',
             'getcategories': 'rpcItemCategoryService.findRoot',
             'getcategory': 'rpcItemCategoryService.findOne',
+            'findcategory': 'rpcItemCategoryService.search',
 
             // favorite items
             'addfavorite': 'rpcFavoriteItemService.create',
