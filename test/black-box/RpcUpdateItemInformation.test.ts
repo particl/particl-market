@@ -1,137 +1,66 @@
-import { api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { rpc, api } from './lib/api';
+import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 
 describe('/RpcUpdateItemInformation', () => {
+    const testUtil = new BlackBoxTestUtil();
+    const method = 'updateiteminformation';
 
-    const keys = [
-        'id', 'updatedAt', 'createdAt', 'title', 'shortDescription', 'longDescription' // , 'Related'
-    ];
-
-    const testDataIteminformation = {
-        method: 'createlistingitemtemplate',
-        params: [
-            0, 'Test Title', 'test short description', 'Long description', '0'
-        ],
-        jsonrpc: '2.0'
-    };
-
-    const testDataWithItemtemplates = {
+    const testDataListingItemTemplate = {
         profile_id: 0,
         itemInformation: {
-            title: 'Item Information with Templates',
-            shortDescription: 'Item short description with Templates',
-            longDescription: 'Item long description with Templates',
+            title: 'Item Information with Templates First',
+            shortDescription: 'Item short description with Templates First',
+            longDescription: 'Item long description with Templates First',
             itemCategory: {
-                key: '0'
+                key: 'cat_high_luxyry_items'
             }
         }
     };
+    let createdListingItemTemplateId;
+    let createdListingItemTemplateId2;
+    beforeAll(async () => {
+        await testUtil.cleanDb();
+        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME' });
+        const profileId = addProfileRes.getBody()['result'].id;
+        // create listing item
+        testDataListingItemTemplate.profile_id = profileId;
+        const addListingItemTemplate: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
+        const addListingItemTemplateResult = addListingItemTemplate.getBody()['result'];
+        createdListingItemTemplateId = addListingItemTemplateResult.id;
 
-    const testDataUpdate = {
-        method: 'updateiteminformation',
-        params: [
-            '0',
-            'Update Item Information',
-            'Update Item Short description',
-            'Update Item Long description',
-            '0'
-        ],
-        jsonrpc: '2.0'
-    };
+        const testDataListingItemTemplate2 = testDataListingItemTemplate;
+        delete testDataListingItemTemplate2.itemInformation;
+        const addListingItemTemplate2: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate2);
+        const addListingItemTemplateResult2 = addListingItemTemplate2.getBody()['result'];
+        createdListingItemTemplateId2 = addListingItemTemplateResult2.id;
+    });
 
     const testData = {
         title: 'Item Information',
         shortDescription: 'Item short description',
         longDescription: 'Item long description',
         itemCategory: {
-            key: '0'
+            key: 'cat_high_luxyry_items'
         }
     };
 
-    const rootData = {
-        key: 'cat_ROOT',
-        name: 'ROOT',
-        description: 'root'
-    };
-
-    const testDataCat = {
-        key: 'cat_electronics',
-        name: 'Electronics and Technology',
-        description: 'Electronics and Technology description'
-    };
-
-    beforeAll(async () => {
-        const command = new DatabaseResetCommand();
-        await command.run();
-    });
-
-    let catKey;
-    let catId;
     test('Should update Item Information by RPC', async () => {
-        // create root category
-        const res = await api('POST', '/api/item-categories', {
-            body: rootData
-        });
-        res.expectJson();
-        res.expectStatusCode(201);
-        const rootId = res.getData()['id'];
-
-        testDataCat['parentItemCategoryId'] = rootId;
-        // create category
-        const rescat = await api('POST', '/api/item-categories', {
-            body: testDataCat
-        });
-        rescat.expectJson();
-        rescat.expectStatusCode(201);
-        catId = rescat.getData()['id'];
-        catKey = rescat.getData()['key'];
-
-        testDataWithItemtemplates.itemInformation.itemCategory.key = catKey;
-        // create Item information with item-template
-        const resItemInformation = await api('POST', '/api/listing-item-templates', {
-            body: testDataWithItemtemplates
-        });
-        resItemInformation.expectJson();
-        resItemInformation.expectStatusCode(201);
-        // resItemInformation.expectData(keys);
-        const createdId = resItemInformation.getBody()['data']['ItemInformation']['id'];
-
-
         // update item information
-        testDataUpdate.params[0] = createdId;
-        testDataUpdate.params[4] = catKey;
-        const resUpdateItemInformation = await api('POST', '/api/rpc', {
-            body: testDataUpdate
-        });
-        resUpdateItemInformation.expectJson();
-        resUpdateItemInformation.expectStatusCode(200);
-        resUpdateItemInformation.expectDataRpc(keys);
-        const result: any = resUpdateItemInformation.getBody()['result'];
-        expect(result.title).toBe(testDataUpdate.params[1]);
-        expect(result.shortDescription).toBe(testDataUpdate.params[2]);
-        expect(result.longDescription).toBe(testDataUpdate.params[3]);
-        expect(result.ItemCategory.key).toBe(testDataUpdate.params[4]);
+        const getDataRes: any = await rpc(method, [createdListingItemTemplateId,
+            testData.title, testData.shortDescription, testData.longDescription, testData.itemCategory.key]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.title).toBe(testData.title);
+        expect(result.shortDescription).toBe(testData.shortDescription);
+        expect(result.longDescription).toBe(testData.longDescription);
+        expect(result.ItemCategory.key).toBe(testData.itemCategory.key);
     });
 
     test('Should fail update Item Information, item-information is not related with item-template', async () => {
-        testData.itemCategory.key = catKey;
-        // create Item information without item-template
-        const resItemInformation = await api('POST', '/api/item-informations', {
-            body: testData
-        });
-        resItemInformation.expectJson();
-        resItemInformation.expectStatusCode(201);
-        resItemInformation.expectData(keys);
-        const createdId = resItemInformation.getData()['id'];
-
-        // update item information
-        testDataUpdate.params[0] = createdId;
-        testDataUpdate.params[4] = catKey;
-        const resUpdateItemInformation = await api('POST', '/api/rpc', {
-            body: testDataUpdate
-        });
-        const result: any = resUpdateItemInformation;
-        resUpdateItemInformation.expectJson();
-        resUpdateItemInformation.expectStatusCode(404);
+        const getDataRes: any = await rpc(method, [createdListingItemTemplateId2,
+            testData.title, testData.shortDescription, testData.longDescription, testData.itemCategory.key]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(404);
     });
 });
