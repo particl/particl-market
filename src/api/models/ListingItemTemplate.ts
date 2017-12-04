@@ -47,9 +47,13 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                     qb.where('item_categories.key', '=', options.category);
                     qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
                 }
+                if (options.profileId) {
+                    qb.where('profile_id', '=', options.profileId);
+                }
                 qb.innerJoin('item_informations', 'item_informations.listing_item_template_id', 'listing_item_templates.id');
-                qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
-                qb.where('profile_id', '=', options.profileId);
+                if (options.searchString) {
+                    qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
+                }
             })
             .orderBy('item_informations.title', options.order).query({
                 limit: options.pageLimit,
