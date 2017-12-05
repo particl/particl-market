@@ -7,6 +7,7 @@ import { ListingItemObject } from './ListingItemObject';
 import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
 import { FavoriteItem } from './FavoriteItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
+import { Bid } from './Bid';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -190,4 +191,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public ListingItemTemplate(): ListingItemTemplate {
         return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
     }
+
+    public Bids(): Collection<Bid> {
+        return this.hasMany(Bid, 'listing_item_id', 'id');
+    }
+
 }

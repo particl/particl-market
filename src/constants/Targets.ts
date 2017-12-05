@@ -11,6 +11,7 @@
 export const Targets = {
     Model:     {
         Address: 'Address',
+        Bid: 'Bid',
         CryptocurrencyAddress: 'CryptocurrencyAddress',
         Escrow: 'Escrow',
         EscrowRatio: 'EscrowRatio',
@@ -34,6 +35,7 @@ export const Targets = {
     },
     Repository:     {
         AddressRepository: 'AddressRepository',
+        BidRepository: 'BidRepository',
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
         EscrowRepository: 'EscrowRepository',
@@ -57,6 +59,7 @@ export const Targets = {
     },
     Service:     {
         AddressService: 'AddressService',
+        BidService: 'BidService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultProfileService: 'DefaultProfileService',
@@ -83,14 +86,13 @@ export const Targets = {
             RpcEscrowService: 'RpcEscrowService',
             RpcFavoriteItemService: 'RpcFavoriteItemService',
             RpcItemCategoryService: 'RpcItemCategoryService',
+            RpcItemImageService: 'RpcItemImageService',
             RpcItemInformationService: 'RpcItemInformationService',
             RpcItemLocationService: 'RpcItemLocationService',
             RpcListingItemService: 'RpcListingItemService',
             RpcListingItemTemplateService: 'RpcListingItemTemplateService',
             RpcPaymentInformationService: 'RpcPaymentInformationService',
             RpcProfileService: 'RpcProfileService',
-            RpcTestDataService: 'RpcTestDataService',
-            RpcItemImageService: 'RpcItemImageService',
             RpcShippingDestinationService: 'RpcShippingDestinationService',
             RpcTestDataService: 'RpcTestDataService'
         },
@@ -114,6 +116,7 @@ export const Targets = {
     },
     Controller:     {
         AddressController: 'AddressController',
+        BidController: 'BidController',
         CryptocurrencyAddressController: 'CryptocurrencyAddressController',
         EscrowController: 'EscrowController',
         EscrowRatioController: 'EscrowRatioController',
