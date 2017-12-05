@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface ShippingDestination {
-        id: int;
+        id: number;
         country: string;
         shippingAvailability: string;
         createdAt: Date;

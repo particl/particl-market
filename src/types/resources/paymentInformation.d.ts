@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface PaymentInformation {
-        id: int;
+        id: number;
         type: string;
         createdAt: Date;
         updatedAt: Date;

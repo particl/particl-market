@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface ItemImageData {
-        id: int;
+        id: number;
         dataId: string;
         protocol: string;
         encoding: string;

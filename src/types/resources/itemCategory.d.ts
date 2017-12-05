@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface ItemCategory {
-        id: int;
+        id: number;
         key: string;
         name: string;
         description: string;

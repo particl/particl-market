@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface ListingItem {
-        id: int;
+        id: number;
         hash: string;
         createdAt: Date;
         updatedAt: Date;

@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface Address {
-        id: int;
+        id: number;
         createdAt: Date;
         updatedAt: Date;
     }

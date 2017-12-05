@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface ShippingPrice {
-        id: int;
+        id: number;
         domestic: number;
         international: number;
         createdAt: Date;

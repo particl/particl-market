@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface ItemInformation {
-        id: int;
+        id: number;
         title: string;
         shortDescription: string;
         longDescription: string;

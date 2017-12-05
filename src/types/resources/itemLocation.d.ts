@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface ItemLocation {
-        id: int;
+        id: number;
         region: string;
         address: string;
         createdAt: Date;

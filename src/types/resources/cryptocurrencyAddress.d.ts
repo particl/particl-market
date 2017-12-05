@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface CryptocurrencyAddress {
-        id: int;
+        id: number;
         type: string;
         address: string;
         createdAt: Date;

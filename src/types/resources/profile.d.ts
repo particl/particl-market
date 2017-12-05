@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface Profile {
-        id: int;
+        id: number;
         createdAt: Date;
         updatedAt: Date;
     }

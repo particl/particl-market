@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface EscrowRatio {
-        id: int;
+        id: number;
         buyer: number;
         seller: number;
         createdAt: Date;

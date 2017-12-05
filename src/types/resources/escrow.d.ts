@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface Escrow {
-        id: int;
+        id: number;
         type: string;
         createdAt: Date;
         updatedAt: Date;

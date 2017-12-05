@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface ItemPrice {
-        id: int;
+        id: number;
         currency: string;
         basePrice: number;
         createdAt: Date;

@@ -1,7 +1,7 @@
 declare module 'resources' {
 
     interface LocationMarker {
-        id: int;
+        id: number;
         markerTitle: string;
         markerText: string;
         lat: number;
