@@ -14,6 +14,7 @@ import { Country } from '../../src/api/enums/Country';
 import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
 
 describe('ShippingDestination', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

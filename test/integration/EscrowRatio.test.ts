@@ -12,6 +12,7 @@ import { EscrowRatio } from '../../src/api/models/EscrowRatio';
 import { EscrowRatioService } from '../../src/api/services/EscrowRatioService';
 
 describe('EscrowRatio', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

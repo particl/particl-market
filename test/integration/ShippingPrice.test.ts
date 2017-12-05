@@ -12,6 +12,7 @@ import { ShippingPrice } from '../../src/api/models/ShippingPrice';
 import { ShippingPriceService } from '../../src/api/services/ShippingPriceService';
 
 describe('ShippingPrice', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

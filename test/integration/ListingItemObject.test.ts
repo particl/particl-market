@@ -13,6 +13,7 @@ import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType
 import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
 
 describe('ListingItemObject', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
