@@ -1,6 +1,7 @@
 import { Bookshelf } from '../../config/Database';
 // import { Collection } from 'bookshelf';
 import { ItemImageData } from './ItemImageData';
+import { ItemInformation } from './ItemInformation';
 
 export class ItemImage extends Bookshelf.Model<ItemImage> {
 
@@ -9,7 +10,8 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
             return await ItemImage.where<ItemImage>({ id: value }).fetch({
                 withRelated: [
 //                    'ItemImageDatas'
-                    'ItemImageData'
+                    'ItemImageData',
+                    'ItemInformation'
                 ]
             });
         } else {
@@ -35,6 +37,11 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
     public ItemImageData(): ItemImageData {
         return this.hasOne(ItemImageData);
     }
+
+    public ItemInformation(): ItemInformation {
+      return this.belongsTo(ItemInformation, 'item_information_id', 'id');
+    }
+
 
     // TODO: hasMany
     /*
