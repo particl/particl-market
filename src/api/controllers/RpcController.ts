@@ -31,6 +31,7 @@ import { RpcTestDataService } from '../services/rpc/RpcTestDataService';
 import { RpcItemImageService } from '../services/rpc/RpcItemImageService';
 import { RpcShippingDestinationService } from '../services/rpc/RpcShippingDestinationService';
 import { RpcItemLocationService } from '../services/rpc/RpcItemLocationService';
+import { RpcMessagingInformationService } from '../services/rpc/RpcMessagingInformationService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -73,6 +74,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemImageService) private rpcItemImageService: RpcItemImageService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcShippingDestinationService) private rpcShippingDestinationService: RpcShippingDestinationService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemLocationService) private rpcItemLocationService: RpcItemLocationService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcMessagingInformationService) private rpcMesInfoService: RpcMessagingInformationService,
 
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -214,7 +216,10 @@ export class RpcController {
 
             // item location
             'updateitemlocation': 'rpcItemLocationService.update',
-            'removeitemlocation': 'rpcItemLocationService.destroy'
+            'removeitemlocation': 'rpcItemLocationService.destroy',
+
+            // message infoprmation
+            'updatemessaginginformation' : 'rpcMesInfoService.update'
 
         };
     }
