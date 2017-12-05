@@ -7,6 +7,8 @@ You need to set up your development environment before you can do anything.
 Install [Node.js and NPM](https://nodejs.org/en/download/)
 * on OSX use [homebrew](http://brew.sh) `brew install node`
 * on Windows use [chocolatey](https://chocolatey.org/) `choco install nodejs`
+* on Linux (Ubuntu) use `curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -`<br/>
+`sudo apt-get install -y nodejs`
 
 Install yarn globally
 ```
