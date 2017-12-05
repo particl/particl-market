@@ -49,14 +49,15 @@ describe('Address', () => {
         addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
 
         // clean up the db
-        await testDataService.clean([]);
+        return await testDataService.clean([]);
     });
-
+/*
     afterAll(async () => {
         //
         // log.info('afterAll');
+        return;
     });
-
+*/
     test('Should throw ValidationException because there is no profile_id', async () => {
         expect.assertions(1);
         await addressService.create(testDataUpdated).catch(e =>
