@@ -12,6 +12,7 @@ import { ItemCategory } from '../../src/api/models/ItemCategory';
 import { ItemCategoryService } from '../../src/api/services/ItemCategoryService';
 
 describe('ItemCategory', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

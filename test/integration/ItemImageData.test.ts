@@ -13,6 +13,7 @@ import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType
 import { ItemImageDataService } from '../../src/api/services/ItemImageDataService';
 
 describe('ItemImageData', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

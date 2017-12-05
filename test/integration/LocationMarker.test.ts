@@ -12,6 +12,7 @@ import { LocationMarker } from '../../src/api/models/LocationMarker';
 import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
 
 describe('LocationMarker', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

@@ -9,8 +9,7 @@ import { ProfileService } from '../../src/api/services/ProfileService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 
 describe('TestDataService', () => {
-
-    // jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
