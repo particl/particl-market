@@ -13,6 +13,7 @@ import { Country } from '../../src/api/enums/Country';
 import { ItemLocationService } from '../../src/api/services/ItemLocationService';
 
 describe('ItemLocation', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

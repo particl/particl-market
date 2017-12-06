@@ -13,8 +13,7 @@ import { Address } from '../../src/api/models/Address';
 import { AddressService } from '../../src/api/services/AddressService';
 
 describe('Address', () => {
-
-    // jasmine.DEFAULT_TIMEOUT_INTERVAL = 60000;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
@@ -49,14 +48,15 @@ describe('Address', () => {
         addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
 
         // clean up the db
-        await testDataService.clean([]);
+        return await testDataService.clean([]);
     });
-
+/*
     afterAll(async () => {
         //
         // log.info('afterAll');
+        return;
     });
-
+*/
     test('Should throw ValidationException because there is no profile_id', async () => {
         expect.assertions(1);
         await addressService.create(testDataUpdated).catch(e =>

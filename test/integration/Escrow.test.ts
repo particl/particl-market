@@ -13,6 +13,7 @@ import { EscrowType } from '../../src/api/enums/EscrowType';
 import { EscrowService } from '../../src/api/services/EscrowService';
 
 describe('Escrow', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

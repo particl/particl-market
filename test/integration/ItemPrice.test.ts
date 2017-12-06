@@ -14,6 +14,7 @@ import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAdd
 import { ItemPriceService } from '../../src/api/services/ItemPriceService';
 
 describe('ItemPrice', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

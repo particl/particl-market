@@ -13,6 +13,7 @@ import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType
 import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
 
 describe('MessagingInformation', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

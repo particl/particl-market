@@ -20,6 +20,7 @@ import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 
 describe('ListingItem', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

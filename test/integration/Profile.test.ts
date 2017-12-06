@@ -14,6 +14,7 @@ import { ProfileService } from '../../src/api/services/ProfileService';
 import { AddressService } from '../../src/api/services/AddressService';
 
 describe('Profile', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
