@@ -100,6 +100,7 @@ export const Targets = {
         UserService: 'UserService'
     },
     Command:     {
+        TestCommand: 'TestCommand'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
