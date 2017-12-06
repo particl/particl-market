@@ -7,6 +7,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.increments('id').primary();
             table.string('hash').notNullable().unique();
+            table.string('market_id').notNullable();
 
             table.integer('listing_item_template_id').unsigned().nullable();
             table.foreign('listing_item_template_id').references('id')

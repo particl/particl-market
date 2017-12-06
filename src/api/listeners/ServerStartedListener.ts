@@ -3,6 +3,7 @@ import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
 import { DefaultItemCategoryService } from '../services/DefaultItemCategoryService';
 import { DefaultProfileService } from '../services/DefaultProfileService';
+import { DefaultMarketService } from '../services/DefaultMarketService';
 import { EventEmitter, events } from '../../core/api/events';
 
 export class ServerStartedListener implements interfaces.Listener {
@@ -16,6 +17,7 @@ export class ServerStartedListener implements interfaces.Listener {
         // @inject(Types.Core) @named(Core.Events) public events: EventEmitter,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
+        @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -29,6 +31,9 @@ export class ServerStartedListener implements interfaces.Listener {
      */
     public async act(payload: any): Promise<any> {
         this.log.info('Receive event ServerStartedListenerEvent', payload);
+
+        // seed the default market
+        await this.defaultMarketService.seedDefaultMarket();
 
         // seed the default categories
         await this.defaultItemCategoryService.seedDefaultCategories();
