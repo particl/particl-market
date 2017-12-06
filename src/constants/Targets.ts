@@ -104,6 +104,12 @@ export const Targets = {
         TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
+    Command:     {
+        TestCommand: 'TestCommand'
+    },
+    Factory:     {
+        TestFactory: 'TestFactory'
+    },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
         PopulateUserMiddleware: 'PopulateUserMiddleware',

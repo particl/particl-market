@@ -1,0 +1,21 @@
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../{{deepness}}core/Logger';
+import { Types, Core, Targets } from '../../{{deepness}}constants';
+
+export class {{name.capitalize}}Factory {
+
+    public log: LoggerType;
+    private let {{name.camelCase}}s;
+
+    constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+    ) {
+        this.log = new Logger(__filename);
+        this.{{name.camelCase}}s.push(some{{name.capitalize}});
+    }
+
+    public get(): {{name.capitalize}} {
+        // TODO: return the correct one from {{name.camelCase}}s
+    }
+
+}

@@ -42,7 +42,9 @@ figlet('console', (error: any, data: any) => {
             }));
 
         const commands = files.map(f => require(f.path)[f.name]);
-        const keys = commands.map(c => c.command);
+        const keys = commands.map(c => {
+            return c.command;
+        });
         const key = process.argv[2];
 
         if (keys.indexOf(key) < 0 && key !== '--help') {
