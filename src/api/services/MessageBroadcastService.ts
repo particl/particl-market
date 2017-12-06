@@ -3,7 +3,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 
 
-export class MessageBroadcastServiceService {
+export class MessageBroadcastService {
 
     public log: LoggerType;
 
