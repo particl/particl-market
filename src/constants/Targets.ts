@@ -83,24 +83,23 @@ export const Targets = {
             RpcEscrowService: 'RpcEscrowService',
             RpcFavoriteItemService: 'RpcFavoriteItemService',
             RpcItemCategoryService: 'RpcItemCategoryService',
+            RpcItemImageService: 'RpcItemImageService',
             RpcItemInformationService: 'RpcItemInformationService',
             RpcItemLocationService: 'RpcItemLocationService',
             RpcListingItemService: 'RpcListingItemService',
             RpcListingItemTemplateService: 'RpcListingItemTemplateService',
+            RpcMessagingInformationService: 'RpcMessagingInformationService',
             RpcPaymentInformationService: 'RpcPaymentInformationService',
             RpcProfileService: 'RpcProfileService',
-            RpcTestDataService: 'RpcTestDataService',
-            RpcItemImageService: 'RpcItemImageService',
             RpcShippingDestinationService: 'RpcShippingDestinationService',
-            RpcMessagingInformationService: 'RpcMessagingInformationService'
+            RpcTestDataService: 'RpcTestDataService'
         },
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
         TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
-    RpcCommand:     {
-        FavoriteRpcCommand: 'FavoriteRpcCommand'
+    Command:     {
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',

@@ -12,7 +12,7 @@ export class {{name.capitalize}}Command {
 
     public log: LoggerType;
 
-    {{#if isResourceTemplate}}constructor(
+    constructor(
         @inject(Types.Service) @named(Targets.Service.{{name.capitalize}}Service) public {{name.camelCase}}Service: {{name.capitalize}}Service,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {

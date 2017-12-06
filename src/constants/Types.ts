@@ -14,7 +14,7 @@ export const Types = {
     Core: Symbol('Core'),
     Model: Symbol('Model'),
     Service: Symbol('Service'),
-    RpcCommand: Symbol('RpcCommand'),
+    Command: Symbol('Command'),
     Listener: Symbol('Listener'),
     Repository: Symbol('Repository'),
     Middleware: Symbol('Middleware')

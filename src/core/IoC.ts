@@ -52,8 +52,8 @@ export class IoC {
         await this.bindRepositories();
         this.log.info('binding services');
         await this.bindServices();
-        this.log.info('binding rpc commands');
-        await this.bindRpcCommands();
+        this.log.info('binding commands');
+        await this.bindCommands();
         await this.bindListeners();
 
         if (!Environment.isTest()) {
@@ -95,11 +95,11 @@ export class IoC {
             (name: any, value: any) => this.bindFile(Types.Service, name, value));
     }
 
-    private bindRpcCommands(): Promise<void> {
+    private bindCommands(): Promise<void> {
         return this.bindFiles(
-            '/commands/**/*RpcCommand.ts',
-            Targets.RpcCommand,
-            (name: any, value: any) => this.bindFile(Types.RpcCommand, name, value));
+            '/commands/**/*Command.ts',
+            Targets.Command,
+            (name: any, value: any) => this.bindFile(Types.Command, name, value));
     }
 
     private bindMiddlewares(): Promise<void> {
