@@ -98,6 +98,8 @@ All the templates for the commands are located in `src/console/templates`.
 * `npm run console make:resource` - Generates a controller, service, requests, repo, model and a migration with CRUD operations.
 * `npm run console make:controller` - Generates a controller.
 * `npm run console make:service` - Generates a service.
+* `npm run console make:command` - Generates a command.
+* `npm run console make:factory` - Generates a factory.
 * `npm run console make:repo` - Generates a repository.
 * `npm run console make:model` - Generates a model with the props and configurations.
 * `npm run console make:middleware` - Generates a basic middleware.
@@ -147,8 +149,10 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 | **.vscode/**                    | VSCode tasks, launch configuration and some other settings |
 | **dist/**                       | Compiled source files will be placed here |
 | **src/**                        | Source files |
+| **src/api/controllers/**        | RPC Commands |
 | **src/api/controllers/**        | REST API Controllers |
 | **src/api/exceptions/**         | Exceptions like 404 NotFound |
+| **src/api/factories/**          | Factories |
 | **src/api/listeners/**          | Event listeners |
 | **src/api/middlewares/**        | Express Middlewares like populateUser |
 | **src/api/models/**             | Bookshelf Models |
