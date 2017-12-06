@@ -52,6 +52,8 @@ export class IoC {
         await this.bindRepositories();
         this.log.info('binding services');
         await this.bindServices();
+        this.log.info('binding commands');
+        await this.bindCommands();
         await this.bindListeners();
 
         if (!Environment.isTest()) {
@@ -91,6 +93,13 @@ export class IoC {
             '/services/**/*Service.ts',
             Targets.Service,
             (name: any, value: any) => this.bindFile(Types.Service, name, value));
+    }
+
+    private bindCommands(): Promise<void> {
+        return this.bindFiles(
+            '/commands/**/*Command.ts',
+            Targets.Command,
+            (name: any, value: any) => this.bindFile(Types.Command, name, value));
     }
 
     private bindMiddlewares(): Promise<void> {

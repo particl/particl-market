@@ -99,6 +99,9 @@ export const Targets = {
         TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
+    Command:     {
+        FavoriteCommand: 'FavoriteCommand'
+    },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
         PopulateUserMiddleware: 'PopulateUserMiddleware',
