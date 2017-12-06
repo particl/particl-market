@@ -58,10 +58,15 @@ export class AbstractMakeCommand {
     }
 
     public async write(): Promise<void> {
+        console.log('write');
         const filePath = this.buildFilePath(this.target, this.context.name, this.isTest);
+        console.log('filePath: ', filePath);
         await existsFile(filePath, true, this.isTest);
+        console.log('existsFile');
         this.context.name = parseName(this.context.name, this.suffix);
+        console.log('this.context.name: ', this.context.name);
         await writeTemplate(this.template, filePath, this.context);
+        console.log('writeTemplate');
     }
 
     public buildFilePath = (targetPath: string, fileName: string, isTest = false, extension = '.ts') => {

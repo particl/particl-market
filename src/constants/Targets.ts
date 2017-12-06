@@ -99,8 +99,8 @@ export const Targets = {
         TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
-    Command:     {
-        FavoriteCommand: 'FavoriteCommand'
+    RpcCommand:     {
+        FavoriteRpcCommand: 'FavoriteRpcCommand'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',

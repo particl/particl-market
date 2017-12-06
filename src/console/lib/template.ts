@@ -20,7 +20,10 @@ export const loadTemplate = async (file: string, stop: boolean = false): Promise
 };
 
 export const writeTemplate = async (tempFile: string, filePath: string, context: any): Promise<any> => {
+    console.log('filePath: ', filePath);
     await syncFolder(filePath);
+    console.log('syncFolder ');
+    console.log('tempFile: ', tempFile);
     await syncTemplate(filePath, tempFile, context);
     console.log('File created in: ' + filePath);
 };
@@ -42,7 +45,9 @@ const syncFolder = (filePath: string) => {
 
 const syncTemplate = async (filePath: string, tempFile: string, context: any) => {
     const template = await loadTemplate(tempFile);
+    console.log('template: ', template);
     const content = handlebars.compile(template)(context);
+    console.log('content: ', content);
     return new Promise((resolve, reject) => {
         fs.writeFile(filePath, content, (err: any) => {
             if (err) {

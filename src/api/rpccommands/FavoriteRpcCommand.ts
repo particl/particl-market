@@ -7,7 +7,7 @@ import { FavoriteItemService } from '../services/FavoriteItemService';
 import { RpcRequest } from '../requests/RpcRequest';
 import { FavoriteItem } from '../models/FavoriteItem';
 
-export class FavoriteCommand {
+export class FavoriteRpcCommand {
 
     public log: LoggerType;
 
