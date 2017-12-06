@@ -73,7 +73,7 @@ export const Targets = {
         ListingItemService: 'ListingItemService',
         ListingItemTemplateService: 'ListingItemTemplateService',
         LocationMarkerService: 'LocationMarkerService',
-        MessageBroadcastServiceService: 'MessageBroadcastServiceService',
+        MessageBroadcastService: 'MessageBroadcastService',
         MessagingInformationService: 'MessagingInformationService',
         PaymentInformationService: 'PaymentInformationService',
         ProfileService: 'ProfileService',
