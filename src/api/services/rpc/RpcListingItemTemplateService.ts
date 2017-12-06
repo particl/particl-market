@@ -83,7 +83,8 @@ export class RpcListingItemTemplateService {
                             address: data.params[10]
                         }
                     }
-                }
+                },
+                messagingInformation: {}
             });
         } else {
             return this.listingItemTemplateService.create({
