@@ -102,6 +102,8 @@ export const Targets = {
     Command:     {
         TestCommand: 'TestCommand'
     },
+    Factory:     {
+    },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
         PopulateUserMiddleware: 'PopulateUserMiddleware',

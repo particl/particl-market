@@ -1,5 +1,5 @@
 /**
- * MakeRpcCommandCommand
+ * MakeCommandCommand
  * -------------------------------------
  *
  */
