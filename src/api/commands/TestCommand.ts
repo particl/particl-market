@@ -3,9 +3,9 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { TestService } from '../repositories/TestService';
+import { FavoriteItemService } from '../services/FavoriteItemService';
 import { RpcRequest } from '../requests/RpcRequest';
-import { Test } from '../models/Test';
+import { FavoriteItem } from '../models/FavoriteItem';
 
 
 export class TestCommand {
@@ -13,15 +13,15 @@ export class TestCommand {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.TestService) public testService: TestService,
+        @inject(Types.Service) @named(Targets.Service.FavoriteItemService) public favoriteItemService: FavoriteItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Test>> {
-        return this.testService.findAll();
+    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
+        return this.favoriteItemService.findAll();
     }
 
 }
