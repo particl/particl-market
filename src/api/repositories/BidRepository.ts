@@ -5,6 +5,7 @@ import { Bid } from '../models/Bid';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { BidSearchParams } from '../requests/BidSearchParams';
 
 export class BidRepository {
 
@@ -24,6 +25,16 @@ export class BidRepository {
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Bid> {
         return this.BidModel.fetchById(id, withRelated);
+    }
+
+    /**
+     * todo: optionally fetch withRelated
+     *
+     * @param options, BidSearchParams
+     * @returns {Promise<Bookshelf.Collection<Bid>>}
+     */
+    public async search(options: BidSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Bid>> {
+        return this.BidModel.search(options, withRelated);
     }
 
     public async create(data: any): Promise<Bid> {

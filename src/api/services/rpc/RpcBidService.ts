@@ -20,20 +20,19 @@ export class RpcBidService {
 
     /**
      * data.params[]:
-     *  [0]: page, number
-     *  [1]: pageLimit, number
-     *  [2]: order, SearchOrder
-     *  [3]: category, number|string, if string, try to find using key, can be null
-     *  [4]: searchString, string, can be null
+     * [0]: status, string
+     * [1]: listingItemId, number
+     * [2]: profileId, number
      *
      * @param data
-     * @returns {Promise<Bid>}
+     * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     @validate()
     public async search( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Bid>> {
         return this.bidService.search({
-            listingItemId: data.params[0],
-            profileId: data.params[1]
+            status: data.params[0],
+            listingItemId: data.params[1],
+            profileId: data.params[2]
         } as BidSearchParams);
     }
 }

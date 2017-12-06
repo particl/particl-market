@@ -12,6 +12,7 @@ import { BidData } from '../../src/api/models/BidData';
 import { BidDataService } from '../../src/api/services/BidDataService';
 
 describe('BidData', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

@@ -13,6 +13,7 @@ import { BidService } from '../../src/api/services/BidService';
 import { BidStatus } from '../../src/api/enums/BidStatus';
 
 describe('Bid', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
@@ -23,7 +24,7 @@ describe('Bid', () => {
     let createdId;
 
     const testData = {
-        status: BidStatus.NEW,
+        status: BidStatus.ACTIVE,
         listing_item_id: null
     };
 

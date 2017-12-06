@@ -8,6 +8,9 @@ import { BidRepository } from '../repositories/BidRepository';
 import { Bid } from '../models/Bid';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
+import { BidSearchParams } from '../requests/BidSearchParams';
+import { BidStatus } from '../enums/BidStatus';
+
 
 export class BidService {
 
@@ -31,6 +34,19 @@ export class BidService {
             throw new NotFoundException(id);
         }
         return bid;
+    }
+
+    /**
+     * search Bid using given BidSearchParams
+     *
+     * @param options
+     * @returns {Promise<Bookshelf.Collection<Bid>>}
+     */
+    @validate()
+    public async search(
+        @request(BidSearchParams) options: BidSearchParams,
+        withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+        return this.bidRepo.search(options, withRelated);
     }
 
     @validate()
@@ -59,7 +75,10 @@ export class BidService {
         const bid = await this.findOne(id, false);
 
         // set new values
-        bid.Status = body.status;
+        if (BidStatus[body.status]) {
+            bid.Status = BidStatus[body.status];
+        }
+
         // update bid record
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());
 
