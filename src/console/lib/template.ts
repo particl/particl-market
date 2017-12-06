@@ -22,7 +22,6 @@ export const loadTemplate = async (file: string, stop: boolean = false): Promise
 export const writeTemplate = async (tempFile: string, filePath: string, context: any): Promise<any> => {
     await syncFolder(filePath);
     await syncTemplate(filePath, tempFile, context);
-    console.log('File created in: ' + filePath);
 };
 
 const syncFolder = (filePath: string) => {
