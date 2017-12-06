@@ -11,6 +11,8 @@
 export const Targets = {
     Model:     {
         Address: 'Address',
+        Bid: 'Bid',
+        BidData: 'BidData',
         CryptocurrencyAddress: 'CryptocurrencyAddress',
         Escrow: 'Escrow',
         EscrowRatio: 'EscrowRatio',
@@ -35,6 +37,8 @@ export const Targets = {
     },
     Repository:     {
         AddressRepository: 'AddressRepository',
+        BidDataRepository: 'BidDataRepository',
+        BidRepository: 'BidRepository',
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
         EscrowRepository: 'EscrowRepository',
@@ -59,6 +63,8 @@ export const Targets = {
     },
     Service:     {
         AddressService: 'AddressService',
+        BidDataService: 'BidDataService',
+        BidService: 'BidService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultProfileService: 'DefaultProfileService',
@@ -96,8 +102,9 @@ export const Targets = {
             RpcPaymentInformationService: 'RpcPaymentInformationService',
             RpcProfileService: 'RpcProfileService',
             RpcShippingDestinationService: 'RpcShippingDestinationService',
+            RpcTestDataService: 'RpcTestDataService',
+            RpcBidService: 'RpcBidService'
             RpcMarketService: 'RpcMarketService',
-            RpcTestDataService: 'RpcTestDataService'
         },
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
@@ -125,6 +132,8 @@ export const Targets = {
     },
     Controller:     {
         AddressController: 'AddressController',
+        BidController: 'BidController',
+        BidDataController: 'BidDataController',
         CryptocurrencyAddressController: 'CryptocurrencyAddressController',
         EscrowController: 'EscrowController',
         EscrowRatioController: 'EscrowRatioController',
