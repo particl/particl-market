@@ -1,6 +1,7 @@
 import { Bookshelf } from '../../config/Database';
 import { Collection } from 'bookshelf';
 import { ListingItem } from './ListingItem';
+import { BidData } from './BidData';
 
 export class Bid extends Bookshelf.Model<Bid> {
 
@@ -35,6 +36,10 @@ export class Bid extends Bookshelf.Model<Bid> {
 
     public ListingItem(): ListingItem {
        return this.belongsTo(ListingItem, 'listing_item_id', 'id');
+    }
+
+    public BidData(): BidData {
+       return this.hasOne(BidData);
     }
 
     // TODO: add related

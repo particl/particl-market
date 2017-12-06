@@ -12,6 +12,7 @@ export const Targets = {
     Model:     {
         Address: 'Address',
         Bid: 'Bid',
+        BidData: 'BidData',
         CryptocurrencyAddress: 'CryptocurrencyAddress',
         Escrow: 'Escrow',
         EscrowRatio: 'EscrowRatio',
@@ -35,6 +36,7 @@ export const Targets = {
     },
     Repository:     {
         AddressRepository: 'AddressRepository',
+        BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
@@ -59,6 +61,7 @@ export const Targets = {
     },
     Service:     {
         AddressService: 'AddressService',
+        BidDataService: 'BidDataService',
         BidService: 'BidService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
@@ -91,11 +94,11 @@ export const Targets = {
             RpcItemLocationService: 'RpcItemLocationService',
             RpcListingItemService: 'RpcListingItemService',
             RpcListingItemTemplateService: 'RpcListingItemTemplateService',
+            RpcMessagingInformationService: 'RpcMessagingInformationService',
             RpcPaymentInformationService: 'RpcPaymentInformationService',
             RpcProfileService: 'RpcProfileService',
-            RpcTestDataService: 'RpcTestDataService',
             RpcShippingDestinationService: 'RpcShippingDestinationService',
-            RpcMessagingInformationService: 'RpcMessagingInformationService'
+            RpcTestDataService: 'RpcTestDataService'
         },
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
@@ -118,6 +121,7 @@ export const Targets = {
     Controller:     {
         AddressController: 'AddressController',
         BidController: 'BidController',
+        BidDataController: 'BidDataController',
         CryptocurrencyAddressController: 'CryptocurrencyAddressController',
         EscrowController: 'EscrowController',
         EscrowRatioController: 'EscrowRatioController',

@@ -104,14 +104,14 @@ describe('Bid', () => {
 
 
     test('Should update the bid', async () => {
-        testDataUpdated['listing_item_id'] = 2;
+        testDataUpdated['listing_item_id'] = 1;
         testDataUpdated['status'] = BidStatus.CANCELLED;
         const bidModel: Bid = await bidService.update(createdId, testDataUpdated);
         const result = bidModel.toJSON();
 
         // test the values
-        expect(result.status).toBe(testData.status);
-        expect(result.listingItemId).toBe(testData.listing_item_id);
+        expect(result.status).toBe(testDataUpdated.status);
+        expect(result.listingItemId).toBe(testDataUpdated.listing_item_id);
     });
 
     test('Should delete the bid', async () => {

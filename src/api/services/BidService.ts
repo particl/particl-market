@@ -9,7 +9,6 @@ import { Bid } from '../models/Bid';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 
-
 export class BidService {
 
     public log: LoggerType;
@@ -60,7 +59,7 @@ export class BidService {
         const bid = await this.findOne(id, false);
 
         // set new values
-
+        bid.Status = body.status;
         // update bid record
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());
 
