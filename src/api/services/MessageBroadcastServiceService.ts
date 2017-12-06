@@ -7,10 +7,14 @@ export class MessageBroadcastServiceService {
 
     public log: LoggerType;
 
-        constructor(
+    constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
+    public async broadcast(): Promise<void> {
+        // TODO: to be implemented
+        return;
+    }
 }
