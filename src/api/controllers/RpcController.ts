@@ -33,7 +33,7 @@ import { RpcShippingDestinationService } from '../services/rpc/RpcShippingDestin
 import { RpcItemLocationService } from '../services/rpc/RpcItemLocationService';
 import { RpcMessagingInformationService } from '../services/rpc/RpcMessagingInformationService';
 import { RpcBidService } from '../services/rpc/RpcBidService';
-
+import { RpcMarketService } from '../services/rpc/RpcMarketService';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -78,6 +78,7 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemLocationService) private rpcItemLocationService: RpcItemLocationService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcMessagingInformationService) private rpcMesInfoService: RpcMessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcBidService) private rpcBidService: RpcBidService,
+        @inject(Types.Service) @named(Targets.Service.rpc.RpcMarketService) private rpcMarketService: RpcMarketService,
 
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -222,10 +223,13 @@ export class RpcController {
             'removeitemlocation': 'rpcItemLocationService.destroy',
 
             // message infoprmation
-            'updatemessaginginformation' : 'rpcMesInfoService.update',
+            'updatemessaginginformation': 'rpcMesInfoService.update',
 
             // Bid
             'findbids': 'rpcBidService.search'
+
+            // market
+            'addmarket': 'rpcMarketService.create'
 
         };
     }
