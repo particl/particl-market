@@ -226,7 +226,7 @@ export class RpcController {
             'updatemessaginginformation': 'rpcMesInfoService.update',
 
             // Bid
-            'findbids': 'rpcBidService.search'
+            'findbids': 'rpcBidService.search',
 
             // market
             'addmarket': 'rpcMarketService.create'
