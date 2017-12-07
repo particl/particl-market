@@ -7,6 +7,8 @@ import { ListingItemObject } from './ListingItemObject';
 import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
 import { FavoriteItem } from './FavoriteItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
+import { Bid } from './Bid';
+import { Market } from './Market';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -61,7 +63,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public static async fetchByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {
 
         const listingCollection = ListingItem.forge<Collection<ListingItem>>()
-            .query( qb => {
+            .query(qb => {
                 qb.innerJoin('item_informations', 'listing_items.id', 'item_informations.listing_item_id');
                 // qb.groupBy('listing_items.id');
                 qb.where('item_informations.item_category_id', '=', categoryId);
@@ -97,7 +99,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public static async searchBy(options: ListingItemSearchParams, withRelated: boolean = false): Promise<Collection<ListingItem>> {
         const listingCollection = ListingItem.forge<Collection<ListingItem>>()
-            .query( qb => {
+            .query(qb => {
                 if (typeof options.category === 'number') {
                     qb.where('item_informations.item_category_id', '=', options.category);
                 } else if (options.category && typeof options.category === 'string') {
@@ -184,10 +186,19 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     }
 
     public FavoriteItems(): Collection<FavoriteItem> {
-      return this.hasMany(FavoriteItem , 'listing_item_id', 'id');
+        return this.hasMany(FavoriteItem, 'listing_item_id', 'id');
     }
 
     public ListingItemTemplate(): ListingItemTemplate {
         return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
     }
+
+    public Bids(): Collection<Bid> {
+        return this.hasMany(Bid, 'listing_item_id', 'id');
+    }
+
+    public Market(): Market {
+        return this.belongsTo(Market, 'market_id', 'id');
+    }
+
 }

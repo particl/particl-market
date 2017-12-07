@@ -23,6 +23,7 @@ import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { DefaultItemCategoryService } from './DefaultItemCategoryService';
 import { DefaultProfileService } from './DefaultProfileService';
+import { DefaultMarketService } from './DefaultMarketService';
 import { ProfileService } from './ProfileService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { FavoriteItemService } from './FavoriteItemService';
@@ -35,6 +36,7 @@ export class TestDataService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
+        @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
@@ -59,6 +61,7 @@ export class TestDataService {
         if (seed) {
             await this.defaultItemCategoryService.seedDefaultCategories();
             await this.defaultProfileService.seedDefaultProfile();
+            await this.defaultMarketService.seedDefaultMarket();
         }
 
         return;

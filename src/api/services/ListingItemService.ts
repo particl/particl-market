@@ -76,7 +76,7 @@ export class ListingItemService {
 
     @validate()
 
-    public async create(@request(ListingItemCreateRequest) data: any): Promise<ListingItem> {
+    public async create( @request(ListingItemCreateRequest) data: any): Promise<ListingItem> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -88,7 +88,10 @@ export class ListingItemService {
         const messagingInformation = body.messagingInformation;
         delete body.messagingInformation;
 
-        this.log.debug('body: ', body);
+        // check market id : if null use default market id = 1
+        if (!body['market_id']) {
+            body.market_id = 1;
+        }
         // If the request body was valid we will create the listingItem
         const listingItem = await this.listingItemRepo.create(body);
 
