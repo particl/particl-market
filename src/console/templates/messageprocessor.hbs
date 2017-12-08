@@ -2,6 +2,7 @@ import { inject, named } from 'inversify';
 import { validate } from '../../{{deepness}}core/api/Validate';
 import { Logger as LoggerType } from '../../{{deepness}}core/Logger';
 import { Types, Core, Targets } from '../../{{deepness}}constants';
+import { MessageProcessorInterface } from './MessageProcessorInterface';
 
 export class {{name.capitalize}}MessageProcessor implements MessageProcessorInterface {
 

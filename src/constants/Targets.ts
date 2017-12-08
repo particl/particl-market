@@ -118,6 +118,7 @@ export const Targets = {
         TestFactory: 'TestFactory'
     },
     MessageProcessor:     {
+        MarketplaceMessageProcessor: 'MarketplaceMessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
         TestMessageProcessor: 'TestMessageProcessor'
     },
