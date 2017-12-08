@@ -1,0 +1,3 @@
+interface MessageProcessorInterface {
+    process(): void;
+}
