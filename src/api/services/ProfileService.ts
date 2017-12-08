@@ -59,7 +59,6 @@ export class ProfileService {
         // extract and remove related models from request
         const addresses = body.addresses || [];
         delete body.addresses;
-
         // If the request body was valid we will create the profile
         const profile = await this.profileRepo.create(body);
 
@@ -84,13 +83,14 @@ export class ProfileService {
 
         // set new values
         profile.Name = body.name;
+        profile.Address = body.address;
 
         // update address record
         const updatedProfile = await this.profileRepo.update(id, profile.toJSON());
 
         // todo: loop through addresses, add new ones that have no id, update the new ones with id and delete the removed
         // find related records and delete them
-        let addresses = updatedProfile.related('Addresses').toJSON();
+        let addresses = updatedProfile.related('ShippingAddresses').toJSON();
         for (const address of addresses) {
             await this.addressService.destroy(address.id);
         }

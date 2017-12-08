@@ -64,7 +64,9 @@ export class MarketService {
         const market = await this.findOne(id, false);
 
         // set new values
-
+        market.Name = body.name;
+        market.PrivateKey = body.private_key;
+        market.Address = body.address;
         // update market record
         const updatedMarket = await this.marketRepo.update(id, market.toJSON());
 
