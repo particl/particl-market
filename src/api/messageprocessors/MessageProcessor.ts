@@ -1,9 +1,10 @@
+import * as rpc from 'particl-rpc-service';
 import { inject, named } from 'inversify';
-import { validate } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { MarketplaceMessageInterface } from "../messages/MarketplaceMessageInterface";
+import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
+import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -15,8 +16,11 @@ export class MessageProcessor implements MessageProcessorInterface {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async process( message: MarketplaceMessageInterface ): Promise<void> {
+    public async poll(): Promise<void> {
+        rpc.init();
+    }
+
+    public process(message: ActionMessageInterface): void {
         //
     }
 

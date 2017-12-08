@@ -1,3 +1,5 @@
+import { ActionMessageInterface } from '../messages/ActionMessageInterface';
+
 export interface MessageProcessorInterface {
-    process( message: ActionMessage ): void;
+    process( message: ActionMessageInterface ): void;
 }

@@ -3,7 +3,7 @@ import { validate } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
-import {ActionMessageInterface} from "../messages/ActionMessageInterface";
+import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 
 export class TestMessageProcessor implements MessageProcessorInterface {
 
