@@ -36,7 +36,7 @@ describe('/RpcUpdateAddress', () => {
         // set up the test data, create profile + addresses
         const addDataRes: any = await testUtil.addData('profile', testData);
         const profileId = addDataRes.getBody()['result'].id;
-        const addressId = addDataRes.getBody()['result'].Addresses[0].id;
+        const addressId = addDataRes.getBody()['result'].ShippingAddresses[0].id;
 
         // update address
         const res = await rpc(method, [

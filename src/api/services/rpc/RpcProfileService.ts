@@ -60,7 +60,8 @@ export class RpcProfileService {
     @validate()
     public async create( @request(RpcRequest) data: any): Promise<Profile> {
         return this.profileService.create({
-            name : data.params[0]
+            name : data.params[0],
+            address : data.params[1] || ''
         });
     }
 
@@ -75,7 +76,8 @@ export class RpcProfileService {
     @validate()
     public async update( @request(RpcRequest) data: any): Promise<Profile> {
         return this.profileService.update(data.params[0], {
-            name: data.params[1]
+            name: data.params[1],
+            address : data.params[2] || ''
         });
     }
 

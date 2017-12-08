@@ -10,6 +10,7 @@ describe('UpdateProfile', () => {
 
     const testData = {
         name: 'DEFAULT-PROFILE-TEST',
+        address: 'DEFAULT-PROFILE-ADDRESS',
         addresses: [{
             title: 'Title',
             addressLine1: 'Add',
@@ -36,12 +37,14 @@ describe('UpdateProfile', () => {
 
         // update profile
         const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';
-        const res = await rpc(method, [createdId, profileName]);
+        const profileAddress = 'UPDATED-DEFAULT-PROFILE-TEST-ADDRESS';
+        const res = await rpc(method, [createdId, profileName, profileAddress]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
         expect(result.name).toBe(profileName);
+        expect(result.address).toBe(profileAddress);
     });
 
 });
