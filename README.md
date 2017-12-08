@@ -150,11 +150,13 @@ The route prefix is `/api` by default, but you can change this in the .env file.
 | **.vscode/**                    | VSCode tasks, launch configuration and some other settings |
 | **dist/**                       | Compiled source files will be placed here |
 | **src/**                        | Source files |
-| **src/api/controllers/**        | RPC Commands |
+| **src/api/commands/**           | RPC Commands |
 | **src/api/controllers/**        | REST API Controllers |
 | **src/api/exceptions/**         | Exceptions like 404 NotFound |
 | **src/api/factories/**          | Factories |
 | **src/api/listeners/**          | Event listeners |
+| **src/api/messageprocessors/**  | Marketplace messageprocessors |
+| **src/api/messages/**           | Marketplace messages |
 | **src/api/middlewares/**        | Express Middlewares like populateUser |
 | **src/api/models/**             | Bookshelf Models |
 | **src/api/repositories/**       | Repository / DB layer |
