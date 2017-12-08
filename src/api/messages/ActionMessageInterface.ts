@@ -1,4 +1,4 @@
-export interface ActionMessage {
+export interface ActionMessageInterface {
 
     action: string;
     item: string;
