@@ -1,11 +1,15 @@
 import { IsNotEmpty } from 'class-validator';
 
-export class Bid {
+export class BidMessage implements ActionMessage {
 
     @IsNotEmpty()
-    public version: string;
+    public action: string;
 
     @IsNotEmpty()
-    public mpaction: any;
+    public item: string;
+
+    constructor() {
+        //
+    }
 
 }

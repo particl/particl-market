@@ -100,6 +100,7 @@ All the templates for the commands are located in `src/console/templates`.
 * `npm run console make:service` - Generates a service.
 * `npm run console make:command` - Generates a command.
 * `npm run console make:factory` - Generates a factory.
+* `npm run console make:messageprocessor` - Generates a messageprocessor.
 * `npm run console make:repo` - Generates a repository.
 * `npm run console make:model` - Generates a model with the props and configurations.
 * `npm run console make:middleware` - Generates a basic middleware.
