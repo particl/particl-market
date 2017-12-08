@@ -6,6 +6,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { EscrowService } from '../EscrowService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
+import { MessageBroadcastService } from '../MessageBroadcastService';
 
 export class RpcEscrowService {
 
@@ -13,6 +14,7 @@ export class RpcEscrowService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
+        @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
     }
@@ -32,6 +34,42 @@ export class RpcEscrowService {
     @validate()
     public async findOne( @request(RpcRequest) data: any): Promise<Escrow> {
         return this.escrowService.findOne(data.params[0]);
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: id
+     *
+     * @param data
+     * @returns {Promise<Escrow>}
+     */
+    @validate()
+    public async lock( @request(RpcRequest) data: any): Promise<void> {
+        return this.messageBroadcastService.broadcast();
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: id
+     *
+     * @param data
+     * @returns {Promise<Escrow>}
+     */
+    @validate()
+    public async refund( @request(RpcRequest) data: any): Promise<void> {
+        return this.messageBroadcastService.broadcast();
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: id
+     *
+     * @param data
+     * @returns {Promise<Escrow>}
+     */
+    @validate()
+    public async release( @request(RpcRequest) data: any): Promise<void> {
+        return this.messageBroadcastService.broadcast();
     }
 
     /**
