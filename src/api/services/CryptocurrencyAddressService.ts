@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { ValidationException } from '../exceptions/ValidationException';
 import { CryptocurrencyAddressRepository } from '../repositories/CryptocurrencyAddressRepository';
 import { CryptocurrencyAddress } from '../models/CryptocurrencyAddress';
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
@@ -37,6 +38,10 @@ export class CryptocurrencyAddressService {
 
     @validate()
     public async create( @request(CryptocurrencyAddressCreateRequest) body: any): Promise<CryptocurrencyAddress> {
+
+        if (body.item_price_id == null && body.profile_id == null) {
+            throw new ValidationException('Request body is not valid', ['item_price_id or profile_id missing']);
+        }
 
         // If the request body was valid we will create the cryptocurrencyAddress
         const cryptocurrencyAddress = await this.cryptocurrencyAddressRepo.create(body);

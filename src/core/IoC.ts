@@ -56,6 +56,8 @@ export class IoC {
         await this.bindCommands();
         this.log.info('binding factories');
         await this.bindFactories();
+        this.log.info('binding message processors');
+        await this.bindMessageProcessors();
         await this.bindListeners();
 
         if (!Environment.isTest()) {
@@ -109,6 +111,13 @@ export class IoC {
             '/factories/**/*Factory.ts',
             Targets.Factory,
             (name: any, value: any) => this.bindFile(Types.Factory, name, value));
+    }
+
+    private bindMessageProcessors(): Promise<void> {
+        return this.bindFiles(
+            '/messageprocessors/**/*MessageProcessor.ts',
+            Targets.MessageProcessor,
+            (name: any, value: any) => this.bindFile(Types.MessageProcessor, name, value));
     }
 
     private bindMiddlewares(): Promise<void> {

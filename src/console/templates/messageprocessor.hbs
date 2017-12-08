@@ -1,0 +1,22 @@
+import { inject, named } from 'inversify';
+import { validate } from '../../{{deepness}}core/api/Validate';
+import { Logger as LoggerType } from '../../{{deepness}}core/Logger';
+import { Types, Core, Targets } from '../../{{deepness}}constants';
+import { MessageProcessorInterface } from './MessageProcessorInterface';
+
+export class {{name.capitalize}}MessageProcessor implements MessageProcessorInterface {
+
+    public log: LoggerType;
+
+    constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+    ) {
+        this.log = new Logger(__filename);
+    }
+
+    @validate()
+    public async process( message: ActionMessageInterface ): Promise<void> {
+        //
+    }
+
+}

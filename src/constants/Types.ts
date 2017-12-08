@@ -16,6 +16,7 @@ export const Types = {
     Service: Symbol('Service'),
     Command: Symbol('Command'),
     Factory: Symbol('Factory'),
+    MessageProcessor: Symbol('MessageProcessor'),
     Listener: Symbol('Listener'),
     Repository: Symbol('Repository'),
     Middleware: Symbol('Middleware')

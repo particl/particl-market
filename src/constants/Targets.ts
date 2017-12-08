@@ -67,8 +67,8 @@ export const Targets = {
         BidService: 'BidService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
-        DefaultProfileService: 'DefaultProfileService',
         DefaultMarketService: 'DefaultMarketService',
+        DefaultProfileService: 'DefaultProfileService',
         EscrowRatioService: 'EscrowRatioService',
         EscrowService: 'EscrowService',
         FavoriteItemService: 'FavoriteItemService',
@@ -89,6 +89,7 @@ export const Targets = {
         ProfileService: 'ProfileService',
         rpc: {
             RpcAddressService: 'RpcAddressService',
+            RpcBidService: 'RpcBidService',
             RpcCliHelpService: 'RpcCliHelpService',
             RpcEscrowService: 'RpcEscrowService',
             RpcFavoriteItemService: 'RpcFavoriteItemService',
@@ -98,13 +99,12 @@ export const Targets = {
             RpcItemLocationService: 'RpcItemLocationService',
             RpcListingItemService: 'RpcListingItemService',
             RpcListingItemTemplateService: 'RpcListingItemTemplateService',
+            RpcMarketService: 'RpcMarketService',
             RpcMessagingInformationService: 'RpcMessagingInformationService',
             RpcPaymentInformationService: 'RpcPaymentInformationService',
             RpcProfileService: 'RpcProfileService',
             RpcShippingDestinationService: 'RpcShippingDestinationService',
-            RpcTestDataService: 'RpcTestDataService',
-            RpcBidService: 'RpcBidService',
-            RpcMarketService: 'RpcMarketService'
+            RpcTestDataService: 'RpcTestDataService'
         },
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
@@ -116,6 +116,11 @@ export const Targets = {
     },
     Factory:     {
         TestFactory: 'TestFactory'
+    },
+    MessageProcessor:     {
+        MessageProcessor: 'MessageProcessor',
+        MessageProcessorInterface: 'MessageProcessorInterface',
+        TestMessageProcessor: 'TestMessageProcessor'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',

@@ -27,6 +27,7 @@ describe('Profile', () => {
 
     const testData = {
         name: 'DEFAULT1',
+        address: 'DEFAULT11-ADDRESS',
         addresses: [{
             title: 'Title',
             addressLine1: 'Add',
@@ -44,6 +45,7 @@ describe('Profile', () => {
 
     const testDataUpdated = {
         name: 'DEFAULT2',
+        address: 'DEFAULT12-ADDRESS',
         addresses: [{
             title: 'Title New',
             addressLine1: 'Add New',
@@ -87,7 +89,8 @@ describe('Profile', () => {
         const result = profileModel.toJSON();
 
         expect(result.name).toBe(testData.name);
-        expect(result.Addresses).toHaveLength(2);
+        expect(result.address).toBe(testData.address);
+        expect(result.ShippingAddresses).toHaveLength(2);
     });
 
     test('Should throw ValidationException because we want to create a empty profile', async () => {
@@ -105,7 +108,8 @@ describe('Profile', () => {
         const result = profile[0];
 
         expect(result.name).toBe(testData.name);
-        expect(result.Addresses).toBe(undefined); // doesnt fetch related
+        expect(result.address).toBe(testData.address);
+        expect(result.ShippingAddresses).toBe(undefined); // doesnt fetch related
     });
 
     test('Should return one profile', async () => {
@@ -113,7 +117,8 @@ describe('Profile', () => {
         const result = profileModel.toJSON();
 
         expect(result.name).toBe(testData.name);
-        expect(result.Addresses).toHaveLength(2);
+        expect(result.address).toBe(testData.address);
+        expect(result.ShippingAddresses).toHaveLength(2);
     });
 
     test('Should update the profile', async () => {
@@ -121,7 +126,8 @@ describe('Profile', () => {
         const result = profileModel.toJSON();
 
         expect(result.name).toBe(testDataUpdated.name);
-        expect(result.Addresses).toHaveLength(3);
+        expect(result.address).toBe(testDataUpdated.address);
+        expect(result.ShippingAddresses).toHaveLength(3);
     });
 
     test('Should delete the profile', async () => {
@@ -129,17 +135,17 @@ describe('Profile', () => {
 
         const profileModel: Profile = await profileService.findOne(createdId);
         const result = profileModel.toJSON();
-        expect(result.Addresses).toHaveLength(3);
+        expect(result.ShippingAddresses).toHaveLength(3);
 
-        const addressId1 = result.Addresses[0].id;
+        const addressId1 = result.ShippingAddresses[0].id;
 
         await profileService.destroy(createdId);
-        await profileService.findOne(createdId).catch( e => {
+        await profileService.findOne(createdId).catch(e => {
             expect(e).toEqual(new NotFoundException(createdId));
         });
 
         // make sure addresses were also deleted
-        await profileService.findOne(addressId1).catch( e => {
+        await profileService.findOne(addressId1).catch(e => {
             expect(e).toEqual(new NotFoundException(addressId1));
         });
 
