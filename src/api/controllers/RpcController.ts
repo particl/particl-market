@@ -240,11 +240,6 @@ export class RpcController {
         const rpcRequest = this.createRequest(body.method, body.params, body.id);
         this.log.debug('controller.handleRPC() rpcRequest:', JSON.stringify(rpcRequest, null, 2));
 
-        command = factory.get/create(body.method)
-        if(command){
-            command.execute(body.params)
-        }
-
         // check that we have exposed the method
         if (this.exposedMethods.hasOwnProperty(body.method)) {
             const callPath = this.exposedMethods[rpcRequest.method].split('.');
