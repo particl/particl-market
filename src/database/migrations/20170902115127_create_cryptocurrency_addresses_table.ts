@@ -14,7 +14,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('item_price_id').references('id').inTable('item_prices').onDelete('cascade');
 
             table.integer('profile_id').unsigned();
-            
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })
