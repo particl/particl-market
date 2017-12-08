@@ -5,6 +5,7 @@ import { DefaultItemCategoryService } from '../services/DefaultItemCategoryServi
 import { DefaultProfileService } from '../services/DefaultProfileService';
 import { DefaultMarketService } from '../services/DefaultMarketService';
 import { EventEmitter, events } from '../../core/api/events';
+import { MessageProcessor} from '../messageprocessors/MessageProcessor';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -14,7 +15,7 @@ export class ServerStartedListener implements interfaces.Listener {
     public log: LoggerType;
 
     constructor(
-        // @inject(Types.Core) @named(Core.Events) public events: EventEmitter,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
@@ -40,6 +41,9 @@ export class ServerStartedListener implements interfaces.Listener {
 
         // seed the default Profile
         await this.defaultProfileService.seedDefaultProfile();
+
+        // start polling
+        this.messageProcessor.schedulePoll();
 
         events.emit(ServerStartedListener.ServerReadyEvent, 'Ready!');
     }
