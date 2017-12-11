@@ -28,7 +28,7 @@ export class RemoveCategoryCommand implements RpcCommand<ItemCategory> {
         this.name = 'RemoveCategoryCommand';
     }
 
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemCategory>> {
+    public async execute( @request(RpcRequest) data: any): Promise<void> {
         const categoryId = data.params[0];
         const isDelete = await this.isDoable(categoryId);
         if (isDelete) {
@@ -40,7 +40,7 @@ export class RemoveCategoryCommand implements RpcCommand<ItemCategory> {
                 // not be delete its a associated with listingItemTemplate
                 throw new MessageException(`Category associated with listing-item-template can't be delete. id= ${categoryId}`);
             }
-            return await Bookshelf.Collection.apply(this.itemCategoryService.destroy(categoryId));
+            return await this.itemCategoryService.destroy(categoryId);
         } else {
             throw new MessageException(`category can't be delete. id= ${categoryId}`);
         }

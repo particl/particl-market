@@ -8,7 +8,7 @@ export class RpcCommand<T extends Bookshelf.Model<any>> {
     public log: LoggerType;
     public name: string;
 
-    public async execute(data: RpcRequest): Promise<Bookshelf.Collection<T>> {
+    public async execute(data: RpcRequest): Promise<T> {
         throw new NotFoundException('This command shouldn\'t ever be run');
     }
 

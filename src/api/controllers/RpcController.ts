@@ -37,6 +37,7 @@ import { RpcMarketService } from '../services/rpc/RpcMarketService';
 
 // import {RpcCommand} from '../commands/RpcCommand';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
+import { RpcRequest } from '../requests/RpcRequest';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -273,13 +274,13 @@ export class RpcController {
 */
     }
 
-    private createRequest(method: string, params?: any, id?: string | number): JsonRpc2Request {
+    private createRequest(method: string, params?: any, id?: string | number): RpcRequest {
         if (id === null || id === undefined) {
             id = this.generateId();
         } else if (typeof (id) !== 'number') {
             id = String(id);
         }
-        return { jsonrpc: this.VERSION, method: method.toLowerCase(), params, id };
+        return new RpcRequest({ jsonrpc: this.VERSION, method: method.toLowerCase(), params, id });
     }
 
     private createResponse(id: string | number = '', result?: any, error?: any): JsonRpc2Response {

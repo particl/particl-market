@@ -22,7 +22,7 @@ export class GetCategoryCommand implements RpcCommand<ItemCategory> {
         this.name = 'getcategory';
     }
 
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemCategory>> {
+    public async execute( @request(RpcRequest) data: any): Promise<ItemCategory> {
         if (typeof data.params[0] === 'number') {
             return await Bookshelf.Collection.apply(this.itemCategoryService.findOne(data.params[0]));
         } else {

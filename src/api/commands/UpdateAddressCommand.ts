@@ -21,7 +21,7 @@ export class UpdateAddressCommand implements RpcCommand<Address> {
         this.name = 'UpdateAddressCommand';
     }
 
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Address>> {
+    public async execute( @request(RpcRequest) data: any): Promise<Address> {
         return Bookshelf.Collection.apply(this.addressService.update(data.params[0], {
             title : data.params[1],
             addressLine1 : data.params[2],

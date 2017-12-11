@@ -22,17 +22,16 @@ export class CreateAddressCommand implements RpcCommand<Address> {
         this.name = 'CreateAddressCommand';
     }
 
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Address>> {
+    public async execute( @request(RpcRequest) data: any): Promise<Address> {
         this.log.error('Attempting to create address');
-        return Bookshelf.Collection.apply(this.addressService.create({
+        return await this.addressService.create({
             title : data.params[0],
             addressLine1 : data.params[1],
             addressLine2 : data.params[2],
             city : data.params[3],
             country : data.params[4],
             profile_id : data.params[5]
-        })
-        );
+        });
     }
 
     public help(): string {
