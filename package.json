@@ -106,7 +106,7 @@
     "lodash": "^4.17.4",
     "morgan": "^1.7.0",
     "nodemon": "^1.11.0",
-    "particl-rpc-service": "^0.1.9",
+    "particl-rpc-service": "^0.1.12",
     "path": "^0.12.7",
     "pluralize": "^5.0.0",
     "reflect-metadata": "^0.1.10",
