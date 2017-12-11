@@ -100,9 +100,19 @@ export const Targets = {
         UserService: 'UserService'
     },
     Command:     {
-        TestCommand: 'TestCommand'
+        AddressCommand: 'AddressCommand',
+        CreateAddressCommand: 'CreateAddressCommand',
+        CreateCategoryCommand: 'CreateCategoryCommand',
+        GetCategoriesCommand: 'GetCategoriesCommand',
+        GetCategoryCommand: 'GetCategoryCommand',
+        RemoveCategoryCommand: 'RemoveCategoryCommand',
+        RpcCommand: 'RpcCommand',
+        TestCommand: 'TestCommand',
+        UpdateAddressCommand: 'UpdateAddressCommand',
+        UpdateCategoryCommand: 'UpdateCategoryCommand'
     },
     Factory:     {
+        RpcCommandFactory: 'RpcCommandFactory',
         TestFactory: 'TestFactory'
     },
     Middleware:     {

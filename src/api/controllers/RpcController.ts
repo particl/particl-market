@@ -33,6 +33,9 @@ import { RpcShippingDestinationService } from '../services/rpc/RpcShippingDestin
 import { RpcItemLocationService } from '../services/rpc/RpcItemLocationService';
 import { RpcMessagingInformationService } from '../services/rpc/RpcMessagingInformationService';
 
+// import {RpcCommand} from '../commands/RpcCommand';
+import { RpcCommandFactory } from '../factories/RpcCommandFactory';
+
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
 let rpcIdCount = 0;
@@ -76,7 +79,9 @@ export class RpcController {
         @inject(Types.Service) @named(Targets.Service.rpc.RpcItemLocationService) private rpcItemLocationService: RpcItemLocationService,
         @inject(Types.Service) @named(Targets.Service.rpc.RpcMessagingInformationService) private rpcMesInfoService: RpcMessagingInformationService,
 
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
         this.log = new Logger(__filename);
 
@@ -230,8 +235,12 @@ export class RpcController {
         const rpcRequest = this.createRequest(body.method, body.params, body.id);
         this.log.debug('controller.handleRPC() rpcRequest:', JSON.stringify(rpcRequest, null, 2));
 
+        // My code goes here
+        const result = this.rpcCommandFactory.get(body.method).execute(rpcRequest);
+        return this.createResponse(rpcRequest.id, result);
+
         // check that we have exposed the method
-        if (this.exposedMethods.hasOwnProperty(body.method)) {
+       /* if (this.exposedMethods.hasOwnProperty(body.method)) {
             const callPath = this.exposedMethods[rpcRequest.method].split('.');
 
             // make sure we have an instance of the service and it contains the function we want to call
@@ -251,7 +260,7 @@ export class RpcController {
             return res.failed(400, this.getErrorMessage(RpcErrorCode.MethodNotFound), new JsonRpcError(RpcErrorCode.MethodNotFound,
                 'method: ' + body.method + ' not found.'));
         }
-
+*/
     }
 
     private createRequest(method: string, params?: any, id?: string | number): JsonRpc2Request {
