@@ -1,7 +1,11 @@
 import { MarketplaceMessageInterface } from './MarketplaceMessageInterface';
 
-export interface ItemMessageInterface extends MarketplaceMessageInterface {
+export interface ItemMessageInterface {
 
-    item: string;
+    // todo classes
+    information: any;
+    payment: any;
+    messaging: any;
+    object: any;
 
 }

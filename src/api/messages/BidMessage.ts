@@ -9,6 +9,8 @@ export class BidMessage implements ActionMessageInterface {
     @IsNotEmpty()
     public item: string;
 
+    // todo: objects
+
     constructor() {
         //
     }
