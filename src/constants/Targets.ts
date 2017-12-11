@@ -113,15 +113,15 @@ export const Targets = {
     },
     Command:     {
         AddressCommand: 'AddressCommand',
-        CreateAddressCommand: 'CreateAddressCommand',
-        CreateCategoryCommand: 'CreateCategoryCommand',
-        GetCategoriesCommand: 'GetCategoriesCommand',
-        GetCategoryCommand: 'GetCategoryCommand',
-        RemoveCategoryCommand: 'RemoveCategoryCommand',
+        AddressCreateCommand: 'AddressCreateCommand',
+        CategoryCreateCommand: 'CategoryCreateCommand',
+        CategoriesGetCommand: 'CategoriesGetCommand',
+        CategoryGetCommand: 'CategoryGetCommand',
+        CategoryRemoveCommand: 'CategoryRemoveCommand',
         RpcCommand: 'RpcCommand',
         TestCommand: 'TestCommand',
-        UpdateAddressCommand: 'UpdateAddressCommand',
-        UpdateCategoryCommand: 'UpdateCategoryCommand'
+        AddressUpdateCommand: 'AddressUpdateCommand',
+        CategoryUpdateCommand: 'CategoryUpdateCommand'
     },
     Factory:     {
         RpcCommandFactory: 'RpcCommandFactory',

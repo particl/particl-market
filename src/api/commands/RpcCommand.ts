@@ -4,7 +4,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { RpcRequest } from '../requests/RpcRequest';
 import {NotFoundException} from '../exceptions/NotFoundException';
 
-export class RpcCommand<T extends Bookshelf.Model<any>> {
+export class RpcCommand<T> {
     public log: LoggerType;
     public name: string;
 

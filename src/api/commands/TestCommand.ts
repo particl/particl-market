@@ -8,7 +8,7 @@ import { RpcRequest } from '../requests/RpcRequest';
 import { FavoriteItem } from '../models/FavoriteItem';
 import {RpcCommand} from './RpcCommand';
 
-export class TestCommand implements RpcCommand<FavoriteItem> {
+export class TestCommand implements RpcCommand<Bookshelf.Collection<FavoriteItem>> {
     public log: LoggerType;
     public name: string;
 
