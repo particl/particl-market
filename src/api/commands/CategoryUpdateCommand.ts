@@ -22,7 +22,7 @@ export class CategoryUpdateCommand implements RpcCommand<ItemCategory> {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'UpdateCategoryCommand';
+        this.name = 'updatecategory';
     }
 
     public async execute( @request(RpcRequest) data: any): Promise<ItemCategory> {

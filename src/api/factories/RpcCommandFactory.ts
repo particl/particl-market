@@ -9,6 +9,7 @@ import {AddressCreateCommand} from '../commands/AddressCreateCommand';
 import {AddressUpdateCommand} from '../commands/AddressUpdateCommand';
 import {CategoryCreateCommand} from '../commands/CategoryCreateCommand';
 import {CategoriesGetCommand} from '../commands/CategoriesGetCommand';
+import {CategoryGetCommand} from '../commands/CategoryGetCommand';
 import {CategoryRemoveCommand} from '../commands/CategoryRemoveCommand';
 // import {multiInject} from 'inversify/dts/annotation/multi_inject';
 
@@ -23,6 +24,7 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.AddressUpdateCommand) private addressUpdateCommand: AddressUpdateCommand,
        @inject(Types.Command) @named(Targets.Command.CategoryCreateCommand) private categoryCreateCommand: CategoryCreateCommand,
        @inject(Types.Command) @named(Targets.Command.CategoriesGetCommand) private categoriesGetCommand: CategoriesGetCommand,
+       @inject(Types.Command) @named(Targets.Command.CategoryGetCommand) private categoryGetCommand: CategoryGetCommand,
        @inject(Types.Command) @named(Targets.Command.CategoryRemoveCommand) private categoryRemoveCommand: CategoryRemoveCommand,
 
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
@@ -36,6 +38,7 @@ export class RpcCommandFactory {
         this.commands.push(addressUpdateCommand);
         this.commands.push(categoryCreateCommand);
         this.commands.push(categoriesGetCommand);
+        this.commands.push(categoryGetCommand);
         this.commands.push(categoryRemoveCommand);
 
         for (const o of this.commands) {

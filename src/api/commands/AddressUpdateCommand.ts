@@ -18,7 +18,7 @@ export class AddressUpdateCommand implements RpcCommand<Address> {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'UpdateAddressCommand';
+        this.name = 'address.update';
     }
 
     public async execute( @request(RpcRequest) data: any): Promise<Address> {

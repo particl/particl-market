@@ -19,7 +19,7 @@ export class CategoryCreateCommand implements RpcCommand<ItemCategory> {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'CreateCategoryCommand';
+        this.name = 'createcategory';
     }
 
     /**

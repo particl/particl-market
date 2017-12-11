@@ -19,7 +19,7 @@ export class AddressCreateCommand implements RpcCommand<Address> {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'CreateAddressCommand';
+        this.name = 'address.create';
     }
 
     public async execute( @request(RpcRequest) data: any): Promise<Address> {

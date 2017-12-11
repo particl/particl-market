@@ -19,7 +19,7 @@ export class CategoriesGetCommand implements RpcCommand<ItemCategory> {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'GetCategoriesCommand';
+        this.name = 'getcategories';
     }
 
     @validate()

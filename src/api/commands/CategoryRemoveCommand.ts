@@ -25,7 +25,7 @@ export class CategoryRemoveCommand implements RpcCommand<void> {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'RemoveCategoryCommand';
+        this.name = 'removecategory';
     }
 
     public async execute( @request(RpcRequest) data: any): Promise<void> {
