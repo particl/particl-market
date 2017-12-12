@@ -102,21 +102,24 @@ export class RpcController {
             'itemcategory.update': 'rpcItemCategoryService.update', // DONE
             'itemcategory.destroy': 'rpcItemCategoryService.destroy', // DONE
 
-            'escrow.create': 'escrowService.rpcCreate',
-            'escrow.find': 'escrowService.rpcFindOne',
-            'escrow.findall': 'escrowService.rpcFindAll',
-            'escrow.update': 'escrowService.rpcUpdate',
-            'escrow.destroy': 'escrowService.rpcDestroy',
+            'escrow.create': 'escrowService.rpcCreate', // DONE
+            'escrow.find': 'escrowService.rpcFindOne', // DONE
+            'escrow.findall': 'escrowService.rpcFindAll', // DONE
+            'escrow.update': 'escrowService.rpcUpdate', // DONE
+            'escrow.destroy': 'escrowService.rpcDestroy', // DONE
+
             'itemprice.create': 'itemPriceService.rpcCreate',
             'itemprice.find': 'itemPriceService.rpcFindOne',
             'itemprice.findall': 'itemPriceService.rpcFindAll',
             'itemprice.update': 'itemPriceService.rpcUpdate',
             'itemprice.destroy': 'itemPriceService.rpcDestroy',
+
             'paymentinformation.create': 'paymentInformationService.rpcCreate',
             'paymentinformation.find': 'paymentInformationService.rpcFindOne',
             'paymentinformation.findall': 'paymentInformationService.rpcFindAll',
             'paymentinformation.update': 'paymentInformationService.rpcUpdate',
             'paymentinformation.destroy': 'paymentInformationService.rpcDestroy',
+
             'itemimagedata.create': 'imageDataService.rpcCreate',
             'itemimagedata.find': 'imageDataService.rpcFindOne',
             'itemimagedata.findall': 'imageDataService.rpcFindAll',
@@ -127,31 +130,37 @@ export class RpcController {
             'itemimage.findall': 'itemImageService.rpcFindAll',
             'itemimage.update': 'itemImageService.rpcUpdate',
             'itemimage.destroy': 'itemCategoryService.rpcDestroy',
+
             'locationmarker.create': 'locationMarkerService.rpcCreate',
             'locationmarker.find': 'locationMarkerService.rpcFindOne',
             'locationmarker.findall': 'locationMarkerService.rpcFindAll',
             'locationmarker.update': 'locationMarkerService.rpcUpdate',
             'locationmarker.destroy': 'locationMarkerService.rpcDestroy',
+
             'itemlocation.create': 'itemLocationService.rpcCreate',
             'itemlocation.find': 'itemLocationService.rpcFindOne',
             'itemlocation.findall': 'itemLocationService.rpcFindAll',
             'itemlocation.update': 'itemLocationService.rpcUpdate',
             'itemlocation.destroy': 'itemLocationService.rpcDestroy',
+
             'shipping.create': 'shippingDestinationService.rpcCreate',
             'shipping.find': 'shippingDestinationService.rpcFindOne',
             'shipping.findall': 'shippingDestinationService.rpcFindAll',
             'shipping.update': 'shippingDestinationService.rpcUpdate',
             'shipping.destroy': 'shippingDestinationService.rpcDestroy',
+
             'iteminformation.create': 'itemInformationService.rpcCreate',
             'iteminformation.find': 'itemInformationService.rpcFindOne',
             'iteminformation.findall': 'itemInformationService.rpcFindAll',
             'iteminformation.update': 'itemInformationService.rpcUpdate',
             'iteminformation.destroy': 'itemInformationService.rpcDestroy',
+
             'messaginginformation.create': 'messagingInformationService.rpcCreate',
             'messaginginformation.find': 'messagingInformationService.rpcFindOne',
             'messaginginformation.findall': 'messagingInformationService.rpcFindAll',
             'messaginginformation.update': 'messagingInformationService.rpcUpdate',
             'messaginginformation.destroy': 'messagingInformationService.rpcDestroy',
+
             'listingitem.create': 'listingItemService.create',
             'listingitem.find': 'listingItemService.findOne',
             'listingitem.findall': 'listingItemService.findAll',
@@ -162,13 +171,15 @@ export class RpcController {
             'profile.create': 'rpcProfileService.rpcCreate',
             'profile.update': 'rpcProfileService.rpcUpdate',
             'profile.find': 'rpcProfileService.rpcFindOne',
-            'address.create': 'rpcAddressService.rpcCreate',
-            'address.update': 'rpcAddressService.rpcUpdate',
+
+            'address.create': 'rpcAddressService.rpcCreate', // DONE
+            'address.update': 'rpcAddressService.rpcUpdate', // DONE
             // everything above is/was used for testing
 
             // mappings below are for the final/real rpc api
             // profile
             'help': 'rpcCliHelpService.help', // DONE/TESTED
+
             'createprofile': 'rpcProfileService.create',
             'updateprofile': 'rpcProfileService.update',
             'getprofile': 'rpcProfileService.findOne',
