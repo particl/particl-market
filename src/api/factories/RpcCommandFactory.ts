@@ -7,11 +7,20 @@ import {NotFoundException} from '../exceptions/NotFoundException';
 // import {AddressCommand} from '../commands/AddressCommand';
 import {AddressCreateCommand} from '../commands/AddressCreateCommand';
 import {AddressUpdateCommand} from '../commands/AddressUpdateCommand';
+
 import {CategoryCreateCommand} from '../commands/CategoryCreateCommand';
 import {CategoriesGetCommand} from '../commands/CategoriesGetCommand';
+import {CategoryFindCommand} from '../commands/CategoryFindCommand';
 import {CategoryGetCommand} from '../commands/CategoryGetCommand';
 import {CategoryRemoveCommand} from '../commands/CategoryRemoveCommand';
-import {CategoryFindCommand} from '../commands/CategoryFindCommand';
+import {CategoryUpdateCommand} from '../commands/CategoryUpdateCommand';
+
+import {ItemCategoryCreateCommand} from '../commands/ItemCategoryCreateCommand';
+import {ItemCategoryDestroyCommand} from '../commands/ItemCategoryDestroyCommand';
+import {ItemCategoryFindAllCommand} from '../commands/ItemCategoryFindAllCommand';
+import {ItemCategoryFindCommand} from '../commands/ItemCategoryFindCommand';
+import {ItemCategoryFindRootCommand} from '../commands/ItemCategoryFindRootCommand';
+import {ItemCategoryUpdateCommand} from '../commands/ItemCategoryUpdateCommand';
 
 
 import {HelpCommand} from '../commands/HelpCommand';
@@ -26,11 +35,21 @@ export class RpcCommandFactory {
     constructor(
        @inject(Types.Command) @named(Targets.Command.AddressCreateCommand) private addresscreateCommand: AddressCreateCommand,
        @inject(Types.Command) @named(Targets.Command.AddressUpdateCommand) private addressUpdateCommand: AddressUpdateCommand,
-       @inject(Types.Command) @named(Targets.Command.CategoryCreateCommand) private categoryCreateCommand: CategoryCreateCommand,
+
        @inject(Types.Command) @named(Targets.Command.CategoriesGetCommand) private categoriesGetCommand: CategoriesGetCommand,
+       @inject(Types.Command) @named(Targets.Command.CategoryCreateCommand) private categoryCreateCommand: CategoryCreateCommand,
+       @inject(Types.Command) @named(Targets.Command.CategoryFindCommand) private categoryFindCommand: CategoryFindCommand,
        @inject(Types.Command) @named(Targets.Command.CategoryGetCommand) private categoryGetCommand: CategoryGetCommand,
        @inject(Types.Command) @named(Targets.Command.CategoryRemoveCommand) private categoryRemoveCommand: CategoryRemoveCommand,
-       @inject(Types.Command) @named(Targets.Command.CategoryFindCommand) private categoryFindCommand: CategoryFindCommand,
+       @inject(Types.Command) @named(Targets.Command.CategoryUpdateCommand) private categoryUpdateCommand: CategoryUpdateCommand,
+
+       @inject(Types.Command) @named(Targets.Command.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemCategoryDestroyCommand) private itemCategoryDestroyCommand: ItemCategoryDestroyCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemCategoryFindAllCommand) private itemCategoryFindAllCommand: ItemCategoryFindAllCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemCategoryFindCommand) private itemCategoryFindCommand: ItemCategoryFindCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemCategoryFindRootCommand) private itemCategoryFindRootCommand: ItemCategoryFindRootCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemCategoryUpdateCommand) private itemCategoryUpdateCommand: ItemCategoryUpdateCommand,
+
        @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
@@ -42,11 +61,21 @@ export class RpcCommandFactory {
 
         this.commands.push(addresscreateCommand);
         this.commands.push(addressUpdateCommand);
+
         this.commands.push(categoryCreateCommand);
         this.commands.push(categoriesGetCommand);
+        this.commands.push(categoryFindCommand);
         this.commands.push(categoryGetCommand);
         this.commands.push(categoryRemoveCommand);
-        this.commands.push(categoryFindCommand);
+        this.commands.push(categoryUpdateCommand);
+
+        this.commands.push(itemCategoryCreateCommand);
+        this.commands.push(itemCategoryDestroyCommand);
+        this.commands.push(itemCategoryFindAllCommand);
+        this.commands.push(itemCategoryFindCommand);
+        this.commands.push(itemCategoryFindRootCommand);
+        this.commands.push(itemCategoryUpdateCommand);
+
         this.commands.push(helpCommand);
 
         for (const o of this.commands) {

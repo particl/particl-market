@@ -95,12 +95,12 @@ export class RpcController {
         this.exposedMethods = {
 
             // todo: figure out a working way to pass for example: this.escrowService.create
-            'itemcategory.create': 'rpcItemCategoryService.create',
-            'itemcategory.find': 'rpcItemCategoryService.findOne',
-            'itemcategory.findall': 'rpcItemCategoryService.findAll',
-            'itemcategory.findroot': 'rpcItemCategoryService.findRoot',
-            'itemcategory.update': 'rpcItemCategoryService.update',
-            'itemcategory.destroy': 'rpcItemCategoryService.destroy',
+            'itemcategory.create': 'rpcItemCategoryService.create', // DONE
+            'itemcategory.find': 'rpcItemCategoryService.findOne', // DONE
+            'itemcategory.findall': 'rpcItemCategoryService.findAll', // DONE
+            'itemcategory.findroot': 'rpcItemCategoryService.findRoot', // DONE
+            'itemcategory.update': 'rpcItemCategoryService.update', // DONE
+            'itemcategory.destroy': 'rpcItemCategoryService.destroy', // DONE
 
             'escrow.create': 'escrowService.rpcCreate',
             'escrow.find': 'escrowService.rpcFindOne',

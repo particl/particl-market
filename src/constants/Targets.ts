@@ -121,6 +121,12 @@ export const Targets = {
         CategoryRemoveCommand: 'CategoryRemoveCommand',
         CategoryUpdateCommand: 'CategoryUpdateCommand',
         HelpCommand: 'HelpCommand',
+        ItemCategoryCreateCommand: 'ItemCategoryCreateCommand',
+        ItemCategoryDestroyCommand: 'ItemCategoryDestroyCommand',
+        ItemCategoryFindAllCommand: 'ItemCategoryFindAllCommand',
+        ItemCategoryFindCommand: 'ItemCategoryFindCommand',
+        ItemCategoryFindRootCommand: 'ItemCategoryFindRootCommand',
+        ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand',
         RpcCommand: 'RpcCommand',
         TestCommand: 'TestCommand'
     },
