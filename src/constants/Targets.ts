@@ -200,6 +200,7 @@ export const Targets = {
         ProfileUpdateCommand: 'ProfileUpdateCommand',
         RemoveFavoriteCommand: 'RemoveFavoriteCommand',
         RemoveItemImageCommand: 'RemoveItemImageCommand',
+        RemoveItemLocationCommand: 'RemoveItemLocationCommand',
         RemoveShippingDestinationCommand: 'RemoveShippingDestinationCommand',
         RpcCommand: 'RpcCommand',
         SearchListingItemTemplateCommand: 'SearchListingItemTemplateCommand',
@@ -211,6 +212,7 @@ export const Targets = {
         TestCommand: 'TestCommand',
         UpdateEscrowCommand: 'UpdateEscrowCommand',
         UpdateItemInformationCommand: 'UpdateItemInformationCommand',
+        UpdateItemLocationCommand: 'UpdateItemLocationCommand',
         UpdatePaymentInformationCommand: 'UpdatePaymentInformationCommand',
         UpdateProfileCommand: 'UpdateProfileCommand'
     },

@@ -128,6 +128,9 @@ import {RemoveItemImageCommand} from '../commands/RemoveItemImageCommand';
 import {AddShippingDestinationCommand} from '../commands/AddShippingDestinationCommand';
 import {RemoveShippingDestinationCommand} from '../commands/RemoveShippingDestinationCommand';
 
+import {UpdateItemLocationCommand} from '../commands/UpdateItemLocationCommand';
+import {RemoveItemLocationCommand} from '../commands/RemoveItemLocationCommand';
+
 import {HelpCommand} from '../commands/HelpCommand';
 
 // tslint:disable:array-type
@@ -266,6 +269,9 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.AddShippingDestinationCommand) private addShippingDstCommand: AddShippingDestinationCommand,
        @inject(Types.Command) @named(Targets.Command.RemoveShippingDestinationCommand) private removeShippingDstCommand: RemoveShippingDestinationCommand,
 
+       @inject(Types.Command) @named(Targets.Command.UpdateItemLocationCommand) private updateItemLocationCommand: UpdateItemLocationCommand,
+       @inject(Types.Command) @named(Targets.Command.RemoveItemLocationCommand) private removeItemLocationCommand: RemoveItemLocationCommand,
+
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
        // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
        // @multiInject(Types.Command) @named('Command') private commands: Command[],
@@ -395,6 +401,9 @@ export class RpcCommandFactory {
 
         this.commands.push(addShippingDstCommand);
         this.commands.push(removeShippingDstCommand);
+
+        this.commands.push(updateItemLocationCommand);
+        this.commands.push(removeItemLocationCommand);
 
         this.commands.push(helpCommand);
 

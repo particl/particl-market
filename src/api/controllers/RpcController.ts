@@ -237,8 +237,8 @@ export class RpcController {
             'removeshippingdestination': 'rpcShippingDestinationService.destroy', // DONE
 
             // item location
-            'updateitemlocation': 'rpcItemLocationService.update',
-            'removeitemlocation': 'rpcItemLocationService.destroy',
+            'updateitemlocation': 'rpcItemLocationService.update', // DONE
+            'removeitemlocation': 'rpcItemLocationService.destroy', // DONE
 
             // message infoprmation
             'updatemessaginginformation': 'rpcMesInfoService.update',
