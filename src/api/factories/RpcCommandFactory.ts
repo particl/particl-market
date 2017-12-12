@@ -99,6 +99,10 @@ import {CreateProfileCommand} from '../commands/CreateProfileCommand';
 import {GetProfileCommand} from '../commands/GetProfileCommand';
 import {UpdateProfileCommand} from '../commands/UpdateProfileCommand';
 
+import {FindItemsCommand} from '../commands/FindItemsCommand';
+import {FindOwnItemsCommand} from '../commands/FindOwnItemsCommand';
+import {GetItemCommand} from '../commands/GetItemCommand';
+
 // tslint:disable:array-type
 export class RpcCommandFactory {
 
@@ -204,6 +208,10 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.GetProfileCommand) private getProfileCommand: GetProfileCommand,
        @inject(Types.Command) @named(Targets.Command.UpdateProfileCommand) private updateProfileCommand: UpdateProfileCommand,
 
+       @inject(Types.Command) @named(Targets.Command.FindItemsCommand) private findItemsCommand: FindItemsCommand,
+       @inject(Types.Command) @named(Targets.Command.FindOwnItemsCommand) private findOwnItemsCommand: FindOwnItemsCommand,
+       @inject(Types.Command) @named(Targets.Command.GetItemCommand) private getItemCommand: GetItemCommand,
+
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
        // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
        // @multiInject(Types.Command) @named('Command') private commands: Command[],
@@ -302,6 +310,10 @@ export class RpcCommandFactory {
         this.commands.push(createProfileCommand);
         this.commands.push(getProfileCommand);
         this.commands.push(updateProfileCommand);
+
+        this.commands.push(findItemsCommand);
+        this.commands.push(findOwnItemsCommand);
+        this.commands.push(getItemCommand);
 
         this.commands.push(helpCommand);
 

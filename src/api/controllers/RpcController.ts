@@ -190,9 +190,9 @@ export class RpcController {
             'updateaddress': 'rpcAddressService.update', // DONE
 
             // listing items
-            'finditems': 'rpcListingItemService.search',
-            'getitem': 'rpcListingItemService.findOne',
-            'findownitems': 'rpcListingItemService.findOwnItems',
+            'finditems': 'rpcListingItemService.search', // DONE
+            'getitem': 'rpcListingItemService.findOne', // DONE
+            'findownitems': 'rpcListingItemService.findOwnItems', // DONE
 
             // listing items
             'createlistingitemtemplate': 'rpcListingItemTemplateService.create',
