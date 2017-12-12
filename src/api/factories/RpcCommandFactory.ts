@@ -93,8 +93,6 @@ import {ShippingFindAllCommand} from '../commands/ShippingFindAllCommand';
 import {ShippingFindCommand} from '../commands/ShippingFindCommand';
 import {ShippingUpdateCommand} from '../commands/ShippingUpdateCommand';
 
-import {HelpCommand} from '../commands/HelpCommand';
-
 import {CreateProfileCommand} from '../commands/CreateProfileCommand';
 import {GetProfileCommand} from '../commands/GetProfileCommand';
 import {UpdateProfileCommand} from '../commands/UpdateProfileCommand';
@@ -102,6 +100,12 @@ import {UpdateProfileCommand} from '../commands/UpdateProfileCommand';
 import {FindItemsCommand} from '../commands/FindItemsCommand';
 import {FindOwnItemsCommand} from '../commands/FindOwnItemsCommand';
 import {GetItemCommand} from '../commands/GetItemCommand';
+
+import {CreateListingItemTemplateCommand} from '../commands/CreateListingItemTemplateCommand';
+import {GetListingItemTemplateCommand} from '../commands/GetListingItemTemplateCommand';
+import {SearchListingItemTemplateCommand} from '../commands/SearchListingItemTemplateCommand';
+
+import {HelpCommand} from '../commands/HelpCommand';
 
 // tslint:disable:array-type
 export class RpcCommandFactory {
@@ -212,6 +216,10 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.FindOwnItemsCommand) private findOwnItemsCommand: FindOwnItemsCommand,
        @inject(Types.Command) @named(Targets.Command.GetItemCommand) private getItemCommand: GetItemCommand,
 
+       @inject(Types.Command) @named(Targets.Command.CreateListingItemTemplateCommand) private createListingItemTemplateCmd: CreateListingItemTemplateCommand,
+       @inject(Types.Command) @named(Targets.Command.GetListingItemTemplateCommand) private getListingItemTemplateCmd: GetListingItemTemplateCommand,
+       @inject(Types.Command) @named(Targets.Command.SearchListingItemTemplateCommand) private searchListingItemTemplateCmd: SearchListingItemTemplateCommand,
+
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
        // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
        // @multiInject(Types.Command) @named('Command') private commands: Command[],
@@ -314,6 +322,10 @@ export class RpcCommandFactory {
         this.commands.push(findItemsCommand);
         this.commands.push(findOwnItemsCommand);
         this.commands.push(getItemCommand);
+
+        this.commands.push(createListingItemTemplateCmd);
+        this.commands.push(getListingItemTemplateCmd);
+        this.commands.push(searchListingItemTemplateCmd);
 
         this.commands.push(helpCommand);
 
