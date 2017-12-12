@@ -233,8 +233,8 @@ export class RpcController {
             'additemimage': 'rpcItemImageService.create', // DONE
             'removeitemimage': 'rpcItemImageService.destroy', // DONE
             // shippingDestination
-            'addshippingdestination': 'rpcShippingDestinationService.create',
-            'removeshippingdestination': 'rpcShippingDestinationService.destroy',
+            'addshippingdestination': 'rpcShippingDestinationService.create', // DONE
+            'removeshippingdestination': 'rpcShippingDestinationService.destroy', // DONE
 
             // item location
             'updateitemlocation': 'rpcItemLocationService.update',
