@@ -135,6 +135,8 @@ import {UpdateMessagingInformationCommand} from '../commands/UpdateMessagingInfo
 
 import {FindBidsCommand} from '../commands/FindBidsCommand';
 
+import {AddMarketCommand} from '../commands/AddMarketCommand';
+
 import {HelpCommand} from '../commands/HelpCommand';
 
 // tslint:disable:array-type
@@ -281,6 +283,8 @@ export class RpcCommandFactory {
 
        @inject(Types.Command) @named(Targets.Command.FindBidsCommand) private findBidsCommand: FindBidsCommand,
 
+       @inject(Types.Command) @named(Targets.Command.AddMarketCommand) private addMarketCommand: AddMarketCommand,
+
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
        // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
        // @multiInject(Types.Command) @named('Command') private commands: Command[],
@@ -417,6 +421,8 @@ export class RpcCommandFactory {
         this.commands.push(updateMsgInfoCmd);
 
         this.commands.push(findBidsCommand);
+
+        this.commands.push(addMarketCommand);
 
         this.commands.push(helpCommand);
 

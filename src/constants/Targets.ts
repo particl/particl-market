@@ -115,6 +115,7 @@ export const Targets = {
         AddDataCommand: 'AddDataCommand',
         AddFavoriteCommand: 'AddFavoriteCommand',
         AddItemImageCommand: 'AddItemImageCommand',
+        AddMarketCommand: 'AddMarketCommand',
         AddressCreateCommand: 'AddressCreateCommand',
         AddressUpdateCommand: 'AddressUpdateCommand',
         AddShippingDestinationCommand: 'AddShippingDestinationCommand',
