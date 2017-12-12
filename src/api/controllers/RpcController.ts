@@ -150,11 +150,11 @@ export class RpcController {
             'shipping.update': 'shippingDestinationService.rpcUpdate', // DONE
             'shipping.destroy': 'shippingDestinationService.rpcDestroy', // DONE
 
-            'iteminformation.create': 'itemInformationService.rpcCreate',
-            'iteminformation.find': 'itemInformationService.rpcFindOne',
-            'iteminformation.findall': 'itemInformationService.rpcFindAll',
-            'iteminformation.update': 'itemInformationService.rpcUpdate',
-            'iteminformation.destroy': 'itemInformationService.rpcDestroy',
+            'iteminformation.create': 'itemInformationService.rpcCreate', // DONE
+            'iteminformation.find': 'itemInformationService.rpcFindOne', // DONE
+            'iteminformation.findall': 'itemInformationService.rpcFindAll', // DONE
+            'iteminformation.update': 'itemInformationService.rpcUpdate', // DONE
+            'iteminformation.destroy': 'itemInformationService.rpcDestroy', // DONE
 
             'messaginginformation.create': 'messagingInformationService.rpcCreate',
             'messaginginformation.find': 'messagingInformationService.rpcFindOne',
