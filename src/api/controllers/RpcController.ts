@@ -114,11 +114,11 @@ export class RpcController {
             'itemprice.update': 'itemPriceService.rpcUpdate', // DONE
             'itemprice.destroy': 'itemPriceService.rpcDestroy', // DONE
 
-            'paymentinformation.create': 'paymentInformationService.rpcCreate',
-            'paymentinformation.find': 'paymentInformationService.rpcFindOne',
-            'paymentinformation.findall': 'paymentInformationService.rpcFindAll',
-            'paymentinformation.update': 'paymentInformationService.rpcUpdate',
-            'paymentinformation.destroy': 'paymentInformationService.rpcDestroy',
+            'paymentinformation.create': 'paymentInformationService.rpcCreate', // DONE
+            'paymentinformation.find': 'paymentInformationService.rpcFindOne', // DONE
+            'paymentinformation.findall': 'paymentInformationService.rpcFindAll', // DONE
+            'paymentinformation.update': 'paymentInformationService.rpcUpdate', // DONE
+            'paymentinformation.destroy': 'paymentInformationService.rpcDestroy', // DONE
 
             'itemimagedata.create': 'imageDataService.rpcCreate',
             'itemimagedata.find': 'imageDataService.rpcFindOne',
