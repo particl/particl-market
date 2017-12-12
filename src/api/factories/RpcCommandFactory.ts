@@ -40,6 +40,10 @@ import {PaymentInformationFindAllCommand} from '../commands/PaymentInformationFi
 import {PaymentInformationFindCommand} from '../commands/PaymentInformationFindCommand';
 import {PaymentInformationUpdateCommand} from '../commands/PaymentInformationUpdateCommand';
 
+import {ProfileCreateCommand} from '../commands/ProfileCreateCommand';
+import {ProfileFindCommand} from '../commands/ProfileFindCommand';
+import {ProfileUpdateCommand} from '../commands/ProfileUpdateCommand';
+
 import {ItemImageDataCreateCommand} from '../commands/ItemImageDataCreateCommand';
 import {ItemImageDataDestroyCommand} from '../commands/ItemImageDataDestroyCommand';
 import {ItemImageDataFindAllCommand} from '../commands/ItemImageDataFindAllCommand';
@@ -137,6 +141,10 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.PaymentInformationFindCommand) private paymentInformationFindCommand: PaymentInformationFindCommand,
        @inject(Types.Command) @named(Targets.Command.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
 
+       @inject(Types.Command) @named(Targets.Command.ProfileCreateCommand) private profileCreateCommand: ProfileCreateCommand,
+       @inject(Types.Command) @named(Targets.Command.ProfileFindCommand) private profileFindCommand: ProfileFindCommand,
+       @inject(Types.Command) @named(Targets.Command.ProfileUpdateCommand) private profileUpdateCommand: ProfileUpdateCommand,
+
        @inject(Types.Command) @named(Targets.Command.ItemImageDataCreateCommand) private itemImageDataCreateCommand: ItemImageDataCreateCommand,
        @inject(Types.Command) @named(Targets.Command.ItemImageDataDestroyCommand) private itemImageDataDestroyCommand: ItemImageDataDestroyCommand,
        @inject(Types.Command) @named(Targets.Command.ItemImageDataFindAllCommand) private itemImageDataFindAllCommand: ItemImageDataFindAllCommand,
@@ -230,6 +238,10 @@ export class RpcCommandFactory {
         this.commands.push(paymentInfoFindAllCommand);
         this.commands.push(paymentInformationFindCommand);
         this.commands.push(paymentInformationUpdateCommand);
+
+        this.commands.push(profileCreateCommand);
+        this.commands.push(profileFindCommand);
+        this.commands.push(profileUpdateCommand);
 
         this.commands.push(itemImageDataCreateCommand);
         this.commands.push(itemImageDataDestroyCommand);

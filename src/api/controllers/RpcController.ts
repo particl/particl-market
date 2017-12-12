@@ -169,9 +169,9 @@ export class RpcController {
             'listingitem.update': 'listingItemService.update', // DONE
             'listingitem.destroy': 'listingItemService.destroy', // DONE
 
-            'profile.create': 'rpcProfileService.rpcCreate',
-            'profile.update': 'rpcProfileService.rpcUpdate',
-            'profile.find': 'rpcProfileService.rpcFindOne',
+            'profile.create': 'rpcProfileService.rpcCreate', // DONE
+            'profile.update': 'rpcProfileService.rpcUpdate', // DONE
+            'profile.find': 'rpcProfileService.rpcFindOne', // DONE
 
             'address.create': 'rpcAddressService.rpcCreate', // DONE
             'address.update': 'rpcAddressService.rpcUpdate', // DONE
