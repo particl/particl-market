@@ -162,12 +162,12 @@ export class RpcController {
             'messaginginformation.update': 'messagingInformationService.rpcUpdate', // DONE
             'messaginginformation.destroy': 'messagingInformationService.rpcDestroy', // DONE
 
-            'listingitem.create': 'listingItemService.create',
-            'listingitem.find': 'listingItemService.findOne',
-            'listingitem.findall': 'listingItemService.findAll',
-            'listingitem.findbycategory': 'listingItemService.findByCategory',
-            'listingitem.update': 'listingItemService.update',
-            'listingitem.destroy': 'listingItemService.destroy',
+            'listingitem.create': 'listingItemService.create', // DONE
+            'listingitem.find': 'listingItemService.findOne', // DONE
+            'listingitem.findall': 'listingItemService.findAll', // DONE
+            'listingitem.findbycategory': 'listingItemService.findByCategory', // DONE
+            'listingitem.update': 'listingItemService.update', // DONE
+            'listingitem.destroy': 'listingItemService.destroy', // DONE
 
             'profile.create': 'rpcProfileService.rpcCreate',
             'profile.update': 'rpcProfileService.rpcUpdate',

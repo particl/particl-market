@@ -27,6 +27,13 @@ import {ItemPriceFindAllCommand} from '../commands/ItemPriceFindAllCommand';
 import {ItemPriceFindCommand} from '../commands/ItemPriceFindCommand';
 import {ItemPriceUpdateCommand} from '../commands/ItemPriceUpdateCommand';
 
+import {ListingItemCreateCommand} from '../commands/ListingItemCreateCommand';
+import {ListingItemDestroyCommand} from '../commands/ListingItemDestroyCommand';
+import {ListingItemFindAllCommand} from '../commands/ListingItemFindAllCommand';
+import {ListingItemFindByCategoryCommand} from '../commands/ListingItemFindByCategoryCommand';
+import {ListingItemFindCommand} from '../commands/ListingItemFindCommand';
+import {ListingItemUpdateCommand} from '../commands/ListingItemUpdateCommand';
+
 import {PaymentInformationCreateCommand} from '../commands/PaymentInformationCreateCommand';
 import {PaymentInformationDestroyCommand} from '../commands/PaymentInformationDestroyCommand';
 import {PaymentInformationFindAllCommand} from '../commands/PaymentInformationFindAllCommand';
@@ -113,6 +120,14 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.ItemPriceFindAllCommand) private itemPriceFindAllCommand: ItemPriceFindAllCommand,
        @inject(Types.Command) @named(Targets.Command.ItemPriceFindCommand) private itemPriceFindCommand: ItemPriceFindCommand,
        @inject(Types.Command) @named(Targets.Command.ItemPriceUpdateCommand) private itemPriceUpdateCommand: ItemPriceUpdateCommand,
+
+       // Truncated names to be under max line length
+       @inject(Types.Command) @named(Targets.Command.ListingItemCreateCommand) private lstItemCreateCommand: ListingItemCreateCommand,
+       @inject(Types.Command) @named(Targets.Command.ListingItemDestroyCommand) private lstItemDestroyCommand: ListingItemDestroyCommand,
+       @inject(Types.Command) @named(Targets.Command.ListingItemFindAllCommand) private lstItemFindAllCommand: ListingItemFindAllCommand,
+       @inject(Types.Command) @named(Targets.Command.ListingItemFindByCategoryCommand) private lstItemFindByCategoryCommand: ListingItemFindByCategoryCommand,
+       @inject(Types.Command) @named(Targets.Command.ListingItemFindCommand) private lstItemFindCommand: ListingItemFindCommand,
+       @inject(Types.Command) @named(Targets.Command.ListingItemUpdateCommand) private lstItemUpdateCommand: ListingItemUpdateCommand,
 
        @inject(Types.Command) @named(Targets.Command.PaymentInformationCreateCommand) private paymentInformationCreateCommand: PaymentInformationCreateCommand,
        // Name shortened because max line length
@@ -202,6 +217,13 @@ export class RpcCommandFactory {
         this.commands.push(itemPriceFindAllCommand);
         this.commands.push(itemPriceFindCommand);
         this.commands.push(itemPriceUpdateCommand);
+
+        this.commands.push(lstItemCreateCommand);
+        this.commands.push(lstItemDestroyCommand);
+        this.commands.push(lstItemFindAllCommand);
+        this.commands.push(lstItemFindByCategoryCommand);
+        this.commands.push(lstItemFindCommand);
+        this.commands.push(lstItemUpdateCommand);
 
         this.commands.push(paymentInformationCreateCommand);
         this.commands.push(paymentInfoDestroyCommand);
