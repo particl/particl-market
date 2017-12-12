@@ -213,8 +213,8 @@ export class RpcController {
             'findcategory': 'rpcItemCategoryService.search', // DONE
 
             // favorite items
-            'addfavorite': 'rpcFavoriteItemService.create',
-            'removefavorite': 'rpcFavoriteItemService.destroy',
+            'addfavorite': 'rpcFavoriteItemService.create', // DONE
+            'removefavorite': 'rpcFavoriteItemService.destroy', // DONE
 
             // paymentInformation
             'updatepaymentinformation': 'rpcPaymentInformationService.update',

@@ -112,6 +112,7 @@ export const Targets = {
         UserService: 'UserService'
     },
     Command:     {
+        AddFavoriteCommand: 'AddFavouriteCommand',
         AddressCreateCommand: 'AddressCreateCommand',
         AddressUpdateCommand: 'AddressUpdateCommand',
         CategoriesGetCommand: 'CategoriesGetCommand',
@@ -190,6 +191,7 @@ export const Targets = {
         ProfileCreateCommand: 'ProfileCreateCommand',
         ProfileFindCommand: 'ProfileFindCommand',
         ProfileUpdateCommand: 'ProfileUpdateCommand',
+        RemoveFavoriteCommand: 'RemoveFavoriteCommand',
         RpcCommand: 'RpcCommand',
         SearchListingItemTemplateCommand: 'SearchListingItemTemplateCommand',
         ShippingCreateCommand: 'ShippingCreateCommand',

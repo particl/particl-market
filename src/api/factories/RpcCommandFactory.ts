@@ -109,6 +109,9 @@ import {CreateItemInformationCommand} from '../commands/CreateItemInformationCom
 import {GetItemInformationCommand} from '../commands/GetItemInformationCommand';
 import {UpdateItemInformationCommand} from '../commands/UpdateItemInformationCommand';
 
+import {AddFavoriteCommand} from '../commands/AddFavoriteCommand';
+import {RemoveFavoriteCommand} from '../commands/RemoveFavoriteCommand';
+
 import {HelpCommand} from '../commands/HelpCommand';
 
 // tslint:disable:array-type
@@ -228,6 +231,9 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.GetItemInformationCommand) private getItemInformationCommand: GetItemInformationCommand,
        @inject(Types.Command) @named(Targets.Command.UpdateItemInformationCommand) private updateItemInformationCommand: UpdateItemInformationCommand,
 
+       @inject(Types.Command) @named(Targets.Command.AddFavoriteCommand) private addFavoriteCommand: AddFavoriteCommand,
+       @inject(Types.Command) @named(Targets.Command.RemoveFavoriteCommand) private removeFavoriteCommand: RemoveFavoriteCommand,
+
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
        // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
        // @multiInject(Types.Command) @named('Command') private commands: Command[],
@@ -338,6 +344,9 @@ export class RpcCommandFactory {
         this.commands.push(createItemInformationCommand);
         this.commands.push(getItemInformationCommand);
         this.commands.push(updateItemInformationCommand);
+
+        this.commands.push(addFavoriteCommand);
+        this.commands.push(removeFavoriteCommand);
 
         this.commands.push(helpCommand);
 
