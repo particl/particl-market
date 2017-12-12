@@ -168,14 +168,14 @@ export class RpcController {
 
             // mappings below are for the final/real rpc api
             // profile
-            'help': 'rpcCliHelpService.help',
+            'help': 'rpcCliHelpService.help', // DONE/TESTED
             'createprofile': 'rpcProfileService.create',
             'updateprofile': 'rpcProfileService.update',
             'getprofile': 'rpcProfileService.findOne',
 
             // profile / addresses
-            'createaddress': 'rpcAddressService.create',
-            'updateaddress': 'rpcAddressService.update',
+            'createaddress': 'rpcAddressService.create', // DONE
+            'updateaddress': 'rpcAddressService.update', // DONE
 
             // listing items
             'finditems': 'rpcListingItemService.search',
@@ -193,12 +193,12 @@ export class RpcController {
             'updateiteminformation': 'rpcItemInformationService.update',
 
             // categories
-            'createcategory': 'rpcItemCategoryService.create',
-            'updatecategory': 'rpcItemCategoryService.update',
-            'removecategory': 'rpcItemCategoryService.destroy',
-            'getcategories': 'rpcItemCategoryService.findRoot',
-            'getcategory': 'rpcItemCategoryService.findOne',
-            'findcategory': 'rpcItemCategoryService.search',
+            'createcategory': 'rpcItemCategoryService.create', // DONE
+            'updatecategory': 'rpcItemCategoryService.update', // DONE
+            'removecategory': 'rpcItemCategoryService.destroy', // DONE
+            'getcategories': 'rpcItemCategoryService.findRoot', // DONE
+            'getcategory': 'rpcItemCategoryService.findOne', // DONE
+            'findcategory': 'rpcItemCategoryService.search', // DONE
 
             // favorite items
             'addfavorite': 'rpcFavoriteItemService.create',

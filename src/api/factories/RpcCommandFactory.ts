@@ -11,6 +11,8 @@ import {CategoryCreateCommand} from '../commands/CategoryCreateCommand';
 import {CategoriesGetCommand} from '../commands/CategoriesGetCommand';
 import {CategoryGetCommand} from '../commands/CategoryGetCommand';
 import {CategoryRemoveCommand} from '../commands/CategoryRemoveCommand';
+import {CategoryFindCommand} from '../commands/CategoryFindCommand';
+
 
 import {HelpCommand} from '../commands/HelpCommand';
 // import {multiInject} from 'inversify/dts/annotation/multi_inject';
@@ -28,6 +30,7 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.CategoriesGetCommand) private categoriesGetCommand: CategoriesGetCommand,
        @inject(Types.Command) @named(Targets.Command.CategoryGetCommand) private categoryGetCommand: CategoryGetCommand,
        @inject(Types.Command) @named(Targets.Command.CategoryRemoveCommand) private categoryRemoveCommand: CategoryRemoveCommand,
+       @inject(Types.Command) @named(Targets.Command.CategoryFindCommand) private categoryFindCommand: CategoryFindCommand,
        @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
@@ -43,6 +46,7 @@ export class RpcCommandFactory {
         this.commands.push(categoriesGetCommand);
         this.commands.push(categoryGetCommand);
         this.commands.push(categoryRemoveCommand);
+        this.commands.push(categoryFindCommand);
         this.commands.push(helpCommand);
 
         for (const o of this.commands) {
@@ -52,10 +56,10 @@ export class RpcCommandFactory {
     }
 
     public get(commandName: string): RpcCommand<Bookshelf.Model<any>> {
-        this.log.error('Looking for command <' + commandName + '>');
+        this.log.debug('Looking for command <' + commandName + '>');
         for (const command of this.commands) {
             if (command.name.toLowerCase() === commandName.toLowerCase()) {
-                this.log.error('Found ' + command.name.toLowerCase());
+                this.log.debug('Found ' + command.name.toLowerCase());
                 return command;
             }
         }

@@ -116,6 +116,7 @@ export const Targets = {
         AddressUpdateCommand: 'AddressUpdateCommand',
         CategoriesGetCommand: 'CategoriesGetCommand',
         CategoryCreateCommand: 'CategoryCreateCommand',
+        CategoryFindCommand: 'CategoryFindCommand',
         CategoryGetCommand: 'CategoryGetCommand',
         CategoryRemoveCommand: 'CategoryRemoveCommand',
         CategoryUpdateCommand: 'CategoryUpdateCommand',
