@@ -114,6 +114,10 @@ import {RemoveFavoriteCommand} from '../commands/RemoveFavoriteCommand';
 
 import {UpdatePaymentInformationCommand} from '../commands/UpdatePaymentInformationCommand';
 
+import {CreateEscrowCommand} from '../commands/CreateEscrowCommand';
+import {DestroyEscrowCommand} from '../commands/DestroyEscrowCommand';
+import {UpdateEscrowCommand} from '../commands/UpdateEscrowCommand';
+
 import {HelpCommand} from '../commands/HelpCommand';
 
 // tslint:disable:array-type
@@ -238,6 +242,10 @@ export class RpcCommandFactory {
 
        @inject(Types.Command) @named(Targets.Command.UpdatePaymentInformationCommand) private updatePaymentInformationCommand: UpdatePaymentInformationCommand,
 
+       @inject(Types.Command) @named(Targets.Command.CreateEscrowCommand) private createEscrowCommand: CreateEscrowCommand,
+       @inject(Types.Command) @named(Targets.Command.DestroyEscrowCommand) private destroyEscrowCommand: DestroyEscrowCommand,
+       @inject(Types.Command) @named(Targets.Command.UpdateEscrowCommand) private updateEscrowCommand: UpdateEscrowCommand,
+
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
        // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
        // @multiInject(Types.Command) @named('Command') private commands: Command[],
@@ -353,6 +361,10 @@ export class RpcCommandFactory {
         this.commands.push(removeFavoriteCommand);
 
         this.commands.push(updatePaymentInformationCommand);
+
+        this.commands.push(createEscrowCommand);
+        this.commands.push(destroyEscrowCommand);
+        this.commands.push(updateEscrowCommand);
 
         this.commands.push(helpCommand);
 

@@ -220,9 +220,9 @@ export class RpcController {
             'updatepaymentinformation': 'rpcPaymentInformationService.update', // DONE
 
             // escrow
-            'createescrow': 'rpcEscrowService.create',
-            'updateescrow': 'rpcEscrowService.update',
-            'destroyescrow': 'rpcEscrowService.destroy',
+            'createescrow': 'rpcEscrowService.create', // DONE
+            'updateescrow': 'rpcEscrowService.update', // DONE
+            'destroyescrow': 'rpcEscrowService.destroy', // DONE
 
             // test data management
             'cleandb': 'rpcTestDataService.clean',
