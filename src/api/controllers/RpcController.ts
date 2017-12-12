@@ -217,7 +217,7 @@ export class RpcController {
             'removefavorite': 'rpcFavoriteItemService.destroy', // DONE
 
             // paymentInformation
-            'updatepaymentinformation': 'rpcPaymentInformationService.update',
+            'updatepaymentinformation': 'rpcPaymentInformationService.update', // DONE
 
             // escrow
             'createescrow': 'rpcEscrowService.create',

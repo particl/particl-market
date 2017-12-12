@@ -112,7 +112,7 @@ export const Targets = {
         UserService: 'UserService'
     },
     Command:     {
-        AddFavoriteCommand: 'AddFavouriteCommand',
+        AddFavoriteCommand: 'AddFavoriteCommand',
         AddressCreateCommand: 'AddressCreateCommand',
         AddressUpdateCommand: 'AddressUpdateCommand',
         CategoriesGetCommand: 'CategoriesGetCommand',
@@ -201,6 +201,7 @@ export const Targets = {
         ShippingUpdateCommand: 'ShippingUpdateCommand',
         TestCommand: 'TestCommand',
         UpdateItemInformationCommand: 'UpdateItemInformationCommand',
+        UpdatePaymentInformationCommand: 'UpdatePaymentInformationCommand',
         UpdateProfileCommand: 'UpdateProfileCommand'
     },
     Factory:     {

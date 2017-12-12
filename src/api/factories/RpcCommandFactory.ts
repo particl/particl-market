@@ -112,6 +112,8 @@ import {UpdateItemInformationCommand} from '../commands/UpdateItemInformationCom
 import {AddFavoriteCommand} from '../commands/AddFavoriteCommand';
 import {RemoveFavoriteCommand} from '../commands/RemoveFavoriteCommand';
 
+import {UpdatePaymentInformationCommand} from '../commands/UpdatePaymentInformationCommand';
+
 import {HelpCommand} from '../commands/HelpCommand';
 
 // tslint:disable:array-type
@@ -234,6 +236,8 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.AddFavoriteCommand) private addFavoriteCommand: AddFavoriteCommand,
        @inject(Types.Command) @named(Targets.Command.RemoveFavoriteCommand) private removeFavoriteCommand: RemoveFavoriteCommand,
 
+       @inject(Types.Command) @named(Targets.Command.UpdatePaymentInformationCommand) private updatePaymentInformationCommand: UpdatePaymentInformationCommand,
+
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
        // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
        // @multiInject(Types.Command) @named('Command') private commands: Command[],
@@ -347,6 +351,8 @@ export class RpcCommandFactory {
 
         this.commands.push(addFavoriteCommand);
         this.commands.push(removeFavoriteCommand);
+
+        this.commands.push(updatePaymentInformationCommand);
 
         this.commands.push(helpCommand);
 
