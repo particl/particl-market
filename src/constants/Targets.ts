@@ -213,6 +213,7 @@ export const Targets = {
         UpdateEscrowCommand: 'UpdateEscrowCommand',
         UpdateItemInformationCommand: 'UpdateItemInformationCommand',
         UpdateItemLocationCommand: 'UpdateItemLocationCommand',
+        UpdateMessagingInformationCommand: 'UpdateMessagingInformationCommand',
         UpdatePaymentInformationCommand: 'UpdatePaymentInformationCommand',
         UpdateProfileCommand: 'UpdateProfileCommand'
     },

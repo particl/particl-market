@@ -240,7 +240,7 @@ export class RpcController {
             'updateitemlocation': 'rpcItemLocationService.update', // DONE
             'removeitemlocation': 'rpcItemLocationService.destroy', // DONE
 
-            // message infoprmation
+            // message information
             'updatemessaginginformation': 'rpcMesInfoService.update',
 
             // Bid
