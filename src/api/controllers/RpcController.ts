@@ -181,9 +181,9 @@ export class RpcController {
             // profile
             'help': 'rpcCliHelpService.help', // DONE/TESTED
 
-            'createprofile': 'rpcProfileService.create',
-            'updateprofile': 'rpcProfileService.update',
-            'getprofile': 'rpcProfileService.findOne',
+            'createprofile': 'rpcProfileService.create', // DONE
+            'updateprofile': 'rpcProfileService.update', // DONE
+            'getprofile': 'rpcProfileService.findOne', // DONE
 
             // profile / addresses
             'createaddress': 'rpcAddressService.create', // DONE

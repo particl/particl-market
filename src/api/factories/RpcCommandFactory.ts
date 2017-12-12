@@ -94,7 +94,10 @@ import {ShippingFindCommand} from '../commands/ShippingFindCommand';
 import {ShippingUpdateCommand} from '../commands/ShippingUpdateCommand';
 
 import {HelpCommand} from '../commands/HelpCommand';
-// import {multiInject} from 'inversify/dts/annotation/multi_inject';
+
+import {CreateProfileCommand} from '../commands/CreateProfileCommand';
+import {GetProfileCommand} from '../commands/GetProfileCommand';
+import {UpdateProfileCommand} from '../commands/UpdateProfileCommand';
 
 // tslint:disable:array-type
 export class RpcCommandFactory {
@@ -197,6 +200,10 @@ export class RpcCommandFactory {
 
        @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
+       @inject(Types.Command) @named(Targets.Command.CreateProfileCommand) private createProfileCommand: CreateProfileCommand,
+       @inject(Types.Command) @named(Targets.Command.GetProfileCommand) private getProfileCommand: GetProfileCommand,
+       @inject(Types.Command) @named(Targets.Command.UpdateProfileCommand) private updateProfileCommand: UpdateProfileCommand,
+
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
        // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
        // @multiInject(Types.Command) @named('Command') private commands: Command[],
@@ -291,6 +298,10 @@ export class RpcCommandFactory {
         this.commands.push(shippingFindAllCommand);
         this.commands.push(shippingFindCommand);
         this.commands.push(shippingUpdateCommand);
+
+        this.commands.push(createProfileCommand);
+        this.commands.push(getProfileCommand);
+        this.commands.push(updateProfileCommand);
 
         this.commands.push(helpCommand);
 

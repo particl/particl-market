@@ -120,11 +120,13 @@ export const Targets = {
         CategoryGetCommand: 'CategoryGetCommand',
         CategoryRemoveCommand: 'CategoryRemoveCommand',
         CategoryUpdateCommand: 'CategoryUpdateCommand',
+        CreateProfileCommand: 'CreateProfileCommand',
         EscrowCreateCommand: 'EscrowCreateCommand',
         EscrowDestroyCommand: 'EscrowDestroyCommand',
         EscrowFindAllCommand: 'EscrowFindAllCommand',
         EscrowFindCommand: 'EscrowFindCommand',
         EscrowUpdateCommand: 'EscrowUpdateCommand',
+        GetProfileCommand: 'GetProfileCommand',
         HelpCommand: 'HelpCommand',
         ItemCategoryCreateCommand: 'ItemCategoryCreateCommand',
         ItemCategoryDestroyCommand: 'ItemCategoryDestroyCommand',
@@ -187,7 +189,8 @@ export const Targets = {
         ShippingFindAllCommand: 'ShippingFindAllCommand',
         ShippingFindCommand: 'ShippingFindCommand',
         ShippingUpdateCommand: 'ShippingUpdateCommand',
-        TestCommand: 'TestCommand'
+        TestCommand: 'TestCommand',
+        UpdateProfileCommand: 'UpdateProfileCommand'
     },
     Factory:     {
         RpcCommandFactory: 'RpcCommandFactory',
