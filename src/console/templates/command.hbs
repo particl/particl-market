@@ -8,7 +8,7 @@ import { RpcRequest } from '../{{deepness}}requests/RpcRequest';
 import { {{name.capitalize}} } from '../{{deepness}}models/{{name.capitalize}}';
 import {RpcCommand} from './RpcCommand';
 
-export class {{name.capitalize}}Command implements RpcCommand<{{name.capitalize}}> {
+export class {{name.capitalize}}Command implements RpcCommand<Bookshelf.Collection<{{name.capitalize}}>}> {
 
     public log: LoggerType;
     public name: string;
@@ -16,8 +16,8 @@ export class {{name.capitalize}}Command implements RpcCommand<{{name.capitalize}
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        this(log);
-        this.name = '{{name.capitalize}}Command';
+        this.log = new Logger(__filename);
+        this.name = '{{name.capitalize}}';//TODO: replace me with the command name
     }
 
     @validate()
