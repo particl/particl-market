@@ -137,6 +137,11 @@ export const Targets = {
         ItemPriceFindAllCommand: 'ItemPriceFindAllCommand',
         ItemPriceFindCommand: 'ItemPriceFindCommand',
         ItemPriceUpdateCommand: 'ItemPriceUpdateCommand',
+        PaymentInformationCreateCommand: 'PaymentInformationCreateCommand',
+        PaymentInformationDestroyCommand: 'PaymentInformationDestroyCommand',
+        PaymentInformationFindAllCommand: 'PaymentInformationFindAllCommand',
+        PaymentInformationFindCommand: 'PaymentInformationFindCommand',
+        PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand',
         RpcCommand: 'RpcCommand',
         TestCommand: 'TestCommand'
     },
