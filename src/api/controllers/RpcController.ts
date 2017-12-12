@@ -247,7 +247,7 @@ export class RpcController {
         this.log.debug('controller.handleRPC() rpcRequest:', JSON.stringify(rpcRequest, null, 2));
 
         // My code goes here
-        const result = this.rpcCommandFactory.get(body.method).execute(rpcRequest);
+        const result = await this.rpcCommandFactory.get(body.method).execute(rpcRequest);
         return this.createResponse(rpcRequest.id, result);
 
         // check that we have exposed the method
