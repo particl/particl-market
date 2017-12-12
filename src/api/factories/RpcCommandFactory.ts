@@ -33,6 +33,12 @@ import {PaymentInformationFindAllCommand} from '../commands/PaymentInformationFi
 import {PaymentInformationFindCommand} from '../commands/PaymentInformationFindCommand';
 import {PaymentInformationUpdateCommand} from '../commands/PaymentInformationUpdateCommand';
 
+import {ItemImageDataCreateCommand} from '../commands/ItemImageDataCreateCommand';
+import {ItemImageDataDestroyCommand} from '../commands/ItemImageDataDestroyCommand';
+import {ItemImageDataFindAllCommand} from '../commands/ItemImageDataFindAllCommand';
+import {ItemImageDataFindCommand} from '../commands/ItemImageDataFindCommand';
+import {ItemImageDataUpdateCommand} from '../commands/ItemImageDataUpdateCommand';
+
 import {ItemCategoryCreateCommand} from '../commands/ItemCategoryCreateCommand';
 import {ItemCategoryDestroyCommand} from '../commands/ItemCategoryDestroyCommand';
 import {ItemCategoryFindAllCommand} from '../commands/ItemCategoryFindAllCommand';
@@ -81,6 +87,12 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.PaymentInformationFindCommand) private paymentInformationFindCommand: PaymentInformationFindCommand,
        @inject(Types.Command) @named(Targets.Command.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
 
+       @inject(Types.Command) @named(Targets.Command.ItemImageDataCreateCommand) private itemImageDataCreateCommand: ItemImageDataCreateCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemImageDataDestroyCommand) private itemImageDataDestroyCommand: ItemImageDataDestroyCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemImageDataFindAllCommand) private itemImageDataFindAllCommand: ItemImageDataFindAllCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemImageDataFindCommand) private itemImageDataFindCommand: ItemImageDataFindCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemImageDataUpdateCommand) private itemImageDataUpdateCommand: ItemImageDataUpdateCommand,
+
        @inject(Types.Command) @named(Targets.Command.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
        @inject(Types.Command) @named(Targets.Command.ItemCategoryDestroyCommand) private itemCategoryDestroyCommand: ItemCategoryDestroyCommand,
        @inject(Types.Command) @named(Targets.Command.ItemCategoryFindAllCommand) private itemCategoryFindAllCommand: ItemCategoryFindAllCommand,
@@ -124,6 +136,12 @@ export class RpcCommandFactory {
         this.commands.push(paymentInfoFindAllCommand);
         this.commands.push(paymentInformationFindCommand);
         this.commands.push(paymentInformationUpdateCommand);
+
+        this.commands.push(itemImageDataCreateCommand);
+        this.commands.push(itemImageDataDestroyCommand);
+        this.commands.push(itemImageDataFindAllCommand);
+        this.commands.push(itemImageDataFindCommand);
+        this.commands.push(itemImageDataUpdateCommand);
 
         this.commands.push(itemCategoryCreateCommand);
         this.commands.push(itemCategoryDestroyCommand);
