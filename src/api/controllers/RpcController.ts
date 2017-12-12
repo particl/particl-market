@@ -225,9 +225,9 @@ export class RpcController {
             'destroyescrow': 'rpcEscrowService.destroy', // DONE
 
             // test data management
-            'cleandb': 'rpcTestDataService.clean',
-            'adddata': 'rpcTestDataService.create',
-            'generatedata': 'rpcTestDataService.generate',
+            'cleandb': 'rpcTestDataService.clean', // DONE
+            'adddata': 'rpcTestDataService.create', // DONE
+            'generatedata': 'rpcTestDataService.generate', // DONE
 
             // itemImage
             'additemimage': 'rpcItemImageService.create',

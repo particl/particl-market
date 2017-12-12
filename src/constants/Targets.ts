@@ -112,6 +112,7 @@ export const Targets = {
         UserService: 'UserService'
     },
     Command:     {
+        AddDataCommand: 'AddDataCommand',
         AddFavoriteCommand: 'AddFavoriteCommand',
         AddressCreateCommand: 'AddressCreateCommand',
         AddressUpdateCommand: 'AddressUpdateCommand',
@@ -121,6 +122,7 @@ export const Targets = {
         CategoryGetCommand: 'CategoryGetCommand',
         CategoryRemoveCommand: 'CategoryRemoveCommand',
         CategoryUpdateCommand: 'CategoryUpdateCommand',
+        CleanDbCommand: 'CleanDbCommand',
         CreateEscrowCommand: 'CreateEscrowCommand',
         CreateItemInformationCommand: 'CreateItemInformationCommand',
         CreateListingItemTemplateCommand: 'CreateListingItemTemplateCommand',
@@ -133,6 +135,7 @@ export const Targets = {
         EscrowUpdateCommand: 'EscrowUpdateCommand',
         FindItemsCommand: 'FindItemsCommand',
         FindOwnItemsCommand: 'FindOwnItemsCommand',
+        GenerateDataCommand: 'GenerateDataCommand',
         GetItemCommand: 'GetItemCommand',
         GetItemInformationCommand: 'GetItemInformationCommand',
         GetListingItemTemplateCommand: 'GetListingItemTemplateCommand',

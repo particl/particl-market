@@ -118,6 +118,10 @@ import {CreateEscrowCommand} from '../commands/CreateEscrowCommand';
 import {DestroyEscrowCommand} from '../commands/DestroyEscrowCommand';
 import {UpdateEscrowCommand} from '../commands/UpdateEscrowCommand';
 
+import {AddDataCommand} from '../commands/AddDataCommand';
+import {CleanDbCommand} from '../commands/CleanDbCommand';
+import {GenerateDataCommand} from '../commands/GenerateDataCommand';
+
 import {HelpCommand} from '../commands/HelpCommand';
 
 // tslint:disable:array-type
@@ -246,6 +250,10 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.DestroyEscrowCommand) private destroyEscrowCommand: DestroyEscrowCommand,
        @inject(Types.Command) @named(Targets.Command.UpdateEscrowCommand) private updateEscrowCommand: UpdateEscrowCommand,
 
+       @inject(Types.Command) @named(Targets.Command.AddDataCommand) private addDataCommand: AddDataCommand,
+       @inject(Types.Command) @named(Targets.Command.CleanDbCommand) private cleanDbCommand: CleanDbCommand,
+       @inject(Types.Command) @named(Targets.Command.GenerateDataCommand) private generateDataCommand: GenerateDataCommand,
+
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
        // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
        // @multiInject(Types.Command) @named('Command') private commands: Command[],
@@ -365,6 +373,10 @@ export class RpcCommandFactory {
         this.commands.push(createEscrowCommand);
         this.commands.push(destroyEscrowCommand);
         this.commands.push(updateEscrowCommand);
+
+        this.commands.push(addDataCommand);
+        this.commands.push(cleanDbCommand);
+        this.commands.push(generateDataCommand);
 
         this.commands.push(helpCommand);
 
