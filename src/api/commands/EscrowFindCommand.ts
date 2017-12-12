@@ -9,7 +9,7 @@ import { Escrow } from '../models/Escrow';
 import {RpcCommand} from './RpcCommand';
 
 export class EscrowFindCommand implements RpcCommand<Escrow> {
-    //TODO: This has a bug when executed. Probably not due to our abstractions however
+    // TODO: This has a bug when executed. Probably not due to our abstractions however
 
     public log: LoggerType;
     public name: string;
