@@ -135,6 +135,7 @@ export const Targets = {
         EscrowFindAllCommand: 'EscrowFindAllCommand',
         EscrowFindCommand: 'EscrowFindCommand',
         EscrowUpdateCommand: 'EscrowUpdateCommand',
+        FindBidsCommand: 'FindBidsCommand',
         FindItemsCommand: 'FindItemsCommand',
         FindOwnItemsCommand: 'FindOwnItemsCommand',
         GenerateDataCommand: 'GenerateDataCommand',
