@@ -45,6 +45,12 @@ import {ItemImageFindAllCommand} from '../commands/ItemImageFindAllCommand';
 import {ItemImageFindCommand} from '../commands/ItemImageFindCommand';
 import {ItemImageUpdateCommand} from '../commands/ItemImageUpdateCommand';
 
+import {LocationMarkerCreateCommand} from '../commands/LocationMarkerCreateCommand';
+import {LocationMarkerDestroyCommand} from '../commands/LocationMarkerDestroyCommand';
+import {LocationMarkerFindAllCommand} from '../commands/LocationMarkerFindAllCommand';
+import {LocationMarkerFindCommand} from '../commands/LocationMarkerFindCommand';
+import {LocationMarkerUpdateCommand} from '../commands/LocationMarkerUpdateCommand';
+
 import {ItemCategoryCreateCommand} from '../commands/ItemCategoryCreateCommand';
 import {ItemCategoryDestroyCommand} from '../commands/ItemCategoryDestroyCommand';
 import {ItemCategoryFindAllCommand} from '../commands/ItemCategoryFindAllCommand';
@@ -105,6 +111,12 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.ItemImageFindCommand) private itemImageFindCommand: ItemImageFindCommand,
        @inject(Types.Command) @named(Targets.Command.ItemImageUpdateCommand) private itemImageUpdateCommand: ItemImageUpdateCommand,
 
+       @inject(Types.Command) @named(Targets.Command.LocationMarkerCreateCommand) private locationMarkerCreateCommand: LocationMarkerCreateCommand,
+       @inject(Types.Command) @named(Targets.Command.LocationMarkerDestroyCommand) private locationMarkerDestroyCommand: LocationMarkerDestroyCommand,
+       @inject(Types.Command) @named(Targets.Command.LocationMarkerFindAllCommand) private locationMarkerFindAllCommand: LocationMarkerFindAllCommand,
+       @inject(Types.Command) @named(Targets.Command.LocationMarkerFindCommand) private locationMarkerFindCommand: LocationMarkerFindCommand,
+       @inject(Types.Command) @named(Targets.Command.LocationMarkerUpdateCommand) private locationMarkerUpdateCommand: LocationMarkerUpdateCommand,
+
        @inject(Types.Command) @named(Targets.Command.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
        @inject(Types.Command) @named(Targets.Command.ItemCategoryDestroyCommand) private itemCategoryDestroyCommand: ItemCategoryDestroyCommand,
        @inject(Types.Command) @named(Targets.Command.ItemCategoryFindAllCommand) private itemCategoryFindAllCommand: ItemCategoryFindAllCommand,
@@ -160,6 +172,12 @@ export class RpcCommandFactory {
         this.commands.push(itemImageFindAllCommand);
         this.commands.push(itemImageFindCommand);
         this.commands.push(itemImageUpdateCommand);
+
+        this.commands.push(locationMarkerCreateCommand);
+        this.commands.push(locationMarkerDestroyCommand);
+        this.commands.push(locationMarkerFindAllCommand);
+        this.commands.push(locationMarkerFindCommand);
+        this.commands.push(locationMarkerUpdateCommand);
 
         this.commands.push(itemCategoryCreateCommand);
         this.commands.push(itemCategoryDestroyCommand);
