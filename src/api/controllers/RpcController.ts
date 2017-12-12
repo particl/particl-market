@@ -138,11 +138,11 @@ export class RpcController {
             'locationmarker.update': 'locationMarkerService.rpcUpdate', // DONE
             'locationmarker.destroy': 'locationMarkerService.rpcDestroy', // DONE
 
-            'itemlocation.create': 'itemLocationService.rpcCreate',
-            'itemlocation.find': 'itemLocationService.rpcFindOne',
-            'itemlocation.findall': 'itemLocationService.rpcFindAll',
-            'itemlocation.update': 'itemLocationService.rpcUpdate',
-            'itemlocation.destroy': 'itemLocationService.rpcDestroy',
+            'itemlocation.create': 'itemLocationService.rpcCreate', // DONE
+            'itemlocation.find': 'itemLocationService.rpcFindOne', // DONE
+            'itemlocation.findall': 'itemLocationService.rpcFindAll', // DONE
+            'itemlocation.update': 'itemLocationService.rpcUpdate', // DONE
+            'itemlocation.destroy': 'itemLocationService.rpcDestroy', // DONE
 
             'shipping.create': 'shippingDestinationService.rpcCreate',
             'shipping.find': 'shippingDestinationService.rpcFindOne',
