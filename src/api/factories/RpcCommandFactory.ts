@@ -21,6 +21,12 @@ import {EscrowFindAllCommand} from '../commands/EscrowFindAllCommand';
 import {EscrowFindCommand} from '../commands/EscrowFindCommand';
 import {EscrowUpdateCommand} from '../commands/EscrowUpdateCommand';
 
+import {ItemPriceCreateCommand} from '../commands/ItemPriceCreateCommand';
+import {ItemPriceDestroyCommand} from '../commands/ItemPriceDestroyCommand';
+import {ItemPriceFindAllCommand} from '../commands/ItemPriceFindAllCommand';
+import {ItemPriceFindCommand} from '../commands/ItemPriceFindCommand';
+import {ItemPriceUpdateCommand} from '../commands/ItemPriceUpdateCommand';
+
 import {ItemCategoryCreateCommand} from '../commands/ItemCategoryCreateCommand';
 import {ItemCategoryDestroyCommand} from '../commands/ItemCategoryDestroyCommand';
 import {ItemCategoryFindAllCommand} from '../commands/ItemCategoryFindAllCommand';
@@ -55,6 +61,12 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.EscrowFindCommand) private escrowFindCommand: EscrowFindCommand,
        @inject(Types.Command) @named(Targets.Command.EscrowUpdateCommand) private escrowUpdateCommand: EscrowUpdateCommand,
 
+       @inject(Types.Command) @named(Targets.Command.ItemPriceCreateCommand) private itemPriceCreateCommand: ItemPriceCreateCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemPriceDestroyCommand) private itemPriceDestroyCommand: ItemPriceDestroyCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemPriceFindAllCommand) private itemPriceFindAllCommand: ItemPriceFindAllCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemPriceFindCommand) private itemPriceFindCommand: ItemPriceFindCommand,
+       @inject(Types.Command) @named(Targets.Command.ItemPriceUpdateCommand) private itemPriceUpdateCommand: ItemPriceUpdateCommand,
+
        @inject(Types.Command) @named(Targets.Command.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
        @inject(Types.Command) @named(Targets.Command.ItemCategoryDestroyCommand) private itemCategoryDestroyCommand: ItemCategoryDestroyCommand,
        @inject(Types.Command) @named(Targets.Command.ItemCategoryFindAllCommand) private itemCategoryFindAllCommand: ItemCategoryFindAllCommand,
@@ -86,6 +98,12 @@ export class RpcCommandFactory {
         this.commands.push(escrowFindAllCommand);
         this.commands.push(escrowFindCommand);
         this.commands.push(escrowUpdateCommand);
+
+        this.commands.push(itemPriceCreateCommand);
+        this.commands.push(itemPriceDestroyCommand);
+        this.commands.push(itemPriceFindAllCommand);
+        this.commands.push(itemPriceFindCommand);
+        this.commands.push(itemPriceUpdateCommand);
 
         this.commands.push(itemCategoryCreateCommand);
         this.commands.push(itemCategoryDestroyCommand);

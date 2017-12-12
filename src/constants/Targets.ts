@@ -132,6 +132,11 @@ export const Targets = {
         ItemCategoryFindCommand: 'ItemCategoryFindCommand',
         ItemCategoryFindRootCommand: 'ItemCategoryFindRootCommand',
         ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand',
+        ItemPriceCreateCommand: 'ItemPriceCreateCommand',
+        ItemPriceDestroyCommand: 'ItemPriceDestroyCommand',
+        ItemPriceFindAllCommand: 'ItemPriceFindAllCommand',
+        ItemPriceFindCommand: 'ItemPriceFindCommand',
+        ItemPriceUpdateCommand: 'ItemPriceUpdateCommand',
         RpcCommand: 'RpcCommand',
         TestCommand: 'TestCommand'
     },

@@ -108,11 +108,11 @@ export class RpcController {
             'escrow.update': 'escrowService.rpcUpdate', // DONE
             'escrow.destroy': 'escrowService.rpcDestroy', // DONE
 
-            'itemprice.create': 'itemPriceService.rpcCreate',
-            'itemprice.find': 'itemPriceService.rpcFindOne',
-            'itemprice.findall': 'itemPriceService.rpcFindAll',
-            'itemprice.update': 'itemPriceService.rpcUpdate',
-            'itemprice.destroy': 'itemPriceService.rpcDestroy',
+            'itemprice.create': 'itemPriceService.rpcCreate', // DONE
+            'itemprice.find': 'itemPriceService.rpcFindOne', // DONE
+            'itemprice.findall': 'itemPriceService.rpcFindAll', // DONE
+            'itemprice.update': 'itemPriceService.rpcUpdate', // DONE
+            'itemprice.destroy': 'itemPriceService.rpcDestroy', // DONE
 
             'paymentinformation.create': 'paymentInformationService.rpcCreate',
             'paymentinformation.find': 'paymentInformationService.rpcFindOne',
