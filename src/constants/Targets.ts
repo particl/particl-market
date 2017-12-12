@@ -163,6 +163,11 @@ export const Targets = {
         PaymentInformationFindCommand: 'PaymentInformationFindCommand',
         PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand',
         RpcCommand: 'RpcCommand',
+        ShippingCreateCommand: 'ShippingCreateCommand',
+        ShippingDestroyCommand: 'ShippingDestroyCommand',
+        ShippingFindAllCommand: 'ShippingFindAllCommand',
+        ShippingFindCommand: 'ShippingFindCommand',
+        ShippingUpdateCommand: 'ShippingUpdateCommand',
         TestCommand: 'TestCommand'
     },
     Factory:     {

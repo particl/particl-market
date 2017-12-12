@@ -64,6 +64,11 @@ import {ItemCategoryFindCommand} from '../commands/ItemCategoryFindCommand';
 import {ItemCategoryFindRootCommand} from '../commands/ItemCategoryFindRootCommand';
 import {ItemCategoryUpdateCommand} from '../commands/ItemCategoryUpdateCommand';
 
+import {ShippingCreateCommand} from '../commands/ShippingCreateCommand';
+import {ShippingDestroyCommand} from '../commands/ShippingDestroyCommand';
+import {ShippingFindAllCommand} from '../commands/ShippingFindAllCommand';
+import {ShippingFindCommand} from '../commands/ShippingFindCommand';
+import {ShippingUpdateCommand} from '../commands/ShippingUpdateCommand';
 
 import {HelpCommand} from '../commands/HelpCommand';
 // import {multiInject} from 'inversify/dts/annotation/multi_inject';
@@ -136,6 +141,12 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.ItemCategoryFindRootCommand) private itemCategoryFindRootCommand: ItemCategoryFindRootCommand,
        @inject(Types.Command) @named(Targets.Command.ItemCategoryUpdateCommand) private itemCategoryUpdateCommand: ItemCategoryUpdateCommand,
 
+       @inject(Types.Command) @named(Targets.Command.ShippingCreateCommand) private shippingCreateCommand: ShippingCreateCommand,
+       @inject(Types.Command) @named(Targets.Command.ShippingDestroyCommand) private shippingDestroyCommand: ShippingDestroyCommand,
+       @inject(Types.Command) @named(Targets.Command.ShippingFindAllCommand) private shippingFindAllCommand: ShippingFindAllCommand,
+       @inject(Types.Command) @named(Targets.Command.ShippingFindCommand) private shippingFindCommand: ShippingFindCommand,
+       @inject(Types.Command) @named(Targets.Command.ShippingUpdateCommand) private shippingUpdateCommand: ShippingUpdateCommand,
+
        @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
@@ -203,6 +214,12 @@ export class RpcCommandFactory {
         this.commands.push(itemCategoryFindCommand);
         this.commands.push(itemCategoryFindRootCommand);
         this.commands.push(itemCategoryUpdateCommand);
+
+        this.commands.push(shippingCreateCommand);
+        this.commands.push(shippingDestroyCommand);
+        this.commands.push(shippingFindAllCommand);
+        this.commands.push(shippingFindCommand);
+        this.commands.push(shippingUpdateCommand);
 
         this.commands.push(helpCommand);
 
