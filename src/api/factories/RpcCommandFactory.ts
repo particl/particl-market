@@ -63,6 +63,12 @@ import {LocationMarkerFindAllCommand} from '../commands/LocationMarkerFindAllCom
 import {LocationMarkerFindCommand} from '../commands/LocationMarkerFindCommand';
 import {LocationMarkerUpdateCommand} from '../commands/LocationMarkerUpdateCommand';
 
+import {MessagingInformationCreateCommand} from '../commands/MessagingInformationCreateCommand';
+import {MessagingInformationDestroyCommand} from '../commands/MessagingInformationDestroyCommand';
+import {MessagingInformationFindAllCommand} from '../commands/MessagingInformationFindAllCommand';
+import {MessagingInformationFindCommand} from '../commands/MessagingInformationFindCommand';
+import {MessagingInformationUpdateCommand} from '../commands/MessagingInformationUpdateCommand';
+
 import {ItemCategoryCreateCommand} from '../commands/ItemCategoryCreateCommand';
 import {ItemCategoryDestroyCommand} from '../commands/ItemCategoryDestroyCommand';
 import {ItemCategoryFindAllCommand} from '../commands/ItemCategoryFindAllCommand';
@@ -146,6 +152,13 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.LocationMarkerFindCommand) private locationMarkerFindCommand: LocationMarkerFindCommand,
        @inject(Types.Command) @named(Targets.Command.LocationMarkerUpdateCommand) private locationMarkerUpdateCommand: LocationMarkerUpdateCommand,
 
+       // Truncated names so they don't exceed max line length
+       @inject(Types.Command) @named(Targets.Command.MessagingInformationCreateCommand) private msgInfoCreateCommand: MessagingInformationCreateCommand,
+       @inject(Types.Command) @named(Targets.Command.MessagingInformationDestroyCommand) private msgInfoDestroyCommand: MessagingInformationDestroyCommand,
+       @inject(Types.Command) @named(Targets.Command.MessagingInformationFindAllCommand) private msgInfoFindAllCommand: MessagingInformationFindAllCommand,
+       @inject(Types.Command) @named(Targets.Command.MessagingInformationFindCommand) private msgInfoFindCommand: MessagingInformationFindCommand,
+       @inject(Types.Command) @named(Targets.Command.MessagingInformationUpdateCommand) private msgInfoUpdateCommand: MessagingInformationUpdateCommand,
+
        @inject(Types.Command) @named(Targets.Command.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
        @inject(Types.Command) @named(Targets.Command.ItemCategoryDestroyCommand) private itemCategoryDestroyCommand: ItemCategoryDestroyCommand,
        @inject(Types.Command) @named(Targets.Command.ItemCategoryFindAllCommand) private itemCategoryFindAllCommand: ItemCategoryFindAllCommand,
@@ -225,6 +238,12 @@ export class RpcCommandFactory {
         this.commands.push(locationMarkerFindAllCommand);
         this.commands.push(locationMarkerFindCommand);
         this.commands.push(locationMarkerUpdateCommand);
+
+        this.commands.push(msgInfoCreateCommand);
+        this.commands.push(msgInfoDestroyCommand);
+        this.commands.push(msgInfoFindAllCommand);
+        this.commands.push(msgInfoFindCommand);
+        this.commands.push(msgInfoUpdateCommand);
 
         this.commands.push(itemCategoryCreateCommand);
         this.commands.push(itemCategoryDestroyCommand);

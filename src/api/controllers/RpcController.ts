@@ -156,11 +156,11 @@ export class RpcController {
             'iteminformation.update': 'itemInformationService.rpcUpdate', // DONE
             'iteminformation.destroy': 'itemInformationService.rpcDestroy', // DONE
 
-            'messaginginformation.create': 'messagingInformationService.rpcCreate',
-            'messaginginformation.find': 'messagingInformationService.rpcFindOne',
-            'messaginginformation.findall': 'messagingInformationService.rpcFindAll',
-            'messaginginformation.update': 'messagingInformationService.rpcUpdate',
-            'messaginginformation.destroy': 'messagingInformationService.rpcDestroy',
+            'messaginginformation.create': 'messagingInformationService.rpcCreate', // DONE
+            'messaginginformation.find': 'messagingInformationService.rpcFindOne', // DONE
+            'messaginginformation.findall': 'messagingInformationService.rpcFindAll', // DONE
+            'messaginginformation.update': 'messagingInformationService.rpcUpdate', // DONE
+            'messaginginformation.destroy': 'messagingInformationService.rpcDestroy', // DONE
 
             'listingitem.create': 'listingItemService.create',
             'listingitem.find': 'listingItemService.findOne',
