@@ -122,6 +122,9 @@ import {AddDataCommand} from '../commands/AddDataCommand';
 import {CleanDbCommand} from '../commands/CleanDbCommand';
 import {GenerateDataCommand} from '../commands/GenerateDataCommand';
 
+import {AddItemImageCommand} from '../commands/AddItemImageCommand';
+import {RemoveItemImageCommand} from '../commands/RemoveItemImageCommand';
+
 import {HelpCommand} from '../commands/HelpCommand';
 
 // tslint:disable:array-type
@@ -254,6 +257,9 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.CleanDbCommand) private cleanDbCommand: CleanDbCommand,
        @inject(Types.Command) @named(Targets.Command.GenerateDataCommand) private generateDataCommand: GenerateDataCommand,
 
+       @inject(Types.Command) @named(Targets.Command.AddItemImageCommand) private addItemImageCommand: AddItemImageCommand,
+       @inject(Types.Command) @named(Targets.Command.RemoveItemImageCommand) private removeItemImageCommand: RemoveItemImageCommand,
+
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
        // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
        // @multiInject(Types.Command) @named('Command') private commands: Command[],
@@ -377,6 +383,9 @@ export class RpcCommandFactory {
         this.commands.push(addDataCommand);
         this.commands.push(cleanDbCommand);
         this.commands.push(generateDataCommand);
+
+        this.commands.push(addItemImageCommand);
+        this.commands.push(removeItemImageCommand);
 
         this.commands.push(helpCommand);
 

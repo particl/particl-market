@@ -230,8 +230,8 @@ export class RpcController {
             'generatedata': 'rpcTestDataService.generate', // DONE
 
             // itemImage
-            'additemimage': 'rpcItemImageService.create',
-            'removeitemimage': 'rpcItemImageService.destroy',
+            'additemimage': 'rpcItemImageService.create', // DONE
+            'removeitemimage': 'rpcItemImageService.destroy', // DONE
             // shippingDestination
             'addshippingdestination': 'rpcShippingDestinationService.create',
             'removeshippingdestination': 'rpcShippingDestinationService.destroy',

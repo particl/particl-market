@@ -114,6 +114,7 @@ export const Targets = {
     Command:     {
         AddDataCommand: 'AddDataCommand',
         AddFavoriteCommand: 'AddFavoriteCommand',
+        AddItemImageCommand: 'AddItemImageCommand',
         AddressCreateCommand: 'AddressCreateCommand',
         AddressUpdateCommand: 'AddressUpdateCommand',
         CategoriesGetCommand: 'CategoriesGetCommand',
@@ -197,6 +198,7 @@ export const Targets = {
         ProfileFindCommand: 'ProfileFindCommand',
         ProfileUpdateCommand: 'ProfileUpdateCommand',
         RemoveFavoriteCommand: 'RemoveFavoriteCommand',
+        RemoveItemImageCommand: 'RemoveItemImageCommand',
         RpcCommand: 'RpcCommand',
         SearchListingItemTemplateCommand: 'SearchListingItemTemplateCommand',
         ShippingCreateCommand: 'ShippingCreateCommand',
