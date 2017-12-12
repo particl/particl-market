@@ -200,9 +200,9 @@ export class RpcController {
             'searchlistingitemtemplate': 'rpcListingItemTemplateService.search', // DONE
 
             // item information
-            'createiteminformation': 'rpcItemInformationService.create',
-            'getiteminformation': 'rpcItemInformationService.findOne',
-            'updateiteminformation': 'rpcItemInformationService.update',
+            'createiteminformation': 'rpcItemInformationService.create', // DONE
+            'getiteminformation': 'rpcItemInformationService.findOne', // DONE
+            'updateiteminformation': 'rpcItemInformationService.update', // DONE
 
             // categories
             'createcategory': 'rpcItemCategoryService.create', // DONE

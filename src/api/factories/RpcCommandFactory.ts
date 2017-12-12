@@ -105,6 +105,10 @@ import {CreateListingItemTemplateCommand} from '../commands/CreateListingItemTem
 import {GetListingItemTemplateCommand} from '../commands/GetListingItemTemplateCommand';
 import {SearchListingItemTemplateCommand} from '../commands/SearchListingItemTemplateCommand';
 
+import {CreateItemInformationCommand} from '../commands/CreateItemInformationCommand';
+import {GetItemInformationCommand} from '../commands/GetItemInformationCommand';
+import {UpdateItemInformationCommand} from '../commands/UpdateItemInformationCommand';
+
 import {HelpCommand} from '../commands/HelpCommand';
 
 // tslint:disable:array-type
@@ -220,6 +224,10 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.GetListingItemTemplateCommand) private getListingItemTemplateCmd: GetListingItemTemplateCommand,
        @inject(Types.Command) @named(Targets.Command.SearchListingItemTemplateCommand) private searchListingItemTemplateCmd: SearchListingItemTemplateCommand,
 
+       @inject(Types.Command) @named(Targets.Command.CreateItemInformationCommand) private createItemInformationCommand: CreateItemInformationCommand,
+       @inject(Types.Command) @named(Targets.Command.GetItemInformationCommand) private getItemInformationCommand: GetItemInformationCommand,
+       @inject(Types.Command) @named(Targets.Command.UpdateItemInformationCommand) private updateItemInformationCommand: UpdateItemInformationCommand,
+
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
        // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
        // @multiInject(Types.Command) @named('Command') private commands: Command[],
@@ -326,6 +334,10 @@ export class RpcCommandFactory {
         this.commands.push(createListingItemTemplateCmd);
         this.commands.push(getListingItemTemplateCmd);
         this.commands.push(searchListingItemTemplateCmd);
+
+        this.commands.push(createItemInformationCommand);
+        this.commands.push(getItemInformationCommand);
+        this.commands.push(updateItemInformationCommand);
 
         this.commands.push(helpCommand);
 

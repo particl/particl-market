@@ -120,6 +120,7 @@ export const Targets = {
         CategoryGetCommand: 'CategoryGetCommand',
         CategoryRemoveCommand: 'CategoryRemoveCommand',
         CategoryUpdateCommand: 'CategoryUpdateCommand',
+        CreateItemInformationCommand: 'CreateItemInformationCommand',
         CreateListingItemTemplateCommand: 'CreateListingItemTemplateCommand',
         CreateProfileCommand: 'CreateProfileCommand',
         EscrowCreateCommand: 'EscrowCreateCommand',
@@ -130,6 +131,7 @@ export const Targets = {
         FindItemsCommand: 'FindItemsCommand',
         FindOwnItemsCommand: 'FindOwnItemsCommand',
         GetItemCommand: 'GetItemCommand',
+        GetItemInformationCommand: 'GetItemInformationCommand',
         GetListingItemTemplateCommand: 'GetListingItemTemplateCommand',
         GetProfileCommand: 'GetProfileCommand',
         HelpCommand: 'HelpCommand',
@@ -196,6 +198,7 @@ export const Targets = {
         ShippingFindCommand: 'ShippingFindCommand',
         ShippingUpdateCommand: 'ShippingUpdateCommand',
         TestCommand: 'TestCommand',
+        UpdateItemInformationCommand: 'UpdateItemInformationCommand',
         UpdateProfileCommand: 'UpdateProfileCommand'
     },
     Factory:     {
