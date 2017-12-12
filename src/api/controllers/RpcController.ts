@@ -126,11 +126,11 @@ export class RpcController {
             'itemimagedata.update': 'imageDataService.rpcUpdate', // DONE
             'itemimagedata.destroy': 'imageDataService.rpcDestroy', // DONE
 
-            'itemimage.create': 'itemImageService.rpcCreate',
-            'itemimage.find': 'itemImageService.rpcFindOne',
-            'itemimage.findall': 'itemImageService.rpcFindAll',
-            'itemimage.update': 'itemImageService.rpcUpdate',
-            'itemimage.destroy': 'itemCategoryService.rpcDestroy',
+            'itemimage.create': 'itemImageService.rpcCreate', // DONE
+            'itemimage.find': 'itemImageService.rpcFindOne', // DONE
+            'itemimage.findall': 'itemImageService.rpcFindAll', // DONE
+            'itemimage.update': 'itemImageService.rpcUpdate', // DONE
+            'itemimage.destroy': 'itemImageService.rpcDestroy', // DONE
 
             'locationmarker.create': 'locationMarkerService.rpcCreate',
             'locationmarker.find': 'locationMarkerService.rpcFindOne',
