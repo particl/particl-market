@@ -11,6 +11,8 @@ import {CategoryCreateCommand} from '../commands/CategoryCreateCommand';
 import {CategoriesGetCommand} from '../commands/CategoriesGetCommand';
 import {CategoryGetCommand} from '../commands/CategoryGetCommand';
 import {CategoryRemoveCommand} from '../commands/CategoryRemoveCommand';
+
+import {HelpCommand} from '../commands/HelpCommand';
 // import {multiInject} from 'inversify/dts/annotation/multi_inject';
 
 // tslint:disable:array-type
@@ -26,6 +28,7 @@ export class RpcCommandFactory {
        @inject(Types.Command) @named(Targets.Command.CategoriesGetCommand) private categoriesGetCommand: CategoriesGetCommand,
        @inject(Types.Command) @named(Targets.Command.CategoryGetCommand) private categoryGetCommand: CategoryGetCommand,
        @inject(Types.Command) @named(Targets.Command.CategoryRemoveCommand) private categoryRemoveCommand: CategoryRemoveCommand,
+       @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
        // @multiInject(Types.Command) public commands: RpcCommand<any>[],
        // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
@@ -40,6 +43,7 @@ export class RpcCommandFactory {
         this.commands.push(categoriesGetCommand);
         this.commands.push(categoryGetCommand);
         this.commands.push(categoryRemoveCommand);
+        this.commands.push(helpCommand);
 
         for (const o of this.commands) {
             this.log.debug('Command ' + o.name + ' was pushed');
