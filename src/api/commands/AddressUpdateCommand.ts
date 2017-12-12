@@ -22,14 +22,14 @@ export class AddressUpdateCommand implements RpcCommand<Address> {
     }
 
     public async execute( @request(RpcRequest) data: any): Promise<Address> {
-        return Bookshelf.Collection.apply(this.addressService.update(data.params[0], {
+        return this.addressService.update(data.params[0], {
             title : data.params[1],
             addressLine1 : data.params[2],
             addressLine2 : data.params[3],
             city : data.params[4],
             country : data.params[5],
             profile_id : data.params[6]
-        }));
+        });
     }
 
     public help(): string {
