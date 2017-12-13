@@ -18,6 +18,12 @@ export class HelpCommand implements RpcCommand<string> {
         this.name = 'help';
     }
 
+    /**
+     * data.params[]: none
+     *
+     * @param data
+     * @returns {Promise<Escrow>}
+     */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<string> {
         return  'available commands: \n' +

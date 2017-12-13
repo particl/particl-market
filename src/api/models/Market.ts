@@ -9,13 +9,21 @@ export class Market extends Bookshelf.Model<Market> {
         if (withRelated) {
             return await Market.where<Market>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'MarketRelated',
-                    // 'MarketRelated.Related'
                 ]
             });
         } else {
             return await Market.where<Market>({ id: value }).fetch();
+        }
+    }
+
+    public static async fetchByAddress(value: string, withRelated: boolean = true): Promise<Market> {
+        if (withRelated) {
+            return await Market.where<Market>({ address: value }).fetch({
+                withRelated: [
+                ]
+            });
+        } else {
+            return await Market.where<Market>({ address: value }).fetch();
         }
     }
 

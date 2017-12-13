@@ -2,7 +2,7 @@ import { rpc, api } from './lib/api';
 import * as crypto from 'crypto-js';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 
-describe('DestroyCategory', () => {
+describe('DestroyItemCategory', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const method = 'removecategory';
@@ -16,11 +16,12 @@ describe('DestroyCategory', () => {
     let profileId;
 
     beforeAll(async () => {
-        await testUtil.cleanDb();
+
         // create category
         const res = await rpc('getcategory', [parentCategory.key]);
         const categoryResult: any = res.getBody()['result'];
 
+        console.log('categoryResult: ', categoryResult);
         parentCategory.id = categoryResult.id;
         const addCategoryRes: any = await testUtil.addData('itemcategory', {
             name: 'sample category',
