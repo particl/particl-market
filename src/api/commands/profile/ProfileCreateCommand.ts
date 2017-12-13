@@ -31,7 +31,8 @@ export class ProfileCreateCommand implements RpcCommand<Profile> {
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<Profile> {
         return this.profileService.create({
-            name : data.params[0]
+            name : data.params[0],
+            address : data.params[1]
         });
     }
 

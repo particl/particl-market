@@ -83,7 +83,11 @@ export class ProfileService {
 
         // set new values
         profile.Name = body.name;
-        profile.Address = body.address;
+
+        // update address only if its set
+        if (body.address) {
+            profile.Address = body.address;
+        }
 
         // update address record
         const updatedProfile = await this.profileRepo.update(id, profile.toJSON());

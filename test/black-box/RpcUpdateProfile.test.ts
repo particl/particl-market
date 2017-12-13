@@ -44,7 +44,7 @@ describe('UpdateProfile', () => {
         const result: any = res.getBody()['result'];
 
         expect(result.name).toBe(profileName);
-        expect(result.address).toBe(profileAddress);
+        expect(result.address).toBe('DEFAULT-PROFILE-ADDRESS'); // we are not allowing the address to be updated
     });
 
 });

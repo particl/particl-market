@@ -16,14 +16,17 @@ describe('UpdateCategory', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
         // create category
         const res = await rpc('getcategory', [parentCategory.key]);
         const categoryResult: any = res.getBody()['result'];
-
         parentCategory.id = categoryResult.id;
-        const addCategoryRes: any = await testUtil.addData('itemcategory', { name: 'sample category',
+
+        const addCategoryRes: any = await testUtil.addData('itemcategory', {
+            name: 'sample category',
             description: 'sample category description',
-            parent_item_category_id: parentCategory.id });
+            parent_item_category_id: parentCategory.id
+        });
         newCategory = addCategoryRes.getBody()['result'];
     });
 
@@ -33,6 +36,12 @@ describe('UpdateCategory', () => {
     };
 
     test('Should update the category with parent category id', async () => {
+        /*
+         *  [0]: category id
+         *  [1]: category name
+         *  [2]: description
+         *  [3]: parentItemCategoryId
+         */
         categoryData.id = newCategory.id;
         const res = await rpc(method, [categoryData.id, categoryData.name, categoryData.description, parentCategory.id]);
         res.expectJson();
