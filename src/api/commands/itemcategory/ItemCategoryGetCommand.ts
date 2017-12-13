@@ -1,4 +1,3 @@
-import * as Bookshelf from 'bookshelf';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -33,9 +32,9 @@ export class ItemCategoryGetCommand implements RpcCommand<ItemCategory> {
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<ItemCategory> {
         if (typeof data.params[0] === 'number') {
-            return await Bookshelf.Collection.apply(this.itemCategoryService.findOne(data.params[0]));
+            return await this.itemCategoryService.findOne(data.params[0]);
         } else {
-            return await Bookshelf.Collection.apply(this.itemCategoryService.findOneByKey(data.params[0]));
+            return await this.itemCategoryService.findOneByKey(data.params[0]);
         }
     }
 

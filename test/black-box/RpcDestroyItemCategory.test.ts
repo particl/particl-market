@@ -16,12 +16,12 @@ describe('DestroyItemCategory', () => {
     let profileId;
 
     beforeAll(async () => {
+        await testUtil.cleanDb();
 
         // create category
         const res = await rpc('getcategory', [parentCategory.key]);
         const categoryResult: any = res.getBody()['result'];
 
-        console.log('categoryResult: ', categoryResult);
         parentCategory.id = categoryResult.id;
         const addCategoryRes: any = await testUtil.addData('itemcategory', {
             name: 'sample category',
