@@ -1,6 +1,3 @@
-import * as Bookshelf from 'bookshelf';
-import { injectable, inject, named } from 'inversify';
-import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { AddressService } from '../services/AddressService';
@@ -8,7 +5,6 @@ import { RpcRequest } from '../requests/RpcRequest';
 import { Address } from '../models/Address';
 import {RpcCommand} from './RpcCommand';
 
-// @injectable
 export class AddressUpdateCommand implements RpcCommand<Address> {
     public log: LoggerType;
     public name: string;

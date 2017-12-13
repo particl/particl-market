@@ -1,4 +1,3 @@
-import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';

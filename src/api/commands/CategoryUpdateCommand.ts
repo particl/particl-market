@@ -1,6 +1,4 @@
 import * as Bookshelf from 'bookshelf';
-import { injectable, inject, named } from 'inversify';
-import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ItemCategoryService } from '../services/ItemCategoryService';
@@ -10,9 +8,7 @@ import { ItemCategory } from '../models/ItemCategory';
 import {RpcCommand} from './RpcCommand';
 import { MessageException } from '../exceptions/MessageException';
 
-// @injectable
 export class CategoryUpdateCommand implements RpcCommand<ItemCategory> {
-
     public log: LoggerType;
     public name: string;
 

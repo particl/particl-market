@@ -1,15 +1,10 @@
-import * as Bookshelf from 'bookshelf';
-import { Container, injectable, inject, named } from 'inversify';
-import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { AddressService } from '../services/AddressService';
 import { RpcRequest } from '../requests/RpcRequest';
 import { Address } from '../models/Address';
 import {RpcCommand} from './RpcCommand';
-import {Collection} from 'bookshelf';
 
-// @injectable()
 export class AddressCreateCommand implements RpcCommand<Address> {
     public log: LoggerType;
     public name: string;
@@ -38,5 +33,3 @@ export class AddressCreateCommand implements RpcCommand<Address> {
         return 'CreateAddressCommand: TODO: Fill in help string.';
     }
 }
-// const container = new Container();
-// container.bind<RpcCommand<Address>>(CreateAddressCommand).to(CreateAddressCommand);

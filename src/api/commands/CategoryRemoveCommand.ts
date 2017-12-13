@@ -1,18 +1,13 @@
-import * as Bookshelf from 'bookshelf';
-import { injectable, inject, named } from 'inversify';
-import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ItemCategoryService } from '../services/ItemCategoryService';
 import { ListingItemService } from '../services/ListingItemService';
 import { ListingItemTemplateService } from '../services/ListingItemTemplateService';
 import { RpcRequest } from '../requests/RpcRequest';
-import { ItemCategory } from '../models/ItemCategory';
 import {RpcCommand} from './RpcCommand';
 import { MessageException } from '../exceptions/MessageException';
 import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
 
-// @injectable
 export class CategoryRemoveCommand implements RpcCommand<void> {
 
     public log: LoggerType;
