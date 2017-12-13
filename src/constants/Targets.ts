@@ -115,9 +115,11 @@ export const Targets = {
         TestCommand: 'TestCommand'
     },
     Factory:     {
+        BidFactory: 'BidFactory',
         TestFactory: 'TestFactory'
     },
     MessageProcessor:     {
+        BidMessageProcessor: 'BidMessageProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
         TestMessageProcessor: 'TestMessageProcessor'
