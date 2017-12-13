@@ -3,28 +3,32 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { FavoriteItemService } from '../services/FavoriteItemService';
+import { ProfileService } from '../services/ProfileService';
 import { RpcRequest } from '../requests/RpcRequest';
-import { FavoriteItem } from '../models/FavoriteItem';
+import { Profile } from '../models/Profile';
 import {RpcCommand} from './RpcCommand';
 
-export class TestCommand implements RpcCommand<Bookshelf.Collection<FavoriteItem>> {
+export class UpdateProfileCommand implements RpcCommand<Profile> {
+
     public log: LoggerType;
     public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.FavoriteItemService) public favoriteItemService: FavoriteItemService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'TestCommand';
+        this.name = 'updateprofile';
     }
 
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
-        return this.favoriteItemService.findAll();
+    @validate()
+    public async execute( @request(RpcRequest) data: any): Promise<Profile> {
+        return this.profileService.update(data.params[0], {
+            name: data.params[1]
+        });
     }
 
     public help(): string {
-        return 'CreateCategoryCommand: TODO: Fill in help string.';
+        return 'UpdateProfileCommand: TODO: Fill in help string.';
     }
 }

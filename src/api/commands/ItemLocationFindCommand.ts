@@ -3,28 +3,31 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { FavoriteItemService } from '../services/FavoriteItemService';
+import { ItemLocationService } from '../services/ItemLocationService';
 import { RpcRequest } from '../requests/RpcRequest';
-import { FavoriteItem } from '../models/FavoriteItem';
+import { ItemLocation } from '../models/ItemLocation';
 import {RpcCommand} from './RpcCommand';
 
-export class TestCommand implements RpcCommand<Bookshelf.Collection<FavoriteItem>> {
+export class ItemLocationFindCommand implements RpcCommand<ItemLocation> {
+
     public log: LoggerType;
     public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.FavoriteItemService) public favoriteItemService: FavoriteItemService,
+        @inject(Types.Service) @named(Targets.Service.ItemLocationService) private itemLocationService: ItemLocationService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'TestCommand';
+        this.name = 'itemlocation.find';
     }
 
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
-        return this.favoriteItemService.findAll();
+    @validate()
+    public async execute( @request(RpcRequest) data: any): Promise<ItemLocation> {
+        return this.itemLocationService.findOne(data.params[0]);
+
     }
 
     public help(): string {
-        return 'CreateCategoryCommand: TODO: Fill in help string.';
+        return 'ItemLocationFindCommand: TODO: Fill in help string.';
     }
 }

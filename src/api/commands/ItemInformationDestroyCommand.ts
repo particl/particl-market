@@ -3,28 +3,29 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { FavoriteItemService } from '../services/FavoriteItemService';
+import { ItemInformationService } from '../services/ItemInformationService';
 import { RpcRequest } from '../requests/RpcRequest';
-import { FavoriteItem } from '../models/FavoriteItem';
 import {RpcCommand} from './RpcCommand';
 
-export class TestCommand implements RpcCommand<Bookshelf.Collection<FavoriteItem>> {
+export class ItemInformationDestroyCommand implements RpcCommand<void> {
+
     public log: LoggerType;
     public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.FavoriteItemService) public favoriteItemService: FavoriteItemService,
+        @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'TestCommand';
+        this.name = 'iteminformation.destroy';
     }
 
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
-        return this.favoriteItemService.findAll();
+    @validate()
+    public async execute( @request(RpcRequest) data: any): Promise<void> {
+        return this.itemInformationService.destroy(data.params[0]);
     }
 
     public help(): string {
-        return 'CreateCategoryCommand: TODO: Fill in help string.';
+        return 'ItemInformationDestroyCommand: TODO: Fill in help string.';
     }
 }

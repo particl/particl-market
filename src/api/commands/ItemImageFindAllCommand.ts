@@ -3,28 +3,30 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { FavoriteItemService } from '../services/FavoriteItemService';
+import { ItemImageService } from '../services/ItemImageService';
 import { RpcRequest } from '../requests/RpcRequest';
-import { FavoriteItem } from '../models/FavoriteItem';
+import { ItemImage } from '../models/ItemImage';
 import {RpcCommand} from './RpcCommand';
 
-export class TestCommand implements RpcCommand<Bookshelf.Collection<FavoriteItem>> {
+export class ItemImageFindAllCommand implements RpcCommand<Bookshelf.Collection<ItemImage>> {
+
     public log: LoggerType;
     public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.FavoriteItemService) public favoriteItemService: FavoriteItemService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'TestCommand';
+        this.name = 'itemimage.findall';
     }
 
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
-        return this.favoriteItemService.findAll();
+    @validate()
+    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemImage>> {
+        return this.itemImageService.findAll();
     }
 
     public help(): string {
-        return 'CreateCategoryCommand: TODO: Fill in help string.';
+        return 'ItemImageFindAllCommand: TODO: Fill in help string.';
     }
 }
