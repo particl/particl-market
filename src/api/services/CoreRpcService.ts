@@ -1,6 +1,7 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
+import { Environment } from '../../core/helpers/Environment';
 import * as rpc from 'particl-rpc-service';
 
 
@@ -24,10 +25,12 @@ export class CoreRpcService {
         this.log = new Logger(__filename);
 
         rpc.init({
-            rpcuser: this.USER,
-            rpcpassword: this.PASSWORD,
-            rpcbind: this.HOSTNAME,
-            port: this.TESTNET_PORT
+            rpcuser: (process.env.RPCUSER ? process.env.RPCUSER : this.USER),
+            rpcpassword: (process.env.RPCPASSWORD ? process.env.RPCPASSWORD : this.PASSWORD),
+            host: (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.HOSTNAME),
+            port: (Environment.isDevelopment() ?
+                (process.env.TESTNET_PORT ? process.env.TESTNET_PORT : this.TESTNET_PORT) :
+                (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.MAINNET_PORT))
         });
     }
 

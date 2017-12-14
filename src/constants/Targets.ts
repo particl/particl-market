@@ -169,10 +169,12 @@ export const Targets = {
         TestCommand: 'TestCommand'
     },
     Factory:     {
+        BidFactory: 'BidFactory',
         RpcCommandFactory: 'RpcCommandFactory',
         TestFactory: 'TestFactory'
     },
     MessageProcessor:     {
+        BidMessageProcessor: 'BidMessageProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
         TestMessageProcessor: 'TestMessageProcessor'
