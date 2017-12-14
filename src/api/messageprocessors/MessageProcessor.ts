@@ -3,8 +3,8 @@ import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
 import { ActionMessageInterface } from '../messages/ActionMessageInterface';
+import { CoreRpcService } from '../services/CoreRpcService';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -20,6 +20,7 @@ export class MessageProcessor implements MessageProcessorInterface {
     private PASSWORD = 'test';
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -70,18 +71,7 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     private async pollMessages(): Promise<any> {
         this.log.debug('timeout ', this.interval);
-
-        return new Promise((resolve, reject) => {
-
-            rpc.call('getnetworkinfo', null, (error, response) => {
-                if (error) {
-                    reject(error);
-                } else if (response) {
-                    resolve(response);
-                }
-            });
-
-        });
+        return await this.coreRpcService.call('getnetworkinfo');
     }
 
 }
