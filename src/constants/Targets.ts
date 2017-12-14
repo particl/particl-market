@@ -65,6 +65,7 @@ export const Targets = {
         AddressService: 'AddressService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
+        CoreRpcService: 'CoreRpcService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
