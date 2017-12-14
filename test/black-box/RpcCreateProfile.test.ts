@@ -12,11 +12,13 @@ describe('CreateProfile', () => {
 
     test('Should create a new profile by RPC', async () => {
         const profileName = 'DEFAULT-TEST-PROFILE';
-        const res = await rpc(method, [profileName]);
+        const profileAddress = 'DEFAULT-TEST-ADDRESS';
+        const res = await rpc(method, [profileName, profileAddress]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.name).toBe(profileName);
+        expect(result.address).toBe(profileAddress);
     });
 
     test('Should fail because we want to create an empty profile', async () => {

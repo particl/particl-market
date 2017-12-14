@@ -91,7 +91,7 @@ describe('/RpcGetProfile', () => {
         resMain.expectDataRpc(keys);
         const resultMain: any = resMain.getBody()['result'];
         expect(resultMain.id).toBe(testDataGet.params[0]);
-        expect(resultMain.Addresses).toHaveLength(2);
+        expect(resultMain.ShippingAddresses).toHaveLength(2);
     });
 
     test('Should return one profile by Name', async () => {

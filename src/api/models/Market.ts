@@ -9,13 +9,21 @@ export class Market extends Bookshelf.Model<Market> {
         if (withRelated) {
             return await Market.where<Market>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'MarketRelated',
-                    // 'MarketRelated.Related'
                 ]
             });
         } else {
             return await Market.where<Market>({ id: value }).fetch();
+        }
+    }
+
+    public static async fetchByAddress(value: string, withRelated: boolean = true): Promise<Market> {
+        if (withRelated) {
+            return await Market.where<Market>({ address: value }).fetch({
+                withRelated: [
+                ]
+            });
+        } else {
+            return await Market.where<Market>({ address: value }).fetch();
         }
     }
 
@@ -24,6 +32,15 @@ export class Market extends Bookshelf.Model<Market> {
 
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
+
+    public get Name(): string { return this.get('name'); }
+    public set Name(value: string) { this.set('name', value); }
+
+    public get PrivateKey(): string { return this.get('private_key'); }
+    public set PrivateKey(value: string) { this.set('private_key', value); }
+
+    public get Address(): string { return this.get('address'); }
+    public set Address(value: string) { this.set('address', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

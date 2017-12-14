@@ -13,8 +13,8 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<void>}
      */
-    public async cleanDb(): void {
-        const res = await rpc('cleandb');
+    public async cleanDb(ignoreTables: string[] = []): void {
+        const res = await rpc('cleandb', ignoreTables);
         res.expectJson();
         res.expectStatusCode(200);
     }

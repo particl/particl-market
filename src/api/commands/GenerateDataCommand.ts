@@ -1,13 +1,12 @@
-import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { TestDataService } from '../services/TestDataService';
 import { RpcRequest } from '../requests/RpcRequest';
-import {RpcCommand} from './RpcCommand';
+import { RpcCommandInterface } from './RpcCommandInterface';
 
-export class GenerateDataCommand implements RpcCommand<any> {
+export class GenerateDataCommand implements RpcCommandInterface<any> {
 
     public log: LoggerType;
     public name: string;

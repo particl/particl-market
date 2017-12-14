@@ -34,26 +34,18 @@ export class MarketService {
         return market;
     }
 
-    public async findDefault(id: number, withRelated: boolean = false): Promise<Market> {
-        return await this.marketRepo.findOne(id, withRelated);
+    public async findByAddress(address: string, withRelated: boolean = true): Promise<Market> {
+        return await this.marketRepo.findOneByAddress(address, withRelated);
     }
 
     @validate()
     public async create( @request(MarketCreateRequest) body: any): Promise<Market> {
 
-        // TODO: extract and remove related models from request
-        // const marketRelated = body.related;
-        // delete body.related;
-
         // If the request body was valid we will create the market
         const market = await this.marketRepo.create(body);
 
-        // TODO: create related models
-        // marketRelated._id = market.Id;
-        // await this.marketRelatedService.create(marketRelated);
-
         // finally find and return the created market
-        const newMarket = await this.findOne(market.id);
+        const newMarket = await this.findOne(market.Id);
         return newMarket;
     }
 
@@ -64,7 +56,9 @@ export class MarketService {
         const market = await this.findOne(id, false);
 
         // set new values
-
+        market.Name = body.name;
+        market.PrivateKey = body.private_key;
+        market.Address = body.address;
         // update market record
         const updatedMarket = await this.marketRepo.update(id, market.toJSON());
 

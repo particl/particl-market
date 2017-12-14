@@ -6,5 +6,7 @@ export class ProfileCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public name: string;
+
+    public address: string;
 }
 // tslint:enable:variable-name

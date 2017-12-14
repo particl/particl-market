@@ -29,13 +29,13 @@ export class DefaultMarketService {
     }
 
     public async insertOrUpdateMarket(market: any): Promise<Market> {
-        let newMarket = await this.marketService.findDefault(1);
+        let newMarket = await this.marketService.findByAddress('DEFAULT-MARKET-ADDRESS');
         if (newMarket === null) {
             newMarket = await this.marketService.create(market);
-            this.log.debug('created new default Market with ID = 1');
+            this.log.debug('created new default Market');
         } else {
             newMarket = await this.marketService.update(newMarket.Id, market);
-            this.log.debug('updated new default Market with ID = 1');
+            this.log.debug('updated new default Market');
         }
         return newMarket;
     }
