@@ -26,6 +26,10 @@ export class MarketRepository {
         return this.MarketModel.fetchById(id, withRelated);
     }
 
+    public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Market> {
+        return this.MarketModel.fetchByAddress(address, withRelated);
+    }
+
     public async create(data: any): Promise<Market> {
         const market = this.MarketModel.forge<Market>(data);
         try {

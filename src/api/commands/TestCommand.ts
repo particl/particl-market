@@ -6,22 +6,25 @@ import { Types, Core, Targets } from '../../constants';
 import { FavoriteItemService } from '../services/FavoriteItemService';
 import { RpcRequest } from '../requests/RpcRequest';
 import { FavoriteItem } from '../models/FavoriteItem';
+import { RpcCommandInterface } from './RpcCommandInterface';
 
-
-export class TestCommand {
-
+export class TestCommand implements RpcCommandInterface<Bookshelf.Collection<FavoriteItem>> {
     public log: LoggerType;
+    public name: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) public favoriteItemService: FavoriteItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
+        this.name = 'TestCommand';
     }
 
-    @validate()
     public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
         return this.favoriteItemService.findAll();
     }
 
+    public help(): string {
+        return 'CreateCategoryCommand: TODO: Fill in help string.';
+    }
 }

@@ -65,6 +65,7 @@ export const Targets = {
         AddressService: 'AddressService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
+        CoreRpcService: 'CoreRpcService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
@@ -87,35 +88,89 @@ export const Targets = {
         MessagingInformationService: 'MessagingInformationService',
         PaymentInformationService: 'PaymentInformationService',
         ProfileService: 'ProfileService',
-        rpc: {
-            RpcAddressService: 'RpcAddressService',
-            RpcBidService: 'RpcBidService',
-            RpcCliHelpService: 'RpcCliHelpService',
-            RpcEscrowService: 'RpcEscrowService',
-            RpcFavoriteItemService: 'RpcFavoriteItemService',
-            RpcItemCategoryService: 'RpcItemCategoryService',
-            RpcItemImageService: 'RpcItemImageService',
-            RpcItemInformationService: 'RpcItemInformationService',
-            RpcItemLocationService: 'RpcItemLocationService',
-            RpcListingItemService: 'RpcListingItemService',
-            RpcListingItemTemplateService: 'RpcListingItemTemplateService',
-            RpcMarketService: 'RpcMarketService',
-            RpcMessagingInformationService: 'RpcMessagingInformationService',
-            RpcPaymentInformationService: 'RpcPaymentInformationService',
-            RpcProfileService: 'RpcProfileService',
-            RpcShippingDestinationService: 'RpcShippingDestinationService',
-            RpcTestDataService: 'RpcTestDataService'
-        },
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
         TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
     Command:     {
+        AddDataCommand: 'AddDataCommand',
+        bid: {
+            BidSearchCommand: 'BidSearchCommand'
+        },
+        CleanDbCommand: 'CleanDbCommand',
+        escrow: {
+            EscrowCreateCommand: 'EscrowCreateCommand',
+            EscrowDestroyCommand: 'EscrowDestroyCommand',
+            EscrowUpdateCommand: 'EscrowUpdateCommand'
+        },
+        favorite: {
+            FavoriteAddCommand: 'FavoriteAddCommand',
+            FavoriteRemoveCommand: 'FavoriteRemoveCommand'
+        },
+        GenerateDataCommand: 'GenerateDataCommand',
+        HelpCommand: 'HelpCommand',
+        itemcategory: {
+            ItemCategoriesGetCommand: 'ItemCategoriesGetCommand',
+            ItemCategoryCreateCommand: 'ItemCategoryCreateCommand',
+            ItemCategoryFindCommand: 'ItemCategoryFindCommand',
+            ItemCategoryGetCommand: 'ItemCategoryGetCommand',
+            ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
+            ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
+        },
+        itemimage: {
+            ItemImageAddCommand: 'ItemImageAddCommand',
+            ItemImageRemoveCommand: 'ItemImageRemoveCommand'
+        },
+        iteminformation: {
+            ItemInformationCreateCommand: 'ItemInformationCreateCommand',
+            ItemInformationGetCommand: 'ItemInformationGetCommand',
+            ItemInformationUpdateCommand: 'ItemInformationUpdateCommand'
+        },
+        itemlocation: {
+            ItemLocationCreateCommand: 'ItemLocationCreateCommand',
+            ItemLocationRemoveCommand: 'ItemLocationRemoveCommand',
+            ItemLocationUpdateCommand: 'ItemLocationUpdateCommand'
+        },
+        listingitem: {
+            ListingItemGetCommand: 'ListingItemGetCommand',
+            ListingItemSearchCommand: 'ListingItemSearchCommand',
+            OwnListingItemSearchCommand: 'OwnListingItemSearchCommand'
+        },
+        listingitemtemplate: {
+            ListingItemTemplateCreateCommand: 'ListingItemTemplateCreateCommand',
+            ListingItemTemplateDestroyCommand: 'ListingItemTemplateDestroyCommand',
+            ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
+            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
+        },
+        market: {
+            MarketCreateCommand: 'MarketCreateCommand'
+        },
+        messaginginformation: {
+            MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
+        },
+        paymentinformation: {
+            PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'
+        },
+        profile: {
+            AddressCreateCommand: 'AddressCreateCommand',
+            AddressDestroyCommand: 'AddressDestroyCommand',
+            AddressUpdateCommand: 'AddressUpdateCommand',
+            ProfileCreateCommand: 'ProfileCreateCommand',
+            ProfileDestroyCommand: 'ProfileDestroyCommand',
+            ProfileGetCommand: 'ProfileGetCommand',
+            ProfileUpdateCommand: 'ProfileUpdateCommand'
+        },
+        RpcCommandInterface: 'RpcCommandInterface',
+        shippingdestination: {
+            ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
+            ShippingDestinationRemoveCommand: 'ShippingDestinationRemoveCommand'
+        },
         TestCommand: 'TestCommand'
     },
     Factory:     {
         BidFactory: 'BidFactory',
+        RpcCommandFactory: 'RpcCommandFactory',
         TestFactory: 'TestFactory'
     },
     MessageProcessor:     {

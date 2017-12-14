@@ -59,6 +59,7 @@ export class TestDataService {
 
         await this.cleanDb(ignoreTables);
         if (seed) {
+            this.log.debug('seeding default data after cleaning');
             await this.defaultItemCategoryService.seedDefaultCategories();
             await this.defaultProfileService.seedDefaultProfile();
             await this.defaultMarketService.seedDefaultMarket();
