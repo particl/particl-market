@@ -29,10 +29,9 @@ export class BidFactory {
             });
         });
 
-        // return bid object
+        // return bid object with bidData
         return {
             status: BidStatus.ACTIVE,
-            listing_item_id: data.item,
             bidData
         } as any;
     }

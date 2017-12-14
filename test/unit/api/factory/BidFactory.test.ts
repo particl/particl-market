@@ -25,7 +25,6 @@ describe('BidFactory', () => {
     test('Should convert bidMessage in to bid', () => {
         const res = bidFactory.get(req);
         expect(res.status).toBe(req.status);
-        expect(res.listing_item_id).toBe(req.item);
         expect(res.status).toBe(req.status);
         expect(res.bidData.length).toBe(1);
         expect(res.bidData[0].dataId).toBe(req.objects[0].id);
@@ -36,7 +35,6 @@ describe('BidFactory', () => {
         req.objects.push({id: 'colour', value: 'red'});
         const res = bidFactory.get(req);
         expect(res.status).toBe(req.status);
-        expect(res.listing_item_id).toBe(req.item);
         expect(res.status).toBe(req.status);
         expect(res.bidData.length).toBe(2);
         expect(res.bidData[1].dataId).toBe(req.objects[1].id);
@@ -47,7 +45,6 @@ describe('BidFactory', () => {
         req.objects = [];
         const res = bidFactory.get(req);
         expect(res.status).toBe(req.status);
-        expect(res.listing_item_id).toBe(req.item);
         expect(res.status).toBe(req.status);
         expect(res.bidData.length).toBe(0);
     });
