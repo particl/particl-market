@@ -44,7 +44,7 @@ export const validate = () => (target: any, propertyName: string, descriptor: Ty
     const method = descriptor.value;
     descriptor.value = async function(...args: any[]): Promise<any> {
         const requestParameters: RequestParameter[] = Reflect.getOwnMetadata(requestMetadataKey, target, propertyName);
-        if (requestParameters.length > 0) {
+        if (requestParameters && requestParameters.length > 0) {
             for (const requestParameter of requestParameters) {
                 const requestBody = new requestParameter.request(args[requestParameter.index]);
                 await requestBody.validate();

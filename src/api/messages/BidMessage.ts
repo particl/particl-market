@@ -10,7 +10,7 @@ export class BidMessage implements ActionMessageInterface {
     public item: string;
 
     // todo: objects
-    public objects: any;
+    public objects?: any;
 
     constructor() {
         //
