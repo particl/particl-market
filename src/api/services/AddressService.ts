@@ -64,7 +64,7 @@ export class AddressService {
     }
 
     public async destroy(id: number): Promise<void> {
-        await this.addressRepo.destroy(id);
+        return await this.addressRepo.destroy(id);
     }
 
 }

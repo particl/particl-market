@@ -33,7 +33,7 @@ export class AddressCreateCommand implements RpcCommandInterface<Address> {
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<Address> {
-        this.log.error('Attempting to create address');
+        this.log.debug('Attempting to create address');
         return await this.addressService.create({
             title : data.params[0],
             addressLine1 : data.params[1],
