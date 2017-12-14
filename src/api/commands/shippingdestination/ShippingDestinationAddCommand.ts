@@ -6,14 +6,14 @@ import { ShippingDestinationService } from '../../services/ShippingDestinationSe
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ShippingDestination } from '../../models/ShippingDestination';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as _ from 'lodash';
 import { MessageException } from '../../exceptions/MessageException';
 import { Country } from '../../enums/Country';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
 
-export class ShippingDestinationAddCommand implements RpcCommand<ShippingDestination> {
+export class ShippingDestinationAddCommand implements RpcCommandInterface<ShippingDestination> {
 
     public log: LoggerType;
     public name: string;

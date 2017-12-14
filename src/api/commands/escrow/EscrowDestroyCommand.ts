@@ -4,9 +4,9 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { EscrowService } from '../../services/EscrowService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 
-export class EscrowDestroyCommand implements RpcCommand<void> {
+export class EscrowDestroyCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
     public name: string;

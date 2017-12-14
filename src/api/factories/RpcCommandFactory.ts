@@ -2,7 +2,7 @@ import * as Bookshelf from 'bookshelf';
 import { inject, named, multiInject } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { RpcCommand} from '../commands/RpcCommand';
+import { RpcCommandInterface} from '../commands/RpcCommandInterface';
 import { NotFoundException } from '../exceptions/NotFoundException';
 
 import { AddDataCommand} from '../commands/AddDataCommand';
@@ -55,7 +55,7 @@ import { ShippingDestinationRemoveCommand } from '../commands/shippingdestinatio
 export class RpcCommandFactory {
 
     public log: LoggerType;
-    public commands: Array<RpcCommand<any>> = [];
+    public commands: Array<RpcCommandInterface<any>> = [];
 
     constructor(
 
@@ -163,7 +163,7 @@ export class RpcCommandFactory {
 
     }
 
-    public get(commandName: string): RpcCommand<Bookshelf.Model<any>> {
+    public get(commandName: string): RpcCommandInterface<Bookshelf.Model<any>> {
         this.log.debug('Looking for command <' + commandName + '>');
         for (const command of this.commands) {
             if (command.name.toLowerCase() === commandName.toLowerCase()) {

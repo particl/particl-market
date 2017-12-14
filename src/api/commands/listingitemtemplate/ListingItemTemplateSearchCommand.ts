@@ -6,10 +6,10 @@ import { Types, Core, Targets } from '../../../constants';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
 
-export class ListingItemTemplateSearchCommand implements RpcCommand<Bookshelf.Collection<ListingItemTemplate>> {
+export class ListingItemTemplateSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
 
     public log: LoggerType;
     public name: string;

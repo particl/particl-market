@@ -5,12 +5,12 @@ import { Types, Core, Targets } from '../../../constants';
 import { ItemLocationService } from '../../services/ItemLocationService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemLocation } from '../../models/ItemLocation';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import * as _ from 'lodash';
 
-export class ItemLocationCreateCommand implements RpcCommand<ItemLocation> {
+export class ItemLocationCreateCommand implements RpcCommandInterface<ItemLocation> {
 
     public log: LoggerType;
     public name: string;

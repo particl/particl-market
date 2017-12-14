@@ -6,11 +6,11 @@ import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { ListingItemService } from '../../services/ListingItemService';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
 
-export class ItemCategoryRemoveCommand implements RpcCommand<void> {
+export class ItemCategoryRemoveCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
     public name: string;

@@ -5,9 +5,9 @@ import { Types, Core, Targets } from '../../../constants';
 import { MarketService } from '../../services/MarketService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Market } from '../../models/Market';
-import {RpcCommand} from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 
-export class MarketCreateCommand implements RpcCommand<Market> {
+export class MarketCreateCommand implements RpcCommandInterface<Market> {
 
     public log: LoggerType;
     public name: string;

@@ -5,9 +5,9 @@ import { Types, Core, Targets } from '../../../constants';
 import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Profile } from '../../models/Profile';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 
-export class ProfileGetCommand implements RpcCommand<Profile> {
+export class ProfileGetCommand implements RpcCommandInterface<Profile> {
 
     public log: LoggerType;
     public name: string;

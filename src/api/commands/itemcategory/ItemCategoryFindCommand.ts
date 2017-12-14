@@ -6,9 +6,9 @@ import { Types, Core, Targets } from '../../../constants';
 import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategory } from '../../models/ItemCategory';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 
-export class ItemCategoryFindCommand implements RpcCommand<Bookshelf.Collection<ItemCategory>> {
+export class ItemCategoryFindCommand implements RpcCommandInterface<Bookshelf.Collection<ItemCategory>> {
 
     public log: LoggerType;
     public name: string;

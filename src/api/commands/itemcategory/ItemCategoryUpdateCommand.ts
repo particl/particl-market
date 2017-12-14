@@ -7,10 +7,10 @@ import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategory } from '../../models/ItemCategory';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 
-export class ItemCategoryUpdateCommand implements RpcCommand<ItemCategory> {
+export class ItemCategoryUpdateCommand implements RpcCommandInterface<ItemCategory> {
 
     public log: LoggerType;
     public name: string;

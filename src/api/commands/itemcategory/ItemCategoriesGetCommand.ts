@@ -5,9 +5,9 @@ import { Types, Core, Targets } from '../../../constants';
 import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategory } from '../../models/ItemCategory';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 
-export class ItemCategoriesGetCommand implements RpcCommand<ItemCategory> {
+export class ItemCategoriesGetCommand implements RpcCommandInterface<ItemCategory> {
 
     public log: LoggerType;
     public name: string;

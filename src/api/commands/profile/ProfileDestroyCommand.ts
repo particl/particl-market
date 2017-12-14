@@ -3,10 +3,10 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 
-export class ProfileDestroyCommand implements RpcCommand<void> {
+export class ProfileDestroyCommand implements RpcCommandInterface<void> {
     public log: LoggerType;
     public name: string;
 

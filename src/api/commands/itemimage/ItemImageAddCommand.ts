@@ -6,10 +6,10 @@ import { ItemImageService } from '../../services/ItemImageService';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemImage } from '../../models/ItemImage';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as crypto from 'crypto-js';
 
-export class ItemImageAddCommand implements RpcCommand<ItemImage> {
+export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
 
     public log: LoggerType;
     public name: string;

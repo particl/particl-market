@@ -3,10 +3,10 @@ import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 
-export class ListingItemTemplateDestroyCommand implements RpcCommand<void> {
+export class ListingItemTemplateDestroyCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
     public name: string;

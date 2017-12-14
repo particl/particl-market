@@ -5,9 +5,9 @@ import { Types, Core, Targets } from '../../../constants';
 import { ItemInformationService } from '../../services/ItemInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemInformation } from '../../models/ItemInformation';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 
-export class ItemInformationGetCommand implements RpcCommand<ItemInformation> {
+export class ItemInformationGetCommand implements RpcCommandInterface<ItemInformation> {
 
     public log: LoggerType;
     public name: string;

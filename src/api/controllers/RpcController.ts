@@ -6,7 +6,6 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { JsonRpc2Request, JsonRpc2Response, RpcErrorCode } from '../../core/api/jsonrpc';
 import { JsonRpcError } from '../../core/api/JsonRpcError';
 
-// import {RpcCommand} from '../commands/RpcCommand';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { RpcRequest } from '../requests/RpcRequest';
 

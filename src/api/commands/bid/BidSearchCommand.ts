@@ -6,10 +6,10 @@ import { Types, Core, Targets } from '../../../constants';
 import { BidService } from '../../services/BidService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidSearchParams } from '../../requests/BidSearchParams';
 
-export class BidSearchCommand implements RpcCommand<Bookshelf.Collection<Bid>> {
+export class BidSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
     public log: LoggerType;
     public name: string;

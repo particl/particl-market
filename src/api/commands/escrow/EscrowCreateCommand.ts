@@ -5,9 +5,9 @@ import { Types, Core, Targets } from '../../../constants';
 import { EscrowService } from '../../services/EscrowService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 
-export class EscrowCreateCommand implements RpcCommand<Escrow> {
+export class EscrowCreateCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
     public name: string;

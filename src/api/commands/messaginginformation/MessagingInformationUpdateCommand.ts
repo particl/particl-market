@@ -6,11 +6,11 @@ import { ListingItemTemplateService } from '../../services/ListingItemTemplateSe
 import { MessagingInformationService } from '../../services/MessagingInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { MessagingInformation } from '../../models/MessagingInformation';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import * as _ from 'lodash';
 
-export class MessagingInformationUpdateCommand implements RpcCommand<MessagingInformation> {
+export class MessagingInformationUpdateCommand implements RpcCommandInterface<MessagingInformation> {
 
     public log: LoggerType;
     public name: string;

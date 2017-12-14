@@ -6,11 +6,11 @@ import { FavoriteItemService } from '../../services/FavoriteItemService';
 import { ListingItemService } from '../../services/ListingItemService';
 import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
 
-export class FavoriteRemoveCommand implements RpcCommand<void> {
+export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
     public name: string;

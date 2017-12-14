@@ -5,7 +5,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { ShippingDestinationService } from '../../services/ShippingDestinationService';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
 import * as _ from 'lodash';
@@ -13,7 +13,7 @@ import { Country } from '../../enums/Country';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
 
-export class ShippingDestinationRemoveCommand implements RpcCommand<void> {
+export class ShippingDestinationRemoveCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
     public name: string;

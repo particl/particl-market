@@ -5,10 +5,10 @@ import { Types, Core, Targets } from '../../../constants';
 import { PaymentInformationService } from '../../services/PaymentInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { PaymentInformation } from '../../models/PaymentInformation';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
 
-export class PaymentInformationUpdateCommand implements RpcCommand<PaymentInformation> {
+export class PaymentInformationUpdateCommand implements RpcCommandInterface<PaymentInformation> {
 
     public log: LoggerType;
     public name: string;

@@ -6,9 +6,9 @@ import { Types, Core, Targets } from '../../constants';
 import { FavoriteItemService } from '../services/FavoriteItemService';
 import { RpcRequest } from '../requests/RpcRequest';
 import { FavoriteItem } from '../models/FavoriteItem';
-import {RpcCommand} from './RpcCommand';
+import { RpcCommandInterface } from './RpcCommandInterface';
 
-export class TestCommand implements RpcCommand<Bookshelf.Collection<FavoriteItem>> {
+export class TestCommand implements RpcCommandInterface<Bookshelf.Collection<FavoriteItem>> {
     public log: LoggerType;
     public name: string;
 

@@ -160,7 +160,7 @@ export const Targets = {
             ProfileGetCommand: 'ProfileGetCommand',
             ProfileUpdateCommand: 'ProfileUpdateCommand'
         },
-        RpcCommand: 'RpcCommand',
+        RpcCommandInterface: 'RpcCommandInterface',
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
             ShippingDestinationRemoveCommand: 'ShippingDestinationRemoveCommand'

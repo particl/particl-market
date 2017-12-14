@@ -7,11 +7,11 @@ import { ListingItemService } from '../../services/ListingItemService';
 import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { FavoriteItem } from '../../models/FavoriteItem';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 
-export class FavoriteAddCommand implements RpcCommand<FavoriteItem> {
+export class FavoriteAddCommand implements RpcCommandInterface<FavoriteItem> {
 
     public log: LoggerType;
     public name: string;

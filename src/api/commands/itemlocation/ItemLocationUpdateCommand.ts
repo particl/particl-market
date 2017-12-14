@@ -6,11 +6,11 @@ import { ItemLocationService } from '../../services/ItemLocationService';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemLocation } from '../../models/ItemLocation';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as _ from 'lodash';
 import { MessageException } from '../../exceptions/MessageException';
 
-export class ItemLocationUpdateCommand implements RpcCommand<ItemLocation> {
+export class ItemLocationUpdateCommand implements RpcCommandInterface<ItemLocation> {
 
     public log: LoggerType;
     public name: string;

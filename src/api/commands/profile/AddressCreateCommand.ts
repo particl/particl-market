@@ -5,9 +5,9 @@ import { Types, Core, Targets } from '../../../constants';
 import { AddressService } from '../../services/AddressService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Address } from '../../models/Address';
-import { RpcCommand } from '../RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
 
-export class AddressCreateCommand implements RpcCommand<Address> {
+export class AddressCreateCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
     public name: string;
 
