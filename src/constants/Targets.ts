@@ -170,9 +170,14 @@ export const Targets = {
     },
     Factory:     {
         RpcCommandFactory: 'RpcCommandFactory',
-        TestFactory: 'TestFactory'
+        TestFactory: 'TestFactory',
+        ListingItemFactory: 'ListingItemFactory',
+        ItemCategoryFactory: 'ItemCategoryFactory',
+        MessagingInformationFactory: 'MessagingInformationFactory',
+        ItemPriceFactory : 'ItemPriceFactory'
     },
     MessageProcessor:     {
+        ListingItemMessageProcessor: 'ListingItemMessageProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
         TestMessageProcessor: 'TestMessageProcessor'

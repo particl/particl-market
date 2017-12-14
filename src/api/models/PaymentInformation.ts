@@ -1,3 +1,4 @@
+import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { Escrow } from './Escrow';
 import { ItemPrice } from './ItemPrice';
@@ -46,7 +47,7 @@ export class PaymentInformation extends Bookshelf.Model<PaymentInformation> {
         return this.hasOne(Escrow);
     }
 
-    public ItemPrice(): ItemPrice {
-        return this.hasOne(ItemPrice);
+    public ItemPrice(): Collection<ItemPrice> {
+        return this.hasMany(ItemPrice, 'payment_information_id', 'id');
     }
 }

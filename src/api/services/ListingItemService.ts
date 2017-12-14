@@ -85,7 +85,7 @@ export class ListingItemService {
         delete body.itemInformation;
         const paymentInformation = body.paymentInformation;
         delete body.paymentInformation;
-        const messagingInformation = body.messagingInformation;
+        const messagingInformation = body.messagingInformation || [];
         delete body.messagingInformation;
 
         // check market id : if null use default market id = 1
@@ -104,9 +104,13 @@ export class ListingItemService {
             paymentInformation.listing_item_id = listingItem.Id;
             await this.paymentInformationService.create(paymentInformation);
         }
-        if (messagingInformation) {
-            messagingInformation.listing_item_id = listingItem.Id;
-            await this.messagingInformationService.create(messagingInformation);
+        // if (messagingInformation) {
+        //     messagingInformation.listing_item_id = listingItem.Id;
+        //     await this.messagingInformationService.create(messagingInformation);
+        // }
+        for (const msgInfo of messagingInformation) {
+            msgInfo.listing_item_id = listingItem.Id;
+            await this.messagingInformationService.create(msgInfo);
         }
 
         // finally find and return the created listingItem

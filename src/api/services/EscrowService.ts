@@ -85,9 +85,10 @@ export class EscrowService {
         const escrow = await this.escrowRepo.create(body);
 
         // then create escrowratio
-        escrowRatio.escrow_id = escrow.Id;
-        await this.escrowratioService.create(escrowRatio);
-
+        if (escrowRatio) {
+            escrowRatio.escrow_id = escrow.Id;
+            await this.escrowratioService.create(escrowRatio);
+        }
         // finally find and return the created escrow
         const newEscrow = await this.findOne(escrow.Id);
         return newEscrow;

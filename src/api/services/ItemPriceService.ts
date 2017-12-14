@@ -54,13 +54,15 @@ export class ItemPriceService {
         // this.log.debug('itemprice created: ', JSON.stringify(itemPrice));
 
         // then create shippingPrice
-        shippingPrice.item_price_id = itemPrice.Id;
-        await this.shippingpriceService.create(shippingPrice);
-
+        if (shippingPrice) {
+            shippingPrice.item_price_id = itemPrice.Id;
+            await this.shippingpriceService.create(shippingPrice);
+        }
         // then create address
-        cryptocurrencyAddress.item_price_id = itemPrice.Id;
-        await this.cryptocurrencyaddressService.create(cryptocurrencyAddress);
-
+        if (cryptocurrencyAddress) {
+            cryptocurrencyAddress.item_price_id = itemPrice.Id;
+            await this.cryptocurrencyaddressService.create(cryptocurrencyAddress);
+        }
         // finally find and return the created itemPrice
         const newItemPrice = await this.findOne(itemPrice.id);
         return newItemPrice;

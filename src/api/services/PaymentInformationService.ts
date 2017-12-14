@@ -51,7 +51,7 @@ export class PaymentInformationService {
         }
 
         const escrow = body.escrow;
-        const itemPrice = body.itemPrice;
+        const itemPrice = body.itemPrice || [];
 
         delete body.escrow;
         delete body.itemPrice;
@@ -66,15 +66,20 @@ export class PaymentInformationService {
         }
 
         // then create item price
-        itemPrice.payment_information_id = paymentInformation.Id;
-        await this.itemPriceService.create(itemPrice);
-
+        // if (itemPrice) {
+        //     itemPrice.payment_information_id = paymentInformation.Id;
+        //     await this.itemPriceService.create(itemPrice);
+        // }
+        for (const itemP of itemPrice) {
+            itemP.payment_information_id = paymentInformation.Id;
+            await this.itemPriceService.create(itemP);
+        }
         // finally find and return the created paymentInformation
         const newPaymentInformation = await this.findOne(paymentInformation.Id);
         return newPaymentInformation;
     }
 
-    public async updateByListingId(@request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
+    public async updateByListingId( @request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
         const paymentInformation = await this.paymentInformationRepo.findOneByListingItemTemplateId(body.listing_item_template_id);
         if (paymentInformation === null) {
             this.log.warn(`PaymentInformation with the listing_item_template_id=${body.listing_item_template_id} was not found!`);
