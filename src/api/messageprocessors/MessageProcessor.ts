@@ -13,26 +13,11 @@ export class MessageProcessor implements MessageProcessorInterface {
     private timeout: any;
     private interval = 3000;
 
-    private MAINNET_PORT = 51735;
-    private TESTNET_PORT = 51935;
-    private HOSTNAME = 'localhost';
-    private USER = 'test';
-    private PASSWORD = 'test';
-
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-
-        rpc.init({
-            rpcuser: this.USER,
-            rpcpassword: this.PASSWORD,
-            rpcbind: this.HOSTNAME,
-            port: this.TESTNET_PORT
-        });
-
-        // this.schedulePoll();
     }
 
     public process(message: ActionMessageInterface): void {
@@ -71,7 +56,11 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     private async pollMessages(): Promise<any> {
         this.log.debug('timeout ', this.interval);
-        return await this.coreRpcService.call('getnetworkinfo');
+
+        return await this.coreRpcService.call('getnetworkinfo')
+            .catch(reason => {
+                this.log.info('error: ', reason);
+            });
     }
 
 }
