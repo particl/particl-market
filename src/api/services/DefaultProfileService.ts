@@ -30,15 +30,17 @@ export class DefaultProfileService {
     public async insertOrUpdateProfile(profile: any): Promise<Profile> {
         let newProfile = await this.profileService.findOneByName(profile.name);
         if (newProfile === null) {
-            newProfile = await this.profileService.create(profile);
             this.log.debug('created new default profile');
+            let newAddr;
             await this.coreRpcService.call('getnewaddress').then((res) => {
-                this.log.info('Successfully created new address for profile: ' + res.result);
-                newProfile.CryptocurrencyAddresses().push(res.result);
+                newAddr = res.result;
+                this.log.info('Successfully created new address for profile: ' + newAddr);
             })
             .catch(reason => {
                 this.log.info('Could not create new address for profile: ', reason);
             });
+            profile.address = newAddr;
+            newProfile = await this.profileService.create(profile);
         } else {
             newProfile = await this.profileService.update(newProfile.Id, profile);
             this.log.debug('updated new default profile');
