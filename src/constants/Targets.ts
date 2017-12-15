@@ -169,6 +169,7 @@ export const Targets = {
         TestCommand: 'TestCommand'
     },
     Factory:     {
+        BidFactory: 'BidFactory',
         RpcCommandFactory: 'RpcCommandFactory',
         TestFactory: 'TestFactory',
         ListingItemFactory: 'ListingItemFactory',
@@ -178,6 +179,7 @@ export const Targets = {
     },
     MessageProcessor:     {
         ListingItemMessageProcessor: 'ListingItemMessageProcessor',
+        BidMessageProcessor: 'BidMessageProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
         TestMessageProcessor: 'TestMessageProcessor'

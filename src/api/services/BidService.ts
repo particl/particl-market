@@ -10,6 +10,7 @@ import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { BidStatus } from '../enums/BidStatus';
+import { BidDataService } from './BidDataService';
 
 
 export class BidService {
@@ -18,6 +19,7 @@ export class BidService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.BidRepository) public bidRepo: BidRepository,
+        @inject(Types.Service) @named(Targets.Service.BidDataService) public bidDataService: BidDataService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -53,15 +55,17 @@ export class BidService {
     public async create( @request(BidCreateRequest) body: any): Promise<Bid> {
 
         // TODO: extract and remove related models from request
-        // const bidRelated = body.related;
-        // delete body.related;
+        const bidData = body.bidData || [];
+        delete body.bidData;
 
         // If the request body was valid we will create the bid
         const bid = await this.bidRepo.create(body);
 
         // TODO: create related models
-        // bidRelated._id = bid.Id;
-        // await this.bidRelatedService.create(bidRelated);
+        for (const data of bidData) {
+            data.bid_id = bid.Id;
+            await this.bidDataService.create(data);
+        }
 
         // finally find and return the created bid
         const newBid = await this.findOne(bid.id);

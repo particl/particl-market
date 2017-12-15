@@ -1,5 +1,5 @@
-import { LogMock } from './lib/LogMock';
-import { ListingItemFactory } from '../../src/api/factories/ListingItemFactory';
+import { LogMock } from '../../lib/LogMock';
+import { ListingItemFactory } from '../../../../src/api/factories/ListingItemFactory';
 
 describe('ListingItemFactory', () => {
 
