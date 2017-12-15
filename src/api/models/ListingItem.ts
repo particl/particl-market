@@ -30,7 +30,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     'PaymentInformation.ItemPrice.ShippingPrice',
                     'PaymentInformation.ItemPrice.Address',
                     'MessagingInformation',
-                    'ListingItemObjects'
+                    'ListingItemObjects',
+                    'Bids'
                 ]
             });
         } else {
@@ -55,7 +56,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 'PaymentInformation.ItemPrice.ShippingPrice',
                 'PaymentInformation.ItemPrice.Address',
                 'MessagingInformation',
-                'ListingItemObjects'
+                'ListingItemObjects',
+                'Bids'
             ]
         });
     }
