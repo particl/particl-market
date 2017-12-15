@@ -116,13 +116,20 @@ export class PaymentInformationService {
             await this.escrowService.create(relatedEscrow);
         }
         // find related record and delete it
-        let relatedItemPrice = updatedPaymentInformation.related('ItemPrice').toJSON();
-        await this.itemPriceService.destroy(relatedItemPrice.id);
+        let relatedItemPrice = updatedPaymentInformation.related('ItemPrice').toJSON() || [];
+        for (const relatedItemP of relatedItemPrice) {
+            await this.itemPriceService.destroy(relatedItemP.id);
+        }
 
         // recreate related data
-        relatedItemPrice = body.itemPrice;
-        relatedItemPrice.payment_information_id = id;
-        await this.itemPriceService.create(relatedItemPrice);
+        relatedItemPrice = body.itemPrice || [];
+        // relatedItemPrice.payment_information_id = id;
+        // await this.itemPriceService.create(relatedItemPrice);
+
+        for (const relatedItemP of relatedItemPrice) {
+            relatedItemP.payment_information_id = id;
+            await this.itemPriceService.create(relatedItemP);
+        }
 
         // finally find and return the updated paymentInformation
         const newPaymentInformation = await this.findOne(id);

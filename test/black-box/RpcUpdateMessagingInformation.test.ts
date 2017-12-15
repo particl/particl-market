@@ -19,9 +19,9 @@ describe('UpdateMessagingInformation', () => {
             },
             listingItemId: null
         },
-        messagingInformation: {
+        messagingInformation: [{
             listingItemId: null
-        }
+        }]
     };
 
     let createdTemplateId;

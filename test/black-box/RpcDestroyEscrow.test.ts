@@ -29,7 +29,7 @@ describe('/DestroyEscrow', () => {
                     seller: 100
                 }
             },
-            itemPrice: {
+            itemPrice: [{
                 currency: Currency.BITCOIN,
                 basePrice: 0.0001,
                 shippingPrice: {
@@ -40,7 +40,7 @@ describe('/DestroyEscrow', () => {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: 'This is temp address.'
                 }
-            }
+            }]
         }
     };
 

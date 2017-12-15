@@ -78,7 +78,7 @@ describe('/FindItems', () => {
                     seller: 100
                 }
             },
-            itemPrice: {
+            itemPrice: [{
                 currency: Currency.BITCOIN,
                 basePrice: 0.0001,
                 shippingPrice: {
@@ -89,12 +89,12 @@ describe('/FindItems', () => {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: '1234'
                 }
-            }
+            }]
         },
-        messagingInformation: {
+        messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1'
-        }
+        }]
     };
 
     const testDataTwo = {
@@ -139,7 +139,7 @@ describe('/FindItems', () => {
                     seller: 1
                 }
             },
-            itemPrice: {
+            itemPrice: [{
                 currency: Currency.PARTICL,
                 basePrice: 3.333,
                 shippingPrice: {
@@ -150,12 +150,12 @@ describe('/FindItems', () => {
                     type: CryptocurrencyAddressType.STEALTH,
                     address: 'UPDATED'
                 }
-            }
+            }]
         },
-        messagingInformation: {
+        messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1 UPDATED'
-        }
+        }]
     };
 
     let createdHashFirst;

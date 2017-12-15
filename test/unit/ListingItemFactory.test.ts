@@ -46,11 +46,12 @@ describe('ListingItemFactory', () => {
         itemPriceFactory = itemPriceFactory;
     });
 
-    test('Should fail because data is missing', () => {
+    test('Should get the listing-item data', () => {
         itemCategoryFactory = {
-            getCategory: jest.fn().mockImplementation(() => {
+            get: jest.fn().mockImplementation(() => {
+                // return 1;
                 return new Promise((resolve, reject) => {
-                    resolve(() => ({ id: 1 }));
+                    resolve(1);
                 });
             })
         };
@@ -58,7 +59,10 @@ describe('ListingItemFactory', () => {
             get: jest.fn().mockImplementation(() => {
                 return new Promise((resolve, reject) => {
                     resolve({
-                        toJSON: () => (req.messaging)
+                        toJSON: () => ([{
+                            protocol: req.messaging[0].protocol,
+                            publicKey: req.messaging[0].public_key
+                        }])
                     });
                 });
             })
@@ -67,18 +71,43 @@ describe('ListingItemFactory', () => {
             get: jest.fn().mockImplementation(() => {
                 return new Promise((resolve, reject) => {
                     resolve({
-                        toJSON: () => (req.payment.cryptocurrency)
+                        toJSON: () => ([{
+                            currency: req.payment.cryptocurrency[0].currency,
+                            basePrice: req.payment.cryptocurrency[0].base_price
+                        }])
                     });
                 });
             })
         };
         listingItemFactory = new ListingItemFactory(itemCategoryFactory, mesInfoFactory, itemPriceFactory, LogMock);
 
-        // delete req.payment;
-
         listingItemFactory.get(req).then((res, error) => {
-            console.log('----listingItem----', res);
-            console.log('----listingItem----', res.paymentInformation.itemPrice.toJSON());
+            expect(res.hash).not.toBeNull();
+            // itemInformation
+            expect(res.itemInformation).not.toBe(undefined);
+            expect(res.itemInformation.title).toBe(req.information.title);
+            expect(res.itemInformation.shortDescription).toBe(req.information.short_description);
+            expect(res.itemInformation.longDescription).toBe(req.information.long_description);
+
+            expect(res.itemInformation.itemCategory).not.toBe(undefined);
+            expect(res.itemInformation.itemCategory.id).not.toBe(undefined);
+            expect(res.itemInformation.itemCategory.id).not.toBeNaN();
+
+            // paymentInformation
+            expect(res.paymentInformation).not.toBe(undefined);
+            expect(res.paymentInformation.type).toBe(req.payment.type);
+            expect(res.paymentInformation.escrow.type).toBe(req.payment.escrow.type);
+
+            const itemPrice = res.paymentInformation.itemPrice.toJSON()[0];
+            expect(itemPrice.currency).toBe(req.payment.cryptocurrency[0].currency);
+            expect(itemPrice.basePrice).toBe(req.payment.cryptocurrency[0].base_price);
+
+            // messagingInformation
+            expect(res.messagingInformation).not.toBe(undefined);
+
+            const messagingInformation = res.messagingInformation.toJSON()[0];
+            expect(messagingInformation.protocol).toBe(req.messaging[0].protocol);
+            expect(messagingInformation.publicKey).toBe(req.messaging[0].public_key);
         });
     });
 });

@@ -315,7 +315,7 @@ export class TestDataService {
                         seller: _.random(1, 100)
                 }
             },
-            itemPrice: {
+            itemPrice: [{
                 currency: Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
                     basePrice: _.random(123.45, 5.43),
                     shippingPrice: {
@@ -326,16 +326,16 @@ export class TestDataService {
                     type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptocurrencyAddressType)),
                         address: Faker.finance.bitcoinAddress()
                 }
-            }
+            }]
         };
         return paymentInformation;
     }
 
     private generateMessagingInformation(): any {
-        const messagingInformation = {
+        const messagingInformation = [{
             protocol: Faker.random.arrayElement(Object.getOwnPropertyNames(MessagingProtocolType)),
             publicKey: Faker.random.uuid()
-        };
+        }];
         return messagingInformation;
     }
 

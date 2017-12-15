@@ -17,7 +17,7 @@ export class ItemCategoryFactory {
         this.log = new Logger(__filename);
     }
 
-    public async getCategory(data: any): Promise<ItemCategory> {
+    public async get(data: any): Promise<ItemCategory> {
         // find/create category
         const categoryData = data;
         const newCatData = {
@@ -38,7 +38,7 @@ export class ItemCategoryFactory {
                 newCat = catExist;
             }
         }
-        return newCat;
+        return newCat.id;
     }
 
 }

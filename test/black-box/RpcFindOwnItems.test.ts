@@ -78,7 +78,7 @@ describe('/findOwnItems', () => {
                     seller: 100
                 }
             },
-            itemPrice: {
+            itemPrice: [{
                 currency: Currency.BITCOIN,
                 basePrice: 0.0001,
                 shippingPrice: {
@@ -89,12 +89,12 @@ describe('/findOwnItems', () => {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: '1234'
                 }
-            }
+            }]
         },
-        messagingInformation: {
+        messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1'
-        }
+        }]
     };
 
     const testDataListingItemTemplate = {
@@ -109,7 +109,7 @@ describe('/findOwnItems', () => {
         },
         paymentInformation: {
             type: 'payment',
-            itemPrice: {
+            itemPrice: [{
                 currency: Currency.PARTICL,
                 basePrice: 12,
                 shippingPrice: {
@@ -120,7 +120,7 @@ describe('/findOwnItems', () => {
                     type: CryptocurrencyAddressType.STEALTH,
                     address: 'This is temp address.'
                 }
-            }
+            }]
         }
     };
 

@@ -27,7 +27,7 @@ export class ListingItemFactory {
 
     public async get(data: ItemMessageInterface): Promise<ListingItem> {
         // get Category
-        const itemCategory = await this.itemCategoryFactory.getCategory(data.information.category);
+        const itemCategory = await this.itemCategoryFactory.get(data.information.category);
         // get messagingInformation
         const messagingInformation = await this.mesInfoFactory.get(data.messaging);
 
@@ -42,7 +42,7 @@ export class ListingItemFactory {
                 shortDescription: data.information.short_description,
                 longDescription: data.information.long_description,
                 itemCategory: {
-                    id: itemCategory.id
+                    id: itemCategory
                 }
             },
             paymentInformation: {

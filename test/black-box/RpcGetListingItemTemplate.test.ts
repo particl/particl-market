@@ -24,7 +24,6 @@ describe('GetListingItemTemplate', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-
         expect(result.Profile.id).toBe(profile.id);
         expect(result.Profile.name).toBe(profile.name);
         expect(result).hasOwnProperty('Profile');
@@ -57,10 +56,10 @@ describe('GetListingItemTemplate', () => {
         expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testData.PaymentInformation.Escrow.Ratio.seller);
         expect(result.PaymentInformation.ItemPrice.currency).toBe(testData.PaymentInformation.ItemPrice.currency);
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.PaymentInformation.ItemPrice.basePrice);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.PaymentInformation.ItemPrice.ShippingPrice.domestic);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.PaymentInformation.ItemPrice.ShippingPrice.international);
-        expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.PaymentInformation.ItemPrice.Address.type);
-        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.PaymentInformation.ItemPrice.Address.address);
+        expect(result.PaymentInformation.ItemPrice[0].ShippingPrice.domestic).toBe(testData.PaymentInformation.ItemPrice[0].ShippingPrice.domestic);
+        expect(result.PaymentInformation.ItemPrice[0].ShippingPrice.international).toBe(testData.PaymentInformation.ItemPrice[0].ShippingPrice.international);
+        expect(result.PaymentInformation.ItemPrice[0].Address.type).toBe(testData.PaymentInformation.ItemPrice[0].Address.type);
+        expect(result.PaymentInformation.ItemPrice[0].Address.address).toBe(testData.PaymentInformation.ItemPrice[0].Address.address);
 
         expect(result.MessagingInformation.protocol).toBe(testData.MessagingInformation.protocol);
         expect(result.MessagingInformation.publicKey).toBe(testData.MessagingInformation.publicKey);

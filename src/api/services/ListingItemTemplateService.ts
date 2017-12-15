@@ -61,7 +61,7 @@ export class ListingItemTemplateService {
         delete body.itemInformation;
         const paymentInformation = body.paymentInformation;
         delete body.paymentInformation;
-        const messagingInformation = body.messagingInformation;
+        const messagingInformation = body.messagingInformation || [];
         delete body.messagingInformation;
 
         // this.log.info('save itemInformation: ', itemInformation);
@@ -83,10 +83,14 @@ export class ListingItemTemplateService {
             const result = await this.paymentInformationService.create(paymentInformation);
             // this.log.info('saved paymentInformation: ', result.toJSON());
         }
-        if (messagingInformation) {
-            messagingInformation.listing_item_template_id = listingItemTemplate.Id;
-            const result = await this.messagingInformationService.create(messagingInformation);
-            // this.log.info('saved messagingInformation: ', result.toJSON());
+        // if (messagingInformation) {
+        //     messagingInformation.listing_item_template_id = listingItemTemplate.Id;
+        //     const result = await this.messagingInformationService.create(messagingInformation);
+        //     // this.log.info('saved messagingInformation: ', result.toJSON());
+        // }
+        for (const msgInfo of messagingInformation) {
+            msgInfo.listing_item_template_id = listingItemTemplate.Id;
+            await this.messagingInformationService.create(msgInfo);
         }
 
         // finally find and return the created listingItemTemplate
