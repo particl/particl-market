@@ -171,6 +171,7 @@ export const Targets = {
     Factory:     {
         BidFactory: 'BidFactory',
         CancelBidFactory: 'CancelBidFactory',
+        RejectBidFactory: 'RejectBidFactory',
         RpcCommandFactory: 'RpcCommandFactory',
         TestFactory: 'TestFactory'
     },
@@ -179,6 +180,7 @@ export const Targets = {
         CancelBidMessageProcessor: 'CancelBidMessageProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
+        RejectBidMessageProcessor: 'RejectBidMessageProcessor',
         TestMessageProcessor: 'TestMessageProcessor'
     },
     Middleware:     {

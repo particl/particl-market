@@ -2,7 +2,6 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ActionMessageInterface } from '../messages/ActionMessageInterface';
-import { Bid } from '../models/Bid';
 import { BidMessage } from '../messages/BidMessage';
 import { BidStatus } from '../enums/BidStatus';
 import * as _ from 'lodash';
@@ -19,7 +18,7 @@ export class BidFactory {
         // this.bids.push(someBid);
     }
 
-    public get(data: BidMessage): Promise<Bid> {
+    public get(data: BidMessage): void {
 
         // set dataId and dataValue
         const bidData = _.map(data.objects, (value) => {

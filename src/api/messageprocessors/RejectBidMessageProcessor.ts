@@ -7,17 +7,17 @@ import { BidMessage } from '../messages/BidMessage';
 import { Bid } from '../models/Bid';
 import { ListingItemService } from '../services/ListingItemService';
 import { BidService } from '../services/BidService';
-import { CancelBidFactory } from '../factories/CancelBidFactory';
+import { RejectBidFactory } from '../factories/RejectBidFactory';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { MessageException } from '../exceptions/MessageException';
 import { BidStatus } from '../enums/BidStatus';
 
-export class CancelBidMessageProcessor implements MessageProcessorInterface {
+export class RejectBidMessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.CancelBidFactory) private cancelBidFactory: CancelBidFactory,
+        @inject(Types.Factory) @named(Targets.Factory.RejectBidFactory) private rejectBidFactory: RejectBidFactory,
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -26,7 +26,7 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
     }
 
     /**
-     * Cancel bid
+     * Reject bid
      * message:
      * item: message.item
      * action: message.action
@@ -37,7 +37,7 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
     @validate()
     public async process( message: BidMessage ): Promise<Bid> {
         // convert the bid message to bid
-        const bidMessage = this.cancelBidFactory.get(message);
+        const bidMessage = this.rejectBidFactory.get(message);
 
         // find listingItem by hash
         const listingItem = await this.listingItemService.findOneByHash(bidMessage['hash']);
@@ -58,10 +58,10 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
                 throw new MessageException(`Bid not found for the listing item hash ${bidMessage['hash']}`);
 
             } else if (bid.status === BidStatus.ACTIVE) {
-                // update the bid status to cancel only if bid status is active
-                return await this.bidService.update(bid.id, {listing_item_id: bid.listingItemId, status: BidStatus.CANCELLED});
+                // update the bid status to reject only if bid status is active
+                return await this.bidService.update(bid.id, {listing_item_id: bid.listingItemId, status: BidStatus.REJECTED});
             } else {
-                throw new MessageException(`Bid can not be cancelled because it was already been ${bid.status}`);
+                throw new MessageException(`Bid can not be rejected because it was already been ${bid.status}`);
             }
         }
     }
