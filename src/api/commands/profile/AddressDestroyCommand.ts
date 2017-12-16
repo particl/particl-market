@@ -5,12 +5,15 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
+import { AddressService } from '../../services/AddressService';
+
 
 export class AddressDestroyCommand implements RpcCommandInterface<void> {
     public log: LoggerType;
     public name: string;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -27,7 +30,7 @@ export class AddressDestroyCommand implements RpcCommandInterface<void> {
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<void> {
-        throw new MessageException('Not implemented');
+        return await this.addressService.destroy(data.params[0]);
     }
 
     public help(): string {
