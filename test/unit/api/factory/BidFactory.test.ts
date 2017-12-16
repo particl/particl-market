@@ -41,7 +41,7 @@ describe('BidFactory', () => {
         expect(res.bidData[1].dataValue).toBe(req.objects[1].value);
     });
 
-    test('Should return blank bidData ', () => {
+    test('Should return blank bidData', () => {
         req.objects = [];
         const res = bidFactory.get(req);
         expect(res.status).toBe(req.status);

@@ -169,6 +169,7 @@ export const Targets = {
         TestCommand: 'TestCommand'
     },
     Factory:     {
+        AcceptBidFactory: 'AcceptBidFactory',
         BidFactory: 'BidFactory',
         CancelBidFactory: 'CancelBidFactory',
         RejectBidFactory: 'RejectBidFactory',
@@ -176,6 +177,7 @@ export const Targets = {
         TestFactory: 'TestFactory'
     },
     MessageProcessor:     {
+        AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
         BidMessageProcessor: 'BidMessageProcessor',
         CancelBidMessageProcessor: 'CancelBidMessageProcessor',
         MessageProcessor: 'MessageProcessor',

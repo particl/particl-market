@@ -14,13 +14,6 @@ describe('BidMessageProcessor', () => {
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
-
-    let testDataService: TestDataService;
-    let bidMessageProcessor: BidMessageProcessor;
-    let listingItemService: ListingItemService;
-    let createdBidId;
-    let createdHash;
-
     const testBidData = {
         action: 'MPA_BID',
         item: '',
@@ -33,6 +26,13 @@ describe('BidMessageProcessor', () => {
     const testListingData = {
        hash: 'f08f3d6e'
     };
+
+    let testDataService: TestDataService;
+    let bidMessageProcessor: BidMessageProcessor;
+    let listingItemService: ListingItemService;
+    let createdBidId;
+    let createdHash;
+
 
     beforeAll(async () => {
 

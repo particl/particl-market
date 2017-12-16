@@ -9,7 +9,7 @@ import { ListingItemService } from '../../../src/api/services/ListingItemService
 import { BidMessageProcessor } from '../../../src/api/messageprocessors/BidMessageProcessor';
 import { RejectBidMessageProcessor } from '../../../src/api/messageprocessors/RejectBidMessageProcessor';
 import { CancelBidMessageProcessor } from '../../../src/api/messageprocessors/CancelBidMessageProcessor';
-
+import { AcceptBidMessageProcessor } from '../../../src/api/messageprocessors/AcceptBidMessageProcessor';
 import { BidStatus } from '../../../src/api/enums/BidStatus';
 
 describe('RejectBidMessageProcessor', () => {
@@ -17,18 +17,19 @@ describe('RejectBidMessageProcessor', () => {
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
+    const testBidData = {
+        action: 'MPA_REJECT',
+        item: 'f08f3d6e101'
+    };
 
     let testDataService: TestDataService;
     let bidMessageProcessor: BidMessageProcessor;
     let rejectBidMessageProcessor: RejectBidMessageProcessor;
     let cancelBidMessageProcessor: CancelBidMessageProcessor;
+    let acceptBidMessageProcessor: AcceptBidMessageProcessor;
     let listingItemService: ListingItemService;
     let listingItemModel;
 
-    const testBidData = {
-        action: 'MPA_REJECT',
-        item: 'f08f3d6e101'
-    };
 
     beforeAll(async () => {
 
@@ -43,6 +44,8 @@ describe('RejectBidMessageProcessor', () => {
         rejectBidMessageProcessor = app.IoC.getNamed<RejectBidMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.RejectBidMessageProcessor);
 
         cancelBidMessageProcessor = app.IoC.getNamed<CancelBidMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.CancelBidMessageProcessor);
+
+        acceptBidMessageProcessor = app.IoC.getNamed<AcceptBidMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.AcceptBidMessageProcessor);
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([], false);
     });
@@ -83,10 +86,17 @@ describe('RejectBidMessageProcessor', () => {
         expect(result.BidData.length).toBe(0);
     });
 
-    test('Should not reject the bid becuase bid was alredy rejected', async () => {
+    test('Should not cancel the bid becuase bid was alredy been rejected', async () => {
         // cancel bid
-        const bidModel = await cancelBidMessageProcessor.process(testBidData).catch(e =>
+        await cancelBidMessageProcessor.process(testBidData).catch(e =>
             expect(e).toEqual(new MessageException(`Bid can not be cancelled because it was already been ${BidStatus.REJECTED}`))
+        );
+    });
+
+    test('Should not accepted the bid becuase bid was alredy been cancelled', async () => {
+        // accept a bid
+        await acceptBidMessageProcessor.process(testBidData).catch(e =>
+           expect(e).toEqual(new MessageException(`Bid can not be accepted because it was already been ${BidStatus.REJECTED}`))
         );
     });
 
