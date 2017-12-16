@@ -104,10 +104,6 @@ export class ListingItemService {
             paymentInformation.listing_item_id = listingItem.Id;
             await this.paymentInformationService.create(paymentInformation);
         }
-        // if (messagingInformation) {
-        //     messagingInformation.listing_item_id = listingItem.Id;
-        //     await this.messagingInformationService.create(messagingInformation);
-        // }
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_id = listingItem.Id;
             await this.messagingInformationService.create(msgInfo);
@@ -146,10 +142,15 @@ export class ListingItemService {
         await this.paymentInformationService.create(body.paymentInformation);
 
         // find related record and delete it and recreate related data
-        const messagingInformation = updatedListingItem.related('MessagingInformation').toJSON();
-        await this.messagingInformationService.destroy(messagingInformation.id);
-        body.messagingInformation.listing_item_id = id;
-        await this.messagingInformationService.create(body.messagingInformation);
+        let messagingInformation = updatedListingItem.related('MessagingInformation').toJSON() || [];
+        for (const msgInfo of messagingInformation) {
+            await this.messagingInformationService.destroy(msgInfo.id);
+        }
+        messagingInformation = body.messagingInformation || [];
+        for (const msgInfo of messagingInformation) {
+            msgInfo.listing_item_id = id;
+            await this.messagingInformationService.create(msgInfo);
+        }
 
         // finally find and return the updated listingItem
         const newListingItem = await this.findOne(id);

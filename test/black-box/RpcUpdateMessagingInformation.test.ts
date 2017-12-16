@@ -53,7 +53,7 @@ describe('UpdateMessagingInformation', () => {
         // set listing item id in item information
         testDataListingItemTemplate.itemInformation.listingItemId = 1;
         // set listing item id in message information
-        testDataListingItemTemplate.messagingInformation.listingItemId = 1;
+        testDataListingItemTemplate.messagingInformation[0].listingItemId = 1;
 
         // create new item template
         const listingItemTemplate = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);

@@ -18,15 +18,9 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         this.log = new Logger(__filename);
     }
 
-    // @validate()
+    @validate()
     public async process(message: any): Promise<ListingItem> {
         // Convert the ListingItemMessage to ListingItem
-        // message = { information: { title: 'Title of the item', short_description: 'A short description / summary of item',
-        // long_description: 'A longer description of the item or service',
-        // category: ['cat_high_business_corporate', 'Subcategory', 'Subsubcategory'] }, payment: { type: 'SALE', escrow: { type: 'NOP' },
-        // cryptocurrency: [{ currency: 'BITCOIN', base_price: 100000000 }] }, messaging: [{ protocol: 'SMSG', public_key: 'publickey2' }]};
-
-
         const listingItem = await this.listingItemFactory.get(message);
 
         // create listing-item

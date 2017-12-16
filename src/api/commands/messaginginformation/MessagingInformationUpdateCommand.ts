@@ -74,6 +74,6 @@ export class MessagingInformationUpdateCommand implements RpcCommandInterface<Me
             this.log.warn(`Item Information or Message information with the listing template id=${listingItemTemplateId} was not found!`);
             throw new MessageException(`Item Information or Message information with the listing template id=${listingItemTemplateId} was not found!`);
         }
-        return [ItemInformation, MessageInformation];
+        return [ItemInformation, MessageInformation[0]];
     }
 }

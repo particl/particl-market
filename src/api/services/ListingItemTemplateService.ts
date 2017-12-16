@@ -81,13 +81,8 @@ export class ListingItemTemplateService {
         if (paymentInformation) {
             paymentInformation.listing_item_template_id = listingItemTemplate.Id;
             const result = await this.paymentInformationService.create(paymentInformation);
-            // this.log.info('saved paymentInformation: ', result.toJSON());
+           // this.log.info('saved paymentInformation: ', result.toJSON());
         }
-        // if (messagingInformation) {
-        //     messagingInformation.listing_item_template_id = listingItemTemplate.Id;
-        //     const result = await this.messagingInformationService.create(messagingInformation);
-        //     // this.log.info('saved messagingInformation: ', result.toJSON());
-        // }
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_template_id = listingItemTemplate.Id;
             await this.messagingInformationService.create(msgInfo);
@@ -127,10 +122,17 @@ export class ListingItemTemplateService {
         await this.paymentInformationService.create(body.paymentInformation);
 
         // find related record and delete it and recreate related data
-        const messagingInformation = updatedListingItemTemplate.related('MessagingInformation').toJSON();
-        await this.messagingInformationService.destroy(messagingInformation.id);
-        body.messagingInformation.listing_item_template_id = id;
-        await this.messagingInformationService.create(body.messagingInformation);
+        let messagingInformation = updatedListingItemTemplate.related('MessagingInformation').toJSON() || [];
+        for (const msgInfo of messagingInformation) {
+            msgInfo.listing_item_template_id = id;
+            await this.messagingInformationService.destroy(msgInfo.id);
+        }
+        // add new
+        messagingInformation = body.messagingInformation || [];
+        for (const msgInfo of messagingInformation) {
+            msgInfo.listing_item_template_id = id;
+            await this.messagingInformationService.create(msgInfo);
+        }
 
         // finally find and return the updated listingItem
         const newListingItemTemplate = await this.findOne(id);

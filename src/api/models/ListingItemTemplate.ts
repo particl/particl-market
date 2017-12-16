@@ -110,8 +110,8 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         return this.hasOne(PaymentInformation);
     }
 
-    public MessagingInformation(): MessagingInformation {
-        return this.hasOne(MessagingInformation);
+    public MessagingInformation(): Collection<MessagingInformation> {
+        return this.hasMany(MessagingInformation, 'listing_item_template_id', 'id');
     }
 
     public ListingItemObjects(): Collection<ListingItemObject> {

@@ -36,7 +36,7 @@ describe('PaymentInformation', () => {
                 seller: 100
             }
         },
-        itemPrice: {
+        itemPrice: [{
             currency: Currency.BITCOIN,
             basePrice: 0.0001,
             shippingPrice: {
@@ -47,7 +47,7 @@ describe('PaymentInformation', () => {
                 type: CryptocurrencyAddressType.NORMAL,
                 address: '1234'
             }
-        }
+        }]
     };
 
     const testDataUpdated = {
@@ -59,7 +59,7 @@ describe('PaymentInformation', () => {
                 seller: 0
             }
         },
-        itemPrice: {
+        itemPrice: [{
             currency: Currency.PARTICL,
             basePrice: 0.002,
             shippingPrice: {
@@ -70,7 +70,7 @@ describe('PaymentInformation', () => {
                 type: CryptocurrencyAddressType.STEALTH,
                 address: '4567'
             }
-        }
+        }]
     };
 
     beforeAll(async () => {
@@ -106,12 +106,12 @@ describe('PaymentInformation', () => {
         expect(result.Escrow.type).toBe(testData.escrow.type);
         expect(result.Escrow.Ratio.buyer).toBe(testData.escrow.ratio.buyer);
         expect(result.Escrow.Ratio.seller).toBe(testData.escrow.ratio.seller);
-        expect(result.ItemPrice.currency).toBe(testData.itemPrice.currency);
-        expect(result.ItemPrice.basePrice).toBe(testData.itemPrice.basePrice);
-        expect(result.ItemPrice.ShippingPrice.domestic).toBe(testData.itemPrice.shippingPrice.domestic);
-        expect(result.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
-        expect(result.ItemPrice.Address.type).toBe(testData.itemPrice.address.type);
-        expect(result.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
+        expect(result.ItemPrice[0].currency).toBe(testData.itemPrice[0].currency);
+        expect(result.ItemPrice[0].basePrice).toBe(testData.itemPrice[0].basePrice);
+        expect(result.ItemPrice[0].ShippingPrice.domestic).toBe(testData.itemPrice[0].shippingPrice.domestic);
+        expect(result.ItemPrice[0].ShippingPrice.international).toBe(testData.itemPrice[0].shippingPrice.international);
+        expect(result.ItemPrice[0].Address.type).toBe(testData.itemPrice[0].address.type);
+        expect(result.ItemPrice[0].Address.address).toBe(testData.itemPrice[0].address.address);
     });
 
     test('Should throw ValidationException because we want to create a empty payment information', async () => {
@@ -138,12 +138,12 @@ describe('PaymentInformation', () => {
         expect(result.Escrow.type).toBe(testData.escrow.type);
         expect(result.Escrow.Ratio.buyer).toBe(testData.escrow.ratio.buyer);
         expect(result.Escrow.Ratio.seller).toBe(testData.escrow.ratio.seller);
-        expect(result.ItemPrice.currency).toBe(testData.itemPrice.currency);
-        expect(result.ItemPrice.basePrice).toBe(testData.itemPrice.basePrice);
-        expect(result.ItemPrice.ShippingPrice.domestic).toBe(testData.itemPrice.shippingPrice.domestic);
-        expect(result.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
-        expect(result.ItemPrice.Address.type).toBe(testData.itemPrice.address.type);
-        expect(result.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
+        expect(result.ItemPrice[0].currency).toBe(testData.itemPrice[0].currency);
+        expect(result.ItemPrice[0].basePrice).toBe(testData.itemPrice[0].basePrice);
+        expect(result.ItemPrice[0].ShippingPrice.domestic).toBe(testData.itemPrice[0].shippingPrice.domestic);
+        expect(result.ItemPrice[0].ShippingPrice.international).toBe(testData.itemPrice[0].shippingPrice.international);
+        expect(result.ItemPrice[0].Address.type).toBe(testData.itemPrice[0].address.type);
+        expect(result.ItemPrice[0].Address.address).toBe(testData.itemPrice[0].address.address);
     });
 
     test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
@@ -162,12 +162,12 @@ describe('PaymentInformation', () => {
         expect(result.Escrow.type).toBe(testDataUpdated.escrow.type);
         expect(result.Escrow.Ratio.buyer).toBe(testDataUpdated.escrow.ratio.buyer);
         expect(result.Escrow.Ratio.seller).toBe(testDataUpdated.escrow.ratio.seller);
-        expect(result.ItemPrice.currency).toBe(testDataUpdated.itemPrice.currency);
-        expect(result.ItemPrice.basePrice).toBe(testDataUpdated.itemPrice.basePrice);
-        expect(result.ItemPrice.ShippingPrice.domestic).toBe(testDataUpdated.itemPrice.shippingPrice.domestic);
-        expect(result.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.itemPrice.shippingPrice.international);
-        expect(result.ItemPrice.Address.type).toBe(testDataUpdated.itemPrice.address.type);
-        expect(result.ItemPrice.Address.address).toBe(testDataUpdated.itemPrice.address.address);
+        expect(result.ItemPrice[0].currency).toBe(testDataUpdated.itemPrice[0].currency);
+        expect(result.ItemPrice[0].basePrice).toBe(testDataUpdated.itemPrice[0].basePrice);
+        expect(result.ItemPrice[0].ShippingPrice.domestic).toBe(testDataUpdated.itemPrice[0].shippingPrice.domestic);
+        expect(result.ItemPrice[0].ShippingPrice.international).toBe(testDataUpdated.itemPrice[0].shippingPrice.international);
+        expect(result.ItemPrice[0].Address.type).toBe(testDataUpdated.itemPrice[0].address.type);
+        expect(result.ItemPrice[0].Address.address).toBe(testDataUpdated.itemPrice[0].address.address);
     });
 
     test('Should delete the payment information', async () => {
