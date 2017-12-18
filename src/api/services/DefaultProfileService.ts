@@ -32,13 +32,14 @@ export class DefaultProfileService {
         if (newProfile === null) {
             this.log.debug('created new default profile');
             let newAddr;
-            await this.coreRpcService.call('getnewaddress').then((res) => {
-                newAddr = res.result;
-                this.log.info('Successfully created new address for profile: ' + newAddr);
-            })
-            .catch(reason => {
-                this.log.info('Could not create new address for profile: ', reason);
-            });
+            await this.coreRpcService.call('getnewaddress')
+                .then((res) => {
+                    newAddr = res.result;
+                    this.log.info('Successfully created new address for profile: ' + newAddr);
+                })
+                .catch(reason => {
+                    this.log.info('Could not create new address for profile: ', reason);
+                });
             profile.address = newAddr;
             newProfile = await this.profileService.create(profile);
         } else {

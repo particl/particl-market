@@ -4,7 +4,6 @@ import { Types, Core, Targets } from '../../constants';
 import { Environment } from '../../core/helpers/Environment';
 import * as rpc from 'particl-rpc-service';
 
-
 export class CoreRpcService {
 
     public log: LoggerType;
@@ -12,7 +11,6 @@ export class CoreRpcService {
     private timeout: any;
     private interval = 3000;
 
-    // TODO: get these from config
     private MAINNET_PORT = 51735;
     private TESTNET_PORT = 51935;
     private HOSTNAME = 'localhost';
