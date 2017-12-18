@@ -13,6 +13,9 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('payment_information_id').references('id')
                 .inTable('payment_informations').onDelete('cascade');
 
+            table.integer('cryptocurrency_address_id').unsigned();
+            table.foreign('cryptocurrency_address_id').references('id').inTable('cryptocurrency_addresses');
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })

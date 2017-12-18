@@ -32,7 +32,7 @@ export class Profile extends Bookshelf.Model<Profile> {
         }
     }
 
-    public get tableName(): string { return 'profile'; }
+    public get tableName(): string { return 'profiles'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }

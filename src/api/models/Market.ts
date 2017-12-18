@@ -27,7 +27,7 @@ export class Market extends Bookshelf.Model<Market> {
         }
     }
 
-    public get tableName(): string { return 'market'; }
+    public get tableName(): string { return 'markets'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }
