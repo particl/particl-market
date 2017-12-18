@@ -17,7 +17,10 @@ export const DatabaseConfig = {
     connection: process.env.DB_CONNECTION,
     pool: {
         min: parseInt(process.env.DB_POOL_MIN, 10),
-        max: parseInt(process.env.DB_POOL_MAX, 10)
+        max: parseInt(process.env.DB_POOL_MAX, 10),
+        afterCreate: (conn, cb) => {
+            conn.run('PRAGMA foreign_keys = ON', cb);
+        }
     },
     migrations: {
         directory: process.env.DB_MIGRATION_DIR,
