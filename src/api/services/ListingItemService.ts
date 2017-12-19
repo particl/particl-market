@@ -11,6 +11,7 @@ import { ListingItemUpdateRequest } from '../requests/ListingItemUpdateRequest';
 import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemInformationService } from './ItemInformationService';
+import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
 
 export class ListingItemService {
@@ -18,6 +19,7 @@ export class ListingItemService {
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
@@ -152,7 +154,23 @@ export class ListingItemService {
         return newListingItem;
     }
 
+   // public async destroy(id: number): Promise<void> {
+   //     await this.listingItemRepo.destroy(id);
+   // }
     public async destroy(id: number): Promise<void> {
+        const item = await this.findOne(id, true);
+        if (!item) {
+            throw new NotFoundException('Item listing does not exist. id = ' + id);
+        }
+        const paymentInfo = item.PaymentInformation();
+        if (paymentInfo) {
+            const itemPrice = paymentInfo.ItemPrice();
+            const cryptoAddress = itemPrice.Address();
+            if (!cryptoAddress) {
+                throw new NotFoundException('Payment information without cryptographic address. PaymentInfo.id = ' + paymentInfo.id);
+            }
+            this.cryptocurrencyAddressService.destroy(cryptoAddress.Id);
+        }
         await this.listingItemRepo.destroy(id);
     }
 }

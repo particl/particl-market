@@ -72,10 +72,13 @@ export class ItemInformationService {
         // check if item category allready exists
         let existingItemCategory;
         if (itemCategory.key) {
+            this.log.debug('itemCategoryService.findOneByKey');
             existingItemCategory = await this.itemCategoryService.findOneByKey(itemCategory.key);
         } else if (itemCategory.id) {
+            this.log.debug('itemCategoryService.findOne');
             existingItemCategory = await this.itemCategoryService.findOne(itemCategory.id);
         } else {
+            this.log.debug('itemCategoryService.create');
             existingItemCategory = await this.itemCategoryService.create(itemCategory);
         }
 

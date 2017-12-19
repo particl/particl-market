@@ -55,6 +55,20 @@ describe('CryptocurrencyAddress', () => {
     });
 
     test('Should create a new cryptocurrency address', async () => {
+        const listingItemTemplate = testDataService.generate({
+            model: 'listingitemtemplate',
+            amount: 1,
+            withRelated: true
+        }).catch(e => {
+            log.error('098: ' + e);
+        });
+        // log.debug('ListingItemTemplate create with id = ' + listingItemTemplate.profile_id);
+        // for ( const o of listingItemTemplate) {
+        //    log.debug('#### ' + o);
+        // }
+        // log.debug('123 ' + listingItemTemplate[0]);
+        // log.debug('DONE');
+
         testData['item_price_id'] = 0;
         const cryptocurrencyAddressModel: CryptocurrencyAddress = await cryptocurrencyAddressService.create(testData);
         createdId = cryptocurrencyAddressModel.Id;

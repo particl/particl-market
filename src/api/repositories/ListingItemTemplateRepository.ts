@@ -39,11 +39,15 @@ export class ListingItemTemplateRepository {
     }
 
     public async create(data: any): Promise<ListingItemTemplate> {
+        this.log.error('C1');
         const listingItemTemplate = this.ListingItemTemplateModel.forge<ListingItemTemplate>(data);
         try {
+            this.log.error('C2 ' + listingItemTemplate);
             const listingItemTemplateCreated = await listingItemTemplate.save();
+            this.log.error('C3');
             return this.ListingItemTemplateModel.fetchById(listingItemTemplateCreated.id);
         } catch (error) {
+            this.log.error('C4');
             throw new DatabaseException('Could not create the listingItemTemplate!', error);
         }
     }

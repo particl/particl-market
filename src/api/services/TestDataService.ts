@@ -110,7 +110,6 @@ export class TestDataService {
      */
     @validate()
     public async generate(@request(TestDataCreateRequest) body: any): Promise<any> {
-
         switch (body.model) {
             case 'listingitemtemplate': {
                 return await this.generateListingItemTemplates(body.amount, body.withRelated);
@@ -172,7 +171,9 @@ export class TestDataService {
         const items: any[] = [];
         for (let i = amount; i !== 0; i--) {
             const listingItemTemplate = await this.generateListingItemTemplate();
+            this.log.error('B1');
             const savedListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplate);
+            this.log.error('B2');
             items.push(savedListingItemTemplate);
         }
         return this.generateResponse(items, withRelated);

@@ -12,9 +12,6 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('profile_id').references('id')
                 .inTable('profiles').onDelete('RESTRICT');
 
-            table.integer('crypto_address').notNullable();
-            table.foreign('crypto_address').references('')
-
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })

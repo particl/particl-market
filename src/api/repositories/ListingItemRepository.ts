@@ -2,6 +2,7 @@ import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
 import { ListingItem } from '../models/ListingItem';
+import { ItemPrice } from '../models/ItemPrice';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -12,6 +13,7 @@ export class ListingItemRepository {
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Model) @named(Targets.Model.ItemPrice) public ItemPriceModel: typeof ItemPrice,
         @inject(Types.Model) @named(Targets.Model.ListingItem) public ListingItemModel: typeof ListingItem,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -80,6 +82,7 @@ export class ListingItemRepository {
         }
 
         try {
+            this.log.debug('123: test: ' + listingItem.attributes.item_price_id);
             await listingItem.destroy();
             return;
         } catch (error) {

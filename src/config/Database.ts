@@ -32,6 +32,7 @@ export const DatabaseConfig = {
     useNullAsDefault: true,
     // debug: true
     debug: false
+
 };
 
 export const Knex = (): knex => knex(DatabaseConfig);
