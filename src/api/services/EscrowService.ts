@@ -13,7 +13,11 @@ import { RpcRequest } from '../requests/RpcRequest';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
 import { EscrowRatioService } from '../services/EscrowRatioService';
-
+import { AddressService } from '../services/AddressService';
+import { MessageBroadcastService } from '../services/MessageBroadcastService';
+import { EscrowLockFactory } from '../factories/EscrowLockFactory';
+import { EscrowRefundFactory } from '../factories/EscrowRefundFactory';
+import { EscrowReleaseFactory } from '../factories/EscrowReleaseFactory';
 
 export class EscrowService {
 
@@ -24,6 +28,11 @@ export class EscrowService {
         @inject(Types.Repository) @named(Targets.Repository.EscrowRepository) public escrowRepo: EscrowRepository,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
         @inject(Types.Repository) @named(Targets.Repository.PaymentInformationRepository) private paymentInfoRepo: PaymentInformationRepository,
+        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
+        @inject(Types.Factory) @named(Targets.Factory.EscrowLockFactory) private escrowLockFactory: EscrowLockFactory,
+        @inject(Types.Factory) @named(Targets.Factory.EscrowRefundFactory) private escrowRefundFactory: EscrowRefundFactory,
+        @inject(Types.Factory) @named(Targets.Factory.EscrowReleaseFactory) private escrowReleaseFactory: EscrowReleaseFactory,
+        @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -84,7 +93,7 @@ export class EscrowService {
         // If the request body was valid we will create the escrow
         const escrow = await this.escrowRepo.create(body);
 
-        // then create escrowratio
+        // then create escromemowratio
         escrowRatio.escrow_id = escrow.Id;
         await this.escrowratioService.create(escrowRatio);
 
@@ -172,6 +181,53 @@ export class EscrowService {
 
     public async destroy(id: number): Promise<void> {
         await this.escrowRepo.destroy(id);
+    }
+
+    @validate()
+    public async lock(data: any): Promise<void> {
+        // fetch the escrow
+        const escrow = await this.findOne(data.escrowId, false);
+        // fetch the address
+        const address = await this.addressService.findOne(data.addressId, false);
+        // escrowfactory to generate the lockmessage
+        const messageInput = {
+            escrow,
+            address,
+            listing: data.itemHash,
+            nonce: data.nonce,
+            memo: data.memo
+        };
+        const escrowActionMessage = await this.escrowLockFactory.get(messageInput);
+        return await this.messageBroadcastService.broadcast();
+    }
+
+    @validate()
+    public async refund(data: any): Promise<void> {
+        // fetch the escrow
+        const escrow = await this.findOne(data.escrowId, false);
+        // escrowfactory to generate the lockmessage
+        const messageInput = {
+            escrow,
+            listing: data.itemHash,
+            accepted: data.accepted,
+            memo: data.memo
+        };
+        const escrowActionMessage = await this.escrowRefundFactory.get(messageInput);
+        return await this.messageBroadcastService.broadcast();
+    }
+
+    @validate()
+    public async release(data: any): Promise<void> {
+        // fetch the escrow
+        const escrow = await this.findOne(data.escrowId, false);
+        // escrowfactory to generate the lockmessage
+        const messageInput = {
+            escrow,
+            listing: data.itemHash,
+            memo: data.memo
+        };
+        const escrowActionMessage = await this.escrowReleaseFactory.get(messageInput);
+        return await this.messageBroadcastService.broadcast();
     }
 
     // TODO: REMOVE

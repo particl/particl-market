@@ -102,7 +102,10 @@ export const Targets = {
         escrow: {
             EscrowCreateCommand: 'EscrowCreateCommand',
             EscrowDestroyCommand: 'EscrowDestroyCommand',
-            EscrowUpdateCommand: 'EscrowUpdateCommand'
+            EscrowUpdateCommand: 'EscrowUpdateCommand',
+            EscrowLockCommand: 'EscrowLockCommand',
+            EscrowRefundCommand: 'EscrowRefundCommand',
+            EscrowReleaseCommand: 'EscrowReleaseCommand'
         },
         favorite: {
             FavoriteAddCommand: 'FavoriteAddCommand',
@@ -170,6 +173,9 @@ export const Targets = {
     },
     Factory:     {
         BidFactory: 'BidFactory',
+        EscrowLockFactory: 'EscrowLockFactory',
+        EscrowRefundFactory: 'EscrowRefundFactory',
+        EscrowReleaseFactory: 'EscrowReleaseFactory',
         RpcCommandFactory: 'RpcCommandFactory',
         TestFactory: 'TestFactory'
     },

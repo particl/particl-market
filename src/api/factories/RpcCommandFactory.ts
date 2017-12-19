@@ -49,6 +49,9 @@ import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
 import { ProfileGetCommand } from '../commands/profile/ProfileGetCommand';
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
+import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
+import { EscrowRefundCommand } from '../commands/escrow/EscrowRefundCommand';
+import { EscrowReleaseCommand } from '../commands/escrow/EscrowReleaseCommand';
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -103,7 +106,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.CleanDbCommand) private cleanDbCommand: CleanDbCommand,
         @inject(Types.Command) @named(Targets.Command.GenerateDataCommand) private generateDataCommand: GenerateDataCommand,
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
-
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowLockCommand) private escrowLockCommand: EscrowLockCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowRefundCommand) private escrowRefundCommand: EscrowRefundCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowReleaseCommand) private escrowReleaseCommand: EscrowReleaseCommand,
         //  ---
         // @multiInject(Types.Command) public commands: RpcCommand<any>[],
         // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
@@ -151,6 +156,9 @@ export class RpcCommandFactory {
         this.commands.push(profileUpdateCommand);
         this.commands.push(shippingDestinationAddCommand);
         this.commands.push(shippingDestinationRemoveCommand);
+        this.commands.push(escrowLockCommand);
+        this.commands.push(escrowRefundCommand);
+        this.commands.push(escrowReleaseCommand);
 
         this.commands.push(addDataCommand);
         this.commands.push(cleanDbCommand);

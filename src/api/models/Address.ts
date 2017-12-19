@@ -26,11 +26,11 @@ export class Address extends Bookshelf.Model<Address> {
     public get Title(): string { return this.get('title'); }
     public set Title(value: string) { this.set('title', value); }
 
-    public get AddressLine1(): string { return this.get('address_line1'); }
-    public set AddressLine1(value: string) { this.set('address_line1', value); }
+    public get AddressLine1(): string { return this.get('addressLine1'); }
+    public set AddressLine1(value: string) { this.set('addressLine1', value); }
 
-    public get AddressLine2(): string { return this.get('address_line2'); }
-    public set AddressLine2(value: string) { this.set('address_line2', value); }
+    public get AddressLine2(): string { return this.get('addressLine2'); }
+    public set AddressLine2(value: string) { this.set('addressLine2', value); }
 
     public get City(): string { return this.get('city'); }
     public set City(value: string) { this.set('city', value); }
