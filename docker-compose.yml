@@ -12,9 +12,11 @@ services:
       - particld
     depends_on:
       - particld
+    environment:
+      - NODE_ENV=development
 
   particld:
-    image: ludx/particl:0.15.0.3
+    image: ludx/particl:0.15.1.0
     volumes:
       - ./data/particl:/root/.particl
     ports:

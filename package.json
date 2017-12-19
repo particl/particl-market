@@ -18,6 +18,7 @@
     "pretest:integration": "./node_modules/.bin/tslint -c ./tslint.json -t stylish './test/integration/**/*.ts'",
     "test:integration": "npm run banner test && cross-env \"./node_modules/.bin/jest\" --forceExit --testPathPattern=integration -i",
     "test:integration:pretty": "NODE_ENV=test npm run test:integration -- --verbose",
+    "test:integration:single": "npm run banner test && cross-env \"./node_modules/.bin/jest\" --forceExit --testPathPattern=integration/$TEST -i",
     "db:migrate": "npm run banner migrate && \"./node_modules/.bin/knex\" migrate:latest",
     "db:migrate:rollback": "npm run banner rollback && \"./node_modules/.bin/knex\" migrate:rollback",
     "db:seed": "npm run banner seed && \"./node_modules/.bin/knex\" seed:run",
