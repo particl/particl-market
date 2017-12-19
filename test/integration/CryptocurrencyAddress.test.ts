@@ -22,6 +22,7 @@ describe('CryptocurrencyAddress', () => {
     let cryptocurrencyAddressService: CryptocurrencyAddressService;
 
     let createdId;
+    let createdListingItemTemplate;
 
     const testData = {
         type: CryptocurrencyAddressType.NORMAL,
@@ -41,6 +42,17 @@ describe('CryptocurrencyAddress', () => {
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
+
+        createdListingItemTemplate = testDataService.generate({
+            model: 'listingitemtemplate',
+            amount: 1,
+            withRelated: true
+        }).then(result => {
+            log.info('created: ', result);
+        }).catch(e => {
+            log.error('098: ' + e);
+        });
+
     });
 
     afterAll(async () => {
@@ -55,13 +67,7 @@ describe('CryptocurrencyAddress', () => {
     });
 
     test('Should create a new cryptocurrency address', async () => {
-        const listingItemTemplate = testDataService.generate({
-            model: 'listingitemtemplate',
-            amount: 1,
-            withRelated: true
-        }).catch(e => {
-            log.error('098: ' + e);
-        });
+
         // log.debug('ListingItemTemplate create with id = ' + listingItemTemplate.profile_id);
         // for ( const o of listingItemTemplate) {
         //    log.debug('#### ' + o);

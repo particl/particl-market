@@ -49,20 +49,20 @@ export class ItemPriceService {
         delete body.shippingPrice;
         delete body.address;
 
-        // If the request body was valid we will create the itemPrice
+        // first create the related cryptoAddress
+        const relatedCryptocurrencyAddress = await this.cryptocurrencyaddressService.create(cryptocurrencyAddress);
+        body.cryptocurrency_address_id = relatedCryptocurrencyAddress.Id;
+
+        // create the itemPrice
         const itemPrice = await this.itemPriceRepo.create(body);
         // this.log.debug('itemprice created: ', JSON.stringify(itemPrice));
 
-        // then create shippingPrice
+        // then create related shippingPrice
         shippingPrice.item_price_id = itemPrice.Id;
         await this.shippingpriceService.create(shippingPrice);
 
-        // then create address
-        cryptocurrencyAddress.item_price_id = itemPrice.Id;
-        await this.cryptocurrencyaddressService.create(cryptocurrencyAddress);
-
         // finally find and return the created itemPrice
-        const newItemPrice = await this.findOne(itemPrice.id);
+        const newItemPrice = await this.findOne(itemPrice.Id);
         return newItemPrice;
     }
 

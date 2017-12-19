@@ -319,11 +319,11 @@ export class TestDataService {
                     basePrice: _.random(123.45, 5.43),
                     shippingPrice: {
                     domestic: _.random(5.00, 1.11),
-                        international: _.random(10.00, 5.003)
+                    international: _.random(10.00, 5.003)
                 },
                 address: {
                     type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptocurrencyAddressType)),
-                        address: Faker.finance.bitcoinAddress()
+                    address: Faker.finance.bitcoinAddress()
                 }
             }
         };
