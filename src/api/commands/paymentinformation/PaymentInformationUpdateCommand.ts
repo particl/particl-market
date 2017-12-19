@@ -46,7 +46,7 @@ export class PaymentInformationUpdateCommand implements RpcCommandInterface<Paym
             //         seller: data.params[4]
             //     }
             // },
-            itemPrice: [{
+            itemPrice: {
                 currency: data.params[2],
                 basePrice: data.params[3],
                 shippingPrice: {
@@ -57,7 +57,7 @@ export class PaymentInformationUpdateCommand implements RpcCommandInterface<Paym
                     type: CryptocurrencyAddressType.NORMAL,
                     address: data.params[6]
                 }
-            }]
+            }
         });
     }
 

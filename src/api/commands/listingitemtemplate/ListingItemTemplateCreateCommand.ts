@@ -56,7 +56,7 @@ export class ListingItemTemplateCreateCommand implements RpcCommandInterface<Lis
                 },
                 paymentInformation: {
                     type: data.params[5],
-                    itemPrice: [{
+                    itemPrice: {
                         currency: data.params[6],
                         basePrice: data.params[7],
                         shippingPrice: {
@@ -67,7 +67,7 @@ export class ListingItemTemplateCreateCommand implements RpcCommandInterface<Lis
                             type: 'address-type',
                             address: data.params[10]
                         }
-                    }]
+                    }
                 }
             });
         } else {

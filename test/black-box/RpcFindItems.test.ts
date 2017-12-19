@@ -78,7 +78,7 @@ describe('/FindItems', () => {
                     seller: 100
                 }
             },
-            itemPrice: [{
+            itemPrice: {
                 currency: Currency.BITCOIN,
                 basePrice: 0.0001,
                 shippingPrice: {
@@ -89,7 +89,7 @@ describe('/FindItems', () => {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: '1234'
                 }
-            }]
+            }
         },
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
@@ -139,7 +139,7 @@ describe('/FindItems', () => {
                     seller: 1
                 }
             },
-            itemPrice: [{
+            itemPrice: {
                 currency: Currency.PARTICL,
                 basePrice: 3.333,
                 shippingPrice: {
@@ -150,7 +150,7 @@ describe('/FindItems', () => {
                     type: CryptocurrencyAddressType.STEALTH,
                     address: 'UPDATED'
                 }
-            }]
+            }
         },
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,

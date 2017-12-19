@@ -71,11 +71,11 @@ describe('CreateListingItemTemplate', () => {
         expect(result.ItemInformation.longDescription).toBe(testData[3]);
         expect(result.ItemInformation.ItemCategory.key).toBe(testData[4]);
         expect(result.PaymentInformation.type).toBe(testData[5]);
-        expect(result.PaymentInformation.ItemPrice[0].currency).toBe(testData[6]);
-        expect(result.PaymentInformation.ItemPrice[0].basePrice).toBe(testData[7]);
-        expect(result.PaymentInformation.ItemPrice[0].ShippingPrice.domestic).toBe(testData[8]);
-        expect(result.PaymentInformation.ItemPrice[0].ShippingPrice.international).toBe(testData[9]);
-        expect(result.PaymentInformation.ItemPrice[0].Address.address).toBe(testData[10]);
+        expect(result.PaymentInformation.ItemPrice.currency).toBe(testData[6]);
+        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData[7]);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData[8]);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData[9]);
+        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData[10]);
 
     });
 

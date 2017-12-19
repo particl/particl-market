@@ -77,7 +77,7 @@ describe('/RpcRemoveFavorite', () => {
                     seller: 100
                 }
             },
-            itemPrice: [{
+            itemPrice: {
                 currency: Currency.BITCOIN,
                 basePrice: 0.0001,
                 shippingPrice: {
@@ -88,7 +88,7 @@ describe('/RpcRemoveFavorite', () => {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: '1234'
                 }
-            }]
+            }
         },
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,

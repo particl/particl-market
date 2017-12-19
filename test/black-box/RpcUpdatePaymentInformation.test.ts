@@ -29,7 +29,7 @@ describe('/UpdateItemInformation', () => {
                     seller: 100
                 }
             },
-            itemPrice: [{
+            itemPrice: {
                 currency: Currency.BITCOIN,
                 basePrice: 0.0001,
                 shippingPrice: {
@@ -40,13 +40,13 @@ describe('/UpdateItemInformation', () => {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: 'This is temp address.'
                 }
-            }]
+            }
         }
     };
 
     const testData = {
         type: PaymentType.FREE,
-        itemPrice: [{
+        itemPrice: {
             currency: Currency.PARTICL,
             basePrice: 1,
             shippingPrice: {
@@ -57,7 +57,7 @@ describe('/UpdateItemInformation', () => {
                 type: CryptocurrencyAddressType.NORMAL,
                 address: 'This is NEW address.'
             }
-        }]
+        }
     };
 
     beforeAll(async () => {
@@ -71,35 +71,34 @@ describe('/UpdateItemInformation', () => {
         testDataListingItemTemplate.profile_id = profileId;
 
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-
         addListingItemTempRes.expectJson();
         addListingItemTempRes.expectStatusCode(200);
         const addListingItemTempResult = addListingItemTempRes.getBody()['result'];
         const createdTemplateId = addListingItemTempResult.id;
         const paymentInformationId = addListingItemTempResult.PaymentInformation.id;
         const updateDataRes: any = await rpc(method, [createdTemplateId, testData.type,
-            testData.itemPrice[0].currency, testData.itemPrice[0].basePrice,
-            testData.itemPrice[0].shippingPrice.domestic, testData.itemPrice[0].shippingPrice.international,
-            testData.itemPrice[0].address.address]);
+            testData.itemPrice.currency, testData.itemPrice.basePrice,
+            testData.itemPrice.shippingPrice.domestic, testData.itemPrice.shippingPrice.international,
+            testData.itemPrice.address.address]);
         updateDataRes.expectJson();
         updateDataRes.expectStatusCode(200);
         const resultUpdate: any = updateDataRes.getBody()['result'];
         expect(resultUpdate.listingItemTemplateId).toBe(createdTemplateId);
         expect(resultUpdate.type).toBe(testData.type);
 
-        expect(resultUpdate.ItemPrice[0].currency).toBe(testData.itemPrice[0].currency);
-        expect(resultUpdate.ItemPrice[0].basePrice).toBe(testData.itemPrice[0].basePrice);
+        expect(resultUpdate.ItemPrice.currency).toBe(testData.itemPrice.currency);
+        expect(resultUpdate.ItemPrice.basePrice).toBe(testData.itemPrice.basePrice);
 
-        expect(resultUpdate.ItemPrice[0].ShippingPrice.domestic).toBe(testData.itemPrice[0].shippingPrice.domestic);
-        expect(resultUpdate.ItemPrice[0].ShippingPrice.international).toBe(testData.itemPrice[0].shippingPrice.international);
-        expect(resultUpdate.ItemPrice[0].Address.address).toBe(testData.itemPrice[0].address.address);
+        expect(resultUpdate.ItemPrice.ShippingPrice.domestic).toBe(testData.itemPrice.shippingPrice.domestic);
+        expect(resultUpdate.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
+        expect(resultUpdate.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
     });
 
     test('Should fail update Payment Information, payment-information is not related with item-template', async () => {
         const updateDataRes: any = await rpc(method, [0, testData.type,
-            testData.itemPrice[0].currency, testData.itemPrice[0].basePrice,
-            testData.itemPrice[0].shippingPrice.domestic, testData.itemPrice[0].shippingPrice.international,
-            testData.itemPrice[0].address.address]);
+            testData.itemPrice.currency, testData.itemPrice.basePrice,
+            testData.itemPrice.shippingPrice.domestic, testData.itemPrice.shippingPrice.international,
+            testData.itemPrice.address.address]);
         updateDataRes.expectJson();
         updateDataRes.expectStatusCode(404);
     });

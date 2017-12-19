@@ -24,7 +24,7 @@ describe('/removeItemLocation', () => {
         },
         paymentInformation: {
             type: 'payment',
-            itemPrice: [{
+            itemPrice: {
                 currency: Currency.PARTICL,
                 basePrice: 12,
                 shippingPrice: {
@@ -35,7 +35,7 @@ describe('/removeItemLocation', () => {
                     type: CryptocurrencyAddressType.STEALTH,
                     address: 'This is temp address.'
                 }
-            }]
+            }
         }
     };
 

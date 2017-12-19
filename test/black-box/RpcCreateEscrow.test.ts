@@ -21,7 +21,7 @@ describe('/CreateEscrow', () => {
         },
         paymentInformation: {
             type: 'payment',
-            itemPrice: [{
+            itemPrice: {
                 currency: Currency.PARTICL,
                 basePrice: 12,
                 shippingPrice: {
@@ -32,7 +32,7 @@ describe('/CreateEscrow', () => {
                     type: CryptocurrencyAddressType.STEALTH,
                     address: 'This is temp address.'
                 }
-            }]
+            }
         }
     };
     const testData = {
