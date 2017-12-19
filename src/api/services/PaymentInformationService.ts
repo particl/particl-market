@@ -51,7 +51,7 @@ export class PaymentInformationService {
         }
 
         const escrow = body.escrow;
-        const itemPrice = body.itemPrice || [];
+        const itemPrice = body.itemPrice;
 
         delete body.escrow;
         delete body.itemPrice;
@@ -66,20 +66,15 @@ export class PaymentInformationService {
         }
 
         // then create item price
-        // if (itemPrice) {
-        //     itemPrice.payment_information_id = paymentInformation.Id;
-        //     await this.itemPriceService.create(itemPrice);
-        // }
-        for (const itemP of itemPrice) {
-            itemP.payment_information_id = paymentInformation.Id;
-            await this.itemPriceService.create(itemP);
-        }
+        itemPrice.payment_information_id = paymentInformation.Id;
+        await this.itemPriceService.create(itemPrice);
+
         // finally find and return the created paymentInformation
         const newPaymentInformation = await this.findOne(paymentInformation.Id);
         return newPaymentInformation;
     }
 
-    public async updateByListingId( @request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
+    public async updateByListingId(@request(PaymentInformationUpdateRequest) body: any): Promise<PaymentInformation> {
         const paymentInformation = await this.paymentInformationRepo.findOneByListingItemTemplateId(body.listing_item_template_id);
         if (paymentInformation === null) {
             this.log.warn(`PaymentInformation with the listing_item_template_id=${body.listing_item_template_id} was not found!`);
@@ -116,20 +111,13 @@ export class PaymentInformationService {
             await this.escrowService.create(relatedEscrow);
         }
         // find related record and delete it
-        let relatedItemPrice = updatedPaymentInformation.related('ItemPrice').toJSON() || [];
-        for (const relatedItemP of relatedItemPrice) {
-            await this.itemPriceService.destroy(relatedItemP.id);
-        }
+        let relatedItemPrice = updatedPaymentInformation.related('ItemPrice').toJSON();
+        await this.itemPriceService.destroy(relatedItemPrice.id);
 
         // recreate related data
-        relatedItemPrice = body.itemPrice || [];
-        // relatedItemPrice.payment_information_id = id;
-        // await this.itemPriceService.create(relatedItemPrice);
-
-        for (const relatedItemP of relatedItemPrice) {
-            relatedItemP.payment_information_id = id;
-            await this.itemPriceService.create(relatedItemP);
-        }
+        relatedItemPrice = body.itemPrice;
+        relatedItemPrice.payment_information_id = id;
+        await this.itemPriceService.create(relatedItemPrice);
 
         // finally find and return the updated paymentInformation
         const newPaymentInformation = await this.findOne(id);

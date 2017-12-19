@@ -47,7 +47,7 @@ export class PaymentInformation extends Bookshelf.Model<PaymentInformation> {
         return this.hasOne(Escrow);
     }
 
-    public ItemPrice(): Collection<ItemPrice> {
-        return this.hasMany(ItemPrice, 'payment_information_id', 'id');
+    public ItemPrice(): ItemPrice {
+        return this.hasOne(ItemPrice);
     }
 }
