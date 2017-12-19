@@ -5,11 +5,9 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import * as _ from 'lodash';
 import * as Faker from 'faker';
-import * as crypto from 'crypto';
 import { MessageException } from '../exceptions/MessageException';
 import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
 import { Country } from '../enums/Country';
-import { Address } from '../models/Address';
 import { ShippingAvailability } from '../enums/ShippingAvailability';
 import { MessagingProtocolType } from '../enums/MessagingProtocolType';
 import { CryptocurrencyAddressType } from '../enums/CryptocurrencyAddressType';
@@ -17,7 +15,6 @@ import { Currency } from '../enums/Currency';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { PaymentType } from '../enums/PaymentType';
 import { EscrowType } from '../enums/EscrowType';
-import { Profile } from '../models/Profile';
 import { ListingItem } from '../models/ListingItem';
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
@@ -27,6 +24,7 @@ import { DefaultMarketService } from './DefaultMarketService';
 import { ProfileService } from './ProfileService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { FavoriteItemService } from './FavoriteItemService';
+import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 
 export class TestDataService {
 
@@ -109,7 +107,7 @@ export class TestDataService {
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async generate(@request(TestDataCreateRequest) body: any): Promise<any> {
+    public async generate(@request(TestDataGenerateRequest) body: any): Promise<any> {
         switch (body.model) {
             case 'listingitemtemplate': {
                 return await this.generateListingItemTemplates(body.amount, body.withRelated);
