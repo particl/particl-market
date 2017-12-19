@@ -18,7 +18,7 @@ describe('AcceptBidMessageProcessor', () => {
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
     const testBidData = {
-        action: 'MPA_ACCEPT',
+        action: 'MPA_BID',
         item: 'f08f3d6e101'
     };
 
@@ -78,7 +78,9 @@ describe('AcceptBidMessageProcessor', () => {
         await bidMessageProcessor.process(testBidData);
 
         // accept a bid
+        testBidData.action = 'MPA_ACCEPT';
         const bidModel = await acceptBidMessageProcessor.process(testBidData);
+
         const result = bidModel.toJSON();
         // test the values
         expect(result.status).toBe(BidStatus.ACCEPTED);

@@ -18,7 +18,7 @@ describe('RejectBidMessageProcessor', () => {
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
     const testBidData = {
-        action: 'MPA_REJECT',
+        action: 'MPA_BID',
         item: 'f08f3d6e101'
     };
 
@@ -78,6 +78,7 @@ describe('RejectBidMessageProcessor', () => {
         await bidMessageProcessor.process(testBidData);
 
         // reject bid
+        testBidData.action = 'MPA_REJECT';
         const bidModel = await rejectBidMessageProcessor.process(testBidData);
         const result = bidModel.toJSON();
         // test the values

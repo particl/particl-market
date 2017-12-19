@@ -10,9 +10,8 @@ describe('BidFactory', () => {
         process.env.AUTH0_HOST = 'test';
         bidFactory = new BidFactory(LogMock);
         req = {
-            version: '0.1.1.0',
+            action: 'MPA_BID',
             item: 'f08f3d6e',
-            status: 'ACTIVE',
             objects: [
               {
                 id: 'colour',
@@ -24,8 +23,7 @@ describe('BidFactory', () => {
 
     test('Should convert bidMessage in to bid', () => {
         const res = bidFactory.get(req);
-        expect(res.status).toBe(req.status);
-        expect(res.status).toBe(req.status);
+        expect(res.status).toBe('ACTIVE');
         expect(res.bidData.length).toBe(1);
         expect(res.bidData[0].dataId).toBe(req.objects[0].id);
         expect(res.bidData[0].dataValue).toBe(req.objects[0].value);
@@ -34,8 +32,7 @@ describe('BidFactory', () => {
     test('Should return 2 bidData objects for the given bidMessage', () => {
         req.objects.push({id: 'colour', value: 'red'});
         const res = bidFactory.get(req);
-        expect(res.status).toBe(req.status);
-        expect(res.status).toBe(req.status);
+        expect(res.status).toBe('ACTIVE');
         expect(res.bidData.length).toBe(2);
         expect(res.bidData[1].dataId).toBe(req.objects[1].id);
         expect(res.bidData[1].dataValue).toBe(req.objects[1].value);
@@ -44,8 +41,7 @@ describe('BidFactory', () => {
     test('Should return blank bidData', () => {
         req.objects = [];
         const res = bidFactory.get(req);
-        expect(res.status).toBe(req.status);
-        expect(res.status).toBe(req.status);
+        expect(res.status).toBe('ACTIVE');
         expect(res.bidData.length).toBe(0);
     });
 });

@@ -19,7 +19,7 @@ describe('CancelBidMessageProcessor', () => {
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
     const testBidData = {
-        action: 'MPA_CANCEL',
+        action: 'MPA_BID',
         item: 'f08f3d6e101'
     };
 
@@ -76,9 +76,11 @@ describe('CancelBidMessageProcessor', () => {
 
     test('Should cancel a bid for the given listing item', async () => {
         // create bid message
+
         await bidMessageProcessor.process(testBidData);
 
         // cancel bid
+        testBidData.action = 'MPA_CANCEL';
         const bidModel = await cancelBidMessageProcessor.process(testBidData);
         const result = bidModel.toJSON();
         // test the values

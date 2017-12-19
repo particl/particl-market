@@ -169,10 +169,7 @@ export const Targets = {
         TestCommand: 'TestCommand'
     },
     Factory:     {
-        AcceptBidFactory: 'AcceptBidFactory',
         BidFactory: 'BidFactory',
-        CancelBidFactory: 'CancelBidFactory',
-        RejectBidFactory: 'RejectBidFactory',
         RpcCommandFactory: 'RpcCommandFactory',
         TestFactory: 'TestFactory'
     },
