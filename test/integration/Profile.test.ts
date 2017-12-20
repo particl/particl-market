@@ -12,6 +12,7 @@ import { Country } from '../../src/api/enums/Country';
 
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { AddressService } from '../../src/api/services/AddressService';
+import {TestDataGenerateRequest} from "../../src/api/requests/TestDataGenerateRequest";
 
 describe('Profile', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -152,10 +153,16 @@ describe('Profile', () => {
 
     test('Should create a new profile with delivery addresses and cryptoaddresses', async () => {
 
-        const profileModel: Profile = await testDataService.generate()
+        const profileModel: Profile = await testDataService.generate({
+            model: 'profile',
+            amount: 1,
+            withRelated: true
+        } as TestDataGenerateRequest);
+
         createdId = profileModel.Id;
 
         const result = profileModel.toJSON();
+        log.info('result: ', result);
 
         expect(result.name).toBe(testData.name);
         expect(result.address).toBe(testData.address);
