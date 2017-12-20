@@ -82,7 +82,7 @@ describe('Profile', () => {
         //
     });
 
-    test('Should create a new profile', async () => {
+    test('Should create a new profile with just delivery addresses', async () => {
         const profileModel: Profile = await profileService.create(testData);
         createdId = profileModel.Id;
 
@@ -148,7 +148,19 @@ describe('Profile', () => {
         await profileService.findOne(addressId1).catch(e => {
             expect(e).toEqual(new NotFoundException(addressId1));
         });
-
     });
+
+    test('Should create a new profile with delivery addresses and cryptoaddresses', async () => {
+
+        const profileModel: Profile = await testDataService.generate()
+        createdId = profileModel.Id;
+
+        const result = profileModel.toJSON();
+
+        expect(result.name).toBe(testData.name);
+        expect(result.address).toBe(testData.address);
+        expect(result.ShippingAddresses).toHaveLength(2);
+    });
+
 
 });

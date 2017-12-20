@@ -8,7 +8,7 @@ export class TestDataGenerateRequest extends RequestBody {
     public model: string;
 
     @IsNotEmpty()
-    public amount: string;
+    public amount: number;
 
     @IsNotEmpty()
     public withRelated: boolean;

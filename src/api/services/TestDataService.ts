@@ -74,7 +74,7 @@ export class TestDataService {
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async create(@request(TestDataCreateRequest) body: any): Promise<any> {
+    public async create(@request(TestDataCreateRequest) body: TestDataCreateRequest): Promise<any> {
         switch (body.model) {
             case 'listingitemtemplate': {
                 return await this.listingItemTemplateService.create(body.data);
@@ -108,7 +108,7 @@ export class TestDataService {
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async generate(@request(TestDataGenerateRequest) body: any): Promise<any> {
+    public async generate(@request(TestDataGenerateRequest) body: TestDataGenerateRequest): Promise<any> {
         switch (body.model) {
             case 'listingitemtemplate': {
                 return await this.generateListingItemTemplates(body.amount, body.withRelated);
