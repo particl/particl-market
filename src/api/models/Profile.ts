@@ -11,7 +11,8 @@ export class Profile extends Bookshelf.Model<Profile> {
             return await Profile.where<Profile>({ id: value }).fetch({
                 withRelated: [
                     'ShippingAddresses',
-                    'CryptocurrencyAddresses'
+                    'CryptocurrencyAddresses',
+                    'FavoriteItems'
                 ]
             });
         } else {
@@ -24,7 +25,8 @@ export class Profile extends Bookshelf.Model<Profile> {
             return await Profile.where<Profile>({ name: value }).fetch({
                 withRelated: [
                     'ShippingAddresses',
-                    'CryptocurrencyAddresses'
+                    'CryptocurrencyAddresses',
+                    'FavoriteItems'
                 ]
             });
         } else {
