@@ -12,6 +12,7 @@ import { Profile } from '../../src/api/models/Profile';
 import { Country } from '../../src/api/enums/Country';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../../src/api/requests/ProfileCreateRequest';
+import { ProfileUpdateRequest } from '../../src/api/requests/ProfileUpdateRequest';
 
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { AddressService } from '../../src/api/services/AddressService';
@@ -49,7 +50,7 @@ describe('Profile', () => {
     const testDataUpdated = {
         name: 'DEFAULT2',
         address: 'DEFAULT12-ADDRESS'
-    } as ProfileCreateRequest;
+    } as ProfileUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -166,5 +167,10 @@ describe('Profile', () => {
 
     });
 
+    test('Should create a new profile with delivery addresses and cryptoaddresses and FavoriteItems', async () => {
+
+        // TODO
+
+    });
 
 });

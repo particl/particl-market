@@ -12,6 +12,8 @@ import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAdd
 
 import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
 import { ProfileService } from '../../src/api/services/ProfileService';
+import { CryptocurrencyAddressCreateRequest } from '../../src/api/requests/CryptocurrencyAddressCreateRequest';
+import { CryptocurrencyAddressUpdateRequest } from '../../src/api/requests/CryptocurrencyAddressUpdateRequest';
 
 describe('CryptocurrencyAddress', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -24,19 +26,19 @@ describe('CryptocurrencyAddress', () => {
     let profileService: ProfileService;
 
     let createdId;
-    let createdListingItemTemplate;
+    // let createdListingItemTemplate;
 
     let defaultProfile;
 
     const testData = {
         type: CryptocurrencyAddressType.NORMAL,
         address: '123'
-    };
+    } as CryptocurrencyAddressCreateRequest;
 
     const testDataUpdated = {
         type: CryptocurrencyAddressType.STEALTH,
         address: '456'
-    };
+    } as CryptocurrencyAddressUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -52,7 +54,7 @@ describe('CryptocurrencyAddress', () => {
         defaultProfile = defaultProfile.toJSON();
         log.debug('defaultProfile: ', defaultProfile);
 
-
+/*
         createdListingItemTemplate = await testDataService.generate({
             model: 'listingitemtemplate',
             amount: 1,
@@ -62,56 +64,43 @@ describe('CryptocurrencyAddress', () => {
         }).catch(e => {
             log.error('098: ' + e);
         });
-
+*/
         log.debug('beforeAll DONE');
 
     });
 
-    afterAll(async () => {
-        //
-    });
-
-    test('Should throw ValidationException because there is no item_price_id', async () => {
-        expect.assertions(1);
-        await cryptocurrencyAddressService.create(testData).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
     test('Should create a new cryptocurrency address related to profile', async () => {
-        // log.debug('ListingItemTemplate create with id = ' + listingItemTemplate.profile_id);
-        // for ( const o of listingItemTemplate) {
-        //    log.debug('#### ' + o);
-        // }
-        // log.debug('123 ' + listingItemTemplate[0]);
-        // log.debug('DONE');
 
+        // profile id to testData
+        testData.profile_id = defaultProfile.id;
 
-        const cryptocurrencyAddressModel: CryptocurrencyAddress = await cryptocurrencyAddressService.create(testData);
-        createdId = cryptocurrencyAddressModel.Id;
-
-        const result = cryptocurrencyAddressModel.toJSON();
-        log.debug('cryptocurrencyAddressModel: ', result);
+        const cryptocurrencyAddress: CryptocurrencyAddress = await cryptocurrencyAddressService.create(testData);
+        createdId = cryptocurrencyAddress.Id;
+        const result = cryptocurrencyAddress.toJSON();
 
         expect(result.type).toBe(testData.type);
         expect(result.address).toBe(testData.address);
     });
 
-    test('Should create a new cryptocurrency address related to profile', async () => {
-        //
+    test('Should create a new cryptocurrency address without a link to a profile', async () => {
+        const cryptocurrencyAddress: CryptocurrencyAddress = await cryptocurrencyAddressService.create(testData);
+        const result = cryptocurrencyAddress.toJSON();
+        expect(result.type).toBe(testData.type);
+        expect(result.address).toBe(testData.address);
     });
 
     test('Should throw ValidationException because we want to create a empty cryptocurrency address', async () => {
         expect.assertions(1);
-        await cryptocurrencyAddressService.create({}).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
+        await cryptocurrencyAddressService.create({} as CryptocurrencyAddressCreateRequest)
+            .catch(e =>
+                expect(e).toEqual(new ValidationException('Request body is not valid', []))
+            );
     });
 
-    test('Should list cryptocurrency addresss with our new create one', async () => {
+    test('Should list cryptocurrency addresses with our new create one', async () => {
         const cryptocurrencyAddressCollection = await cryptocurrencyAddressService.findAll();
         const cryptocurrencyAddress = cryptocurrencyAddressCollection.toJSON();
-        expect(cryptocurrencyAddress.length).toBe(1);
+        expect(cryptocurrencyAddress.length).toBe(2);
 
         const result = cryptocurrencyAddress[0];
 
@@ -127,15 +116,7 @@ describe('CryptocurrencyAddress', () => {
         expect(result.address).toBe(testData.address);
     });
 
-    test('Should throw ValidationException because there is no item_price_id', async () => {
-        expect.assertions(1);
-        await cryptocurrencyAddressService.update(createdId, testDataUpdated).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
     test('Should update the cryptocurrency address', async () => {
-        testDataUpdated['item_price_id'] = 0;
         const cryptocurrencyAddressModel: CryptocurrencyAddress = await cryptocurrencyAddressService.update(createdId, testDataUpdated);
         const result = cryptocurrencyAddressModel.toJSON();
 
