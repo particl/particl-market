@@ -1,4 +1,5 @@
 import { Bookshelf } from '../../config/Database';
+import { Profile } from './Profile';
 
 
 export class CryptocurrencyAddress extends Bookshelf.Model<CryptocurrencyAddress> {
@@ -7,9 +8,7 @@ export class CryptocurrencyAddress extends Bookshelf.Model<CryptocurrencyAddress
         if (withRelated) {
             return await CryptocurrencyAddress.where<CryptocurrencyAddress>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'CryptocurrencyAddressRelated',
-                    // 'CryptocurrencyAddressRelated.Related'
+                    // 'Profile'
                 ]
             });
         } else {
@@ -35,8 +34,8 @@ export class CryptocurrencyAddress extends Bookshelf.Model<CryptocurrencyAddress
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public CryptocurrencyAddressRelated(): CryptocurrencyAddressRelated {
-    //    return this.hasOne(CryptocurrencyAddressRelated);
-    // }
+    public Profile(): Profile {
+        return this.belongsTo(Profile, 'profile_id', 'id');
+    }
+
 }

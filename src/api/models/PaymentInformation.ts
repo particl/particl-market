@@ -1,6 +1,7 @@
 import { Bookshelf } from '../../config/Database';
 import { Escrow } from './Escrow';
 import { ItemPrice } from './ItemPrice';
+import { CryptocurrencyAddress } from './CryptocurrencyAddress';
 
 export class PaymentInformation extends Bookshelf.Model<PaymentInformation> {
 
@@ -12,7 +13,7 @@ export class PaymentInformation extends Bookshelf.Model<PaymentInformation> {
                     'Escrow.Ratio',
                     'ItemPrice',
                     'ItemPrice.ShippingPrice',
-                    'ItemPrice.Address'
+                    'ItemPrice.CryptocurrencyAddress'
                 ]
             });
         } else {
@@ -33,8 +34,8 @@ export class PaymentInformation extends Bookshelf.Model<PaymentInformation> {
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }
 
-    public get ListingItemTemplateId(): number { return this.get('listing_item_template_id'); }
-    public set ListingItemTemplateId(value: number) { this.set('listing_item_template_id', value); }
+    // public get ListingItemTemplateId(): number { return this.get('listing_item_template_id'); }
+    // public set ListingItemTemplateId(value: number) { this.set('listing_item_template_id', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
@@ -49,4 +50,5 @@ export class PaymentInformation extends Bookshelf.Model<PaymentInformation> {
     public ItemPrice(): ItemPrice {
         return this.hasOne(ItemPrice);
     }
+
 }

@@ -54,6 +54,9 @@ export class ListingItemTemplateService {
 
     @validate()
     public async create( @request(ListingItemTemplateCreateRequest) data: any): Promise<ListingItemTemplate> {
+
+        this.log.debug('ListingItemTemplateService.create, data:', JSON.stringify(data, null, 2));
+
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
@@ -69,30 +72,36 @@ export class ListingItemTemplateService {
         // this.log.info('save messagingInformation: ', messagingInformation);
 
         // If the request body was valid we will create the listingItemTemplate
-        const listingItemTemplate = await this.listingItemTemplateRepo.create(body);
-        this.log.info('saved listingItemTemplate.Id: ', listingItemTemplate.Id);
+        await this.listingItemTemplateRepo.create(body)
+            .then(async (listingItemTemplate) => {
 
+                this.log.error('ListingItemTemplateService.create, listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
 
-        if (itemInformation) {
-            itemInformation.listing_item_template_id = listingItemTemplate.Id;
-            const result = await this.itemInformationService.create(itemInformation);
-            // this.log.info('saved itemInformation: ', result.toJSON());
-        }
-        if (paymentInformation) {
-            paymentInformation.listing_item_template_id = listingItemTemplate.Id;
-            const result = await this.paymentInformationService.create(paymentInformation);
-            // this.log.info('saved paymentInformation: ', result.toJSON());
-        }
-        if (messagingInformation) {
-            messagingInformation.listing_item_template_id = listingItemTemplate.Id;
-            const result = await this.messagingInformationService.create(messagingInformation);
-            // this.log.info('saved messagingInformation: ', result.toJSON());
-        }
+                if (itemInformation) {
+                    itemInformation.listing_item_template_id = listingItemTemplate.Id;
+                    const result = await this.itemInformationService.create(itemInformation);
+                    // this.log.info('saved itemInformation: ', result.toJSON());
+                }
+                if (paymentInformation) {
+                    paymentInformation.listing_item_template_id = listingItemTemplate.Id;
+                    const result = await this.paymentInformationService.create(paymentInformation);
+                    // this.log.info('saved paymentInformation: ', result.toJSON());
+                }
+                if (messagingInformation) {
+                    messagingInformation.listing_item_template_id = listingItemTemplate.Id;
+                    const result = await this.messagingInformationService.create(messagingInformation);
+                    // this.log.info('saved messagingInformation: ', result.toJSON());
+                }
 
-        // finally find and return the created listingItemTemplate
-        const newListingItemTemplate = await this.findOne(listingItemTemplate.Id);
-        // this.log.info('newListingItemTemplate: ', newListingItemTemplate.toJSON());
-        return newListingItemTemplate;
+                // finally find and return the created listingItemTemplate
+                const newListingItemTemplate = await this.findOne(listingItemTemplate.Id);
+                // this.log.info('newListingItemTemplate: ', newListingItemTemplate.toJSON());
+                return newListingItemTemplate;
+
+            })
+            .catch(reason => {
+                this.log.error('ERROR: ', reason);
+            });
     }
 
     @validate()

@@ -9,7 +9,7 @@ export class ItemPrice extends Bookshelf.Model<ItemPrice> {
             return await ItemPrice.where<ItemPrice>({ id: value }).fetch({
                 withRelated: [
                     'ShippingPrice',
-                    'Address'
+                    'CryptocurrencyAddress'
                 ]
             });
         } else {
@@ -39,7 +39,8 @@ export class ItemPrice extends Bookshelf.Model<ItemPrice> {
         return this.hasOne(ShippingPrice);
     }
 
-    public Address(): CryptocurrencyAddress {
-        return this.hasOne(CryptocurrencyAddress);
+    public CryptocurrencyAddress(): CryptocurrencyAddress {
+        return this.belongsTo(CryptocurrencyAddress, 'cryptocurrency_address_id', 'id');
     }
+
 }

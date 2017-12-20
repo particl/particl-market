@@ -39,6 +39,8 @@ export class CryptocurrencyAddressService {
     @validate()
     public async create( @request(CryptocurrencyAddressCreateRequest) body: any): Promise<CryptocurrencyAddress> {
 
+        this.log.error('CryptocurrencyAddressService.create, body: ', JSON.stringify(body, null, 2));
+
         if (body.item_price_id == null && body.profile_id == null) {
             throw new ValidationException('Request body is not valid', ['item_price_id or profile_id missing']);
         }

@@ -11,6 +11,7 @@ import { CryptocurrencyAddress } from '../../src/api/models/CryptocurrencyAddres
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 
 import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
+import { ProfileService } from '../../src/api/services/ProfileService';
 
 describe('CryptocurrencyAddress', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -20,9 +21,12 @@ describe('CryptocurrencyAddress', () => {
 
     let testDataService: TestDataService;
     let cryptocurrencyAddressService: CryptocurrencyAddressService;
+    let profileService: ProfileService;
 
     let createdId;
     let createdListingItemTemplate;
+
+    let defaultProfile;
 
     const testData = {
         type: CryptocurrencyAddressType.NORMAL,
@@ -39,11 +43,16 @@ describe('CryptocurrencyAddress', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         cryptocurrencyAddressService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.CryptocurrencyAddressService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
 
-        createdListingItemTemplate = testDataService.generate({
+        defaultProfile = await profileService.getDefault();
+        defaultProfile = defaultProfile.toJSON();
+        log.debug('defaultProfile: ', defaultProfile);
+
+        createdListingItemTemplate = await testDataService.generate({
             model: 'listingitemtemplate',
             amount: 1,
             withRelated: true
@@ -52,6 +61,8 @@ describe('CryptocurrencyAddress', () => {
         }).catch(e => {
             log.error('098: ' + e);
         });
+
+        log.debug('beforeAll DONE');
 
     });
 
@@ -66,12 +77,7 @@ describe('CryptocurrencyAddress', () => {
         );
     });
 
-    test('Should create a new cryptocurrency address', async () => {
-        const tmpListingItemTemplate = testDataService.create({
-            model: 'listingitemtemplate',
-            amount: 1,
-            withRelated: true
-        });
+    test('Should create a new cryptocurrency address related to profile', async () => {
         // log.debug('ListingItemTemplate create with id = ' + listingItemTemplate.profile_id);
         // for ( const o of listingItemTemplate) {
         //    log.debug('#### ' + o);
@@ -79,14 +85,19 @@ describe('CryptocurrencyAddress', () => {
         // log.debug('123 ' + listingItemTemplate[0]);
         // log.debug('DONE');
 
-        testData['item_price_id'] = 1;
+
         const cryptocurrencyAddressModel: CryptocurrencyAddress = await cryptocurrencyAddressService.create(testData);
         createdId = cryptocurrencyAddressModel.Id;
 
         const result = cryptocurrencyAddressModel.toJSON();
+        log.debug('cryptocurrencyAddressModel: ', result);
 
         expect(result.type).toBe(testData.type);
         expect(result.address).toBe(testData.address);
+    });
+
+    test('Should create a new cryptocurrency address related to profile', async () => {
+        //
     });
 
     test('Should throw ValidationException because we want to create a empty cryptocurrency address', async () => {

@@ -75,7 +75,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                     'PaymentInformation.Escrow.Ratio',
                     'PaymentInformation.ItemPrice',
                     'PaymentInformation.ItemPrice.ShippingPrice',
-                    'PaymentInformation.ItemPrice.Address',
+                    'PaymentInformation.ItemPrice.CryptocurrencyAddress',
                     'MessagingInformation',
                     'ListingItemObjects',
                     'ListingItem',

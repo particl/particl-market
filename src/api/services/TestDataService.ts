@@ -61,6 +61,7 @@ export class TestDataService {
             await this.defaultItemCategoryService.seedDefaultCategories();
             await this.defaultProfileService.seedDefaultProfile();
             await this.defaultMarketService.seedDefaultMarket();
+            this.log.info('cleanup & default seeds done.');
         }
 
         return;
@@ -169,9 +170,9 @@ export class TestDataService {
         const items: any[] = [];
         for (let i = amount; i !== 0; i--) {
             const listingItemTemplate = await this.generateListingItemTemplate();
-            this.log.error('B1');
+            // this.log.debug('B1', JSON.stringify(listingItemTemplate, null, 2));
             const savedListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplate);
-            this.log.error('B2');
+            this.log.debug('B2', JSON.stringify(savedListingItemTemplate, null, 2));
             items.push(savedListingItemTemplate);
         }
         return this.generateResponse(items, withRelated);
