@@ -43,9 +43,11 @@ export class ListingItemTemplateRepository {
         const listingItemTemplate = this.ListingItemTemplateModel.forge<ListingItemTemplate>(data);
         try {
             this.log.error('C2 ' + listingItemTemplate);
-            const listingItemTemplateCreated = await listingItemTemplate.save();
+            const listingItemTemplateCreated = listingItemTemplate.save();
             this.log.error('C3');
-            return this.ListingItemTemplateModel.fetchById(listingItemTemplateCreated.id);
+            return this.ListingItemTemplateModel.fetchById(listingItemTemplateCreated.id).catch(e => {
+                this.log.error('ListingItemTemplateModel.fetchById: ' + e);
+            });
         } catch (error) {
             this.log.error('C4');
             throw new DatabaseException('Could not create the listingItemTemplate!', error);
