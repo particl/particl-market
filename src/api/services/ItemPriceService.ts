@@ -39,19 +39,28 @@ export class ItemPriceService {
     }
 
     @validate()
-    public async create( @request(ItemPriceCreateRequest) data: any): Promise<ItemPrice> {
+    public async create( @request(ItemPriceCreateRequest) data: ItemPriceCreateRequest): Promise<ItemPrice> {
 
         const body = JSON.parse(JSON.stringify(data));
 
         const shippingPrice = body.shippingPrice;
-        const cryptocurrencyAddress = body.address;
+        const cryptocurrencyAddress = body.cryptocurrencyAddress;
 
         delete body.shippingPrice;
-        delete body.address;
+        delete body.cryptocurrencyAddress;
 
-        // first create the related cryptoAddress
-        const relatedCryptocurrencyAddress = await this.cryptocurrencyaddressService.create(cryptocurrencyAddress);
-        body.cryptocurrency_address_id = relatedCryptocurrencyAddress.Id;
+        if (cryptocurrencyAddress && cryptocurrencyAddress.id) {
+            // the cryptocurrencyAddress exists
+            this.log.debug('cryptocurrencyAddress exists');
+            body.cryptocurrency_address_id = cryptocurrencyAddress.id;
+        } else {
+            // new address
+            this.log.debug('cryptocurrencyAddress does not exist, creating new');
+            const relatedCryptocurrencyAddress = await this.cryptocurrencyaddressService.create(cryptocurrencyAddress);
+            body.cryptocurrency_address_id = relatedCryptocurrencyAddress.Id;
+        }
+
+        this.log.debug('creating: ', body);
 
         // create the itemPrice
         const itemPrice = await this.itemPriceRepo.create(body);
@@ -67,7 +76,7 @@ export class ItemPriceService {
     }
 
     @validate()
-    public async update(id: number, @request(ItemPriceUpdateRequest) data: any): Promise<ItemPrice> {
+    public async update(id: number, @request(ItemPriceUpdateRequest) data: ItemPriceUpdateRequest): Promise<ItemPrice> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -112,54 +121,6 @@ export class ItemPriceService {
 
     public async destroy(id: number): Promise<void> {
         await this.itemPriceRepo.destroy(id);
-    }
-
-    // TODO: remove this rpc stuff
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemPrice>> {
-        return this.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ItemPrice> {
-        return this.findOne(data.params[0]);
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemPrice> {
-        return this.create({
-            currency: data.params[0],
-            basePrice: data.params[1],
-            shippingPrice: {
-                domestic: data.params[2],
-                international: data.params[3]
-            },
-            address: {
-                type: data.params[4],
-                address: data.params[5]
-            }
-        });
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemPrice> {
-        return this.update(data.params[0], {
-            currency: data.params[1],
-            basePrice: data.params[2],
-            shippingPrice: {
-                domestic: data.params[3],
-                international: data.params[4]
-            },
-            address: {
-                type: data.params[5],
-                address: data.params[6]
-            }
-        });
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
     }
 
 }

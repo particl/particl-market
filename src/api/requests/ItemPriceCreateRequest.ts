@@ -13,5 +13,7 @@ export class ItemPriceCreateRequest extends RequestBody {
     @IsNotEmpty()
     public basePrice: number;
 
+    public shippingPrice;
+    public cryptocurrencyAddress;               // or this exists
 }
 // tslint:enable:variable-name

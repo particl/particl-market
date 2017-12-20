@@ -12,6 +12,10 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 
 import { ItemPriceService } from '../../src/api/services/ItemPriceService';
+import { ItemPriceCreateRequest } from '../../src/api/requests/ItemPriceCreateRequest';
+import { ItemPriceUpdateRequest } from '../../src/api/requests/ItemPriceUpdateRequest';
+import {ListingItemTemplate} from "../../src/api/models/ListingItemTemplate";
+import {TestDataGenerateRequest} from "../../src/api/requests/TestDataGenerateRequest";
 
 describe('ItemPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -22,7 +26,8 @@ describe('ItemPrice', () => {
     let testDataService: TestDataService;
     let itemPriceService: ItemPriceService;
 
-    let createdId;
+    let createdId: number;
+    let createdListingItemTemplate: ListingItemTemplate;
 
     const testData = {
         currency: Currency.BITCOIN,
@@ -31,11 +36,11 @@ describe('ItemPrice', () => {
             domestic: 0.123,
             international: 1.234
         },
-        address: {
+        cryptocurrencyAddress: {
             type: CryptocurrencyAddressType.NORMAL,
             address: '1234'
         }
-    };
+    } as ItemPriceCreateRequest;
 
     const testDataUpdated = {
         currency: Currency.PARTICL,
@@ -44,11 +49,11 @@ describe('ItemPrice', () => {
             domestic: 1.234,
             international: 2.345
         },
-        address: {
+        cryptocurrencyAddress: {
             type: CryptocurrencyAddressType.STEALTH,
             address: '4567'
         }
-    };
+    } as ItemPriceUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -58,6 +63,18 @@ describe('ItemPrice', () => {
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
+
+        // create listingItemTemplate for testing purposes
+        const createdListingItemTemplates = await testDataService.generate<ListingItemTemplate>({
+            model: 'listingitemtemplate',
+            amount: 1,
+            withRelated: true
+        } as TestDataGenerateRequest).then(result => {
+            log.debug('created: ', result);
+            createdListingItemTemplate = result[0];
+        }).catch(e => {
+            log.error('error: ' + e);
+        });
     });
 
     afterAll(async () => {
