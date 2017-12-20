@@ -28,13 +28,12 @@ export class ItemCategoryFactory {
         const rootCategory: any = rootCategoryWithRelated;
         // check cat1 match with root itemcategory.key
         if (categoryAsArray[0] !== rootCategory.Key) {
-            throw new MessageException(`${categoryAsArray[0]} should be root ItemCategory`);
+            this.log.warn(`${categoryAsArray[0]} should be root ItemCategory`);
         }
         // check cat2 is matching with ItemCategory.ItemCategories
         let innerItemCategories = rootCategory.ChildItemCategories;
         // check with key and name
         const itemCategory2 = await this.checkCategory(innerItemCategories, categoryAsArray[1]);
-
         let needToBeCreated: any = [];
         if (itemCategory2) {
             innerItemCategories = itemCategory2['ChildItemCategories'];
@@ -42,7 +41,7 @@ export class ItemCategoryFactory {
             const itemCategory3 = await this.checkCategory(innerItemCategories, categoryAsArray[2]);
             if (!itemCategory3) {
                 needToBeCreated.push({
-                    parent_item_category_id: innerItemCategories.id,
+                    parent_item_category_id: itemCategory2.id,
                     name: categoryAsArray[2]
                 });
             } else {
