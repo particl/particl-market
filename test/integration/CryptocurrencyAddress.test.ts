@@ -52,6 +52,7 @@ describe('CryptocurrencyAddress', () => {
         defaultProfile = defaultProfile.toJSON();
         log.debug('defaultProfile: ', defaultProfile);
 
+
         createdListingItemTemplate = await testDataService.generate({
             model: 'listingitemtemplate',
             amount: 1,
