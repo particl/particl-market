@@ -99,7 +99,7 @@ describe('ListingItemTemplate', () => {
                     seller: 100
                 }
             },
-            itemPrice: [{
+            itemPrice: {
                 currency: Currency.BITCOIN,
                 basePrice: 0.0001,
                 shippingPrice: {
@@ -110,7 +110,7 @@ describe('ListingItemTemplate', () => {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: '1234'
                 }
-            }]
+            }
         },
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
@@ -163,7 +163,7 @@ describe('ListingItemTemplate', () => {
                     seller: 1
                 }
             },
-            itemPrice: [{
+            itemPrice: {
                 currency: Currency.PARTICL,
                 basePrice: 3.333,
                 shippingPrice: {
@@ -174,7 +174,7 @@ describe('ListingItemTemplate', () => {
                     type: CryptocurrencyAddressType.STEALTH,
                     address: '1234 UPDATED'
                 }
-            }]
+            }
         },
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
@@ -232,13 +232,13 @@ describe('ListingItemTemplate', () => {
         expect(result.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
         expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
         expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testData.paymentInformation.escrow.ratio.seller);
-        const resItemPrice = result.PaymentInformation.ItemPrice[0];
-        expect(resItemPrice.currency).toBe(testData.paymentInformation.itemPrice[0].currency);
-        expect(resItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice[0].basePrice);
-        expect(resItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice[0].shippingPrice.domestic);
-        expect(resItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice[0].shippingPrice.international);
-        expect(resItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice[0].address.type);
-        expect(resItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice[0].address.address);
+        const resItemPrice = result.PaymentInformation.ItemPrice;
+        expect(resItemPrice.currency).toBe(testData.paymentInformation.itemPrice.currency);
+        expect(resItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
+        expect(resItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
+        expect(resItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
+        expect(resItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
+        expect(resItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
         expect(result.PaymentInformation.listingItemId).toBe(null);
 
         expect(result.MessagingInformation[0].protocol).toBe(testData.messagingInformation[0].protocol);
@@ -292,13 +292,13 @@ describe('ListingItemTemplate', () => {
         expect(result.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
         expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
         expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testData.paymentInformation.escrow.ratio.seller);
-        const resItemPrice = result.PaymentInformation.ItemPrice[0];
-        expect(resItemPrice.currency).toBe(testData.paymentInformation.itemPrice[0].currency);
-        expect(resItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice[0].basePrice);
-        expect(resItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice[0].shippingPrice.domestic);
-        expect(resItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice[0].shippingPrice.international);
-        expect(resItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice[0].address.type);
-        expect(resItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice[0].address.address);
+        const resItemPrice = result.PaymentInformation.ItemPrice;
+        expect(resItemPrice.currency).toBe(testData.paymentInformation.itemPrice.currency);
+        expect(resItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
+        expect(resItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
+        expect(resItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
+        expect(resItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
+        expect(resItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
         expect(result.PaymentInformation.listingItemId).toBe(null);
 
         expect(result.MessagingInformation[0].protocol).toBe(testData.messagingInformation[0].protocol);
@@ -332,13 +332,13 @@ describe('ListingItemTemplate', () => {
         expect(result.PaymentInformation.Escrow.type).toBe(testDataUpdated.paymentInformation.escrow.type);
         expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testDataUpdated.paymentInformation.escrow.ratio.buyer);
         expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testDataUpdated.paymentInformation.escrow.ratio.seller);
-        const resItemPrice = result.PaymentInformation.ItemPrice[0];
-        expect(resItemPrice.currency).toBe(testDataUpdated.paymentInformation.itemPrice[0].currency);
-        expect(resItemPrice.basePrice).toBe(testDataUpdated.paymentInformation.itemPrice[0].basePrice);
-        expect(resItemPrice.ShippingPrice.domestic).toBe(testDataUpdated.paymentInformation.itemPrice[0].shippingPrice.domestic);
-        expect(resItemPrice.ShippingPrice.international).toBe(testDataUpdated.paymentInformation.itemPrice[0].shippingPrice.international);
-        expect(resItemPrice.Address.type).toBe(testDataUpdated.paymentInformation.itemPrice[0].address.type);
-        expect(resItemPrice.Address.address).toBe(testDataUpdated.paymentInformation.itemPrice[0].address.address);
+        const resItemPrice = result.PaymentInformation.ItemPrice;
+        expect(resItemPrice.currency).toBe(testDataUpdated.paymentInformation.itemPrice.currency);
+        expect(resItemPrice.basePrice).toBe(testDataUpdated.paymentInformation.itemPrice.basePrice);
+        expect(resItemPrice.ShippingPrice.domestic).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.domestic);
+        expect(resItemPrice.ShippingPrice.international).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.international);
+        expect(resItemPrice.Address.type).toBe(testDataUpdated.paymentInformation.itemPrice.address.type);
+        expect(resItemPrice.Address.address).toBe(testDataUpdated.paymentInformation.itemPrice.address.address);
         expect(result.PaymentInformation.listingItemId).toBe(null);
 
         expect(result.MessagingInformation[0].protocol).toBe(testDataUpdated.messagingInformation[0].protocol);

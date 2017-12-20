@@ -17,14 +17,14 @@ export class MessagingInformationFactory {
         this.log = new Logger(__filename);
     }
 
-    public get(data: any): Promise<MessagingInformation> {
-        const MessagingInfoData = _.map(data, (value) => {
+    public get(message: string[]): Promise<MessagingInformation> {
+        const messInfoData = _.map(message, (value) => {
             return _.assign({}, {
-                protocol: MessagingProtocolType[value['protocol']],
+                protocol: value['protocol'],
                 publicKey: value['public_key']
             });
         });
-        return MessagingInfoData as any;
+        return messInfoData as any;
     }
 
 }

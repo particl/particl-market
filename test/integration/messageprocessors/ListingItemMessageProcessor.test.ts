@@ -13,14 +13,14 @@ describe('ListingItemMessageProcessor', () => {
 
     let testDataService: TestDataService;
     let listingItemMessageProcessor: ListingItemMessageProcessor;
-
+    const messaging = [{ protocol: 'SMSG', public_key: 'publickey2' }];
     const testData = {
         information: {
             title: 'Title of the item',
             short_description: 'A short description / summary of item',
             long_description: 'A longer description of the item or service',
             category: [
-                'cat_high_business_corporate',
+                'cat_ROOT',
                 'Subcategory',
                 'Subsubcategory'
             ]
@@ -30,9 +30,9 @@ describe('ListingItemMessageProcessor', () => {
             escrow: {
                 type: 'NOP'
             },
-            cryptocurrency: [{ currency: 'BITCOIN', base_price: 100000000 }]
+            cryptocurrency: { currency: 'BITCOIN', base_price: 100000000 }
         },
-        messaging: [{ protocol: 'SMSG', public_key: 'publickey2' }]
+        messaging
     };
 
     beforeAll(async () => {
@@ -41,7 +41,7 @@ describe('ListingItemMessageProcessor', () => {
         listingItemMessageProcessor = app.IoC.getNamed<ListingItemMessageProcessor>(Types.MessageProcessor,
             Targets.MessageProcessor.ListingItemMessageProcessor);
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([], false);
+        await testDataService.clean([]);
     });
 
     afterAll(async () => {
@@ -63,13 +63,13 @@ describe('ListingItemMessageProcessor', () => {
         // paymentInformation
         expect(result.PaymentInformation.type).toBe(testData.payment.type);
         expect(result.PaymentInformation.Escrow.type).toBe(testData.payment.escrow.type);
-        const itemPrice = result.PaymentInformation.ItemPrice[0];
-        expect(itemPrice.currency).toBe(testData.payment.cryptocurrency[0].currency);
-        expect(itemPrice.basePrice).toBe(testData.payment.cryptocurrency[0].base_price);
+        const itemPrice = result.PaymentInformation.ItemPrice;
+        expect(itemPrice.currency).toBe(testData.payment.cryptocurrency.currency);
+        expect(itemPrice.basePrice).toBe(testData.payment.cryptocurrency.base_price);
 
         // messaging-infomration
-        expect(result.MessagingInformation[0].protocol).toBe(testData.messaging[0].protocol);
-        expect(result.MessagingInformation[0].publicKey).toBe(testData.messaging[0].public_key);
+        expect(result.MessagingInformation[0].protocol).toBe(messaging[0].protocol);
+        expect(result.MessagingInformation[0].publicKey).toBe(messaging[0].public_key);
     });
 
 });
