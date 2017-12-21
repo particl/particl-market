@@ -1,23 +1,27 @@
 import { IsNotEmpty } from 'class-validator';
-import { ActionMessageInterface } from './../ActionMessageInterface';
+import { ActionMessageInterface } from './ActionMessageInterface';
 
+export class EscrowMessage implements ActionMessageInterface {
 
-export class EscrowRefundMessage implements ActionMessageInterface {
-
+    @IsNotEmpty()
     public action: string;
+
     public item: string;
 
     @IsNotEmpty()
     public escrow: object;
 
+    public address?: object;
+
     @IsNotEmpty()
     public listing: string;
+
+    public nonce?: string;
 
     @IsNotEmpty()
     public memo: string;
 
-    @IsNotEmpty()
-    public accepted: boolean;
+    public accepted?: boolean;
 
     constructor() {
         //

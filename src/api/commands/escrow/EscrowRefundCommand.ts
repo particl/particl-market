@@ -6,6 +6,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
+import { EscrowRefundRequest } from '../../requests/EscrowRefundRequest';
 
 export class EscrowRefundCommand implements RpcCommandInterface<Escrow> {
 
@@ -27,17 +28,18 @@ export class EscrowRefundCommand implements RpcCommandInterface<Escrow> {
      * [2]: memo
      * [3]: escrowid
      * @param data
-     * @returns {Promise<Escrow>}
+     * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<any> {
-        const actionData = {
-            itemHash: data.params[0],
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
+        return this.escrowService.refund({
+            listing: data.params[0],
             accepted: data.params[1],
             memo: data.params[2],
-            escrowId: data.params[3]
-        };
-        return this.escrowService.refund(actionData);
+            escrow: data.params[3],
+            action: 'MPA_REFUND',
+            item: ''
+        } as EscrowRefundRequest);
     }
 
     public help(): string {

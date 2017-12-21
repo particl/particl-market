@@ -5,13 +5,18 @@ import { RequestBody } from '../../core/api/RequestBody';
 export class EscrowReleaseRequest extends RequestBody {
 
     @IsNotEmpty()
-    public escrowId: number;
-
-    @IsNotEmpty()
-    public itemHash: string;
+    public listing: string;
 
     @IsNotEmpty()
     public memo: string;
+
+    @IsNotEmpty()
+    public escrow: any;
+
+    @IsNotEmpty()
+    public action: string;
+
+    public item: string;
 
 }
 // tslint:enable:variable-name

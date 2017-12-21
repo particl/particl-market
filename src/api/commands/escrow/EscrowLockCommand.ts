@@ -7,6 +7,8 @@ import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
 
+import { EscrowLockRequest } from '../../requests/EscrowLockRequest';
+
 export class EscrowLockCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
@@ -28,18 +30,19 @@ export class EscrowLockCommand implements RpcCommandInterface<Escrow> {
      * [3]: escrowid
      * [4]: memo
      * @param data
-     * @returns {Promise<Escrow>}
+     * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<any> {
-        const actionData = {
-            itemHash: data.params[0],
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
+        return this.escrowService.lock({
+            listing: data.params[0],
             nonce: data.params[1],
-            addressId: data.params[2],
-            escrowId: data.params[3],
-            memo: data.params[4]
-        };
-        return this.escrowService.lock(actionData);
+            address: data.params[2],
+            escrow: data.params[3],
+            memo: data.params[4],
+            action: 'MPA_LOCK',
+            item: ''
+        } as EscrowLockRequest);
     }
 
     public help(): string {

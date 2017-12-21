@@ -183,55 +183,39 @@ export class EscrowService {
     }
 
     @validate()
-    public async lock( @request(EscrowLockRequest) data: any): Promise<void> {
+    public async lock( @request(EscrowLockRequest) data: EscrowLockRequest): Promise<void> {
         // fetch the escrow
-        const escrow = await this.findOne(data.escrowId, false);
+        const escrowId: any = data.escrow;
+        const escrow = await this.findOne(escrowId, false);
+        data.escrow = escrow.toJSON();
         // fetch the address
-        const address = await this.addressService.findOne(data.addressId, false);
+        const addressId: any = data.address;
+        const address = await this.addressService.findOne(addressId, false);
+        data.address = address.toJSON();
         // escrowfactory to generate the lockmessage
-        const messageInput = {
-            escrow: escrow.toJSON(),
-            address: address.toJSON(),
-            listing: data.itemHash,
-            nonce: data.nonce,
-            memo: data.memo,
-            action: '',
-            item: ''
-        };
-        const escrowActionMessage = await this.escrowFactory.getLockMessage(messageInput);
+        const escrowActionMessage = await this.escrowFactory.get(data);
         return await this.messageBroadcastService.broadcast();
     }
 
     @validate()
-    public async refund( @request(EscrowRefundRequest) data: any): Promise<void> {
+    public async refund( @request(EscrowRefundRequest) data: EscrowRefundRequest): Promise<any> {
         // fetch the escrow
-        const escrow = await this.findOne(data.escrowId, false);
+        const escrowId: any = data.escrow;
+        const escrow = await this.findOne(escrowId, false);
+        data.escrow = escrow.toJSON();
         // escrowfactory to generate the refundmessage
-        const messageInput = {
-            escrow: escrow.toJSON(),
-            listing: data.itemHash,
-            accepted: data.accepted,
-            memo: data.memo,
-            action: '',
-            item: ''
-        };
-        const escrowActionMessage = await this.escrowFactory.getRefundMessage(messageInput);
+        const escrowActionMessage = await this.escrowFactory.get(data);
         return await this.messageBroadcastService.broadcast();
     }
 
     @validate()
     public async release( @request(EscrowReleaseRequest) data: any): Promise<void> {
         // fetch the escrow
-        const escrow = await this.findOne(data.escrowId, false);
+        const escrowId: any = data.escrow;
+        const escrow = await this.findOne(escrowId, false);
+        data.escrow = escrow.toJSON();
         // escrowfactory to generate the releasemessage
-        const messageInput = {
-            escrow: escrow.toJSON(),
-            listing: data.itemHash,
-            memo: data.memo,
-            action: '',
-            item: ''
-        };
-        const escrowActionMessage = await this.escrowFactory.getReleaseMessage(messageInput);
+        const escrowActionMessage = await this.escrowFactory.get(data);
         return await this.messageBroadcastService.broadcast();
     }
 
