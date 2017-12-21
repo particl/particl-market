@@ -3,6 +3,7 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
+import { ProfileService } from '../../src/api/services/ProfileService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -14,8 +15,8 @@ import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAdd
 import { ItemPriceService } from '../../src/api/services/ItemPriceService';
 import { ItemPriceCreateRequest } from '../../src/api/requests/ItemPriceCreateRequest';
 import { ItemPriceUpdateRequest } from '../../src/api/requests/ItemPriceUpdateRequest';
-import {ListingItemTemplate} from "../../src/api/models/ListingItemTemplate";
-import {TestDataGenerateRequest} from "../../src/api/requests/TestDataGenerateRequest";
+import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
+import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 
 describe('ItemPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -25,9 +26,11 @@ describe('ItemPrice', () => {
 
     let testDataService: TestDataService;
     let itemPriceService: ItemPriceService;
+    let profileService: ProfileService;
 
     let createdId: number;
-    let createdListingItemTemplate: ListingItemTemplate;
+    let createdListingItemTemplate;
+    let defaultProfile;
 
     const testData = {
         currency: Currency.BITCOIN,
@@ -60,10 +63,20 @@ describe('ItemPrice', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.ItemPriceService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
 
+        defaultProfile = await profileService.getDefault();
+        createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
+            model: 'listingitemtemplate',
+            data: {
+                profile_id: defaultProfile.Id,
+                hash: 'itemhash'
+            },
+            withRelated: true
+        } as TestDataCreateRequest);
     });
 
     afterAll(async () => {

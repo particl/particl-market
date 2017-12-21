@@ -16,13 +16,10 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 
 import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-import { ItemInformationCreateRequest } from '../../src/api/requests/ItemInformationCreateRequest';
-import { ItemInformationUpdateRequest } from '../../src/api/requests/ItemInformationUpdateRequest';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-import {PaymentInformationCreateRequest} from "../../src/api/requests/PaymentInformationCreateRequest";
-import {PaymentInformationUpdateRequest} from "../../src/api/requests/PaymentInformationUpdateRequest";
+import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
+import { PaymentInformationUpdateRequest } from '../../src/api/requests/PaymentInformationUpdateRequest';
 
 describe('PaymentInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
