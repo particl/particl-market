@@ -6,6 +6,7 @@ export class ListingItemTemplateUpdateRequest extends RequestBody {
 
     // @IsNotEmpty()
     public hash: string;
+
     public itemInformation;
     public paymentInformation;
     public messagingInformation;

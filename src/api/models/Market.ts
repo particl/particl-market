@@ -27,6 +27,17 @@ export class Market extends Bookshelf.Model<Market> {
         }
     }
 
+    public static async fetchByName(value: string, withRelated: boolean = true): Promise<Market> {
+        if (withRelated) {
+            return await Market.where<Market>({ name: value }).fetch({
+                withRelated: [
+                ]
+            });
+        } else {
+            return await Market.where<Market>({ name: value }).fetch();
+        }
+    }
+
     public get tableName(): string { return 'markets'; }
     public get hasTimestamps(): boolean { return true; }
 
@@ -48,8 +59,4 @@ export class Market extends Bookshelf.Model<Market> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    public ListingItems(): Collection<ListingItem> {
-       return this.hasMany(ListingItem, 'market_id', 'id');
-    }
 }

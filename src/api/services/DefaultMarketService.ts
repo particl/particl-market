@@ -20,7 +20,7 @@ export class DefaultMarketService {
 
     public async seedDefaultMarket(): Promise<void> {
         const defaultMarket = {
-            name: 'DEFAULT-MARKET',
+            name: 'DEFAULT',
             private_key: 'DEFAULT-PRIVATE-KEY',
             address: 'DEFAULT-MARKET-ADDRESS'
         };

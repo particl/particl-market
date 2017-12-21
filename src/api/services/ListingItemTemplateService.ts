@@ -64,17 +64,18 @@ export class ListingItemTemplateService {
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
-        delete body.itemInformation;
         const paymentInformation = body.paymentInformation;
-        delete body.paymentInformation;
         const messagingInformation = body.messagingInformation;
-        delete body.messagingInformation;
         const listingItemObjects = body.listingItemObjects;
+        delete body.itemInformation;
+        delete body.paymentInformation;
+        delete body.messagingInformation;
         delete body.listingItemObjects;
 
         // this.log.debug('itemInformation to save: ', JSON.stringify(itemInformation, null, 2));
         // this.log.debug('paymentInformation to save: ', JSON.stringify(paymentInformation, null, 2));
         // this.log.debug('messagingInformation to save: ', JSON.stringify(messagingInformation, null, 2));
+        // this.log.debug('listingItemObjects to save: ', JSON.stringify(listingItemObjects, null, 2));
 
         // If the request body was valid we will create the listingItemTemplate
         const listingItemTemplate = await this.listingItemTemplateRepo.create(body)
@@ -102,9 +103,7 @@ export class ListingItemTemplateService {
         }
 
         // finally find and return the created listingItemTemplate
-        const newListingItemTemplate = await this.findOne(listingItemTemplate.Id);
-        // this.log.debug('newListingItemTemplate: ', JSON.stringify(newListingItemTemplate.toJSON(), null, 2));
-        return newListingItemTemplate;
+        return await this.findOne(listingItemTemplate.Id);
 
     }
 

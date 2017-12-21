@@ -195,7 +195,6 @@ describe('ListingItemTemplate', () => {
         // TODO: ignoring listingitemobjects for now
     } as ListingItemTemplateUpdateRequest;
 
-
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
@@ -210,6 +209,11 @@ describe('ListingItemTemplate', () => {
         await testDataService.clean([]);
         defaultProfile = await profileService.getDefault();
     });
+
+    // todo:
+    // - need more update tests
+    // - need to test listingitems related to listingitemtemplate
+    // - need to check deletes remove everything
 
     test('Should create a new listing item template without iteminfo, paymentinfo, messaginginfo and objects', async () => {
         // update the hash
@@ -239,7 +243,7 @@ describe('ListingItemTemplate', () => {
 
     test('Should throw ValidationException because we want to create a empty listing item template', async () => {
         expect.assertions(1);
-        await listingItemTemplateService.create({}).catch(e =>
+        await listingItemTemplateService.create({} as ListingItemTemplateCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -254,7 +258,7 @@ describe('ListingItemTemplate', () => {
         expect(result.hash).toBe(testData.hash);
     });
 
-    test('Should return one listing item template', async () => {
+    test('Should return one simple listing item template', async () => {
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.findOne(createdId);
         const result = listingItemTemplateModel.toJSON();
 
@@ -308,7 +312,7 @@ describe('ListingItemTemplate', () => {
 
     test('Should delete the listing item template', async () => {
         expect.assertions(1);
-        log.debug('createdId:', createdId);
+        // log.debug('createdId:', createdId);
 
         await listingItemTemplateService.destroy(createdId);
         await listingItemTemplateService.findOne(createdId, false).catch(e =>
