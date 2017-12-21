@@ -13,7 +13,6 @@ import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
 import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../../src/api/requests/ListingItemObjectUpdateRequest';

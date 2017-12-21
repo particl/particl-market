@@ -3,6 +3,7 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
+import { ProfileService } from '../../src/api/services/ProfileService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -13,6 +14,10 @@ import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 
 import { ItemInformationService } from '../../src/api/services/ItemInformationService';
+import { ItemInformationCreateRequest } from '../../src/api/requests/ItemInformationCreateRequest';
+import { ItemInformationUpdateRequest } from '../../src/api/requests/ItemInformationUpdateRequest';
+import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
+import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
 describe('ItemInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -22,8 +27,11 @@ describe('ItemInformation', () => {
 
     let testDataService: TestDataService;
     let itemInformationService: ItemInformationService;
+    let profileService: ProfileService;
 
     let createdId;
+    let createdListingItemTemplate;
+    let defaultProfile;
 
     const testData = {
         title: 'item title1',
@@ -79,7 +87,7 @@ describe('ItemInformation', () => {
                 data: 'smsgdata'
             }
         }]
-    };
+    } as ItemInformationCreateRequest;
 
     const testDataUpdated = {
         title: 'item title2',
@@ -135,16 +143,27 @@ describe('ItemInformation', () => {
                 data: 'smsgdata'
             }
         }]
-    };
+    } as ItemInformationUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
+
+        defaultProfile = await profileService.getDefault();
+        createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
+            model: 'listingitemtemplate',
+            data: {
+                profile_id: defaultProfile.Id,
+                hash: 'itemhash'
+            },
+            withRelated: true
+        } as TestDataCreateRequest);
     });
 
     afterAll(async () => {
@@ -159,7 +178,7 @@ describe('ItemInformation', () => {
     });
 
     test('Should create a new item information', async () => {
-        testData['listing_item_template_id'] = 0;
+        testData['listing_item_template_id'] = createdListingItemTemplate.Id;
         const itemInformationModel: ItemInformation = await itemInformationService.create(testData);
         createdId = itemInformationModel.Id;
 
@@ -231,7 +250,10 @@ describe('ItemInformation', () => {
     });
 
     test('Should update the item information', async () => {
-        testDataUpdated['listing_item_template_id'] = 0;
+
+        testDataUpdated['listing_item_template_id'] = createdListingItemTemplate.Id;
+
+        log.debug('testDataUpdated: ', JSON.stringify(testDataUpdated, null, 2));
         const itemInformationModel: ItemInformation = await itemInformationService.update(createdId, testDataUpdated);
         const result = itemInformationModel.toJSON();
 
