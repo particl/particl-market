@@ -103,7 +103,7 @@ describe('ListingItem', () => {
                     domestic: 0.123,
                     international: 1.234
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: '1234'
                 }
@@ -167,7 +167,7 @@ describe('ListingItem', () => {
                     domestic: 1.111,
                     international: 2.222
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.STEALTH,
                     address: '1234 UPDATED'
                 }
@@ -225,8 +225,8 @@ describe('ListingItem', () => {
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
-        expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
-        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testData.paymentInformation.itemPrice.cryptocurrencyAddress.type);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testData.paymentInformation.itemPrice.cryptocurrencyAddress.address);
         expect(result.PaymentInformation.listingItemTemplateId).toBe(null);
 
         expect(result.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
@@ -281,8 +281,8 @@ describe('ListingItem', () => {
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
-        expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
-        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testData.paymentInformation.itemPrice.cryptocurrencyAddress.type);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testData.paymentInformation.itemPrice.cryptocurrencyAddress.address);
         expect(result.PaymentInformation.listingItemTemplateId).toBe(null);
 
         expect(result.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
@@ -320,8 +320,8 @@ describe('ListingItem', () => {
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testDataUpdated.paymentInformation.itemPrice.basePrice);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.domestic);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.international);
-        expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testDataUpdated.paymentInformation.itemPrice.address.type);
-        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testDataUpdated.paymentInformation.itemPrice.address.address);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.type);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.address);
         expect(result.PaymentInformation.listingItemTemplateId).toBe(null);
 
         expect(result.MessagingInformation.protocol).toBe(testDataUpdated.messagingInformation.protocol);

@@ -49,7 +49,7 @@ export class ItemCategoryService {
     }
 
     @validate()
-    public async create( @request(ItemCategoryCreateRequest) body: any): Promise<ItemCategory> {
+    public async create( @request(ItemCategoryCreateRequest) body: ItemCategoryCreateRequest): Promise<ItemCategory> {
 
         if (body.parent_item_category_id === 0) {
             delete body.parent_item_category_id;
@@ -63,7 +63,7 @@ export class ItemCategoryService {
     }
 
     @validate()
-    public async update(id: number, @request(ItemCategoryUpdateRequest) body: any, patching: boolean = true): Promise<ItemCategory> {
+    public async update(id: number, @request(ItemCategoryUpdateRequest) body: ItemCategoryUpdateRequest, patching: boolean = true): Promise<ItemCategory> {
 
         // parent_item_category_id
 

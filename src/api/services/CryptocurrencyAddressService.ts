@@ -40,11 +40,10 @@ export class CryptocurrencyAddressService {
 
         // If the request body was valid we will create the cryptocurrencyAddress
         const cryptocurrencyAddress = await this.cryptocurrencyAddressRepo.create(body);
-        this.log.error('CryptocurrencyAddressService.create: ', JSON.stringify(cryptocurrencyAddress.toJSON(), null, 2));
+        // this.log.debug('CryptocurrencyAddressService created: ', JSON.stringify(cryptocurrencyAddress.toJSON(), null, 2));
 
         // finally find and return the created cryptocurrencyAddress
-        const newCryptocurrencyAddress = await this.findOne(cryptocurrencyAddress.Id);
-        return newCryptocurrencyAddress;
+        return await this.findOne(cryptocurrencyAddress.Id);
     }
 
     @validate()
@@ -58,8 +57,7 @@ export class CryptocurrencyAddressService {
         cryptocurrencyAddress.Address = body.address;
 
         // update cryptocurrencyAddress record
-        const updatedCryptocurrencyAddress = await this.cryptocurrencyAddressRepo.update(id, cryptocurrencyAddress.toJSON());
-        return updatedCryptocurrencyAddress;
+        return await this.cryptocurrencyAddressRepo.update(id, cryptocurrencyAddress.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {

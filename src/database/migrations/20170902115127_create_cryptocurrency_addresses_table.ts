@@ -10,11 +10,8 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('type').notNullable();
             table.string('address').notNullable();
 
-            // table.integer('item_price_id').unsigned().nullable();
-            // table.foreign('item_price_id').references('id').inTable('item_prices').onDelete('SET NULL');
-
             table.integer('profile_id').unsigned().nullable();
-            table.foreign('profile_id').references('id').inTable('profiles').onDelete('RESTRICT');
+            table.foreign('profile_id').references('id').inTable('profiles');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

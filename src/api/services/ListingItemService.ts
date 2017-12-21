@@ -165,7 +165,7 @@ export class ListingItemService {
         const paymentInfo = item.PaymentInformation();
         if (paymentInfo) {
             const itemPrice = paymentInfo.ItemPrice();
-            const cryptoAddress = itemPrice.Address();
+            const cryptoAddress = itemPrice.CryptocurrencyAddress();
             if (!cryptoAddress) {
                 throw new NotFoundException('Payment information without cryptographic address. PaymentInfo.id = ' + paymentInfo.id);
             }

@@ -99,8 +99,8 @@ describe('ItemPrice', () => {
         expect(result.basePrice).toBe(testData.basePrice);
         expect(result.ShippingPrice.domestic).toBe(testData.shippingPrice.domestic);
         expect(result.ShippingPrice.international).toBe(testData.shippingPrice.international);
-        expect(result.Address.type).toBe(testData.address.type);
-        expect(result.Address.address).toBe(testData.address.address);
+        expect(result.CryptocurrencyAddress.type).toBe(testData.cryptocurrencyAddress.type);
+        expect(result.CryptocurrencyAddress.address).toBe(testData.cryptocurrencyAddress.address);
     });
 
     test('Should throw ValidationException because we want to create a empty item price', async () => {
@@ -120,7 +120,7 @@ describe('ItemPrice', () => {
         expect(result.currency).toBe(testData.currency);
         expect(result.basePrice).toBe(testData.basePrice);
         expect(result.ShippingPrice).toBe(undefined); // doesnt fetch related
-        expect(result.Address).toBe(undefined); // doesnt fetch related
+        expect(result.CryptocurrencyAddress).toBe(undefined); // doesnt fetch related
     });
 
     test('Should return one item price', async () => {
@@ -131,8 +131,8 @@ describe('ItemPrice', () => {
         expect(result.basePrice).toBe(testData.basePrice);
         expect(result.ShippingPrice.domestic).toBe(testData.shippingPrice.domestic);
         expect(result.ShippingPrice.international).toBe(testData.shippingPrice.international);
-        expect(result.Address.type).toBe(testData.address.type);
-        expect(result.Address.address).toBe(testData.address.address);
+        expect(result.CryptocurrencyAddress.type).toBe(testData.cryptocurrencyAddress.type);
+        expect(result.CryptocurrencyAddress.address).toBe(testData.cryptocurrencyAddress.address);
     });
 
     test('Should throw ValidationException because there is no payment_information_id', async () => {
@@ -151,8 +151,8 @@ describe('ItemPrice', () => {
         expect(result.basePrice).toBe(testDataUpdated.basePrice);
         expect(result.ShippingPrice.domestic).toBe(testDataUpdated.shippingPrice.domestic);
         expect(result.ShippingPrice.international).toBe(testDataUpdated.shippingPrice.international);
-        expect(result.Address.type).toBe(testDataUpdated.address.type);
-        expect(result.Address.address).toBe(testDataUpdated.address.address);
+        expect(result.CryptocurrencyAddress.type).toBe(testDataUpdated.cryptocurrencyAddress.type);
+        expect(result.CryptocurrencyAddress.address).toBe(testDataUpdated.cryptocurrencyAddress.address);
     });
 
     test('Should delete the item price', async () => {

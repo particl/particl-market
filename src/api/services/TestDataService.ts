@@ -70,9 +70,9 @@ export class TestDataService {
             await this.defaultProfileService.seedDefaultProfile();
             await this.defaultMarketService.seedDefaultMarket();
             this.log.info('cleanup & default seeds done.');
-        }
 
-        return;
+            return;
+        }
     }
 
     /**
@@ -135,6 +135,7 @@ export class TestDataService {
 
     /**
      * clean up the db
+     * todo: ignoreTables not used
      *
      * @param ignoreTables
      * @returns {Promise<void>}
@@ -150,7 +151,37 @@ export class TestDataService {
         };
         this.log.debug('ignoreTables: ', ignoreTables);
 
+        const tablesToClean = [
+            'bid_datas',
+            'bids',
+            'location_markers',
+            'item_locations',
+            'shipping_destinations',
+            'item_image_datas',
+            'item_images',
+            'item_informations',
+            'shipping_prices',
+            'item_prices',
+            'escrow_ratios',
+            'escrows',
+            'payment_informations',
+            'messaging_informations',
+            'listing_item_objects',
+            'listing_items',
+            'listing_item_templates',
+            'addresses',
+            'favorite_items',
+            'cryptocurrency_addresses',
+            'profiles',
+            'item_categories',
+            'markets',
+            'users'     // todo: not needed
+        ];
+
+        /*
         const existingTables = await this.getTableNames(Database.knex);
+        this.log.debug('existingTables: ', existingTables);
+
         const tablesToClean = existingTables
             .map( (table) => {
                 return table.name; // [Object.keys(table)[0]];
@@ -158,10 +189,10 @@ export class TestDataService {
             .filter( (tableName) => {
                 return !_.includes(ignoreTables, tableName);
             });
-
-
+        */
         // this.log.debug('tablesToClean: ', tablesToClean);
         for (const table of tablesToClean) {
+            this.log.debug('cleaning table: ', table);
             await Database.knex.select().from(table).del();
         }
         return;
@@ -346,7 +377,7 @@ export class TestDataService {
                     domestic: _.random(5.00, 1.11),
                     international: _.random(10.00, 5.003)
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptocurrencyAddressType)),
                     address: Faker.finance.bitcoinAddress()
                 }

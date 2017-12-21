@@ -43,7 +43,7 @@ describe('PaymentInformation', () => {
                 domestic: 0.123,
                 international: 1.234
             },
-            address: {
+            cryptocurrencyAddress: {
                 type: CryptocurrencyAddressType.NORMAL,
                 address: '1234'
             }
@@ -66,7 +66,7 @@ describe('PaymentInformation', () => {
                 domestic: 1.234,
                 international: 2.345
             },
-            address: {
+            cryptocurrencyAddress: {
                 type: CryptocurrencyAddressType.STEALTH,
                 address: '4567'
             }
@@ -110,8 +110,8 @@ describe('PaymentInformation', () => {
         expect(result.ItemPrice.basePrice).toBe(testData.itemPrice.basePrice);
         expect(result.ItemPrice.ShippingPrice.domestic).toBe(testData.itemPrice.shippingPrice.domestic);
         expect(result.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
-        expect(result.ItemPrice.Address.type).toBe(testData.itemPrice.address.type);
-        expect(result.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
+        expect(result.ItemPrice.CryptocurrencyAddress.type).toBe(testData.itemPrice.cryptocurrencyAddress.type);
+        expect(result.ItemPrice.CryptocurrencyAddress.address).toBe(testData.itemPrice.cryptocurrencyAddress.address);
     });
 
     test('Should throw ValidationException because we want to create a empty payment information', async () => {
@@ -142,8 +142,8 @@ describe('PaymentInformation', () => {
         expect(result.ItemPrice.basePrice).toBe(testData.itemPrice.basePrice);
         expect(result.ItemPrice.ShippingPrice.domestic).toBe(testData.itemPrice.shippingPrice.domestic);
         expect(result.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
-        expect(result.ItemPrice.Address.type).toBe(testData.itemPrice.address.type);
-        expect(result.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
+        expect(result.ItemPrice.CryptocurrencyAddress.type).toBe(testData.itemPrice.cryptocurrencyAddress.type);
+        expect(result.ItemPrice.CryptocurrencyAddress.address).toBe(testData.itemPrice.cryptocurrencyAddress.address);
     });
 
     test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
@@ -166,8 +166,8 @@ describe('PaymentInformation', () => {
         expect(result.ItemPrice.basePrice).toBe(testDataUpdated.itemPrice.basePrice);
         expect(result.ItemPrice.ShippingPrice.domestic).toBe(testDataUpdated.itemPrice.shippingPrice.domestic);
         expect(result.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.itemPrice.shippingPrice.international);
-        expect(result.ItemPrice.Address.type).toBe(testDataUpdated.itemPrice.address.type);
-        expect(result.ItemPrice.Address.address).toBe(testDataUpdated.itemPrice.address.address);
+        expect(result.ItemPrice.CryptocurrencyAddress.type).toBe(testDataUpdated.itemPrice.cryptocurrencyAddress.type);
+        expect(result.ItemPrice.CryptocurrencyAddress.address).toBe(testDataUpdated.itemPrice.cryptocurrencyAddress.address);
     });
 
     test('Should delete the payment information', async () => {

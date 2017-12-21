@@ -85,7 +85,7 @@ describe('/RpcAddFavorite', () => {
                     domestic: 0.123,
                     international: 1.234
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: '1234'
                 }

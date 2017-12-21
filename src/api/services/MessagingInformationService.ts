@@ -56,7 +56,7 @@ export class MessagingInformationService {
     }
 
     @validate()
-    public async create( @request(MessagingInformationCreateRequest) body: any): Promise<MessagingInformation> {
+    public async create( @request(MessagingInformationCreateRequest) body: MessagingInformationCreateRequest): Promise<MessagingInformation> {
 
         // todo: could this be annotated in MessagingInformationCreateRequest?
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
@@ -67,7 +67,7 @@ export class MessagingInformationService {
         const messagingInformation = await this.messagingInformationRepo.create(body);
 
         // finally find and return the created messagingInformation
-        const newMessagingInformation = await this.findOne(messagingInformation.id);
+        const newMessagingInformation = await this.findOne(messagingInformation.Id);
         return newMessagingInformation;
     }
 
@@ -80,7 +80,7 @@ export class MessagingInformationService {
     }
 
     @validate()
-    public async update(id: number, @request(MessagingInformationUpdateRequest) body: any): Promise<MessagingInformation> {
+    public async update(id: number, @request(MessagingInformationUpdateRequest) body: MessagingInformationUpdateRequest): Promise<MessagingInformation> {
 
         // todo: could this be annotated in MessagingInformationCreateRequest?
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
