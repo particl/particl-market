@@ -10,8 +10,6 @@ import { MessagingInformationRepository } from '../repositories/MessagingInforma
 import { MessagingInformation } from '../models/MessagingInformation';
 import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
 import { MessagingInformationUpdateRequest } from '../requests/MessagingInformationUpdateRequest';
-import { RpcRequest } from '../requests/RpcRequest';
-
 
 export class MessagingInformationService {
 
@@ -24,18 +22,8 @@ export class MessagingInformationService {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<MessagingInformation>> {
-        return this.findAll();
-    }
-
     public async findAll(): Promise<Bookshelf.Collection<MessagingInformation>> {
         return this.messagingInformationRepo.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<MessagingInformation> {
-        return this.findOne(data.params[0]);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<MessagingInformation> {
@@ -45,14 +33,6 @@ export class MessagingInformationService {
             throw new NotFoundException(id);
         }
         return messagingInformation;
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<MessagingInformation> {
-        return this.create({
-            protocol: data.params[0],
-            publicKey: data.params[1]
-        });
     }
 
     @validate()
@@ -69,14 +49,6 @@ export class MessagingInformationService {
         // finally find and return the created messagingInformation
         const newMessagingInformation = await this.findOne(messagingInformation.Id);
         return newMessagingInformation;
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<MessagingInformation> {
-        return this.update(data.params[0], {
-            protocol: data.params[1],
-            publicKey: data.params[2]
-        });
     }
 
     @validate()
@@ -97,11 +69,6 @@ export class MessagingInformationService {
         // update messagingInformation record
         const updatedMessagingInformation = await this.messagingInformationRepo.update(id, messagingInformation.toJSON());
         return updatedMessagingInformation;
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
     }
 
     public async destroy(id: number): Promise<void> {

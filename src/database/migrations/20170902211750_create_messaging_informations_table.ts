@@ -6,8 +6,8 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('messaging_informations', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('protocol').nullable();
-            table.text('public_key').nullable();
+            table.string('protocol').notNullable();
+            table.text('public_key').notNullable();
 
             table.integer('listing_item_id').unsigned().nullable();
             table.foreign('listing_item_id').references('id')
