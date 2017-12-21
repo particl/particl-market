@@ -64,17 +64,6 @@ describe('ItemPrice', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
 
-        // create listingItemTemplate for testing purposes
-        const createdListingItemTemplates = await testDataService.generate<ListingItemTemplate>({
-            model: 'listingitemtemplate',
-            amount: 1,
-            withRelated: true
-        } as TestDataGenerateRequest).then(result => {
-            log.debug('created: ', result);
-            createdListingItemTemplate = result[0];
-        }).catch(e => {
-            log.error('error: ' + e);
-        });
     });
 
     afterAll(async () => {
