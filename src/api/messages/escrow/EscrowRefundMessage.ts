@@ -1,7 +1,11 @@
 import { IsNotEmpty } from 'class-validator';
-import { GenerateMessageInterface } from './../GenerateMessageInterface';
+import { ActionMessageInterface } from './../ActionMessageInterface';
 
-export class EscrowRefundMessage implements GenerateMessageInterface {
+
+export class EscrowRefundMessage implements ActionMessageInterface {
+
+    public action: string;
+    public item: string;
 
     @IsNotEmpty()
     public escrow: object;

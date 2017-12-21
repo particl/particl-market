@@ -173,9 +173,7 @@ export const Targets = {
     },
     Factory:     {
         BidFactory: 'BidFactory',
-        EscrowLockFactory: 'EscrowLockFactory',
-        EscrowRefundFactory: 'EscrowRefundFactory',
-        EscrowReleaseFactory: 'EscrowReleaseFactory',
+        EscrowFactory: 'EscrowFactory',
         RpcCommandFactory: 'RpcCommandFactory',
         TestFactory: 'TestFactory'
     },
