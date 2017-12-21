@@ -158,7 +158,7 @@ export class ItemInformationService {
         }
 
         // todo: instead of delete and create, update
-        
+
         // find related record and delete it
         let shippingDestinations = updatedItemInformation.related('ShippingDestinations').toJSON();
         for (const shippingDestination of shippingDestinations) {

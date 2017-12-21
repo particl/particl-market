@@ -129,7 +129,7 @@ export class ItemPriceService {
         const itemPrice = await this.findOne(id);
         const relatedCryptocurrencyAddress = itemPrice.related('CryptocurrencyAddress').toJSON();
 
-        this.log.debug('relatedCryptocurrencyAddress: ', JSON.stringify(relatedCryptocurrencyAddress.toJSON(), null, 2));
+        this.log.debug('relatedCryptocurrencyAddress: ', JSON.stringify(relatedCryptocurrencyAddress, null, 2));
 
         await this.itemPriceRepo.destroy(id);
         if (!_.isEmpty(relatedCryptocurrencyAddress.Profile)) {
