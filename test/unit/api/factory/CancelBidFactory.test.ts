@@ -7,6 +7,9 @@ describe('CancelBidFactory', () => {
     let bidFactory;
     let req;
 
+    const latestBid = {
+        Status: 'ACTIVE'
+    };
     beforeEach(() => {
         process.env.AUTH0_HOST = 'test';
         bidFactory = new BidFactory(LogMock);
@@ -17,9 +20,8 @@ describe('CancelBidFactory', () => {
     });
 
     test('Should convert the cancelBidMessage to bid', () => {
-        const res = bidFactory.get(req);
+        const res = bidFactory.get(req, 8, latestBid);
         expect(res.status).toBe('CANCELLED');
-
     });
 });
 

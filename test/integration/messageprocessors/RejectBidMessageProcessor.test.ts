@@ -6,11 +6,13 @@ import { TestDataService } from '../../../src/api/services/TestDataService';
 import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 import { ListingItemService } from '../../../src/api/services/ListingItemService';
+import { BidService } from '../../../src/api/services/BidService';
 import { BidMessageProcessor } from '../../../src/api/messageprocessors/BidMessageProcessor';
 import { RejectBidMessageProcessor } from '../../../src/api/messageprocessors/RejectBidMessageProcessor';
 import { CancelBidMessageProcessor } from '../../../src/api/messageprocessors/CancelBidMessageProcessor';
 import { AcceptBidMessageProcessor } from '../../../src/api/messageprocessors/AcceptBidMessageProcessor';
 import { BidStatus } from '../../../src/api/enums/BidStatus';
+import { BidSearchParams } from '../../../src/api/requests/BidSearchParams';
 
 describe('RejectBidMessageProcessor', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -28,6 +30,7 @@ describe('RejectBidMessageProcessor', () => {
     let cancelBidMessageProcessor: CancelBidMessageProcessor;
     let acceptBidMessageProcessor: AcceptBidMessageProcessor;
     let listingItemService: ListingItemService;
+    let bidService: BidService;
     let listingItemModel;
 
 
@@ -36,6 +39,8 @@ describe('RejectBidMessageProcessor', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+
+        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
 
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
 
@@ -69,7 +74,7 @@ describe('RejectBidMessageProcessor', () => {
 
         // throw MessageException because no bid found for givin listing hash
         const bidModel = await rejectBidMessageProcessor.process({action: 'MPA_REJECT', item: 'TEST-HASH' }).catch(e =>
-            expect(e).toEqual(new MessageException('Bid not found for the listing item hash TEST-HASH'))
+            expect(e).toEqual(new MessageException('Bid with the listing Item was not found!'))
         );
     });
 
@@ -87,17 +92,27 @@ describe('RejectBidMessageProcessor', () => {
         expect(result.BidData.length).toBe(0);
     });
 
+    test('Should return two bids with latest one created with Reject status for the given listing item', async () => {
+        const bids = await bidService.search({listingItemId: listingItemModel.id} as BidSearchParams);
+        const bidResults = bids.toJSON();
+        expect(bidResults.length).toBe(2);
+        expect(bidResults[0].status).toBe('ACTIVE');
+        expect(bidResults[1].status).toBe('REJECTED');
+    });
+
     test('Should not cancel the bid becuase bid was alredy been rejected', async () => {
         // cancel bid
+        testBidData.action = 'MPA_CANCEL';
         await cancelBidMessageProcessor.process(testBidData).catch(e =>
-            expect(e).toEqual(new MessageException(`Bid can not be cancelled because it was already been ${BidStatus.REJECTED}`))
+            expect(e).toEqual(new MessageException(`Bid can not be CANCELLED because it was already been ${BidStatus.REJECTED}`))
         );
     });
 
     test('Should not accepted the bid becuase bid was alredy been cancelled', async () => {
         // accept a bid
+        testBidData.action = 'MPA_ACCEPT';
         await acceptBidMessageProcessor.process(testBidData).catch(e =>
-           expect(e).toEqual(new MessageException(`Bid can not be accepted because it was already been ${BidStatus.REJECTED}`))
+           expect(e).toEqual(new MessageException(`Bid can not be ACCEPTED because it was already been ${BidStatus.REJECTED}`))
         );
     });
 

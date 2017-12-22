@@ -7,6 +7,10 @@ describe('AcceptBidFactory', () => {
     let bidFactory;
     let req;
 
+    const latestBid = {
+        Status: 'ACTIVE'
+    };
+
     beforeEach(() => {
         process.env.AUTH0_HOST = 'test';
         bidFactory = new BidFactory(LogMock);
@@ -17,7 +21,7 @@ describe('AcceptBidFactory', () => {
     });
 
     test('Should convert the acceptBidMessage to bid', () => {
-        const res = bidFactory.get(req);
+        const res = bidFactory.get(req, 8, latestBid);
         expect(res.status).toBe('ACCEPTED');
     });
 });

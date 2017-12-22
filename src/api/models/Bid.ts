@@ -50,6 +50,10 @@ export class Bid extends Bookshelf.Model<Bid> {
         }
     }
 
+    public static async getLatestBid(listingItemId: number): Promise<Bid> {
+        return await Bid.where<Bid>({ listing_item_id: listingItemId }).orderBy('created_at', 'DESC').fetch();
+    }
+
     public get tableName(): string { return 'bids'; }
     public get hasTimestamps(): boolean { return true; }
 

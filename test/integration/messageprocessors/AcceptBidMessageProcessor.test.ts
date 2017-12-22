@@ -11,6 +11,8 @@ import { RejectBidMessageProcessor } from '../../../src/api/messageprocessors/Re
 import { AcceptBidMessageProcessor } from '../../../src/api/messageprocessors/AcceptBidMessageProcessor';
 import { CancelBidMessageProcessor } from '../../../src/api/messageprocessors/CancelBidMessageProcessor';
 import { BidStatus } from '../../../src/api/enums/BidStatus';
+import { BidService } from '../../../src/api/services/BidService';
+import { BidSearchParams } from '../../../src/api/requests/BidSearchParams';
 
 describe('AcceptBidMessageProcessor', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -28,8 +30,8 @@ describe('AcceptBidMessageProcessor', () => {
     let cancelBidMessageProcessor: CancelBidMessageProcessor;
     let acceptBidMessageProcessor: AcceptBidMessageProcessor;
     let listingItemService: ListingItemService;
+    let bidService: BidService;
     let listingItemModel;
-
 
     beforeAll(async () => {
 
@@ -38,6 +40,7 @@ describe('AcceptBidMessageProcessor', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
 
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
 
         bidMessageProcessor = app.IoC.getNamed<BidMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.BidMessageProcessor);
 
@@ -69,7 +72,7 @@ describe('AcceptBidMessageProcessor', () => {
 
         // throw MessageException because no bid found for givin listing hash
         const bidModel = await acceptBidMessageProcessor.process({action: 'MPA_ACCEPT', item: 'TEST-HASH' }).catch(e =>
-            expect(e).toEqual(new MessageException('Bid not found for the listing item hash TEST-HASH'))
+            expect(e).toEqual(new MessageException('Bid with the listing Item was not found!'))
         );
     });
 
@@ -88,17 +91,27 @@ describe('AcceptBidMessageProcessor', () => {
         expect(result.BidData.length).toBe(0);
     });
 
+    test('Should return two bids with latest one created with Accept status for the given listing item', async () => {
+        const bids = await bidService.search({listingItemId: listingItemModel.id} as BidSearchParams);
+        const bidResults = bids.toJSON();
+        expect(bidResults.length).toBe(2);
+        expect(bidResults[0].status).toBe('ACTIVE');
+        expect(bidResults[1].status).toBe('ACCEPTED');
+    });
+
     test('Should not cancel the bid becuase bid was alredy been accepted', async () => {
         // cancel bid
+        testBidData.action = 'MPA_CANCEL';
         await cancelBidMessageProcessor.process(testBidData).catch(e =>
-            expect(e).toEqual(new MessageException(`Bid can not be cancelled because it was already been ${BidStatus.ACCEPTED}`))
+            expect(e).toEqual(new MessageException(`Bid can not be CANCELLED because it was already been ${BidStatus.ACCEPTED}`))
         );
     });
 
     test('Should not reject the bid becuase bid was alredy been accepted', async () => {
         // reject a bid
+        testBidData.action = 'MPA_REJECT';
         await rejectBidMessageProcessor.process(testBidData).catch(e =>
-            expect(e).toEqual(new MessageException(`Bid can not be rejected because it was already been ${BidStatus.ACCEPTED}`))
+            expect(e).toEqual(new MessageException(`Bid can not be REJECTED because it was already been ${BidStatus.ACCEPTED}`))
         );
     });
 

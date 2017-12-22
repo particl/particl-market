@@ -37,6 +37,10 @@ export class BidRepository {
         return this.BidModel.search(options, withRelated);
     }
 
+    public async getLatestBid(listingItemId: number): Promise<Bid> {
+        return this.BidModel.getLatestBid(listingItemId);
+    }
+
     public async create(data: any): Promise<Bid> {
         const bid = this.BidModel.forge<Bid>(data);
         try {

@@ -51,6 +51,12 @@ export class BidService {
         return this.bidRepo.search(options, withRelated);
     }
 
+
+    @validate()
+    public async getLatestBid(listingItemId: number): Promise<Bid> {
+        return await this.bidRepo.getLatestBid(listingItemId);
+    }
+
     @validate()
     public async create( @request(BidCreateRequest) body: any): Promise<Bid> {
 

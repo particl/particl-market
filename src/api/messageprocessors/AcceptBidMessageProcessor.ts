@@ -44,26 +44,18 @@ export class AcceptBidMessageProcessor implements MessageProcessorInterface {
             this.log.warn(`ListingItem with the hash=${message.item} was not found!`);
             throw new NotFoundException(message.item);
         } else {
-            // find related bid
-            // TODO: LATER WE WILL CHANGE IT FOR THE SINGLE BID
-            const bid = listingItem.related('Bids').toJSON()[0];
+            try {
+                // find latest bid
+                const latestBid = await this.bidService.getLatestBid(listingItem.id);
 
-            // if bid not found for the given listing item hash
-            if (!bid) {
-                this.log.warn(`Bid with the listing Item hash=${message['item']} was not found!`);
-                throw new MessageException(`Bid not found for the listing item hash ${message['item']}`);
-
-            } else if (bid.status === BidStatus.ACTIVE) {
                 // convert the bid message to bid
-                const bidMessage = this.bidFactory.get(message);
+                const bidMessage = this.bidFactory.get(message, listingItem.id, latestBid);
 
-                // setting the bid relation with listingItem
-                bidMessage['listing_item_id'] = bid.listingItemId;
+                // create the new bid with status accept only if previous bid not rejected or cancelled
+                return await this.bidService.create(bidMessage);
 
-                // update the bid status to accept only if bid status is active
-                return await this.bidService.update(bid.id, bidMessage);
-            } else {
-                throw new MessageException(`Bid can not be accepted because it was already been ${bid.status}`);
+            } catch (error) {
+                throw error;
             }
         }
     }
