@@ -39,7 +39,7 @@ describe('/RpcFindItemTemplates', () => {
                     domestic: 0.123,
                     international: 1.234
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: 'This is temp address.'
                 }
@@ -73,7 +73,7 @@ describe('/RpcFindItemTemplates', () => {
                     domestic: 0.123,
                     international: 1.234
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: 'This is temp address.'
                 }

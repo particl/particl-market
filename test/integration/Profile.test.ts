@@ -1,3 +1,4 @@
+import * as Bookshelf from 'bookshelf';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -9,6 +10,9 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { Profile } from '../../src/api/models/Profile';
 import { Country } from '../../src/api/enums/Country';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { ProfileCreateRequest } from '../../src/api/requests/ProfileCreateRequest';
+import { ProfileUpdateRequest } from '../../src/api/requests/ProfileUpdateRequest';
 
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { AddressService } from '../../src/api/services/AddressService';
@@ -28,7 +32,7 @@ describe('Profile', () => {
     const testData = {
         name: 'DEFAULT1',
         address: 'DEFAULT11-ADDRESS',
-        addresses: [{
+        shippingAddresses: [{
             title: 'Title',
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
@@ -41,31 +45,12 @@ describe('Profile', () => {
             city: 'city',
             country: Country.FINLAND
         }]
-    };
+    } as ProfileCreateRequest;
 
     const testDataUpdated = {
         name: 'DEFAULT2',
-        address: 'DEFAULT12-ADDRESS',
-        addresses: [{
-            title: 'Title New',
-            addressLine1: 'Add New',
-            addressLine2: 'ADD 22 New',
-            city: 'city New',
-            country: Country.UNITED_KINGDOM
-        }, {
-            title: 'Title 2',
-            addressLine1: 'Add 2',
-            addressLine2: 'ADD 22 22',
-            city: 'city 22',
-            country: Country.USA
-        }, {
-            title: 'Title 3',
-            addressLine1: 'Add 3',
-            addressLine2: 'ADD 3',
-            city: 'city 3',
-            country: Country.SOUTH_AFRICA
-        }]
-    };
+        address: 'DEFAULT12-ADDRESS'
+    } as ProfileUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -82,7 +67,7 @@ describe('Profile', () => {
         //
     });
 
-    test('Should create a new profile', async () => {
+    test('Should create a new profile with just delivery addresses', async () => {
         const profileModel: Profile = await profileService.create(testData);
         createdId = profileModel.Id;
 
@@ -95,21 +80,30 @@ describe('Profile', () => {
 
     test('Should throw ValidationException because we want to create a empty profile', async () => {
         expect.assertions(1);
-        await profileService.create({}).catch(e =>
+        await profileService.create({} as ProfileCreateRequest).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
+    test('Should throw ValidationException because missing profile address', async () => {
+        expect.assertions(1);
+        await profileService.create({ name: 'test' } as ProfileCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should list profiles with our new create one', async () => {
         const profileCollection = await profileService.findAll();
-        const profile = profileCollection.toJSON();
-        expect(profile.length).toBe(1);
+        const profiles = profileCollection.toJSON();
+        expect(profiles.length).toBe(1);
 
-        const result = profile[0];
+        const result = profiles[0];
 
         expect(result.name).toBe(testData.name);
         expect(result.address).toBe(testData.address);
-        expect(result.ShippingAddresses).toBe(undefined); // doesnt fetch related
+        expect(result.ShippingAddresses).toBe(undefined);           // doesnt fetch related
+        expect(result.CryptocurrencyAddresses).toBe(undefined);     // doesnt fetch related
+        expect(result.FavoriteItems).toBe(undefined);               // doesnt fetch related
     });
 
     test('Should return one profile', async () => {
@@ -119,15 +113,18 @@ describe('Profile', () => {
         expect(result.name).toBe(testData.name);
         expect(result.address).toBe(testData.address);
         expect(result.ShippingAddresses).toHaveLength(2);
+        expect(result.CryptocurrencyAddresses).toHaveLength(0);
+        expect(result.FavoriteItems).toHaveLength(0);
     });
 
+    // TODO: updating profile does not affect related models
     test('Should update the profile', async () => {
         const profileModel: Profile = await profileService.update(createdId, testDataUpdated);
         const result = profileModel.toJSON();
 
         expect(result.name).toBe(testDataUpdated.name);
         expect(result.address).toBe(testDataUpdated.address);
-        expect(result.ShippingAddresses).toHaveLength(3);
+        // expect(result.ShippingAddresses).toHaveLength(3);
     });
 
     test('Should delete the profile', async () => {
@@ -135,7 +132,7 @@ describe('Profile', () => {
 
         const profileModel: Profile = await profileService.findOne(createdId);
         const result = profileModel.toJSON();
-        expect(result.ShippingAddresses).toHaveLength(3);
+        expect(result.ShippingAddresses).toHaveLength(2);
 
         const addressId1 = result.ShippingAddresses[0].id;
 
@@ -148,6 +145,31 @@ describe('Profile', () => {
         await profileService.findOne(addressId1).catch(e => {
             expect(e).toEqual(new NotFoundException(addressId1));
         });
+    });
+
+    test('Should create a new profile with delivery addresses and cryptoaddresses', async () => {
+
+        const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
+            model: 'profile',
+            amount: 1,
+            withRelated: true
+        } as TestDataGenerateRequest);
+
+        const profileModel = profiles[0];
+        const result = profileModel.toJSON();
+        log.debug('result: ', JSON.stringify(result, null, 2));
+
+        expect(result.name.substring(0, 5)).toBe('TEST-');
+        expect(result.address).toBeDefined();
+        expect(result.ShippingAddresses).not.toHaveLength(0);
+        expect(result.CryptocurrencyAddresses).not.toHaveLength(0);
+        expect(result.FavoriteItems).toHaveLength(0);
+
+    });
+
+    test('Should create a new profile with delivery addresses and cryptoaddresses and FavoriteItems', async () => {
+
+        // TODO
 
     });
 

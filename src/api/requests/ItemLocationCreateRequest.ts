@@ -13,5 +13,7 @@ export class ItemLocationCreateRequest extends RequestBody {
     @IsNotEmpty()
     public address: string;
 
+    public locationMarker;
+
 }
 // tslint:enable:variable-name

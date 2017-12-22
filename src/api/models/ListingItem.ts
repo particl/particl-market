@@ -12,27 +12,30 @@ import { Market } from './Market';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
+    public static RELATIONS = [
+        'ItemInformation',
+        'ItemInformation.ItemCategory',
+        'ItemInformation.ItemLocation',
+        'ItemInformation.ItemLocation.LocationMarker',
+        'ItemInformation.ItemImages',
+        'ItemInformation.ItemImages.ItemImageData',
+        'ItemInformation.ShippingDestinations',
+        'PaymentInformation',
+        'PaymentInformation.Escrow',
+        'PaymentInformation.Escrow.Ratio',
+        'PaymentInformation.ItemPrice',
+        'PaymentInformation.ItemPrice.ShippingPrice',
+        'PaymentInformation.ItemPrice.CryptocurrencyAddress',
+        'MessagingInformation',
+        'ListingItemObjects',
+        'Bids',
+        'Market'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {
         if (withRelated) {
             return await ListingItem.where<ListingItem>({ id: value }).fetch({
-                withRelated: [
-                    'ItemInformation',
-                    'ItemInformation.ItemCategory',
-                    'ItemInformation.ItemLocation',
-                    'ItemInformation.ItemLocation.LocationMarker',
-                    'ItemInformation.ItemImages',
-                    'ItemInformation.ItemImages.ItemImageData',
-                    'ItemInformation.ShippingDestinations',
-                    'PaymentInformation',
-                    'PaymentInformation.Escrow',
-                    'PaymentInformation.Escrow.Ratio',
-                    'PaymentInformation.ItemPrice',
-                    'PaymentInformation.ItemPrice.ShippingPrice',
-                    'PaymentInformation.ItemPrice.Address',
-                    'MessagingInformation',
-                    'ListingItemObjects',
-                    'Bids'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await ListingItem.where<ListingItem>({ id: value }).fetch();
@@ -41,24 +44,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public static async fetchByHash(value: string): Promise<ListingItem> {
         return await ListingItem.where<ListingItem>({ hash: value }).fetch({
-            withRelated: [
-                'ItemInformation',
-                'ItemInformation.ItemCategory',
-                'ItemInformation.ItemLocation',
-                'ItemInformation.ItemLocation.LocationMarker',
-                'ItemInformation.ItemImages',
-                'ItemInformation.ItemImages.ItemImageData',
-                'ItemInformation.ShippingDestinations',
-                'PaymentInformation',
-                'PaymentInformation.Escrow',
-                'PaymentInformation.Escrow.Ratio',
-                'PaymentInformation.ItemPrice',
-                'PaymentInformation.ItemPrice.ShippingPrice',
-                'PaymentInformation.ItemPrice.Address',
-                'MessagingInformation',
-                'ListingItemObjects',
-                'Bids'
-            ]
+            withRelated: this.RELATIONS
         });
     }
 
@@ -76,23 +62,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
         if (withRelated) {
             return await listingCollection.fetchAll({
-                withRelated: [
-                    'ItemInformation',
-                    'ItemInformation.ItemCategory',
-                    'ItemInformation.ItemLocation',
-                    'ItemInformation.ItemLocation.LocationMarker',
-                    'ItemInformation.ItemImages',
-                    'ItemInformation.ItemImages.ItemImageData',
-                    'ItemInformation.ShippingDestinations',
-                    'PaymentInformation',
-                    'PaymentInformation.Escrow',
-                    'PaymentInformation.Escrow.Ratio',
-                    'PaymentInformation.ItemPrice',
-                    'PaymentInformation.ItemPrice.ShippingPrice',
-                    'PaymentInformation.ItemPrice.Address',
-                    'MessagingInformation',
-                    'ListingItemObjects'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await listingCollection.fetchAll();
@@ -132,23 +102,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
         if (withRelated) {
             return await listingCollection.fetchAll({
-                withRelated: [
-                    'ItemInformation',
-                    'ItemInformation.ItemCategory',
-                    'ItemInformation.ItemLocation',
-                    'ItemInformation.ItemLocation.LocationMarker',
-                    'ItemInformation.ItemImages',
-                    'ItemInformation.ItemImages.ItemImageData',
-                    'ItemInformation.ShippingDestinations',
-                    'PaymentInformation',
-                    'PaymentInformation.Escrow',
-                    'PaymentInformation.Escrow.Ratio',
-                    'PaymentInformation.ItemPrice',
-                    'PaymentInformation.ItemPrice.ShippingPrice',
-                    'PaymentInformation.ItemPrice.Address',
-                    'MessagingInformation',
-                    'ListingItemObjects'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await listingCollection.fetchAll();

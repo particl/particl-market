@@ -75,7 +75,7 @@ describe('CreateListingItemTemplate', () => {
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData[7]);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData[8]);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData[9]);
-        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData[10]);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testData[10]);
 
     });
 

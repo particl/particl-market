@@ -17,6 +17,10 @@ export class MarketRepository {
         this.log = new Logger(__filename);
     }
 
+    public async getDefault(withRelated: boolean = true): Promise<Market> {
+        return this.findOneByName('DEFAULT', withRelated);
+    }
+
     public async findAll(): Promise<Bookshelf.Collection<Market>> {
         const list = await this.MarketModel.fetchAll();
         return list as Bookshelf.Collection<Market>;
@@ -28,6 +32,10 @@ export class MarketRepository {
 
     public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Market> {
         return this.MarketModel.fetchByAddress(address, withRelated);
+    }
+
+    public async findOneByName(name: string, withRelated: boolean = true): Promise<Market> {
+        return this.MarketModel.fetchByName(name, withRelated);
     }
 
     public async create(data: any): Promise<Market> {

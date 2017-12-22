@@ -60,7 +60,7 @@ export class MessageProcessor implements MessageProcessorInterface {
     private async pollMessages(): Promise<any> {
         this.log.debug('timeout ', this.interval);
 
-        return await this.coreRpcService.call('smsginbox')
+        return await this.coreRpcService.call('getinfo')
             .then((response) => {
                 this.log.info('smsginbox: ' + JSON.stringify(response.result));
                 return response.result;

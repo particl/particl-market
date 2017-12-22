@@ -53,7 +53,7 @@ export class PaymentInformationUpdateCommand implements RpcCommandInterface<Paym
                     domestic: data.params[4],
                     international: data.params[5]
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: data.params[6]
                 }

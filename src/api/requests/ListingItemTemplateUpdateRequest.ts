@@ -4,8 +4,13 @@ import { RequestBody } from '../../core/api/RequestBody';
 // tslint:disable:variable-name
 export class ListingItemTemplateUpdateRequest extends RequestBody {
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public hash: string;
+
+    public itemInformation;
+    public paymentInformation;
+    public messagingInformation;
+    public listingitemobjects;
 
 }
 // tslint:enable:variable-name

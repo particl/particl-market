@@ -157,7 +157,7 @@ export class RpcCommandFactory {
         this.commands.push(generateDataCommand);
         this.commands.push(helpCommand);
 
-        this.log.debug(this.commands.length + 'commands initialized.');
+        this.log.debug(this.commands.length + ' commands initialized.');
 
     }
 

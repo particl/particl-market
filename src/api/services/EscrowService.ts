@@ -1,4 +1,5 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -12,7 +13,7 @@ import { EscrowUpdateRequest } from '../requests/EscrowUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
-import { EscrowRatioService } from '../services/EscrowRatioService';
+import { EscrowRatioService } from './EscrowRatioService';
 
 
 export class EscrowService {
@@ -74,7 +75,7 @@ export class EscrowService {
     }
 
     @validate()
-    public async create( @request(EscrowCreateRequest) data: any): Promise<Escrow> {
+    public async create( @request(EscrowCreateRequest) data: EscrowCreateRequest): Promise<Escrow> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -84,13 +85,14 @@ export class EscrowService {
         // If the request body was valid we will create the escrow
         const escrow = await this.escrowRepo.create(body);
 
-        // then create escrowratio
-        escrowRatio.escrow_id = escrow.Id;
-        await this.escrowratioService.create(escrowRatio);
+        // create related models, escrowRatio
+        if (!_.isEmpty(escrowRatio)) {
+            escrowRatio.escrow_id = escrow.Id;
+            await this.escrowratioService.create(escrowRatio);
+        }
 
         // finally find and return the created escrow
-        const newEscrow = await this.findOne(escrow.Id);
-        return newEscrow;
+        return await this.findOne(escrow.Id);
     }
 
     public async updateCheckByListingItem(body: any): Promise<Escrow> {
@@ -119,7 +121,7 @@ export class EscrowService {
     }
 
     @validate()
-    public async update(id: number, @request(EscrowUpdateRequest) data: any): Promise<Escrow> {
+    public async update(id: number, @request(EscrowUpdateRequest) data: EscrowUpdateRequest): Promise<Escrow> {
 
         const body = JSON.parse(JSON.stringify(data));
 

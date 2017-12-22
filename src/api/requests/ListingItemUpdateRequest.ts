@@ -7,5 +7,13 @@ export class ListingItemUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public hash: string;
 
+    @IsNotEmpty()
+    public market_id: number;
+
+    public itemInformation;
+    public paymentInformation;
+    public messagingInformation;
+    public listingItemObjects;
+
 }
 // tslint:enable:variable-name

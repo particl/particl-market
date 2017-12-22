@@ -1,12 +1,13 @@
-version: '2'
+version: '3'
 
 services:
   app:
-    build: .
+    build:
+      context: ./
     volumes:
       - ./data:/app/data
     ports:
-      - 3000:3000
+      - 3100:3000
     command: npm run serve
     links:
       - particld
@@ -14,24 +15,31 @@ services:
       - particld
     environment:
       - NODE_ENV=development
+      - APP_PORT=3000
+      - RPCUSER=test
+      - RPCPASSWORD=test
+      - RPCHOSTNAME=particld
+      - MAINNET_PORT=51738
+      - TESTNET_PORT=51935
 
   particld:
-    image: ludx/particl:0.15.1.0
+    image: ludx/particl:0.15.1.1
     volumes:
       - ./data/particl:/root/.particl
     ports:
-      - 61738:51738
-      - 61935:51935
+      - 51738:51738
+      - 51935:51935
     environment:
       - CONF_TESTNET=1                 # Use the test chain
       - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set
       - CONF_RPCPASSWORD=test           # Password for JSON-RPC connections, generated unless set
-      - CONF_PRINTTOCONSOLE=1           # Send trace/debug info to console instead of debug.log file
+      - CONF_PRINTTOCONSOLE=0           # Send trace/debug info to console instead of debug.log file
 #      - CONF_ONLYNET=onion              # Only connect to nodes in network: ipv4, ipv6 or onion
 #      - CONF_PROXY=127.0.0.1:9050       # Connect through SOCKS5 proxy
 #      - CONF_ONION=127.0.0.1:9050       # Use separate SOCKS5 proxy to reach peers via Tor hidden services (default: -proxy)
       - CONF_SERVER=1                   # Accept command line and JSON-RPC commands
-      - CONF_RPCALLOWIP=0.0.0.0/0       # Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24).
+#      - CONF_RPCALLOWIP=*
+#      - CONF_RPCALLOWIP=0.0.0.0/0       # Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24).
 #      - CONF_REST=0                    # Accept public REST requests (default: 0)
       - CONF_LISTEN=1                   # Accept connections from outside (default: 1 if no -proxy or -connect)
 #      - CONF_LISTENONION=1              # Automatically create Tor hidden service (default: 1)
