@@ -174,8 +174,7 @@ export const Targets = {
         TestFactory: 'TestFactory',
         ListingItemFactory: 'ListingItemFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
-        MessagingInformationFactory: 'MessagingInformationFactory',
-        ItemPriceFactory : 'ItemPriceFactory'
+        MessagingInformationFactory: 'MessagingInformationFactory'
     },
     MessageProcessor:     {
         ListingItemMessageProcessor: 'ListingItemMessageProcessor',

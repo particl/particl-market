@@ -26,40 +26,46 @@ export class ItemCategoryFactory {
      */
     public async get(categoryAsArray: string[], rootCategoryWithRelated: ItemCategory): Promise<ItemCategory> {
         const rootCategory: any = rootCategoryWithRelated;
+        let childItemCategories;
+        const createdCategories: any = [];
+        let findItemCategory;
+        let lastCheckIndex = 0;
         // check cat1 match with root itemcategory.key
-        if (categoryAsArray[0] !== rootCategory.Key) {
+        if (categoryAsArray[0] !== rootCategory.Key) { // cat_ROOT
             this.log.warn(`${categoryAsArray[0]} should be root ItemCategory`);
         }
-        // check cat2 is matching with ItemCategory.ItemCategories
-        let innerItemCategories = rootCategory.ChildItemCategories;
-        // check with key and name
-        const itemCategory2 = await this.checkCategory(innerItemCategories, categoryAsArray[1]);
-        let needToBeCreated: any = [];
-        if (itemCategory2) {
-            innerItemCategories = itemCategory2['ChildItemCategories'];
-            // check with key and name
-            const itemCategory3 = await this.checkCategory(innerItemCategories, categoryAsArray[2]);
-            if (!itemCategory3) {
-                needToBeCreated.push({
-                    parent_item_category_id: itemCategory2.id,
-                    name: categoryAsArray[2]
-                });
+        // insert root category
+        createdCategories.push({
+            parentCategoryId: null,
+            id: rootCategory.id
+        });
+        childItemCategories = rootCategory.ChildItemCategories;
+        for (let c = 1; c <= categoryAsArray.length; c++) {
+            // check category have ChildItemCategories
+            if (childItemCategories.length > 0) {
+                // search catgeory
+                findItemCategory = await this.checkCategory(childItemCategories, categoryAsArray[c]);
+                if (findItemCategory) {
+                    createdCategories.push({
+                        parentCategoryId: findItemCategory.parent_item_category_id,
+                        id: findItemCategory.id
+                    });
+                    childItemCategories = findItemCategory.ChildItemCategories || [];
+                } else {
+                    // created all category till from
+                    break;
+                }
             } else {
-                needToBeCreated = {
-                    ItemCategory: itemCategory3['id']
-                };
+                // created all category till from
+                break;
             }
-        } else {
-            needToBeCreated.push({
-                parent_item_category_id: rootCategory.id,
-                name: categoryAsArray[1]
-            });
-            needToBeCreated.push({
-                parent_item_category_id: '0',
-                name: categoryAsArray[2]
-            });
+            lastCheckIndex = c;
         }
-        return needToBeCreated as any;
+        const ItemCategoryOutput = {
+            lastCheckIndex, // created all category till that index
+            createdCategories
+        };
+        return ItemCategoryOutput as any;
     }
 
     private async checkCategory(categories: string[], value: string): Promise<any> {

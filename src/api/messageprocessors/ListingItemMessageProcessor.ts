@@ -10,7 +10,6 @@ import { ListingItem } from '../models/ListingItem';
 
 import { ItemCategoryFactory } from '../factories/ItemCategoryFactory';
 import { MessagingInformationFactory } from '../factories/MessagingInformationFactory';
-import { ItemPriceFactory } from '../factories/ItemPriceFactory';
 import { ItemCategoryService } from '../services/ItemCategoryService';
 import { isArray } from 'util';
 
@@ -21,7 +20,6 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) public listingItemFactory: ListingItemFactory,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) public itemCategoryFactory: ItemCategoryFactory,
         @inject(Types.Factory) @named(Targets.Factory.MessagingInformationFactory) public mesInfoFactory: MessagingInformationFactory,
-        @inject(Types.Factory) @named(Targets.Factory.ItemPriceFactory) public itemPriceFactory: ItemPriceFactory,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -32,33 +30,13 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
     @validate()
     public async process(message: any): Promise<ListingItem> {
         // get Category
-        const rootCategoryWithRelated: any = await this.itemCategoryService.findRoot();
-        const itemCategory: any = await this.itemCategoryFactory.get(message.information.category, rootCategoryWithRelated);
-        let itemCategoryId;
-        // create category if need
-        if (isArray(itemCategory)) {
-            let parentItemCategoryId;
-            let newCat;
-            for (const item of itemCategory) {
-                if (item.parent_item_category_id === '0') {
-                    item.parent_item_category_id = parentItemCategoryId;
-                }
-                newCat = await this.itemCategoryService.create(item);
-                parentItemCategoryId = newCat.id;
-            }
-            itemCategoryId = newCat.id;
-        } else {
-            itemCategoryId = itemCategory.ItemCategory;
-        }
+        const itemCategoryId = await this.createUserDefinedItemCategories(message.information.category);
         message.information.itemCategory = itemCategoryId;
-
-
         // get itemPrice
-        const itemPriceData = {
+        const itemPrice = {
             currency: message.payment.cryptocurrency.currency,
             basePrice: message.payment.cryptocurrency.base_price
         };
-        const itemPrice = await this.itemPriceFactory.get(itemPriceData);
         message.payment.itemPrice = itemPrice;
         // get messagingInformation
         const messagingInformation = await this.mesInfoFactory.get(message.messaging);
@@ -67,6 +45,29 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         const listingItem = await this.listingItemFactory.get(message);
         // create listing-item
         return await this.listingItemService.create(listingItem);
+    }
+
+    private async createUserDefinedItemCategories(category: string[]): Promise<number> {
+        const rootCategoryWithRelated: any = await this.itemCategoryService.findRoot();
+        const itemCategoryOutPut: any = await this.itemCategoryFactory.get(category, rootCategoryWithRelated);
+        const itemCategory = itemCategoryOutPut.createdCategories;
+        const lastCreatedIndex = itemCategoryOutPut.lastCheckIndex;
+        let itemCategoryId: number;
+        let parentItemCategoryId;
+        if (lastCreatedIndex === category.length) {
+            // all category is exist
+            itemCategoryId = itemCategory[lastCreatedIndex].id;
+        } else {
+            // get and create category
+            let newCat;
+            parentItemCategoryId = itemCategory[lastCreatedIndex].id;
+            for (let i = lastCreatedIndex + 1; i < category.length; i++) {
+                newCat = await this.itemCategoryService.create({ name: category[i], parent_item_category_id: parentItemCategoryId });
+                parentItemCategoryId = newCat.id;
+            }
+            itemCategoryId = newCat.id;
+        }
+        return itemCategoryId;
     }
 
 }
