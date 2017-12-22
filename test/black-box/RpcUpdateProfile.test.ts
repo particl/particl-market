@@ -11,7 +11,7 @@ describe('UpdateProfile', () => {
     const testData = {
         name: 'DEFAULT-PROFILE-TEST',
         address: 'DEFAULT-PROFILE-ADDRESS',
-        addresses: [{
+        shippingAddresses: [{
             title: 'Title',
             addressLine1: 'Add',
             addressLine2: 'ADD 22',

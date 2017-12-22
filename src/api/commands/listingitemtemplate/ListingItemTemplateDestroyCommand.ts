@@ -2,6 +2,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
+import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
@@ -12,6 +13,7 @@ export class ListingItemTemplateDestroyCommand implements RpcCommandInterface<vo
     public name: string;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -26,7 +28,7 @@ export class ListingItemTemplateDestroyCommand implements RpcCommandInterface<vo
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<void> {
-        throw new MessageException('Not implemented');
+        return this.listingItemTemplateService.destroy(data.params[0]);
     }
 
     public help(): string {

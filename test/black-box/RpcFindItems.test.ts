@@ -85,7 +85,7 @@ describe('/FindItems', () => {
                     domestic: 0.123,
                     international: 1.234
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: '1234'
                 }
@@ -146,7 +146,7 @@ describe('/FindItems', () => {
                     domestic: 1.111,
                     international: 2.222
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.STEALTH,
                     address: 'UPDATED'
                 }

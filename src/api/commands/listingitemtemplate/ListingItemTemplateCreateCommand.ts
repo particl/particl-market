@@ -63,7 +63,7 @@ export class ListingItemTemplateCreateCommand implements RpcCommandInterface<Lis
                             domestic: data.params[8],
                             international: data.params[9]
                         },
-                        address: {
+                        cryptocurrencyAddress: {
                             type: 'address-type',
                             address: data.params[10]
                         }

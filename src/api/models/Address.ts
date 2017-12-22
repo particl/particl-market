@@ -17,7 +17,7 @@ export class Address extends Bookshelf.Model<Address> {
         }
     }
 
-    public get tableName(): string { return 'address'; }
+    public get tableName(): string { return 'addresses'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }

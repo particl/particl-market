@@ -36,18 +36,17 @@ export class LocationMarkerService {
     }
 
     @validate()
-    public async create( @request(LocationMarkerCreateRequest) body: any): Promise<LocationMarker> {
+    public async create( @request(LocationMarkerCreateRequest) body: LocationMarkerCreateRequest): Promise<LocationMarker> {
 
         // If the request body was valid we will create the locationMarker
         const locationMarker = await this.locationMarkerRepo.create(body);
 
         // finally find and return the created locationMarker
-        const newLocationMarker = await this.findOne(locationMarker.Id);
-        return newLocationMarker;
+        return await this.findOne(locationMarker.Id);
     }
 
     @validate()
-    public async update(id: number, @request(LocationMarkerUpdateRequest) body: any): Promise<LocationMarker> {
+    public async update(id: number, @request(LocationMarkerUpdateRequest) body: LocationMarkerUpdateRequest): Promise<LocationMarker> {
 
         // find the existing one without related
         const locationMarker = await this.findOne(id, false);

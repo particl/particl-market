@@ -2,19 +2,16 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 
 // tslint:disable:variable-name
-export class ItemPriceCreateRequest extends RequestBody {
+export class TestDataGenerateRequest extends RequestBody {
 
     @IsNotEmpty()
-    public payment_information_id: number;
+    public model: string;
 
     @IsNotEmpty()
-    public currency: string;
+    public amount: number;
 
     @IsNotEmpty()
-    public basePrice: number;
+    public withRelated: boolean;
 
-    public shippingPrice;
-
-    public cryptocurrencyAddress;
 }
 // tslint:enable:variable-name

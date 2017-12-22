@@ -3,6 +3,7 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
+import { ProfileService } from '../../src/api/services/ProfileService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -11,6 +12,10 @@ import { MessagingInformation } from '../../src/api/models/MessagingInformation'
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
 import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
+import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
+import { MessagingInformationUpdateRequest } from '../../src/api/requests/MessagingInformationUpdateRequest';
+import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
+import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
 describe('MessagingInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -20,27 +25,42 @@ describe('MessagingInformation', () => {
 
     let testDataService: TestDataService;
     let messagingInformationService: MessagingInformationService;
+    let profileService: ProfileService;
 
     let createdId;
+    let createdListingItemTemplate;
+    let defaultProfile;
+
 
     const testData = {
         protocol: MessagingProtocolType.SMSG,
         publicKey: 'publickey1'
-    };
+    } as MessagingInformationCreateRequest;
 
     const testDataUpdated = {
         protocol: MessagingProtocolType.SMSG,
         publicKey: 'publickey2'
-    };
+    } as MessagingInformationUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
+
+        defaultProfile = await profileService.getDefault();
+        createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
+            model: 'listingitemtemplate',
+            data: {
+                profile_id: defaultProfile.Id,
+                hash: 'itemhash'
+            },
+            withRelated: true
+        } as TestDataCreateRequest);
     });
 
     afterAll(async () => {
@@ -55,7 +75,7 @@ describe('MessagingInformation', () => {
     });
 
     test('Should create a new messaging information', async () => {
-        testData['listing_item_template_id'] = 0;
+        testData['listing_item_template_id'] = createdListingItemTemplate.Id;
         const messagingInformationModel: MessagingInformation = await messagingInformationService.create(testData);
         createdId = messagingInformationModel.Id;
 
@@ -99,7 +119,7 @@ describe('MessagingInformation', () => {
     });
 
     test('Should update the messaging information', async () => {
-        testDataUpdated['listing_item_template_id'] = 0;
+        testDataUpdated['listing_item_template_id'] = createdListingItemTemplate.Id;
         const messagingInformationModel: MessagingInformation = await messagingInformationService.update(createdId, testDataUpdated);
         const result = messagingInformationModel.toJSON();
 

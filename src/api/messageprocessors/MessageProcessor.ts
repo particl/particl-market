@@ -47,20 +47,27 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @returns {Promise<void>}
      */
     private async poll(): Promise<void> {
-        const response = await this.pollMessages().catch(reason => {
-            this.log.info('error: ', reason);
-        });
-        this.log.info('response: ', response);
+        await this.pollMessages()
+            .then((messages) => {
+                this.log.info('response: ', messages);
+            })
+            .catch(reason => {
+                this.log.info('error: ', reason);
+            });
         return;
     }
 
     private async pollMessages(): Promise<any> {
         this.log.debug('timeout ', this.interval);
 
-        return await this.coreRpcService.call('getnetworkinfo')
+        return await this.coreRpcService.call('getinfo')
+            .then((response) => {
+                this.log.info('smsginbox: ' + JSON.stringify(response.result));
+                return response.result;
+            })
             .catch(reason => {
-                this.log.info('error: ', reason);
+                this.log.error('error: ', reason);
+                return reason;
             });
     }
-
 }

@@ -7,6 +7,7 @@ export class ItemCategoryUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public parent_item_category_id: number;
 
+    public id: number;
     public key: string;
 
     @IsNotEmpty()

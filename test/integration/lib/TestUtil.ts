@@ -22,7 +22,7 @@ export class TestUtil {
 
     }
 
-    private isServerStarted(): boolean {
+    private async isServerStarted(): boolean {
         if (this.serverStarted === false) {
             throw Error('Not started.');
         } else {

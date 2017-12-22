@@ -3,7 +3,7 @@ import * as Knex from 'knex';
 
 exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
-        db.schema.createTable('profile', (table: Knex.CreateTableBuilder) => {
+        db.schema.createTable('profiles', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
             table.string('name').notNullable().unique();

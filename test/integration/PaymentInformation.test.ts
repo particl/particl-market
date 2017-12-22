@@ -1,9 +1,10 @@
 import { app } from '../../src/app';
+import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
-import * as _ from 'lodash';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
+import { ProfileService } from '../../src/api/services/ProfileService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -15,6 +16,10 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 
 import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
+import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
+import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
+import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
+import { PaymentInformationUpdateRequest } from '../../src/api/requests/PaymentInformationUpdateRequest';
 
 describe('PaymentInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -24,8 +29,11 @@ describe('PaymentInformation', () => {
 
     let testDataService: TestDataService;
     let paymentInformationService: PaymentInformationService;
+    let profileService: ProfileService;
 
     let createdId;
+    let createdListingItemTemplate;
+    let defaultProfile;
 
     const testData = {
         type: PaymentType.SALE,
@@ -43,12 +51,12 @@ describe('PaymentInformation', () => {
                 domestic: 0.123,
                 international: 1.234
             },
-            address: {
+            cryptocurrencyAddress: {
                 type: CryptocurrencyAddressType.NORMAL,
                 address: '1234'
             }
         }
-    };
+    } as PaymentInformationCreateRequest;
 
     const testDataUpdated = {
         type: PaymentType.FREE,
@@ -66,21 +74,33 @@ describe('PaymentInformation', () => {
                 domestic: 1.234,
                 international: 2.345
             },
-            address: {
+            cryptocurrencyAddress: {
                 type: CryptocurrencyAddressType.STEALTH,
                 address: '4567'
             }
         }
-    };
+    } as PaymentInformationUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
+
+        defaultProfile = await profileService.getDefault();
+        createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
+            model: 'listingitemtemplate',
+            data: {
+                profile_id: defaultProfile.Id,
+                hash: 'itemhash'
+            },
+            withRelated: true
+        } as TestDataCreateRequest);
+
     });
 
     afterAll(async () => {
@@ -95,7 +115,7 @@ describe('PaymentInformation', () => {
     });
 
     test('Should create a new payment information', async () => {
-        testData['listing_item_template_id'] = 0;
+        testData['listing_item_template_id'] = createdListingItemTemplate.Id;
 
         const paymentInformationModel: PaymentInformation = await paymentInformationService.create(testData);
         createdId = paymentInformationModel.Id;
@@ -110,8 +130,8 @@ describe('PaymentInformation', () => {
         expect(result.ItemPrice.basePrice).toBe(testData.itemPrice.basePrice);
         expect(result.ItemPrice.ShippingPrice.domestic).toBe(testData.itemPrice.shippingPrice.domestic);
         expect(result.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
-        expect(result.ItemPrice.Address.type).toBe(testData.itemPrice.address.type);
-        expect(result.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
+        expect(result.ItemPrice.CryptocurrencyAddress.type).toBe(testData.itemPrice.cryptocurrencyAddress.type);
+        expect(result.ItemPrice.CryptocurrencyAddress.address).toBe(testData.itemPrice.cryptocurrencyAddress.address);
     });
 
     test('Should throw ValidationException because we want to create a empty payment information', async () => {
@@ -142,8 +162,8 @@ describe('PaymentInformation', () => {
         expect(result.ItemPrice.basePrice).toBe(testData.itemPrice.basePrice);
         expect(result.ItemPrice.ShippingPrice.domestic).toBe(testData.itemPrice.shippingPrice.domestic);
         expect(result.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
-        expect(result.ItemPrice.Address.type).toBe(testData.itemPrice.address.type);
-        expect(result.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
+        expect(result.ItemPrice.CryptocurrencyAddress.type).toBe(testData.itemPrice.cryptocurrencyAddress.type);
+        expect(result.ItemPrice.CryptocurrencyAddress.address).toBe(testData.itemPrice.cryptocurrencyAddress.address);
     });
 
     test('Should throw ValidationException because there is no listing_item_id or listing_item_template_id', async () => {
@@ -166,8 +186,8 @@ describe('PaymentInformation', () => {
         expect(result.ItemPrice.basePrice).toBe(testDataUpdated.itemPrice.basePrice);
         expect(result.ItemPrice.ShippingPrice.domestic).toBe(testDataUpdated.itemPrice.shippingPrice.domestic);
         expect(result.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.itemPrice.shippingPrice.international);
-        expect(result.ItemPrice.Address.type).toBe(testDataUpdated.itemPrice.address.type);
-        expect(result.ItemPrice.Address.address).toBe(testDataUpdated.itemPrice.address.address);
+        expect(result.ItemPrice.CryptocurrencyAddress.type).toBe(testDataUpdated.itemPrice.cryptocurrencyAddress.type);
+        expect(result.ItemPrice.CryptocurrencyAddress.address).toBe(testDataUpdated.itemPrice.cryptocurrencyAddress.address);
     });
 
     test('Should delete the payment information', async () => {

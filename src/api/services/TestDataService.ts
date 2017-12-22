@@ -1,15 +1,14 @@
-import { Bookshelf } from '../../config/Database';
+import { Bookshelf as Database } from '../../config/Database';
+import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import * as _ from 'lodash';
 import * as Faker from 'faker';
-import * as crypto from 'crypto';
 import { MessageException } from '../exceptions/MessageException';
 import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
 import { Country } from '../enums/Country';
-import { Address } from '../models/Address';
 import { ShippingAvailability } from '../enums/ShippingAvailability';
 import { MessagingProtocolType } from '../enums/MessagingProtocolType';
 import { CryptocurrencyAddressType } from '../enums/CryptocurrencyAddressType';
@@ -17,7 +16,6 @@ import { Currency } from '../enums/Currency';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { PaymentType } from '../enums/PaymentType';
 import { EscrowType } from '../enums/EscrowType';
-import { Profile } from '../models/Profile';
 import { ListingItem } from '../models/ListingItem';
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
@@ -27,6 +25,14 @@ import { DefaultMarketService } from './DefaultMarketService';
 import { ProfileService } from './ProfileService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { FavoriteItemService } from './FavoriteItemService';
+import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
+import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
+import { Address } from '../models/Address';
+import { CryptocurrencyAddress } from '../models/CryptocurrencyAddress';
+import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
+import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
+import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
+import { FavoriteItemCreateRequest } from '../requests/FavoriteItemCreateRequest';
 
 export class TestDataService {
 
@@ -63,9 +69,10 @@ export class TestDataService {
             await this.defaultItemCategoryService.seedDefaultCategories();
             await this.defaultProfileService.seedDefaultProfile();
             await this.defaultMarketService.seedDefaultMarket();
-        }
+            this.log.info('cleanup & default seeds done.');
 
-        return;
+            return;
+        }
     }
 
     /**
@@ -75,22 +82,22 @@ export class TestDataService {
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async create(@request(TestDataCreateRequest) body: any): Promise<any> {
+    public async create<T>(@request(TestDataCreateRequest) body: TestDataCreateRequest): Promise<Bookshelf.Model<T>> {
         switch (body.model) {
             case 'listingitemtemplate': {
-                return await this.listingItemTemplateService.create(body.data);
+                return await this.listingItemTemplateService.create(body.data as ListingItemTemplateCreateRequest) as Bookshelf.Model<T>;
             }
             case 'listingitem': {
-                return await this.listingItemService.create(body.data);
+                return await this.listingItemService.create(body.data as ListingItemCreateRequest) as Bookshelf.Model<T>;
             }
             case 'profile': {
-                return await this.profileService.create(body.data);
+                return await this.profileService.create(body.data as ProfileCreateRequest) as Bookshelf.Model<T>;
             }
             case 'itemcategory': {
-                return await this.itemCategoryService.create(body.data);
+                return await this.itemCategoryService.create(body.data as ItemCategoryCreateRequest) as Bookshelf.Model<T>;
             }
             case 'favoriteitem': {
-                return await this.favoriteItemService.create(body.data);
+                return await this.favoriteItemService.create(body.data as FavoriteItemCreateRequest) as Bookshelf.Model<T>;
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -109,8 +116,7 @@ export class TestDataService {
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async generate(@request(TestDataCreateRequest) body: any): Promise<any> {
-
+    public async generate<T>(@request(TestDataGenerateRequest) body: TestDataGenerateRequest): Promise<Bookshelf.Collection<T>> {
         switch (body.model) {
             case 'listingitemtemplate': {
                 return await this.generateListingItemTemplates(body.amount, body.withRelated);
@@ -129,6 +135,7 @@ export class TestDataService {
 
     /**
      * clean up the db
+     * todo: ignoreTables not used
      *
      * @param ignoreTables
      * @returns {Promise<void>}
@@ -144,7 +151,37 @@ export class TestDataService {
         };
         this.log.debug('ignoreTables: ', ignoreTables);
 
-        const existingTables = await this.getTableNames(Bookshelf.knex);
+        const tablesToClean = [
+            'bid_datas',
+            'bids',
+            'location_markers',
+            'item_locations',
+            'shipping_destinations',
+            'item_image_datas',
+            'item_images',
+            'item_informations',
+            'shipping_prices',
+            'item_prices',
+            'escrow_ratios',
+            'escrows',
+            'payment_informations',
+            'messaging_informations',
+            'listing_item_objects',
+            'listing_items',
+            'listing_item_templates',
+            'addresses',
+            'favorite_items',
+            'cryptocurrency_addresses',
+            'profiles',
+            'item_categories',
+            'markets',
+            'users'     // todo: not needed
+        ];
+
+        /*
+        const existingTables = await this.getTableNames(Database.knex);
+        this.log.debug('existingTables: ', existingTables);
+
         const tablesToClean = existingTables
             .map( (table) => {
                 return table.name; // [Object.keys(table)[0]];
@@ -152,11 +189,11 @@ export class TestDataService {
             .filter( (tableName) => {
                 return !_.includes(ignoreTables, tableName);
             });
-
-
+        */
         // this.log.debug('tablesToClean: ', tablesToClean);
         for (const table of tablesToClean) {
-            await Bookshelf.knex.select().from(table).del();
+            this.log.debug('cleaning table: ', table);
+            await Database.knex.select().from(table).del();
         }
         return;
     }
@@ -171,8 +208,10 @@ export class TestDataService {
     private async generateListingItemTemplates(amount: number, withRelated: boolean = true): Promise<any> {
         const items: any[] = [];
         for (let i = amount; i !== 0; i--) {
-            const listingItemTemplate = await this.generateListingItemTemplate();
+            const listingItemTemplate = await this.generateListingItemTemplateData();
+            // this.log.debug('B1', JSON.stringify(listingItemTemplate, null, 2));
             const savedListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplate);
+            this.log.debug('B2', JSON.stringify(savedListingItemTemplate, null, 2));
             items.push(savedListingItemTemplate);
         }
         return this.generateResponse(items, withRelated);
@@ -184,7 +223,7 @@ export class TestDataService {
     private async generateListingItems(amount: number, withRelated: boolean = true): Promise<any> {
         const items: any[] = [];
         for (let i = amount; i !== 0; i--) {
-            const listingItem = this.generateListingItem();
+            const listingItem = this.generateListingItemData();
             const savedListingItem = await this.listingItemService.create(listingItem);
             items.push(savedListingItem);
         }
@@ -197,7 +236,7 @@ export class TestDataService {
     private async generateProfiles(amount: number, withRelated: boolean = true): Promise<any> {
         const items: any[] = [];
         for (let i = amount; i !== 0; i--) {
-            const profile = this.generateProfile();
+            const profile = this.generateProfileData();
             const savedProfile = await this.profileService.create(profile);
             items.push(savedProfile);
         }
@@ -212,16 +251,21 @@ export class TestDataService {
         }
     }
 
-    private generateProfile(): any {
+    private generateProfileData(): ProfileCreateRequest {
         const name = 'TEST-' + Faker.name.firstName();
-        const addresses = this.generateAddresses(_.random(1, 5));
+        const address = Faker.finance.bitcoinAddress();
+        const shippingAddresses = this.generateAddressesData(_.random(1, 5));
+        const cryptocurrencyAddresses = this.generateCryptocurrencyAddressesData(_.random(1, 5));
+
         return {
             name,
-            addresses
-        };
+            address,
+            shippingAddresses,
+            cryptocurrencyAddresses
+        } as ProfileCreateRequest;
     }
 
-    private generateAddresses(amount: number): any {
+    private generateAddressesData(amount: number): Address[] {
         const addresses: any[] = [];
         for (let i = amount; i !== 0; i--) {
             addresses.push({
@@ -235,10 +279,21 @@ export class TestDataService {
         return addresses;
     }
 
-    private generateListingItem(): any {
-        const itemInformation = this.generateItemInformation();
-        const paymentInformation = this.generatePaymentInformation();
-        const messagingInformation = this.generateMessagingInformation();
+    private generateCryptocurrencyAddressesData(amount: number): CryptocurrencyAddress[] {
+        const cryptoAddresses: any[] = [];
+        for (let i = amount; i !== 0; i--) {
+            cryptoAddresses.push({
+                type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptocurrencyAddressType)),
+                address: Faker.finance.bitcoinAddress()
+            });
+        }
+        return cryptoAddresses;
+    }
+
+    private generateListingItemData(): any {
+        const itemInformation = this.generateItemInformationData();
+        const paymentInformation = this.generatePaymentInformationData();
+        const messagingInformation = this.generateMessagingInformationData();
 
         const listingItem = {
             hash: Faker.random.uuid(),
@@ -251,7 +306,7 @@ export class TestDataService {
         return listingItem;
     }
 
-    private generateShippingDestinations(amount: number): any[] {
+    private generateShippingDestinationsData(amount: number): any[] {
         const items: any[] = [];
         for (let i = amount; i !== 0; i--) {
             items.push({
@@ -262,7 +317,7 @@ export class TestDataService {
         return items;
     }
 
-    private generateItemImages(amount: number): any[] {
+    private generateItemImagesData(amount: number): any[] {
         const items: any[] = [];
         for (let i = amount; i !== 0; i--) {
             const item = {
@@ -279,9 +334,9 @@ export class TestDataService {
         return items;
     }
 
-    private generateItemInformation(): any {
-        const shippingDestinations = this.generateShippingDestinations(_.random(1, 5));
-        const itemImages = this.generateItemImages(_.random(1, 5));
+    private generateItemInformationData(): any {
+        const shippingDestinations = this.generateShippingDestinationsData(_.random(1, 5));
+        const itemImages = this.generateItemImagesData(_.random(1, 5));
         const itemInformation = {
             title: Faker.commerce.productName(),
                 shortDescription: Faker.commerce.productAdjective() + ' ' + Faker.commerce.product(),
@@ -305,7 +360,7 @@ export class TestDataService {
         return itemInformation;
     }
 
-    private generatePaymentInformation(): any {
+    private generatePaymentInformationData(): any {
         const paymentInformation = {
             type: Faker.random.arrayElement(Object.getOwnPropertyNames(PaymentType)),
                 escrow: {
@@ -320,18 +375,18 @@ export class TestDataService {
                     basePrice: _.random(123.45, 5.43),
                     shippingPrice: {
                     domestic: _.random(5.00, 1.11),
-                        international: _.random(10.00, 5.003)
+                    international: _.random(10.00, 5.003)
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptocurrencyAddressType)),
-                        address: Faker.finance.bitcoinAddress()
+                    address: Faker.finance.bitcoinAddress()
                 }
             }
         };
         return paymentInformation;
     }
 
-    private generateMessagingInformation(): any {
+    private generateMessagingInformationData(): any {
         const messagingInformation = {
             protocol: Faker.random.arrayElement(Object.getOwnPropertyNames(MessagingProtocolType)),
             publicKey: Faker.random.uuid()
@@ -339,10 +394,10 @@ export class TestDataService {
         return messagingInformation;
     }
 
-    private async generateListingItemTemplate(): Promise<any> {
-        const itemInformation = this.generateItemInformation();
-        const paymentInformation = this.generatePaymentInformation();
-        const messagingInformation = this.generateMessagingInformation();
+    private async generateListingItemTemplateData(): Promise<any> {
+        const itemInformation = this.generateItemInformationData();
+        const paymentInformation = this.generatePaymentInformationData();
+        const messagingInformation = this.generateMessagingInformationData();
         const defaultProfile = await this.profileService.getDefault();
 
         const listingItemTemplate = {

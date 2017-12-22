@@ -31,7 +31,7 @@ describe('/removeItemLocation', () => {
                     domestic: 5,
                     international: 7
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.STEALTH,
                     address: 'This is temp address.'
                 }

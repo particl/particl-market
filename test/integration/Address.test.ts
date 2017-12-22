@@ -9,6 +9,7 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { Country } from '../../src/api/enums/Country';
 import { Address } from '../../src/api/models/Address';
+import { Address } from '../../src/api/models/Profile';
 
 import { AddressService } from '../../src/api/services/AddressService';
 
@@ -20,6 +21,7 @@ describe('Address', () => {
 
     let testDataService: TestDataService;
     let addressService: AddressService;
+    let profileService: ProfileService;
 
     let createdId;
 
@@ -46,6 +48,7 @@ describe('Address', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
         // clean up the db
         return await testDataService.clean([]);
@@ -59,14 +62,18 @@ describe('Address', () => {
 */
     test('Should throw ValidationException because there is no profile_id', async () => {
         expect.assertions(1);
-        await addressService.create(testDataUpdated).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        await addressService.create(testDataUpdated).catch(e => {
+                expect(e).toEqual(new ValidationException('Request body is not valid', []));
+            }
         );
     });
 
     test('Should create a new address', async () => {
-        testData['profile_id'] = 0;
-        const addressModel: Address = await addressService.create(testData);
+        const defaultProfile = await profileService.getDefault();
+        testData['profile_id'] = defaultProfile.Id;
+        const addressModel: Address = await addressService.create(testData).catch(e => {
+            log.error(e);
+        });
         createdId = addressModel.Id;
 
         const result = addressModel.toJSON();

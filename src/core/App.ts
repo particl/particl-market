@@ -35,6 +35,7 @@ export class App {
         // Configure the logger, because we need it already.
         const loggerConfig = new LoggerConfig();
         loggerConfig.configure();
+
         // Create express app
         this.log.info('NODE_ENV: ' + process.env.NODE_ENV);
         this.log.info('Defining app...');

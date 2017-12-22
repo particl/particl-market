@@ -7,11 +7,10 @@ export class TestDataCreateRequest extends RequestBody {
     @IsNotEmpty()
     public model: string;
 
-    // @IsNotEmpty()
+    @IsNotEmpty()
     public data: string;
 
-    public amount: string;
-
+    @IsNotEmpty()
     public withRelated: boolean;
 
 }

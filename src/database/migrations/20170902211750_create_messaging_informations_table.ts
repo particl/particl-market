@@ -6,8 +6,8 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('messaging_informations', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('protocol').nullable();
-            table.text('public_key').nullable();
+            table.string('protocol').notNullable();
+            table.text('public_key').notNullable();
 
             table.integer('listing_item_id').unsigned().nullable();
             table.foreign('listing_item_id').references('id')
@@ -15,7 +15,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.integer('listing_item_template_id').unsigned().nullable();
             table.foreign('listing_item_template_id').references('id')
-                .inTable('listing_item_templates');
+                .inTable('listing_item_templates').onDelete('cascade');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

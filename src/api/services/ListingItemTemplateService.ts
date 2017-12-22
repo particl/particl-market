@@ -1,17 +1,19 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
-import { ItemInformationService } from '../services/ItemInformationService';
-import { PaymentInformationService } from '../services/PaymentInformationService';
+import { ItemInformationService } from './ItemInformationService';
+import { PaymentInformationService } from './PaymentInformationService';
+import { MessagingInformationService } from './MessagingInformationService';
+import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplateUpdateRequest } from '../requests/ListingItemTemplateUpdateRequest';
 import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
-import { MessagingInformationService } from './MessagingInformationService';
 
 export class ListingItemTemplateService {
 
@@ -22,6 +24,7 @@ export class ListingItemTemplateService {
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
+        @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -53,50 +56,59 @@ export class ListingItemTemplateService {
     }
 
     @validate()
-    public async create( @request(ListingItemTemplateCreateRequest) data: any): Promise<ListingItemTemplate> {
+    public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest): Promise<ListingItemTemplate> {
+
+        // this.log.debug('ListingItemTemplateService.create, data:', JSON.stringify(data, null, 2));
+
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
-        delete body.itemInformation;
         const paymentInformation = body.paymentInformation;
-        delete body.paymentInformation;
         const messagingInformation = body.messagingInformation;
+        const listingItemObjects = body.listingItemObjects;
+        delete body.itemInformation;
+        delete body.paymentInformation;
         delete body.messagingInformation;
+        delete body.listingItemObjects;
 
-        // this.log.info('save itemInformation: ', itemInformation);
-        // this.log.info('save paymentInformation: ', paymentInformation);
-        // this.log.info('save messagingInformation: ', messagingInformation);
+        // this.log.debug('itemInformation to save: ', JSON.stringify(itemInformation, null, 2));
+        // this.log.debug('paymentInformation to save: ', JSON.stringify(paymentInformation, null, 2));
+        // this.log.debug('messagingInformation to save: ', JSON.stringify(messagingInformation, null, 2));
+        // this.log.debug('listingItemObjects to save: ', JSON.stringify(listingItemObjects, null, 2));
 
         // If the request body was valid we will create the listingItemTemplate
-        const listingItemTemplate = await this.listingItemTemplateRepo.create(body);
-        this.log.info('saved listingItemTemplate.Id: ', listingItemTemplate.Id);
+        const listingItemTemplate = await this.listingItemTemplateRepo.create(body)
+            .catch(reason => {
+                this.log.error('ERROR: ', reason);
+            });
 
-
-        if (itemInformation) {
+        if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.Id;
             const result = await this.itemInformationService.create(itemInformation);
-            // this.log.info('saved itemInformation: ', result.toJSON());
+            // this.log.debug('saved itemInformation ' + listingItemTemplate.Id + ': ', result.toJSON());
         }
-        if (paymentInformation) {
+        if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.Id;
             const result = await this.paymentInformationService.create(paymentInformation);
-            // this.log.info('saved paymentInformation: ', result.toJSON());
+            // this.log.debug('saved paymentInformation ' + listingItemTemplate.Id + ': ', result.toJSON());
         }
-        if (messagingInformation) {
+        if (!_.isEmpty(messagingInformation)) {
             messagingInformation.listing_item_template_id = listingItemTemplate.Id;
             const result = await this.messagingInformationService.create(messagingInformation);
-            // this.log.info('saved messagingInformation: ', result.toJSON());
+            // this.log.debug('saved messagingInformation ' + listingItemTemplate.Id + ': ', result.toJSON());
+        }
+        if (!_.isEmpty(listingItemObjects)) {
+            // TODO: implement
         }
 
         // finally find and return the created listingItemTemplate
-        const newListingItemTemplate = await this.findOne(listingItemTemplate.Id);
-        // this.log.info('newListingItemTemplate: ', newListingItemTemplate.toJSON());
-        return newListingItemTemplate;
+        return await this.findOne(listingItemTemplate.Id);
+
     }
 
     @validate()
-    public async update(id: number, @request(ListingItemTemplateUpdateRequest) data: any): Promise<ListingItemTemplate> {
+    public async update(id: number, @request(ListingItemTemplateUpdateRequest) data: ListingItemTemplateUpdateRequest): Promise<ListingItemTemplate> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -106,35 +118,55 @@ export class ListingItemTemplateService {
         // set new values
         listingItemTemplate.Hash = body.hash;
 
-        this.log.info('listingItemTemplate.toJSON():', listingItemTemplate.toJSON());
         // update listingItemTemplate record
         const updatedListingItemTemplate = await this.listingItemTemplateRepo.update(id, listingItemTemplate.toJSON());
+        // this.log.debug('updatedListingItemTemplate.toJSON():', updatedListingItemTemplate.toJSON());
 
         // find related record and delete it and recreate related data
         const itemInformation = updatedListingItemTemplate.related('ItemInformation').toJSON();
-        await this.itemInformationService.destroy(itemInformation.id);
-        body.itemInformation.listing_item_template_id = id;
-        await this.itemInformationService.create(body.itemInformation);
-
-        // find related record and delete it and recreate related data
         const paymentInformation = updatedListingItemTemplate.related('PaymentInformation').toJSON();
-        await this.paymentInformationService.destroy(paymentInformation.id);
-        body.paymentInformation.listing_item_template_id = id;
-        await this.paymentInformationService.create(body.paymentInformation);
-
-        // find related record and delete it and recreate related data
         const messagingInformation = updatedListingItemTemplate.related('MessagingInformation').toJSON();
-        await this.messagingInformationService.destroy(messagingInformation.id);
-        body.messagingInformation.listing_item_template_id = id;
-        await this.messagingInformationService.create(body.messagingInformation);
+        const listingItemObjects = updatedListingItemTemplate.related('ListingItemObjects').toJSON();
+
+        if (!_.isEmpty(itemInformation)) {
+            body.itemInformation.listing_item_template_id = id;
+            await this.itemInformationService.update(body.itemInformation.id, body.itemInformation);
+        }
+
+        if (!_.isEmpty(paymentInformation)) {
+            body.paymentInformation.listing_item_template_id = id;
+            await this.paymentInformationService.update(body.paymentInformation.id, body.paymentInformation);
+        }
+
+        if (!_.isEmpty(messagingInformation)) {
+            body.messagingInformation.listing_item_template_id = id;
+            await this.messagingInformationService.update(body.messagingInformation.id, body.messagingInformation);
+        }
+
+        if (!_.isEmpty(listingItemObjects)) {
+            // TODO: implement
+        }
 
         // finally find and return the updated listingItem
-        const newListingItemTemplate = await this.findOne(id);
-        return newListingItemTemplate;
+        return await this.findOne(id);
     }
 
     public async destroy(id: number): Promise<void> {
+
+        const listingItemTemplate = await this.findOne(id);
+        const relatedCryptocurrencyAddress = listingItemTemplate
+            .related('PaymentInformation')
+            .related('ItemPrice')
+            .related('CryptocurrencyAddress')
+            .toJSON();
+        // this.log.debug('relatedCryptocurrencyAddress: ', JSON.stringify(relatedCryptocurrencyAddress, null, 2));
+
         await this.listingItemTemplateRepo.destroy(id);
+        // if we have cryptoaddress and it's not related to profile -> delete
+        if (!_.isEmpty(relatedCryptocurrencyAddress) && relatedCryptocurrencyAddress.profileId === null) {
+            await this.cryptocurrencyAddressService.destroy(relatedCryptocurrencyAddress.id);
+        }
+
     }
 
 }
