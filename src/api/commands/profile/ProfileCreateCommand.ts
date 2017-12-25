@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
+import { ProfileCreateRequest } from '../../requests/ProfileCreateRequest';
 import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 
@@ -33,7 +34,7 @@ export class ProfileCreateCommand implements RpcCommandInterface<Profile> {
         return this.profileService.create({
             name : data.params[0],
             address : data.params[1]
-        });
+        } as ProfileCreateRequest);
     }
 
     public help(): string {

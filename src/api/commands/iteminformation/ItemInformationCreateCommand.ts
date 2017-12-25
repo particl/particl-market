@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ItemInformationService } from '../../services/ItemInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
+import { ItemInformationCreateRequest } from '../../requests/ItemInformationCreateRequest';
 import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 
@@ -41,7 +42,7 @@ export class ItemInformationCreateCommand implements RpcCommandInterface<ItemInf
             itemCategory: {
                 key: data.params[4]
             }
-        });
+        } as ItemInformationCreateRequest);
     }
 
     public help(): string {

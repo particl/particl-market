@@ -5,6 +5,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { MessagingInformationService } from '../../services/MessagingInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
+import { MessagingInformationUpdateRequest } from '../../requests/MessagingInformationUpdateRequest';
 import { MessagingInformation } from '../../models/MessagingInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
@@ -45,7 +46,7 @@ export class MessagingInformationUpdateCommand implements RpcCommandInterface<Me
                 listing_item_template_id: data.params[0],
                 protocol: data.params[1],
                 publicKey: data.params[2]
-            });
+            } as MessagingInformationUpdateRequest);
         }
     }
 

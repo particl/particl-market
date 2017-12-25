@@ -17,6 +17,10 @@ import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { PaymentType } from '../enums/PaymentType';
 import { EscrowType } from '../enums/EscrowType';
 import { ListingItem } from '../models/ListingItem';
+import { Profile } from '../models/Profile';
+import { ItemCategory } from '../models/ItemCategory';
+import { FavoriteItem } from '../models/FavoriteItem';
+import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { DefaultItemCategoryService } from './DefaultItemCategoryService';
@@ -82,22 +86,22 @@ export class TestDataService {
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async create<T>(@request(TestDataCreateRequest) body: TestDataCreateRequest): Promise<Bookshelf.Model<T>> {
+    public async create<T>(@request(TestDataCreateRequest) body: TestDataCreateRequest): Promise<Bookshelf.Model<any>> {
         switch (body.model) {
             case 'listingitemtemplate': {
-                return await this.listingItemTemplateService.create(body.data as ListingItemTemplateCreateRequest) as Bookshelf.Model<T>;
+                return await this.listingItemTemplateService.create(body.data as ListingItemTemplateCreateRequest) as Bookshelf.Model<ListingItemTemplate>;
             }
             case 'listingitem': {
-                return await this.listingItemService.create(body.data as ListingItemCreateRequest) as Bookshelf.Model<T>;
+                return await this.listingItemService.create(body.data as ListingItemCreateRequest) as Bookshelf.Model<ListingItem>;
             }
             case 'profile': {
-                return await this.profileService.create(body.data as ProfileCreateRequest) as Bookshelf.Model<T>;
+                return await this.profileService.create(body.data as ProfileCreateRequest) as Bookshelf.Model<Profile>;
             }
             case 'itemcategory': {
-                return await this.itemCategoryService.create(body.data as ItemCategoryCreateRequest) as Bookshelf.Model<T>;
+                return await this.itemCategoryService.create(body.data as ItemCategoryCreateRequest) as Bookshelf.Model<ItemCategory>;
             }
             case 'favoriteitem': {
-                return await this.favoriteItemService.create(body.data as FavoriteItemCreateRequest) as Bookshelf.Model<T>;
+                return await this.favoriteItemService.create(body.data as FavoriteItemCreateRequest) as Bookshelf.Model<FavoriteItem>;
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -116,7 +120,7 @@ export class TestDataService {
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async generate<T>(@request(TestDataGenerateRequest) body: TestDataGenerateRequest): Promise<Bookshelf.Collection<T>> {
+    public async generate<T>(@request(TestDataGenerateRequest) body: TestDataGenerateRequest): Promise<Bookshelf.Collection<any>> {
         switch (body.model) {
             case 'listingitemtemplate': {
                 return await this.generateListingItemTemplates(body.amount, body.withRelated);

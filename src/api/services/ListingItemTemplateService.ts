@@ -78,7 +78,7 @@ export class ListingItemTemplateService {
         // this.log.debug('listingItemObjects to save: ', JSON.stringify(listingItemObjects, null, 2));
 
         // If the request body was valid we will create the listingItemTemplate
-        const listingItemTemplate = await this.listingItemTemplateRepo.create(body)
+        const listingItemTemplate: any = await this.listingItemTemplateRepo.create(body)
             .catch(reason => {
                 this.log.error('ERROR: ', reason);
             });
@@ -156,9 +156,12 @@ export class ListingItemTemplateService {
         const listingItemTemplate = await this.findOne(id);
         const relatedCryptocurrencyAddress = listingItemTemplate
             .related('PaymentInformation')
-            .related('ItemPrice')
-            .related('CryptocurrencyAddress')
             .toJSON();
+        // const relatedCryptocurrencyAddress = listingItemTemplate
+        //     .related('PaymentInformation')
+        //     .related('ItemPrice')
+        //     .related('CryptocurrencyAddress')
+        //     .toJSON();
         // this.log.debug('relatedCryptocurrencyAddress: ', JSON.stringify(relatedCryptocurrencyAddress, null, 2));
 
         await this.listingItemTemplateRepo.destroy(id);
