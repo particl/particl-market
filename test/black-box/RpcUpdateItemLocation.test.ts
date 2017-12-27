@@ -46,9 +46,9 @@ describe('/updateItemLocation', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        // create profile
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME' });
-        testDataListingItemTemplate.profile_id = addProfileRes.getBody()['result'].id;
+        // profile
+        const defaultProfile = await testUtil.getDefaultProfile();
+        testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // create item template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
@@ -57,6 +57,18 @@ describe('/updateItemLocation', () => {
         createdItemInformationId = result.ItemInformation.id;
         testDataUpdated.unshift(createdTemplateId);
 
+    });
+
+    test('Should update item location and set null location marker fields', async () => {
+        // update item location
+        const addDataRes: any = await rpc(method, [createdTemplateId, testDataUpdated[1], testDataUpdated[2]]);
+        addDataRes.expectJson();
+        addDataRes.expectStatusCode(200);
+        const result: any = addDataRes.getBody()['result'];
+
+        expect(result.region).toBe(testDataUpdated[1]);
+        expect(result.address).toBe(testDataUpdated[2]);
+        expect(result.itemInformationId).toBe(createdItemInformationId);
     });
 
     test('Should update item location', async () => {
@@ -72,24 +84,6 @@ describe('/updateItemLocation', () => {
         expect(result.LocationMarker.markerText).toBe(testDataUpdated[4]);
         expect(result.LocationMarker.lat).toBe(testDataUpdated[5]);
         expect(result.LocationMarker.lng).toBe(testDataUpdated[6]);
-    });
-
-
-    test('Should update item location and set null location marker fields', async () => {
-        // update item location
-        const addDataRes: any = await rpc(method, [createdTemplateId, testDataUpdated[1], testDataUpdated[2]]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(200);
-        const result: any = addDataRes.getBody()['result'];
-
-        expect(result.region).toBe(testDataUpdated[1]);
-        expect(result.address).toBe(testDataUpdated[2]);
-        expect(result.itemInformationId).toBe(createdItemInformationId);
-        expect(result.LocationMarker.markerTitle).toBe(null);
-        expect(result.LocationMarker.markerText).toBe(null);
-        expect(result.LocationMarker.lat).toBe(null);
-        expect(result.LocationMarker.lng).toBe(null);
-
     });
 
     test('Should fail because we want to update without reason', async () => {
@@ -108,9 +102,12 @@ describe('/updateItemLocation', () => {
 
     // ItemLocation cannot be updated if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
     test('Should not update item location because item information is related with listing item', async () => {
-
+        // create listing item
+        const listingItems = await testUtil.generateData('listingitem', 1);
+        const testData = listingItems[0];
+        const listingItemId = testData['id'];
         // set listing item id in item information
-        testDataListingItemTemplate.itemInformation.listingItemId = 1;
+        testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
 
         // create new  item template
         const newListingItemTemplate = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);

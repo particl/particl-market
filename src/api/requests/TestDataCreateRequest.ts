@@ -11,7 +11,7 @@ export class TestDataCreateRequest extends RequestBody {
     public data: object;
 
     @IsNotEmpty()
-    public withRelated: boolean;
+    public withRelated?: boolean;
 
 }
 // tslint:enable:variable-name

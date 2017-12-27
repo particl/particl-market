@@ -27,7 +27,8 @@ export class AddDataCommand implements RpcCommandInterface<any> {
 
         return await this.testDataService.create({
             model: data.params[0],
-            data: JSON.parse(data.params[1])
+            data: JSON.parse(data.params[1]),
+            withRelated: true
         } as TestDataCreateRequest);
     }
 

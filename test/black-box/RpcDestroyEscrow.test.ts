@@ -46,8 +46,8 @@ describe('/DestroyEscrow', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-ESCROW' });
-        profileId = addProfileRes.getBody()['result'].id;
+        const defaultProfile = await testUtil.getDefaultProfile();
+        profileId = defaultProfile.id;
     });
 
     test('Should destroy Escrow by RPC', async () => {
