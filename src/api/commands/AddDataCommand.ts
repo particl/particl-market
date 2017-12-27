@@ -24,11 +24,11 @@ export class AddDataCommand implements RpcCommandInterface<any> {
     public async execute( @request(RpcRequest) data: any): Promise<any> {
         this.log.info('data.params[0]: ', data.params[0]);
         this.log.info('data.params[1]: ', data.params[1]);
-
+        const withRelated = data.params[2] ? data.params[2] : true;
         return await this.testDataService.create({
             model: data.params[0],
             data: JSON.parse(data.params[1]),
-            withRelated: true
+            withRelated
         } as TestDataCreateRequest);
     }
 
