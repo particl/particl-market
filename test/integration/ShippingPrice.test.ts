@@ -126,7 +126,7 @@ describe('ShippingPrice', () => {
     });
 
     test('Should update the shipping price', async () => {
-        testDataUpdated['item_price_id'] = 0;
+        testDataUpdated['item_price_id'] = itemPriceId;
         const shippingPriceModel: ShippingPrice = await shippingPriceService.update(createdId, testDataUpdated as ShippingPriceUpdateRequest);
         const result = shippingPriceModel.toJSON();
 
