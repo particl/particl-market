@@ -1,10 +1,12 @@
 import { EscrowFactory } from '../../../../src/api/factories/EscrowFactory';
 import { LogMock } from '../../lib/LogMock';
+import { EscrowMessageType } from '../../../../src/api/enums/EscrowMessageType';
+import {Country} from "../../../../src/api/enums/Country";
+import {EscrowType} from "../../../../src/api/enums/EscrowType";
 
 describe('EscrowFactory', () => {
     // jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
     let escrowFactory;
-    let req;
 
     beforeEach(() => {
         process.env.AUTH0_HOST = 'test';
@@ -12,27 +14,38 @@ describe('EscrowFactory', () => {
     });
 
     test('Should get EscrowLockMessage', () => {
-        req = {
-            action: 'MPA_LOCK',
-            escrow: {},
-            address: {
-                addressLine1: '20 seventeen street,',
-                addressLine2: 'march city, 2017'
-            },
+
+        const request = {
+            action: EscrowMessageType.MPA_LOCK,
             listing: 'f08f3d6e',
             nonce: 'randomness',
             memo: 'Please deliver by 17 March 2017'
         };
 
-        escrowFactory.get(req).then((response, error) => {
-            expect(response.version).not.toBeNull();
-            expect(response.mpaction.length).toBe(1);
-            expect(response.mpaction[0].action).toBe('MPA_LOCK');
-            expect(response.mpaction[0].listing).toBe(req.listing);
-            expect(response.mpaction[0].nonce).toBe(req.nonce);
-            expect(response.mpaction[0].info.address).toBe(req.address.addressLine1 + req.address.addressLine2);
-            expect(response.mpaction[0].info.memo).toBe(req.memo);
-            expect(response.mpaction[0].escrow.rawtx).not.toBeNull();
+        const escrow = {
+            type: EscrowType.MAD,
+            ratio: {
+                buyer: 50,
+                seller: 50
+            }
+        };
+
+        const address = {
+            title: 'Title',
+            addressLine1: '20 seventeen street',
+            addressLine2: 'march city, 2017',
+            city: 'city',
+            country: Country.FINLAND
+        };
+
+        escrowFactory.getMessage(request).then((response, error) => {
+            expect(response.action).toBe(request.action);
+            expect(response.listing).toBe(request.listing);
+            expect(response.nonce).toBe(request.nonce);
+            expect(response.info.address).toBe(request.address.addressLine1 + ', ' + request.address.addressLine2);
+            expect(response.info.memo).toBe(request.memo);
+            // todo: fix expect
+            expect(response.escrow.rawtx).not.toBeNull();
         });
     });
 

@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import { EscrowMessageType } from '../enums/EscrowMessageType';
 
 // tslint:disable:variable-name
 export class EscrowRefundRequest extends RequestBody {
@@ -14,14 +15,10 @@ export class EscrowRefundRequest extends RequestBody {
     public memo: string;
 
     @IsNotEmpty()
-    public escrow: any;
+    public escrowId: any;
 
     @IsNotEmpty()
-    public action: string;
-
-    public item: string;
-
-    public address?: any;
+    public action: EscrowMessageType;
 
 }
 // tslint:enable:variable-name

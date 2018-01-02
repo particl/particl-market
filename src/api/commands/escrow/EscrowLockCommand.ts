@@ -8,6 +8,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
 
 import { EscrowLockRequest } from '../../requests/EscrowLockRequest';
+import { EscrowMessageType } from '../../enums/EscrowMessageType';
 
 export class EscrowLockCommand implements RpcCommandInterface<Escrow> {
 
@@ -26,22 +27,23 @@ export class EscrowLockCommand implements RpcCommandInterface<Escrow> {
      * data.params[]:
      * [0]: itemhash
      * [1]: nonce
-     * [2]: address_id (from profile deliveryaddresses)
-     * [3]: escrowid
+     * [2]: addressId (from profile deliveryaddresses)
+     * [3]: escrowId
      * [4]: memo
      * @param data
      * @returns {Promise<any>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
+        // TODO: we have the listing hash, why is escrow being passed here?
+        // TODO: nonce, I don't think the client should pass this?
         return this.escrowService.lock({
             listing: data.params[0],
             nonce: data.params[1],
-            address: data.params[2],
-            escrow: data.params[3],
+            addressId: data.params[2],
+            escrowId: data.params[3],
             memo: data.params[4],
-            action: 'MPA_LOCK',
-            item: ''
+            action: EscrowMessageType.MPA_LOCK
         } as EscrowLockRequest);
     }
 

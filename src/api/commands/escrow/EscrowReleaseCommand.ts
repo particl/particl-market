@@ -7,6 +7,7 @@ import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
 import { EscrowReleaseRequest } from '../../requests/EscrowReleaseRequest';
+import { EscrowMessageType } from '../../enums/EscrowMessageType';
 
 export class EscrowReleaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -25,7 +26,7 @@ export class EscrowReleaseCommand implements RpcCommandInterface<Escrow> {
      * data.params[]:
      * [0]: itemhash
      * [1]: memo
-     * [2]: escrowid
+     * [2]: escrowId
      * @param data
      * @returns {Promise<any>}
      */
@@ -34,9 +35,8 @@ export class EscrowReleaseCommand implements RpcCommandInterface<Escrow> {
         return this.escrowService.release({
             listing: data.params[0],
             memo: data.params[1],
-            escrow: data.params[2],
-            action: 'MPA_RELEASE',
-            item: ''
+            escrowId: data.params[2],
+            action: EscrowMessageType.MPA_RELEASE
         } as EscrowReleaseRequest);
     }
 
