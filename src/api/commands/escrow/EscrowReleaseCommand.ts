@@ -32,6 +32,7 @@ export class EscrowReleaseCommand implements RpcCommandInterface<Escrow> {
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
+        // TODO: we have the listing hash, why is escrowId being passed here?
         return this.escrowService.release({
             listing: data.params[0],
             memo: data.params[1],

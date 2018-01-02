@@ -35,7 +35,7 @@ export class EscrowLockCommand implements RpcCommandInterface<Escrow> {
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
-        // TODO: we have the listing hash, why is escrow being passed here?
+        // TODO: we have the listing hash, why is escrowId being passed here?
         // TODO: nonce, I don't think the client should pass this?
         return this.escrowService.lock({
             listing: data.params[0],

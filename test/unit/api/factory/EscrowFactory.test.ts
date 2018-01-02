@@ -38,11 +38,12 @@ describe('EscrowFactory', () => {
             country: Country.FINLAND
         };
 
-        escrowFactory.getMessage(request).then((response, error) => {
+        escrowFactory.getMessage(request, escrow, address).then((response, error) => {
             expect(response.action).toBe(request.action);
             expect(response.listing).toBe(request.listing);
             expect(response.nonce).toBe(request.nonce);
-            expect(response.info.address).toBe(request.address.addressLine1 + ', ' + request.address.addressLine2);
+            // todo: fix when zip is added
+            expect(response.info.address).toBe(address.addressLine1 + ', ' + address.addressLine2);
             expect(response.info.memo).toBe(request.memo);
             // todo: fix expect
             expect(response.escrow.rawtx).not.toBeNull();

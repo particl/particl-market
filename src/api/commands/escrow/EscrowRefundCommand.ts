@@ -33,7 +33,7 @@ export class EscrowRefundCommand implements RpcCommandInterface<Escrow> {
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
-        // TODO: we have the listing hash, why is escrow being passed here?
+        // TODO: we have the listing hash, why is escrowId being passed here?
         return this.escrowService.refund({
             listing: data.params[0],
             accepted: data.params[1],
