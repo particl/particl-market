@@ -36,6 +36,7 @@ export class BidMessageProcessor implements MessageProcessorInterface {
             // setting the bid relation with listingItem
             // bid['listing_item_id'] = listingItem.id;
             // return await this.bidService.create(bid);
+            return;
         }
     }
 }
