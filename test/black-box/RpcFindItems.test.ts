@@ -15,6 +15,7 @@ describe('/FindItems', () => {
     const method = 'finditems';
 
     const testData = {
+        market_id: 0,
         hash: 'hash1',
         itemInformation: {
             title: 'item title1',
@@ -85,7 +86,7 @@ describe('/FindItems', () => {
                     domestic: 0.123,
                     international: 1.234
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: '1234'
                 }
@@ -98,6 +99,7 @@ describe('/FindItems', () => {
     };
 
     const testDataTwo = {
+        market_id: 0,
         hash: 'hash2',
         itemInformation: {
             title: 'title UPDATED',
@@ -146,7 +148,7 @@ describe('/FindItems', () => {
                     domestic: 1.111,
                     international: 2.222
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.STEALTH,
                     address: 'UPDATED'
                 }
@@ -164,12 +166,16 @@ describe('/FindItems', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+        // add market
+        const res = await rpc('addmarket', ['Test Market', 'privateKey', 'Market Address']);
+        const result: any = res.getBody()['result'];
+        testData.market_id = result.id;
         // create listing item
         const addListingItem1: any = await testUtil.addData('listingitem', testData);
         const addListingItem1Result = addListingItem1.getBody()['result'];
         createdHashFirst = addListingItem1Result.hash;
         categoryId = addListingItem1Result.ItemInformation.ItemCategory.id;
-
+        testDataTwo.market_id = result.id;
         const addListingItem2: any = await testUtil.addData('listingitem', testDataTwo);
         createdHashSecond = addListingItem2.getBody()['result'].hash;
     });

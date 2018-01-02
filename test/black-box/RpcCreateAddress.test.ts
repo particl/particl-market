@@ -7,6 +7,7 @@ describe('CreateAddress', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const method = 'createaddress';
+    let defaultProfileId;
 
     const testData = {
         title: 'Work',
@@ -18,13 +19,12 @@ describe('CreateAddress', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+        const defaultProfile = await testUtil.getDefaultProfile();
+        defaultProfileId = defaultProfile.id;
     });
 
     test('Should create a new address by RPC', async () => {
-        const addDataRes: any = await testUtil.addData('profile', { name: 'TESTING-ADDRESS-PROFILE-NAME' });
-        const profileId = addDataRes.getBody()['result'].id;
-
-        const res = await rpc(method, [testData.title, testData.addressLine1, testData.addressLine2, testData.city, testData.country, profileId]);
+        const res = await rpc(method, [testData.title, testData.addressLine1, testData.addressLine2, testData.city, testData.country, defaultProfileId]);
         res.expectJson();
         res.expectStatusCode(200);
 

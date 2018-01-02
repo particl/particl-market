@@ -39,7 +39,7 @@ describe('/RpcFindItemTemplates', () => {
                     domestic: 0.123,
                     international: 1.234
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: 'This is temp address.'
                 }
@@ -73,7 +73,7 @@ describe('/RpcFindItemTemplates', () => {
                     domestic: 0.123,
                     international: 1.234
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: 'This is temp address.'
                 }
@@ -84,8 +84,8 @@ describe('/RpcFindItemTemplates', () => {
     let profileId;
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME' });
-        profileId = addProfileRes.getBody()['result'].id;
+        const defaultProfile = await testUtil.getDefaultProfile();
+        profileId = defaultProfile.id;
         // create listing item
         testDataListingItemTemplate1.profile_id = profileId;
         const addListingItemTemplate1: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate1);

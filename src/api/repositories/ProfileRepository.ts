@@ -66,6 +66,7 @@ export class ProfileRepository {
             await profile.destroy();
             return;
         } catch (error) {
+            this.log.error('ERROR: ', error);
             throw new DatabaseException('Could not delete the profile!', error);
         }
     }

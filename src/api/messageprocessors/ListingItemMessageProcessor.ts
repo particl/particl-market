@@ -8,6 +8,10 @@ import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ListingItemService } from '../services/ListingItemService';
 import { ListingItem } from '../models/ListingItem';
 
+import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
+
+import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
+
 import { ItemCategoryFactory } from '../factories/ItemCategoryFactory';
 import { MessagingInformationFactory } from '../factories/MessagingInformationFactory';
 import { ItemCategoryService } from '../services/ItemCategoryService';
@@ -44,7 +48,7 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         // Convert the ListingItemMessage to ListingItem
         const listingItem = await this.listingItemFactory.get(message);
         // create listing-item
-        return await this.listingItemService.create(listingItem);
+        return await this.listingItemService.create(listingItem.toJSON() as ListingItemCreateRequest);
     }
 
     private async createUserDefinedItemCategories(category: string[]): Promise<number> {
@@ -62,7 +66,10 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
             let newCat;
             parentItemCategoryId = itemCategory[lastCreatedIndex].id;
             for (let i = lastCreatedIndex + 1; i < category.length; i++) {
-                newCat = await this.itemCategoryService.create({ name: category[i], parent_item_category_id: parentItemCategoryId });
+                newCat = await this.itemCategoryService.create({
+                    name: category[i],
+                    parent_item_category_id: parentItemCategoryId
+                } as ItemCategoryCreateRequest);
                 parentItemCategoryId = newCat.id;
             }
             itemCategoryId = newCat.id;

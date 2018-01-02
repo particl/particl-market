@@ -6,6 +6,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
+import { ItemCategoryUpdateRequest } from '../../requests/ItemCategoryUpdateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
@@ -46,7 +47,7 @@ export class ItemCategoryUpdateCommand implements RpcCommandInterface<ItemCatego
                 name: data.params[1],
                 description: data.params[2],
                 parent_item_category_id: parentItemCategoryId
-            });
+            } as ItemCategoryUpdateRequest);
         } else {
             throw new MessageException(`category can't be update. id= ${data.params[0]}`);
         }

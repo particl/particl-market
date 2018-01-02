@@ -16,7 +16,6 @@ describe('GetItem', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-
     });
 
     test('Should get the listing item by hash', async () => {
@@ -62,8 +61,8 @@ describe('GetItem', () => {
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.PaymentInformation.ItemPrice.basePrice);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.PaymentInformation.ItemPrice.ShippingPrice.domestic);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.PaymentInformation.ItemPrice.ShippingPrice.international);
-        expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.PaymentInformation.ItemPrice.Address.type);
-        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.PaymentInformation.ItemPrice.Address.address);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testData.PaymentInformation.ItemPrice.CryptocurrencyAddress.type);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testData.PaymentInformation.ItemPrice.CryptocurrencyAddress.address);
 
         expect(result.MessagingInformation[0].protocol).toBe(testData.MessagingInformation[0].protocol);
         expect(result.MessagingInformation[0].publicKey).toBe(testData.MessagingInformation[0].publicKey);
@@ -112,8 +111,8 @@ describe('GetItem', () => {
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.PaymentInformation.ItemPrice.basePrice);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.PaymentInformation.ItemPrice.ShippingPrice.domestic);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.PaymentInformation.ItemPrice.ShippingPrice.international);
-        expect(result.PaymentInformation.ItemPrice.Address.type).toBe(testData.PaymentInformation.ItemPrice.Address.type);
-        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData.PaymentInformation.ItemPrice.Address.address);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testData.PaymentInformation.ItemPrice.CryptocurrencyAddress.type);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testData.PaymentInformation.ItemPrice.CryptocurrencyAddress.address);
 
         expect(result.MessagingInformation[0].protocol).toBe(testData.MessagingInformation[0].protocol);
         expect(result.MessagingInformation[0].publicKey).toBe(testData.MessagingInformation[0].publicKey);

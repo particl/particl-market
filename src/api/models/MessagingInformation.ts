@@ -7,9 +7,6 @@ export class MessagingInformation extends Bookshelf.Model<MessagingInformation> 
         if (withRelated) {
             return await MessagingInformation.where<MessagingInformation>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'MessagingInformationRelated',
-                    // 'MessagingInformationRelated.Related'
                 ]
             });
         } else {
@@ -35,8 +32,4 @@ export class MessagingInformation extends Bookshelf.Model<MessagingInformation> 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public MessagingInformationRelated(): MessagingInformationRelated {
-    //    return this.hasOne(MessagingInformationRelated);
-    // }
 }

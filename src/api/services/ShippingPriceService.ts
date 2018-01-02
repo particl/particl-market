@@ -36,7 +36,7 @@ export class ShippingPriceService {
     }
 
     @validate()
-    public async create( @request(ShippingPriceCreateRequest) data: any): Promise<ShippingPrice> {
+    public async create( @request(ShippingPriceCreateRequest) data: ShippingPriceCreateRequest): Promise<ShippingPrice> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -49,7 +49,7 @@ export class ShippingPriceService {
     }
 
     @validate()
-    public async update(id: number, @request(ShippingPriceUpdateRequest) data: any): Promise<ShippingPrice> {
+    public async update(id: number, @request(ShippingPriceUpdateRequest) data: ShippingPriceUpdateRequest): Promise<ShippingPrice> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -69,35 +69,4 @@ export class ShippingPriceService {
     public async destroy(id: number): Promise<void> {
         await this.shippingPriceRepo.destroy(id);
     }
-
-    // TODO: remove
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ShippingPrice>> {
-        return this.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ShippingPrice> {
-        return this.findOne(data.params[0]);
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ShippingPrice> {
-        return this.create({
-            data: data.params[0] // TODO: convert your params to ShippingPriceCreateRequest
-        });
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ShippingPrice> {
-        return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to ShippingPriceUpdateRequest
-        });
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
-    }
-
 }

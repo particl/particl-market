@@ -5,6 +5,7 @@ import { Types, Core, Targets } from '../../constants';
 import { Profile } from '../models/Profile';
 import { ProfileService } from './ProfileService';
 import { CoreRpcService } from './CoreRpcService';
+import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
 
 export class DefaultProfileService {
 
@@ -18,33 +19,45 @@ export class DefaultProfileService {
         this.log = new Logger(__filename);
     }
 
-
     public async seedDefaultProfile(): Promise<void> {
         const defaultProfile = {
             name: 'DEFAULT'
-        };
-        await this.insertOrUpdateProfile(defaultProfile);
+        } as ProfileCreateRequest;
+
+        defaultProfile.address = await this.getAddress();
+        const newProfile = await this.insertOrUpdateProfile(defaultProfile);
+
+        this.log.debug('default profile:', newProfile.toJSON());
         return;
     }
 
-    public async insertOrUpdateProfile(profile: any): Promise<Profile> {
+    public async insertOrUpdateProfile(profile: ProfileCreateRequest): Promise<Profile> {
         let newProfile = await this.profileService.findOneByName(profile.name);
         if (newProfile === null) {
             this.log.debug('created new default profile');
-            let newAddr;
-            await this.coreRpcService.call('getnewaddress').then((res) => {
-                newAddr = res.result;
-                this.log.info('Successfully created new address for profile: ' + newAddr);
-            })
-            .catch(reason => {
-                this.log.info('Could not create new address for profile: ', reason);
-            });
-            profile.address = newAddr;
             newProfile = await this.profileService.create(profile);
+
         } else {
             newProfile = await this.profileService.update(newProfile.Id, profile);
             this.log.debug('updated new default profile');
         }
         return newProfile;
+    }
+
+    private async getAddress(): Promise<string> {
+        return 'FIXFIXFIX';
+        /*
+        FFS fix this after merge
+        await this.coreRpcService.call('getnewaddress')
+            .then( async (res) => {
+                this.log.info('Successfully created new address for profile: ' + res.result);
+                return res.result;
+            })
+            .catch(reason => {
+                // TODO: temporarily returning empty address, FIXTHIS!
+                this.log.info('Could not create new address for profile: ', reason);
+                return '';
+            });
+        */
     }
 }

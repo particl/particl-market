@@ -13,11 +13,8 @@ describe('CreateListingItemTemplate', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-
         // add profile for testing
-        const addDataRes: any = await testUtil.addData('profile', { name: 'TESTING-ADDRESS-PROFILE-NAME' });
-        profile = addDataRes.getBody()['result'];
-
+        profile = await testUtil.getDefaultProfile();
     });
 
     test('Should create a new Listing Item Template with only Profile Id', async () => {
@@ -75,7 +72,7 @@ describe('CreateListingItemTemplate', () => {
         expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData[7]);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData[8]);
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData[9]);
-        expect(result.PaymentInformation.ItemPrice.Address.address).toBe(testData[10]);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testData[10]);
 
     });
 

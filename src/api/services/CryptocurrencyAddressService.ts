@@ -9,7 +9,6 @@ import { CryptocurrencyAddressRepository } from '../repositories/CryptocurrencyA
 import { CryptocurrencyAddress } from '../models/CryptocurrencyAddress';
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { CryptocurrencyAddressUpdateRequest } from '../requests/CryptocurrencyAddressUpdateRequest';
-import { RpcRequest } from '../requests/RpcRequest';
 
 
 export class CryptocurrencyAddressService {
@@ -37,22 +36,18 @@ export class CryptocurrencyAddressService {
     }
 
     @validate()
-    public async create( @request(CryptocurrencyAddressCreateRequest) body: any): Promise<CryptocurrencyAddress> {
-
-        if (body.item_price_id == null && body.profile_id == null) {
-            throw new ValidationException('Request body is not valid', ['item_price_id or profile_id missing']);
-        }
+    public async create( @request(CryptocurrencyAddressCreateRequest) body: CryptocurrencyAddressCreateRequest): Promise<CryptocurrencyAddress> {
 
         // If the request body was valid we will create the cryptocurrencyAddress
         const cryptocurrencyAddress = await this.cryptocurrencyAddressRepo.create(body);
+        // this.log.debug('CryptocurrencyAddressService created: ', JSON.stringify(cryptocurrencyAddress.toJSON(), null, 2));
 
         // finally find and return the created cryptocurrencyAddress
-        const newCryptocurrencyAddress = await this.findOne(cryptocurrencyAddress.Id);
-        return newCryptocurrencyAddress;
+        return await this.findOne(cryptocurrencyAddress.Id);
     }
 
     @validate()
-    public async update(id: number, @request(CryptocurrencyAddressUpdateRequest) body: any): Promise<CryptocurrencyAddress> {
+    public async update(id: number, @request(CryptocurrencyAddressUpdateRequest) body: CryptocurrencyAddressUpdateRequest): Promise<CryptocurrencyAddress> {
 
         // find the existing one without related
         const cryptocurrencyAddress = await this.findOne(id, false);
@@ -62,42 +57,11 @@ export class CryptocurrencyAddressService {
         cryptocurrencyAddress.Address = body.address;
 
         // update cryptocurrencyAddress record
-        const updatedCryptocurrencyAddress = await this.cryptocurrencyAddressRepo.update(id, cryptocurrencyAddress.toJSON());
-        return updatedCryptocurrencyAddress;
+        return await this.cryptocurrencyAddressRepo.update(id, cryptocurrencyAddress.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {
         await this.cryptocurrencyAddressRepo.destroy(id);
-    }
-
-    // TODO: REMOVE
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<CryptocurrencyAddress>> {
-        return this.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<CryptocurrencyAddress> {
-        return this.findOne(data.params[0]);
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<CryptocurrencyAddress> {
-        return this.create({
-            data: data.params[0] // TODO: convert your params to CryptocurrencyAddressCreateRequest
-        });
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<CryptocurrencyAddress> {
-        return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to CryptocurrencyAddressUpdateRequest
-        });
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
     }
 
 }

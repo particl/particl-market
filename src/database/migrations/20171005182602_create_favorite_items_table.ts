@@ -8,11 +8,11 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.integer('listing_item_id').unsigned().notNullable();
             table.foreign('listing_item_id').references('id')
-                .inTable('listing_item').onDelete('cascade');
+                .inTable('listing_items').onDelete('cascade');
 
             table.integer('profile_id').unsigned().notNullable();
             table.foreign('profile_id').references('id')
-                .inTable('profile').onDelete('cascade');
+                .inTable('profiles').onDelete('cascade');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

@@ -19,8 +19,8 @@ describe('/RpcItemInformation', () => {
     let createdListingItemTemplateId;
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME' });
-        const profileId = addProfileRes.getBody()['result'].id;
+        const defaultProfile = await testUtil.getDefaultProfile();
+        const profileId = defaultProfile.id;
         // create listing item
         testDataListingItemTemplate.profile_id = profileId;
         const addListingItemTemplate: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);

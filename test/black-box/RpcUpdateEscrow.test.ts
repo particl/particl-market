@@ -35,7 +35,7 @@ describe('/UpdateEscrow', () => {
                     domestic: 0.123,
                     international: 1.234
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: 'This is temp address.'
                 }
@@ -53,8 +53,8 @@ describe('/UpdateEscrow', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-ESCROW' });
-        profileId = addProfileRes.getBody()['result'].id;
+        const defaultProfile = await testUtil.getDefaultProfile();
+        profileId = defaultProfile.id;
     });
 
     test('Should update Escrow by RPC', async () => {

@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { PaymentInformationService } from '../../services/PaymentInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
+import { PaymentInformationUpdateRequest } from '../../requests/PaymentInformationUpdateRequest';
 import { PaymentInformation } from '../../models/PaymentInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
@@ -53,12 +54,12 @@ export class PaymentInformationUpdateCommand implements RpcCommandInterface<Paym
                     domestic: data.params[4],
                     international: data.params[5]
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: data.params[6]
                 }
             }
-        });
+        } as PaymentInformationUpdateRequest);
     }
 
     public help(): string {

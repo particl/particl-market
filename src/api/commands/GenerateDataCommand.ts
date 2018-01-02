@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { TestDataService } from '../services/TestDataService';
 import { RpcRequest } from '../requests/RpcRequest';
+import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { RpcCommandInterface } from './RpcCommandInterface';
 
 export class GenerateDataCommand implements RpcCommandInterface<any> {
@@ -28,7 +29,7 @@ export class GenerateDataCommand implements RpcCommandInterface<any> {
             model: data.params[0],
             amount: data.params[1],
             withRelated: data.params[2]
-        });
+        } as TestDataGenerateRequest);
     }
 
     public help(): string {

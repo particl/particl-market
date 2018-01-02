@@ -13,8 +13,8 @@ export class MessageBroadcastService {
         this.log = new Logger(__filename);
     }
 
-    public async broadcast(): Promise<void> {
+    public async broadcast(message: any): Promise<void> {
         // TODO: to be implemented
-        return;
+        return message;
     }
 }

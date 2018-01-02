@@ -49,6 +49,14 @@ import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
 import { ProfileGetCommand } from '../commands/profile/ProfileGetCommand';
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
+import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
+import { EscrowRefundCommand } from '../commands/escrow/EscrowRefundCommand';
+import { EscrowReleaseCommand } from '../commands/escrow/EscrowReleaseCommand';
+
+import { AcceptBidCommand } from '../commands/bid/AcceptBidCommand';
+import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
+import { RejectBidCommand } from '../commands/bid/RejectBidCommand';
+import { SendBidCommand } from '../commands/bid/SendBidCommand';
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -104,6 +112,16 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.GenerateDataCommand) private generateDataCommand: GenerateDataCommand,
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowLockCommand) private escrowLockCommand: EscrowLockCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowRefundCommand) private escrowRefundCommand: EscrowRefundCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowReleaseCommand) private escrowReleaseCommand: EscrowReleaseCommand,
+
+        @inject(Types.Command) @named(Targets.Command.bid.AcceptBidCommand) private acceptBidCommand: AcceptBidCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.CancelBidCommand) private cancelBidCommand: CancelBidCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.RejectBidCommand) private rejectBidCommand: RejectBidCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.SendBidCommand) private sendBidCommand: SendBidCommand,
+
+
         //  ---
         // @multiInject(Types.Command) public commands: RpcCommand<any>[],
         // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
@@ -151,15 +169,20 @@ export class RpcCommandFactory {
         this.commands.push(profileUpdateCommand);
         this.commands.push(shippingDestinationAddCommand);
         this.commands.push(shippingDestinationRemoveCommand);
+        this.commands.push(escrowLockCommand);
+        this.commands.push(escrowRefundCommand);
+        this.commands.push(escrowReleaseCommand);
 
         this.commands.push(addDataCommand);
         this.commands.push(cleanDbCommand);
         this.commands.push(generateDataCommand);
         this.commands.push(helpCommand);
+        this.commands.push(acceptBidCommand);
+        this.commands.push(cancelBidCommand);
+        this.commands.push(rejectBidCommand);
+        this.commands.push(sendBidCommand);
 
-        for (const o of this.commands) {
-            this.log.debug('Command ' + o.name + ' was pushed');
-        }
+        this.log.debug(this.commands.length + ' commands initialized.');
 
     }
 

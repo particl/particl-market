@@ -7,12 +7,11 @@ export class TestDataCreateRequest extends RequestBody {
     @IsNotEmpty()
     public model: string;
 
-    // @IsNotEmpty()
-    public data: string;
+    @IsNotEmpty()
+    public data: object;
 
-    public amount: string;
-
-    public withRelated: boolean;
+    @IsNotEmpty()
+    public withRelated?: boolean;
 
 }
 // tslint:enable:variable-name

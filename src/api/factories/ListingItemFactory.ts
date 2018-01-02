@@ -19,9 +19,10 @@ export class ListingItemFactory {
     }
 
     public async get(data: ItemMessageInterface): Promise<ListingItem> {
-        const hash = crypto.SHA256(new Date().getTime().toString()).toString();
+        // const hash = crypto.SHA256(new Date().getTime().toString()).toString();
         const listingItem = {
-            hash,
+            hash: crypto.SHA256(new Date().getTime().toString()).toString(),
+            market_id: 0,
             itemInformation: {
                 title: data.information.title,
                 shortDescription: data.information.short_description,

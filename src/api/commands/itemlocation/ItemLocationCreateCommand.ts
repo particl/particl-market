@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ItemLocationService } from '../../services/ItemLocationService';
 import { RpcRequest } from '../../requests/RpcRequest';
+import { ItemLocationCreateRequest } from '../../requests/ItemLocationCreateRequest';
 import { ItemLocation } from '../../models/ItemLocation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
@@ -58,7 +59,7 @@ export class ItemLocationCreateCommand implements RpcCommandInterface<ItemLocati
                     lat: data.params[5],
                     lng: data.params[6]
                 }
-            });
+            } as ItemLocationCreateRequest);
         }
     }
 

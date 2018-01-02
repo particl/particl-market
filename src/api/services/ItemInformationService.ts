@@ -17,7 +17,8 @@ import { ItemImageService } from './ItemImageService';
 import { ShippingDestinationService } from './ShippingDestinationService';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { ItemCategoryService } from './ItemCategoryService';
-
+import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest';
+import { ItemCategory } from '../models/ItemCategory';
 
 export class ItemInformationService {
 
@@ -49,43 +50,34 @@ export class ItemInformationService {
     }
 
     @validate()
-    public async create( @request(ItemInformationCreateRequest) data: any): Promise<ItemInformation> {
+    public async create( @request(ItemInformationCreateRequest) data: ItemInformationCreateRequest): Promise<ItemInformation> {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        // todo: could this be annotated in ItemInformationUpdateRequest?
+        // ItemInformation needs to be related to either one
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
 
         // extract and remove related models from request
         const itemCategory = body.itemCategory;
-        delete body.itemCategory;
-
-        const itemLocation = body.itemLocation || {};
-        delete body.itemLocation;
+        const itemLocation = body.itemLocation;
         const shippingDestinations = body.shippingDestinations || [];
-        delete body.shippingDestinations;
         const itemImages = body.itemImages || [];
+        delete body.itemCategory;
+        delete body.itemLocation;
+        delete body.shippingDestinations;
         delete body.itemImages;
 
-        // check if item category allready exists
-        let existingItemCategory;
-        if (itemCategory.key) {
-            existingItemCategory = await this.itemCategoryService.findOneByKey(itemCategory.key);
-        } else if (itemCategory.id) {
-            existingItemCategory = await this.itemCategoryService.findOne(itemCategory.id);
-        } else {
-            existingItemCategory = await this.itemCategoryService.create(itemCategory);
-        }
-
+        // get existing item category or create new one
+        const existingItemCategory = await this.getOrCreateItemCategory(itemCategory);
         body.item_category_id = existingItemCategory.Id;
 
-        // If the request body was valid, create the itemInformation
+        // ready to save, if the request body was valid, create the itemInformation
         const itemInformation = await this.itemInformationRepo.create(body);
 
         // create related models
-        if (itemLocation.region) {
+        if (!_.isEmpty(itemLocation)) {
             itemLocation.item_information_id = itemInformation.Id;
             await this.itemLocationService.create(itemLocation);
         }
@@ -101,11 +93,10 @@ export class ItemInformationService {
         }
 
         // finally find and return the created itemInformation
-        const newItemInformation = await this.findOne(itemInformation.Id);
-        return newItemInformation;
+        return await this.findOne(itemInformation.Id);
     }
 
-    public async updateWithCheckListingTemplate(@request(ItemInformationUpdateRequest) body: any): Promise<ItemInformation> {
+    public async updateWithCheckListingTemplate(@request(ItemInformationUpdateRequest) body: ItemInformationUpdateRequest): Promise<ItemInformation> {
         const listingItemTemplateId = body.listing_item_template_id;
         const listingItemTemplate = await this.listingItemTemplateRepository.findOne(listingItemTemplateId);
         const itemInformation = listingItemTemplate.related('ItemInformation').toJSON() || {};
@@ -117,11 +108,10 @@ export class ItemInformationService {
     }
 
     @validate()
-    public async update(id: number, @request(ItemInformationUpdateRequest) data: any): Promise<ItemInformation> {
+    public async update(id: number, @request(ItemInformationUpdateRequest) data: ItemInformationUpdateRequest): Promise<ItemInformation> {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        // todo: could this be annotated in ItemInformationUpdateRequest?
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
@@ -135,17 +125,10 @@ export class ItemInformationService {
         itemInformation.LongDescription = body.longDescription;
         const itemInfoToSave = itemInformation.toJSON();
 
-        // check if item category allready exists
-        let existingItemCategory;
-        if (body.itemCategory.key) {
-            existingItemCategory = await this.itemCategoryService.findOneByKey(body.itemCategory.key);
-        } else if (body.itemCategory.id) {
-            existingItemCategory = await this.itemCategoryService.findOne(body.itemCategory.id);
-        } else {
-            existingItemCategory = await this.itemCategoryService.create(body.itemCategory);
-        }
+        // get existing item category or create new one
+        const existingItemCategory = await this.getOrCreateItemCategory(body.itemCategory);
+        itemInfoToSave.item_category_id = existingItemCategory.Id;
 
-        itemInfoToSave['itemCategoryId'] = existingItemCategory.Id;
         // update itemInformation record
         const updatedItemInformation = await this.itemInformationRepo.update(id, itemInfoToSave);
 
@@ -158,6 +141,9 @@ export class ItemInformationService {
             itemLocation.item_information_id = id;
             await this.itemLocationService.create(itemLocation);
         }
+
+        // todo: instead of delete and create, update
+
         // find related record and delete it
         let shippingDestinations = updatedItemInformation.related('ShippingDestinations').toJSON();
         for (const shippingDestination of shippingDestinations) {
@@ -191,6 +177,21 @@ export class ItemInformationService {
 
     public async destroy(id: number): Promise<void> {
         await this.itemInformationRepo.destroy(id);
+    }
+
+    /**
+     * fetch or create the given ItemCategory from db
+     * @param itemCategory
+     * @returns {Promise<ItemCategory>}
+     */
+    private async getOrCreateItemCategory(itemCategory: ItemCategoryUpdateRequest): Promise<ItemCategory> {
+        if (itemCategory.key) {
+            return await this.itemCategoryService.findOneByKey(itemCategory.key);
+        } else if (itemCategory.id) {
+            return await this.itemCategoryService.findOne(itemCategory.id);
+        } else {
+            return await this.itemCategoryService.create(itemCategory);
+        }
     }
 
 }

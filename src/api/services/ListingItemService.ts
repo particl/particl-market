@@ -1,4 +1,5 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -11,6 +12,8 @@ import { ListingItemUpdateRequest } from '../requests/ListingItemUpdateRequest';
 import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemInformationService } from './ItemInformationService';
+import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
+import { MarketService } from './MarketService';
 import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
 
 export class ListingItemService {
@@ -18,6 +21,8 @@ export class ListingItemService {
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
@@ -76,31 +81,36 @@ export class ListingItemService {
 
     @validate()
 
-    public async create( @request(ListingItemCreateRequest) data: any): Promise<ListingItem> {
+    public async create( @request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
 
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
-        delete body.itemInformation;
         const paymentInformation = body.paymentInformation;
         delete body.paymentInformation;
         const messagingInformation = body.messagingInformation || [];
         delete body.messagingInformation;
+        const listingItemObjects = body.listingItemObjects || {};
+        delete body.listingItemObjects;
 
-        // check market id : if null use default market id = 1
-        if (!body['market_id']) {
-            body.market_id = 1;
-        }
+        // this.log.debug('itemInformation to save: ', JSON.stringify(itemInformation, null, 2));
+        // this.log.debug('paymentInformation to save: ', JSON.stringify(paymentInformation, null, 2));
+        // this.log.debug('messagingInformation to save: ', JSON.stringify(messagingInformation, null, 2));
+        // this.log.debug('listingItemObjects to save: ', JSON.stringify(listingItemObjects, null, 2));
+
         // If the request body was valid we will create the listingItem
-        const listingItem = await this.listingItemRepo.create(body);
+        const listingItem: any = await this.listingItemRepo.create(body)
+            .catch(reason => {
+                this.log.error('ERROR: ', reason);
+            });
 
         // create related models
-        if (itemInformation) {
+        if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_id = listingItem.Id;
             await this.itemInformationService.create(itemInformation);
         }
-        if (paymentInformation) {
+        if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_id = listingItem.Id;
             await this.paymentInformationService.create(paymentInformation);
         }
@@ -108,14 +118,16 @@ export class ListingItemService {
             msgInfo.listing_item_id = listingItem.Id;
             await this.messagingInformationService.create(msgInfo);
         }
+        if (!_.isEmpty(listingItemObjects)) {
+            // TODO: implement
+        }
 
         // finally find and return the created listingItem
-        const newListingItem = await this.findOne(listingItem.Id);
-        return newListingItem;
+        return await this.findOne(listingItem.Id);
     }
 
     @validate()
-    public async update(id: number, @request(ListingItemUpdateRequest) data: any): Promise<ListingItem> {
+    public async update(id: number, @request(ListingItemUpdateRequest) data: ListingItemUpdateRequest): Promise<ListingItem> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -125,17 +137,13 @@ export class ListingItemService {
         // set new values
         listingItem.Hash = body.hash;
 
-        this.log.info('listingItem.toJSON():', listingItem.toJSON());
+        this.log.debug('listingItem.toJSON():', listingItem.toJSON());
+
         // update listingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
 
         // find related record and delete it and recreate related data
         const itemInformation = updatedListingItem.related('ItemInformation').toJSON();
-        await this.itemInformationService.destroy(itemInformation.id);
-        body.itemInformation.listing_item_id = id;
-        await this.itemInformationService.create(body.itemInformation);
-
-        // find related record and delete it and recreate related data
         const paymentInformation = updatedListingItem.related('PaymentInformation').toJSON();
         await this.paymentInformationService.destroy(paymentInformation.id);
         body.paymentInformation.listing_item_id = id;
@@ -153,11 +161,26 @@ export class ListingItemService {
         }
 
         // finally find and return the updated listingItem
-        const newListingItem = await this.findOne(id);
-        return newListingItem;
+        return await this.findOne(id);
     }
 
+    // public async destroy(id: number): Promise<void> {
+    //     await this.listingItemRepo.destroy(id);
+    // }
     public async destroy(id: number): Promise<void> {
+        const item = await this.findOne(id, true);
+        if (!item) {
+            throw new NotFoundException('Item listing does not exist. id = ' + id);
+        }
+        const paymentInfo = item.PaymentInformation();
+        if (paymentInfo) {
+            const itemPrice = paymentInfo.ItemPrice();
+            const cryptoAddress = itemPrice.CryptocurrencyAddress();
+            if (!cryptoAddress) {
+                throw new NotFoundException('Payment information without cryptographic address. PaymentInfo.id = ' + paymentInfo.id);
+            }
+            this.cryptocurrencyAddressService.destroy(cryptoAddress.Id);
+        }
         await this.listingItemRepo.destroy(id);
     }
 }

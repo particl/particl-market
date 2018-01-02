@@ -1,4 +1,5 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -9,11 +10,16 @@ import { EscrowRepository } from '../repositories/EscrowRepository';
 import { Escrow } from '../models/Escrow';
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../requests/EscrowUpdateRequest';
+import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
+import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
+import { EscrowLockRequest } from '../requests/EscrowLockRequest';
 import { RpcRequest } from '../requests/RpcRequest';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
 import { EscrowRatioService } from '../services/EscrowRatioService';
-
+import { AddressService } from '../services/AddressService';
+import { MessageBroadcastService } from '../services/MessageBroadcastService';
+import { EscrowFactory } from '../factories/EscrowFactory';
 
 export class EscrowService {
 
@@ -24,6 +30,9 @@ export class EscrowService {
         @inject(Types.Repository) @named(Targets.Repository.EscrowRepository) public escrowRepo: EscrowRepository,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
         @inject(Types.Repository) @named(Targets.Repository.PaymentInformationRepository) private paymentInfoRepo: PaymentInformationRepository,
+        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
+        @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) private escrowFactory: EscrowFactory,
+        @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -74,7 +83,7 @@ export class EscrowService {
     }
 
     @validate()
-    public async create( @request(EscrowCreateRequest) data: any): Promise<Escrow> {
+    public async create( @request(EscrowCreateRequest) data: EscrowCreateRequest): Promise<Escrow> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -84,14 +93,14 @@ export class EscrowService {
         // If the request body was valid we will create the escrow
         const escrow = await this.escrowRepo.create(body);
 
-        // then create escrowratio
-        if (escrowRatio) {
+        // create related models, escrowRatio
+        if (!_.isEmpty(escrowRatio)) {
             escrowRatio.escrow_id = escrow.Id;
             await this.escrowratioService.create(escrowRatio);
         }
+
         // finally find and return the created escrow
-        const newEscrow = await this.findOne(escrow.Id);
-        return newEscrow;
+        return await this.findOne(escrow.Id);
     }
 
     public async updateCheckByListingItem(body: any): Promise<Escrow> {
@@ -120,7 +129,7 @@ export class EscrowService {
     }
 
     @validate()
-    public async update(id: number, @request(EscrowUpdateRequest) data: any): Promise<Escrow> {
+    public async update(id: number, @request(EscrowUpdateRequest) data: EscrowUpdateRequest): Promise<Escrow> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -175,42 +184,79 @@ export class EscrowService {
         await this.escrowRepo.destroy(id);
     }
 
+    @validate()
+    public async lock( @request(EscrowLockRequest) data: EscrowLockRequest): Promise<void> {
+        // fetch the escrow
+        const escrowId: any = data.escrow;
+        const escrow = await this.findOne(escrowId, false);
+        data.escrow = escrow.toJSON();
+        // fetch the address
+        const addressId: any = data.address;
+        const address = await this.addressService.findOne(addressId, false);
+        data.address = address.toJSON();
+        // escrowfactory to generate the lockmessage
+        const escrowActionMessage = await this.escrowFactory.get(data);
+        return await this.messageBroadcastService.broadcast(escrowActionMessage);
+    }
+
+    @validate()
+    public async refund( @request(EscrowRefundRequest) data: EscrowRefundRequest): Promise<any> {
+        // fetch the escrow
+        const escrowId: any = data.escrow;
+        const escrow = await this.findOne(escrowId, false);
+        data.escrow = escrow.toJSON();
+        // escrowfactory to generate the refundmessage
+        const escrowActionMessage = await this.escrowFactory.get(data);
+        return await this.messageBroadcastService.broadcast(escrowActionMessage);
+    }
+
+    @validate()
+    public async release( @request(EscrowReleaseRequest) data: any): Promise<void> {
+        // fetch the escrow
+        const escrowId: any = data.escrow;
+        const escrow = await this.findOne(escrowId, false);
+        data.escrow = escrow.toJSON();
+        // escrowfactory to generate the releasemessage
+        const escrowActionMessage = await this.escrowFactory.get(data);
+        return await this.messageBroadcastService.broadcast(escrowActionMessage);
+    }
+
     // TODO: REMOVE
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Escrow>> {
-        return this.findAll();
-    }
+    // @validate()
+    // public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Escrow>> {
+    //     return this.findAll();
+    // }
 
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<Escrow> {
-        return this.findOne(data.params[0]);
-    }
+    // @validate()
+    // public async rpcFindOne( @request(RpcRequest) data: any): Promise<Escrow> {
+    //     return this.findOne(data.params[0]);
+    // }
 
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<Escrow> {
-        return this.create({
-            type: data.params[0],
-            ratio: {
-                buyer: data.params[1],
-                seller: data.params[2]
-            }
-        });
-    }
+    // @validate()
+    // public async rpcCreate( @request(RpcRequest) data: any): Promise<Escrow> {
+    //     return this.create({
+    //         type: data.params[0],
+    //         ratio: {
+    //             buyer: data.params[1],
+    //             seller: data.params[2]
+    //         }
+    //     });
+    // }
 
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<Escrow> {
-        return this.update(data.params[0], {
-            type: data.params[1],
-            ratio: {
-                buyer: data.params[2],
-                seller: data.params[3]
-            }
-        });
-    }
+    // @validate()
+    // public async rpcUpdate( @request(RpcRequest) data: any): Promise<Escrow> {
+    //     return this.update(data.params[0], {
+    //         type: data.params[1],
+    //         ratio: {
+    //             buyer: data.params[2],
+    //             seller: data.params[3]
+    //         }
+    //     });
+    // }
 
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
-    }
+    // @validate()
+    // public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
+    //     return this.destroy(data.params[0]);
+    // }
 
 }

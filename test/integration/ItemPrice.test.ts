@@ -3,6 +3,7 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
+import { ProfileService } from '../../src/api/services/ProfileService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -12,6 +13,10 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 
 import { ItemPriceService } from '../../src/api/services/ItemPriceService';
+import { ItemPriceCreateRequest } from '../../src/api/requests/ItemPriceCreateRequest';
+import { ItemPriceUpdateRequest } from '../../src/api/requests/ItemPriceUpdateRequest';
+import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
+import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 
 describe('ItemPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -21,8 +26,11 @@ describe('ItemPrice', () => {
 
     let testDataService: TestDataService;
     let itemPriceService: ItemPriceService;
+    let profileService: ProfileService;
 
-    let createdId;
+    let createdId: number;
+    let createdListingItemTemplate;
+    let defaultProfile;
 
     const testData = {
         currency: Currency.BITCOIN,
@@ -31,11 +39,11 @@ describe('ItemPrice', () => {
             domestic: 0.123,
             international: 1.234
         },
-        address: {
+        cryptocurrencyAddress: {
             type: CryptocurrencyAddressType.NORMAL,
             address: '1234'
         }
-    };
+    } as ItemPriceCreateRequest;
 
     const testDataUpdated = {
         currency: Currency.PARTICL,
@@ -44,20 +52,31 @@ describe('ItemPrice', () => {
             domestic: 1.234,
             international: 2.345
         },
-        address: {
+        cryptocurrencyAddress: {
             type: CryptocurrencyAddressType.STEALTH,
             address: '4567'
         }
-    };
+    } as ItemPriceUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.ItemPriceService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
+
+        defaultProfile = await profileService.getDefault();
+        createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
+            model: 'listingitemtemplate',
+            data: {
+                profile_id: defaultProfile.Id,
+                hash: 'itemhash'
+            },
+            withRelated: true
+        } as TestDataCreateRequest);
     });
 
     afterAll(async () => {
@@ -82,8 +101,8 @@ describe('ItemPrice', () => {
         expect(result.basePrice).toBe(testData.basePrice);
         expect(result.ShippingPrice.domestic).toBe(testData.shippingPrice.domestic);
         expect(result.ShippingPrice.international).toBe(testData.shippingPrice.international);
-        expect(result.Address.type).toBe(testData.address.type);
-        expect(result.Address.address).toBe(testData.address.address);
+        expect(result.CryptocurrencyAddress.type).toBe(testData.cryptocurrencyAddress.type);
+        expect(result.CryptocurrencyAddress.address).toBe(testData.cryptocurrencyAddress.address);
     });
 
     test('Should throw ValidationException because we want to create a empty item price', async () => {
@@ -103,7 +122,7 @@ describe('ItemPrice', () => {
         expect(result.currency).toBe(testData.currency);
         expect(result.basePrice).toBe(testData.basePrice);
         expect(result.ShippingPrice).toBe(undefined); // doesnt fetch related
-        expect(result.Address).toBe(undefined); // doesnt fetch related
+        expect(result.CryptocurrencyAddress).toBe(undefined); // doesnt fetch related
     });
 
     test('Should return one item price', async () => {
@@ -114,8 +133,8 @@ describe('ItemPrice', () => {
         expect(result.basePrice).toBe(testData.basePrice);
         expect(result.ShippingPrice.domestic).toBe(testData.shippingPrice.domestic);
         expect(result.ShippingPrice.international).toBe(testData.shippingPrice.international);
-        expect(result.Address.type).toBe(testData.address.type);
-        expect(result.Address.address).toBe(testData.address.address);
+        expect(result.CryptocurrencyAddress.type).toBe(testData.cryptocurrencyAddress.type);
+        expect(result.CryptocurrencyAddress.address).toBe(testData.cryptocurrencyAddress.address);
     });
 
     test('Should throw ValidationException because there is no payment_information_id', async () => {
@@ -134,8 +153,8 @@ describe('ItemPrice', () => {
         expect(result.basePrice).toBe(testDataUpdated.basePrice);
         expect(result.ShippingPrice.domestic).toBe(testDataUpdated.shippingPrice.domestic);
         expect(result.ShippingPrice.international).toBe(testDataUpdated.shippingPrice.international);
-        expect(result.Address.type).toBe(testDataUpdated.address.type);
-        expect(result.Address.address).toBe(testDataUpdated.address.address);
+        expect(result.CryptocurrencyAddress.type).toBe(testDataUpdated.cryptocurrencyAddress.type);
+        expect(result.CryptocurrencyAddress.address).toBe(testDataUpdated.cryptocurrencyAddress.address);
     });
 
     test('Should delete the item price', async () => {

@@ -8,8 +8,8 @@ import { ProfileRepository } from '../repositories/ProfileRepository';
 import { Profile } from '../models/Profile';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
 import { ProfileUpdateRequest } from '../requests/ProfileUpdateRequest';
-import { RpcRequest } from '../requests/RpcRequest';
 import { AddressService } from './AddressService';
+import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 
 
 export class ProfileService {
@@ -18,6 +18,7 @@ export class ProfileService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
+        @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Repository) @named(Targets.Repository.ProfileRepository) public profileRepo: ProfileRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -52,20 +53,28 @@ export class ProfileService {
     }
 
     @validate()
-    public async create( @request(ProfileCreateRequest) data: any): Promise<Profile> {
+    public async create( @request(ProfileCreateRequest) data: ProfileCreateRequest): Promise<Profile> {
 
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
-        const addresses = body.addresses || [];
-        delete body.addresses;
+        const shippingAddresses = body.shippingAddresses || [];
+        delete body.shippingAddresses;
+        const cryptocurrencyAddresses = body.cryptocurrencyAddresses || [];
+        delete body.cryptocurrencyAddresses;
+
         // If the request body was valid we will create the profile
         const profile = await this.profileRepo.create(body);
 
-        // create related models
-        for (const address of addresses) {
+        // then create related models
+        for (const address of shippingAddresses) {
             address.profile_id = profile.Id;
             await this.addressService.create(address);
+        }
+
+        for (const cryptoAddress of cryptocurrencyAddresses) {
+            cryptoAddress.profile_id = profile.Id;
+            await this.cryptocurrencyAddressService.create(cryptoAddress);
         }
 
         // finally find and return the created profileId
@@ -89,21 +98,31 @@ export class ProfileService {
             profile.Address = body.address;
         }
 
-        // update address record
+        // update profile
         const updatedProfile = await this.profileRepo.update(id, profile.toJSON());
+        this.log.debug('updatedProfile: ', updatedProfile.toJSON());
 
-        // todo: loop through addresses, add new ones that have no id, update the new ones with id and delete the removed
-        // find related records and delete them
-        let addresses = updatedProfile.related('ShippingAddresses').toJSON();
-        for (const address of addresses) {
-            await this.addressService.destroy(address.id);
+        // update related data
+        const shippingAddresses = body.shippingAddresses || [];
+
+        // TODO does not remove the ones that exists
+        for (const address of shippingAddresses) {
+            if (address.profile_id) {
+                await this.addressService.update(address.id, address);
+            } else {
+                address.profile_id = id;
+                await this.addressService.create(address);
+            }
         }
 
-        // recreate related data
-        addresses = body.addresses || [];
-        for (const address of addresses) {
-            address.profile_id = id;
-            await this.addressService.create(address);
+        const cryptocurrencyAddresses = body.cryptocurrencyAddresses || [];
+        for (const cryptoAddress of cryptocurrencyAddresses) {
+            if (cryptoAddress.profile_id) {
+                await this.cryptocurrencyAddressService.update(cryptoAddress.id, cryptoAddress);
+            } else {
+                cryptoAddress.profile_id = id;
+                await this.cryptocurrencyAddressService.create(cryptoAddress);
+            }
         }
 
         // finally find and return the updated itemInformation

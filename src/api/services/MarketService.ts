@@ -21,6 +21,15 @@ export class MarketService {
         this.log = new Logger(__filename);
     }
 
+    public async getDefault(withRelated: boolean = true): Promise<Market> {
+        const market = await this.marketRepo.getDefault(withRelated);
+        if (market === null) {
+            this.log.warn(`Default Market was not found!`);
+            throw new NotFoundException('DEFAULT');
+        }
+        return market;
+    }
+
     public async findAll(): Promise<Bookshelf.Collection<Market>> {
         return this.marketRepo.findAll();
     }

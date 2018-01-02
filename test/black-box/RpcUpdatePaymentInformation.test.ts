@@ -36,7 +36,7 @@ describe('/UpdateItemInformation', () => {
                     domestic: 0.123,
                     international: 1.234
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: 'This is temp address.'
                 }
@@ -53,7 +53,7 @@ describe('/UpdateItemInformation', () => {
                 domestic: 2,
                 international: 3
             },
-            address: {
+            cryptocurrencyAddress: {
                 type: CryptocurrencyAddressType.NORMAL,
                 address: 'This is NEW address.'
             }
@@ -62,8 +62,8 @@ describe('/UpdateItemInformation', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-ESCROW' });
-        profileId = addProfileRes.getBody()['result'].id;
+        const defaultProfile = await testUtil.getDefaultProfile();
+        profileId = defaultProfile.id;
     });
 
     test('Should update Payment-information by RPC', async () => {
@@ -79,7 +79,7 @@ describe('/UpdateItemInformation', () => {
         const updateDataRes: any = await rpc(method, [createdTemplateId, testData.type,
             testData.itemPrice.currency, testData.itemPrice.basePrice,
             testData.itemPrice.shippingPrice.domestic, testData.itemPrice.shippingPrice.international,
-            testData.itemPrice.address.address]);
+            testData.itemPrice.cryptocurrencyAddress.address]);
         updateDataRes.expectJson();
         updateDataRes.expectStatusCode(200);
         const resultUpdate: any = updateDataRes.getBody()['result'];
@@ -91,14 +91,14 @@ describe('/UpdateItemInformation', () => {
 
         expect(resultUpdate.ItemPrice.ShippingPrice.domestic).toBe(testData.itemPrice.shippingPrice.domestic);
         expect(resultUpdate.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
-        expect(resultUpdate.ItemPrice.Address.address).toBe(testData.itemPrice.address.address);
+        expect(resultUpdate.ItemPrice.CryptocurrencyAddress.address).toBe(testData.itemPrice.cryptocurrencyAddress.address);
     });
 
     test('Should fail update Payment Information, payment-information is not related with item-template', async () => {
         const updateDataRes: any = await rpc(method, [0, testData.type,
             testData.itemPrice.currency, testData.itemPrice.basePrice,
             testData.itemPrice.shippingPrice.domestic, testData.itemPrice.shippingPrice.international,
-            testData.itemPrice.address.address]);
+            testData.itemPrice.cryptocurrencyAddress.address]);
         updateDataRes.expectJson();
         updateDataRes.expectStatusCode(404);
     });

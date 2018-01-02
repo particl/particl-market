@@ -96,13 +96,20 @@ export const Targets = {
     Command:     {
         AddDataCommand: 'AddDataCommand',
         bid: {
-            BidSearchCommand: 'BidSearchCommand'
+            BidSearchCommand: 'BidSearchCommand',
+            AcceptBidCommand: 'AcceptBidCommand',
+            CancelBidCommand: 'CancelBidCommand',
+            RejectBidCommand: 'RejectBidCommand',
+            SendBidCommand: 'SendBidCommand'
         },
         CleanDbCommand: 'CleanDbCommand',
         escrow: {
             EscrowCreateCommand: 'EscrowCreateCommand',
             EscrowDestroyCommand: 'EscrowDestroyCommand',
-            EscrowUpdateCommand: 'EscrowUpdateCommand'
+            EscrowUpdateCommand: 'EscrowUpdateCommand',
+            EscrowLockCommand: 'EscrowLockCommand',
+            EscrowRefundCommand: 'EscrowRefundCommand',
+            EscrowReleaseCommand: 'EscrowReleaseCommand'
         },
         favorite: {
             FavoriteAddCommand: 'FavoriteAddCommand',
@@ -170,6 +177,7 @@ export const Targets = {
     },
     Factory:     {
         BidFactory: 'BidFactory',
+        EscrowFactory: 'EscrowFactory',
         RpcCommandFactory: 'RpcCommandFactory',
         TestFactory: 'TestFactory',
         ListingItemFactory: 'ListingItemFactory',
@@ -178,9 +186,12 @@ export const Targets = {
     },
     MessageProcessor:     {
         ListingItemMessageProcessor: 'ListingItemMessageProcessor',
+        AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
         BidMessageProcessor: 'BidMessageProcessor',
+        CancelBidMessageProcessor: 'CancelBidMessageProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
+        RejectBidMessageProcessor: 'RejectBidMessageProcessor',
         TestMessageProcessor: 'TestMessageProcessor'
     },
     Middleware:     {

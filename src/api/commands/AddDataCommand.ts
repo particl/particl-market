@@ -5,6 +5,7 @@ import { Types, Core, Targets } from '../../constants';
 import { TestDataService } from '../services/TestDataService';
 import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandInterface } from './RpcCommandInterface';
+import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
 
 export class AddDataCommand implements RpcCommandInterface<any> {
 
@@ -23,11 +24,12 @@ export class AddDataCommand implements RpcCommandInterface<any> {
     public async execute( @request(RpcRequest) data: any): Promise<any> {
         this.log.info('data.params[0]: ', data.params[0]);
         this.log.info('data.params[1]: ', data.params[1]);
-
+        const withRelated = data.params[2] ? data.params[2] : true;
         return await this.testDataService.create({
             model: data.params[0],
-            data: JSON.parse(data.params[1])
-        });
+            data: JSON.parse(data.params[1]),
+            withRelated
+        } as TestDataCreateRequest);
     }
 
     public help(): string {

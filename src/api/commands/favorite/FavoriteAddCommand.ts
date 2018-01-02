@@ -10,6 +10,7 @@ import { FavoriteItem } from '../../models/FavoriteItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
 import { NotFoundException } from '../../exceptions/NotFoundException';
+import { FavoriteItemCreateRequest } from '../../requests/FavoriteItemCreateRequest';
 
 export class FavoriteAddCommand implements RpcCommandInterface<FavoriteItem> {
 
@@ -47,7 +48,7 @@ export class FavoriteAddCommand implements RpcCommandInterface<FavoriteItem> {
             favoriteItem = await this.favoriteItemService.create({
                 listing_item_id: favoriteParams[0],
                 profile_id: favoriteParams[1]
-            });
+            } as FavoriteItemCreateRequest);
         }
         return favoriteItem;
     }

@@ -3,7 +3,7 @@ import * as Knex from 'knex';
 
 exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
-        db.schema.createTable('address', (table: Knex.CreateTableBuilder) => {
+        db.schema.createTable('addresses', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
             table.string('title').nullable();
@@ -14,7 +14,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.integer('profile_id').unsigned().notNullable();
             table.foreign('profile_id').references('id')
-                .inTable('profile').onDelete('cascade');
+                .inTable('profiles').onDelete('CASCADE');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
@@ -24,6 +24,6 @@ exports.up = (db: Knex): Promise<any> => {
 
 exports.down = (db: Knex): Promise<any> => {
     return Promise.all([
-        db.schema.dropTable('address')
+        db.schema.dropTable('addresses')
     ]);
 };

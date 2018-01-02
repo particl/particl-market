@@ -29,7 +29,7 @@ describe('/removeShippingDestination', () => {
                     domestic: 5,
                     international: 7
                 },
-                address: {
+                cryptocurrencyAddress: {
                     type: CryptocurrencyAddressType.STEALTH,
                     address: 'This is temp address.'
                 }
@@ -37,17 +37,16 @@ describe('/removeShippingDestination', () => {
         }
     };
 
-    let createdProfileId;
     let createdTemplateId;
+    let createdlistingItemsId;
     let createdItemInformationId;
     let createdShippingDestinationId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
         // create profile
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME' });
-        createdProfileId = addProfileRes.getBody()['result'].id;
-        testDataListingItemTemplate.profile_id = createdProfileId;
+        const defaultProfile = await testUtil.getDefaultProfile();
+        testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // create item template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
@@ -60,6 +59,10 @@ describe('/removeShippingDestination', () => {
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         createdShippingDestinationId = addDataRes.getBody()['result'].id;
+
+        // create listing item
+        const listingItems = await testUtil.generateData('listingitem', 1);
+        createdlistingItemsId = listingItems[0]['id'];
     });
 
     test('Should fail to remove shipping destination for invalid country', async () => {
@@ -107,7 +110,7 @@ describe('/removeShippingDestination', () => {
     test('Should fail to remove if there is a ListingItem related to ItemInformation. (the item has allready been posted)', async () => {
 
         // set listing item id
-        testDataListingItemTemplate.itemInformation.listingItemId = 2;
+        testDataListingItemTemplate.itemInformation.listingItemId = createdlistingItemsId;
 
         // create item template information with listing item id
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);

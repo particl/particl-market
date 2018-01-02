@@ -7,9 +7,6 @@ export class ShippingPrice extends Bookshelf.Model<ShippingPrice> {
         if (withRelated) {
             return await ShippingPrice.where<ShippingPrice>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'ShippingPriceRelated',
-                    // 'ShippingPriceRelated.Related'
                 ]
             });
         } else {
@@ -35,8 +32,4 @@ export class ShippingPrice extends Bookshelf.Model<ShippingPrice> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public ShippingPriceRelated(): ShippingPriceRelated {
-    //    return this.hasOne(ShippingPriceRelated);
-    // }
 }

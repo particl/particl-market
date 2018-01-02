@@ -9,10 +9,12 @@ describe('UpdateCategory', () => {
 
     const parentCategory = {
         id: 0,
-        key: 'cat_high_real_estate'
+        key: 'cat_high_real_estate',
+        parentItemCategoryId: 0
     };
 
     let newCategory;
+    let marketId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -28,9 +30,15 @@ describe('UpdateCategory', () => {
             parent_item_category_id: parentCategory.id
         });
         newCategory = addCategoryRes.getBody()['result'];
+
+        // market
+        const resMarket = await rpc('addmarket', ['Test Market', 'privateKey', 'Market Address']);
+        const resultMarket: any = resMarket.getBody()['result'];
+        marketId = resultMarket.id;
     });
 
     let categoryData = {
+        id: 0,
         name: 'Sample Category update',
         description: 'Sample Category Description update'
     };
@@ -54,6 +62,7 @@ describe('UpdateCategory', () => {
     });
 
     categoryData = {
+        id: 0,
         name: 'Sample Cat update',
         description: 'Sample Cat Description update'
     };
@@ -79,6 +88,7 @@ describe('UpdateCategory', () => {
     test('Should not update the category if listing-item related with category', async () => {
         const hash = crypto.SHA256(new Date().getTime().toString()).toString();
         const listingitemData = {
+            market_id: marketId,
             hash,
             itemInformation: {
                 title: 'item title1',

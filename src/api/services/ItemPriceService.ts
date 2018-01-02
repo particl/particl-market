@@ -1,4 +1,5 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -8,7 +9,6 @@ import { ItemPriceRepository } from '../repositories/ItemPriceRepository';
 import { ItemPrice } from '../models/ItemPrice';
 import { ItemPriceCreateRequest } from '../requests/ItemPriceCreateRequest';
 import { ItemPriceUpdateRequest } from '../requests/ItemPriceUpdateRequest';
-import { RpcRequest } from '../requests/RpcRequest';
 import { ShippingPriceService } from './ShippingPriceService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 
@@ -17,7 +17,7 @@ export class ItemPriceService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) private cryptocurrencyaddressService: CryptocurrencyAddressService,
+        @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) private cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ShippingPriceService) private shippingpriceService: ShippingPriceService,
         @inject(Types.Repository) @named(Targets.Repository.ItemPriceRepository) public itemPriceRepo: ItemPriceRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -39,37 +39,50 @@ export class ItemPriceService {
     }
 
     @validate()
-    public async create( @request(ItemPriceCreateRequest) data: any): Promise<ItemPrice> {
+    public async create( @request(ItemPriceCreateRequest) data: ItemPriceCreateRequest): Promise<ItemPrice> {
 
         const body = JSON.parse(JSON.stringify(data));
 
         const shippingPrice = body.shippingPrice;
-        const cryptocurrencyAddress = body.address;
+        const cryptocurrencyAddress = body.cryptocurrencyAddress;
 
         delete body.shippingPrice;
-        delete body.address;
+        delete body.cryptocurrencyAddress;
 
-        // If the request body was valid we will create the itemPrice
+        // create related models, cryptocurrencyAddress
+        if (!_.isEmpty(cryptocurrencyAddress)) {
+
+            if (cryptocurrencyAddress.id) {
+                // use existing
+                // this.log.debug('cryptocurrencyAddress exists');
+                body.cryptocurrency_address_id = cryptocurrencyAddress.id;
+            } else {
+                // new address
+                // this.log.debug('cryptocurrencyAddress does not exist, creating new');
+                const relatedCryptocurrencyAddress = await this.cryptocurrencyAddressService.create(cryptocurrencyAddress);
+                body.cryptocurrency_address_id = relatedCryptocurrencyAddress.Id;
+            }
+        }
+
+        // this.log.debug('creating: ', body);
+        // create the itemPrice
         const itemPrice = await this.itemPriceRepo.create(body);
-        // this.log.debug('itemprice created: ', JSON.stringify(itemPrice));
-
         // then create shippingPrice
-        if (shippingPrice) {
+        if (!_.isEmpty(shippingPrice)) {
             shippingPrice.item_price_id = itemPrice.Id;
             await this.shippingpriceService.create(shippingPrice);
         }
         // then create address
-        if (cryptocurrencyAddress) {
+        if (!_.isEmpty(cryptocurrencyAddress)) {
             cryptocurrencyAddress.item_price_id = itemPrice.Id;
-            await this.cryptocurrencyaddressService.create(cryptocurrencyAddress);
+            await this.cryptocurrencyAddressService.create(cryptocurrencyAddress);
         }
         // finally find and return the created itemPrice
-        const newItemPrice = await this.findOne(itemPrice.id);
-        return newItemPrice;
+        return await this.findOne(itemPrice.Id);
     }
 
     @validate()
-    public async update(id: number, @request(ItemPriceUpdateRequest) data: any): Promise<ItemPrice> {
+    public async update(id: number, @request(ItemPriceUpdateRequest) data: ItemPriceUpdateRequest): Promise<ItemPrice> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -97,15 +110,15 @@ export class ItemPriceService {
 
         // ---
         // find related CryptocurrencyAddress
-        let relatedCryptocurrencyAddress = updatedItemPrice.related('Address').toJSON();
+        let relatedCryptocurrencyAddress = updatedItemPrice.related('CryptocurrencyAddress').toJSON();
 
         // delete it
-        await this.cryptocurrencyaddressService.destroy(relatedCryptocurrencyAddress.id);
+        await this.cryptocurrencyAddressService.destroy(relatedCryptocurrencyAddress.id);
 
         // and create new related data
-        relatedCryptocurrencyAddress = body.address;
+        relatedCryptocurrencyAddress = body.cryptocurrencyAddress;
         relatedCryptocurrencyAddress.item_price_id = id;
-        await this.cryptocurrencyaddressService.create(relatedCryptocurrencyAddress);
+        await this.cryptocurrencyAddressService.create(relatedCryptocurrencyAddress);
 
         // finally find and return the updated item price
         const newItemPrice = await this.findOne(id);
@@ -113,55 +126,15 @@ export class ItemPriceService {
     }
 
     public async destroy(id: number): Promise<void> {
+
+        const itemPrice = await this.findOne(id);
+        const relatedCryptocurrencyAddress = itemPrice.related('CryptocurrencyAddress').toJSON();
+
+        this.log.debug('relatedCryptocurrencyAddress: ', JSON.stringify(relatedCryptocurrencyAddress, null, 2));
+
         await this.itemPriceRepo.destroy(id);
+        if (!_.isEmpty(relatedCryptocurrencyAddress.Profile)) {
+            await this.cryptocurrencyAddressService.destroy(relatedCryptocurrencyAddress.Id);
+        }
     }
-
-    // TODO: remove this rpc stuff
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemPrice>> {
-        return this.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ItemPrice> {
-        return this.findOne(data.params[0]);
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemPrice> {
-        return this.create({
-            currency: data.params[0],
-            basePrice: data.params[1],
-            shippingPrice: {
-                domestic: data.params[2],
-                international: data.params[3]
-            },
-            address: {
-                type: data.params[4],
-                address: data.params[5]
-            }
-        });
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemPrice> {
-        return this.update(data.params[0], {
-            currency: data.params[1],
-            basePrice: data.params[2],
-            shippingPrice: {
-                domestic: data.params[3],
-                international: data.params[4]
-            },
-            address: {
-                type: data.params[5],
-                address: data.params[6]
-            }
-        });
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
-    }
-
 }

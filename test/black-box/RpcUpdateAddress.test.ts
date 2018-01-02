@@ -10,7 +10,8 @@ describe('/RpcUpdateAddress', () => {
 
     const testData = {
         name: 'TESTING-ADDRESS-PROFILE-NAME',
-        addresses: [{
+        address: 'TESTING-ADDRESS-PROFILE-ADDRESS',
+        shippingAddresses: [{
             title: 'Title',
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
