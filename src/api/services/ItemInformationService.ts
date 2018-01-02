@@ -96,21 +96,6 @@ export class ItemInformationService {
         return await this.findOne(itemInformation.Id);
     }
 
-    /**
-     * fetch or create the given ItemCategory from db
-     * @param itemCategory
-     * @returns {Promise<ItemCategory>}
-     */
-    private async getOrCreateItemCategory(itemCategory: ItemCategoryUpdateRequest): ItemCategory {
-        if (itemCategory.key) {
-            return await this.itemCategoryService.findOneByKey(itemCategory.key);
-        } else if (itemCategory.id) {
-            return await this.itemCategoryService.findOne(itemCategory.id);
-        } else {
-            return await this.itemCategoryService.create(itemCategory);
-        }
-    }
-
     public async updateWithCheckListingTemplate(@request(ItemInformationUpdateRequest) body: ItemInformationUpdateRequest): Promise<ItemInformation> {
         const listingItemTemplateId = body.listing_item_template_id;
         const listingItemTemplate = await this.listingItemTemplateRepository.findOne(listingItemTemplateId);
@@ -192,6 +177,21 @@ export class ItemInformationService {
 
     public async destroy(id: number): Promise<void> {
         await this.itemInformationRepo.destroy(id);
+    }
+
+    /**
+     * fetch or create the given ItemCategory from db
+     * @param itemCategory
+     * @returns {Promise<ItemCategory>}
+     */
+    private async getOrCreateItemCategory(itemCategory: ItemCategoryUpdateRequest): Promise<ItemCategory> {
+        if (itemCategory.key) {
+            return await this.itemCategoryService.findOneByKey(itemCategory.key);
+        } else if (itemCategory.id) {
+            return await this.itemCategoryService.findOne(itemCategory.id);
+        } else {
+            return await this.itemCategoryService.create(itemCategory);
+        }
     }
 
 }

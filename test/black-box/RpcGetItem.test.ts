@@ -16,7 +16,6 @@ describe('GetItem', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-
     });
 
     test('Should get the listing item by hash', async () => {

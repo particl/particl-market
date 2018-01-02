@@ -3,14 +3,24 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
+import { FavoriteItemService } from '../../src/api/services/FavoriteItemService';
+import { ProfileService } from '../../src/api/services/ProfileService';
+import { MarketService } from '../../src/api/services/MarketService';
+import { ListingItemService } from '../../src/api/services/ListingItemService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { FavoriteItem } from '../../src/api/models/FavoriteItem';
+import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
-import { FavoriteItemService } from '../../src/api/services/FavoriteItemService';
-import { ProfileService } from '../../src/api/services/ProfileService';
+import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
+
+import { PaymentType } from '../../src/api/enums/PaymentType';
+import { Currency } from '../../src/api/enums/Currency';
+
+import { FavoriteItemCreateRequest } from '../../src/api/requests/FavoriteItemCreateRequest';
+import { FavoriteItemUpdateRequest } from '../../src/api/requests/FavoriteItemUpdateRequest';
 
 describe('FavoriteItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -21,16 +31,20 @@ describe('FavoriteItem', () => {
     let testDataService: TestDataService;
     let favoriteItemService: FavoriteItemService;
     let profileService: ProfileService;
+    let marketService: MarketService;
+    let listingItemService: ListingItemService;
 
     let createdId;
     let defaultProfile;
-    const testData = {
+    let createdListingItem;
 
-    };
+    const testData = {
+        profile_id: 0,
+        listing_item_id: 0
+    } as FavoriteItemCreateRequest;
 
     const testDataUpdated = {
-
-    };
+    } as FavoriteItemUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -38,9 +52,22 @@ describe('FavoriteItem', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         favoriteItemService = app.IoC.getNamed<FavoriteItemService>(Types.Service, Targets.Service.FavoriteItemService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
+
+        // listing-item
         defaultProfile = await profileService.getDefault();
+        const defaultMarket = await marketService.getDefault();
+        createdListingItem = await testDataService.create<ListingItemTemplate>({
+            model: 'listingitem',
+            data: {
+                market_id: defaultMarket.Id,
+                hash: 'itemhash'
+            } as any,
+            withRelated: true
+        } as TestDataCreateRequest);
     });
 
     afterAll(async () => {
@@ -48,30 +75,23 @@ describe('FavoriteItem', () => {
     });
 
 
-    test('Should throw ValidationException because there is no related_id', async () => {
+    test('Should throw ValidationException because there is no related_id and empty', async () => {
         expect.assertions(1);
-        await favoriteItemService.create(testData).catch(e =>
+        await favoriteItemService.create({}).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should create a new favorite item', async () => {
-        testData['profile_id'] = defaultProfile.id;
-        testData['listing_item_id'] = 1;
+        testData.profile_id = defaultProfile.id;
+        testData.listing_item_id = createdListingItem.id;
         const favoriteItemModel: FavoriteItem = await favoriteItemService.create(testData);
         createdId = favoriteItemModel.Id;
 
         const result = favoriteItemModel.toJSON();
         // test the values
         expect(result.profileId).toBe(defaultProfile.id);
-        expect(result.listingItemId).toBe(1);
-    });
-
-    test('Should throw ValidationException because we want to create a empty favorite item', async () => {
-        expect.assertions(1);
-        await favoriteItemService.create({}).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
+        expect(result.listingItemId).toBe(createdListingItem.id);
     });
 
     test('Should list favorite items with our new create one', async () => {
@@ -83,7 +103,7 @@ describe('FavoriteItem', () => {
 
         // test the values
         expect(result.profileId).toBe(defaultProfile.id);
-        expect(result.listingItemId).toBe(1);
+        expect(result.listingItemId).toBe(createdListingItem.id);
     });
 
     test('Should return one favorite item', async () => {
@@ -92,33 +112,41 @@ describe('FavoriteItem', () => {
 
         // test the values
         expect(result.profileId).toBe(defaultProfile.id);
-        expect(result.listingItemId).toBe(1);
+        expect(result.listingItemId).toBe(createdListingItem.id);
     });
 
 
     test('Should throw ValidationException because there is no profile_id', async () => {
         expect.assertions(1);
-        await favoriteItemService.update(createdId, testDataUpdated).catch(e =>
+        const testDataUpdated2 = testDataUpdated;
+        delete testDataUpdated2.profile_id;
+        await favoriteItemService.update(createdId, testDataUpdated2).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
 
     test('Should update the favorite item', async () => {
-        testDataUpdated['profile_id'] = defaultProfile.id;
-        testDataUpdated['listing_item_id'] = 0;
+        testDataUpdated.profile_id = defaultProfile.id;
+        testDataUpdated.listing_item_id = createdListingItem.id;
         const favoriteItemModel: FavoriteItem = await favoriteItemService.update(createdId, testDataUpdated);
         const result = favoriteItemModel.toJSON();
 
         // test the values
-        // expect(result.value).toBe(testDataUpdated.value);
+        expect(result.profileId).toBe(defaultProfile.id);
+        expect(result.listingItemId).toBe(createdListingItem.id);
     });
 
     test('Should delete the favorite item', async () => {
-        expect.assertions(1);
+        expect.assertions(2);
         await favoriteItemService.destroy(createdId);
         await favoriteItemService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
+        );
+        // remove listingItem
+        await listingItemService.destroy(createdListingItem.id);
+        await listingItemService.findOne(createdListingItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdListingItem.id))
         );
     });
 

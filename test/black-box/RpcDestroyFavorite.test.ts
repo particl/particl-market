@@ -14,6 +14,7 @@ describe('/RpcRemoveFavorite', () => {
     const method = 'removefavorite';
 
     const testData = {
+        market_id: 0,
         hash: 'hash',
         itemInformation: {
             title: 'item title',
@@ -105,9 +106,12 @@ describe('/RpcRemoveFavorite', () => {
         await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
         defaultProfileId = defaultProfile.id;
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME' });
+        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME', address: 'TESTING-PROFILE-ADDRESS' });
         profileId = addProfileRes.getBody()['result'].id;
-
+        // create market
+        const resMarket = await rpc('addmarket', ['Test Market', 'privateKey', 'Market Address']);
+        const resultMarket: any = resMarket.getBody()['result'];
+        testData.market_id = resultMarket.id;
         // create listing item
         const addListingItem: any = await testUtil.addData('listingitem', testData);
         const addListingItemResult = addListingItem.getBody()['result'];

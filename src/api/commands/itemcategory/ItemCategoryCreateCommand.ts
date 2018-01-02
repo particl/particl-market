@@ -4,6 +4,7 @@ import { validate, request } from '../../../core/api/Validate';
 import { Types, Core, Targets } from '../../../constants';
 import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { RpcRequest } from '../../requests/RpcRequest';
+import { ItemCategoryCreateRequest } from '../../requests/ItemCategoryCreateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 
@@ -41,7 +42,7 @@ export class ItemCategoryCreateCommand implements RpcCommandInterface<ItemCatego
             name: data.params[0],
             description: data.params[1],
             parent_item_category_id: parentItemCategoryId
-        });
+        } as ItemCategoryCreateRequest);
     }
 
     public help(): string {

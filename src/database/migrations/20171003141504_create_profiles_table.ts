@@ -17,6 +17,6 @@ exports.up = (db: Knex): Promise<any> => {
 
 exports.down = (db: Knex): Promise<any> => {
     return Promise.all([
-        db.schema.dropTable('profile')
+        db.schema.dropTable('profiles')
     ]);
 };

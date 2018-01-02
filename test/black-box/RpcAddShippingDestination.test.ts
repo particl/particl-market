@@ -36,7 +36,6 @@ describe('/addShippingDestination', () => {
         }
     };
 
-    let createdProfileId;
     let createdTemplateId;
     let createdItemInformationId;
     let createdShippingDestinationId;
@@ -44,9 +43,9 @@ describe('/addShippingDestination', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
         // create profile
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME' });
-        createdProfileId = addProfileRes.getBody()['result'].id;
-        testDataListingItemTemplate.profile_id = createdProfileId;
+        const defaultProfile = await testUtil.getDefaultProfile();
+        const profileId = defaultProfile.id;
+        testDataListingItemTemplate.profile_id = profileId;
 
         // create item template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
