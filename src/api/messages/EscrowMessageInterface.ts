@@ -1,10 +1,10 @@
 import { IsNotEmpty } from 'class-validator';
-import { MarketplaceMessageInterface } from './MarketplaceMessageInterface';
+import { ActionMessageInterface } from './ActionMessageInterface';
 
-export class EscrowMessageInterface implements MarketplaceMessageInterface {
-    @IsNotEmpty()
-    public version: string;
-
-    @IsNotEmpty()
-    public mpaction: any;
+export interface EscrowMessageInterface extends ActionMessageInterface {
+    nonce?: string;
+    accepted?: boolean;
+    memo?: string;
+    info?: any;      // todo
+    escrow: any;    // todo
 }

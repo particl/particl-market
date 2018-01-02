@@ -1,6 +1,7 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
+import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 
 
 export class MessageBroadcastService {
@@ -13,8 +14,8 @@ export class MessageBroadcastService {
         this.log = new Logger(__filename);
     }
 
-    public async broadcast(message: any): Promise<void> {
+    public async broadcast(message: ActionMessageInterface): Promise<void> {
         // TODO: to be implemented
-        return message;
+        return;
     }
 }
