@@ -23,7 +23,8 @@ describe('EscrowFactory', () => {
             nonce: 'randomness',
             memo: 'Please deliver by 17 March 2017'
         };
-        const res = escrowFactory.get(req).then((response, error) => {
+
+        escrowFactory.get(req).then((response, error) => {
             expect(response.version).not.toBeNull();
             expect(response.mpaction.length).toBe(1);
             expect(response.mpaction[0].action).toBe('MPA_LOCK');

@@ -196,7 +196,7 @@ export class EscrowService {
         const address = await this.addressService.findOne(addressId, false);
         data.address = address.toJSON();
         // escrowfactory to generate the lockmessage
-        const escrowActionMessage = await this.escrowFactory.get(data as EscrowMessage);
+        const escrowActionMessage = await this.escrowFactory.getMessage(data);
         return await this.messageBroadcastService.broadcast(escrowActionMessage as EscrowMessageInterface);
     }
 
@@ -207,7 +207,7 @@ export class EscrowService {
         const escrow = await this.findOne(escrowId, false);
         data.escrow = escrow.toJSON();
         // escrowfactory to generate the refundmessage
-        const escrowActionMessage = await this.escrowFactory.get(data as EscrowMessage);
+        const escrowActionMessage = await this.escrowFactory.getMessage(data);
         return await this.messageBroadcastService.broadcast(escrowActionMessage as EscrowMessageInterface);
     }
 
@@ -218,7 +218,7 @@ export class EscrowService {
         const escrow = await this.findOne(escrowId, false);
         data.escrow = escrow.toJSON();
         // escrowfactory to generate the releasemessage
-        const escrowActionMessage = await this.escrowFactory.get(data as EscrowMessage);
+        const escrowActionMessage = await this.escrowFactory.getMessage(data);
         return await this.messageBroadcastService.broadcast(escrowActionMessage as EscrowMessageInterface);
     }
 

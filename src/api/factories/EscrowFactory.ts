@@ -6,6 +6,9 @@ import { validate, request } from '../../core/api/Validate';
 import { Escrow } from '../models/Escrow';
 import { EscrowMessageInterface } from '../messages/EscrowMessageInterface';
 import { EscrowMessage } from '../messages/EscrowMessage';
+import { EscrowLockRequest } from '../requests/EscrowLockRequest';
+import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
+import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
 
 export class EscrowFactory {
 
@@ -30,12 +33,11 @@ export class EscrowFactory {
      * @param data
      * @returns {EscrowMessageInterface}
      */
-    @validate()
-    public get(data: EscrowMessage): EscrowMessageInterface {
-        let message;
+    public getMessage(data: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest): EscrowMessageInterface {
+        let message: EscrowMessageInterface;
         switch (data.action) {
             case 'MPA_LOCK':
-                const address: any = data.address;
+                const address: string = data.address;
                 message = {
                     version: '0.0.1.0',
                     mpaction: [
@@ -44,7 +46,7 @@ export class EscrowFactory {
                             listing: data.listing,
                             nonce: data.nonce,
                             info: {
-                                address: address['addressLine1'] + address['addressLine2'],
+                                address: address['addressLine1'] + ', ' + address['addressLine2'],
                                 memo: data.memo
                             },
                             escrow: {
@@ -94,4 +96,19 @@ export class EscrowFactory {
         }
         return message as EscrowMessageInterface;
     }
+
+    /**
+     * Factory will return model based on the message
+     *
+     * @param data
+     * @returns {Escrow}
+     */
+    @validate()
+    public getModel(data: EscrowMessageInterface): Escrow {
+
+        // TODO:
+        return new Escrow();
+    }
+
+
 }
