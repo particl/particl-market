@@ -14,17 +14,9 @@ describe('BidMessageProcessor', () => {
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
-
-    let testDataService: TestDataService;
-    let bidMessageProcessor: BidMessageProcessor;
-    let listingItemService: ListingItemService;
-    let createdBidId;
-    let createdHash;
-
-    const testData = {
+    const testBidData = {
         action: 'MPA_BID',
-        item: 'f08f3d6e',
-        status: BidStatus.ACTIVE,
+        item: '',
         objects: [{
            id: 'colour',
            value: 'black'
@@ -34,6 +26,13 @@ describe('BidMessageProcessor', () => {
     const testListingData = {
        hash: 'f08f3d6e'
     };
+
+    let testDataService: TestDataService;
+    let bidMessageProcessor: BidMessageProcessor;
+    let listingItemService: ListingItemService;
+    let createdBidId;
+    let createdHash;
+
 
     beforeAll(async () => {
 
@@ -51,30 +50,30 @@ describe('BidMessageProcessor', () => {
         //
     });
 
-
     test('Should throw NotFoundException because invalid listing hash', async () => {
         expect.assertions(1);
-        await bidMessageProcessor.process(testData).catch(e =>
-            expect(e).toEqual(new NotFoundException(testData.item))
+        await bidMessageProcessor.process(testBidData).catch(e =>
+            expect(e).toEqual(new NotFoundException(testBidData.item))
         );
     });
-
 
     test('Should create a new bid by bidMessage', async () => {
         // create the listingItem
         const listingItemModel: ListingItem = await listingItemService.create(testListingData);
         createdHash = listingItemModel.Hash;
-        testData.item = createdHash;
+        testBidData.item = createdHash;
 
-        const bidModel = await bidMessageProcessor.process(testData);
+        // create bid
+        const bidModel = await bidMessageProcessor.process(testBidData);
         const result = bidModel.toJSON();
         createdBidId = bidModel.id;
+
         // test the values
-        expect(result.status).toBe(testData.status);
+        expect(result.status).toBe(BidStatus.ACTIVE);
         expect(result.listingItemId).toBe(listingItemModel.id);
         expect(result.BidData.length).toBe(1);
-        expect(result.BidData[0].dataId).toBe(testData.objects[0].id);
-        expect(result.BidData[0].dataValue).toBe(testData.objects[0].value);
+        expect(result.BidData[0].dataId).toBe(testBidData.objects[0].id);
+        expect(result.BidData[0].dataValue).toBe(testBidData.objects[0].value);
     });
 
 });

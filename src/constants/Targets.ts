@@ -182,9 +182,12 @@ export const Targets = {
         TestFactory: 'TestFactory'
     },
     MessageProcessor:     {
+        AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
         BidMessageProcessor: 'BidMessageProcessor',
+        CancelBidMessageProcessor: 'CancelBidMessageProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
+        RejectBidMessageProcessor: 'RejectBidMessageProcessor',
         TestMessageProcessor: 'TestMessageProcessor'
     },
     Middleware:     {
