@@ -395,10 +395,10 @@ export class TestDataService {
     }
 
     private generateMessagingInformationData(): any {
-        const messagingInformation = {
+        const messagingInformation = [{
             protocol: Faker.random.arrayElement(Object.getOwnPropertyNames(MessagingProtocolType)),
             publicKey: Faker.random.uuid()
-        };
+        }];
         return messagingInformation;
     }
 

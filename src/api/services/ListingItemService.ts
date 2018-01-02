@@ -88,11 +88,10 @@ export class ListingItemService {
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
         const paymentInformation = body.paymentInformation;
-        const messagingInformation = body.messagingInformation;
-        const listingItemObjects = body.listingItemObjects;
-        delete body.itemInformation;
         delete body.paymentInformation;
+        const messagingInformation = body.messagingInformation || [];
         delete body.messagingInformation;
+        const listingItemObjects = body.listingItemObjects || {};
         delete body.listingItemObjects;
 
         // this.log.debug('itemInformation to save: ', JSON.stringify(itemInformation, null, 2));
@@ -115,9 +114,9 @@ export class ListingItemService {
             paymentInformation.listing_item_id = listingItem.Id;
             await this.paymentInformationService.create(paymentInformation);
         }
-        if (!_.isEmpty(messagingInformation)) {
-            messagingInformation.listing_item_id = listingItem.Id;
-            await this.messagingInformationService.create(messagingInformation);
+        for (const msgInfo of messagingInformation) {
+            msgInfo.listing_item_id = listingItem.Id;
+            await this.messagingInformationService.create(msgInfo);
         }
         if (!_.isEmpty(listingItemObjects)) {
             // TODO: implement
@@ -146,26 +145,19 @@ export class ListingItemService {
         // find related record and delete it and recreate related data
         const itemInformation = updatedListingItem.related('ItemInformation').toJSON();
         const paymentInformation = updatedListingItem.related('PaymentInformation').toJSON();
-        const messagingInformation = updatedListingItem.related('MessagingInformation').toJSON();
-        const listingItemObjects = updatedListingItem.related('ListingItemObjects').toJSON();
+        await this.paymentInformationService.destroy(paymentInformation.id);
+        body.paymentInformation.listing_item_id = id;
+        await this.paymentInformationService.create(body.paymentInformation);
 
-        if (!_.isEmpty(itemInformation)) {
-            body.itemInformation.listing_item_id = id;
-            await this.itemInformationService.update(body.itemInformation.id, body.itemInformation);
+        // find related record and delete it and recreate related data
+        let messagingInformation = updatedListingItem.related('MessagingInformation').toJSON() || [];
+        for (const msgInfo of messagingInformation) {
+            await this.messagingInformationService.destroy(msgInfo.id);
         }
-
-        if (!_.isEmpty(paymentInformation)) {
-            body.paymentInformation.listing_item_id = id;
-            await this.paymentInformationService.update(body.paymentInformation.id, body.paymentInformation);
-        }
-
-        if (!_.isEmpty(messagingInformation)) {
-            body.messagingInformation.listing_item_id = id;
-            await this.messagingInformationService.update(body.messagingInformation.id, body.messagingInformation);
-        }
-
-        if (!_.isEmpty(listingItemObjects)) {
-            // TODO: implement
+        messagingInformation = body.messagingInformation || [];
+        for (const msgInfo of messagingInformation) {
+            msgInfo.listing_item_id = id;
+            await this.messagingInformationService.create(msgInfo);
         }
 
         // finally find and return the updated listingItem

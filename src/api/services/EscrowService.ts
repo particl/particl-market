@@ -222,5 +222,4 @@ export class EscrowService {
         return await this.messageBroadcastService.broadcast(escrowActionMessage as EscrowMessageInterface);
     }
 
-
 }

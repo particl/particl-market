@@ -6,6 +6,5 @@ export interface ItemMessageInterface {
     information: any;
     payment: any;
     messaging: any;
-    object: any;
 
 }

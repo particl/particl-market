@@ -1,3 +1,4 @@
+import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { Escrow } from './Escrow';
 import { ItemPrice } from './ItemPrice';

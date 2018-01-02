@@ -70,8 +70,7 @@ export class ListingItemTemplateCreateCommand implements RpcCommandInterface<Lis
                             address: data.params[10]
                         }
                     }
-                },
-                messagingInformation: {}
+                }
             };
         } else {
             body = {

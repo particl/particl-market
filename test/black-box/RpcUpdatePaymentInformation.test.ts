@@ -71,7 +71,6 @@ describe('/UpdateItemInformation', () => {
         testDataListingItemTemplate.profile_id = profileId;
 
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-
         addListingItemTempRes.expectJson();
         addListingItemTempRes.expectStatusCode(200);
         const addListingItemTempResult = addListingItemTempRes.getBody()['result'];

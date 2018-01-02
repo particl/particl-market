@@ -64,8 +64,8 @@ describe('GetItem', () => {
         expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testData.PaymentInformation.ItemPrice.CryptocurrencyAddress.type);
         expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testData.PaymentInformation.ItemPrice.CryptocurrencyAddress.address);
 
-        expect(result.MessagingInformation.protocol).toBe(testData.MessagingInformation.protocol);
-        expect(result.MessagingInformation.publicKey).toBe(testData.MessagingInformation.publicKey);
+        expect(result.MessagingInformation[0].protocol).toBe(testData.MessagingInformation[0].protocol);
+        expect(result.MessagingInformation[0].publicKey).toBe(testData.MessagingInformation[0].publicKey);
     });
 
     test('Should get the listing item by id', async () => {
@@ -114,7 +114,7 @@ describe('GetItem', () => {
         expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testData.PaymentInformation.ItemPrice.CryptocurrencyAddress.type);
         expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testData.PaymentInformation.ItemPrice.CryptocurrencyAddress.address);
 
-        expect(result.MessagingInformation.protocol).toBe(testData.MessagingInformation.protocol);
-        expect(result.MessagingInformation.publicKey).toBe(testData.MessagingInformation.publicKey);
+        expect(result.MessagingInformation[0].protocol).toBe(testData.MessagingInformation[0].protocol);
+        expect(result.MessagingInformation[0].publicKey).toBe(testData.MessagingInformation[0].publicKey);
     });
 });

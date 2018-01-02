@@ -91,10 +91,10 @@ describe('/findOwnItems', () => {
                 }
             }
         },
-        messagingInformation: {
+        messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1'
-        }
+        }]
     };
 
     const testDataListingItemTemplate = {
