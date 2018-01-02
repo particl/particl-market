@@ -13,11 +13,8 @@ describe('CreateListingItemTemplate', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-
         // add profile for testing
-        const addDataRes: any = await testUtil.addData('profile', { name: 'TESTING-ADDRESS-PROFILE-NAME' });
-        profile = addDataRes.getBody()['result'];
-
+        profile = await testUtil.getDefaultProfile();
     });
 
     test('Should create a new Listing Item Template with only Profile Id', async () => {

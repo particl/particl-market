@@ -2,6 +2,10 @@ import { rpc, api } from './lib/api';
 import * as crypto from 'crypto-js';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
+import { Currency } from '../../src/api/enums/Currency';
+import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
+import { PaymentType } from '../../src/api/enums/PaymentType';
+import { EscrowType } from '../../src/api/enums/EscrowType';
 
 describe('UpdateMessagingInformation', () => {
 
@@ -11,26 +15,58 @@ describe('UpdateMessagingInformation', () => {
     const testDataListingItemTemplate = {
         profile_id: 0,
         itemInformation: {
-            title: 'Item Information',
-            shortDescription: 'Item short description',
-            longDescription: 'Item long description',
+            title: 'Item Information with Templates First',
+            shortDescription: 'Item short description with Templates First',
+            longDescription: 'Item long description with Templates First',
             itemCategory: {
                 key: 'cat_high_luxyry_items'
             },
             listingItemId: null
         },
+        paymentInformation: {
+            type: PaymentType.SALE,
+            escrow: {
+                type: EscrowType.MAD,
+                ratio: {
+                    buyer: 100,
+                    seller: 100
+                }
+            },
+            itemPrice: {
+                currency: Currency.BITCOIN,
+                basePrice: 0.0001,
+                shippingPrice: {
+                    domestic: 0.123,
+                    international: 1.234
+                },
+                cryptocurrencyAddress: {
+                    type: CryptocurrencyAddressType.NORMAL,
+                    address: 'This is temp address.'
+                }
+            }
+        },
         messagingInformation: {
+            protocol: MessagingProtocolType.SMSG,
+            publicKey: 'publickeyNew',
             listingItemId: null
         }
     };
 
     let createdTemplateId;
+    let listingItemId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+        const defaultProfile = await testUtil.getDefaultProfile();
+        testDataListingItemTemplate.profile_id = defaultProfile.id;
         // create listing-item-template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        createdTemplateId = addListingItemTempRes.getBody()['result'].id;
+        const result: any = addListingItemTempRes.getBody()['result'];
+        createdTemplateId = result.id;
+
+        // listing-item
+        const listingItems = await testUtil.generateData('listingitem', 1);
+        listingItemId = listingItems[0]['id'];
     });
 
     const messageInfoData = {
@@ -51,9 +87,9 @@ describe('UpdateMessagingInformation', () => {
 
     test('Should not update the message-information if listing-item related with it', async () => {
         // set listing item id in item information
-        testDataListingItemTemplate.itemInformation.listingItemId = 1;
+        testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
         // set listing item id in message information
-        testDataListingItemTemplate.messagingInformation.listingItemId = 1;
+        testDataListingItemTemplate.messagingInformation.listingItemId = listingItemId;
 
         // create new item template
         const listingItemTemplate = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);

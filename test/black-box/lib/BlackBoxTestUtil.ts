@@ -13,7 +13,7 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<void>}
      */
-    public async cleanDb(ignoreTables: string[] = []): void {
+    public async cleanDb(ignoreTables: string[] = []): Promise<any> {
         const res = await rpc('cleandb', ignoreTables);
         res.expectJson();
         res.expectStatusCode(200);
@@ -26,7 +26,7 @@ export class BlackBoxTestUtil {
      * @param data
      * @returns {Promise<any>}
      */
-    public async addData(model: string, data: any): any {
+    public async addData(model: string, data: any): Promise<any> {
         const res = await rpc('adddata', [model, JSON.stringify(data)]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -41,8 +41,8 @@ export class BlackBoxTestUtil {
      * @param withRelated - return full related model data or just id's, defaults to true
      * @returns {Promise<any>}
      */
-    public async generateData(model: string, amount?: number = 1, withRelated?: boolean = true): any {
-        const res: any = await  rpc('generatedata', [model, amount, withRelated]);
+    public async generateData(model: string, amount: number = 1, withRelated: boolean = true): Promise<any> {
+        const res: any = await rpc('generatedata', [model, amount, withRelated]);
         res.expectJson();
         res.expectStatusCode(200);
         return res.getBody()['result'];
@@ -53,8 +53,8 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<any>}
      */
-    public async getDefaultProfile(): any {
-        const res: any = await  rpc('getprofile', ['DEFAULT']);
+    public async getDefaultProfile(): Promise<any> {
+        const res: any = await rpc('getprofile', ['DEFAULT']);
         res.expectJson();
         res.expectStatusCode(200);
         return res.getBody()['result'];

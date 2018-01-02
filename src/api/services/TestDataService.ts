@@ -27,6 +27,7 @@ import { DefaultItemCategoryService } from './DefaultItemCategoryService';
 import { DefaultProfileService } from './DefaultProfileService';
 import { DefaultMarketService } from './DefaultMarketService';
 import { ProfileService } from './ProfileService';
+import { MarketService } from './MarketService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { FavoriteItemService } from './FavoriteItemService';
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
@@ -47,6 +48,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
@@ -86,7 +88,7 @@ export class TestDataService {
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async create<T>(@request(TestDataCreateRequest) body: TestDataCreateRequest): Promise<Bookshelf.Model<any>> {
+    public async create<T>( @request(TestDataCreateRequest) body: TestDataCreateRequest): Promise<Bookshelf.Model<any>> {
         switch (body.model) {
             case 'listingitemtemplate': {
                 return await this.listingItemTemplateService.create(body.data as ListingItemTemplateCreateRequest) as Bookshelf.Model<ListingItemTemplate>;
@@ -120,7 +122,7 @@ export class TestDataService {
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async generate<T>(@request(TestDataGenerateRequest) body: TestDataGenerateRequest): Promise<Bookshelf.Collection<any>> {
+    public async generate<T>( @request(TestDataGenerateRequest) body: TestDataGenerateRequest): Promise<Bookshelf.Collection<any>> {
         switch (body.model) {
             case 'listingitemtemplate': {
                 return await this.generateListingItemTemplates(body.amount, body.withRelated);
@@ -227,7 +229,7 @@ export class TestDataService {
     private async generateListingItems(amount: number, withRelated: boolean = true): Promise<any> {
         const items: any[] = [];
         for (let i = amount; i !== 0; i--) {
-            const listingItem = this.generateListingItemData();
+            const listingItem = await this.generateListingItemData();
             const savedListingItem = await this.listingItemService.create(listingItem);
             items.push(savedListingItem);
         }
@@ -294,7 +296,8 @@ export class TestDataService {
         return cryptoAddresses;
     }
 
-    private generateListingItemData(): any {
+    private async generateListingItemData(): Promise<any> {
+        const defaultMarket = await this.marketService.getDefault();
         const itemInformation = this.generateItemInformationData();
         const paymentInformation = this.generatePaymentInformationData();
         const messagingInformation = this.generateMessagingInformationData();
@@ -303,7 +306,8 @@ export class TestDataService {
             hash: Faker.random.uuid(),
             itemInformation,
             paymentInformation,
-            messagingInformation
+            messagingInformation,
+            market_id: defaultMarket.id
             // TODO: ignoring listingitemobjects for now
         };
 
@@ -343,19 +347,19 @@ export class TestDataService {
         const itemImages = this.generateItemImagesData(_.random(1, 5));
         const itemInformation = {
             title: Faker.commerce.productName(),
-                shortDescription: Faker.commerce.productAdjective() + ' ' + Faker.commerce.product(),
-                longDescription: Faker.lorem.paragraph(),
-                itemCategory: {
+            shortDescription: Faker.commerce.productAdjective() + ' ' + Faker.commerce.product(),
+            longDescription: Faker.lorem.paragraph(),
+            itemCategory: {
                 key: this.randomCategoryKey()
             },
             itemLocation: {
                 region: Faker.random.arrayElement(Object.getOwnPropertyNames(Country)),
-                    address: Faker.address.streetAddress(),
-                    locationMarker: {
+                address: Faker.address.streetAddress(),
+                locationMarker: {
                     markerTitle: Faker.lorem.word(),
-                        markerText: Faker.lorem.sentence(),
-                        lat: Faker.address.latitude(),
-                        lng: Faker.address.longitude()
+                    markerText: Faker.lorem.sentence(),
+                    lat: Faker.address.latitude(),
+                    lng: Faker.address.longitude()
                 }
             },
             shippingDestinations,
@@ -367,17 +371,17 @@ export class TestDataService {
     private generatePaymentInformationData(): any {
         const paymentInformation = {
             type: Faker.random.arrayElement(Object.getOwnPropertyNames(PaymentType)),
-                escrow: {
+            escrow: {
                 type: Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
-                    ratio: {
+                ratio: {
                     buyer: _.random(1, 100),
-                        seller: _.random(1, 100)
+                    seller: _.random(1, 100)
                 }
             },
             itemPrice: {
                 currency: Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
-                    basePrice: _.random(123.45, 5.43),
-                    shippingPrice: {
+                basePrice: _.random(123.45, 5.43),
+                shippingPrice: {
                     domestic: _.random(5.00, 1.11),
                     international: _.random(10.00, 5.003)
                 },

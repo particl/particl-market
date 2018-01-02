@@ -1,6 +1,8 @@
 import { rpc, api } from './lib/api';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
+import { PaymentType } from '../../src/api/enums/PaymentType';
+import { EscrowType } from '../../src/api/enums/EscrowType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 
 describe('/removeItemImage', () => {
@@ -12,25 +14,32 @@ describe('/removeItemImage', () => {
     const testDataListingItemTemplate = {
         profile_id: 0,
         itemInformation: {
-            title: 'Item Information with Templates',
-            shortDescription: 'Item short description with Templates',
-            longDescription: 'Item long description with Templates',
+            title: 'Item Information with Templates First',
+            shortDescription: 'Item short description with Templates First',
+            longDescription: 'Item long description with Templates First',
             itemCategory: {
                 key: 'cat_high_luxyry_items'
             },
-            listingItemId: 0
+            listingItemId: null
         },
         paymentInformation: {
-            type: 'payment',
+            type: PaymentType.SALE,
+            escrow: {
+                type: EscrowType.MAD,
+                ratio: {
+                    buyer: 100,
+                    seller: 100
+                }
+            },
             itemPrice: {
-                currency: Currency.PARTICL,
-                basePrice: 12,
+                currency: Currency.BITCOIN,
+                basePrice: 0.0001,
                 shippingPrice: {
-                    domestic: 5,
-                    international: 7
+                    domestic: 0.123,
+                    international: 1.234
                 },
                 cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.STEALTH,
+                    type: CryptocurrencyAddressType.NORMAL,
                     address: 'This is temp address.'
                 }
             }
@@ -41,14 +50,21 @@ describe('/removeItemImage', () => {
     let createdItemInfoId;
     let createdItemImageId;
     let createdItemImageIdNew;
+    let listingItemId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+        const defaultProfile = await testUtil.getDefaultProfile();
+        testDataListingItemTemplate.profile_id = defaultProfile.id;
         // create item template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
         const result: any = addListingItemTempRes.getBody()['result'];
         createdTemplateId = result.id;
         createdItemInfoId = result.ItemInformation.id;
+
+        // listingitem
+        const listingItems = await testUtil.generateData('listingitem', 1);
+        listingItemId = listingItems[0]['id'];
 
         // add item image
         const addDataRes: any = await rpc('additemimage', [createdTemplateId]);
@@ -60,7 +76,7 @@ describe('/removeItemImage', () => {
 
     test('Should fail to remove ItemImage because there is a ListingItem related to ItemInformation.', async () => {
         // set listing item id
-        testDataListingItemTemplate.itemInformation.listingItemId = 1;
+        testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
         const result: any = addListingItemTempRes.getBody()['result'];
         const newCreatedTemplateId = result.id;
@@ -76,6 +92,7 @@ describe('/removeItemImage', () => {
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.message).toBe('Can\'t delete itemImage because the item has allready been posted!');
     });
+
     test('Should remove item images', async () => {
         // remove item image
         const addDataRes: any = await rpc(method, [createdItemImageId]);

@@ -1,10 +1,10 @@
 import * as _ from 'lodash';
 import { api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
+import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Country } from '../../src/api/enums/Country';
 
 describe('/RpcGetProfile', () => {
-
+    const testUtil = new BlackBoxTestUtil();
     const keys = [
         'id', 'name', 'updatedAt', 'createdAt'
     ];
@@ -12,14 +12,15 @@ describe('/RpcGetProfile', () => {
     const testData = {
         method: 'createprofile',
         params: [
-            'DEFAULT-PROFILE'
+            'DEFAULT-PROFILE', 'DEFAULT-PROFILE-ADDRESS'
         ],
         jsonrpc: '2.0'
     };
 
     const testData2 = {
-        name: 'DEFAULT',
-        addresses: [{
+        name: 'DEFAULT-PROFILE-NAME',
+        address: 'DEFAULT-ADDRESS',
+        shippingAddresses: [{
             title: 'Title',
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
@@ -44,8 +45,7 @@ describe('/RpcGetProfile', () => {
 
     let createdId;
     beforeAll(async () => {
-        const command = new DatabaseResetCommand();
-        await command.run();
+        await testUtil.cleanDb();
     });
 
     test('Should return one profile by ID', async () => {
@@ -72,7 +72,7 @@ describe('/RpcGetProfile', () => {
     });
 
     test('Should return one profile with addresses by ID', async () => {
-        // created profile
+        // create profile
         const res = await api('POST', '/api/profiles', {
             body: testData2
         });
@@ -95,7 +95,7 @@ describe('/RpcGetProfile', () => {
     });
 
     test('Should return one profile by Name', async () => {
-        testDataGet.params[0] = 'DEFAULT-PROFILE';
+        testDataGet.params[0] = 'DEFAULT-PROFILE-NAME';
         const res = await api('POST', '/api/rpc', {
             body: testDataGet
         });
@@ -103,6 +103,6 @@ describe('/RpcGetProfile', () => {
         res.expectStatusCode(200);
         res.expectDataRpc(keys);
         const result: any = res.getBody()['result'];
-        expect(result.name).toBe(testData.params[0]);
+        expect(result.name).toBe(testData2.name);
     });
 });

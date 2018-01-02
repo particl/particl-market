@@ -41,6 +41,9 @@ describe('/addItemImage', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+        // profile
+        const defaultProfile = await testUtil.getDefaultProfile();
+        testDataListingItemTemplate.profile_id = defaultProfile.id;
         // create item template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
         const result: any = addListingItemTempRes.getBody()['result'];
