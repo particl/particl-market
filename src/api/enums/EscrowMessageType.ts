@@ -1,5 +1,5 @@
 /**
- * EscrowMessageTypeEnum
+ * EscrowMessageType
  *
  */
 

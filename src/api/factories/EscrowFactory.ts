@@ -2,15 +2,14 @@ import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { Escrow } from '../models/Escrow';
-import { Address } from '../models/Address';
-import { EscrowMessageInterface } from '../messages/EscrowMessageInterface';
 import { EscrowMessage } from '../messages/EscrowMessage';
 import { EscrowLockRequest } from '../requests/EscrowLockRequest';
 import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
 import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
 import { EscrowMessageType } from '../enums/EscrowMessageType';
 import { MessageException } from '../exceptions/MessageException';
+import * as resources from 'resources';
+
 
 export class EscrowFactory {
 
@@ -32,18 +31,20 @@ export class EscrowFactory {
      *
      * @returns {EscrowMessage}
      */
-    public getMessage(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow?: Escrow, address?: Address): EscrowMessage {
+    public async getMessage(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest,
+                            escrow?: resources.Escrow,
+                            address?: resources.Address): Promise<EscrowMessage> {
 
         switch (request.action) {
 
             case EscrowMessageType.MPA_LOCK:
-                return this.getLockMessage(request as EscrowLockRequest, escrow, address);
+                return await this.getLockMessage(request as EscrowLockRequest, escrow, address);
 
             case EscrowMessageType.MPA_RELEASE:
-                return this.getReleaseMessage(request as EscrowReleaseRequest, escrow);
+                return await this.getReleaseMessage(request as EscrowReleaseRequest, escrow);
 
             case EscrowMessageType.MPA_REFUND:
-                return this.getRefundMessage(request as EscrowRefundRequest, escrow);
+                return await this.getRefundMessage(request as EscrowRefundRequest, escrow);
 
             case EscrowMessageType.MPA_REQUEST_REFUND:
                 // TODO: IMPLEMENT
@@ -59,10 +60,10 @@ export class EscrowFactory {
      * @param data
      * @returns {Escrow}
      */
-    public getModel(data: EscrowMessage): Escrow {
+    public getModel(data: EscrowMessage): resources.Escrow {
 
         // TODO:
-        return new Escrow();
+        return {} as resources.Escrow;
     }
 
     /**
@@ -73,17 +74,18 @@ export class EscrowFactory {
      * @param address
      * @returns {EscrowMessage}
      */
-    private getLockMessage(lockRequest: EscrowLockRequest, escrow: Escrow, address: Address): EscrowMessage {
+    private async getLockMessage(lockRequest: EscrowLockRequest, escrow: resources.Escrow, address: resources.Address): Promise<EscrowMessage> {
 
         this.checkEscrowActionValidity(escrow, EscrowMessageType.MPA_LOCK);
         const rawTx = this.createRawTx(lockRequest, escrow);
+        const addressOneLiner = this.getAddressOneLiner(address);
 
         return {
-            action: 'MPA_LOCK',
+            action: lockRequest.action,
             listing: lockRequest.listing,
             nonce: lockRequest.nonce,
             info: {
-                address: address['addressLine1'] + ', ' + address['addressLine2'],
+                address: addressOneLiner,
                 memo: lockRequest.memo
             },
             escrow: {
@@ -98,13 +100,13 @@ export class EscrowFactory {
      * @param releaseRequest
      * @param escrow
      */
-    private getReleaseMessage(releaseRequest: EscrowReleaseRequest, escrow: Escrow): EscrowMessage {
+    private async getReleaseMessage(releaseRequest: EscrowReleaseRequest, escrow: resources.Escrow): Promise<EscrowMessage> {
 
         this.checkEscrowActionValidity(escrow, EscrowMessageType.MPA_RELEASE);
         const rawTx = this.createRawTx(releaseRequest, escrow);
 
         return {
-            action: 'MPA_RELEASE',
+            action: releaseRequest.action,
             listing: releaseRequest.listing,
             memo: releaseRequest.memo,
             escrow: {
@@ -120,13 +122,13 @@ export class EscrowFactory {
      * @param refundRequest
      * @param escrow
      */
-    private getRefundMessage(refundRequest: EscrowRefundRequest, escrow: Escrow): EscrowMessage {
+    private async getRefundMessage(refundRequest: EscrowRefundRequest, escrow: resources.Escrow): Promise<EscrowMessage> {
 
         this.checkEscrowActionValidity(escrow, EscrowMessageType.MPA_REFUND);
         const rawTx = this.createRawTx(refundRequest, escrow);
 
         return {
-            action: 'MPA_REFUND',
+            action: refundRequest.action,
             item: refundRequest.listing,
             accepted: refundRequest.accepted,
             memo: refundRequest.memo,
@@ -144,7 +146,7 @@ export class EscrowFactory {
      * @param escrowAction
      * @returns {boolean}
      */
-    private checkEscrowActionValidity(escrow: Escrow, escrowAction: EscrowMessageType): boolean {
+    private checkEscrowActionValidity(escrow: resources.Escrow, escrowAction: EscrowMessageType): boolean {
         const isValid = true;
         // TODO: implement
         if (!isValid) {
@@ -160,7 +162,7 @@ export class EscrowFactory {
      * @param escrow
      * @returns {string}
      */
-    private createRawTx(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow: Escrow): string {
+    private createRawTx(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow: resources.Escrow): string {
         // MPA_RELEASE:
         // rawtx: 'The buyer sends the half signed rawtx which releases the escrow and paymeny.
         // The vendor then recreates the whole transaction (check ouputs, inputs, scriptsigs
@@ -178,4 +180,22 @@ export class EscrowFactory {
     }
 
 
+    private getAddressOneLiner(address: resources.Address): string {
+        const addressArray = [];
+
+        if (address.addressLine1) {
+            addressArray.push(address.addressLine1);
+        }
+        if (address.addressLine2) {
+            addressArray.push(address.addressLine2);
+        }
+        if (address.city) {
+            addressArray.push(address.city);
+        }
+        if (address.country) {
+            addressArray.push(address.country);
+        }
+
+        return addressArray.join(', ');
+    }
 }
