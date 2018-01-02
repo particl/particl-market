@@ -87,6 +87,7 @@ export class ListingItemService {
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
+        delete body.itemInformation;
         const paymentInformation = body.paymentInformation;
         delete body.paymentInformation;
         const messagingInformation = body.messagingInformation || [];
