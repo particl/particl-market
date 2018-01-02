@@ -13,13 +13,14 @@ import { EscrowUpdateRequest } from '../requests/EscrowUpdateRequest';
 import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
 import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
 import { EscrowLockRequest } from '../requests/EscrowLockRequest';
-import { RpcRequest } from '../requests/RpcRequest';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
 import { EscrowRatioService } from '../services/EscrowRatioService';
 import { AddressService } from '../services/AddressService';
 import { MessageBroadcastService } from '../services/MessageBroadcastService';
 import { EscrowFactory } from '../factories/EscrowFactory';
+import { EscrowMessageInterface } from '../messages/EscrowMessageInterface';
+import { EscrowMessage } from '../messages/EscrowMessage';
 
 export class EscrowService {
 
@@ -195,8 +196,8 @@ export class EscrowService {
         const address = await this.addressService.findOne(addressId, false);
         data.address = address.toJSON();
         // escrowfactory to generate the lockmessage
-        const escrowActionMessage = await this.escrowFactory.get(data);
-        return await this.messageBroadcastService.broadcast(escrowActionMessage);
+        const escrowActionMessage = await this.escrowFactory.get(data as EscrowMessage);
+        return await this.messageBroadcastService.broadcast(escrowActionMessage as EscrowMessageInterface);
     }
 
     @validate()
@@ -206,8 +207,8 @@ export class EscrowService {
         const escrow = await this.findOne(escrowId, false);
         data.escrow = escrow.toJSON();
         // escrowfactory to generate the refundmessage
-        const escrowActionMessage = await this.escrowFactory.get(data);
-        return await this.messageBroadcastService.broadcast(escrowActionMessage);
+        const escrowActionMessage = await this.escrowFactory.get(data as EscrowMessage);
+        return await this.messageBroadcastService.broadcast(escrowActionMessage as EscrowMessageInterface);
     }
 
     @validate()
@@ -217,46 +218,8 @@ export class EscrowService {
         const escrow = await this.findOne(escrowId, false);
         data.escrow = escrow.toJSON();
         // escrowfactory to generate the releasemessage
-        const escrowActionMessage = await this.escrowFactory.get(data);
-        return await this.messageBroadcastService.broadcast(escrowActionMessage);
+        const escrowActionMessage = await this.escrowFactory.get(data as EscrowMessage);
+        return await this.messageBroadcastService.broadcast(escrowActionMessage as EscrowMessageInterface);
     }
-
-    // TODO: REMOVE
-    // @validate()
-    // public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Escrow>> {
-    //     return this.findAll();
-    // }
-
-    // @validate()
-    // public async rpcFindOne( @request(RpcRequest) data: any): Promise<Escrow> {
-    //     return this.findOne(data.params[0]);
-    // }
-
-    // @validate()
-    // public async rpcCreate( @request(RpcRequest) data: any): Promise<Escrow> {
-    //     return this.create({
-    //         type: data.params[0],
-    //         ratio: {
-    //             buyer: data.params[1],
-    //             seller: data.params[2]
-    //         }
-    //     });
-    // }
-
-    // @validate()
-    // public async rpcUpdate( @request(RpcRequest) data: any): Promise<Escrow> {
-    //     return this.update(data.params[0], {
-    //         type: data.params[1],
-    //         ratio: {
-    //             buyer: data.params[2],
-    //             seller: data.params[3]
-    //         }
-    //     });
-    // }
-
-    // @validate()
-    // public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-    //     return this.destroy(data.params[0]);
-    // }
 
 }
