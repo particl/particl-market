@@ -1,5 +1,5 @@
 export interface ActionMessageInterface {
     action: string;
-    item: string;
+    listing: string;
     objects?: any; // todo: class for object key value pair
 }

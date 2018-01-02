@@ -2,13 +2,15 @@ import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { validate, request } from '../../core/api/Validate';
 import { Escrow } from '../models/Escrow';
+import { Address } from '../models/Address';
 import { EscrowMessageInterface } from '../messages/EscrowMessageInterface';
 import { EscrowMessage } from '../messages/EscrowMessage';
 import { EscrowLockRequest } from '../requests/EscrowLockRequest';
 import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
 import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
+import { EscrowMessageType } from '../enums/EscrowMessageType';
+import { MessageException } from '../exceptions/MessageException';
 
 export class EscrowFactory {
 
@@ -22,79 +24,33 @@ export class EscrowFactory {
 
 
     /**
-     * Factory will return message as per the escrow action for broadcasting.
-     * data:
-     * escrow: object
-     * address: object
-     * listing: string
-     * nonce: string
-     * memo: string
+     * Factory which will create an EscrowMessage
      *
-     * @param data
-     * @returns {EscrowMessageInterface}
+     * @param request, EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest
+     * @param escrow
+     * @param address
+     *
+     * @returns {EscrowMessage}
      */
-    public getMessage(data: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest): EscrowMessageInterface {
-        let message: EscrowMessageInterface;
-        switch (data.action) {
-            case 'MPA_LOCK':
-                const address: string = data.address;
-                message = {
-                    version: '0.0.1.0',
-                    mpaction: [
-                        {
-                            action: 'MPA_LOCK',
-                            listing: data.listing,
-                            nonce: data.nonce,
-                            info: {
-                                address: address['addressLine1'] + ', ' + address['addressLine2'],
-                                memo: data.memo
-                            },
-                            escrow: {
-                                rawtx: '....'
-                            }
-                        }
-                    ]
-                };
-                break;
-            case 'MPA_RELEASE':
-                // rawtx: 'The buyer sends the half signed rawtx which releases the escrow and paymeny.
-                // The vendor then recreates the whole transaction (check ouputs, inputs, scriptsigs
-                // and the fee), verifying that buyer\'s rawtx is indeed legitimate. The vendor then
-                // signs the rawtx and broadcasts it.'
-                message = {
-                    version: '0.0.1.0',
-                    mpaction: {
-                        action: 'MPA_RELEASE',
-                        item: data.listing,
-                        memo: data.memo,
-                        escrow: {
-                            type: 'release',
-                            rawtx: '...'
-                        }
-                    }
-                };
-                break;
-            case 'MPA_REFUND':
-                // rawtx: 'The vendor decodes the rawtx from MP_REQUEST_REFUND and recreates the whole
-                // transaction (check ouputs, inputs, scriptsigs and the fee), verifying that buyer\'s
-                // rawtx is indeed legitimate. The vendor then signs the rawtx and sends it to the buyer.
-                // The vendor can decide to broadcast it himself.'
-                message = {
-                    version: '0.0.1.0',
-                    mpaction: {
-                        action: 'MPA_REFUND',
-                        item: data.listing,
-                        accepted: data.accepted,
-                        memo: data.memo,
-                        escrow: {
-                            type: 'refund',
-                            rawtx: '...'
-                        }
-                    }
-                };
-                break;
+    public getMessage(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow?: Escrow, address?: Address): EscrowMessage {
+
+        switch (request.action) {
+
+            case EscrowMessageType.MPA_LOCK:
+                return this.getLockMessage(request as EscrowLockRequest, escrow, address);
+
+            case EscrowMessageType.MPA_RELEASE:
+                return this.getReleaseMessage(request as EscrowReleaseRequest, escrow);
+
+            case EscrowMessageType.MPA_REFUND:
+                return this.getRefundMessage(request as EscrowRefundRequest, escrow);
+
+            case EscrowMessageType.MPA_REQUEST_REFUND:
+                // TODO: IMPLEMENT
+                // return this.getRequestRefundMessage(request as EscrowRequestRefundRequest, escrow);
+                return new EscrowMessage();
         }
-        return message as EscrowMessageInterface;
+
     }
 
     /**
@@ -103,11 +59,122 @@ export class EscrowFactory {
      * @param data
      * @returns {Escrow}
      */
-    @validate()
-    public getModel(data: EscrowMessageInterface): Escrow {
+    public getModel(data: EscrowMessage): Escrow {
 
         // TODO:
         return new Escrow();
+    }
+
+    /**
+     * creates the EscrowMessage for EscrowLockRequest
+     *
+     * @param lockRequest
+     * @param escrow
+     * @param address
+     * @returns {EscrowMessage}
+     */
+    private getLockMessage(lockRequest: EscrowLockRequest, escrow: Escrow, address: Address): EscrowMessage {
+
+        this.checkEscrowActionValidity(escrow, EscrowMessageType.MPA_LOCK);
+        const rawTx = this.createRawTx(lockRequest, escrow);
+
+        return {
+            action: 'MPA_LOCK',
+            listing: lockRequest.listing,
+            nonce: lockRequest.nonce,
+            info: {
+                address: address['addressLine1'] + ', ' + address['addressLine2'],
+                memo: lockRequest.memo
+            },
+            escrow: {
+                rawtx: rawTx
+            }
+        } as EscrowMessage;
+    }
+
+    /**
+     * creates the EscrowMessage for EscrowReleaseRequest
+     *
+     * @param releaseRequest
+     * @param escrow
+     */
+    private getReleaseMessage(releaseRequest: EscrowReleaseRequest, escrow: Escrow): EscrowMessage {
+
+        this.checkEscrowActionValidity(escrow, EscrowMessageType.MPA_RELEASE);
+        const rawTx = this.createRawTx(releaseRequest, escrow);
+
+        return {
+            action: 'MPA_RELEASE',
+            listing: releaseRequest.listing,
+            memo: releaseRequest.memo,
+            escrow: {
+                type: 'release',
+                rawtx: rawTx
+            }
+        } as EscrowMessage;
+    }
+
+    /**
+     * creates the EscrowMessage for EscrowRefundRequest
+     *
+     * @param refundRequest
+     * @param escrow
+     */
+    private getRefundMessage(refundRequest: EscrowRefundRequest, escrow: Escrow): EscrowMessage {
+
+        this.checkEscrowActionValidity(escrow, EscrowMessageType.MPA_REFUND);
+        const rawTx = this.createRawTx(refundRequest, escrow);
+
+        return {
+            action: 'MPA_REFUND',
+            item: refundRequest.listing,
+            accepted: refundRequest.accepted,
+            memo: refundRequest.memo,
+            escrow: {
+                type: 'refund',
+                rawtx: rawTx
+            }
+        } as EscrowMessage;
+    }
+
+    /**
+     * Checks if the escrowAction is allowed for the given escrow
+     *
+     * @param escrow
+     * @param escrowAction
+     * @returns {boolean}
+     */
+    private checkEscrowActionValidity(escrow: Escrow, escrowAction: EscrowMessageType): boolean {
+        const isValid = true;
+        // TODO: implement
+        if (!isValid) {
+            throw new MessageException('Action is not valid for the Escrow');
+        }
+        return isValid;
+    }
+
+    /**
+     * Creates rawtx based on params
+     *
+     * @param request
+     * @param escrow
+     * @returns {string}
+     */
+    private createRawTx(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow: Escrow): string {
+        // MPA_RELEASE:
+        // rawtx: 'The buyer sends the half signed rawtx which releases the escrow and paymeny.
+        // The vendor then recreates the whole transaction (check ouputs, inputs, scriptsigs
+        // and the fee), verifying that buyer\'s rawtx is indeed legitimate. The vendor then
+        // signs the rawtx and broadcasts it.'
+
+        // MPA_REFUND
+        // rawtx: 'The vendor decodes the rawtx from MP_REQUEST_REFUND and recreates the whole
+        // transaction (check ouputs, inputs, scriptsigs and the fee), verifying that buyer\'s
+        // rawtx is indeed legitimate. The vendor then signs the rawtx and sends it to the buyer.
+        // The vendor can decide to broadcast it himself.'
+
+        // TODO: implement
+        return 'todo: implement';
     }
 
 

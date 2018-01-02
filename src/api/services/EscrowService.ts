@@ -189,14 +189,20 @@ export class EscrowService {
     public async lock( @request(EscrowLockRequest) data: EscrowLockRequest): Promise<void> {
         // fetch the escrow
         const escrowId: any = data.escrow;
-        const escrow = await this.findOne(escrowId, false);
-        data.escrow = escrow.toJSON();
+        const escrowModel = await this.findOne(escrowId, false);
+        const escrow = escrowModel.toJSON();
+
         // fetch the address
         const addressId: any = data.address;
-        const address = await this.addressService.findOne(addressId, false);
-        data.address = address.toJSON();
-        // escrowfactory to generate the lockmessage
-        const escrowActionMessage = await this.escrowFactory.getMessage(data);
+        const addressModel = await this.addressService.findOne(addressId, false);
+        const address = addressModel.toJSON();
+
+        if (_.isEmpty(escrow) || _.isEmpty(address)) {
+            throw new MessageException('Escrow or Address not found!');
+        }
+
+        // use escrowfactory to generate the lockmessage
+        const escrowActionMessage = await this.escrowFactory.getMessage(data, escrow, address);
         return await this.messageBroadcastService.broadcast(escrowActionMessage as EscrowMessageInterface);
     }
 
