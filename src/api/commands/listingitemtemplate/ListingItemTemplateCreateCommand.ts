@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
+import { ListingItemTemplateCreateRequest } from '../../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 
@@ -43,8 +44,9 @@ export class ListingItemTemplateCreateCommand implements RpcCommandInterface<Lis
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<ListingItemTemplate> {
+        let body;
         if (data.params[1] && data.params[2] && data.params[3] && data.params[4]) {
-            return this.listingItemTemplateService.create({
+            body = {
                 profile_id: data.params[0],
                 itemInformation: {
                     title: data.params[1],
@@ -70,12 +72,13 @@ export class ListingItemTemplateCreateCommand implements RpcCommandInterface<Lis
                     }
                 },
                 messagingInformation: {}
-            });
+            };
         } else {
-            return this.listingItemTemplateService.create({
+            body = {
                 profile_id: data.params[0]
-            });
+            };
         }
+        return this.listingItemTemplateService.create(body as ListingItemTemplateCreateRequest);
     }
 
     public help(): string {

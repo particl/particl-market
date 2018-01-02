@@ -5,6 +5,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { ItemLocationService } from '../../services/ItemLocationService';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
+import { ItemLocationUpdateRequest } from '../../requests/ItemLocationUpdateRequest';
 import { ItemLocation } from '../../models/ItemLocation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as _ from 'lodash';
@@ -58,7 +59,7 @@ export class ItemLocationUpdateCommand implements RpcCommandInterface<ItemLocati
                 }
             };
             // update item location
-            return this.itemLocationService.update(itemInformation.ItemLocation.id, body);
+            return this.itemLocationService.update(itemInformation.ItemLocation.id, body as ItemLocationUpdateRequest);
         }
     }
 

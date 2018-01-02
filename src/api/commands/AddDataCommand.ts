@@ -5,6 +5,7 @@ import { Types, Core, Targets } from '../../constants';
 import { TestDataService } from '../services/TestDataService';
 import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandInterface } from './RpcCommandInterface';
+import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
 
 export class AddDataCommand implements RpcCommandInterface<any> {
 
@@ -27,7 +28,7 @@ export class AddDataCommand implements RpcCommandInterface<any> {
         return await this.testDataService.create({
             model: data.params[0],
             data: JSON.parse(data.params[1])
-        });
+        } as TestDataCreateRequest);
     }
 
     public help(): string {

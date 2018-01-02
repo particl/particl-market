@@ -49,7 +49,7 @@ export class FavoriteItemService {
 
 
     @validate()
-    public async create( @request(FavoriteItemCreateRequest) body: any): Promise<FavoriteItem> {
+    public async create( @request(FavoriteItemCreateRequest) body: FavoriteItemCreateRequest): Promise<FavoriteItem> {
 
         // If the request body was valid we will create the favoriteItem
         const favoriteItem = await this.favoriteItemRepo.create(body);
@@ -61,7 +61,7 @@ export class FavoriteItemService {
 
 
     @validate()
-    public async update(id: number, @request(FavoriteItemUpdateRequest) body: any): Promise<FavoriteItem> {
+    public async update(id: number, @request(FavoriteItemUpdateRequest) body: FavoriteItemUpdateRequest): Promise<FavoriteItem> {
 
         // find the existing one without related
         const favoriteItem = await this.findOne(id, false);
