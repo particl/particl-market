@@ -179,9 +179,13 @@ export const Targets = {
         BidFactory: 'BidFactory',
         EscrowFactory: 'EscrowFactory',
         RpcCommandFactory: 'RpcCommandFactory',
-        TestFactory: 'TestFactory'
+        TestFactory: 'TestFactory',
+        ListingItemFactory: 'ListingItemFactory',
+        ItemCategoryFactory: 'ItemCategoryFactory',
+        MessagingInformationFactory: 'MessagingInformationFactory'
     },
     MessageProcessor:     {
+        ListingItemMessageProcessor: 'ListingItemMessageProcessor',
         AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
         BidMessageProcessor: 'BidMessageProcessor',
         CancelBidMessageProcessor: 'CancelBidMessageProcessor',

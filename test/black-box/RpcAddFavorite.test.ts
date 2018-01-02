@@ -92,10 +92,10 @@ describe('/RpcAddFavorite', () => {
                 }
             }
         },
-        messagingInformation: {
+        messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey'
-        }
+        }]
         // TODO: ignoring listingitemobjects for now
     };
 

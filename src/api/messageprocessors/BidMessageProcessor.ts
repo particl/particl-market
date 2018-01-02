@@ -32,7 +32,7 @@ export class BidMessageProcessor implements MessageProcessorInterface {
             this.log.warn(`ListingItem with the hash=${message.item} was not found!`);
             throw new NotFoundException(message.item);
         } else {
-            const bid = this.bidFactory.get(message);
+            const bid = this.bidFactory.get(message, listingItem.id);
             // setting the bid relation with listingItem
             bid['listing_item_id'] = listingItem.id;
             return await this.bidService.create(bid);

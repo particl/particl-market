@@ -23,33 +23,9 @@ describe('UpdateMessagingInformation', () => {
             },
             listingItemId: null
         },
-        paymentInformation: {
-            type: PaymentType.SALE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 100,
-                    seller: 100
-                }
-            },
-            itemPrice: {
-                currency: Currency.BITCOIN,
-                basePrice: 0.0001,
-                shippingPrice: {
-                    domestic: 0.123,
-                    international: 1.234
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.NORMAL,
-                    address: 'This is temp address.'
-                }
-            }
-        },
-        messagingInformation: {
-            protocol: MessagingProtocolType.SMSG,
-            publicKey: 'publickeyNew',
+        messagingInformation: [{
             listingItemId: null
-        }
+        }]
     };
 
     let createdTemplateId;
@@ -89,7 +65,7 @@ describe('UpdateMessagingInformation', () => {
         // set listing item id in item information
         testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
         // set listing item id in message information
-        testDataListingItemTemplate.messagingInformation.listingItemId = listingItemId;
+        testDataListingItemTemplate.messagingInformation[0].listingItemId = 1;
 
         // create new item template
         const listingItemTemplate = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);

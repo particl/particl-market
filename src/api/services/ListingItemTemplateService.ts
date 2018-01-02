@@ -65,10 +65,8 @@ export class ListingItemTemplateService {
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
         const paymentInformation = body.paymentInformation;
-        const messagingInformation = body.messagingInformation;
-        const listingItemObjects = body.listingItemObjects;
-        delete body.itemInformation;
         delete body.paymentInformation;
+        const messagingInformation = body.messagingInformation || [];
         delete body.messagingInformation;
         delete body.listingItemObjects;
 
@@ -91,15 +89,11 @@ export class ListingItemTemplateService {
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.Id;
             const result = await this.paymentInformationService.create(paymentInformation);
-            // this.log.debug('saved paymentInformation ' + listingItemTemplate.Id + ': ', result.toJSON());
+           // this.log.info('saved paymentInformation: ', result.toJSON());
         }
-        if (!_.isEmpty(messagingInformation)) {
-            messagingInformation.listing_item_template_id = listingItemTemplate.Id;
-            const result = await this.messagingInformationService.create(messagingInformation);
-            // this.log.debug('saved messagingInformation ' + listingItemTemplate.Id + ': ', result.toJSON());
-        }
-        if (!_.isEmpty(listingItemObjects)) {
-            // TODO: implement
+        for (const msgInfo of messagingInformation) {
+            msgInfo.listing_item_template_id = listingItemTemplate.Id;
+            await this.messagingInformationService.create(msgInfo);
         }
 
         // finally find and return the created listingItemTemplate
@@ -125,26 +119,21 @@ export class ListingItemTemplateService {
         // find related record and delete it and recreate related data
         const itemInformation = updatedListingItemTemplate.related('ItemInformation').toJSON();
         const paymentInformation = updatedListingItemTemplate.related('PaymentInformation').toJSON();
-        const messagingInformation = updatedListingItemTemplate.related('MessagingInformation').toJSON();
-        const listingItemObjects = updatedListingItemTemplate.related('ListingItemObjects').toJSON();
+        await this.paymentInformationService.destroy(paymentInformation.id);
+        body.paymentInformation.listing_item_template_id = id;
+        await this.paymentInformationService.create(body.paymentInformation);
 
-        if (!_.isEmpty(itemInformation)) {
-            body.itemInformation.listing_item_template_id = id;
-            await this.itemInformationService.update(body.itemInformation.id, body.itemInformation);
+        // find related record and delete it and recreate related data
+        let messagingInformation = updatedListingItemTemplate.related('MessagingInformation').toJSON() || [];
+        for (const msgInfo of messagingInformation) {
+            msgInfo.listing_item_template_id = id;
+            await this.messagingInformationService.destroy(msgInfo.id);
         }
-
-        if (!_.isEmpty(paymentInformation)) {
-            body.paymentInformation.listing_item_template_id = id;
-            await this.paymentInformationService.update(body.paymentInformation.id, body.paymentInformation);
-        }
-
-        if (!_.isEmpty(messagingInformation)) {
-            body.messagingInformation.listing_item_template_id = id;
-            await this.messagingInformationService.update(body.messagingInformation.id, body.messagingInformation);
-        }
-
-        if (!_.isEmpty(listingItemObjects)) {
-            // TODO: implement
+        // add new
+        messagingInformation = body.messagingInformation || [];
+        for (const msgInfo of messagingInformation) {
+            msgInfo.listing_item_template_id = id;
+            await this.messagingInformationService.create(msgInfo);
         }
 
         // finally find and return the updated listingItem

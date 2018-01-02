@@ -65,17 +65,18 @@ export class ItemPriceService {
         }
 
         // this.log.debug('creating: ', body);
-
         // create the itemPrice
         const itemPrice = await this.itemPriceRepo.create(body);
-        // this.log.debug('itemprice created: ', JSON.stringify(itemPrice, null, 2));
-
-        // create related models, shippingPrice
+        // then create shippingPrice
         if (!_.isEmpty(shippingPrice)) {
             shippingPrice.item_price_id = itemPrice.Id;
             await this.shippingpriceService.create(shippingPrice);
         }
-
+        // then create address
+        if (!_.isEmpty(cryptocurrencyAddress)) {
+            cryptocurrencyAddress.item_price_id = itemPrice.Id;
+            await this.cryptocurrencyAddressService.create(cryptocurrencyAddress);
+        }
         // finally find and return the created itemPrice
         return await this.findOne(itemPrice.Id);
     }

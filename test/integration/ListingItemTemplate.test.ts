@@ -124,10 +124,10 @@ describe('ListingItemTemplate', () => {
                 }
             }
         },
-        messagingInformation: {
+        messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1'
-        }
+        }]
         // TODO: ignoring listingitemobjects for now
     } as ListingItemTemplateCreateRequest;
 
@@ -188,10 +188,10 @@ describe('ListingItemTemplate', () => {
                 }
             }
         },
-        messagingInformation: {
+        messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1 UPDATED'
-        }
+        }]
         // TODO: ignoring listingitemobjects for now
     } as ListingItemTemplateUpdateRequest;
 
@@ -275,7 +275,7 @@ describe('ListingItemTemplate', () => {
         expect(result.Profile.name).toBe(defaultProfile.Name);
 
         // tslint:disable:max-line-length
-        /*
+
         expect(result.ItemInformation.title).toBe(testDataUpdated.itemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(testDataUpdated.itemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(testDataUpdated.itemInformation.longDescription);
@@ -306,7 +306,7 @@ describe('ListingItemTemplate', () => {
         expect(result.MessagingInformation.protocol).toBe(testDataUpdated.messagingInformation.protocol);
         expect(result.MessagingInformation.publicKey).toBe(testDataUpdated.messagingInformation.publicKey);
         expect(result.MessagingInformation.listingItemId).toBe(null);
-        */
+
         // tslint:enable:max-line-length
     });
 
@@ -424,14 +424,18 @@ describe('ListingItemTemplate', () => {
         expect(result.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
         expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
         expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testData.paymentInformation.escrow.ratio.seller);
-        expect(result.PaymentInformation.ItemPrice.currency).toBe(testData.paymentInformation.itemPrice.currency);
-        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
-        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testData.paymentInformation.itemPrice.cryptocurrencyAddress.type);
-        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testData.paymentInformation.itemPrice.cryptocurrencyAddress.address);
+        const resItemPrice = result.PaymentInformation.ItemPrice;
+        expect(resItemPrice.currency).toBe(testData.paymentInformation.itemPrice.currency);
+        expect(resItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
+        expect(resItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
+        expect(resItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
+        expect(resItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
+        expect(resItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
         expect(result.PaymentInformation.listingItemId).toBe(null);
-        expect(result.PaymentInformation.listingItemTemplateId).toBe(createdId);
+
+        expect(result.MessagingInformation[0].protocol).toBe(testData.messagingInformation[0].protocol);
+        expect(result.MessagingInformation[0].publicKey).toBe(testData.messagingInformation[0].publicKey);
+        expect(result.MessagingInformation[0].listingItemId).toBe(null);
 
     });
 
@@ -499,19 +503,19 @@ describe('ListingItemTemplate', () => {
         expect(result.PaymentInformation.Escrow.type).toBe(testData.paymentInformation.escrow.type);
         expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testData.paymentInformation.escrow.ratio.buyer);
         expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testData.paymentInformation.escrow.ratio.seller);
-        expect(result.PaymentInformation.ItemPrice.currency).toBe(testData.paymentInformation.itemPrice.currency);
-        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
-        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
-        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testData.paymentInformation.itemPrice.cryptocurrencyAddress.type);
-        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testData.paymentInformation.itemPrice.cryptocurrencyAddress.address);
+        const resItemPrice = result.PaymentInformation.ItemPrice;
+        expect(resItemPrice.currency).toBe(testData.paymentInformation.itemPrice.currency);
+        expect(resItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
+        expect(resItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
+        expect(resItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
+        expect(resItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
+        expect(resItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
         expect(result.PaymentInformation.listingItemId).toBe(null);
         expect(result.PaymentInformation.listingItemTemplateId).toBe(createdId);
 
-        expect(result.MessagingInformation.protocol).toBe(testData.messagingInformation.protocol);
-        expect(result.MessagingInformation.publicKey).toBe(testData.messagingInformation.publicKey);
-        expect(result.MessagingInformation.listingItemId).toBe(null);
-        expect(result.MessagingInformation.listingItemTemplateId).toBe(createdId);
+        expect(result.MessagingInformation[0].protocol).toBe(testData.messagingInformation[0].protocol);
+        expect(result.MessagingInformation[0].publicKey).toBe(testData.messagingInformation[0].publicKey);
+        expect(result.MessagingInformation[0].listingItemId).toBe(null);
     });
 
     test('Should delete the listing item template with item info and payment info', async () => {
@@ -536,5 +540,4 @@ describe('ListingItemTemplate', () => {
 
         // TODO: test that all the other related data was also removed
     });
-
 });

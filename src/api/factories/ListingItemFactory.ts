@@ -1,0 +1,46 @@
+import { inject, named } from 'inversify';
+import * as crypto from 'crypto-js';
+import { Logger as LoggerType } from '../../core/Logger';
+import { Types, Core, Targets } from '../../constants';
+import { ListingItem } from '../models/ListingItem';
+
+import { ItemMessageInterface } from '../messages/ItemMessageInterface';
+import { PaymentType } from '../enums/PaymentType';
+import { EscrowType } from '../enums/EscrowType';
+
+export class ListingItemFactory {
+
+    public log: LoggerType;
+
+    constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+    ) {
+        this.log = new Logger(__filename);
+    }
+
+    public async get(data: ItemMessageInterface): Promise<ListingItem> {
+        // const hash = crypto.SHA256(new Date().getTime().toString()).toString();
+        const listingItem = {
+            hash: crypto.SHA256(new Date().getTime().toString()).toString(),
+            market_id: 0,
+            itemInformation: {
+                title: data.information.title,
+                shortDescription: data.information.short_description,
+                longDescription: data.information.long_description,
+                itemCategory: {
+                    id: data.information.itemCategory
+                }
+            },
+            paymentInformation: {
+                type: PaymentType[data.payment.type],
+                escrow: {
+                    type: EscrowType[data.payment.escrow.type]
+                },
+                itemPrice: data.payment.itemPrice
+            },
+            messagingInformation: data.messaging
+        };
+        return listingItem as any;
+    }
+
+}

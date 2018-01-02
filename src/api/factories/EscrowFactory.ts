@@ -55,6 +55,10 @@ export class EscrowFactory {
                 };
                 break;
             case 'MPA_RELEASE':
+                // rawtx: 'The buyer sends the half signed rawtx which releases the escrow and paymeny.
+                // The vendor then recreates the whole transaction (check ouputs, inputs, scriptsigs
+                // and the fee), verifying that buyer\'s rawtx is indeed legitimate. The vendor then
+                // signs the rawtx and broadcasts it.'
                 message = {
                     version: '0.0.1.0',
                     mpaction: {
@@ -63,12 +67,16 @@ export class EscrowFactory {
                         memo: data.memo,
                         escrow: {
                             type: 'release',
-                            rawtx: 'The buyer sends the half signed rawtx which releases the escrow and paymeny. The vendor then recreates the whole transaction (check ouputs, inputs, scriptsigs and the fee), verifying that buyer\'s rawtx is indeed legitimate. The vendor then signs the rawtx and broadcasts it.'
+                            rawtx: '...'
                         }
                     }
                 };
                 break;
             case 'MPA_REFUND':
+                // rawtx: 'The vendor decodes the rawtx from MP_REQUEST_REFUND and recreates the whole
+                // transaction (check ouputs, inputs, scriptsigs and the fee), verifying that buyer\'s
+                // rawtx is indeed legitimate. The vendor then signs the rawtx and sends it to the buyer.
+                // The vendor can decide to broadcast it himself.'
                 message = {
                     version: '0.0.1.0',
                     mpaction: {
@@ -78,7 +86,7 @@ export class EscrowFactory {
                         memo: data.memo,
                         escrow: {
                             type: 'refund',
-                            rawtx: 'The vendor decodes the rawtx from MP_REQUEST_REFUND and recreates the whole transaction (check ouputs, inputs, scriptsigs and the fee), verifying that buyer\'s rawtx is indeed legitimate. The vendor then signs the rawtx and sends it to the buyer. The vendor can decide to broadcast it himself.'
+                            rawtx: '...'
                         }
                     }
                 };

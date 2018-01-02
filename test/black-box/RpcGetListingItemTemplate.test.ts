@@ -24,7 +24,6 @@ describe('GetListingItemTemplate', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-
         expect(result.Profile.id).toBe(profile.id);
         expect(result.Profile.name).toBe(profile.name);
         expect(result).hasOwnProperty('Profile');

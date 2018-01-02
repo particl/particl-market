@@ -92,10 +92,10 @@ describe('/FindItems', () => {
                 }
             }
         },
-        messagingInformation: {
+        messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1'
-        }
+        }]
     };
 
     const testDataTwo = {
@@ -154,10 +154,10 @@ describe('/FindItems', () => {
                 }
             }
         },
-        messagingInformation: {
+        messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1 UPDATED'
-        }
+        }]
     };
 
     let createdHashFirst;
