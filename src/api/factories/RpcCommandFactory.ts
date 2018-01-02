@@ -53,6 +53,11 @@ import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
 import { EscrowRefundCommand } from '../commands/escrow/EscrowRefundCommand';
 import { EscrowReleaseCommand } from '../commands/escrow/EscrowReleaseCommand';
 
+import { AcceptBidCommand } from '../commands/bid/AcceptBidCommand';
+import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
+import { RejectBidCommand } from '../commands/bid/RejectBidCommand';
+import { SendBidCommand } from '../commands/bid/SendBidCommand';
+
 // tslint:disable:array-type
 // tslint:disable:max-line-length
 export class RpcCommandFactory {
@@ -106,9 +111,17 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.CleanDbCommand) private cleanDbCommand: CleanDbCommand,
         @inject(Types.Command) @named(Targets.Command.GenerateDataCommand) private generateDataCommand: GenerateDataCommand,
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
+
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowLockCommand) private escrowLockCommand: EscrowLockCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRefundCommand) private escrowRefundCommand: EscrowRefundCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowReleaseCommand) private escrowReleaseCommand: EscrowReleaseCommand,
+
+        @inject(Types.Command) @named(Targets.Command.bid.AcceptBidCommand) private acceptBidCommand: AcceptBidCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.CancelBidCommand) private cancelBidCommand: CancelBidCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.RejectBidCommand) private rejectBidCommand: RejectBidCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.SendBidCommand) private sendBidCommand: SendBidCommand,
+
+
         //  ---
         // @multiInject(Types.Command) public commands: RpcCommand<any>[],
         // @multiInject(Types.Command) @named(Targets.AllCommands) private commands: Array<RpcCommand<any>>,
@@ -164,6 +177,10 @@ export class RpcCommandFactory {
         this.commands.push(cleanDbCommand);
         this.commands.push(generateDataCommand);
         this.commands.push(helpCommand);
+        this.commands.push(acceptBidCommand);
+        this.commands.push(cancelBidCommand);
+        this.commands.push(rejectBidCommand);
+        this.commands.push(sendBidCommand);
 
         this.log.debug(this.commands.length + ' commands initialized.');
 

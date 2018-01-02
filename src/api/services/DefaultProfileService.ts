@@ -31,6 +31,19 @@ export class DefaultProfileService {
         return;
     }
 
+    public async insertOrUpdateProfile(profile: ProfileCreateRequest): Promise<Profile> {
+        let newProfile = await this.profileService.findOneByName(profile.name);
+        if (newProfile === null) {
+            this.log.debug('created new default profile');
+            newProfile = await this.profileService.create(profile);
+
+        } else {
+            newProfile = await this.profileService.update(newProfile.Id, profile);
+            this.log.debug('updated new default profile');
+        }
+        return newProfile;
+    }
+
     private async getAddress(): Promise<string> {
         return 'FIXFIXFIX';
         /*
@@ -46,18 +59,5 @@ export class DefaultProfileService {
                 return '';
             });
         */
-    }
-
-    public async insertOrUpdateProfile(profile: ProfileCreateRequest): Promise<Profile> {
-        let newProfile = await this.profileService.findOneByName(profile.name);
-        if (newProfile === null) {
-            this.log.debug('created new default profile');
-            newProfile = await this.profileService.create(profile);
-
-        } else {
-            newProfile = await this.profileService.update(newProfile.Id, profile);
-            this.log.debug('updated new default profile');
-        }
-        return newProfile;
     }
 }

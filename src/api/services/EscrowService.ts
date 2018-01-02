@@ -222,41 +222,41 @@ export class EscrowService {
     }
 
     // TODO: REMOVE
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Escrow>> {
-        return this.findAll();
-    }
+    // @validate()
+    // public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Escrow>> {
+    //     return this.findAll();
+    // }
 
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<Escrow> {
-        return this.findOne(data.params[0]);
-    }
+    // @validate()
+    // public async rpcFindOne( @request(RpcRequest) data: any): Promise<Escrow> {
+    //     return this.findOne(data.params[0]);
+    // }
 
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<Escrow> {
-        return this.create({
-            type: data.params[0],
-            ratio: {
-                buyer: data.params[1],
-                seller: data.params[2]
-            }
-        });
-    }
+    // @validate()
+    // public async rpcCreate( @request(RpcRequest) data: any): Promise<Escrow> {
+    //     return this.create({
+    //         type: data.params[0],
+    //         ratio: {
+    //             buyer: data.params[1],
+    //             seller: data.params[2]
+    //         }
+    //     });
+    // }
 
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<Escrow> {
-        return this.update(data.params[0], {
-            type: data.params[1],
-            ratio: {
-                buyer: data.params[2],
-                seller: data.params[3]
-            }
-        });
-    }
+    // @validate()
+    // public async rpcUpdate( @request(RpcRequest) data: any): Promise<Escrow> {
+    //     return this.update(data.params[0], {
+    //         type: data.params[1],
+    //         ratio: {
+    //             buyer: data.params[2],
+    //             seller: data.params[3]
+    //         }
+    //     });
+    // }
 
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
-    }
+    // @validate()
+    // public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
+    //     return this.destroy(data.params[0]);
+    // }
 
 }

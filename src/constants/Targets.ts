@@ -96,7 +96,11 @@ export const Targets = {
     Command:     {
         AddDataCommand: 'AddDataCommand',
         bid: {
-            BidSearchCommand: 'BidSearchCommand'
+            BidSearchCommand: 'BidSearchCommand',
+            AcceptBidCommand: 'AcceptBidCommand',
+            CancelBidCommand: 'CancelBidCommand',
+            RejectBidCommand: 'RejectBidCommand',
+            SendBidCommand: 'SendBidCommand'
         },
         CleanDbCommand: 'CleanDbCommand',
         escrow: {

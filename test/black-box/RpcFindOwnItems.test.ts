@@ -1,5 +1,4 @@
 import { rpc, api } from './lib/api';
-import { DatabaseResetCommand } from '../../src/console/DatabaseResetCommand';
 import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
@@ -15,6 +14,7 @@ describe('/findOwnItems', () => {
     const method = 'findownitems';
 
     const testData = {
+        market_id: 0,
         hash: 'hash1',
         itemInformation: {
             title: 'item title1',
@@ -125,15 +125,21 @@ describe('/findOwnItems', () => {
     };
 
     let createdHash;
-    let createdProfileId;
+    let profileId;
     let createdTemplateId;
+    let marketId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        // create profile
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME' });
-        createdProfileId = addProfileRes.getBody()['result'].id;
-        testDataListingItemTemplate.profile_id = createdProfileId;
+        // profile
+        const defaultProfile = await testUtil.getDefaultProfile();
+        profileId = defaultProfile.id;
+        // add market
+        const resMarket = await rpc('addmarket', ['Test Market', 'privateKey', 'Market Address']);
+        marketId = resMarket.getBody()['result'].id;
+        testData.market_id = marketId;
+
+        testDataListingItemTemplate.profile_id = profileId;
 
         // create item template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
@@ -147,7 +153,7 @@ describe('/findOwnItems', () => {
 
     test('Should get all own listing items by profile id', async () => {
         // get own items
-        const addDataRes: any = await rpc(method, [1, 2, 'ASC', createdProfileId, '', '', true]);
+        const addDataRes: any = await rpc(method, [1, 2, 'ASC', profileId, '', '', true]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         const result: any = addDataRes.getBody()['result'];

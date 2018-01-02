@@ -14,6 +14,7 @@ describe('DestroyItemCategory', () => {
 
     let newCategory;
     let profileId;
+    let marketId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -29,9 +30,14 @@ describe('DestroyItemCategory', () => {
             parent_item_category_id: parentCategory.id
         });
         newCategory = addCategoryRes.getBody()['result'];
+        // profile
+        const defaultProfile = await testUtil.getDefaultProfile();
+        profileId = defaultProfile.id;
 
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME' });
-        profileId = addProfileRes.getBody()['result'].id;
+        // market
+        const resMarket = await rpc('addmarket', ['Test Market', 'privateKey', 'Market Address']);
+        const resultMarket: any = resMarket.getBody()['result'];
+        marketId = resultMarket.id;
     });
 
     test('Should delete the category', async () => {
@@ -57,6 +63,7 @@ describe('DestroyItemCategory', () => {
 
         const hash = crypto.SHA256(new Date().getTime().toString()).toString();
         const listingitemData = {
+            market_id: marketId,
             hash,
             itemInformation: {
                 title: 'item title',

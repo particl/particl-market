@@ -101,7 +101,7 @@ export class ListingItemService {
         // this.log.debug('listingItemObjects to save: ', JSON.stringify(listingItemObjects, null, 2));
 
         // If the request body was valid we will create the listingItem
-        const listingItem = await this.listingItemRepo.create(body)
+        const listingItem: any = await this.listingItemRepo.create(body)
             .catch(reason => {
                 this.log.error('ERROR: ', reason);
             });
@@ -172,9 +172,9 @@ export class ListingItemService {
         return await this.findOne(id);
     }
 
-   // public async destroy(id: number): Promise<void> {
-   //     await this.listingItemRepo.destroy(id);
-   // }
+    // public async destroy(id: number): Promise<void> {
+    //     await this.listingItemRepo.destroy(id);
+    // }
     public async destroy(id: number): Promise<void> {
         const item = await this.findOne(id, true);
         if (!item) {

@@ -22,12 +22,12 @@ export class MarketService {
     }
 
     public async getDefault(withRelated: boolean = true): Promise<Market> {
-        const profile = await this.marketRepo.getDefault(withRelated);
-        if (profile === null) {
+        const market = await this.marketRepo.getDefault(withRelated);
+        if (market === null) {
             this.log.warn(`Default Market was not found!`);
             throw new NotFoundException('DEFAULT');
         }
-        return profile;
+        return market;
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Market>> {
