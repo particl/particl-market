@@ -10,11 +10,16 @@ import { EscrowRepository } from '../repositories/EscrowRepository';
 import { Escrow } from '../models/Escrow';
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../requests/EscrowUpdateRequest';
+import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
+import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
+import { EscrowLockRequest } from '../requests/EscrowLockRequest';
 import { RpcRequest } from '../requests/RpcRequest';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
-import { EscrowRatioService } from './EscrowRatioService';
-
+import { EscrowRatioService } from '../services/EscrowRatioService';
+import { AddressService } from '../services/AddressService';
+import { MessageBroadcastService } from '../services/MessageBroadcastService';
+import { EscrowFactory } from '../factories/EscrowFactory';
 
 export class EscrowService {
 
@@ -25,6 +30,9 @@ export class EscrowService {
         @inject(Types.Repository) @named(Targets.Repository.EscrowRepository) public escrowRepo: EscrowRepository,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
         @inject(Types.Repository) @named(Targets.Repository.PaymentInformationRepository) private paymentInfoRepo: PaymentInformationRepository,
+        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
+        @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) private escrowFactory: EscrowFactory,
+        @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -174,6 +182,43 @@ export class EscrowService {
 
     public async destroy(id: number): Promise<void> {
         await this.escrowRepo.destroy(id);
+    }
+
+    @validate()
+    public async lock( @request(EscrowLockRequest) data: EscrowLockRequest): Promise<void> {
+        // fetch the escrow
+        const escrowId: any = data.escrow;
+        const escrow = await this.findOne(escrowId, false);
+        data.escrow = escrow.toJSON();
+        // fetch the address
+        const addressId: any = data.address;
+        const address = await this.addressService.findOne(addressId, false);
+        data.address = address.toJSON();
+        // escrowfactory to generate the lockmessage
+        const escrowActionMessage = await this.escrowFactory.get(data);
+        return await this.messageBroadcastService.broadcast();
+    }
+
+    @validate()
+    public async refund( @request(EscrowRefundRequest) data: EscrowRefundRequest): Promise<any> {
+        // fetch the escrow
+        const escrowId: any = data.escrow;
+        const escrow = await this.findOne(escrowId, false);
+        data.escrow = escrow.toJSON();
+        // escrowfactory to generate the refundmessage
+        const escrowActionMessage = await this.escrowFactory.get(data);
+        return await this.messageBroadcastService.broadcast();
+    }
+
+    @validate()
+    public async release( @request(EscrowReleaseRequest) data: any): Promise<void> {
+        // fetch the escrow
+        const escrowId: any = data.escrow;
+        const escrow = await this.findOne(escrowId, false);
+        data.escrow = escrow.toJSON();
+        // escrowfactory to generate the releasemessage
+        const escrowActionMessage = await this.escrowFactory.get(data);
+        return await this.messageBroadcastService.broadcast();
     }
 
     // TODO: REMOVE
