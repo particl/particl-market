@@ -64,9 +64,6 @@ export class ItemCategoryService {
 
     @validate()
     public async update(id: number, @request(ItemCategoryUpdateRequest) body: ItemCategoryUpdateRequest, patching: boolean = true): Promise<ItemCategory> {
-
-        // parent_item_category_id
-
         // find the existing one without related
         const itemCategory = await this.findOne(id, false);
 

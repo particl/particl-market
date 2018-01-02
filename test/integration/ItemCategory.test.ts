@@ -3,13 +3,15 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
+import { ItemCategoryService } from '../../src/api/services/ItemCategoryService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ItemCategory } from '../../src/api/models/ItemCategory';
 
-import { ItemCategoryService } from '../../src/api/services/ItemCategoryService';
+import { ItemCategoryCreateRequest } from '../../src/api/requests/ItemCategoryCreateRequest';
+import { ItemCategoryUpdateRequest } from '../../src/api/requests/ItemCategoryUpdateRequest';
 
 describe('ItemCategory', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -27,33 +29,38 @@ describe('ItemCategory', () => {
     let nullKeyId2;
 
     const rootData = {
+        parent_item_category_id: 0,
         key: 'cat_ROOT',
         name: 'ROOT',
         description: 'root'
-    };
+    } as ItemCategoryCreateRequest;
 
     const testData = {
+        parent_item_category_id: 0,
         key: 'cat_electronics',
         name: 'Electronics and Technologyyyyyy',
         description: 'Electronics and Technology descriptionnnnnnn'
-    };
+    } as ItemCategoryCreateRequest;
 
     const testDataUpdated = {
+        parent_item_category_id: 0,
         key: 'cat_technology',
         name: 'Electronics and Technology',
         description: 'Electronics and Technology description'
-    };
+    } as ItemCategoryUpdateRequest;
 
     const testDataNullKey = {
+        parent_item_category_id: 0,
         name: 'nullkey1',
         description: 'nullkey1'
-    };
+    } as ItemCategoryCreateRequest;
 
     const testDataChild = {
+        parent_item_category_id: 0,
         key: 'cat_computer_systems_parts',
         name: 'Computer Systems and Parts',
         description: 'Computer Systems and Parts description'
-    };
+    } as ItemCategoryCreateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -69,8 +76,18 @@ describe('ItemCategory', () => {
         //
     });
 
+    test('Should throw ValidationException because there is no name of Category', async () => {
+        expect.assertions(1);
+        await itemCategoryService.create({
+            parent_item_category_id: 0,
+            key: 'cat_ele',
+            description: 'Electronics'
+        } as ItemCategoryCreateRequest).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
     test('Should create a root item category', async () => {
-        rootData['parent_item_category_id'] = 0;
         const itemCategoryModel: ItemCategory = await itemCategoryService.create(rootData);
         rootId = itemCategoryModel.Id;
 
@@ -123,7 +140,7 @@ describe('ItemCategory', () => {
 
     test('Should throw ValidationException because we want to create a empty item category', async () => {
         expect.assertions(1);
-        await itemCategoryService.create({}).catch(e =>
+        await itemCategoryService.create({} as ItemCategoryCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -138,7 +155,7 @@ describe('ItemCategory', () => {
 
     test('Should update the item category', async () => {
         testDataUpdated['parent_item_category_id'] = 0;
-        const itemCategoryModel: ItemCategory = await itemCategoryService.update(createdId, testDataUpdated);
+        const itemCategoryModel: ItemCategory = await itemCategoryService.update(createdId, testDataUpdated as ItemCategoryUpdateRequest);
         const result = itemCategoryModel.toJSON();
 
         expect(result.name).toBe(testDataUpdated.name);
@@ -147,19 +164,9 @@ describe('ItemCategory', () => {
 
     test('Should delete the item category', async () => {
         expect.assertions(6);
-        await itemCategoryService.destroy(rootId);
-        await itemCategoryService.findOne(rootId).catch(e =>
-            expect(e).toEqual(new NotFoundException(rootId))
-        );
-
-        await itemCategoryService.destroy(createdId);
-        await itemCategoryService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
-        );
-
-        await itemCategoryService.destroy(createdIdChild);
-        await itemCategoryService.findOne(createdIdChild).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdIdChild))
+        await itemCategoryService.destroy(nullKeyId2);
+        await itemCategoryService.findOne(nullKeyId2).catch(e =>
+            expect(e).toEqual(new NotFoundException(nullKeyId2))
         );
 
         await itemCategoryService.destroy(nullKeyId1);
@@ -167,10 +174,21 @@ describe('ItemCategory', () => {
             expect(e).toEqual(new NotFoundException(nullKeyId1))
         );
 
-        await itemCategoryService.destroy(nullKeyId2);
-        await itemCategoryService.findOne(nullKeyId2).catch(e =>
-            expect(e).toEqual(new NotFoundException(nullKeyId2))
+        await itemCategoryService.destroy(createdIdChild);
+        await itemCategoryService.findOne(createdIdChild).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdIdChild))
         );
+
+        await itemCategoryService.destroy(createdId);
+        await itemCategoryService.findOne(createdId).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
+
+        await itemCategoryService.destroy(rootId);
+        await itemCategoryService.findOne(rootId).catch(e =>
+            expect(e).toEqual(new NotFoundException(rootId))
+        );
+
         const itemCategoryCollection = await itemCategoryService.findAll();
         const itemCategory = itemCategoryCollection.toJSON();
         expect(itemCategory.length).toBe(0);
