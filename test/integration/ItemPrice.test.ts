@@ -121,6 +121,31 @@ describe('ItemPrice', () => {
         );
     });
 
+    test('Should throw ValidationException because there is no currency', async () => {
+        expect.assertions(1);
+        testData['payment_information_id'] = paymentInfo.id;
+        const currency = testData['currency'];
+        delete testData['currency'];
+        await itemPriceService.create(testData).catch(e => {
+            testData['currency'] = currency;
+            expect(e).toEqual(new ValidationException('Request body is not valid', []));
+        }).then(res => {
+            testData['currency'] = currency;
+        });
+    });
+
+    test('Should throw ValidationException because there is no basePrice', async () => {
+        expect.assertions(1);
+        const basePrice = testData['basePrice'];
+        delete testData['basePrice'];
+        await itemPriceService.create(testData).catch(e => {
+            testData['basePrice'] = basePrice;
+            expect(e).toEqual(new ValidationException('Request body is not valid', []));
+        }).then(res => {
+            testData['basePrice'] = basePrice;
+        });
+    });
+
     test('Should create a new item price', async () => {
         testData['payment_information_id'] = paymentInfo.id;
 
