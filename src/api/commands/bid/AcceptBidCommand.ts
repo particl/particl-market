@@ -60,8 +60,8 @@ export class AcceptBidCommand implements RpcCommandInterface<Bid> {
 
                 // broadcast the accepted bid message
                 await this.messageBroadcastService.broadcast({
-                    item: data.params[0],
-                    action: 'MPA_ACCEPT'
+                    listing: data.params[0],
+                    action: BidMessageType.MPA_ACCEPT
                 } as BidMessage);
 
                 // TODO: We will change the return data once broadcast functionality will be implemented

@@ -7,7 +7,7 @@ import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
 import { EscrowRefundRequest } from '../../requests/EscrowRefundRequest';
-import {EscrowMessageType} from "../../enums/EscrowMessageType";
+import { EscrowMessageType } from '../../enums/EscrowMessageType';
 
 export class EscrowRefundCommand implements RpcCommandInterface<Escrow> {
 

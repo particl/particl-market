@@ -44,7 +44,7 @@ export class RejectBidMessageProcessor implements MessageProcessorInterface {
         const latestBid = latestBidModel.toJSON();
 
         // get the BidCreateRequest and create the bid
-        const bidMessage = this.bidFactory.getModel(message, listingItem.id, latestBid);
+        const bidMessage = await this.bidFactory.getModel(message, listingItem.id, latestBid);
         return await this.bidService.create(bidMessage as BidCreateRequest);
     }
 

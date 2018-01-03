@@ -59,8 +59,8 @@ export class CancelBidCommand implements RpcCommandInterface<Bid> {
             } else if (bid.action === BidMessageType.MPA_BID) {
                 // broadcase the cancel bid message
                 await this.messageBroadcastService.broadcast({
-                    item: data.params[0],
-                    action: 'MPA_CANCEL'
+                    listing: data.params[0],
+                    action: BidMessageType.MPA_CANCEL
                 } as BidMessage);
 
                 // TODO: We will change the return data once broadcast functionality will be implemented
