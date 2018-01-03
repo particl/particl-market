@@ -69,7 +69,7 @@ describe('BidMessageProcessor', () => {
         createdBidId = bidModel.id;
 
         // test the values
-        expect(result.status).toBe(BidMessageType.MPA_BID);
+        expect(result.action).toBe(BidMessageType.MPA_BID);
         expect(result.listingItemId).toBe(listingItemModel.id);
         expect(result.BidData.length).toBe(1);
         expect(result.BidData[0].dataId).toBe(testBidData.objects[0].id);

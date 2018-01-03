@@ -51,7 +51,7 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
                 // convert the bid message to bid
                 const bidMessage = this.bidFactory.get(message, listingItem.id, latestBid);
 
-                // create the new bid with status cancel only if previous bid not rejected or cancelled
+                // create the new bid with action cancel only if previous bid not rejected or cancelled
                 return await this.bidService.create(bidMessage);
 
             } catch (error) {

@@ -23,7 +23,7 @@ describe('BidFactory', () => {
         };
 
         const bid = bidFactory.get(request);
-        expect(res.status).toBe('ACTIVE');
+        expect(res.action).toBe('ACTIVE');
         expect(res.bidData.length).toBe(1);
         expect(res.bidData[0].dataId).toBe(req.objects[0].id);
         expect(res.bidData[0].dataValue).toBe(req.objects[0].value);
@@ -32,7 +32,7 @@ describe('BidFactory', () => {
     test('Should return 2 bidData objects for the given bidMessage', () => {
         req.objects.push({id: 'colour', value: 'red'});
         const res = bidFactory.get(req);
-        expect(res.status).toBe('ACTIVE');
+        expect(res.action).toBe('ACTIVE');
         expect(res.bidData.length).toBe(2);
         expect(res.bidData[1].dataId).toBe(req.objects[1].id);
         expect(res.bidData[1].dataValue).toBe(req.objects[1].value);
@@ -41,7 +41,7 @@ describe('BidFactory', () => {
     test('Should return blank bidData', () => {
         req.objects = [];
         const res = bidFactory.get(req);
-        expect(res.status).toBe('ACTIVE');
+        expect(res.action).toBe('ACTIVE');
         expect(res.bidData.length).toBe(0);
     });
 
@@ -56,7 +56,7 @@ describe('BidFactory', () => {
             item: 'f08f3d6e'
         };
         const res = bidFactory.get(req, 8, latestBid);
-        expect(res.status).toBe('ACCEPTED');
+        expect(res.action).toBe('ACCEPTED');
     });
 
     // cancelbbidfactory
@@ -70,7 +70,7 @@ describe('BidFactory', () => {
         };
 
         const res = bidFactory.get(req, 8, latestBid);
-        expect(res.status).toBe('CANCELLED');
+        expect(res.action).toBe('CANCELLED');
     });
 
     // rejectbidfactory
@@ -83,7 +83,7 @@ describe('BidFactory', () => {
             item: 'f08f3d6e'
         };
         const res = bidFactory.get(req, 8, latestBid);
-        expect(res.status).toBe('REJECTED');
+        expect(res.action).toBe('REJECTED');
     });
 });
 

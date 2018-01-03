@@ -56,7 +56,7 @@ export class CancelBidCommand implements RpcCommandInterface<Bid> {
                 this.log.warn(`Bid with the listing Item hash=${data.params[0]} was not found!`);
                 throw new MessageException(`Bid not found for the listing item hash ${data.params[0]}`);
 
-            } else if (bid.status === BidMessageType.MPA_BID) {
+            } else if (bid.action === BidMessageType.MPA_BID) {
                 // broadcase the cancel bid message
                 await this.messageBroadcastService.broadcast({
                     item: data.params[0],
@@ -67,7 +67,7 @@ export class CancelBidCommand implements RpcCommandInterface<Bid> {
                 return bid;
 
             } else {
-                throw new MessageException(`Bid can not be cancelled because it was already been ${bid.status}`);
+                throw new MessageException(`Bid can not be cancelled because it was already been ${bid.action}`);
             }
         }
     }

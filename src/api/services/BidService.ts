@@ -85,8 +85,8 @@ export class BidService {
         const bid = await this.findOne(id, false);
 
         // set new values
-        if (BidMessageType[body.status]) {
-            bid.Status = BidMessageType[body.status];
+        if (BidMessageType[body.action]) {
+            bid.Action = BidMessageType[body.action];
         }
 
         // update bid record

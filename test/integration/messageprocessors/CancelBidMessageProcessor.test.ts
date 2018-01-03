@@ -87,17 +87,17 @@ describe('CancelBidMessageProcessor', () => {
         const bidModel = await cancelBidMessageProcessor.process(testBidData);
         const result = bidModel.toJSON();
         // test the values
-        expect(result.status).toBe(BidMessageType.MPA_CANCEL);
+        expect(result.action).toBe(BidMessageType.MPA_CANCEL);
         expect(result.listingItemId).toBe(listingItemModel.id);
         expect(result.BidData.length).toBe(0);
     });
 
-    test('Should return two bids with latest one created with Cancel status for the given listing item', async () => {
+    test('Should return two bids with latest one created with Cancel action for the given listing item', async () => {
         const bids = await bidService.search({listingItemId: listingItemModel.id} as BidSearchParams);
         const bidResults = bids.toJSON();
         expect(bidResults.length).toBe(2);
-        expect(bidResults[0].status).toBe('ACTIVE');
-        expect(bidResults[1].status).toBe('CANCELLED');
+        expect(bidResults[0].action).toBe('ACTIVE');
+        expect(bidResults[1].action).toBe('CANCELLED');
     });
 
     test('Should not reject the bid becuase it was alredy been cancelled', async () => {

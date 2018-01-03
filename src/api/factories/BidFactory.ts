@@ -33,10 +33,10 @@ export class BidFactory {
         // check that the bidAction is valid, throw if not
         if (this.checkBidMessageActionValidity(bidMessage, latestBid)) {
 
-            // it was, so create and return the request
+            // it was, so create and return the request that can be used to create the bid
             return {
                 listing_item_id: listingItemId,
-                status: bidMessage.action
+                action: bidMessage.action
             } as BidCreateRequest;
 
         } else {
@@ -62,26 +62,26 @@ export class BidFactory {
                 });
 
                 bidCreateRequest = {
-                    status: BidMessageType.MPA_BID,
+                    action: BidMessageType.MPA_BID,
                     bidData
                 };
                 break;
 
             case BidMessageType.MPA_CANCEL:
                 if (this.checkValidBid(BidMessageType.MPA_CANCEL, latestBid)) {
-                    bidCreateRequest['status'] = BidMessageType.MPA_CANCEL;
+                    bidCreateRequest['action'] = BidMessageType.MPA_CANCEL;
                 }
                 break;
 
             case BidMessageType.MPA_REJECT:
                 if (this.checkValidBid(BidMessageType.MPA_REJECT, latestBid)) {
-                    bidCreateRequest['status'] = BidMessageType.MPA_REJECT;
+                    bidCreateRequest['action'] = BidMessageType.MPA_REJECT;
                 }
                 break;
 
             case BidMessageType.MPA_ACCEPT:
                 if (this.checkValidBid(BidMessageType.MPA_ACCEPT, latestBid)) {
-                    bidCreateRequest['status'] = BidMessageType.MPA_ACCEPT;
+                    bidCreateRequest['action'] = BidMessageType.MPA_ACCEPT;
                 }
                 break;
         }
@@ -106,7 +106,7 @@ export class BidFactory {
         }
 
         // TODO: this wont work
-        switch (latestBid.status) {
+        switch (latestBid.action) {
             case BidMessageType.MPA_BID:      // only active bid can be bidded on
                 return bidMessage.action === BidMessageType.MPA_BID;
             case BidMessageType.MPA_ACCEPT:    // latest bid was allready accepted

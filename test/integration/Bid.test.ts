@@ -24,12 +24,12 @@ describe('Bid', () => {
     let createdId;
 
     const testData = {
-        status: BidMessageType.MPA_BID,
+        action: BidMessageType.MPA_BID,
         listing_item_id: null
     };
 
     const testDataUpdated = {
-        status: BidMessageType.MPA_CANCEL,
+        action: BidMessageType.MPA_CANCEL,
         listing_item_id: null
     };
 
@@ -64,7 +64,7 @@ describe('Bid', () => {
         const result = bidModel.toJSON();
 
         // test the values
-        expect(result.status).toBe(testData.status);
+        expect(result.action).toBe(testData.action);
         expect(result.listingItemId).toBe(testData.listing_item_id);
     });
 
@@ -83,7 +83,7 @@ describe('Bid', () => {
         const result = bid[0];
 
         // test the values
-        expect(result.status).toBe(testData.status);
+        expect(result.action).toBe(testData.action);
         expect(result.listingItemId).toBe(testData.listing_item_id);
     });
 
@@ -92,7 +92,7 @@ describe('Bid', () => {
         const result = bidModel.toJSON();
 
         // test the values
-        expect(result.status).toBe(testData.status);
+        expect(result.action).toBe(testData.action);
         expect(result.listingItemId).toBe(testData.listing_item_id);
     });
 
@@ -106,12 +106,12 @@ describe('Bid', () => {
 
     test('Should update the bid', async () => {
         testDataUpdated['listing_item_id'] = 1;
-        testDataUpdated['status'] = BidMessageType.MPA_CANCEL;
+        testDataUpdated['action'] = BidMessageType.MPA_CANCEL;
         const bidModel: Bid = await bidService.update(createdId, testDataUpdated);
         const result = bidModel.toJSON();
 
         // test the values
-        expect(result.status).toBe(testDataUpdated.status);
+        expect(result.action).toBe(testDataUpdated.action);
         expect(result.listingItemId).toBe(testDataUpdated.listing_item_id);
     });
 

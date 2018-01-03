@@ -11,9 +11,6 @@ export class Bid extends Bookshelf.Model<Bid> {
             return await Bid.where<Bid>({ id: value }).fetch({
                 withRelated: [
                 'BidData'
-                    // TODO:
-                    // 'BidRelated',
-                    // 'BidRelated.Related'
                 ]
             });
         } else {
@@ -32,8 +29,8 @@ export class Bid extends Bookshelf.Model<Bid> {
                     qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                     qb.where('listing_item_templates.profile_id', '=', options.profileId);
                 }
-                if (options.status && typeof options.status === 'string') {
-                    qb.where('bids.status', '=', options.status);
+                if (options.action && typeof options.action === 'string') {
+                    qb.where('bids.action', '=', options.action);
                 }
 
             })
@@ -60,8 +57,8 @@ export class Bid extends Bookshelf.Model<Bid> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get Status(): string { return this.get('status'); }
-    public set Status(value: string) { this.set('status', value); }
+    public get Action(): string { return this.get('action'); }
+    public set Action(value: string) { this.set('action', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
