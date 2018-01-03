@@ -4,25 +4,25 @@ import { LogMock } from '../../lib/LogMock';
 describe('BidFactory', () => {
     // jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
     let bidFactory;
-    let req;
 
     beforeEach(() => {
-        process.env.AUTH0_HOST = 'test';
         bidFactory = new BidFactory(LogMock);
-        req = {
+    });
+
+    test('Should convert BidMessage in to bid', () => {
+
+        const request = {
             action: 'MPA_BID',
             item: 'f08f3d6e',
             objects: [
-              {
-                id: 'colour',
-                value: 'black'
-              }
+                {
+                    id: 'colour',
+                    value: 'black'
+                }
             ]
         };
-    });
 
-    test('Should convert bidMessage in to bid', () => {
-        const res = bidFactory.get(req);
+        const bid = bidFactory.get(request);
         expect(res.status).toBe('ACTIVE');
         expect(res.bidData.length).toBe(1);
         expect(res.bidData[0].dataId).toBe(req.objects[0].id);

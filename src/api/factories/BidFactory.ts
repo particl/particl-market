@@ -12,13 +12,11 @@ import * as _ from 'lodash';
 export class BidFactory {
 
     public log: LoggerType;
-    // private let bids;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        // this.bids.push(someBid);
     }
 
     /**
@@ -27,7 +25,6 @@ export class BidFactory {
      * item: data.item
      * object?: data.object
      */
-
     public get(data: BidMessage, listingItemId: number, latestBid?: Bid): Promise<Bid> {
         let returnData = {};
 

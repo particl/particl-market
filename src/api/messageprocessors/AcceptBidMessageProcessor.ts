@@ -11,6 +11,7 @@ import { BidFactory } from '../factories/BidFactory';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { MessageException } from '../exceptions/MessageException';
 import { BidStatus } from '../enums/BidStatus';
+import {BidCreateRequest} from "../requests/BidCreateRequest";
 
 export class AcceptBidMessageProcessor implements MessageProcessorInterface {
 
@@ -26,38 +27,33 @@ export class AcceptBidMessageProcessor implements MessageProcessorInterface {
     }
 
     /**
-     * Accept bid
+     * Process BidMessage of type MPA-ACCEPT
+     *
      * message:
-     * action: message.action
-     * item: message.item
+     *  action: action of the BidMessage
+     *  listing: item hash
      *
      * @returns {Promise<Bid>}
      */
-
     @validate()
     public async process( message: BidMessage ): Promise<Bid> {
-        // find listingItem by hash
-        const listingItem = await this.listingItemService.findOneByHash(message['item']);
 
-        // if listingItem not found
-        if (listingItem === null) {
-            this.log.warn(`ListingItem with the hash=${message.item} was not found!`);
-            throw new NotFoundException(message.item);
-        } else {
-            try {
-                // find latest bid
-                const latestBid = await this.bidService.getLatestBid(listingItem.id);
+        // find listingItem by hash, the service will throw Exception if not
+        const listingItem = await this.listingItemService.findOneByHash(message.listing);
 
-                // convert the bid message to bid
-                const bidMessage = this.bidFactory.get(message, listingItem.id, latestBid);
+        try {
+            // find latest bid
+            const latestBid = await this.bidService.getLatestBid(listingItem.id);
 
-                // create the new bid with status accept only if previous bid not rejected or cancelled
-                return await this.bidService.create(bidMessage);
+            // convert the bid message to bid
+            const bidMessage = this.bidFactory.getModel(message, listingItem.id, latestBid);
 
-            } catch (error) {
-                throw error;
-            }
+            // create the new bid with status accept only if previous bid not rejected or cancelled
+            return await this.bidService.create(bidMessage as BidCreateRequest);
+
+        } catch (error) {
+            throw error;
         }
-    }
 
+    }
 }

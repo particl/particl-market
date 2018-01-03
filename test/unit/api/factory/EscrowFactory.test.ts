@@ -10,7 +10,6 @@ describe('EscrowFactory', () => {
     let escrowFactory;
 
     beforeEach(() => {
-        process.env.AUTH0_HOST = 'test';
         escrowFactory = new EscrowFactory(LogMock);
     });
 
