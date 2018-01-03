@@ -7,7 +7,7 @@ export class BidCreateRequest extends RequestBody {
     public listing_item_id: number;
 
     @IsNotEmpty()
-    public status: string;
+    public action: string;
 
 }
 // tslint:enable:variable-name

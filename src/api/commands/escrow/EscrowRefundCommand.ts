@@ -7,6 +7,7 @@ import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
 import { EscrowRefundRequest } from '../../requests/EscrowRefundRequest';
+import {EscrowMessageType} from "../../enums/EscrowMessageType";
 
 export class EscrowRefundCommand implements RpcCommandInterface<Escrow> {
 
@@ -26,19 +27,19 @@ export class EscrowRefundCommand implements RpcCommandInterface<Escrow> {
      * [0]: itemhash
      * [1]: accepted
      * [2]: memo
-     * [3]: escrowid
+     * [3]: escrowId
      * @param data
      * @returns {Promise<any>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
+        // TODO: we have the listing hash, why is escrowId being passed here?
         return this.escrowService.refund({
             listing: data.params[0],
             accepted: data.params[1],
             memo: data.params[2],
-            escrow: data.params[3],
-            action: 'MPA_REFUND',
-            item: ''
+            escrowId: data.params[3],
+            action: EscrowMessageType.MPA_REFUND
         } as EscrowRefundRequest);
     }
 

@@ -10,7 +10,7 @@ import { BidMessageProcessor } from '../../../src/api/messageprocessors/BidMessa
 import { RejectBidMessageProcessor } from '../../../src/api/messageprocessors/RejectBidMessageProcessor';
 import { AcceptBidMessageProcessor } from '../../../src/api/messageprocessors/AcceptBidMessageProcessor';
 import { CancelBidMessageProcessor } from '../../../src/api/messageprocessors/CancelBidMessageProcessor';
-import { BidStatus } from '../../../src/api/enums/BidStatus';
+import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { BidService } from '../../../src/api/services/BidService';
 import { BidSearchParams } from '../../../src/api/requests/BidSearchParams';
 
@@ -86,24 +86,24 @@ describe('AcceptBidMessageProcessor', () => {
 
         const result = bidModel.toJSON();
         // test the values
-        expect(result.status).toBe(BidStatus.ACCEPTED);
+        expect(result.action).toBe(BidMessageType.MPA_ACCEPT);
         expect(result.listingItemId).toBe(listingItemModel.id);
         expect(result.BidData.length).toBe(0);
     });
 
-    test('Should return two bids with latest one created with Accept status for the given listing item', async () => {
+    test('Should return two bids with latest one created with Accept action for the given listing item', async () => {
         const bids = await bidService.search({listingItemId: listingItemModel.id} as BidSearchParams);
         const bidResults = bids.toJSON();
         expect(bidResults.length).toBe(2);
-        expect(bidResults[0].status).toBe('ACTIVE');
-        expect(bidResults[1].status).toBe('ACCEPTED');
+        expect(bidResults[0].action).toBe('ACTIVE');
+        expect(bidResults[1].action).toBe('ACCEPTED');
     });
 
     test('Should not cancel the bid becuase bid was alredy been accepted', async () => {
         // cancel bid
         testBidData.action = 'MPA_CANCEL';
         await cancelBidMessageProcessor.process(testBidData).catch(e =>
-            expect(e).toEqual(new MessageException(`Bid can not be CANCELLED because it was already been ${BidStatus.ACCEPTED}`))
+            expect(e).toEqual(new MessageException(`Bid can not be CANCELLED because it was already been ${BidMessageType.MPA_ACCEPT}`))
         );
     });
 
@@ -111,7 +111,7 @@ describe('AcceptBidMessageProcessor', () => {
         // reject a bid
         testBidData.action = 'MPA_REJECT';
         await rejectBidMessageProcessor.process(testBidData).catch(e =>
-            expect(e).toEqual(new MessageException(`Bid can not be REJECTED because it was already been ${BidStatus.ACCEPTED}`))
+            expect(e).toEqual(new MessageException(`Bid can not be REJECTED because it was already been ${BidMessageType.MPA_ACCEPT}`))
         );
     });
 

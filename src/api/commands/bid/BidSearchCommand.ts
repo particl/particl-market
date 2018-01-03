@@ -24,7 +24,7 @@ export class BidSearchCommand implements RpcCommandInterface<Bookshelf.Collectio
 
     /**
      * data.params[]:
-     * [0]: status, string
+     * [0]: action, string
      * [1]: listingItemId, number
      * [2]: profileId, number
      *
@@ -34,7 +34,7 @@ export class BidSearchCommand implements RpcCommandInterface<Bookshelf.Collectio
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Bid>> {
         return this.bidService.search({
-            status: data.params[0],
+            action: data.params[0],
             listingItemId: data.params[1],
             profileId: data.params[2]
         } as BidSearchParams);

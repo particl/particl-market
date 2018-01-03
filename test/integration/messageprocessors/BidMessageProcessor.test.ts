@@ -7,7 +7,7 @@ import { NotFoundException } from '../../../src/api/exceptions/NotFoundException
 import { ListingItem } from '../../../src/api/models/ListingItem';
 import { ListingItemService } from '../../../src/api/services/ListingItemService';
 import { BidMessageProcessor } from '../../../src/api/messageprocessors/BidMessageProcessor';
-import { BidStatus } from '../../../src/api/enums/BidStatus';
+import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 
 describe('BidMessageProcessor', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -69,7 +69,7 @@ describe('BidMessageProcessor', () => {
         createdBidId = bidModel.id;
 
         // test the values
-        expect(result.status).toBe(BidStatus.ACTIVE);
+        expect(result.action).toBe(BidMessageType.MPA_BID);
         expect(result.listingItemId).toBe(listingItemModel.id);
         expect(result.BidData.length).toBe(1);
         expect(result.BidData[0].dataId).toBe(testBidData.objects[0].id);

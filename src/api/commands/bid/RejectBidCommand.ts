@@ -11,7 +11,7 @@ import { ListingItemService } from '../../services/ListingItemService';
 import { MessageBroadcastService } from '../../services/MessageBroadcastService';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
-import { BidStatus } from '../../enums/BidStatus';
+import { BidMessageType } from '../../enums/BidMessageType';
 import { Bid } from '../../models/Bid';
 
 export class RejectBidCommand implements RpcCommandInterface<Bid> {
@@ -57,7 +57,7 @@ export class RejectBidCommand implements RpcCommandInterface<Bid> {
                 this.log.warn(`Bid with the listing Item hash=${data.params[0]} was not found!`);
                 throw new MessageException(`Bid not found for the listing item hash ${data.params[0]}`);
 
-            } else if (bid.status === BidStatus.ACTIVE) {
+            } else if (bid.action === BidMessageType.MPA_BID) {
                 // broadcase the reject bid message
                 await this.messageBroadcastService.broadcast({
                     item: data.params[0],
@@ -68,7 +68,7 @@ export class RejectBidCommand implements RpcCommandInterface<Bid> {
                 return bid;
 
             } else {
-                throw new MessageException(`Bid can not be rejected because it was already been ${bid.status}`);
+                throw new MessageException(`Bid can not be rejected because it was already been ${bid.action}`);
             }
         }
     }

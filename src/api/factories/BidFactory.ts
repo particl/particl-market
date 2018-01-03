@@ -1,85 +1,85 @@
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { BidMessage } from '../messages/BidMessage';
-import { BidStatus } from '../enums/BidStatus';
-import { Bid } from '../models/Bid';
+import { BidMessageType } from '../enums/BidMessageType';
 import { MessageException } from '../exceptions/MessageException';
-
-import * as _ from 'lodash';
+import { BidCreateRequest } from '../requests/BidCreateRequest';
+import { BidMessageType } from '../enums/BidMessageType';
+import * as resources from 'resources';
 
 export class BidFactory {
 
     public log: LoggerType;
-    // private let bids;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        // this.bids.push(someBid);
     }
 
     /**
-     * data:
-     * action: data.action
-     * item: data.item
-     * object?: data.object
+     * create a BidCreateRequest
+     *
+     * @param bidMessage
+     * @param listingItemId
+     * @param latestBid
+     * @returns {Promise<BidCreateRequest>}
      */
+    public async getModel(bidMessage: BidMessage, listingItemId: number, latestBid?: resources.Bid): Promise<BidCreateRequest> {
 
-    public get(data: BidMessage, listingItemId: number, latestBid?: Bid): Promise<Bid> {
-        let returnData = {};
+        // check that the bidAction is valid, throw if not
+        if (this.checkBidMessageActionValidity(bidMessage, latestBid)) {
 
-        switch (data.action) {
-            case 'MPA_BID':
-                // set the bidData fields
-                const bidData = _.map(data.objects, (value) => {
+            // it was, so create the bidData field
+            const bidData = _.map(bidMessage.objects, (value) => {
                 return _.assign({}, {
-                        dataId: value['id'],
-                        dataValue: value['value']
-                    });
+                    dataId: value['id'],
+                    dataValue: value['value']
                 });
+            });
 
-                returnData = {
-                    status: BidStatus.ACTIVE,
-                    bidData
-                };
-                break;
+            // create and return the request that can be used to create the bid
+            return {
+                listing_item_id: listingItemId,
+                action: bidMessage.action,
+                bidData
+            } as BidCreateRequest;
 
-            case 'MPA_CANCEL':
-                if (this.checkValidBid(BidStatus.CANCELLED, latestBid)) {
-                    returnData['status'] = BidStatus.CANCELLED;
-                }
-                break;
-
-            case 'MPA_REJECT':
-                if (this.checkValidBid(BidStatus.REJECTED, latestBid)) {
-                    returnData['status'] = BidStatus.REJECTED;
-                }
-                break;
-
-            case 'MPA_ACCEPT':
-                if (this.checkValidBid(BidStatus.ACCEPTED, latestBid)) {
-                    returnData['status'] = BidStatus.ACCEPTED;
-                }
-                break;
+        } else {
+            throw new MessageException('Invalid BidMessageType.');
         }
-        // setting the bid relation with listingItem
-        returnData['listing_item_id'] = listingItemId;
-
-        return returnData as any;
     }
 
-    private checkValidBid(action: string, latestBid?: Bid): boolean {
-        // if bid not found for the given listing item hash
-        if (!latestBid) {
-            this.log.warn(`Bid with the listing Item was not found!`);
-            throw new MessageException('Bid with the listing Item was not found!');
+    /**
+     * Checks if the action in the given BidMessage is valid for the latest bid
+     *
+     * @param bidMessage
+     * @param latestBid
+     * @returns {boolean}
+     */
+    private checkBidMessageActionValidity(bidMessage: BidMessage, latestBid?: resources.Bid): boolean {
 
-        } else if (latestBid.Status !== BidStatus.ACTIVE) {
-           throw new MessageException(`Bid can not be ${action} because it was already been ${latestBid.Status}`);
+        // if no existing bid and message is not MPA_BID -> error
+        if (_.isEmpty(latestBid) && bidMessage.action !== BidMessageType.MPA_BID) {
+            throw new MessageException('Invalid BidMessageType.');
         }
-        return true;
+
+        switch (latestBid.action) {
+            case BidMessageType.MPA_BID:
+                // if the latest bid was allready bidded on, then the message needs to be something else
+                return bidMessage.action !== BidMessageType.MPA_BID;
+            case BidMessageType.MPA_ACCEPT:
+                // latest bid was allready accepted, any bid is invalid
+                return false;
+            case BidMessageType.MPA_CANCEL:
+                // latest bid was cancelled, so we allow only new bids
+                return bidMessage.action === BidMessageType.MPA_BID;
+            case BidMessageType.MPA_REJECT:
+                // latest bid was rejected, so we allow only new bids
+                return bidMessage.action === BidMessageType.MPA_BID;
+        }
     }
+
 }

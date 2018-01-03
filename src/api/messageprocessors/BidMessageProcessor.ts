@@ -23,19 +23,24 @@ export class BidMessageProcessor implements MessageProcessorInterface {
         this.log = new Logger(__filename);
     }
 
+    /**
+     * Process BidMessage of type MPA-BID
+     *
+     * message:
+     *  action: action of the BidMessage
+     *  listing: item hash
+     *
+     * @returns {Promise<Bid>}
+     */
     @validate()
     public async process(message: BidMessage ): Promise<Bid> {
-        // find listingItem by hash
-        const listingItem = await this.listingItemService.findOneByHash(message.item);
-        // if listingItem not found
-        if (listingItem === null) {
-            this.log.warn(`ListingItem with the hash=${message.item} was not found!`);
-            throw new NotFoundException(message.item);
-        } else {
-            const bid = this.bidFactory.get(message, listingItem.id);
-            // setting the bid relation with listingItem
-            bid['listing_item_id'] = listingItem.id;
-            return await this.bidService.create(bid);
-        }
+
+        // find listingItem by hash, the service will throw Exception if not
+        const listingItemModel = await this.listingItemService.findOneByHash(message.listing);
+        const listingItem = listingItemModel.toJSON();
+
+        // get the BidCreateRequest and create the bid
+        const bidCreateRequest = this.bidFactory.getModel(message, listingItem.id);
+        return await this.bidService.create(bidCreateRequest);
     }
 }
