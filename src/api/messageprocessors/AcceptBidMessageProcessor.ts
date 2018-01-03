@@ -39,21 +39,15 @@ export class AcceptBidMessageProcessor implements MessageProcessorInterface {
     public async process( message: BidMessage ): Promise<Bid> {
 
         // find listingItem by hash, the service will throw Exception if not
-        const listingItem = await this.listingItemService.findOneByHash(message.listing);
+        const listingItemModel = await this.listingItemService.findOneByHash(message.listing);
+        const listingItem = listingItemModel.toJSON();
 
-        try {
-            // find latest bid
-            const latestBid = await this.bidService.getLatestBid(listingItem.id);
+        // find latest bid
+        const latestBidModel = await this.bidService.getLatestBid(listingItem.id);
+        const latestBid = latestBidModel.toJSON();
 
-            // convert the bid message to bid
-            const bidMessage = this.bidFactory.getModel(message, listingItem.id, latestBid);
-
-            // create the new bid with status accept only if previous bid not rejected or cancelled
-            return await this.bidService.create(bidMessage as BidCreateRequest);
-
-        } catch (error) {
-            throw error;
-        }
-
+        // get the BidCreateRequest and create the bid
+        const bidMessage = this.bidFactory.getModel(message, listingItem.id, latestBid);
+        return await this.bidService.create(bidMessage as BidCreateRequest);
     }
 }
