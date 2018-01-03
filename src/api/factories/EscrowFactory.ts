@@ -129,7 +129,7 @@ export class EscrowFactory {
 
         return {
             action: refundRequest.action,
-            item: refundRequest.listing,
+            listing: refundRequest.listing,
             accepted: refundRequest.accepted,
             memo: refundRequest.memo,
             escrow: {
