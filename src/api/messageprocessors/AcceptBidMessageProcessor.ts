@@ -8,9 +8,6 @@ import { Bid } from '../models/Bid';
 import { ListingItemService } from '../services/ListingItemService';
 import { BidService } from '../services/BidService';
 import { BidFactory } from '../factories/BidFactory';
-import { NotFoundException } from '../exceptions/NotFoundException';
-import { MessageException } from '../exceptions/MessageException';
-import { BidMessageType } from '../enums/BidMessageType';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 
 export class AcceptBidMessageProcessor implements MessageProcessorInterface {
