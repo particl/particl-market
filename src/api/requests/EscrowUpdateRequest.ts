@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import { EscrowType } from '../enums/EscrowType';
 
 // tslint:disable:variable-name
 export class EscrowUpdateRequest extends RequestBody {
@@ -8,7 +9,9 @@ export class EscrowUpdateRequest extends RequestBody {
     public payment_information_id: number;
 
     @IsNotEmpty()
-    public type: string;
+    public type: EscrowType;
+
+    public ratio;
 
 }
 // tslint:enable:variable-name
