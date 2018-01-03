@@ -91,20 +91,7 @@ describe('ItemPrice', () => {
         defaultMarket = await marketService.getDefault();
         defaultMarket = defaultMarket.toJSON();
         log.debug('defaultMarket: ', defaultMarket);
-    });
 
-    afterAll(async () => {
-        //
-    });
-
-    test('Should throw ValidationException because there is no payment_information_id', async () => {
-        expect.assertions(1);
-        await itemPriceService.create(testData).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
-    test('Should create a new item price', async () => {
         const paymentInfoData = {
             listing_item_template_id: createdListingItemTemplate.Id,
             type: PaymentType.FREE,
@@ -121,8 +108,22 @@ describe('ItemPrice', () => {
             data: paymentInfoData,
             withRelated: true
         });
+    });
 
+    afterAll(async () => {
+        //
+    });
+
+    test('Should throw ValidationException because there is no payment_information_id', async () => {
+        expect.assertions(1);
+        await itemPriceService.create(testData).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
+
+    test('Should create a new item price', async () => {
         testData['payment_information_id'] = paymentInfo.id;
+
         const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
         createdId = itemPriceModel.Id;
 
@@ -198,4 +199,71 @@ describe('ItemPrice', () => {
         );
     });
 
+    test('Should create a new item price missing shipping price', async () => {
+        const shippingPrice = testData['shippingPrice'];
+        delete testData['shippingPrice'];
+
+        const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
+        createdId = itemPriceModel.Id;
+
+        testData['shippingPrice'] = shippingPrice;
+
+        const result = itemPriceModel.toJSON();
+
+        expect(result.currency).toBe(testData.currency);
+        expect(result.basePrice).toBe(testData.basePrice);
+        expect(result.CryptocurrencyAddress.type).toBe(testData.cryptocurrencyAddress.type);
+        expect(result.CryptocurrencyAddress.address).toBe(testData.cryptocurrencyAddress.address);
+
+        await itemPriceService.destroy(createdId);
+        await itemPriceService.findOne(createdId).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
+    });
+
+    test('Should create a new item price missing cryptocurrency address', async () => {
+        const cryptocurrencyAddress = testData['cryptocurrencyAddress'];
+        delete testData['cryptocurrencyAddress'];
+
+        const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
+        createdId = itemPriceModel.Id;
+
+        testData['cryptocurrencyAddress'] = cryptocurrencyAddress;
+
+        const result = itemPriceModel.toJSON();
+
+        expect(result.currency).toBe(testData.currency);
+        expect(result.basePrice).toBe(testData.basePrice);
+        expect(result.ShippingPrice.domestic).toBe(testData.shippingPrice.domestic);
+        expect(result.ShippingPrice.international).toBe(testData.shippingPrice.international);
+
+        await itemPriceService.destroy(createdId);
+        await itemPriceService.findOne(createdId).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
+    });
+
+    test('Should create a new item price missing shipping price and cryptocurrency address', async () => {
+        const cryptocurrencyAddress = testData['cryptocurrencyAddress'];
+        delete testData['cryptocurrencyAddress'];
+
+        const shippingPrice = testData['shippingPrice'];
+        delete testData['shippingPrice'];
+
+        const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
+        createdId = itemPriceModel.Id;
+
+        testData['cryptocurrencyAddress'] = cryptocurrencyAddress;
+        testData['shippingPrice'] = shippingPrice;
+
+        const result = itemPriceModel.toJSON();
+
+        expect(result.currency).toBe(testData.currency);
+        expect(result.basePrice).toBe(testData.basePrice);
+
+        await itemPriceService.destroy(createdId);
+        await itemPriceService.findOne(createdId).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
+    });
 });
