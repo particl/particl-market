@@ -11,7 +11,7 @@ import { BidMessageProcessor } from '../../../src/api/messageprocessors/BidMessa
 import { RejectBidMessageProcessor } from '../../../src/api/messageprocessors/RejectBidMessageProcessor';
 import { CancelBidMessageProcessor } from '../../../src/api/messageprocessors/CancelBidMessageProcessor';
 import { AcceptBidMessageProcessor } from '../../../src/api/messageprocessors/AcceptBidMessageProcessor';
-import { BidStatus } from '../../../src/api/enums/BidStatus';
+import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { BidSearchParams } from '../../../src/api/requests/BidSearchParams';
 
 describe('RejectBidMessageProcessor', () => {
@@ -87,7 +87,7 @@ describe('RejectBidMessageProcessor', () => {
         const bidModel = await rejectBidMessageProcessor.process(testBidData);
         const result = bidModel.toJSON();
         // test the values
-        expect(result.status).toBe(BidStatus.REJECTED);
+        expect(result.status).toBe(BidMessageType.MPA_REJECT);
         expect(result.listingItemId).toBe(listingItemModel.id);
         expect(result.BidData.length).toBe(0);
     });
@@ -104,7 +104,7 @@ describe('RejectBidMessageProcessor', () => {
         // cancel bid
         testBidData.action = 'MPA_CANCEL';
         await cancelBidMessageProcessor.process(testBidData).catch(e =>
-            expect(e).toEqual(new MessageException(`Bid can not be CANCELLED because it was already been ${BidStatus.REJECTED}`))
+            expect(e).toEqual(new MessageException(`Bid can not be CANCELLED because it was already been ${BidMessageType.MPA_REJECT}`))
         );
     });
 
@@ -112,7 +112,7 @@ describe('RejectBidMessageProcessor', () => {
         // accept a bid
         testBidData.action = 'MPA_ACCEPT';
         await acceptBidMessageProcessor.process(testBidData).catch(e =>
-           expect(e).toEqual(new MessageException(`Bid can not be ACCEPTED because it was already been ${BidStatus.REJECTED}`))
+           expect(e).toEqual(new MessageException(`Bid can not be ACCEPTED because it was already been ${BidMessageType.MPA_REJECT}`))
         );
     });
 

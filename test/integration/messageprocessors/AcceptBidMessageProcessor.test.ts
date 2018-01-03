@@ -10,7 +10,7 @@ import { BidMessageProcessor } from '../../../src/api/messageprocessors/BidMessa
 import { RejectBidMessageProcessor } from '../../../src/api/messageprocessors/RejectBidMessageProcessor';
 import { AcceptBidMessageProcessor } from '../../../src/api/messageprocessors/AcceptBidMessageProcessor';
 import { CancelBidMessageProcessor } from '../../../src/api/messageprocessors/CancelBidMessageProcessor';
-import { BidStatus } from '../../../src/api/enums/BidStatus';
+import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { BidService } from '../../../src/api/services/BidService';
 import { BidSearchParams } from '../../../src/api/requests/BidSearchParams';
 
@@ -86,7 +86,7 @@ describe('AcceptBidMessageProcessor', () => {
 
         const result = bidModel.toJSON();
         // test the values
-        expect(result.status).toBe(BidStatus.ACCEPTED);
+        expect(result.status).toBe(BidMessageType.MPA_ACCEPT);
         expect(result.listingItemId).toBe(listingItemModel.id);
         expect(result.BidData.length).toBe(0);
     });
@@ -103,7 +103,7 @@ describe('AcceptBidMessageProcessor', () => {
         // cancel bid
         testBidData.action = 'MPA_CANCEL';
         await cancelBidMessageProcessor.process(testBidData).catch(e =>
-            expect(e).toEqual(new MessageException(`Bid can not be CANCELLED because it was already been ${BidStatus.ACCEPTED}`))
+            expect(e).toEqual(new MessageException(`Bid can not be CANCELLED because it was already been ${BidMessageType.MPA_ACCEPT}`))
         );
     });
 
@@ -111,7 +111,7 @@ describe('AcceptBidMessageProcessor', () => {
         // reject a bid
         testBidData.action = 'MPA_REJECT';
         await rejectBidMessageProcessor.process(testBidData).catch(e =>
-            expect(e).toEqual(new MessageException(`Bid can not be REJECTED because it was already been ${BidStatus.ACCEPTED}`))
+            expect(e).toEqual(new MessageException(`Bid can not be REJECTED because it was already been ${BidMessageType.MPA_ACCEPT}`))
         );
     });
 

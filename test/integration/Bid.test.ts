@@ -10,7 +10,7 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Bid } from '../../src/api/models/Bid';
 
 import { BidService } from '../../src/api/services/BidService';
-import { BidStatus } from '../../src/api/enums/BidStatus';
+import { BidMessageType } from '../../src/api/enums/BidMessageType';
 
 describe('Bid', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -24,12 +24,12 @@ describe('Bid', () => {
     let createdId;
 
     const testData = {
-        status: BidStatus.ACTIVE,
+        status: BidMessageType.MPA_BID,
         listing_item_id: null
     };
 
     const testDataUpdated = {
-        status: BidStatus.CANCELLED,
+        status: BidMessageType.MPA_CANCEL,
         listing_item_id: null
     };
 
@@ -106,7 +106,7 @@ describe('Bid', () => {
 
     test('Should update the bid', async () => {
         testDataUpdated['listing_item_id'] = 1;
-        testDataUpdated['status'] = BidStatus.CANCELLED;
+        testDataUpdated['status'] = BidMessageType.MPA_CANCEL;
         const bidModel: Bid = await bidService.update(createdId, testDataUpdated);
         const result = bidModel.toJSON();
 

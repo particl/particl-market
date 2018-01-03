@@ -9,7 +9,7 @@ import { Bid } from '../models/Bid';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 import { BidSearchParams } from '../requests/BidSearchParams';
-import { BidStatus } from '../enums/BidStatus';
+import { BidMessageType } from '../enums/BidMessageType';
 import { BidDataService } from './BidDataService';
 
 
@@ -85,8 +85,8 @@ export class BidService {
         const bid = await this.findOne(id, false);
 
         // set new values
-        if (BidStatus[body.status]) {
-            bid.Status = BidStatus[body.status];
+        if (BidMessageType[body.status]) {
+            bid.Status = BidMessageType[body.status];
         }
 
         // update bid record

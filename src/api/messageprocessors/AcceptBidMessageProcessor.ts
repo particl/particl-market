@@ -10,8 +10,8 @@ import { BidService } from '../services/BidService';
 import { BidFactory } from '../factories/BidFactory';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { MessageException } from '../exceptions/MessageException';
-import { BidStatus } from '../enums/BidStatus';
-import {BidCreateRequest} from "../requests/BidCreateRequest";
+import { BidMessageType } from '../enums/BidMessageType';
+import { BidCreateRequest } from '../requests/BidCreateRequest';
 
 export class AcceptBidMessageProcessor implements MessageProcessorInterface {
 

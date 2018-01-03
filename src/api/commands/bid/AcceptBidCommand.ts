@@ -12,7 +12,7 @@ import { MessageBroadcastService } from '../../services/MessageBroadcastService'
 import { BidService } from '../../services/BidService';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
-import { BidStatus } from '../../enums/BidStatus';
+import { BidMessageType } from '../../enums/BidMessageType';
 import { Bid } from '../../models/Bid';
 
 export class AcceptBidCommand implements RpcCommandInterface<Bid> {
@@ -56,9 +56,9 @@ export class AcceptBidCommand implements RpcCommandInterface<Bid> {
                 this.log.warn(`Bid with the listing Item hash=${data.params[0]} was not found!`);
                 throw new MessageException(`Bid not found for the listing item hash ${data.params[0]}`);
 
-            } else if (bid.status === BidStatus.ACTIVE) {
+            } else if (bid.status === BidMessageType.MPA_BID) {
 
-                // broadcase the accepted bid message
+                // broadcast the accepted bid message
                 await this.messageBroadcastService.broadcast({
                     item: data.params[0],
                     action: 'MPA_ACCEPT'
