@@ -30,14 +30,17 @@ import { ProfileService } from './ProfileService';
 import { MarketService } from './MarketService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { FavoriteItemService } from './FavoriteItemService';
+import { BidService } from './BidService';
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
 import { Address } from '../models/Address';
 import { CryptocurrencyAddress } from '../models/CryptocurrencyAddress';
+import { Bid } from '../models/Bid';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
 import { FavoriteItemCreateRequest } from '../requests/FavoriteItemCreateRequest';
+import { BidCreateRequest } from '../requests/BidCreateRequest';
 
 export class TestDataService {
 
@@ -54,6 +57,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
+        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -104,6 +108,9 @@ export class TestDataService {
             }
             case 'favoriteitem': {
                 return await this.favoriteItemService.create(body.data as FavoriteItemCreateRequest) as Bookshelf.Model<FavoriteItem>;
+            }
+            case 'bid': {
+                return await this.bidService.create(body.data as BidCreateRequest) as Bookshelf.Model<Bid>;
             }
             default: {
                 throw new MessageException('Not implemented');
