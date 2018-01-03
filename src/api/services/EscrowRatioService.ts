@@ -64,39 +64,4 @@ export class EscrowRatioService {
     public async destroy(id: number): Promise<void> {
         await this.escrowRatioRepo.destroy(id);
     }
-
-    // TODO: REMOVE
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<EscrowRatio>> {
-        return this.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<EscrowRatio> {
-        return this.findOne(data.params[0]);
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<EscrowRatio> {
-        return this.create({
-            escrow_id: data.params[0],
-            buyer: data.params[1],
-            seller: data.params[2],
-        } as EscrowRatioCreateRequest);
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<EscrowRatio> {
-        return this.update(data.params[0], {
-            escrow_id: data.params[0],
-            buyer: data.params[1],
-            seller: data.params[2],
-        } as EscrowRatioUpdateRequest);
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
-    }
-
 }
