@@ -2,10 +2,8 @@ import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { BidMessage } from '../messages/BidMessage';
 import { BidMessageType } from '../enums/BidMessageType';
-import { Bid } from '../models/Bid';
 import { MessageException } from '../exceptions/MessageException';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { BidMessageType } from '../enums/BidMessageType';
@@ -22,73 +20,36 @@ export class BidFactory {
     }
 
     /**
+     * create a BidCreateRequest
      *
      * @param bidMessage
      * @param listingItemId
      * @param latestBid
-     * @returns {{}}
+     * @returns {Promise<BidCreateRequest>}
      */
     public async getModel(bidMessage: BidMessage, listingItemId: number, latestBid?: resources.Bid): Promise<BidCreateRequest> {
 
         // check that the bidAction is valid, throw if not
         if (this.checkBidMessageActionValidity(bidMessage, latestBid)) {
 
-            // it was, so create and return the request that can be used to create the bid
+            // it was, so create the bidData field
+            const bidData = _.map(bidMessage.objects, (value) => {
+                return _.assign({}, {
+                    dataId: value['id'],
+                    dataValue: value['value']
+                });
+            });
+
+            // create and return the request that can be used to create the bid
             return {
                 listing_item_id: listingItemId,
-                action: bidMessage.action
+                action: bidMessage.action,
+                bidData
             } as BidCreateRequest;
 
         } else {
             throw new MessageException('Invalid BidMessageType.');
         }
-
-
-
-
-        switch (bidMessage.action) {
-            case BidMessageType.MPA_BID:
-                return await this.getBidModel(bidMessage, escrow, address);
-
-                // setting the bid relation with listingItem
-                bidCreateRequest.listing_item_id = listingItem.id;
-
-                // set the bidData fields
-                const bidData = _.map(bidMessage.objects, (value) => {
-                return _.assign({}, {
-                        dataId: value['id'],
-                        dataValue: value['value']
-                    });
-                });
-
-                bidCreateRequest = {
-                    action: BidMessageType.MPA_BID,
-                    bidData
-                };
-                break;
-
-            case BidMessageType.MPA_CANCEL:
-                if (this.checkValidBid(BidMessageType.MPA_CANCEL, latestBid)) {
-                    bidCreateRequest['action'] = BidMessageType.MPA_CANCEL;
-                }
-                break;
-
-            case BidMessageType.MPA_REJECT:
-                if (this.checkValidBid(BidMessageType.MPA_REJECT, latestBid)) {
-                    bidCreateRequest['action'] = BidMessageType.MPA_REJECT;
-                }
-                break;
-
-            case BidMessageType.MPA_ACCEPT:
-                if (this.checkValidBid(BidMessageType.MPA_ACCEPT, latestBid)) {
-                    bidCreateRequest['action'] = BidMessageType.MPA_ACCEPT;
-                }
-                break;
-        }
-        // setting the bid relation with listingItem
-        bidCreateRequest['listing_item_id'] = listingItemId;
-
-        return bidCreateRequest;
     }
 
     /**
@@ -105,15 +66,18 @@ export class BidFactory {
             throw new MessageException('Invalid BidMessageType.');
         }
 
-        // TODO: this wont work
         switch (latestBid.action) {
-            case BidMessageType.MPA_BID:      // only active bid can be bidded on
-                return bidMessage.action === BidMessageType.MPA_BID;
-            case BidMessageType.MPA_ACCEPT:    // latest bid was allready accepted
+            case BidMessageType.MPA_BID:
+                // if the latest bid was allready bidded on, then the message needs to be something else
+                return bidMessage.action !== BidMessageType.MPA_BID;
+            case BidMessageType.MPA_ACCEPT:
+                // latest bid was allready accepted, any bid is invalid
                 return false;
-            case BidMessageType.MPA_CANCEL:   // latest bid was cancelled, so we allow new bids
+            case BidMessageType.MPA_CANCEL:
+                // latest bid was cancelled, so we allow only new bids
                 return bidMessage.action === BidMessageType.MPA_BID;
-            case BidMessageType.MPA_REJECT:    // latest bid was rejected, so we allow new bids
+            case BidMessageType.MPA_REJECT:
+                // latest bid was rejected, so we allow only new bids
                 return bidMessage.action === BidMessageType.MPA_BID;
         }
     }
