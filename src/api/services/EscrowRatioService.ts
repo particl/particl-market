@@ -36,7 +36,7 @@ export class EscrowRatioService {
     }
 
     @validate()
-    public async create( @request(EscrowRatioCreateRequest) body: any): Promise<EscrowRatio> {
+    public async create( @request(EscrowRatioCreateRequest) body: EscrowRatioCreateRequest): Promise<EscrowRatio> {
 
         // If the request body was valid we will create the escrowRatio
         const escrowRatio = await this.escrowRatioRepo.create(body);
@@ -47,7 +47,7 @@ export class EscrowRatioService {
     }
 
     @validate()
-    public async update(id: number, @request(EscrowRatioUpdateRequest) body: any): Promise<EscrowRatio> {
+    public async update(id: number, @request(EscrowRatioUpdateRequest) body: EscrowRatioUpdateRequest): Promise<EscrowRatio> {
 
         // find the existing one without related
         const escrowRatio = await this.findOne(id, false);
@@ -79,15 +79,19 @@ export class EscrowRatioService {
     @validate()
     public async rpcCreate( @request(RpcRequest) data: any): Promise<EscrowRatio> {
         return this.create({
-            data: data.params[0] // TODO: convert your params to EscrowRatioCreateRequest
-        });
+            escrow_id: data.params[0],
+            buyer: data.params[1],
+            seller: data.params[2],
+        } as EscrowRatioCreateRequest);
     }
 
     @validate()
     public async rpcUpdate( @request(RpcRequest) data: any): Promise<EscrowRatio> {
         return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to EscrowRatioUpdateRequest
-        });
+            escrow_id: data.params[0],
+            buyer: data.params[1],
+            seller: data.params[2],
+        } as EscrowRatioUpdateRequest);
     }
 
     @validate()
