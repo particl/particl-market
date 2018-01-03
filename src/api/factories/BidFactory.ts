@@ -6,7 +6,6 @@ import { BidMessage } from '../messages/BidMessage';
 import { BidMessageType } from '../enums/BidMessageType';
 import { MessageException } from '../exceptions/MessageException';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
-import { BidMessageType } from '../enums/BidMessageType';
 import * as resources from 'resources';
 
 export class BidFactory {
@@ -41,11 +40,11 @@ export class BidFactory {
             });
 
             // create and return the request that can be used to create the bid
-            return {
-                listing_item_id: listingItemId,
-                action: bidMessage.action,
-                bidData
-            } as BidCreateRequest;
+            const bidCreateRequest = new BidCreateRequest();
+            bidCreateRequest.listing_item_id = listingItemId;
+            bidCreateRequest.action = bidMessage.action;
+            bidCreateRequest.bidData = bidData;
+            return bidCreateRequest;
 
         } else {
             throw new MessageException('Invalid BidMessageType.');
@@ -61,25 +60,26 @@ export class BidFactory {
      */
     private checkBidMessageActionValidity(bidMessage: BidMessage, latestBid?: resources.Bid): boolean {
 
-        // if no existing bid and message is not MPA_BID -> error
-        if (_.isEmpty(latestBid) && bidMessage.action !== BidMessageType.MPA_BID) {
-            throw new MessageException('Invalid BidMessageType.');
+        if (latestBid) {
+            switch (latestBid.action) {
+                case BidMessageType.MPA_BID:
+                    // if the latest bid was allready bidded on, then the message needs to be something else
+                    return bidMessage.action !== BidMessageType.MPA_BID;
+                case BidMessageType.MPA_ACCEPT:
+                    // latest bid was allready accepted, any bid is invalid
+                    return false;
+                case BidMessageType.MPA_CANCEL:
+                    // latest bid was cancelled, so we allow only new bids
+                    return bidMessage.action === BidMessageType.MPA_BID;
+                case BidMessageType.MPA_REJECT:
+                    // latest bid was rejected, so we allow only new bids
+                    return bidMessage.action === BidMessageType.MPA_BID;
+            }
+        } else if (bidMessage.action === BidMessageType.MPA_BID) {
+            // if no existing bid and message is MPA_BID -> true
+            return true;
         }
-
-        switch (latestBid.action) {
-            case BidMessageType.MPA_BID:
-                // if the latest bid was allready bidded on, then the message needs to be something else
-                return bidMessage.action !== BidMessageType.MPA_BID;
-            case BidMessageType.MPA_ACCEPT:
-                // latest bid was allready accepted, any bid is invalid
-                return false;
-            case BidMessageType.MPA_CANCEL:
-                // latest bid was cancelled, so we allow only new bids
-                return bidMessage.action === BidMessageType.MPA_BID;
-            case BidMessageType.MPA_REJECT:
-                // latest bid was rejected, so we allow only new bids
-                return bidMessage.action === BidMessageType.MPA_BID;
-        }
+        return false;
     }
 
 }

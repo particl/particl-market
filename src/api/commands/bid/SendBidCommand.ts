@@ -11,6 +11,7 @@ import { NotFoundException } from '../../exceptions/NotFoundException';
 import { BidFactory } from '../../factories/BidFactory';
 import { Bid } from '../../models/Bid';
 import { MessageBroadcastService } from '../../services/MessageBroadcastService';
+import { BidMessageType } from '../../enums/BidMessageType';
 
 export class SendBidCommand implements RpcCommandInterface<Bid> {
 
@@ -57,8 +58,8 @@ export class SendBidCommand implements RpcCommandInterface<Bid> {
             // broadcast the message in to the network
             await this.messageBroadcastService.broadcast({
               objects: bidData,
-              item: listingItemHash,
-              action: 'MPA_BID'
+              listing: listingItemHash,
+              action: BidMessageType.MPA_BID
             } as BidMessage);
 
             // TODO: We will change the return data once broadcast functionality will be implemented

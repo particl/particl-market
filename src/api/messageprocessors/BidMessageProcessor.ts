@@ -40,7 +40,7 @@ export class BidMessageProcessor implements MessageProcessorInterface {
         const listingItem = listingItemModel.toJSON();
 
         // get the BidCreateRequest and create the bid
-        const bidCreateRequest = this.bidFactory.getModel(message, listingItem.id);
+        const bidCreateRequest = await this.bidFactory.getModel(message, listingItem.id);
         return await this.bidService.create(bidCreateRequest);
     }
 }

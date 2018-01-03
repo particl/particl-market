@@ -74,9 +74,9 @@ export class EscrowFactory {
      * @param address
      * @returns {EscrowMessage}
      */
-    private async getLockMessage(lockRequest: EscrowLockRequest, escrow: resources.Escrow, address: resources.Address): Promise<EscrowMessage> {
+    private async getLockMessage(lockRequest: EscrowLockRequest, escrow?: resources.Escrow, address?: resources.Address): Promise<EscrowMessage> {
 
-        this.checkEscrowActionValidity(escrow, EscrowMessageType.MPA_LOCK);
+        this.checkEscrowActionValidity(EscrowMessageType.MPA_LOCK, escrow);
         const rawTx = this.createRawTx(lockRequest, escrow);
         const addressOneLiner = this.getAddressOneLiner(address);
 
@@ -100,9 +100,9 @@ export class EscrowFactory {
      * @param releaseRequest
      * @param escrow
      */
-    private async getReleaseMessage(releaseRequest: EscrowReleaseRequest, escrow: resources.Escrow): Promise<EscrowMessage> {
+    private async getReleaseMessage(releaseRequest: EscrowReleaseRequest, escrow?: resources.Escrow): Promise<EscrowMessage> {
 
-        this.checkEscrowActionValidity(escrow, EscrowMessageType.MPA_RELEASE);
+        this.checkEscrowActionValidity(EscrowMessageType.MPA_RELEASE, escrow);
         const rawTx = this.createRawTx(releaseRequest, escrow);
 
         return {
@@ -122,9 +122,9 @@ export class EscrowFactory {
      * @param refundRequest
      * @param escrow
      */
-    private async getRefundMessage(refundRequest: EscrowRefundRequest, escrow: resources.Escrow): Promise<EscrowMessage> {
+    private async getRefundMessage(refundRequest: EscrowRefundRequest, escrow?: resources.Escrow): Promise<EscrowMessage> {
 
-        this.checkEscrowActionValidity(escrow, EscrowMessageType.MPA_REFUND);
+        this.checkEscrowActionValidity(EscrowMessageType.MPA_REFUND, escrow);
         const rawTx = this.createRawTx(refundRequest, escrow);
 
         return {
@@ -142,11 +142,11 @@ export class EscrowFactory {
     /**
      * Checks if the escrowAction is allowed for the given escrow
      *
-     * @param escrow
      * @param escrowAction
+     * @param escrow
      * @returns {boolean}
      */
-    private checkEscrowActionValidity(escrow: resources.Escrow, escrowAction: EscrowMessageType): boolean {
+    private checkEscrowActionValidity(escrowAction: EscrowMessageType, escrow?: resources.Escrow): boolean {
         const isValid = true;
         // TODO: implement
         if (!isValid) {
@@ -162,7 +162,7 @@ export class EscrowFactory {
      * @param escrow
      * @returns {string}
      */
-    private createRawTx(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow: resources.Escrow): string {
+    private createRawTx(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow?: resources.Escrow): string {
         // MPA_RELEASE:
         // rawtx: 'The buyer sends the half signed rawtx which releases the escrow and paymeny.
         // The vendor then recreates the whole transaction (check ouputs, inputs, scriptsigs
@@ -180,20 +180,22 @@ export class EscrowFactory {
     }
 
 
-    private getAddressOneLiner(address: resources.Address): string {
-        const addressArray = [];
+    private getAddressOneLiner(address: resources.Address = {} as resources.Address): string {
+        const addressArray: string[] = [];
 
-        if (address.addressLine1) {
-            addressArray.push(address.addressLine1);
-        }
-        if (address.addressLine2) {
-            addressArray.push(address.addressLine2);
-        }
-        if (address.city) {
-            addressArray.push(address.city);
-        }
-        if (address.country) {
-            addressArray.push(address.country);
+        if (!_.isEmpty(address)) {
+            if (address.addressLine1) {
+                addressArray.push(address.addressLine1);
+            }
+            if (address.addressLine2) {
+                addressArray.push(address.addressLine2);
+            }
+            if (address.city) {
+                addressArray.push(address.city);
+            }
+            if (address.country) {
+                addressArray.push(address.country);
+            }
         }
 
         return addressArray.join(', ');
