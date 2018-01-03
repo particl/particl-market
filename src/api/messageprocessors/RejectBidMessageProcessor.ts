@@ -9,8 +9,7 @@ import { ListingItemService } from '../services/ListingItemService';
 import { BidService } from '../services/BidService';
 import { BidFactory } from '../factories/BidFactory';
 import { NotFoundException } from '../exceptions/NotFoundException';
-import { MessageException } from '../exceptions/MessageException';
-import { BidMessageType } from '../enums/BidMessageType';
+import { BidCreateRequest } from '../requests/BidCreateRequest';
 
 export class RejectBidMessageProcessor implements MessageProcessorInterface {
 
@@ -26,38 +25,27 @@ export class RejectBidMessageProcessor implements MessageProcessorInterface {
     }
 
     /**
-     * Reject bid
+     * Process BidMessage of type MPA-REJECT
+     *
      * message:
-     * item: message.item
-     * action: message.action
+     *  action: action of the BidMessage
+     *  listing: item hash
      *
      * @returns {Promise<Bid>}
      */
-
     @validate()
     public async process( message: BidMessage ): Promise<Bid> {
-        // find listingItem by hash
-        const listingItem = await this.listingItemService.findOneByHash(message['item']);
+        // find listingItem by hash, the service will throw Exception if not
+        const listingItemModel = await this.listingItemService.findOneByHash(message.listing);
+        const listingItem = listingItemModel.toJSON();
 
-        // if listingItem not found
-        if (listingItem === null) {
-            this.log.warn(`ListingItem with the hash=${message.item} was not found!`);
-            throw new NotFoundException(message.item);
-        } else {
-            try {
-                // find latest bid
-                const latestBid = await this.bidService.getLatestBid(listingItem.id);
+        // find latest bid
+        const latestBidModel = await this.bidService.getLatestBid(listingItem.id);
+        const latestBid = latestBidModel.toJSON();
 
-                // convert the bid message to bid
-                const bidMessage = this.bidFactory.get(message, listingItem.id, latestBid);
-
-                // create the new bid with action reject only if previous bid not rejected or cancelled
-                return await this.bidService.create(bidMessage);
-
-            } catch (error) {
-                throw error;
-            }
-        }
+        // get the BidCreateRequest and create the bid
+        const bidMessage = this.bidFactory.getModel(message, listingItem.id, latestBid);
+        return await this.bidService.create(bidMessage as BidCreateRequest);
     }
 
 }

@@ -24,14 +24,14 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
     }
 
     /**
-     * Cancel bid
+     * Process BidMessage of type MPA-CANCEL
+     *
      * message:
-     * item: message.item
-     * action: message.action
+     *  action: action of the BidMessage
+     *  listing: item hash
      *
      * @returns {Promise<Bid>}
      */
-
     @validate()
     public async process( message: BidMessage ): Promise<Bid> {
 
