@@ -99,7 +99,7 @@ describe('EscrowRatio', () => {
         await escrowRatioService.create({
             buyer: 50,
             seller: 50
-        } as any).catch(e =>
+        } as EscrowRatioCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
             );
     });
@@ -117,7 +117,7 @@ describe('EscrowRatio', () => {
 
     test('Should throw ValidationException because we want to create a empty escrow ratio', async () => {
         expect.assertions(1);
-        await escrowRatioService.create({} as any).catch(e =>
+        await escrowRatioService.create({} as EscrowRatioCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -146,7 +146,7 @@ describe('EscrowRatio', () => {
         await escrowRatioService.update(createdId, {
             buyer: 100,
             seller: 100
-        } as any).catch(e =>
+        } as EscrowRatioUpdateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
             );
     });
