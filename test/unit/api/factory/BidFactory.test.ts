@@ -44,5 +44,46 @@ describe('BidFactory', () => {
         expect(res.status).toBe('ACTIVE');
         expect(res.bidData.length).toBe(0);
     });
+
+    // from acceptbidfactory
+    test('Should convert the acceptBidMessage to bid', () => {
+        const latestBid = {
+            Status: 'ACTIVE'
+        };
+
+        const req = {
+            action: 'MPA_ACCEPT',
+            item: 'f08f3d6e'
+        };
+        const res = bidFactory.get(req, 8, latestBid);
+        expect(res.status).toBe('ACCEPTED');
+    });
+
+    // cancelbbidfactory
+    test('Should convert the cancelBidMessage to bid', () => {
+        const latestBid = {
+            Status: 'ACTIVE'
+        };
+        const req = {
+            action: 'MPA_CANCEL',
+            item: 'f08f3d6e'
+        };
+
+        const res = bidFactory.get(req, 8, latestBid);
+        expect(res.status).toBe('CANCELLED');
+    });
+
+    // rejectbidfactory
+    test('Should convert the rejectBidMessage to bid', () => {
+        const latestBid = {
+            Status: 'ACTIVE'
+        };
+        const req = {
+            action: 'MPA_REJECT',
+            item: 'f08f3d6e'
+        };
+        const res = bidFactory.get(req, 8, latestBid);
+        expect(res.status).toBe('REJECTED');
+    });
 });
 
