@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import { BidMessageType } from '../enums/BidMessageType';
 
 // tslint:disable:variable-name
 export class BidUpdateRequest extends RequestBody {
@@ -7,6 +8,6 @@ export class BidUpdateRequest extends RequestBody {
   public listing_item_id: number;
 
   @IsNotEmpty()
-  public action: string;
+  public action: BidMessageType;
 }
 // tslint:enable:variable-name
