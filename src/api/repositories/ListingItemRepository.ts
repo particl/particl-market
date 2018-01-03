@@ -57,6 +57,7 @@ export class ListingItemRepository {
             const listingItemCreated = await listingItem.save();
             return this.ListingItemModel.fetchById(listingItemCreated.id);
         } catch (error) {
+            this.log.error(error);
             throw new DatabaseException('Could not create the listingItem!', error);
         }
     }
@@ -67,6 +68,7 @@ export class ListingItemRepository {
             const listingItemUpdated = await listingItem.save(data, { patch: true });
             return this.ListingItemModel.fetchById(listingItemUpdated.id);
         } catch (error) {
+            this.log.error(error);
             throw new DatabaseException('Could not update the listingItem!', error);
         }
     }
@@ -76,6 +78,7 @@ export class ListingItemRepository {
         try {
             listingItem = await listingItem.fetch({ require: true });
         } catch (error) {
+            this.log.error(error);
             throw new NotFoundException(id);
         }
 
@@ -83,6 +86,7 @@ export class ListingItemRepository {
             await listingItem.destroy();
             return;
         } catch (error) {
+            this.log.error(error);
             throw new DatabaseException('Could not delete the listingItem!', error);
         }
     }

@@ -32,6 +32,7 @@ export class CryptocurrencyAddressRepository {
             const cryptocurrencyAddressCreated = await cryptocurrencyAddress.save();
             return this.CryptocurrencyAddressModel.fetchById(cryptocurrencyAddressCreated.id);
         } catch (error) {
+            this.log.error(error);
             throw new DatabaseException('Could not create the cryptocurrencyAddress!', error);
         }
     }
@@ -58,6 +59,7 @@ export class CryptocurrencyAddressRepository {
             await cryptocurrencyAddress.destroy();
             return;
         } catch (error) {
+            this.log.error('CryptocurrencyAddressRepository.destroy():100: ' + error);
             throw new DatabaseException('Could not delete the cryptocurrencyAddress!', error);
         }
     }

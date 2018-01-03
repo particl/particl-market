@@ -41,7 +41,13 @@ export class ShippingPriceService {
         const body = JSON.parse(JSON.stringify(data));
 
         // If the request body was valid we will create the shippingPrice
-        const shippingPrice = await this.shippingPriceRepo.create(body);
+        let shippingPrice;
+        await this.shippingPriceRepo.create(body)
+            .catch(e => {
+                this.log.error(e);
+            }).then(res => {
+                shippingPrice = res;
+            });
 
         // finally find and return the created shippingPrice
         const newShippingPrice = await this.findOne(shippingPrice.Id);

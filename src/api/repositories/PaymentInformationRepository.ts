@@ -36,6 +36,7 @@ export class PaymentInformationRepository {
             const paymentInformationCreated = await paymentInformation.save();
             return this.PaymentInformationModel.fetchById(paymentInformationCreated.id);
         } catch (error) {
+            this.log.error(error);
             throw new DatabaseException('Could not create the paymentInformation!', error);
         }
     }

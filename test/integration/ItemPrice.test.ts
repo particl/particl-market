@@ -4,11 +4,16 @@ import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ProfileService } from '../../src/api/services/ProfileService';
+import { MarketService } from '../../src/api/services/MarketService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ItemPrice } from '../../src/api/models/ItemPrice';
+import { Currency } from '../../src/api/enums/Currency';
+import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
+import { PaymentType } from '../../src/api/enums/PaymentType';
+import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 
@@ -27,10 +32,14 @@ describe('ItemPrice', () => {
     let testDataService: TestDataService;
     let itemPriceService: ItemPriceService;
     let profileService: ProfileService;
+    let marketService: MarketService;
 
     let createdId: number;
     let createdListingItemTemplate;
     let defaultProfile;
+    let defaultMarket;
+
+    let paymentInfo;
 
     const testData = {
         currency: Currency.BITCOIN,
@@ -64,6 +73,7 @@ describe('ItemPrice', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.ItemPriceService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
@@ -77,6 +87,10 @@ describe('ItemPrice', () => {
             },
             withRelated: true
         } as TestDataCreateRequest);
+
+        defaultMarket = await marketService.getDefault();
+        defaultMarket = defaultMarket.toJSON();
+        log.debug('defaultMarket: ', defaultMarket);
     });
 
     afterAll(async () => {
@@ -91,7 +105,24 @@ describe('ItemPrice', () => {
     });
 
     test('Should create a new item price', async () => {
-        testData['payment_information_id'] = 0;
+        const paymentInfoData = {
+            listing_item_template_id: createdListingItemTemplate.Id,
+            type: PaymentType.FREE,
+            escrow: {
+                type: EscrowType.MAD,
+                ratio: {
+                    buyer: 1,
+                    seller: 1
+                }
+            }
+        } as PaymentInformationCreateRequest;
+        paymentInfo = await testDataService.create({
+            model: 'paymentinfo',
+            data: paymentInfoData,
+            withRelated: true
+        });
+
+        testData['payment_information_id'] = paymentInfo.id;
         const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
         createdId = itemPriceModel.Id;
 
@@ -145,7 +176,9 @@ describe('ItemPrice', () => {
     });
 
     test('Should update the item price', async () => {
-        testDataUpdated['payment_information_id'] = 0;
+        testDataUpdated['payment_information_id'] = paymentInfo.id;
+        // log.debug('testDataUpdated update = ' + JSON.stringify(testDataUpdated));
+
         const itemPriceModel: ItemPrice = await itemPriceService.update(createdId, testDataUpdated);
         const result = itemPriceModel.toJSON();
 
