@@ -77,7 +77,7 @@ describe('FavoriteItem', () => {
 
     test('Should throw ValidationException because there is no related_id and empty', async () => {
         expect.assertions(1);
-        await favoriteItemService.create({}).catch(e =>
+        await favoriteItemService.create({} as FavoriteItemCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });

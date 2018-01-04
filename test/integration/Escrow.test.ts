@@ -44,7 +44,7 @@ describe('Escrow', () => {
             seller: 50
         },
         payment_information_id: 0
-    };
+    } as EscrowCreateRequest;
 
     const testDataUpdated = {
         type: EscrowType.NOP,
@@ -95,13 +95,13 @@ describe('Escrow', () => {
                 buyer: 100,
                 seller: 100
             }
-        } as any).catch(e =>
+        } as EscrowCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
             );
     });
 
     test('Should create a new escrow', async () => {
-        testData['payment_information_id'] = paymentInformationId;
+        testData.payment_information_id = paymentInformationId;
         const escrowModel: Escrow = await escrowService.create(testData as EscrowCreateRequest);
         createdId = escrowModel.Id;
 
@@ -115,7 +115,7 @@ describe('Escrow', () => {
 
     test('Should throw ValidationException because we want to create a empty escrow', async () => {
         expect.assertions(1);
-        await escrowService.create({} as any).catch(e =>
+        await escrowService.create({} as EscrowCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -148,13 +148,13 @@ describe('Escrow', () => {
                 buyer: 100,
                 seller: 100
             }
-        } as any).catch(e =>
+        } as EscrowUpdateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
             );
     });
 
     test('Should update the escrow', async () => {
-        testDataUpdated['payment_information_id'] = paymentInformationId;
+        testDataUpdated.payment_information_id = paymentInformationId;
         const escrowModel: Escrow = await escrowService.update(createdId, testDataUpdated);
         const result = escrowModel.toJSON();
 
