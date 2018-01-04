@@ -38,11 +38,9 @@ export class CryptocurrencyAddressService {
     @validate()
     public async create( @request(CryptocurrencyAddressCreateRequest) body: CryptocurrencyAddressCreateRequest): Promise<CryptocurrencyAddress> {
         // If the request body was valid we will create the cryptocurrencyAddress
-        let cryptocurrencyAddress;
-        await this.cryptocurrencyAddressRepo.create(body).catch(e => {
-            this.log.error('CryptocurrencyAddressService.create():100: ' + e);
-        }).then(res => {
-            cryptocurrencyAddress = res;
+        const cryptocurrencyAddress = await this.cryptocurrencyAddressRepo.create(body).catch(e => {
+            this.log.error('CryptocurrencyAddressService.create(): ', e);
+            throw e;
         });
         // this.log.debug('CryptocurrencyAddressService created: ', JSON.stringify(cryptocurrencyAddress.toJSON(), null, 2));
 
