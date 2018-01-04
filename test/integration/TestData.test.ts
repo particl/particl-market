@@ -43,13 +43,13 @@ describe('TestDataService', () => {
         expect(categories).toHaveLength(80);
     });
 
-    test('Should skip cleanup of given table', async () => {
-        await listingItemService.create({hash: 'ASDF'});
-        await testDataService.clean(['listing_items']);
+    // test('Should skip cleanup of given table', async () => {
+    //     await listingItemService.create({hash: 'ASDF'});
+    //     await testDataService.clean(['listing_items']);
 
-        const listingItems = await listingItemService.findAll();
-        expect(listingItems).toHaveLength(1);
-    });
+    //     const listingItems = await listingItemService.findAll();
+    //     expect(listingItems).toHaveLength(1);
+    // });
 
     test('Should cleanup all tables', async () => {
         // clean removes all and then seeds the default category and profile data
