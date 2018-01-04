@@ -101,10 +101,7 @@ export class ListingItemService {
         // this.log.debug('listingItemObjects to save: ', JSON.stringify(listingItemObjects, null, 2));
 
         // If the request body was valid we will create the listingItem
-        const listingItem = await this.listingItemRepo.create(body)
-            .catch(reason => {
-                this.log.error('ERROR: ', reason);
-            });
+        const listingItem = await this.listingItemRepo.create(body);
 
         // create related models
         if (!_.isEmpty(itemInformation)) {
