@@ -20,6 +20,7 @@ import { ListingItem } from '../models/ListingItem';
 import { Profile } from '../models/Profile';
 import { ItemCategory } from '../models/ItemCategory';
 import { FavoriteItem } from '../models/FavoriteItem';
+import { PaymentInformation } from '../models/PaymentInformation';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
@@ -31,16 +32,21 @@ import { MarketService } from './MarketService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { FavoriteItemService } from './FavoriteItemService';
 import { ItemInformationService } from './ItemInformationService';
+import { BidService } from './BidService';
+import { PaymentInformationService } from './PaymentInformationService';
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
 import { Address } from '../models/Address';
 import { CryptocurrencyAddress } from '../models/CryptocurrencyAddress';
 import { ItemInformation } from '../models/ItemInformation';
+import { Bid } from '../models/Bid';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
 import { FavoriteItemCreateRequest } from '../requests/FavoriteItemCreateRequest';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
+import { BidCreateRequest } from '../requests/BidCreateRequest';
+import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
 
 export class TestDataService {
 
@@ -58,6 +64,8 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -111,6 +119,12 @@ export class TestDataService {
             }
             case 'iteminformation': {
                 return await this.itemInformationService.create(body.data as ItemInformationCreateRequest) as Bookshelf.Model<ItemInformation>;
+            }
+            case 'bid': {
+                return await this.bidService.create(body.data as BidCreateRequest) as Bookshelf.Model<Bid>;
+            }
+            case 'paymentinfo': {
+                return await this.paymentInformationService.create(body.data as PaymentInformationCreateRequest) as Bookshelf.Model<PaymentInformation>;
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -224,7 +238,6 @@ export class TestDataService {
             const listingItemTemplate = await this.generateListingItemTemplateData();
             // this.log.debug('B1', JSON.stringify(listingItemTemplate, null, 2));
             const savedListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplate);
-            this.log.debug('B2', JSON.stringify(savedListingItemTemplate, null, 2));
             items.push(savedListingItemTemplate);
         }
         return this.generateResponse(items, withRelated);
