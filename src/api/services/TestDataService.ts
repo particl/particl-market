@@ -30,14 +30,17 @@ import { ProfileService } from './ProfileService';
 import { MarketService } from './MarketService';
 import { ItemCategoryService } from './ItemCategoryService';
 import { FavoriteItemService } from './FavoriteItemService';
+import { ItemInformationService } from './ItemInformationService';
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
 import { Address } from '../models/Address';
 import { CryptocurrencyAddress } from '../models/CryptocurrencyAddress';
+import { ItemInformation } from '../models/ItemInformation';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
 import { FavoriteItemCreateRequest } from '../requests/FavoriteItemCreateRequest';
+import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
 
 export class TestDataService {
 
@@ -54,6 +57,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
+        @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -104,6 +108,9 @@ export class TestDataService {
             }
             case 'favoriteitem': {
                 return await this.favoriteItemService.create(body.data as FavoriteItemCreateRequest) as Bookshelf.Model<FavoriteItem>;
+            }
+            case 'iteminformation': {
+                return await this.itemInformationService.create(body.data as ItemInformationCreateRequest) as Bookshelf.Model<ItemInformation>;
             }
             default: {
                 throw new MessageException('Not implemented');

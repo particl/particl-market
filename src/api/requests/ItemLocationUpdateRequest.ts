@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import { Country } from '../enums/Country';
 
 // tslint:disable:variable-name
 export class ItemLocationUpdateRequest extends RequestBody {
@@ -8,7 +9,7 @@ export class ItemLocationUpdateRequest extends RequestBody {
     public item_information_id: number;
 
     @IsNotEmpty()
-    public region: string;
+    public region: Country;
 
     @IsNotEmpty()
     public address: string;
