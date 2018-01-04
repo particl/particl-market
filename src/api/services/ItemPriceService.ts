@@ -51,7 +51,6 @@ export class ItemPriceService {
 
         // create related models, cryptocurrencyAddress
         if (!_.isEmpty(cryptocurrencyAddress)) {
-
             if (cryptocurrencyAddress.id) {
                 // use existing
                 // this.log.debug('cryptocurrencyAddress exists');
@@ -73,10 +72,10 @@ export class ItemPriceService {
             await this.shippingpriceService.create(shippingPrice);
         }
         // then create address
-        if (!_.isEmpty(cryptocurrencyAddress)) {
+        /*if (!_.isEmpty(cryptocurrencyAddress)) {
             cryptocurrencyAddress.item_price_id = itemPrice.Id;
             await this.cryptocurrencyAddressService.create(cryptocurrencyAddress);
-        }
+        }*/
         // finally find and return the created itemPrice
         return await this.findOne(itemPrice.Id);
     }
@@ -117,7 +116,8 @@ export class ItemPriceService {
 
         // and create new related data
         relatedCryptocurrencyAddress = body.cryptocurrencyAddress;
-        relatedCryptocurrencyAddress.item_price_id = id;
+
+        //relatedCryptocurrencyAddress.item_price_id = id;
         await this.cryptocurrencyAddressService.create(relatedCryptocurrencyAddress);
 
         // finally find and return the updated item price

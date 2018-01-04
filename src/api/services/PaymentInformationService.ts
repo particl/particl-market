@@ -85,7 +85,7 @@ export class PaymentInformationService {
     }
 
     @validate()
-    public async update(id: number, @request(PaymentInformationUpdateRequest) data: any): Promise<PaymentInformation> {
+    public async update(id: number, @request(PaymentInformationUpdateRequest) data: PaymentInformationUpdateRequest): Promise<PaymentInformation> {
 
         const body = JSON.parse(JSON.stringify(data));
 

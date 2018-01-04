@@ -4,11 +4,16 @@ import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ProfileService } from '../../src/api/services/ProfileService';
+import { MarketService } from '../../src/api/services/MarketService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ItemPrice } from '../../src/api/models/ItemPrice';
+import { Currency } from '../../src/api/enums/Currency';
+import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
+import { PaymentType } from '../../src/api/enums/PaymentType';
+import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 
@@ -27,10 +32,14 @@ describe('ItemPrice', () => {
     let testDataService: TestDataService;
     let itemPriceService: ItemPriceService;
     let profileService: ProfileService;
+    let marketService: MarketService;
 
     let createdId: number;
     let createdListingItemTemplate;
     let defaultProfile;
+    let defaultMarket;
+
+    let paymentInfo;
 
     const testData = {
         currency: Currency.BITCOIN,
@@ -64,6 +73,7 @@ describe('ItemPrice', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.ItemPriceService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
@@ -77,6 +87,27 @@ describe('ItemPrice', () => {
             },
             withRelated: true
         } as TestDataCreateRequest);
+
+        defaultMarket = await marketService.getDefault();
+        defaultMarket = defaultMarket.toJSON();
+        log.debug('defaultMarket: ', defaultMarket);
+
+        const paymentInfoData = {
+            listing_item_template_id: createdListingItemTemplate.Id,
+            type: PaymentType.FREE,
+            escrow: {
+                type: EscrowType.MAD,
+                ratio: {
+                    buyer: 1,
+                    seller: 1
+                }
+            }
+        } as PaymentInformationCreateRequest;
+        paymentInfo = await testDataService.create({
+            model: 'paymentinfo',
+            data: paymentInfoData,
+            withRelated: true
+        });
     });
 
     afterAll(async () => {
@@ -90,8 +121,34 @@ describe('ItemPrice', () => {
         );
     });
 
+    test('Should throw ValidationException because there is no currency', async () => {
+        expect.assertions(1);
+        testData.payment_information_id = paymentInfo.id;
+        const currency = testData.currency;
+        delete testData.currency;
+        await itemPriceService.create(testData).catch(e => {
+            testData.currency = currency;
+            expect(e).toEqual(new ValidationException('Request body is not valid', []));
+        }).then(res => {
+            testData.currency = currency;
+        });
+    });
+
+    test('Should throw ValidationException because there is no basePrice', async () => {
+        expect.assertions(1);
+        const basePrice = testData.basePrice;
+        delete testData.basePrice;
+        await itemPriceService.create(testData).catch(e => {
+            testData.basePrice = basePrice;
+            expect(e).toEqual(new ValidationException('Request body is not valid', []));
+        }).then(res => {
+            testData.basePrice = basePrice;
+        });
+    });
+
     test('Should create a new item price', async () => {
-        testData['payment_information_id'] = 0;
+        testData.payment_information_id = paymentInfo.id;
+
         const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
         createdId = itemPriceModel.Id;
 
@@ -145,7 +202,9 @@ describe('ItemPrice', () => {
     });
 
     test('Should update the item price', async () => {
-        testDataUpdated['payment_information_id'] = 0;
+        testDataUpdated.payment_information_id = paymentInfo.id;
+        // log.debug('testDataUpdated update = ' + JSON.stringify(testDataUpdated));
+
         const itemPriceModel: ItemPrice = await itemPriceService.update(createdId, testDataUpdated);
         const result = itemPriceModel.toJSON();
 
@@ -165,4 +224,71 @@ describe('ItemPrice', () => {
         );
     });
 
+    test('Should create a new item price missing shipping price', async () => {
+        const shippingPrice = testData.shippingPrice;
+        delete testData.shippingPrice;
+
+        const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
+        createdId = itemPriceModel.Id;
+
+        testData.shippingPrice = shippingPrice;
+
+        const result = itemPriceModel.toJSON();
+
+        expect(result.currency).toBe(testData.currency);
+        expect(result.basePrice).toBe(testData.basePrice);
+        expect(result.CryptocurrencyAddress.type).toBe(testData.cryptocurrencyAddress.type);
+        expect(result.CryptocurrencyAddress.address).toBe(testData.cryptocurrencyAddress.address);
+
+        await itemPriceService.destroy(createdId);
+        await itemPriceService.findOne(createdId).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
+    });
+
+    test('Should create a new item price missing cryptocurrency address', async () => {
+        const cryptocurrencyAddress = testData.cryptocurrencyAddress;
+        delete testData.ryptocurrencyAddress;
+
+        const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
+        createdId = itemPriceModel.Id;
+
+        testData.cryptocurrencyAddress = cryptocurrencyAddress;
+
+        const result = itemPriceModel.toJSON();
+
+        expect(result.currency).toBe(testData.currency);
+        expect(result.basePrice).toBe(testData.basePrice);
+        expect(result.ShippingPrice.domestic).toBe(testData.shippingPrice.domestic);
+        expect(result.ShippingPrice.international).toBe(testData.shippingPrice.international);
+
+        await itemPriceService.destroy(createdId);
+        await itemPriceService.findOne(createdId).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
+    });
+
+    test('Should create a new item price missing shipping price and cryptocurrency address', async () => {
+        const cryptocurrencyAddress = testData.cryptocurrencyAddress;
+        delete testData.cryptocurrencyAddress;
+
+        const shippingPrice = testData.shippingPrice;
+        delete testData.shippingPrice;
+
+        const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
+        createdId = itemPriceModel.Id;
+
+        testData.cryptocurrencyAddress = cryptocurrencyAddress;
+        testData.shippingPrice = shippingPrice;
+
+        const result = itemPriceModel.toJSON();
+
+        expect(result.currency).toBe(testData.currency);
+        expect(result.basePrice).toBe(testData.basePrice);
+
+        await itemPriceService.destroy(createdId);
+        await itemPriceService.findOne(createdId).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
+    });
 });

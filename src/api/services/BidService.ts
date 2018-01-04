@@ -51,14 +51,13 @@ export class BidService {
         return this.bidRepo.search(options, withRelated);
     }
 
-
     @validate()
     public async getLatestBid(listingItemId: number): Promise<Bid> {
         return await this.bidRepo.getLatestBid(listingItemId);
     }
 
     @validate()
-    public async create( @request(BidCreateRequest) body: any): Promise<Bid> {
+    public async create( @request(BidCreateRequest) body: BidCreateRequest): Promise<Bid> {
 
         // TODO: extract and remove related models from request
         const bidData = body.bidData || [];
@@ -79,14 +78,13 @@ export class BidService {
     }
 
     @validate()
-    public async update(id: number, @request(BidUpdateRequest) body: any): Promise<Bid> {
-
+    public async update(id: number, @request(BidUpdateRequest) body: BidUpdateRequest): Promise<Bid> {
         // find the existing one without related
         const bid = await this.findOne(id, false);
 
         // set new values
-        if (BidMessageType[body.action]) {
-            bid.Action = BidMessageType[body.action];
+        if (body.action) {
+            bid.Action = body.action;
         }
 
         // update bid record

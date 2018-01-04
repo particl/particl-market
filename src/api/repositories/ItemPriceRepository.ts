@@ -32,6 +32,7 @@ export class ItemPriceRepository {
             const itemPriceCreated = await itemPrice.save();
             return this.ItemPriceModel.fetchById(itemPriceCreated.id);
         } catch (error) {
+            this.log.error(error);
             throw new DatabaseException('Could not create the itemPrice!', error);
         }
     }
