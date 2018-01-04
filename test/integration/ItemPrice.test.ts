@@ -123,31 +123,31 @@ describe('ItemPrice', () => {
 
     test('Should throw ValidationException because there is no currency', async () => {
         expect.assertions(1);
-        testData['payment_information_id'] = paymentInfo.id;
-        const currency = testData['currency'];
-        delete testData['currency'];
+        testData.payment_information_id = paymentInfo.id;
+        const currency = testData.currency;
+        delete testData.currency;
         await itemPriceService.create(testData).catch(e => {
-            testData['currency'] = currency;
+            testData.currency = currency;
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
         }).then(res => {
-            testData['currency'] = currency;
+            testData.currency = currency;
         });
     });
 
     test('Should throw ValidationException because there is no basePrice', async () => {
         expect.assertions(1);
-        const basePrice = testData['basePrice'];
-        delete testData['basePrice'];
+        const basePrice = testData.basePrice;
+        delete testData.basePrice;
         await itemPriceService.create(testData).catch(e => {
-            testData['basePrice'] = basePrice;
+            testData.basePrice = basePrice;
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
         }).then(res => {
-            testData['basePrice'] = basePrice;
+            testData.basePrice = basePrice;
         });
     });
 
     test('Should create a new item price', async () => {
-        testData['payment_information_id'] = paymentInfo.id;
+        testData.payment_information_id = paymentInfo.id;
 
         const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
         createdId = itemPriceModel.Id;
@@ -202,7 +202,7 @@ describe('ItemPrice', () => {
     });
 
     test('Should update the item price', async () => {
-        testDataUpdated['payment_information_id'] = paymentInfo.id;
+        testDataUpdated.payment_information_id = paymentInfo.id;
         // log.debug('testDataUpdated update = ' + JSON.stringify(testDataUpdated));
 
         const itemPriceModel: ItemPrice = await itemPriceService.update(createdId, testDataUpdated);
@@ -225,13 +225,13 @@ describe('ItemPrice', () => {
     });
 
     test('Should create a new item price missing shipping price', async () => {
-        const shippingPrice = testData['shippingPrice'];
-        delete testData['shippingPrice'];
+        const shippingPrice = testData.shippingPrice;
+        delete testData.shippingPrice;
 
         const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
         createdId = itemPriceModel.Id;
 
-        testData['shippingPrice'] = shippingPrice;
+        testData.shippingPrice = shippingPrice;
 
         const result = itemPriceModel.toJSON();
 
@@ -247,13 +247,13 @@ describe('ItemPrice', () => {
     });
 
     test('Should create a new item price missing cryptocurrency address', async () => {
-        const cryptocurrencyAddress = testData['cryptocurrencyAddress'];
-        delete testData['cryptocurrencyAddress'];
+        const cryptocurrencyAddress = testData.cryptocurrencyAddress;
+        delete testData.ryptocurrencyAddress;
 
         const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
         createdId = itemPriceModel.Id;
 
-        testData['cryptocurrencyAddress'] = cryptocurrencyAddress;
+        testData.cryptocurrencyAddress = cryptocurrencyAddress;
 
         const result = itemPriceModel.toJSON();
 
@@ -269,17 +269,17 @@ describe('ItemPrice', () => {
     });
 
     test('Should create a new item price missing shipping price and cryptocurrency address', async () => {
-        const cryptocurrencyAddress = testData['cryptocurrencyAddress'];
-        delete testData['cryptocurrencyAddress'];
+        const cryptocurrencyAddress = testData.cryptocurrencyAddress;
+        delete testData.cryptocurrencyAddress;
 
-        const shippingPrice = testData['shippingPrice'];
-        delete testData['shippingPrice'];
+        const shippingPrice = testData.shippingPrice;
+        delete testData.shippingPrice;
 
         const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
         createdId = itemPriceModel.Id;
 
-        testData['cryptocurrencyAddress'] = cryptocurrencyAddress;
-        testData['shippingPrice'] = shippingPrice;
+        testData.cryptocurrencyAddress = cryptocurrencyAddress;
+        testData.shippingPrice = shippingPrice;
 
         const result = itemPriceModel.toJSON();
 
