@@ -36,7 +36,7 @@ export class EscrowRatioService {
     }
 
     @validate()
-    public async create( @request(EscrowRatioCreateRequest) body: any): Promise<EscrowRatio> {
+    public async create( @request(EscrowRatioCreateRequest) body: EscrowRatioCreateRequest): Promise<EscrowRatio> {
 
         // If the request body was valid we will create the escrowRatio
         const escrowRatio = await this.escrowRatioRepo.create(body);
@@ -47,7 +47,7 @@ export class EscrowRatioService {
     }
 
     @validate()
-    public async update(id: number, @request(EscrowRatioUpdateRequest) body: any): Promise<EscrowRatio> {
+    public async update(id: number, @request(EscrowRatioUpdateRequest) body: EscrowRatioUpdateRequest): Promise<EscrowRatio> {
 
         // find the existing one without related
         const escrowRatio = await this.findOne(id, false);
@@ -64,35 +64,4 @@ export class EscrowRatioService {
     public async destroy(id: number): Promise<void> {
         await this.escrowRatioRepo.destroy(id);
     }
-
-    // TODO: REMOVE
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<EscrowRatio>> {
-        return this.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<EscrowRatio> {
-        return this.findOne(data.params[0]);
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<EscrowRatio> {
-        return this.create({
-            data: data.params[0] // TODO: convert your params to EscrowRatioCreateRequest
-        });
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<EscrowRatio> {
-        return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to EscrowRatioUpdateRequest
-        });
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
-    }
-
 }
