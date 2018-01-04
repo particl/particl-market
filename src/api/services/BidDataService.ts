@@ -35,7 +35,7 @@ export class BidDataService {
     }
 
     @validate()
-    public async create( @request(BidDataCreateRequest) body: any): Promise<BidData> {
+    public async create( @request(BidDataCreateRequest) body: BidDataCreateRequest): Promise<BidData> {
 
         // TODO: extract and remove related models from request
         // const bidDataRelated = body.related;
@@ -54,7 +54,7 @@ export class BidDataService {
     }
 
     @validate()
-    public async update(id: number, @request(BidDataUpdateRequest) body: any): Promise<BidData> {
+    public async update(id: number, @request(BidDataUpdateRequest) body: BidDataUpdateRequest): Promise<BidData> {
 
         // find the existing one without related
         const bidData = await this.findOne(id, false);
