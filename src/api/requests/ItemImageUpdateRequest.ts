@@ -10,5 +10,7 @@ export class ItemImageUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public hash: string;
 
+    public data: any;
+
 }
 // tslint:enable:variable-name
