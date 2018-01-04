@@ -5,6 +5,7 @@ import { BidMessageType } from '../enums/BidMessageType';
 export class BidMessage implements ActionMessageInterface {
 
     @IsNotEmpty()
+    @IsEnum(BidMessageType)
     public action: BidMessageType;
 
     @IsNotEmpty()
