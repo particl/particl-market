@@ -82,7 +82,7 @@ export class ItemLocationService {
         if (!_.isEmpty(locationMarker) && !_.isEmpty(existingLocationMarker)) {
             // we have new locationMarker and existingLocationMarker -> update with new data
             locationMarker.item_location_id = id;
-            await this.locationMarkerService.update(existingLocationMarker.Id, locationMarker);
+            await this.locationMarkerService.update(existingLocationMarker.id, locationMarker);
 
         } else if (!_.isEmpty(locationMarker) && _.isEmpty(existingLocationMarker)) {
             // we have new locationMarker but no existingLocationMarker -> create new
@@ -90,7 +90,7 @@ export class ItemLocationService {
             await this.locationMarkerService.create(locationMarker);
         } else if (_.isEmpty(locationMarker) && !_.isEmpty(existingLocationMarker)) {
             // we have no new locationMarker and existingLocationMarker -> remove existing
-            await this.locationMarkerService.destroy(existingLocationMarker.Id);
+            await this.locationMarkerService.destroy(existingLocationMarker.id);
         }
 
         // finally find and return the updated itemLocation
