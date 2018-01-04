@@ -1,5 +1,8 @@
 import { BidFactory } from '../../../../src/api/factories/BidFactory';
 import { LogMock } from '../../lib/LogMock';
+import { BidMessageType } from '../../../../src/api/enums/BidMessageType';
+import { BidMessage } from '../../../../src/api/messages/BidMessage';
+import { MessageException } from '../../../../src/api/exceptions/MessageException';
 
 describe('BidFactory', () => {
     // jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -9,81 +12,198 @@ describe('BidFactory', () => {
         bidFactory = new BidFactory(LogMock);
     });
 
-    test('Should convert BidMessage in to bid', () => {
+    // TODO: these tests do not check all the valid state changes yet.
+    // TODO: also they do not take in to account from who the latest bid is from/check if the latestBid was from correct person
 
-        const request = {
-            action: 'MPA_BID',
-            item: 'f08f3d6e',
-            objects: [
-                {
-                    id: 'colour',
-                    value: 'black'
-                }
-            ]
-        };
+    test('Should convert BidMessage, action: MPA_BID to BidCreateRequest', async () => {
 
-        const bid = bidFactory.get(request);
-        expect(res.action).toBe('ACTIVE');
-        expect(res.bidData.length).toBe(1);
-        expect(res.bidData[0].dataId).toBe(req.objects[0].id);
-        expect(res.bidData[0].dataValue).toBe(req.objects[0].value);
+        const listingItemId = 1;
+        const bidMessage = {
+            action: BidMessageType.MPA_BID,
+            listing: 'f08f3d6e',
+            objects: [{
+                id: 'colour',
+                value: 'black'
+            }]
+        } as BidMessage;
+
+        const bidCreateRequest = await bidFactory.getModel(bidMessage, listingItemId);
+
+        expect(bidCreateRequest.action).toBe(bidMessage.action);
+        expect(bidCreateRequest.bidData.length).toBe(1);
+        expect(bidCreateRequest.bidData[0].dataId).toBe(bidMessage.objects[0].id);
+        expect(bidCreateRequest.bidData[0].dataValue).toBe(bidMessage.objects[0].value);
     });
 
-    test('Should return 2 bidData objects for the given bidMessage', () => {
-        req.objects.push({id: 'colour', value: 'red'});
-        const res = bidFactory.get(req);
-        expect(res.action).toBe('ACTIVE');
-        expect(res.bidData.length).toBe(2);
-        expect(res.bidData[1].dataId).toBe(req.objects[1].id);
-        expect(res.bidData[1].dataValue).toBe(req.objects[1].value);
+    test('Should convert BidMessage, action: MPA_BID to BidCreateRequest with 2 bidData objects', async () => {
+        const listingItemId = 1;
+        const bidMessage = {
+            action: BidMessageType.MPA_BID,
+            listing: 'f08f3d6e',
+            objects: [{
+                id: 'colour',
+                value: 'black'
+            }, {
+                id: 'size',
+                value: 'xl'
+            }]
+        } as BidMessage;
+
+        const bidCreateRequest = await bidFactory.getModel(bidMessage, listingItemId);
+        console.log('bidCreateRequest: ', bidCreateRequest);
+        expect(bidCreateRequest.action).toBe(bidMessage.action);
+        expect(bidCreateRequest.bidData.length).toBe(2);
+        expect(bidCreateRequest.bidData[0].dataId).toBe(bidMessage.objects[0].id);
+        expect(bidCreateRequest.bidData[0].dataValue).toBe(bidMessage.objects[0].value);
+        expect(bidCreateRequest.bidData[1].dataId).toBe(bidMessage.objects[1].id);
+        expect(bidCreateRequest.bidData[1].dataValue).toBe(bidMessage.objects[1].value);
     });
 
-    test('Should return blank bidData', () => {
-        req.objects = [];
-        const res = bidFactory.get(req);
-        expect(res.action).toBe('ACTIVE');
-        expect(res.bidData.length).toBe(0);
+    test('Should fail converting BidMessage, action: MPA_BID to BidCreateRequest with undefined listingItemId', async () => {
+
+        expect.assertions(1);
+        const listingItemId: number = undefined;
+        const bidMessage = {
+            action: BidMessageType.MPA_BID,
+            listing: 'f08f3d6e'
+        } as BidMessage;
+
+        await bidFactory.getModel(bidMessage, listingItemId).catch(e =>
+            expect(e).toEqual(new MessageException('Invalid listingItemId.'))
+        );
+
     });
 
-    // from acceptbidfactory
-    test('Should convert the acceptBidMessage to bid', () => {
+    test('Should convert the BidMessage, action: MPA_ACCEPT to BidCreateRequest', async () => {
         const latestBid = {
-            Status: 'ACTIVE'
+            listing_item_id: 1,
+            action: BidMessageType.MPA_BID,
+            bidData: [{
+                dataId: 'colour',
+                dataValue: 'black'
+            }, {
+                dataId: 'size',
+                dataValue: 'xl'
+            }]
         };
+        const listingItemId = 1;
+        const bidMessage = {
+            action: BidMessageType.MPA_ACCEPT,
+            listing: 'f08f3d6e'
+        } as BidMessage;
 
-        const req = {
-            action: 'MPA_ACCEPT',
-            item: 'f08f3d6e'
-        };
-        const res = bidFactory.get(req, 8, latestBid);
-        expect(res.action).toBe('ACCEPTED');
+        const bidCreateRequest = await bidFactory.getModel(bidMessage, listingItemId, latestBid);
+        expect(bidCreateRequest.action).toBe(bidMessage.action);
     });
 
-    // cancelbbidfactory
-    test('Should convert the cancelBidMessage to bid', () => {
+    test('Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_ACCEPT', async () => {
+
+        expect.assertions(3);
+
+        const bidMessage = {
+            action: BidMessageType.MPA_BID,
+            listing: 'f08f3d6e'
+        } as BidMessage;
+
+        const listingItemId = 1;
         const latestBid = {
-            Status: 'ACTIVE'
-        };
-        const req = {
-            action: 'MPA_CANCEL',
-            item: 'f08f3d6e'
+            action: BidMessageType.MPA_ACCEPT
         };
 
-        const res = bidFactory.get(req, 8, latestBid);
-        expect(res.action).toBe('CANCELLED');
+        // bidMessage.action: BidMessageType.MPA_BID
+        // latestBid.action: BidMessageType.MPA_ACCEPT
+        // -> latestBid was allready accepted, cannot bid
+        await bidFactory.getModel(bidMessage, listingItemId, latestBid).catch(e =>
+            expect(e).toEqual(new MessageException('Invalid BidMessageType.'))
+        );
+
+        bidMessage.action = BidMessageType.MPA_REJECT;
+        // bidMessage.action: BidMessageType.MPA_REJECT
+        // latestBid.action: BidMessageType.MPA_ACCEPT
+        // -> latestBid was allready accepted, cannot reject
+        await bidFactory.getModel(bidMessage, listingItemId, latestBid).catch(e =>
+            expect(e).toEqual(new MessageException('Invalid BidMessageType.'))
+        );
+
+        bidMessage.action = BidMessageType.MPA_CANCEL;
+        // bidMessage.action: BidMessageType.MPA_CANCEL
+        // latestBid.action: BidMessageType.MPA_ACCEPT
+        // -> latestBid was allready accepted, cannot cancel
+        await bidFactory.getModel(bidMessage, listingItemId, latestBid).catch(e =>
+            expect(e).toEqual(new MessageException('Invalid BidMessageType.'))
+        );
     });
 
-    // rejectbidfactory
-    test('Should convert the rejectBidMessage to bid', () => {
+    test('Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_CANCEL', async () => {
+
+        expect.assertions(2);
+
+        const bidMessage = {
+            action: BidMessageType.MPA_REJECT,
+            listing: 'f08f3d6e'
+        } as BidMessage;
+
+        const listingItemId = 1;
         const latestBid = {
-            Status: 'ACTIVE'
+            action: BidMessageType.MPA_CANCEL
         };
-        const req = {
-            action: 'MPA_REJECT',
-            item: 'f08f3d6e'
-        };
-        const res = bidFactory.get(req, 8, latestBid);
-        expect(res.action).toBe('REJECTED');
+
+        // latestBid.action: BidMessageType.MPA_CANCEL
+        // bidMessage.action: BidMessageType.MPA_REJECT
+        // -> latestBid was cancelled, cannot reject
+        await bidFactory.getModel(bidMessage, listingItemId, latestBid).catch(e =>
+            expect(e).toEqual(new MessageException('Invalid BidMessageType.'))
+        );
+
+        bidMessage.action = BidMessageType.MPA_ACCEPT;
+        // latestBid.action: BidMessageType.MPA_CANCEL
+        // bidMessage.action: BidMessageType.MPA_ACCEPT
+        // -> latestBid was cancelled, cannot accept
+        await bidFactory.getModel(bidMessage, listingItemId, latestBid).catch(e =>
+            expect(e).toEqual(new MessageException('Invalid BidMessageType.'))
+        );
+
     });
+
+    test('Should fail converting BidMessage to BidCreateRequest, latestBid has action: MPA_REJECT', async () => {
+
+        expect.assertions(3);
+
+        const bidMessage = {
+            action: BidMessageType.MPA_CANCEL,
+            listing: 'f08f3d6e'
+        } as BidMessage;
+
+        const listingItemId = 1;
+        const latestBid = {
+            action: BidMessageType.MPA_REJECT
+        };
+
+        // latestBid.action: BidMessageType.MPA_REJECT
+        // bidMessage.action: BidMessageType.MPA_CANCEL
+        // -> latestBid was rejected, cannot cancel
+        await bidFactory.getModel(bidMessage, listingItemId, latestBid).catch(e =>
+            expect(e).toEqual(new MessageException('Invalid BidMessageType.'))
+        );
+
+        bidMessage.action = BidMessageType.MPA_ACCEPT;
+        // latestBid.action: BidMessageType.MPA_REJECT
+        // bidMessage.action: BidMessageType.MPA_ACCEPT
+        // -> latestBid was rejected, cannot accept
+        await bidFactory.getModel(bidMessage, listingItemId, latestBid).catch(e =>
+            expect(e).toEqual(new MessageException('Invalid BidMessageType.'))
+        );
+
+        bidMessage.action = BidMessageType.MPA_REJECT;
+        // latestBid.action: BidMessageType.MPA_REJECT
+        // bidMessage.action: BidMessageType.MPA_REJECT
+        // -> latestBid was rejected, cannot reject
+        await bidFactory.getModel(bidMessage, listingItemId, latestBid).catch(e =>
+            expect(e).toEqual(new MessageException('Invalid BidMessageType.'))
+        );
+
+    });
+
+
 });
 
