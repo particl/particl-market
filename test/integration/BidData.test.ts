@@ -40,14 +40,15 @@ describe('BidData', () => {
     let createdBid;
 
     const testData = {
+        bid_id: null,
         data_id: 'color',
         data_value: 'black'
-    };
+    } as BidDataCreateRequest;
 
     const testDataUpdated = {
         data_id: 'color',
         data_value: 'black'
-    };
+    } as BidDataUpdateRequest;
 
     const listingItemTestData = {
         market_id: null,
@@ -76,7 +77,7 @@ describe('BidData', () => {
         // get default market
         let defaultMarket = await marketService.getDefault();
         defaultMarket = defaultMarket.toJSON();
-        listingItemTestData['market_id'] = defaultMarket.id;
+        listingItemTestData.market_id = defaultMarket.id;
         // create listing item
         createdListingItem = await testDataService.create<ListingItem>({
             model: 'listingitem',
@@ -85,7 +86,7 @@ describe('BidData', () => {
         } as TestDataCreateRequest);
 
         // create bid
-        testBidData['listing_item_id'] = createdListingItem.id;
+        testBidData.listing_item_id = createdListingItem.id;
         createdBid = await testDataService.create<ListingItem>({
             model: 'bid',
             data: testBidData as any,
@@ -99,13 +100,15 @@ describe('BidData', () => {
 
     test('Should throw ValidationException because there is no bid_id', async () => {
         expect.assertions(1);
-        await bidDataService.create({data_id: 'color', data_value: 'black'} as  any).catch(e =>
+        await bidDataService.create({data_id: 'color', data_value: 'black'} as  BidDataCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should create a new bid data', async () => {
-        testData['bid_id'] = createdBid.id;
+        // set bid id
+        testData.bid_id = createdBid.id;
+
         const bidDataModel: BidData = await bidDataService.create(testData as BidDataCreateRequest);
         createdId = bidDataModel.Id;
         const result = bidDataModel.toJSON();
@@ -116,7 +119,7 @@ describe('BidData', () => {
 
     test('Should throw ValidationException because we want to create a empty bid data', async () => {
         expect.assertions(1);
-        await bidDataService.create({} as any).catch(e =>
+        await bidDataService.create({} as BidDataCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -125,7 +128,6 @@ describe('BidData', () => {
         const bidDataCollection = await bidDataService.findAll();
         const bidData = bidDataCollection.toJSON();
         expect(bidData.length).toBe(1);
-
         const result = bidData[0];
 
         // test the values
@@ -144,14 +146,14 @@ describe('BidData', () => {
 
     test('Should throw ValidationException because we want to update with out bid_id', async () => {
         expect.assertions(1);
-        await bidDataService.update(createdId, testDataUpdated as any).catch(e =>
+        await bidDataService.update(createdId, testDataUpdated as BidDataUpdateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should update the bid data', async () => {
-        testDataUpdated['bid_id'] = createdBid.id;
-        const bidDataModel: BidData = await bidDataService.update(createdId, testDataUpdated);
+        testDataUpdated.bid_id = createdBid.id;
+        const bidDataModel: BidData = await bidDataService.update(createdId, testDataUpdated as BidDataUpdateRequest);
         const result = bidDataModel.toJSON();
 
         // test the values
