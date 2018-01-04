@@ -38,7 +38,7 @@ export class ItemImageService {
     }
 
     @validate()
-    public async create( @request(ItemImageCreateRequest) data: any): Promise<ItemImage> {
+    public async create( @request(ItemImageCreateRequest) data: ItemImageCreateRequest): Promise<ItemImage> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -59,7 +59,7 @@ export class ItemImageService {
     }
 
     @validate()
-    public async update(id: number, @request(ItemImageUpdateRequest) data: any): Promise<ItemImage> {
+    public async update(id: number, @request(ItemImageUpdateRequest) data: ItemImageUpdateRequest): Promise<ItemImage> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -111,7 +111,7 @@ export class ItemImageService {
                 encoding: data.params[3] || '',
                 data: data.params[4] || ''
             }
-        });
+        } as ItemImageCreateRequest);
     }
 
     @validate()
@@ -124,7 +124,7 @@ export class ItemImageService {
                 encoding: data.params[4] || '',
                 data: data.params[5] || ''
             }
-        });
+        } as ItemImageUpdateRequest);
     }
 
     @validate()
