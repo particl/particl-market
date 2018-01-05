@@ -12,12 +12,8 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { FavoriteItem } from '../../src/api/models/FavoriteItem';
-import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-
+import { ListingItem } from '../../src/api/models/ListingItem';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { Currency } from '../../src/api/enums/Currency';
 
 import { FavoriteItemCreateRequest } from '../../src/api/requests/FavoriteItemCreateRequest';
 import { FavoriteItemUpdateRequest } from '../../src/api/requests/FavoriteItemUpdateRequest';
@@ -60,7 +56,7 @@ describe('FavoriteItem', () => {
         // listing-item
         defaultProfile = await profileService.getDefault();
         const defaultMarket = await marketService.getDefault();
-        createdListingItem = await testDataService.create<ListingItemTemplate>({
+        createdListingItem = await testDataService.create<ListingItem>({
             model: 'listingitem',
             data: {
                 market_id: defaultMarket.Id,
