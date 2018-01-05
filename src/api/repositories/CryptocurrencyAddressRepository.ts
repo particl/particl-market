@@ -59,7 +59,7 @@ export class CryptocurrencyAddressRepository {
             await cryptocurrencyAddress.destroy();
             return;
         } catch (error) {
-            this.log.error('CryptocurrencyAddressRepository.destroy():100: ' + error);
+            this.log.error(error);
             throw new DatabaseException('Could not delete the cryptocurrencyAddress!', error);
         }
     }

@@ -8,6 +8,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemImage } from '../../models/ItemImage';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as crypto from 'crypto-js';
+import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
 
 export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
 
@@ -53,7 +54,7 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
                 encoding: data.params[3] || '',
                 data: data.params[4] || ''
             }
-        });
+        } as ItemImageCreateRequest);
     }
 
     public help(): string {
