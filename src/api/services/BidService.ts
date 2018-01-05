@@ -11,7 +11,7 @@ import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { BidMessageType } from '../enums/BidMessageType';
 import { BidDataService } from './BidDataService';
-import {ValidationException} from "../exceptions/ValidationException";
+import { ValidationException } from '../exceptions/ValidationException';
 
 
 export class BidService {

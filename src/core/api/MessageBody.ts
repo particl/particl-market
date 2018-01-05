@@ -11,34 +11,7 @@
  */
 
 import 'reflect-metadata';
-import { validate } from 'class-validator';
-import { ValidationException } from '../../api/exceptions/ValidationException';
+import { RequestBody } from './RequestBody';
 
-
-export class MessageBody {
-
-    /**
-     * Creates an instance of MessageBody and if a input is given
-     * we store the values into the correct property
-     */
-    constructor(input?: any) {
-        if (input) {
-            const keys = Object.keys(input);
-            keys.forEach((key) => {
-                this[key] = input[key];
-            });
-        }
-    }
-
-    /**
-     * Validates the body on the basis of the validator-annotations
-     */
-    public async validate(skipMissingProperties: boolean = false): Promise<void> {
-        const errors = await validate(this, { skipMissingProperties });
-        if (errors && errors.length > 0) {
-            throw new ValidationException('Message body is not valid', errors);
-        }
-        return;
-    }
-
+export class MessageBody extends RequestBody {
 }
