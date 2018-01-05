@@ -37,9 +37,7 @@ export class BidDataService {
     @validate()
     public async create( @request(BidDataCreateRequest) body: BidDataCreateRequest): Promise<BidData> {
 
-        // TODO: extract and remove related models from request
-        // const bidDataRelated = body.related;
-        // delete body.related;
+        console.log('body', body);
 
         // If the request body was valid we will create the bidData
         const bidData = await this.bidDataRepo.create(body);

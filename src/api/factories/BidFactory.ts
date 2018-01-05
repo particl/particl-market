@@ -28,6 +28,10 @@ export class BidFactory {
      */
     public async getModel(bidMessage: BidMessage, listingItemId: number, latestBid?: resources.Bid): Promise<BidCreateRequest> {
 
+        if (!listingItemId) {
+            throw new MessageException('Invalid listingItemId.');
+        }
+
         // check that the bidAction is valid, throw if not
         if (this.checkBidMessageActionValidity(bidMessage, latestBid)) {
 

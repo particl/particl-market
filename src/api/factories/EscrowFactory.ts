@@ -147,10 +147,11 @@ export class EscrowFactory {
      * @returns {boolean}
      */
     private checkEscrowActionValidity(escrowAction: EscrowMessageType, escrow?: resources.Escrow): boolean {
-        const isValid = true;
+        let isValid = true;
         // TODO: implement
         if (!isValid) {
-            throw new MessageException('Action is not valid for the Escrow');
+            isValid = false;
+            // throw new MessageException('Action is not valid for the Escrow');
         }
         return isValid;
     }
