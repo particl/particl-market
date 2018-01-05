@@ -6,9 +6,9 @@ export class BidDataCreateRequest extends RequestBody {
   @IsNotEmpty()
   public bid_id: number;
 
-  public data_id: string;
+  public dataId: string;
 
-  public data_value: string;
+  public dataValue: string;
 
 }
 // tslint:enable:variable-name
