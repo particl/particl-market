@@ -11,6 +11,7 @@ import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { BidMessageType } from '../enums/BidMessageType';
 import { BidDataService } from './BidDataService';
+import {ValidationException} from "../exceptions/ValidationException";
 
 
 export class BidService {
@@ -57,28 +58,36 @@ export class BidService {
     }
 
     @validate()
-    public async create( @request(BidCreateRequest) body: BidCreateRequest): Promise<Bid> {
+    public async create( @request(BidCreateRequest) data: BidCreateRequest): Promise<Bid> {
 
-        // TODO: extract and remove related models from request
-        const bidData = body.bidData || [];
+        const body = JSON.parse(JSON.stringify(data));
+
+        // bid needs to be related to listing item
+        if (body.listing_item_id == null) {
+            throw new ValidationException('Request body is not valid', ['listing_item_id missing']);
+        }
+
+        const bidData = body.bidData;
         delete body.bidData;
 
+        this.log.debug('body: ', body);
         // If the request body was valid we will create the bid
         const bid = await this.bidRepo.create(body);
 
-        // TODO: create related models
-        for (const data of bidData) {
-            data.bid_id = bid.Id;
-            await this.bidDataService.create(data);
+        for (const dataToSave of bidData) {
+            dataToSave.bid_id = bid.Id;
+            this.log.debug('dataToSave: ', dataToSave);
+            await this.bidDataService.create(dataToSave);
         }
 
         // finally find and return the created bid
-        const newBid = await this.findOne(bid.id);
+        const newBid = await this.findOne(bid.Id);
         return newBid;
     }
 
     @validate()
     public async update(id: number, @request(BidUpdateRequest) body: BidUpdateRequest): Promise<Bid> {
+        // TODO: this doesnt work, FIX
         // find the existing one without related
         const bid = await this.findOne(id, false);
 
@@ -91,7 +100,6 @@ export class BidService {
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());
 
         // TODO: find related record and update it
-
         // TODO: finally find and return the updated bid
         // const newBid = await this.findOne(id);
         // return newBid;

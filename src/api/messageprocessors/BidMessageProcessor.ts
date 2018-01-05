@@ -1,5 +1,5 @@
 import { inject, named } from 'inversify';
-import { validate } from '../../core/api/Validate';
+import {message, validate} from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
@@ -33,14 +33,18 @@ export class BidMessageProcessor implements MessageProcessorInterface {
      * @returns {Promise<Bid>}
      */
     @validate()
-    public async process(message: BidMessage ): Promise<Bid> {
+    public async process(@message(BidMessage) data: BidMessage): Promise<Bid> {
 
         // find listingItem by hash, the service will throw Exception if not
-        const listingItemModel = await this.listingItemService.findOneByHash(message.listing);
+        const listingItemModel = await this.listingItemService.findOneByHash(data.listing);
         const listingItem = listingItemModel.toJSON();
 
+        this.log.debug('process, listingItem: ', listingItem);
+
         // get the BidCreateRequest and create the bid
-        const bidCreateRequest = await this.bidFactory.getModel(message, listingItem.id);
+        const bidCreateRequest = await this.bidFactory.getModel(data, listingItem.id);
+        this.log.debug('process, bidCreateRequest: ', bidCreateRequest);
+
         return await this.bidService.create(bidCreateRequest);
     }
 }

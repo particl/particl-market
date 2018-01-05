@@ -1,8 +1,9 @@
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { ActionMessageInterface } from './ActionMessageInterface';
 import { BidMessageType } from '../enums/BidMessageType';
+import { MessageBody } from '../../core/api/MessageBody';
 
-export class BidMessage implements ActionMessageInterface {
+export class BidMessage extends MessageBody implements ActionMessageInterface {
 
     @IsNotEmpty()
     @IsEnum(BidMessageType)
@@ -13,9 +14,5 @@ export class BidMessage implements ActionMessageInterface {
 
     // todo: objects
     public objects?: any;
-
-    constructor() {
-        //
-    }
 
 }
