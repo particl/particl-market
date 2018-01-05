@@ -5,6 +5,7 @@ import { BidMessageType } from '../enums/BidMessageType';
 // tslint:disable:variable-name
 export class BidSearchParams extends RequestBody {
 
+    @IsEnum(BidMessageType)
     public action: BidMessageType;
 
     public listingItemId: number;

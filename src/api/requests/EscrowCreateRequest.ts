@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { EscrowType } from '../enums/EscrowType';
 
@@ -8,6 +8,7 @@ export class EscrowCreateRequest extends RequestBody {
     @IsNotEmpty()
     public payment_information_id: number;
 
+    @IsEnum(EscrowType)
     @IsNotEmpty()
     public type: EscrowType;
 

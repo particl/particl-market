@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { PaymentType } from '../../api/enums/PaymentType';
 
@@ -8,6 +8,7 @@ export class PaymentInformationUpdateRequest extends RequestBody {
     public listing_item_id: number;
     public listing_item_template_id: number;
 
+    @IsEnum(PaymentType)
     @IsNotEmpty()
     public type: PaymentType;
 
