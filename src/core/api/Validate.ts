@@ -16,7 +16,7 @@ import { MessageBody } from './MessageBody';
 const requestMetadataKey = Symbol('ValidateRequest');
 
 interface RequestParameter {
-    request: typeof RequestBody | MessageBody;
+    request: typeof RequestBody;
     index: number;
 }
 
