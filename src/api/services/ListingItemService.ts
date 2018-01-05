@@ -95,11 +95,6 @@ export class ListingItemService {
         const listingItemObjects = body.listingItemObjects || {};
         delete body.listingItemObjects;
 
-        // this.log.debug('itemInformation to save: ', JSON.stringify(itemInformation, null, 2));
-        // this.log.debug('paymentInformation to save: ', JSON.stringify(paymentInformation, null, 2));
-        // this.log.debug('messagingInformation to save: ', JSON.stringify(messagingInformation, null, 2));
-        // this.log.debug('listingItemObjects to save: ', JSON.stringify(listingItemObjects, null, 2));
-
         // If the request body was valid we will create the listingItem
         const listingItem = await this.listingItemRepo.create(body);
 
@@ -162,9 +157,6 @@ export class ListingItemService {
         return await this.findOne(id);
     }
 
-    // public async destroy(id: number): Promise<void> {
-    //     await this.listingItemRepo.destroy(id);
-    // }
     public async destroy(id: number): Promise<void> {
         const item = await this.findOne(id, true);
         if (!item) {
