@@ -402,16 +402,13 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
-
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         const result = listingItemModel.toJSON();
-
         createdId = result.id;
         createdItemInformationId = result.ItemInformation.id;
         createdPaymentInformationId = result.PaymentInformation.id;
 
-        log.debug('defaultMarket: ', defaultMarket);
+        // log.debug('defaultMarket: ', defaultMarket);
         expect(result.hash).toBe(testData.hash);
         expect(result.Market.name).toBe(defaultMarket.Name);
         expect(result.Market.address).toBe(defaultMarket.Address);
@@ -441,13 +438,10 @@ describe('ListingItem', () => {
         expect(resItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
         expect(resItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
         expect(resItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
-        expect(resItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
-        expect(resItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testData.paymentInformation.itemPrice.cryptocurrencyAddress.type);
+        expect(resItemPrice.CryptocurrencyAddress.address).toBe(testData.paymentInformation.itemPrice.cryptocurrencyAddress.address);
         expect(result.PaymentInformation.listingItemTemplateId).toBe(null);
 
-        expect(result.MessagingInformation[0].protocol).toBe(testData.messagingInformation[0].protocol);
-        expect(result.MessagingInformation[0].publicKey).toBe(testData.messagingInformation[0].publicKey);
-        expect(result.MessagingInformation[0].listingItemTemplateId).toBe(null);
 
     });
 
@@ -481,7 +475,6 @@ describe('ListingItem', () => {
         // remove the stuff that we dont need in this test
         delete testDataToSave.listingItemObjects;
 
-        // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         const result = listingItemModel.toJSON();
@@ -520,8 +513,8 @@ describe('ListingItem', () => {
         expect(resItemPrice.basePrice).toBe(testData.paymentInformation.itemPrice.basePrice);
         expect(resItemPrice.ShippingPrice.domestic).toBe(testData.paymentInformation.itemPrice.shippingPrice.domestic);
         expect(resItemPrice.ShippingPrice.international).toBe(testData.paymentInformation.itemPrice.shippingPrice.international);
-        expect(resItemPrice.Address.type).toBe(testData.paymentInformation.itemPrice.address.type);
-        expect(resItemPrice.Address.address).toBe(testData.paymentInformation.itemPrice.address.address);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testData.paymentInformation.itemPrice.cryptocurrencyAddress.type);
+        expect(resItemPrice.CryptocurrencyAddress.address).toBe(testData.paymentInformation.itemPrice.cryptocurrencyAddress.address);
         expect(result.PaymentInformation.listingItemTemplateId).toBe(null);
 
         expect(result.MessagingInformation[0].protocol).toBe(testData.messagingInformation[0].protocol);
