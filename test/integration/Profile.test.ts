@@ -4,18 +4,27 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
+import { MarketService } from '../../src/api/services/MarketService';
+import { ListingItemService } from '../../src/api/services/ListingItemService';
+import { ProfileService } from '../../src/api/services/ProfileService';
+import { AddressService } from '../../src/api/services/AddressService';
+import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
+import { FavoriteItemService } from '../../src/api/services/FavoriteItemService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { Profile } from '../../src/api/models/Profile';
+import { Address } from '../../src/api/models/Address';
+import { ListingItem } from '../../src/api/models/ListingItem';
+import { FavoriteItem } from '../../src/api/models/FavoriteItem';
+
 import { Country } from '../../src/api/enums/Country';
-import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../../src/api/requests/ProfileCreateRequest';
 import { ProfileUpdateRequest } from '../../src/api/requests/ProfileUpdateRequest';
-
-import { ProfileService } from '../../src/api/services/ProfileService';
-import { AddressService } from '../../src/api/services/AddressService';
+import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { FavoriteItemCreateRequest } from '../../src/api/requests/FavoriteItemCreateRequest';
 
 describe('Profile', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -26,8 +35,13 @@ describe('Profile', () => {
     let testDataService: TestDataService;
     let profileService: ProfileService;
     let addressService: AddressService;
+    let cryptocurAddService: CryptocurrencyAddressService;
+    let marketService: MarketService;
+    let listingItemService: ListingItemService;
+    let favoriteItemService: FavoriteItemService;
 
     let createdId;
+    let createdListingItem;
 
     const testData = {
         name: 'DEFAULT1',
@@ -44,7 +58,7 @@ describe('Profile', () => {
             addressLine2: 'ADD 222',
             city: 'city',
             country: Country.FINLAND
-        }]
+        }] as any
     } as ProfileCreateRequest;
 
     const testDataUpdated = {
@@ -58,24 +72,30 @@ describe('Profile', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
         addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
+        cryptocurAddService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.CryptocurrencyAddressService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        favoriteItemService = app.IoC.getNamed<FavoriteItemService>(Types.Service, Targets.Service.FavoriteItemService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([], false);
+        await testDataService.clean([]);
+
+        // create market
+        let defaultMarket = await marketService.getDefault();
+        defaultMarket = defaultMarket.toJSON();
+
+        createdListingItem = await testDataService.create<ListingItem>({
+            model: 'listingitem',
+            data: {
+                market_id: defaultMarket.id,
+                hash: 'itemhash'
+            } as any,
+            withRelated: true
+        } as TestDataCreateRequest);
     });
 
     afterAll(async () => {
         //
-    });
-
-    test('Should create a new profile with just delivery addresses', async () => {
-        const profileModel: Profile = await profileService.create(testData);
-        createdId = profileModel.Id;
-
-        const result = profileModel.toJSON();
-
-        expect(result.name).toBe(testData.name);
-        expect(result.address).toBe(testData.address);
-        expect(result.ShippingAddresses).toHaveLength(2);
     });
 
     test('Should throw ValidationException because we want to create a empty profile', async () => {
@@ -92,12 +112,23 @@ describe('Profile', () => {
         );
     });
 
+    test('Should create a new profile with just delivery addresses', async () => {
+        const profileModel: Profile = await profileService.create(testData);
+        createdId = profileModel.Id;
+
+        const result = profileModel.toJSON();
+
+        expect(result.name).toBe(testData.name);
+        expect(result.address).toBe(testData.address);
+        expect(result.ShippingAddresses).toHaveLength(2);
+    });
+
     test('Should list profiles with our new create one', async () => {
         const profileCollection = await profileService.findAll();
         const profiles = profileCollection.toJSON();
-        expect(profiles.length).toBe(1);
+        expect(profiles.length).toBe(2); // including default one
 
-        const result = profiles[0];
+        const result = profiles[1];
 
         expect(result.name).toBe(testData.name);
         expect(result.address).toBe(testData.address);
@@ -124,17 +155,18 @@ describe('Profile', () => {
 
         expect(result.name).toBe(testDataUpdated.name);
         expect(result.address).toBe(testDataUpdated.address);
-        // expect(result.ShippingAddresses).toHaveLength(3);
+        expect(result.ShippingAddresses).toHaveLength(2);
     });
 
     test('Should delete the profile', async () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         const profileModel: Profile = await profileService.findOne(createdId);
         const result = profileModel.toJSON();
         expect(result.ShippingAddresses).toHaveLength(2);
 
         const addressId1 = result.ShippingAddresses[0].id;
+        const addressId2 = result.ShippingAddresses[1].id;
 
         await profileService.destroy(createdId);
         await profileService.findOne(createdId).catch(e => {
@@ -142,8 +174,11 @@ describe('Profile', () => {
         });
 
         // make sure addresses were also deleted
-        await profileService.findOne(addressId1).catch(e => {
+        await addressService.findOne(addressId1).catch(e => {
             expect(e).toEqual(new NotFoundException(addressId1));
+        });
+        await addressService.findOne(addressId2).catch(e => {
+            expect(e).toEqual(new NotFoundException(addressId2));
         });
     });
 
@@ -156,8 +191,9 @@ describe('Profile', () => {
         } as TestDataGenerateRequest);
 
         const profileModel = profiles[0];
+        // expect(profileModel).toBe(1);
         const result = profileModel.toJSON();
-        log.debug('result: ', JSON.stringify(result, null, 2));
+        // expect(result.id).toBe(1);
 
         expect(result.name.substring(0, 5)).toBe('TEST-');
         expect(result.address).toBeDefined();
@@ -165,12 +201,69 @@ describe('Profile', () => {
         expect(result.CryptocurrencyAddresses).not.toHaveLength(0);
         expect(result.FavoriteItems).toHaveLength(0);
 
+        await profileService.destroy(result.id);
+        await profileService.findOne(result.id).catch(e => {
+            expect(e).toEqual(new NotFoundException(result.id));
+        });
+
+        const firstAddressId = result.ShippingAddresses[0].id;
+        // make sure addresses were also deleted
+        await addressService.findOne(firstAddressId).catch(e => {
+            expect(e).toEqual(new NotFoundException(firstAddressId));
+        });
+        const firstCryptoCurrAddId = result.CryptocurrencyAddresses[0].id;
+        // make sure addresses were also deleted
+        await cryptocurAddService.findOne(firstCryptoCurrAddId).catch(e => {
+            expect(e).toEqual(new NotFoundException(firstCryptoCurrAddId));
+        });
+
     });
 
     test('Should create a new profile with delivery addresses and cryptoaddresses and FavoriteItems', async () => {
+        const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
+            model: 'profile',
+            amount: 1,
+            withRelated: true
+        } as TestDataGenerateRequest);
 
-        // TODO
+        // add fav-item for that profile.
+        const favoriteItemModel: FavoriteItem = await favoriteItemService.create({
+            profile_id: profiles[0].id,
+            listing_item_id: createdListingItem.id
+        } as FavoriteItemCreateRequest);
 
+        // get profile
+        const profileModel: Profile = await profileService.findOne(profiles[0].id);
+        const result = profileModel.toJSON();
+
+        expect(result.name.substring(0, 5)).toBe('TEST-');
+        expect(result.address).toBeDefined();
+        expect(result.ShippingAddresses).not.toHaveLength(0);
+        expect(result.CryptocurrencyAddresses).not.toHaveLength(0);
+        expect(result.FavoriteItems).toHaveLength(1);
+
+        await profileService.destroy(result.id);
+        await profileService.findOne(result.id).catch(e => {
+            expect(e).toEqual(new NotFoundException(result.id));
+        });
+
+        const firstAddressId = result.ShippingAddresses[0].id;
+        // make sure addresses were also deleted
+        await addressService.findOne(firstAddressId).catch(e => {
+            expect(e).toEqual(new NotFoundException(firstAddressId));
+        });
+
+        const firstCryptoCurrAddId = result.CryptocurrencyAddresses[0].id;
+        // make sure CryptocurAddress were also deleted
+        await cryptocurAddService.findOne(firstCryptoCurrAddId).catch(e => {
+            expect(e).toEqual(new NotFoundException(firstCryptoCurrAddId));
+        });
+
+        const favItemId = result.FavoriteItems[0].id;
+        // make sure favItem were also deleted
+        await favoriteItemService.findOne(favItemId).catch(e => {
+            expect(e).toEqual(new NotFoundException(favItemId));
+        });
     });
 
 });
