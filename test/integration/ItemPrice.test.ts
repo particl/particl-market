@@ -5,6 +5,9 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { MarketService } from '../../src/api/services/MarketService';
+import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
+import { EscrowService } from '../../src/api/services/EscrowService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -14,10 +17,9 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 
 import { ItemPriceService } from '../../src/api/services/ItemPriceService';
+import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
 import { ItemPriceCreateRequest } from '../../src/api/requests/ItemPriceCreateRequest';
 import { ItemPriceUpdateRequest } from '../../src/api/requests/ItemPriceUpdateRequest';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
@@ -33,15 +35,19 @@ describe('ItemPrice', () => {
     let itemPriceService: ItemPriceService;
     let profileService: ProfileService;
     let marketService: MarketService;
+    let listingItemTemplateService: ListingItemTemplateService;
+    let paymentInformationService: PaymentInformationService;
+    let escrowService: EscrowService;
 
     let createdId: number;
     let createdListingItemTemplate;
-    let defaultProfile;
-    let defaultMarket;
+    let escrowId;
+    let newcreatedId: number;
 
-    let paymentInfo;
+    let paymentInfoId;
 
     const testData = {
+        payment_information_id: null,
         currency: Currency.BITCOIN,
         basePrice: 0.0001,
         shippingPrice: {
@@ -74,40 +80,34 @@ describe('ItemPrice', () => {
         itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.ItemPriceService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
+        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.EscrowService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
 
-        defaultProfile = await profileService.getDefault();
+        const defaultProfile = await profileService.getDefault();
         createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
             model: 'listingitemtemplate',
             data: {
                 profile_id: defaultProfile.Id,
-                hash: 'itemhash'
-            },
+                hash: 'itemhash',
+                paymentInformation: {
+                    type: PaymentType.FREE,
+                    escrow: {
+                        type: EscrowType.MAD,
+                        ratio: {
+                            buyer: 1,
+                            seller: 1
+                        }
+                    }
+                }
+            } as any,
             withRelated: true
         } as TestDataCreateRequest);
-
-        defaultMarket = await marketService.getDefault();
-        defaultMarket = defaultMarket.toJSON();
-        log.debug('defaultMarket: ', defaultMarket);
-
-        const paymentInfoData = {
-            listing_item_template_id: createdListingItemTemplate.Id,
-            type: PaymentType.FREE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 1,
-                    seller: 1
-                }
-            }
-        } as PaymentInformationCreateRequest;
-        paymentInfo = await testDataService.create({
-            model: 'paymentinfo',
-            data: paymentInfoData,
-            withRelated: true
-        });
+        paymentInfoId = createdListingItemTemplate.toJSON().PaymentInformation.id;
+        escrowId = createdListingItemTemplate.toJSON().PaymentInformation.Escrow.id;
     });
 
     afterAll(async () => {
@@ -123,7 +123,7 @@ describe('ItemPrice', () => {
 
     test('Should throw ValidationException because there is no currency', async () => {
         expect.assertions(1);
-        testData.payment_information_id = paymentInfo.id;
+        testData.payment_information_id = paymentInfoId;
         const currency = testData.currency;
         delete testData.currency;
         await itemPriceService.create(testData).catch(e => {
@@ -147,7 +147,7 @@ describe('ItemPrice', () => {
     });
 
     test('Should create a new item price', async () => {
-        testData.payment_information_id = paymentInfo.id;
+        testData.payment_information_id = paymentInfoId;
 
         const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
         createdId = itemPriceModel.Id;
@@ -164,7 +164,7 @@ describe('ItemPrice', () => {
 
     test('Should throw ValidationException because we want to create a empty item price', async () => {
         expect.assertions(1);
-        await itemPriceService.create({}).catch(e =>
+        await itemPriceService.create({} as ItemPriceCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -202,8 +202,7 @@ describe('ItemPrice', () => {
     });
 
     test('Should update the item price', async () => {
-        testDataUpdated.payment_information_id = paymentInfo.id;
-        // log.debug('testDataUpdated update = ' + JSON.stringify(testDataUpdated));
+        testDataUpdated.payment_information_id = paymentInfoId;
 
         const itemPriceModel: ItemPrice = await itemPriceService.update(createdId, testDataUpdated);
         const result = itemPriceModel.toJSON();
@@ -216,20 +215,12 @@ describe('ItemPrice', () => {
         expect(result.CryptocurrencyAddress.address).toBe(testDataUpdated.cryptocurrencyAddress.address);
     });
 
-    test('Should delete the item price', async () => {
-        expect.assertions(1);
-        await itemPriceService.destroy(createdId);
-        await itemPriceService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
-        );
-    });
-
     test('Should create a new item price missing shipping price', async () => {
         const shippingPrice = testData.shippingPrice;
         delete testData.shippingPrice;
 
         const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
-        createdId = itemPriceModel.Id;
+        newcreatedId = itemPriceModel.Id;
 
         testData.shippingPrice = shippingPrice;
 
@@ -240,18 +231,18 @@ describe('ItemPrice', () => {
         expect(result.CryptocurrencyAddress.type).toBe(testData.cryptocurrencyAddress.type);
         expect(result.CryptocurrencyAddress.address).toBe(testData.cryptocurrencyAddress.address);
 
-        await itemPriceService.destroy(createdId);
-        await itemPriceService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await itemPriceService.destroy(newcreatedId);
+        await itemPriceService.findOne(newcreatedId).catch(e =>
+            expect(e).toEqual(new NotFoundException(newcreatedId))
         );
     });
 
     test('Should create a new item price missing cryptocurrency address', async () => {
         const cryptocurrencyAddress = testData.cryptocurrencyAddress;
-        delete testData.ryptocurrencyAddress;
+        delete testData.cryptocurrencyAddress;
 
         const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
-        createdId = itemPriceModel.Id;
+        newcreatedId = itemPriceModel.Id;
 
         testData.cryptocurrencyAddress = cryptocurrencyAddress;
 
@@ -262,9 +253,9 @@ describe('ItemPrice', () => {
         expect(result.ShippingPrice.domestic).toBe(testData.shippingPrice.domestic);
         expect(result.ShippingPrice.international).toBe(testData.shippingPrice.international);
 
-        await itemPriceService.destroy(createdId);
-        await itemPriceService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await itemPriceService.destroy(newcreatedId);
+        await itemPriceService.findOne(newcreatedId).catch(e =>
+            expect(e).toEqual(new NotFoundException(newcreatedId))
         );
     });
 
@@ -276,7 +267,7 @@ describe('ItemPrice', () => {
         delete testData.shippingPrice;
 
         const itemPriceModel: ItemPrice = await itemPriceService.create(testData);
-        createdId = itemPriceModel.Id;
+        newcreatedId = itemPriceModel.Id;
 
         testData.cryptocurrencyAddress = cryptocurrencyAddress;
         testData.shippingPrice = shippingPrice;
@@ -286,9 +277,33 @@ describe('ItemPrice', () => {
         expect(result.currency).toBe(testData.currency);
         expect(result.basePrice).toBe(testData.basePrice);
 
+        await itemPriceService.destroy(newcreatedId);
+        await itemPriceService.findOne(newcreatedId).catch(e =>
+            expect(e).toEqual(new NotFoundException(newcreatedId))
+        );
+    });
+
+    test('Should delete the item price', async () => {
+        expect.assertions(4);
         await itemPriceService.destroy(createdId);
         await itemPriceService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
+        );
+
+        // delete listing-item-template
+        await listingItemTemplateService.destroy(createdListingItemTemplate.id);
+        await listingItemTemplateService.findOne(createdListingItemTemplate.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdListingItemTemplate.id))
+        );
+
+        // findout payment-information
+        await paymentInformationService.findOne(paymentInfoId).catch(e =>
+            expect(e).toEqual(new NotFoundException(paymentInfoId))
+        );
+
+        // findout Escrown
+        await escrowService.findOne(escrowId).catch(e =>
+            expect(e).toEqual(new NotFoundException(escrowId))
         );
     });
 });

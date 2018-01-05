@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import { Currency } from '../enums/Currency';
 
 // tslint:disable:variable-name
 export class ItemPriceCreateRequest extends RequestBody {
@@ -8,7 +9,7 @@ export class ItemPriceCreateRequest extends RequestBody {
     public payment_information_id: number;
 
     @IsNotEmpty()
-    public currency: string;
+    public currency: Currency;
 
     @IsNotEmpty()
     public basePrice: number;
