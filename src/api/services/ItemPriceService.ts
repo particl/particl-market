@@ -56,20 +56,16 @@ export class ItemPriceService {
         // create related models, cryptocurrencyAddress
         if (!_.isEmpty(cryCurAddress)) {
             if (cryCurAddress.id) {
-                // use existing
-                // this.log.debug('cryptocurrencyAddress exists');
                 body.cryptocurrency_address_id = cryCurAddress.id;
             } else {
-                // new address
-                // this.log.debug('cryptocurrencyAddress does not exist, creating new');
                 const relatedCryAddress = await this.cryptocurrencyAddressService.create(cryCurAddress as CryptocurrencyAddressCreateRequest);
                 body.cryptocurrency_address_id = relatedCryAddress.Id;
             }
         }
 
-        // this.log.debug('creating: ', body);
         // create the itemPrice
         const itemPrice = await this.itemPriceRepo.create(body);
+
         // then create shippingPrice
         if (!_.isEmpty(shippingPrice)) {
             shippingPrice.item_price_id = itemPrice.Id;
@@ -94,7 +90,6 @@ export class ItemPriceService {
         // update itemPrice record
         const updatedItemPrice = await this.itemPriceRepo.update(id, itemPrice.toJSON());
 
-        // ---
         // find related ShippingPrice
         let relatedShippingPrice = updatedItemPrice.related('ShippingPrice').toJSON() || {};
         if (!_.isEmpty(relatedShippingPrice)) {
@@ -108,10 +103,9 @@ export class ItemPriceService {
             await this.shippingpriceService.create(relatedShippingPrice as ShippingPriceCreateRequest);
         }
 
-        // ---
         // find related CryptocurrencyAddress
         let relatedCryptocurrencyAddress = updatedItemPrice.related('CryptocurrencyAddress').toJSON() || {};
-        // let relatedShippingPrice = updatedItemPrice.related('ShippingPrice').toJSON() || {};
+
         if (!_.isEmpty(relatedCryptocurrencyAddress)) {
             const cryptocurrencyAddressId = relatedCryptocurrencyAddress.id;
             relatedCryptocurrencyAddress = body.cryptocurrencyAddress;
@@ -131,8 +125,6 @@ export class ItemPriceService {
 
         const itemPrice = await this.findOne(id);
         const relatedCryptocurrencyAddress = itemPrice.related('CryptocurrencyAddress').toJSON();
-
-        // this.log.debug('relatedCryptocurrencyAddress: ', JSON.stringify(relatedCryptocurrencyAddress, null, 2));
 
         await this.itemPriceRepo.destroy(id);
         if (!_.isEmpty(relatedCryptocurrencyAddress.Profile)) {
