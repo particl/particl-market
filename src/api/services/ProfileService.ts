@@ -10,7 +10,10 @@ import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
 import { ProfileUpdateRequest } from '../requests/ProfileUpdateRequest';
 import { AddressService } from './AddressService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
-
+import { AddressCreateRequest } from '../requests/AddressCreateRequest';
+import { AddressUpdateRequest } from '../requests/AddressUpdateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
+import { CryptocurrencyAddressUpdateRequest } from '../requests/CryptocurrencyAddressUpdateRequest';
 
 export class ProfileService {
 
@@ -69,12 +72,12 @@ export class ProfileService {
         // then create related models
         for (const address of shippingAddresses) {
             address.profile_id = profile.Id;
-            await this.addressService.create(address);
+            await this.addressService.create(address as AddressCreateRequest);
         }
 
         for (const cryptoAddress of cryptocurrencyAddresses) {
             cryptoAddress.profile_id = profile.Id;
-            await this.cryptocurrencyAddressService.create(cryptoAddress);
+            await this.cryptocurrencyAddressService.create(cryptoAddress as CryptocurrencyAddressCreateRequest);
         }
 
         // finally find and return the created profileId
@@ -108,20 +111,20 @@ export class ProfileService {
         // TODO does not remove the ones that exists
         for (const address of shippingAddresses) {
             if (address.profile_id) {
-                await this.addressService.update(address.id, address);
+                await this.addressService.update(address.id, address as AddressUpdateRequest);
             } else {
                 address.profile_id = id;
-                await this.addressService.create(address);
+                await this.addressService.create(address as AddressCreateRequest);
             }
         }
 
         const cryptocurrencyAddresses = body.cryptocurrencyAddresses || [];
         for (const cryptoAddress of cryptocurrencyAddresses) {
             if (cryptoAddress.profile_id) {
-                await this.cryptocurrencyAddressService.update(cryptoAddress.id, cryptoAddress);
+                await this.cryptocurrencyAddressService.update(cryptoAddress.id, cryptoAddress as CryptocurrencyAddressUpdateRequest);
             } else {
                 cryptoAddress.profile_id = id;
-                await this.cryptocurrencyAddressService.create(cryptoAddress);
+                await this.cryptocurrencyAddressService.create(cryptoAddress as CryptocurrencyAddressCreateRequest);
             }
         }
 

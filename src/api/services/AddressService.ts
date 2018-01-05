@@ -34,7 +34,7 @@ export class AddressService {
     }
 
     @validate()
-    public async create( @request(AddressCreateRequest) body: any): Promise<Address> {
+    public async create( @request(AddressCreateRequest) body: AddressCreateRequest): Promise<Address> {
         // TODO: validate that the profile exists
 
         // If the request body was valid we will create the address
@@ -45,7 +45,7 @@ export class AddressService {
     }
 
     @validate()
-    public async update(id: number, @request(AddressUpdateRequest) body: any): Promise<Address> {
+    public async update(id: number, @request(AddressUpdateRequest) body: AddressUpdateRequest): Promise<Address> {
         // TODO: validate that the profile exists
 
         // find the existing one without related
@@ -56,8 +56,6 @@ export class AddressService {
         address.AddressLine2 = body.addressLine2;
         address.City = body.city;
         address.Country = body.country;
-        address.Profile = body.profileId;
-
         // update address record
         const updatedAddress = await this.addressRepo.update(id, address.toJSON());
         return updatedAddress;
