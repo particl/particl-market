@@ -37,7 +37,7 @@ export class ItemImageDataService {
     }
 
     @validate()
-    public async create( @request(ItemImageDataCreateRequest) body: any): Promise<ItemImageData> {
+    public async create( @request(ItemImageDataCreateRequest) body: ItemImageDataCreateRequest): Promise<ItemImageData> {
 
         // todo: could this be annotated in ItemImageDataCreateRequest?
         // todo: improve validation
@@ -53,7 +53,7 @@ export class ItemImageDataService {
     }
 
     @validate()
-    public async update(id: number, @request(ItemImageDataUpdateRequest) body: any): Promise<ItemImageData> {
+    public async update(id: number, @request(ItemImageDataUpdateRequest) body: ItemImageDataCreateRequest): Promise<ItemImageData> {
 
         // todo: could this be annotated in ItemImageDataUpdateRequest?
         // todo: improve validation
@@ -97,7 +97,7 @@ export class ItemImageDataService {
             protocol: data.params[1] || '',
             encoding: data.params[2] || '',
             data: data.params[3] || ''
-        });
+        } as ItemImageDataCreateRequest);
     }
 
     @validate()
@@ -107,7 +107,7 @@ export class ItemImageDataService {
             protocol: data.params[2] || '',
             encoding: data.params[3] || '',
             data: data.params[4] || ''
-        });
+        } as ItemImageDataUpdateRequest);
     }
 
     @validate()
