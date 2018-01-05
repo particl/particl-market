@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { BidMessageType } from '../enums/BidMessageType';
 
@@ -7,6 +7,7 @@ export class BidUpdateRequest extends RequestBody {
   @IsNotEmpty()
   public listing_item_id: number;
 
+  @IsEnum(BidMessageType)
   @IsNotEmpty()
   public action: BidMessageType;
 }
