@@ -41,8 +41,8 @@ describe('BidData', () => {
 
     const testData = {
         bid_id: null,
-        data_id: 'color',
-        data_value: 'black'
+        dataId: 'color',
+        dataValue: 'black'
     } as BidDataCreateRequest;
 
     const testDataUpdated = {
