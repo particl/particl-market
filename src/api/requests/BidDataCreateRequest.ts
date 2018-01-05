@@ -8,10 +8,10 @@ export class BidDataCreateRequest extends RequestBody {
     public bid_id: number;
 
     @IsNotEmpty()
-    public dataId: string;
+    public data_id: string;
 
     @IsNotEmpty()
-    public dataValue: string;
+    public data_value: string;
 
 }
 // tslint:enable:variable-name

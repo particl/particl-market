@@ -42,11 +42,11 @@ describe('Bid', () => {
         action: BidMessageType.MPA_BID,
         listing_item_id: null,
         bidData: [{
-            dataId: 'COLOR',
-            dataValue: 'RED'
+            data_id: 'COLOR',
+            data_value: 'RED'
         }, {
-            dataId: 'COLOR',
-            dataValue: 'GREEN'
+            data_id: 'COLOR',
+            data_value: 'GREEN'
         }]
     } as BidCreateRequest;
 

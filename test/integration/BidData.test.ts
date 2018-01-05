@@ -41,8 +41,8 @@ describe('BidData', () => {
 
     const testData = {
         bid_id: null,
-        dataId: 'color',
-        dataValue: 'black'
+        data_id: 'color',
+        data_value: 'black'
     } as BidDataCreateRequest;
 
     const testDataUpdated = {
@@ -101,7 +101,7 @@ describe('BidData', () => {
     test('Should throw ValidationException because there is no bid_id', async () => {
         expect.assertions(1);
 
-        const bidData = {dataId: 'color', dataCalue: 'black'} as BidDataCreateRequest;
+        const bidData = {data_id: 'color', data_value: 'black'} as BidDataCreateRequest;
         await bidDataService.create(bidData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
