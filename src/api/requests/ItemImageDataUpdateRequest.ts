@@ -1,5 +1,6 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 
 // tslint:disable:variable-name
 export class ItemImageDataUpdateRequest extends RequestBody {
@@ -10,8 +11,8 @@ export class ItemImageDataUpdateRequest extends RequestBody {
     // @IsNotEmpty()
     public dataId: string;
 
-    // @IsNotEmpty()
-    public protocol: string;
+    @IsEnum(ImageDataProtocolType)
+    public protocol: ImageDataProtocolType;
 
     // @IsNotEmpty()
     public encoding: string;
