@@ -10,6 +10,8 @@ export class ListingItemCreateRequest extends RequestBody {
     @IsNotEmpty()
     public market_id: number;
 
+    public listing_item_template_id: number;
+
     public itemInformation;
     public paymentInformation;
     public messagingInformation;
