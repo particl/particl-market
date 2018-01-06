@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { Currency } from '../enums/Currency';
 
@@ -8,6 +8,7 @@ export class ItemPriceUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public payment_information_id: number;
 
+    @IsEnum(Currency)
     @IsNotEmpty()
     public currency: Currency;
 

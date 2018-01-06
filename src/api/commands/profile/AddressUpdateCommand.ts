@@ -6,6 +6,7 @@ import { AddressService } from '../../services/AddressService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { AddressUpdateRequest } from '../../requests/AddressUpdateRequest';
 
 export class AddressUpdateCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
@@ -30,7 +31,7 @@ export class AddressUpdateCommand implements RpcCommandInterface<Address> {
      *  [6]: profileId
      *
      * @param data
-     * @returns {Promise<Profile>}
+     * @returns {Promise<Address>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<Address> {
@@ -41,7 +42,7 @@ export class AddressUpdateCommand implements RpcCommandInterface<Address> {
             city : data.params[4],
             country : data.params[5],
             profile_id : data.params[6]
-        });
+        } as AddressUpdateRequest);
     }
 
     public help(): string {

@@ -9,9 +9,12 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { Country } from '../../src/api/enums/Country';
 import { Address } from '../../src/api/models/Address';
-import { Address } from '../../src/api/models/Profile';
+
+import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
+import { AddressUpdateRequest } from '../../src/api/requests/AddressUpdateRequest';
 
 import { AddressService } from '../../src/api/services/AddressService';
+import { ProfileService } from '../../src/api/services/ProfileService';
 
 describe('Address', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -24,6 +27,7 @@ describe('Address', () => {
     let profileService: ProfileService;
 
     let createdId;
+    let defaultProfileId;
 
     const testData = {
         title: 'Title',
@@ -31,8 +35,8 @@ describe('Address', () => {
         addressLine2: 'ADD 22',
         city: 'city',
         country: Country.FINLAND,
-        profileId: 0
-    };
+        profile_id: 0
+    } as AddressCreateRequest;
 
     const testDataUpdated = {
         title: 'Work',
@@ -40,8 +44,8 @@ describe('Address', () => {
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
         country: Country.SWEDEN,
-        profileId: 0
-    };
+        profile_id: 0
+    } as AddressUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -51,33 +55,31 @@ describe('Address', () => {
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
         // clean up the db
-        return await testDataService.clean([]);
+        await testDataService.clean([]);
+        const defaultProfile = await profileService.getDefault();
+        defaultProfileId = defaultProfile.id;
     });
-/*
-    afterAll(async () => {
-        //
-        // log.info('afterAll');
-        return;
-    });
-*/
+
+
     test('Should throw ValidationException because there is no profile_id', async () => {
         expect.assertions(1);
-        await addressService.create(testDataUpdated).catch(e => {
-                expect(e).toEqual(new ValidationException('Request body is not valid', []));
-            }
-        );
+        await addressService.create({
+            title: 'Title',
+            addressLine1: 'Add',
+            addressLine2: 'ADD 22',
+            city: 'city',
+            country: Country.FINLAND
+        } as AddressCreateRequest).catch(e => {
+            expect(e).toEqual(new ValidationException('Request body is not valid', []));
+        });
     });
 
     test('Should create a new address', async () => {
-        const defaultProfile = await profileService.getDefault();
-        testData['profile_id'] = defaultProfile.Id;
-        const addressModel: Address = await addressService.create(testData).catch(e => {
-            log.error(e);
-        });
+        testData.profile_id = defaultProfileId;
+        const addressModel: Address = await addressService.create(testData);
         createdId = addressModel.Id;
 
         const result = addressModel.toJSON();
-        // log.info('address:', result);
         expect(result.title).toBe(testData.title);
         expect(result.addressLine1).toBe(testData.addressLine1);
         expect(result.addressLine2).toBe(testData.addressLine2);
@@ -87,7 +89,7 @@ describe('Address', () => {
 
     test('Should throw ValidationException because we want to create an empty address', async () => {
         expect.assertions(1);
-        await addressService.create({}).catch(e =>
+        await addressService.create({} as AddressCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -98,7 +100,6 @@ describe('Address', () => {
         expect(addresses.length).toBe(1);
 
         const result = addresses[0];
-        // log.info('address:', result);
         expect(result.title).toBe(testData.title);
         expect(result.addressLine1).toBe(testData.addressLine1);
         expect(result.addressLine2).toBe(testData.addressLine2);
@@ -109,7 +110,6 @@ describe('Address', () => {
     test('Should return one address', async () => {
         const addressModel: Address = await addressService.findOne(createdId);
         const result = addressModel.toJSON();
-         // log.info('address:', result);
 
         expect(result.title).toBe(testData.title);
         expect(result.addressLine1).toBe(testData.addressLine1);
@@ -120,13 +120,19 @@ describe('Address', () => {
 
     test('Should throw ValidationException because there is no profile_id', async () => {
         expect.assertions(1);
-        await addressService.update(createdId, testDataUpdated).catch(e =>
+        await addressService.update(createdId, {
+            title: 'Title',
+            addressLine1: 'Add',
+            addressLine2: 'ADD 22',
+            city: 'city',
+            country: Country.FINLAND
+        } as AddressUpdateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
+            );
     });
 
     test('Should update the address', async () => {
-        testDataUpdated['profile_id'] = 0;
+        testDataUpdated.profile_id = defaultProfileId;
         const addressModel: Address = await addressService.update(createdId, testDataUpdated);
         const result = addressModel.toJSON();
 

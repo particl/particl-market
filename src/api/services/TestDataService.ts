@@ -22,6 +22,7 @@ import { ItemCategory } from '../models/ItemCategory';
 import { FavoriteItem } from '../models/FavoriteItem';
 import { PaymentInformation } from '../models/PaymentInformation';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
+
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { DefaultItemCategoryService } from './DefaultItemCategoryService';
@@ -34,12 +35,16 @@ import { FavoriteItemService } from './FavoriteItemService';
 import { ItemInformationService } from './ItemInformationService';
 import { BidService } from './BidService';
 import { PaymentInformationService } from './PaymentInformationService';
+import { ItemImageService } from './ItemImageService';
+
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
 import { Address } from '../models/Address';
 import { CryptocurrencyAddress } from '../models/CryptocurrencyAddress';
 import { ItemInformation } from '../models/ItemInformation';
 import { Bid } from '../models/Bid';
+import { ItemImage } from '../models/ItemImage';
+
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
@@ -47,6 +52,7 @@ import { FavoriteItemCreateRequest } from '../requests/FavoriteItemCreateRequest
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
+import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
 
 export class TestDataService {
 
@@ -65,6 +71,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -125,6 +132,9 @@ export class TestDataService {
             }
             case 'paymentinfo': {
                 return await this.paymentInformationService.create(body.data as PaymentInformationCreateRequest) as Bookshelf.Model<PaymentInformation>;
+            }
+            case 'itemimage': {
+                return await this.itemImageService.create(body.data as ItemImageCreateRequest) as Bookshelf.Model<ItemImage>;
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -299,7 +309,7 @@ export class TestDataService {
                 addressLine1: Faker.address.streetAddress(),
                 addressLine2: Faker.address.secondaryAddress(),
                 city: Faker.address.city(),
-                country: Faker.address.country()
+                country: Faker.random.arrayElement(Object.getOwnPropertyNames(Country))
             });
         }
         return addresses;
