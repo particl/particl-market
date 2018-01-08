@@ -32,6 +32,9 @@ export class ProfileDestroyCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'ProfileDestroyCommand: TODO: Fill in help string.';
+        return 'removeprofile (<profileId>|<profileName>)\n'
+            + '    <profileID>            -  That profile ID of the profile we want to destroy.\n'
+            + '    <profileName>          -  [TODO implement] The name of the profile we\n'
+            + '                               want to destroy.';
     }
 }

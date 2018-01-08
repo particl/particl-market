@@ -39,6 +39,9 @@ export class MarketCreateCommand implements RpcCommandInterface<Market> {
     }
 
     public help(): string {
-        return 'MarketCreateCommand: TODO: Fill in help string.';
+        return 'addmarket <name> <privateKey> <address>\n'
+            + '    <name>           - String - The unique name of the market being created.\n'
+            + '    <privateKey>     - String - The private key of the market being creted.\n'
+            + '    <address>        - String - [TODO]';
     }
 }

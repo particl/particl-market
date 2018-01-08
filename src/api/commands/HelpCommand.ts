@@ -61,6 +61,6 @@ export class HelpCommand implements RpcCommandInterface<string> {
     }
 
     public help(): string {
-        return 'HelpCommand: TODO: Fill in help string.';
+        return 'help';
     }
 }

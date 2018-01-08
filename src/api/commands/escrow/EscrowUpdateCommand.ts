@@ -42,6 +42,14 @@ export class EscrowUpdateCommand implements RpcCommandInterface<Escrow> {
     }
 
     public help(): string {
-        return 'EscrowUpdateCommand: TODO: Fill in help string.';
+        return 'escrow update <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio>\n'
+            + '    <listingItemTemplateId>         - Numeric - The ID of the listing item template\n'
+            + '                                       associated with the escrow we want to modify.\n'
+            + '    <escrowType>                    - String - The escrow type we want to give to the\n'
+            + '                                       escrow we are modifying.\n'
+            + '                                    - ENUM{NOP,MAD} - The escrow type to give to the\n'
+            + '                                       escrow we are modifying.\n'
+            + '    <buyerRatio>                    - Numeric - [TODO]\n' // TODO: this
+            + '    <sellerRatio>                   - Numeric - [TODO]'; // TODO: this
     }
 }

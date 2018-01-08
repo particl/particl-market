@@ -53,7 +53,14 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
     }
 
     public help(): string {
-        return 'ShippingDestinationAddCommand: TODO: Fill in help string.';
+        return 'addshippingdestination <itemInformationId> <country> <shippingAvailability>\n'
+            + '    <itemInformationId>        - Numeric - ID of the item information object we want\n'
+            + '                                  to link this shipping destination to.\n'
+            + '    <country>                  - Enum{EU, USA, ASIA, FINLAND, SWEDEN,\n'
+            + '                                  SOUTH_AFRICAN, UNITED_KINGDOM} - The country\n'
+            + '                                  associated with this shipping destination.\n'
+            + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
+            + '                                  availability of shipping to the specified area.';
     }
 
     /**

@@ -54,7 +54,13 @@ export class FavoriteAddCommand implements RpcCommandInterface<FavoriteItem> {
     }
 
     public help(): string {
-        return 'FavoriteAddCommand: TODO: Fill in help string.';
+        return 'addfavorite (<itemId> | <hash>) [<profileId>]\n'
+            + '    <itemId>                        - Numeric - The ID of the listing item you want to\n'
+            + '                                       add to your favorites.\n'
+            + '    <hash>                          - String - The hash of the listing item you want\n'
+            + '                                       to add to your favorites.\n'
+            + '    <profileId>                     - [optional] Numeric - The ID of the profile we\n'
+            + '                                       want to associate this favorite with.';
     }
 
     /**

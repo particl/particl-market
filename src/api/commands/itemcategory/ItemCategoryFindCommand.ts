@@ -34,6 +34,8 @@ export class ItemCategoryFindCommand implements RpcCommandInterface<Bookshelf.Co
     }
 
     public help(): string {
-        return 'ItemCategoryFindCommand: TODO: Fill in help string.';
+        return 'findcategory [<searchString>]\n'
+            + '    <searchString>                  - [optional] String - A search string for finding\n'
+            + '                                       categories by name.';
     }
 }

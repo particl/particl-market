@@ -41,7 +41,8 @@ export class ItemLocationRemoveCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'ItemLocationRemoveCommand: TODO: Fill in help string.';
+        return 'removeitemlocation <itemLocationId>\n'
+            + '    <itemLocationId>           - Numeric - [TODO]';
     }
 
     /*

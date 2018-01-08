@@ -31,6 +31,9 @@ export class EscrowDestroyCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'EscrowDestroyCommand: TODO: Fill in help string.';
+        return 'escrow destroy <listingItemTemplateId>\n'
+            + '    <listingItemTemplateId>         - Numeric - The ID belonging to the listing item\n'
+            + '                                       template that the escrow we want to delete is\n'
+            + '                                       associated with.';
     }
 }

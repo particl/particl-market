@@ -32,6 +32,8 @@ export class ListingItemTemplateDestroyCommand implements RpcCommandInterface<vo
     }
 
     public help(): string {
-        return 'ListingItemTemplateDestroyCommand: TODO: Fill in help string.';
+        return 'removelistingitemtemplate <listingTemplateId>\n'
+            + '    <listingTemplateId>    -    Numeric - The ID of the listing item template that we\n'
+            + '                                 want to destroy.';
     }
 }

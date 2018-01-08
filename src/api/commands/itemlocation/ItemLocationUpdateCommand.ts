@@ -64,7 +64,15 @@ export class ItemLocationUpdateCommand implements RpcCommandInterface<ItemLocati
     }
 
     public help(): string {
-        return 'ItemLocationUpdateCommand: TODO: Fill in help string.';
+        return 'updateitemlocation <listingItemTemplateId> <region> <address> <gpsMarkerTitle>'
+            + ' <gpsMarkerDescription> <gpsMarkerLatitude> <gpsMarkerLongitude>\n'
+            + '    <listingItemTemplateId>    - Numeric - [TODO]\n'
+            + '    <region>                   - [TODO] - [TODO]\n'
+            + '    <address>                  - [TODO] - [TODO]\n'
+            + '    <gpsMarkerTitle>           - String - [TODO]\n'
+            + '    <gpsMarkerDescription>     - Numeric - [TODO]\n'
+            + '    <gpsMarkerLatitude>        - Numeric - [TODO]\n'
+            + '    <gpsMarkerLongitude>       - Numeric - [TODO]';
     }
 
     /*

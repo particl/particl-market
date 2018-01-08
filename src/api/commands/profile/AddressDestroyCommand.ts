@@ -34,6 +34,7 @@ export class AddressDestroyCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'AddressDestroyCommand: TODO: Fill in help string.';
+        return 'removeaddress <addressId>\n'
+            + '    <addressId>            - The ID of the address we want to remove.';
     }
 }

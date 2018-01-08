@@ -43,6 +43,10 @@ export class ProfileGetCommand implements RpcCommandInterface<Profile> {
     }
 
     public help(): string {
-        return 'GetProfileCommand: TODO: Fill in help string.';
+        return 'getprofile [<profileId>|<profileName>]\n'
+            + '    <profileId>           - [optional] Numeric - The ID of the profile we want to\n'
+            + '                             retrieve.\n'
+            + '    <profileName>         - [optional] String - The name of the profile we want to\n'
+            + '                             retrieve.';
     }
 }

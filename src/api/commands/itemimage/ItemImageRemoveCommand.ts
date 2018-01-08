@@ -41,6 +41,7 @@ export class ItemImageRemoveCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'ItemImageRemoveCommand: TODO: Fill in help string.';
+        return 'removeitemimage <itemImageId>\n'
+            + '    <itemImageId>                   - Numeric - The ID of the image we want to remove.';
     }
 }
