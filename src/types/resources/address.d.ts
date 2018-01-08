@@ -6,7 +6,7 @@ declare module 'resources' {
         addressLine2: string;
         city: string;
         country: string;
-        zipCode: number;
+        zipCode: string;
         createdAt: Date;
         updatedAt: Date;
     }

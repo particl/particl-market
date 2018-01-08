@@ -35,7 +35,7 @@ describe('Address', () => {
         addressLine2: 'ADD 22',
         city: 'city',
         country: Country.FINLAND,
-        zipCode: 452001,
+        zipCode: '85001',
         profile_id: 0
     } as AddressCreateRequest;
 
@@ -45,7 +45,7 @@ describe('Address', () => {
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
         country: Country.SWEDEN,
-        zipCode: 452001,
+        zipCode: '85001',
         profile_id: 0
     } as AddressUpdateRequest;
 
@@ -71,7 +71,7 @@ describe('Address', () => {
             addressLine2: 'ADD 22',
             city: 'city',
             country: Country.FINLAND,
-            zipCode: 452001
+            zipCode: '85001'
         } as AddressCreateRequest).catch(e => {
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
         });
@@ -134,7 +134,7 @@ describe('Address', () => {
             addressLine2: 'ADD 22',
             city: 'city',
             country: Country.FINLAND,
-            zipCode: 452001
+            zipCode: '85001'
         } as AddressUpdateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
             );

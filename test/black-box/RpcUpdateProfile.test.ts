@@ -17,14 +17,14 @@ describe('UpdateProfile', () => {
             addressLine2: 'ADD 22',
             city: 'city',
             country: Country.SWEDEN,
-            zipCode: 452001
+            zipCode: 85001
         }, {
             title: 'Tite',
             addressLine1: 'Ad',
             addressLine2: 'ADD 222',
             city: 'city',
             country: Country.FINLAND,
-            zipCode: 452001
+            zipCode: 85001
         }]
     };
 

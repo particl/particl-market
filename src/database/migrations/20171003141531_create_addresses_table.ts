@@ -11,7 +11,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('address_line_2').nullable();
             table.string('city').notNullable();
             table.string('country').notNullable();
-            table.integer('zip_code').notNullable();
+            table.string('zip_code').notNullable();
             table.integer('profile_id').unsigned().notNullable();
             table.foreign('profile_id').references('id')
                 .inTable('profiles').onDelete('CASCADE');
