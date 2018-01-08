@@ -33,6 +33,8 @@ export class ListingItemTemplateGetCommand implements RpcCommandInterface<Listin
     }
 
     public help(): string {
-        return 'ListingItemTemplateGetCommand: TODO: Fill in help string.';
+        return 'getlistingitemtemplate <listingTemplateId>\n'
+            + '    <listingTemplateId>   -    Numeric - The ID of the listing item template that we\n'
+            + '                                want to retrieve.';
     }
 }

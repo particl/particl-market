@@ -46,6 +46,13 @@ export class AddressCreateCommand implements RpcCommandInterface<Address> {
     }
 
     public help(): string {
-        return 'CreateAddressCommand: TODO: Fill in help string.';
+        return 'createaddress <title> <addressLine1> <addressLine2> <city> <country> <profileId>\n'
+            + '    <title>                - String - A short identifier for the address.\n'
+            + '    <addressLine1>         - String - The first line of the address.\n'
+            + '    <addressLine2>         - String - The second line of the address.\n'
+            + '    <city>                 - String - The city of the address.\n'
+            + '    <country>              - String - The country of the address.\n'
+            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
+            + '                              this address with.';
     }
 }

@@ -38,6 +38,11 @@ export class ProfileCreateCommand implements RpcCommandInterface<Profile> {
     }
 
     public help(): string {
-        return 'CreateProfileCommand: TODO: Fill in help string.';
+        return 'createprofile <profileName> [<profileAddress>]\n'
+            + '    <profileName>          - The name of the profile we want to create.\n'
+            + '    <profileAddress>       - [optional] the particl address of this profile.\n'
+            + '                              This is the address that\'s used in the particl\n'
+            + '                              messaging system. Will be automatically generated\n'
+            + '                              if omitted.';
     }
 }

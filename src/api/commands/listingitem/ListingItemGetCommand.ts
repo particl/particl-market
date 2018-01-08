@@ -42,6 +42,7 @@ export class ListingItemGetCommand implements RpcCommandInterface<ListingItem> {
     }
 
     public help(): string {
-        return 'ListingItemGetCommand: TODO: Fill in help string.';
+        return 'getitem <listingItemId>\n'
+            + '    <listingItemId>     - Numeric - The ID of the listing item we want to retrieve.';
     }
 }

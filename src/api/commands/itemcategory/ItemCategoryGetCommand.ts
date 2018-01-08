@@ -39,6 +39,10 @@ export class ItemCategoryGetCommand implements RpcCommandInterface<ItemCategory>
     }
 
     public help(): string {
-        return 'ItemCategoryGetCommand: TODO: Fill in help string.';
+        return 'getcategory (<categoryId>|<categoryKey>)\n'
+            + '    <categoryId>                    - Numeric - The ID belonging to the category we\n'
+            + '                                       want to retrive.\n'
+            + '    <categoryKey>                   - String - The key that identifies the category\n'
+            + '                                       we want to retrieve.';
     }
 }

@@ -53,7 +53,9 @@ export class ItemCategoryRemoveCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'ItemCategoryRemoveCommand: TODO: Fill in help string.';
+        return 'removecategory <categoryId>\n'
+            + '    <categoryId>                    - Numeric - The ID belonging to the category we\n'
+            + '                                       want to destroy.';
     }
 
     /**

@@ -46,7 +46,14 @@ export class ItemCategoryCreateCommand implements RpcCommandInterface<ItemCatego
     }
 
     public help(): string {
-        return 'ItemCategoryCreateCommand: TODO: Fill in help string.';
+        return 'createcategory <categoryName> <description> (<parentItemCategoryId>|<parentItemCategoryKey>)\n'
+            + '    <categoryName>                  - String - The name of the category to create.\n'
+            + '    <description>                   - String - A description of the category to\n'
+            + '                                       create.\n'
+            + '    <parentItemCategoryId>          - Numeric - The ID of the parent category of the\n'
+            + '                                       category we\'re creating.\n'
+            + '    <parentItemCategoryKey>         - String - The identifying key of the parent\n'
+            + '                                       category of the category we\'re creating.';
     }
 
     /**

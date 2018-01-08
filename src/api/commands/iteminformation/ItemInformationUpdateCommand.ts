@@ -46,6 +46,18 @@ export class ItemInformationUpdateCommand implements RpcCommandInterface<ItemInf
     }
 
     public help(): string {
-        return 'ItemInformationUpdateCommand: TODO: Fill in help string.';
+        return 'updateiteminformation <listingItemTemplateId> <title> <shortDescription> <longDescription> <category>\n'
+            + '    <listingItemTemplateId>         - Numeric - The ID of the listing item template\n'
+            + '                                       whose associated item information we want to\n'
+            + '                                       update.\n'
+            + '    <title>                         - String - The new title of the item information\n'
+            + '                                       we\'re updating.\n'
+            + '    <shortDescription>              - String - The new short description of the item\n'
+            + '                                       information we\'re updating.\n'
+            + '    <longDescription>               - String - The new long description of the item\n'
+            + '                                       information we\'re updating.\n'
+            + '    <categoryKey>                   - String - The key that identifies the new\n'
+            + '                                       category we want to assign to the item\n'
+            + '                                       information we\'re updating.';
     }
 }

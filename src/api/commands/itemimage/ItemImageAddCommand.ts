@@ -58,6 +58,12 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
     }
 
     public help(): string {
-        return 'ItemImageAddCommand: TODO: Fill in help string.';
+        return 'additemimage <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]\n'
+            + '    <listingItemTemplateId>          - Numeric - The ID of the listing item template\n'
+            + '                                        we want to associate this item image with.\n'
+            + '    <dataId>                         - [optional] Numeric - [TODO]\n'
+            + '        <protocol>                   - [optional] String - [TODO]\n'
+            + '            <encoding>               - [optional] String - [TODO]\n'
+            + '                <data>               - [optional] [TODO] - [TODO]';
     }
 }

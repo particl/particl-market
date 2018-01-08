@@ -64,7 +64,15 @@ export class ItemLocationCreateCommand implements RpcCommandInterface<ItemLocati
     }
 
     public help(): string {
-        return 'ItemLocationCreateCommand: TODO: Fill in help string.';
+        return 'additemlocation <listingItemTemplateId> <region> <address> <gpsMarkerTitle> <gpsMarkerDescription> <gpsMarkerLatitude> <gpsMarkerLongitude>\n'
+            + '    <listingItemTemplateId>    - Numeric - The ID of the listing item template we want\n'
+            + '                                  to associate with this item location.\n'
+            + '    <region>                   - [TODO] - [TODO]\n'
+            + '    <address>                  - [TODO] - [TODO]\n'
+            + '    <gpsMarkerTitle>           - String - [TODO]\n'
+            + '    <gpsMarkerDescription>     - Numeric - [TODO]\n'
+            + '    <gpsMarkerLatitude>        - Numeric - [TODO]\n'
+            + '    <gpsMarkerLongitude>       - Numeric - [TODO]';
     }
 
     /*

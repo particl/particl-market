@@ -31,6 +31,6 @@ export class ItemCategoriesGetCommand implements RpcCommandInterface<ItemCategor
     }
 
     public help(): string {
-        return 'ItemCategoriesGetCommand: TODO: Fill in help string.';
+        return 'getcategories';
     }
 }

@@ -35,6 +35,8 @@ export class ItemInformationGetCommand implements RpcCommandInterface<ItemInform
     }
 
     public help(): string {
-        return 'ItemInformationGetCommand: TODO: Fill in help string.';
+        return 'getiteminformation <itemInformationId>\n'
+            + '    <itemInformationId>             - Numeric - The ID of the item information we want\n'
+            + '                                       to retrieve.';
     }
 }

@@ -51,7 +51,10 @@ export class MessagingInformationUpdateCommand implements RpcCommandInterface<Me
     }
 
     public help(): string {
-        return 'MessagingInformationUpdateCommand: TODO: Fill in help string.';
+        return 'updatemessaginginformation <listingTemplateId> <protocol> <publicKey>\n'
+            + '    <listingTemplateId>      - Numeric - [TODO]\n'
+            + '    <protocol>               - ENUM{SMSG} - [TODO]\n'
+            + '    <publicKey>              - String - [TODO]';
     }
 
     /**

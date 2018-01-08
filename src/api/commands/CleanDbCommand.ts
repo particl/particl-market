@@ -25,6 +25,6 @@ export class CleanDbCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'CleanDbCommand: TODO: Fill in help string.';
+        return 'cleandb';
     }
 }

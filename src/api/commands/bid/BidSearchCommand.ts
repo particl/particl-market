@@ -41,6 +41,12 @@ export class BidSearchCommand implements RpcCommandInterface<Bookshelf.Collectio
     }
 
     public help(): string {
-        return 'BidSearchCommand: TODO: Fill in help string.';
+        return 'findbids [<status> <listingItemId> <profileId>]\n'
+            + '    <status>           - [optional] Enum{ACCEPTED,REJECTED,CANCELLED,ACTIVE} - The\n'
+            + '                          status of the bids we\'re searching for.\n'
+            + '    <listingItemId>    - [optional] Numeric - The ID of the listing item that the\n'
+            + '                          bids we\'re searching for are associated with.\n'
+            + '    <profileId>        - [optional] Numeric - The ID of the profile that made the\n'
+            + '                          bids we\'re searching for [TODO confirm this is true].';
     }
 }

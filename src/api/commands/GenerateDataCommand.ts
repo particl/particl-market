@@ -33,6 +33,9 @@ export class GenerateDataCommand implements RpcCommandInterface<any> {
     }
 
     public help(): string {
-        return 'GenerateDataCommand: TODO: Fill in help string.';
+        return 'generatedata <model> [<amount> [<withRelated>]]\n'
+            + '    <model>                 - [TODO] ENUM{} - [TODO]\n'
+            + '    <amount>                - [optional] Numeric - [TODO]\n'
+            + '    <withRelated>           - [optional] Boolean - [TODO]';
     }
 }
