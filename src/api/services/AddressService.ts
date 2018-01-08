@@ -54,6 +54,7 @@ export class AddressService {
         address.Title = body.title;
         address.AddressLine1 = body.addressLine1;
         address.AddressLine2 = body.addressLine2;
+        address.zipCode = body.zipCode;
         address.City = body.city;
         address.Country = body.country;
         // update address record

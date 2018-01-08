@@ -16,7 +16,8 @@ describe('/RpcUpdateAddress', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
-            country: Country.SWEDEN
+            country: Country.SWEDEN,
+            zipCode: 85001
         }]
     };
 
@@ -25,7 +26,8 @@ describe('/RpcUpdateAddress', () => {
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
-        country: Country.FINLAND
+        country: Country.FINLAND,
+        zipCode: 85001
     };
 
     beforeAll(async () => {
@@ -47,6 +49,7 @@ describe('/RpcUpdateAddress', () => {
             testDataUpdated.addressLine2,
             testDataUpdated.city,
             testDataUpdated.country,
+            testDataUpdated.zipCode,
             profileId
         ]);
         res.expectJson();
@@ -57,5 +60,7 @@ describe('/RpcUpdateAddress', () => {
         expect(result.addressLine2).toBe(testDataUpdated.addressLine2);
         expect(result.city).toBe(testDataUpdated.city);
         expect(result.country).toBe(testDataUpdated.country);
+        expect(result.zipCode).toBe(testDataUpdated.zipCode);
+
     });
 });

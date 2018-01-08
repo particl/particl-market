@@ -50,7 +50,6 @@ describe('BidFactory', () => {
         } as BidMessage;
 
         const bidCreateRequest = await bidFactory.getModel(bidMessage, listingItemId);
-        console.log('bidCreateRequest: ', bidCreateRequest);
         expect(bidCreateRequest.action).toBe(bidMessage.action);
         expect(bidCreateRequest.bidData.length).toBe(2);
         expect(bidCreateRequest.bidData[0].dataId).toBe(bidMessage.objects[0].id);
