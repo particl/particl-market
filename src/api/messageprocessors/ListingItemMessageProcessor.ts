@@ -1,20 +1,19 @@
 import { inject, named } from 'inversify';
 import * as _ from 'lodash';
-import { validate } from '../../core/api/Validate';
+import { message, validate } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ListingItemService } from '../services/ListingItemService';
 import { ListingItem } from '../models/ListingItem';
-
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
-
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
-
 import { ItemCategoryFactory } from '../factories/ItemCategoryFactory';
 import { MessagingInformationFactory } from '../factories/MessagingInformationFactory';
 import { ItemCategoryService } from '../services/ItemCategoryService';
+import { MarketService } from '../services/MarketService';
+import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { isArray } from 'util';
 
 export class ListingItemMessageProcessor implements MessageProcessorInterface {
@@ -26,29 +25,32 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         @inject(Types.Factory) @named(Targets.Factory.MessagingInformationFactory) public mesInfoFactory: MessagingInformationFactory,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
 
     @validate()
-    public async process(message: any): Promise<ListingItem> {
+
+    public async process(@message(ListingItemMessage) data: ListingItemMessage): Promise<ListingItem> {
         // get Category
-        const itemCategoryId = await this.createUserDefinedItemCategories(message.information.category);
-        message.information.itemCategory = itemCategoryId;
+        const itemCategoryId = await this.createUserDefinedItemCategories(data.information.category);
+        data.information.itemCategory = itemCategoryId;
         // get itemPrice
         const itemPrice = {
-            currency: message.payment.cryptocurrency.currency,
-            basePrice: message.payment.cryptocurrency.base_price
+            currency: data.payment.cryptocurrency.currency,
+            basePrice: data.payment.cryptocurrency.base_price
         };
-        message.payment.itemPrice = itemPrice;
+        data.payment.itemPrice = itemPrice;
         // get messagingInformation
-        const messagingInformation = await this.mesInfoFactory.get(message.messaging);
-        message.messaging = messagingInformation;
+        const messagingInformation = await this.mesInfoFactory.get(data.messaging);
+        data.messaging = messagingInformation;
         // Convert the ListingItemMessage to ListingItem
-        const listingItem = await this.listingItemFactory.get(message);
+        const market = await this.marketService.getDefault();
+        const listingItem = await this.listingItemFactory.get(data, market.id);
         // create listing-item
-        return await this.listingItemService.create(listingItem.toJSON() as ListingItemCreateRequest);
+        return await this.listingItemService.create(listingItem as ListingItemCreateRequest);
     }
 
     private async createUserDefinedItemCategories(category: string[]): Promise<number> {
