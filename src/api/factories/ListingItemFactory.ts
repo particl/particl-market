@@ -3,7 +3,7 @@ import * as crypto from 'crypto-js';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ListingItem } from '../models/ListingItem';
-
+import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ItemMessageInterface } from '../messages/ItemMessageInterface';
 import { PaymentType } from '../enums/PaymentType';
 import { EscrowType } from '../enums/EscrowType';
@@ -18,11 +18,11 @@ export class ListingItemFactory {
         this.log = new Logger(__filename);
     }
 
-    public async get(data: ItemMessageInterface): Promise<ListingItem> {
+    public async get(data: ItemMessageInterface, marketId: number): Promise<ListingItemCreateRequest> {
         // const hash = crypto.SHA256(new Date().getTime().toString()).toString();
         const listingItem = {
             hash: crypto.SHA256(new Date().getTime().toString()).toString(),
-            market_id: 0,
+            market_id: marketId,
             itemInformation: {
                 title: data.information.title,
                 shortDescription: data.information.short_description,

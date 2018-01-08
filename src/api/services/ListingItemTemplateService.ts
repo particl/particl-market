@@ -14,6 +14,12 @@ import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplateUpdateRequest } from '../requests/ListingItemTemplateUpdateRequest';
 import { ListingItemTemplateSearchParams } from '../requests/ListingItemTemplateSearchParams';
+import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
+import { ItemInformationUpdateRequest } from '../requests/ItemInformationUpdateRequest';
+import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
+import { PaymentInformationUpdateRequest } from '../requests/PaymentInformationUpdateRequest';
+import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
+import { MessagingInformationUpdateRequest } from '../requests/MessagingInformationUpdateRequest';
 
 export class ListingItemTemplateService {
 
@@ -77,24 +83,21 @@ export class ListingItemTemplateService {
         // this.log.debug('listingItemObjects to save: ', JSON.stringify(listingItemObjects, null, 2));
 
         // If the request body was valid we will create the listingItemTemplate
-        const listingItemTemplate: any = await this.listingItemTemplateRepo.create(body)
-            .catch(reason => {
-                this.log.error('ERROR: ', reason);
-            });
+        const listingItemTemplate: any = await this.listingItemTemplateRepo.create(body);
 
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.Id;
-            const result = await this.itemInformationService.create(itemInformation);
+            const result = await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
             // this.log.debug('saved itemInformation ' + listingItemTemplate.Id + ': ', result.toJSON());
         }
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.Id;
-            const result = await this.paymentInformationService.create(paymentInformation);
-           // this.log.info('saved paymentInformation: ', result.toJSON());
+            const result = await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
+            // this.log.info('saved paymentInformation: ', result.toJSON());
         }
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_template_id = listingItemTemplate.Id;
-            await this.messagingInformationService.create(msgInfo);
+            await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
         }
 
         // finally find and return the created listingItemTemplate
@@ -104,25 +107,55 @@ export class ListingItemTemplateService {
 
     @validate()
     public async update(id: number, @request(ListingItemTemplateUpdateRequest) data: ListingItemTemplateUpdateRequest): Promise<ListingItemTemplate> {
-
         const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const listingItemTemplate = await this.findOne(id, false);
-
         // set new values
         listingItemTemplate.Hash = body.hash;
 
         // update listingItemTemplate record
         const updatedListingItemTemplate = await this.listingItemTemplateRepo.update(id, listingItemTemplate.toJSON());
-        // this.log.debug('updatedListingItemTemplate.toJSON():', updatedListingItemTemplate.toJSON());
+        this.log.debug('updatedListingItemTemplate.toJSON():', updatedListingItemTemplate.toJSON());
+
+        // Item-information
+        let itemInformation = updatedListingItemTemplate.related('ItemInformation').toJSON() || {};
+
+        if (!_.isEmpty(body.itemInformation)) {
+            if (!_.isEmpty(itemInformation)) {
+                const itemInformationId = itemInformation.id;
+                itemInformation = body.itemInformation;
+                itemInformation.listing_item_template_id = id;
+                await this.itemInformationService.update(itemInformationId, itemInformation as ItemInformationUpdateRequest);
+            } else {
+                itemInformation = body.itemInformation;
+                itemInformation.listing_item_template_id = id;
+                await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
+            }
+        }
+
+        // payment-information
+        let paymentInformation = updatedListingItemTemplate.related('PaymentInformation').toJSON() || {};
+
+        if (!_.isEmpty(body.paymentInformation)) {
+            if (!_.isEmpty(paymentInformation)) {
+                const paymentInformationId = paymentInformation.id;
+                paymentInformation = body.paymentInformation;
+                paymentInformation.listing_item_template_id = id;
+                await this.paymentInformationService.update(paymentInformationId, paymentInformation as PaymentInformationUpdateRequest);
+            } else {
+                paymentInformation = body.paymentInformation;
+                paymentInformation.listing_item_template_id = id;
+                await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
+            }
+        }
 
         // find related record and delete it and recreate related data
-        const itemInformation = updatedListingItemTemplate.related('ItemInformation').toJSON();
-        const paymentInformation = updatedListingItemTemplate.related('PaymentInformation').toJSON();
-        await this.paymentInformationService.destroy(paymentInformation.id);
-        body.paymentInformation.listing_item_template_id = id;
-        await this.paymentInformationService.create(body.paymentInformation);
+
+        // const paymentInformation = updatedListingItemTemplate.related('PaymentInformation').toJSON();
+        // await this.paymentInformationService.destroy(paymentInformation.id);
+        // body.paymentInformation.listing_item_template_id = id;
+        // await this.paymentInformationService.create(body.paymentInformation);
 
         // find related record and delete it and recreate related data
         let messagingInformation = updatedListingItemTemplate.related('MessagingInformation').toJSON() || [];
@@ -134,7 +167,7 @@ export class ListingItemTemplateService {
         messagingInformation = body.messagingInformation || [];
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_template_id = id;
-            await this.messagingInformationService.create(msgInfo);
+            await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
         }
 
         // finally find and return the updated listingItem
