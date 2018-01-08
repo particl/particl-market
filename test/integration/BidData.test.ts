@@ -41,13 +41,13 @@ describe('BidData', () => {
 
     const testData = {
         bid_id: null,
-        data_id: 'color',
-        data_value: 'black'
+        dataId: 'color',
+        dataValue: 'black'
     } as BidDataCreateRequest;
 
     const testDataUpdated = {
-        data_id: 'color',
-        data_value: 'black'
+        dataId: 'color',
+        dataValue: 'black'
     } as BidDataUpdateRequest;
 
     const listingItemTestData = {
@@ -101,7 +101,7 @@ describe('BidData', () => {
     test('Should throw ValidationException because there is no bid_id', async () => {
         expect.assertions(1);
 
-        const bidData = {dataId: 'color', dataCalue: 'black'} as BidDataCreateRequest;
+        const bidData = {dataId: 'color', dataValue: 'black'} as BidDataCreateRequest;
         await bidDataService.create(bidData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
@@ -115,8 +115,8 @@ describe('BidData', () => {
         createdId = bidDataModel.Id;
         const result = bidDataModel.toJSON();
         // test the values
-        expect(result.dataId).toBe(testDataUpdated.data_id);
-        expect(result.dataValue).toBe(testDataUpdated.data_value);
+        expect(result.dataId).toBe(testDataUpdated.dataId);
+        expect(result.dataValue).toBe(testDataUpdated.dataValue);
     });
 
     test('Should throw ValidationException because we want to create a empty bid data', async () => {
@@ -133,8 +133,8 @@ describe('BidData', () => {
         const result = bidData[0];
 
         // test the values
-        expect(result.dataId).toBe(testDataUpdated.data_id);
-        expect(result.dataValue).toBe(testDataUpdated.data_value);
+        expect(result.dataId).toBe(testDataUpdated.dataId);
+        expect(result.dataValue).toBe(testDataUpdated.dataValue);
     });
 
     test('Should return one bid data', async () => {
@@ -142,8 +142,8 @@ describe('BidData', () => {
         const result = bidDataModel.toJSON();
 
         // test the values
-        expect(result.dataId).toBe(testDataUpdated.data_id);
-        expect(result.dataValue).toBe(testDataUpdated.data_value);
+        expect(result.dataId).toBe(testDataUpdated.dataId);
+        expect(result.dataValue).toBe(testDataUpdated.dataValue);
     });
 
     test('Should throw ValidationException because we want to update with out bid_id', async () => {
@@ -159,8 +159,8 @@ describe('BidData', () => {
         const result = bidDataModel.toJSON();
 
         // test the values
-        expect(result.dataId).toBe(testDataUpdated.data_id);
-        expect(result.dataValue).toBe(testDataUpdated.data_value);
+        expect(result.dataId).toBe(testDataUpdated.dataId);
+        expect(result.dataValue).toBe(testDataUpdated.dataValue);
     });
 
     test('Should delete the bid data', async () => {
