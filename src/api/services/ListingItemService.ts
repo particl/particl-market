@@ -15,8 +15,12 @@ import { ItemInformationService } from './ItemInformationService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { MarketService } from './MarketService';
 import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
+
+import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
+import { ItemInformationUpdateRequest } from '../requests/ItemInformationUpdateRequest';
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
 import { PaymentInformationUpdateRequest } from '../requests/PaymentInformationUpdateRequest';
+import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
 
 export class ListingItemService {
 
@@ -82,7 +86,6 @@ export class ListingItemService {
     }
 
     @validate()
-
     public async create( @request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
 
         const body = JSON.parse(JSON.stringify(data));
@@ -103,7 +106,7 @@ export class ListingItemService {
         // create related models
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_id = listingItem.Id;
-            await this.itemInformationService.create(itemInformation);
+            await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
         }
 
         if (!_.isEmpty(paymentInformation)) {
@@ -112,7 +115,7 @@ export class ListingItemService {
         }
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_id = listingItem.Id;
-            await this.messagingInformationService.create(msgInfo);
+            await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
         }
         if (!_.isEmpty(listingItemObjects)) {
             // TODO: implement
@@ -139,16 +142,51 @@ export class ListingItemService {
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
 
         // find related record and delete it and recreate related data
-        const itemInformation = updatedListingItem.related('ItemInformation').toJSON();
-        const paymentInformation = updatedListingItem.related('PaymentInformation').toJSON();
+        // const itemInformation = updatedListingItem.related('ItemInformation').toJSON();
+        // const paymentInformation = updatedListingItem.related('PaymentInformation').toJSON();
 
-        if (!_.isEmpty(paymentInformation)) {
-            body.paymentInformation.listing_item_id = id;
-            await this.paymentInformationService.update(paymentInformation.id, body.paymentInformation as PaymentInformationUpdateRequest);
+        // if (!_.isEmpty(paymentInformation)) {
+        //     body.paymentInformation.listing_item_id = id;
+        //     await this.paymentInformationService.update(paymentInformation.id, body.paymentInformation as PaymentInformationUpdateRequest);
 
-        } else {
-            body.paymentInformation.listing_item_id = id;
-            await this.paymentInformationService.create(body.paymentInformation as PaymentInformationCreateRequest);
+        // } else {
+        //     body.paymentInformation.listing_item_id = id;
+        //     await this.paymentInformationService.create(body.paymentInformation as PaymentInformationCreateRequest);
+        // }
+
+        // update listingItem record
+        this.log.debug('updatedListingItem.toJSON():', updatedListingItem.toJSON());
+
+        // Item-information
+        let itemInformation = updatedListingItem.related('ItemInformation').toJSON() || {};
+
+        if (!_.isEmpty(body.itemInformation)) {
+            if (!_.isEmpty(itemInformation)) {
+                const itemInformationId = itemInformation.id;
+                itemInformation = body.itemInformation;
+                itemInformation.listing_item_id = id;
+                await this.itemInformationService.update(itemInformationId, itemInformation as ItemInformationUpdateRequest);
+            } else {
+                itemInformation = body.itemInformation;
+                itemInformation.listing_item_id = id;
+                await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
+            }
+        }
+
+        // payment-information
+        let paymentInformation = updatedListingItem.related('PaymentInformation').toJSON() || {};
+
+        if (!_.isEmpty(body.paymentInformation)) {
+            if (!_.isEmpty(paymentInformation)) {
+                const paymentInformationId = paymentInformation.id;
+                paymentInformation = body.paymentInformation;
+                paymentInformation.listing_item_id = id;
+                await this.paymentInformationService.update(paymentInformationId, paymentInformation as PaymentInformationUpdateRequest);
+            } else {
+                paymentInformation = body.paymentInformation;
+                paymentInformation.listing_item_id = id;
+                await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
+            }
         }
 
         // find related record and delete it and recreate related data
@@ -159,7 +197,7 @@ export class ListingItemService {
         messagingInformation = body.messagingInformation || [];
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_id = id;
-            await this.messagingInformationService.create(msgInfo);
+            await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
         }
 
         // finally find and return the updated listingItem
