@@ -8,6 +8,8 @@ import { BidRepository } from '../repositories/BidRepository';
 import { Bid } from '../models/Bid';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
+import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
+
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { BidMessageType } from '../enums/BidMessageType';
 import { BidDataService } from './BidDataService';
@@ -67,7 +69,7 @@ export class BidService {
             throw new ValidationException('Request body is not valid', ['listing_item_id missing']);
         }
 
-        const bidData = body.bidData;
+        const bidData = body.bidData || [];
         delete body.bidData;
 
         this.log.debug('body: ', body);
@@ -76,8 +78,7 @@ export class BidService {
 
         for (const dataToSave of bidData) {
             dataToSave.bid_id = bid.Id;
-            this.log.debug('dataToSave: ', dataToSave);
-            await this.bidDataService.create(dataToSave);
+            await this.bidDataService.create(dataToSave as BidDataCreateRequest);
         }
 
         // finally find and return the created bid
@@ -99,11 +100,7 @@ export class BidService {
         // update bid record
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());
 
-        // TODO: find related record and update it
-        // TODO: finally find and return the updated bid
-        // const newBid = await this.findOne(id);
         // return newBid;
-
         return updatedBid;
     }
 
