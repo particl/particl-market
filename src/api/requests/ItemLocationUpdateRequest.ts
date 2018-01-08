@@ -1,4 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { Country } from '../enums/Country';
 
@@ -8,6 +8,7 @@ export class ItemLocationUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public item_information_id: number;
 
+    @IsEnum(Country)
     @IsNotEmpty()
     public region: Country;
 

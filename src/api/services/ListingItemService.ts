@@ -15,6 +15,8 @@ import { ItemInformationService } from './ItemInformationService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { MarketService } from './MarketService';
 import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
+import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
+import { PaymentInformationUpdateRequest } from '../requests/PaymentInformationUpdateRequest';
 
 export class ListingItemService {
 
@@ -103,9 +105,10 @@ export class ListingItemService {
             itemInformation.listing_item_id = listingItem.Id;
             await this.itemInformationService.create(itemInformation);
         }
+
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_id = listingItem.Id;
-            await this.paymentInformationService.create(paymentInformation);
+            await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
         }
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_id = listingItem.Id;
@@ -138,9 +141,15 @@ export class ListingItemService {
         // find related record and delete it and recreate related data
         const itemInformation = updatedListingItem.related('ItemInformation').toJSON();
         const paymentInformation = updatedListingItem.related('PaymentInformation').toJSON();
-        await this.paymentInformationService.destroy(paymentInformation.id);
-        body.paymentInformation.listing_item_id = id;
-        await this.paymentInformationService.create(body.paymentInformation);
+
+        if (!_.isEmpty(paymentInformation)) {
+            body.paymentInformation.listing_item_id = id;
+            await this.paymentInformationService.update(paymentInformation.id, body.paymentInformation as PaymentInformationUpdateRequest);
+
+        } else {
+            body.paymentInformation.listing_item_id = id;
+            await this.paymentInformationService.create(body.paymentInformation as PaymentInformationCreateRequest);
+        }
 
         // find related record and delete it and recreate related data
         let messagingInformation = updatedListingItem.related('MessagingInformation').toJSON() || [];
