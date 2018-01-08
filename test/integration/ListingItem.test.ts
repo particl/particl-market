@@ -9,6 +9,7 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ListingItem } from '../../src/api/models/ListingItem';
+import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
@@ -19,13 +20,27 @@ import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAdd
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
 import { ListingItemService } from '../../src/api/services/ListingItemService';
+import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { ProfileService } from '../../src/api/services/ProfileService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
-import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';
 import { ListingItemUpdateRequest } from '../../src/api/requests/ListingItemUpdateRequest';
+import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
+
+import { ItemInformationService } from '../../src/api/services/ItemInformationService';
+import { ItemLocationService } from '../../src/api/services/ItemLocationService';
+import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
+import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
+import { ItemImageService } from '../../src/api/services/ItemImageService';
+
+import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
+import { EscrowService } from '../../src/api/services/EscrowService';
+import { EscrowRatioService } from '../../src/api/services/EscrowRatioService';
+import { ItemPriceService } from '../../src/api/services/ItemPriceService';
+import { ShippingPriceService } from '../../src/api/services/ShippingPriceService';
+import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
+import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
+
 
 describe('ListingItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -35,16 +50,29 @@ describe('ListingItem', () => {
 
     let testDataService: TestDataService;
     let listingItemService: ListingItemService;
-    let itemInformationService: ItemInformationService;
-    let paymentInformationService: PaymentInformationService;
-    let messagingInformationService: MessagingInformationService;
+    let listingItemTemplateService: ListingItemTemplateService;
     let profileService: ProfileService;
     let marketService: MarketService;
 
+    let itemInformationService: ItemInformationService;
+    let itemLocationService: ItemLocationService;
+    let locationMarkerService: LocationMarkerService;
+    let shippingDestinationService: ShippingDestinationService;
+    let itemImageService: ItemImageService;
+
+    let paymentInformationService: PaymentInformationService;
+    let escrowService: EscrowService;
+    let escrowRatioService: EscrowRatioService;
+    let itemPriceService: ItemPriceService;
+    let shippingPriceService: ShippingPriceService;
+    let cryptocurrencyAddressService: CryptocurrencyAddressService;
+
+    let messagingInformationService: MessagingInformationService;
+
     let createdId;
-    let createdItemInformationId;
-    let createdPaymentInformationId;
-    let createdMessagingInformationId;
+    let createdItemInformation;
+    let createdPaymentInformation;
+    let createdMessagingInformation;
     let defaultProfile;
     let defaultMarket;
 
@@ -203,11 +231,24 @@ describe('ListingItem', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
-        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
-        messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+
+        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
+        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.ItemLocationService);
+        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
+        shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.ShippingDestinationService);
+        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
+
+        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
+        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.EscrowService);
+        escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.EscrowRatioService);
+        itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.ItemPriceService);
+        shippingPriceService = app.IoC.getNamed<ShippingPriceService>(Types.Service, Targets.Service.ShippingPriceService);
+        cryptocurrencyAddressService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.CryptocurrencyAddressService);
+
+        messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
@@ -218,8 +259,13 @@ describe('ListingItem', () => {
 
     // todo:
     // - need more update tests
-    // - need to test listingitems related to listingitemtemplate
-    // - need to check deletes remove everything
+
+    test('Should throw ValidationException because we want to create a empty listing item', async () => {
+        expect.assertions(1);
+        await listingItemService.create({} as ListingItemCreateRequest).catch(e =>
+            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        );
+    });
 
     test('Should create a new listing item without iteminfo, paymentinfo, messaginginfo and objects', async () => {
         // update the hash
@@ -249,13 +295,6 @@ describe('ListingItem', () => {
 
     });
 
-    test('Should throw ValidationException because we want to create a empty listing item', async () => {
-        expect.assertions(1);
-        await listingItemService.create({} as ListingItemCreateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
     test('Should list listing items with our new create one', async () => {
         const listingItemCollection = await listingItemService.findAll();
         const listingItem = listingItemCollection.toJSON();
@@ -271,8 +310,6 @@ describe('ListingItem', () => {
         const result = listingItemTemplateModel.toJSON();
 
         expect(result.hash).toBe(testData.hash);
-        // expect(result.Profile.name).toBe(defaultProfile.Name);
-
     });
 
     test('Should update simple listing item', async () => {
@@ -287,7 +324,7 @@ describe('ListingItem', () => {
         expect(result.Market.address).toBe(defaultMarket.Address);
 
         // tslint:disable:max-line-length
-        /*
+
         expect(result.ItemInformation.title).toBe(testDataUpdated.itemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(testDataUpdated.itemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(testDataUpdated.itemInformation.longDescription);
@@ -313,12 +350,11 @@ describe('ListingItem', () => {
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.international);
         expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.type);
         expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.address);
-        expect(result.PaymentInformation.listingItemTemplateId).toBe(null);
+        // expect(result.PaymentInformation.listingItemTemplateId).toBe(null);
 
         expect(result.MessagingInformation.protocol).toBe(testDataUpdated.messagingInformation.protocol);
         expect(result.MessagingInformation.publicKey).toBe(testDataUpdated.messagingInformation.publicKey);
-        expect(result.MessagingInformation.listingItemTemplateId).toBe(null);
-         */
+        // expect(result.MessagingInformation.listingItemTemplateId).toBe(null);
         // tslint:enable:max-line-length
 
     });
@@ -351,7 +387,7 @@ describe('ListingItem', () => {
         const result = listingItemModel.toJSON();
 
         createdId = result.id;
-        createdItemInformationId = result.ItemInformation.id;
+        createdItemInformation = result.ItemInformation;
         // log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result.hash).toBe(testData.hash);
@@ -376,18 +412,41 @@ describe('ListingItem', () => {
     });
 
     test('Should delete the listing item with item info', async () => {
-        expect.assertions(2);
+        expect.assertions(6);
 
         await listingItemService.destroy(createdId);
         await listingItemService.findOne(createdId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );
 
-        await itemInformationService.findOne(createdItemInformationId, false).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdItemInformationId))
+        // item-information
+        await itemInformationService.findOne(createdItemInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdItemInformation.id))
         );
 
-        // TODO: test that all the other related data was also removed
+        // item-location
+        const itemLocationId = createdItemInformation.ItemLocation.id;
+        await itemLocationService.findOne(itemLocationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemLocationId))
+        );
+
+        // location marker
+        const locationMarkerId = createdItemInformation.ItemLocation.LocationMarker.id;
+        await locationMarkerService.findOne(locationMarkerId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(locationMarkerId))
+        );
+
+        // shipping-destination
+        const shipDestinationId = createdItemInformation.ShippingDestinations[0].id;
+        await shippingDestinationService.findOne(shipDestinationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shipDestinationId))
+        );
+
+        // item image
+        const itemImageId = createdItemInformation.ItemImages[0].id;
+        await itemImageService.findOne(itemImageId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemImageId))
+        );
     });
 
     test('Should create a new listing item without messaginginfo and objects', async () => {
@@ -405,8 +464,8 @@ describe('ListingItem', () => {
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         const result = listingItemModel.toJSON();
         createdId = result.id;
-        createdItemInformationId = result.ItemInformation.id;
-        createdPaymentInformationId = result.PaymentInformation.id;
+        createdItemInformation = result.ItemInformation;
+        createdPaymentInformation = result.PaymentInformation;
 
         // log.debug('defaultMarket: ', defaultMarket);
         expect(result.hash).toBe(testData.hash);
@@ -446,22 +505,76 @@ describe('ListingItem', () => {
     });
 
     test('Should delete the listing item with item info and payment info', async () => {
-        expect.assertions(3);
+        expect.assertions(12);
 
         await listingItemService.destroy(createdId);
         await listingItemService.findOne(createdId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );
 
-        await itemInformationService.findOne(createdItemInformationId, false).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdItemInformationId))
+        // item-information
+        await itemInformationService.findOne(createdItemInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdItemInformation.id))
         );
 
-        await paymentInformationService.findOne(createdPaymentInformationId, false).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdPaymentInformationId))
+        // item-location
+        const itemLocationId = createdItemInformation.ItemLocation.id;
+        await itemLocationService.findOne(itemLocationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemLocationId))
         );
 
-        // TODO: test that all the other related data was also removed
+        // location marker
+        const locationMarkerId = createdItemInformation.ItemLocation.LocationMarker.id;
+        await locationMarkerService.findOne(locationMarkerId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(locationMarkerId))
+        );
+
+        // shipping-destination
+        const shipDestinationId = createdItemInformation.ShippingDestinations[0].id;
+        await shippingDestinationService.findOne(shipDestinationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shipDestinationId))
+        );
+
+        // item image
+        const itemImageId = createdItemInformation.ItemImages[0].id;
+        await itemImageService.findOne(itemImageId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemImageId))
+        );
+
+        // paymentInformation
+        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        );
+
+        // escrow
+        const escrowId = createdPaymentInformation.Escrow.id;
+        await escrowService.findOne(escrowId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(escrowId))
+        );
+
+        // escrow-ratio
+        const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
+        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        );
+
+        // itemPrice
+        const itemPriceId = createdPaymentInformation.ItemPrice.id;
+        await itemPriceService.findOne(itemPriceId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemPriceId))
+        );
+
+        // shippingPrice
+        const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
+        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shippingPriceId))
+        );
+
+        // cryptoCurrencyAddress
+        const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
+        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
+        );
     });
 
     test('Should create a new listing item without objects', async () => {
@@ -480,9 +593,9 @@ describe('ListingItem', () => {
         const result = listingItemModel.toJSON();
 
         createdId = result.id;
-        createdItemInformationId = result.ItemInformation.id;
-        createdPaymentInformationId = result.PaymentInformation.id;
-        createdMessagingInformationId = result.PaymentInformation.id;
+        createdItemInformation = result.ItemInformation;
+        createdPaymentInformation = result.PaymentInformation;
+        createdMessagingInformation = result.MessagingInformation;
 
         expect(result.hash).toBe(testData.hash);
         expect(result.Market.name).toBe(defaultMarket.Name);
@@ -524,26 +637,201 @@ describe('ListingItem', () => {
     });
 
     test('Should delete the listing item with item info and payment info', async () => {
-        expect.assertions(4);
+        expect.assertions(13);
 
         await listingItemService.destroy(createdId);
         await listingItemService.findOne(createdId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );
 
-        await itemInformationService.findOne(createdItemInformationId, false).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdItemInformationId))
+        // item-information
+        await itemInformationService.findOne(createdItemInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdItemInformation.id))
         );
 
-        await paymentInformationService.findOne(createdPaymentInformationId, false).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdPaymentInformationId))
+        // item-location
+        const itemLocationId = createdItemInformation.ItemLocation.id;
+        await itemLocationService.findOne(itemLocationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemLocationId))
         );
 
-        await messagingInformationService.findOne(createdMessagingInformationId, false).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdMessagingInformationId))
+        // location marker
+        const locationMarkerId = createdItemInformation.ItemLocation.LocationMarker.id;
+        await locationMarkerService.findOne(locationMarkerId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(locationMarkerId))
         );
 
-        // TODO: test that all the other related data was also removed
+        // shipping-destination
+        const shipDestinationId = createdItemInformation.ShippingDestinations[0].id;
+        await shippingDestinationService.findOne(shipDestinationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shipDestinationId))
+        );
+
+        // item image
+        const itemImageId = createdItemInformation.ItemImages[0].id;
+        await itemImageService.findOne(itemImageId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemImageId))
+        );
+
+        // paymentInformation
+        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        );
+
+        // escrow
+        const escrowId = createdPaymentInformation.Escrow.id;
+        await escrowService.findOne(escrowId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(escrowId))
+        );
+
+        // escrow-ratio
+        const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
+        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        );
+
+        // itemPrice
+        const itemPriceId = createdPaymentInformation.ItemPrice.id;
+        await itemPriceService.findOne(itemPriceId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemPriceId))
+        );
+
+        // shippingPrice
+        const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
+        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shippingPriceId))
+        );
+
+        // cryptoCurrencyAddress
+        const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
+        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
+        );
+
+        // messagingInformation
+        const messagingInformationId = createdMessagingInformation[0].id;
+        await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(messagingInformationId))
+        );
     });
 
+
+    // - need to test listingitems related to listingitemtemplate
+    test('Should published listingitems related with any listingitemtemplate', async () => {
+        // listing-item-template
+        const testDataToSave = JSON.parse(JSON.stringify(testData));
+        testData.hash = crypto.SHA256(new Date().getTime().toString()).toString();
+
+        const testDataListingItemTemplate = {
+            profile_id: defaultProfile.id,
+            hash: crypto.SHA256(new Date().getTime().toString()).toString(),
+            itemInformation: testDataToSave.ItemInformation,
+            paymentInformation: testDataToSave.PaymentInformation,
+            messagingInformation: testDataToSave.MessagingInformation,
+            listingItemObjects: testDataToSave.ListingItemObjects
+        };
+        // tslint:disable:max-line-length
+        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataListingItemTemplate as ListingItemTemplateCreateRequest);
+
+        // listing-item with template id
+        testDataToSave.listing_item_template_id = listingItemTemplateModel.id;
+        testDataToSave.market_id = defaultMarket.Id;
+        // tslint:enable:max-line-length
+
+        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
+        const result = listingItemModel.toJSON();
+
+        createdId = result.id;
+        createdItemInformation = result.ItemInformation;
+        createdPaymentInformation = result.PaymentInformation;
+        createdMessagingInformation = result.MessagingInformation;
+
+        // find listing-item-template
+        const listingItemTemplateModel2: ListingItemTemplate = await listingItemTemplateService.findOne(testDataToSave.listing_item_template_id);
+        const resultTemplate2 = listingItemTemplateModel2.toJSON();
+        // check relation between listing-item and listing-item-template
+        expect(resultTemplate2.ListingItem[0].id).toBe(createdId);
+
+        // delete listing-item
+        await listingItemService.destroy(createdId);
+        await listingItemService.findOne(createdId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
+
+        // item-information
+        await itemInformationService.findOne(createdItemInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdItemInformation.id))
+        );
+
+        // item-location
+        const itemLocationId = createdItemInformation.ItemLocation.id;
+        await itemLocationService.findOne(itemLocationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemLocationId))
+        );
+
+        // location marker
+        const locationMarkerId = createdItemInformation.ItemLocation.LocationMarker.id;
+        await locationMarkerService.findOne(locationMarkerId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(locationMarkerId))
+        );
+
+        // shipping-destination
+        const shipDestinationId = createdItemInformation.ShippingDestinations[0].id;
+        await shippingDestinationService.findOne(shipDestinationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shipDestinationId))
+        );
+
+        // item image
+        const itemImageId = createdItemInformation.ItemImages[0].id;
+        await itemImageService.findOne(itemImageId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemImageId))
+        );
+
+        // paymentInformation
+        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        );
+
+        // escrow
+        const escrowId = createdPaymentInformation.Escrow.id;
+        await escrowService.findOne(escrowId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(escrowId))
+        );
+
+        // escrow-ratio
+        const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
+        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        );
+
+        // itemPrice
+        const itemPriceId = createdPaymentInformation.ItemPrice.id;
+        await itemPriceService.findOne(itemPriceId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemPriceId))
+        );
+
+        // shippingPrice
+        const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
+        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shippingPriceId))
+        );
+
+        // cryptoCurrencyAddress
+        const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
+        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
+        );
+
+        // messagingInformation
+        const messagingInformationId = createdMessagingInformation[0].id;
+        await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(messagingInformationId))
+        );
+
+        // delete listing-item-template
+        await listingItemTemplateService.destroy(listingItemTemplateModel.id);
+        await listingItemTemplateService.findOne(listingItemTemplateModel.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemTemplateModel.id))
+        );
+    });
 });

@@ -1,5 +1,5 @@
 import { inject, named } from 'inversify';
-import { validate } from '../../core/api/Validate';
+import { message, validate } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
@@ -26,17 +26,17 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
     /**
      * Process BidMessage of type MPA-CANCEL
      *
-     * message:
+     * data:
      *  action: action of the BidMessage
      *  listing: item hash
      *
      * @returns {Promise<Bid>}
      */
     @validate()
-    public async process( message: BidMessage ): Promise<Bid> {
+    public async process(@message(BidMessage) data: BidMessage): Promise<Bid> {
 
         // find listingItem by hash, the service will throw Exception if not
-        const listingItemModel = await this.listingItemService.findOneByHash(message.listing);
+        const listingItemModel = await this.listingItemService.findOneByHash(data.listing);
         const listingItem = listingItemModel.toJSON();
 
         // find latest bid
@@ -44,7 +44,7 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
         const latestBid = latestBidModel.toJSON();
 
         // get the BidCreateRequest and create the bid
-        const bidMessage = await this.bidFactory.getModel(message, listingItem.id, latestBid);
+        const bidMessage = await this.bidFactory.getModel(data, listingItem.id, latestBid);
         return await this.bidService.create(bidMessage as BidCreateRequest);
     }
 

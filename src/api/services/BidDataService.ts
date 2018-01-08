@@ -36,15 +36,8 @@ export class BidDataService {
 
     @validate()
     public async create( @request(BidDataCreateRequest) body: BidDataCreateRequest): Promise<BidData> {
-
-        console.log('body', body);
-
         // If the request body was valid we will create the bidData
         const bidData = await this.bidDataRepo.create(body);
-
-        // TODO: create related models
-        // bidDataRelated._id = bidData.Id;
-        // await this.bidDataRelatedService.create(bidDataRelated);
 
         // finally find and return the created bidData
         const newBidData = await this.findOne(bidData.id);
@@ -53,21 +46,14 @@ export class BidDataService {
 
     @validate()
     public async update(id: number, @request(BidDataUpdateRequest) body: BidDataUpdateRequest): Promise<BidData> {
-
         // find the existing one without related
         const bidData = await this.findOne(id, false);
 
         // set new values
-        bidData.DataValue = body.data_value;
-        bidData.DataId = body.data_id;
+        bidData.DataValue = body.dataValue;
+        bidData.DataId = body.dataId;
         // update bidData record
         const updatedBidData = await this.bidDataRepo.update(id, bidData.toJSON());
-
-        // TODO: find related record and update it
-
-        // TODO: finally find and return the updated bidData
-        // const newBidData = await this.findOne(id);
-        // return newBidData;
 
         return updatedBidData;
     }
