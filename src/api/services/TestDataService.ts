@@ -309,7 +309,8 @@ export class TestDataService {
                 addressLine1: Faker.address.streetAddress(),
                 addressLine2: Faker.address.secondaryAddress(),
                 city: Faker.address.city(),
-                country: Faker.random.arrayElement(Object.getOwnPropertyNames(Country))
+                country: Faker.random.arrayElement(Object.getOwnPropertyNames(Country)),
+                zipCode: Faker.address.zipCode()
             });
         }
         return addresses;

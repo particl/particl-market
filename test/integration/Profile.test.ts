@@ -51,13 +51,15 @@ describe('Profile', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
-            country: Country.SWEDEN
+            country: Country.SWEDEN,
+            zipCode: 452001
         }, {
             title: 'Tite',
             addressLine1: 'Ad',
             addressLine2: 'ADD 222',
             city: 'city',
-            country: Country.FINLAND
+            country: Country.FINLAND,
+            zipCode: 452001
         }] as any
     } as ProfileCreateRequest;
 

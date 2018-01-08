@@ -35,7 +35,8 @@ describe('EscrowFactory', () => {
             addressLine1: '20 seventeen street',
             addressLine2: 'march city, 2017',
             city: 'city',
-            country: Country.FINLAND
+            country: Country.FINLAND,
+            zipCode: 452001
         };
 
         const escrowMessage: EscrowMessage = await escrowFactory.getMessage(request, escrow, address);
@@ -44,7 +45,8 @@ describe('EscrowFactory', () => {
         expect(escrowMessage.listing).toBe(request.listing);
         expect(escrowMessage.nonce).toBe(request.nonce);
         // todo: fix when zip is added
-        expect(escrowMessage.info.address).toBe(address.addressLine1 + ', ' + address.addressLine2 + ', ' + address.city + ', ' + address.country);
+        expect(escrowMessage.info.address).toBe(address.addressLine1 + ', ' + address.addressLine2 + ', ' + address.city + ', ' +
+            address.country + ', ' + address.zipCode);
         expect(escrowMessage.info.memo).toBe(request.memo);
         expect(escrowMessage.escrow.rawtx).not.toBeNull();
 

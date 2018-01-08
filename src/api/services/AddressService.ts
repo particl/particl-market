@@ -56,6 +56,7 @@ export class AddressService {
         address.AddressLine2 = body.addressLine2;
         address.City = body.city;
         address.Country = body.country;
+        address.zipCode = body.zipCode;
         // update address record
         const updatedAddress = await this.addressRepo.update(id, address.toJSON());
         return updatedAddress;

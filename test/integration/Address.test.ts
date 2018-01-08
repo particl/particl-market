@@ -35,6 +35,7 @@ describe('Address', () => {
         addressLine2: 'ADD 22',
         city: 'city',
         country: Country.FINLAND,
+        zipCode: 452001,
         profile_id: 0
     } as AddressCreateRequest;
 
@@ -44,6 +45,7 @@ describe('Address', () => {
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
         country: Country.SWEDEN,
+        zipCode: 452001,
         profile_id: 0
     } as AddressUpdateRequest;
 
@@ -68,7 +70,8 @@ describe('Address', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
-            country: Country.FINLAND
+            country: Country.FINLAND,
+            zipCode: 452001
         } as AddressCreateRequest).catch(e => {
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
         });
@@ -85,6 +88,7 @@ describe('Address', () => {
         expect(result.addressLine2).toBe(testData.addressLine2);
         expect(result.city).toBe(testData.city);
         expect(result.country).toBe(testData.country);
+        expect(result.zipCode).toBe(testData.zipCode);
     });
 
     test('Should throw ValidationException because we want to create an empty address', async () => {
@@ -105,6 +109,8 @@ describe('Address', () => {
         expect(result.addressLine2).toBe(testData.addressLine2);
         expect(result.city).toBe(testData.city);
         expect(result.country).toBe(testData.country);
+        expect(result.zipCode).toBe(testData.zipCode);
+
     });
 
     test('Should return one address', async () => {
@@ -116,6 +122,8 @@ describe('Address', () => {
         expect(result.addressLine2).toBe(testData.addressLine2);
         expect(result.city).toBe(testData.city);
         expect(result.country).toBe(testData.country);
+        expect(result.zipCode).toBe(testData.zipCode);
+
     });
 
     test('Should throw ValidationException because there is no profile_id', async () => {
@@ -125,7 +133,8 @@ describe('Address', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
-            country: Country.FINLAND
+            country: Country.FINLAND,
+            zipCode: 452001
         } as AddressUpdateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
             );
@@ -141,6 +150,7 @@ describe('Address', () => {
         expect(result.addressLine2).toBe(testDataUpdated.addressLine2);
         expect(result.city).toBe(testDataUpdated.city);
         expect(result.country).toBe(testDataUpdated.country);
+        expect(result.zipCode).toBe(testDataUpdated.zipCode);
     });
 
     test('Should delete the address', async () => {

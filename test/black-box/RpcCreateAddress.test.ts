@@ -14,7 +14,8 @@ describe('CreateAddress', () => {
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
-        country: Country.FINLAND
+        country: Country.FINLAND,
+        zipCode: 452001
     };
 
     beforeAll(async () => {
@@ -34,6 +35,7 @@ describe('CreateAddress', () => {
         expect(result.addressLine2).toBe(testData.addressLine2);
         expect(result.city).toBe(testData.city);
         expect(result.country).toBe(testData.country);
+        expect(result.zipCode).toBe(testData.zipCode);
     });
 
     test('Should fail because we want to create an empty address without required fields', async () => {

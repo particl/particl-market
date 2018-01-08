@@ -27,7 +27,8 @@ export class AddressCreateCommand implements RpcCommandInterface<Address> {
      *  [2]: addressLine2
      *  [3]: city
      *  [4]: country
-     *  [5]: profileId
+     *  [5]: zipCode
+     *  [6]: profileId
      *
      * @param data
      * @returns {Promise<Address>}
@@ -41,7 +42,8 @@ export class AddressCreateCommand implements RpcCommandInterface<Address> {
             addressLine2 : data.params[2],
             city : data.params[3],
             country : data.params[4],
-            profile_id : data.params[5]
+            zipCode : data.params[5],
+            profile_id : data.params[6]
         } as AddressCreateRequest);
     }
 

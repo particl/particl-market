@@ -253,7 +253,6 @@ describe('ItemInformation', () => {
 
         testDataUpdated['listing_item_template_id'] = createdListingItemTemplate.Id;
 
-        log.debug('testDataUpdated: ', JSON.stringify(testDataUpdated, null, 2));
         const itemInformationModel: ItemInformation = await itemInformationService.update(createdId, testDataUpdated);
         const result = itemInformationModel.toJSON();
 
