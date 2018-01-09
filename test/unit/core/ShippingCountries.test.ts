@@ -1,4 +1,4 @@
-import { ShippingCountries } from '../../../src/api/enums/ShippingCountries';
+import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
 
 import { getDataSet, reduce } from 'iso3166-2-db';
 this.countryCodeList = reduce(getDataSet(), 'en');
