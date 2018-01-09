@@ -52,7 +52,7 @@ export class ShippingDestinationService {
     }
 
     @validate()
-    public async create( @request(ShippingDestinationCreateRequest) body: any): Promise<ShippingDestination> {
+    public async create( @request(ShippingDestinationCreateRequest) body: ShippingDestinationCreateRequest): Promise<ShippingDestination> {
 
         // If the request body was valid we will create the shippingDestination
         const shippingDestination = await this.shippingDestinationRepo.create(body);
@@ -63,7 +63,7 @@ export class ShippingDestinationService {
     }
 
     @validate()
-    public async update(id: number, @request(ShippingDestinationUpdateRequest) body: any): Promise<ShippingDestination> {
+    public async update(id: number, @request(ShippingDestinationUpdateRequest) body: ShippingDestinationUpdateRequest): Promise<ShippingDestination> {
 
         // find the existing one without related
         const shippingDestination = await this.findOne(id, false);
@@ -80,37 +80,4 @@ export class ShippingDestinationService {
     public async destroy(id: number): Promise<void> {
         await this.shippingDestinationRepo.destroy(id);
     }
-
-    // TODO: REMOVE
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ShippingDestination>> {
-        return this.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ShippingDestination> {
-        return this.findOne(data.params[0]);
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ShippingDestination> {
-        return this.create({
-            country: data.params[0],
-            shippingAvailability: data.params[1]
-        });
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ShippingDestination> {
-        return this.update(data.params[0], {
-            country: data.params[1],
-            shippingAvailability: data.params[2]
-        });
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
-    }
-
 }
