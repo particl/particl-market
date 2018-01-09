@@ -298,7 +298,7 @@ describe('ListingItem', () => {
     test('Should list listing items with our new create one', async () => {
         const listingItemCollection = await listingItemService.findAll();
         const listingItem = listingItemCollection.toJSON();
-        expect(listingItem.length).toBe(1);
+        expect(listingItem).toHaveLength(1);
 
         const result = listingItem[0];
 
@@ -895,8 +895,8 @@ describe('ListingItem', () => {
         expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.type);
         expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.address);
 
-        expect(result.MessagingInformation.length).toBe(0);
-        expect(result.ListingItemObjects.length).toBe(0);
+        expect(result.MessagingInformation).toHaveLength(0);
+        expect(result.ListingItemObjects).toHaveLength(0);
         // tslint:enable:max-line-length
     });
 
@@ -962,7 +962,7 @@ describe('ListingItem', () => {
             expect(e).toEqual(new NotFoundException(itemImageId))
         );
 
-        expect(result.MessagingInformation.length).toBe(0);
+        expect(result.MessagingInformation).toHaveLength(0);
 
         // check message-information deleted from DB
         // messagingInformation
@@ -971,7 +971,7 @@ describe('ListingItem', () => {
             expect(e).toEqual(new NotFoundException(messagingInformationId))
         );
 
-        expect(result.ListingItemObjects.length).toBe(0);
+        expect(result.ListingItemObjects).toHaveLength(0);
         // tslint:enable:max-line-length
     });
 
@@ -993,8 +993,8 @@ describe('ListingItem', () => {
 
         // tslint:disable:max-line-length
 
-        expect(result.MessagingInformation.length).not.toBe(0);
-        expect(result.ListingItemObjects.length).toBe(0);
+        expect(result.MessagingInformation).not.toHaveLength(0);
+        expect(result.ListingItemObjects).toHaveLength(0);
 
         // check item-information created again
         expect(createdItemInformation.id).not.toBe(result.ItemInformation.id);
@@ -1135,8 +1135,8 @@ describe('ListingItem', () => {
 
         expect(result.ItemInformation).toEqual({});
         expect(result.PaymentInformation).toEqual({});
-        expect(result.MessagingInformation.length).toBe(0);
-        expect(result.ListingItemObjects.length).toBe(0);
+        expect(result.MessagingInformation).toHaveLength(0);
+        expect(result.ListingItemObjects).toHaveLength(0);
 
         // check its deleted from db after update
         // item-information
