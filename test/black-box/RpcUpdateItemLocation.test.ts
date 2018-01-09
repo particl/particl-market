@@ -2,6 +2,10 @@ import { rpc, api } from './lib/api';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
+import { PaymentType } from '../../src/api/enums/PaymentType';
+import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { Country } from '../../src/api/enums/Country';
 
 describe('/updateItemLocation', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -9,6 +13,7 @@ describe('/updateItemLocation', () => {
 
     const testDataListingItemTemplate = {
         profile_id: 0,
+        hash: '',
         itemInformation: {
             title: 'Item Information with Templates',
             shortDescription: 'Item short description with Templates',
@@ -18,28 +23,16 @@ describe('/updateItemLocation', () => {
                 key: 'cat_high_luxyry_items'
             },
             itemLocation: {
-                region: 'NEWYARK',
+                region: Country.ASIA,
                 address: 'USA'
             }
         },
         paymentInformation: {
-            type: 'payment',
-            itemPrice: {
-                currency: Currency.PARTICL,
-                basePrice: 12,
-                shippingPrice: {
-                    domestic: 5,
-                    international: 7
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.STEALTH,
-                    address: 'This is temp address.'
-                }
-            }
+            type: PaymentType.SALE
         }
-    };
+    } as ListingItemTemplateCreateRequest;
 
-    const testDataUpdated = ['NEWYARK', 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
+    const testDataUpdated = [Country.ASIA, 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
 
     let createdTemplateId;
     let createdItemInformationId;
@@ -49,6 +42,9 @@ describe('/updateItemLocation', () => {
         // profile
         const defaultProfile = await testUtil.getDefaultProfile();
         testDataListingItemTemplate.profile_id = defaultProfile.id;
+
+        // set hash
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
         // create item template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
@@ -109,12 +105,15 @@ describe('/updateItemLocation', () => {
         // set listing item id in item information
         testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
 
+        // set hash
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+
         // create new  item template
         const newListingItemTemplate = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
         const newTemplateId = newListingItemTemplate.getBody()['result'].id;
 
         // update item location
-        const addDataRes: any = await rpc(method, [newTemplateId, 'NEW REASON', 'TEST ADDRESS', 'TEST TITLE', 'TEST DESC', 55.6, 60.8]);
+        const addDataRes: any = await rpc(method, [newTemplateId, Country.ASIA, 'TEST ADDRESS', 'TEST TITLE', 'TEST DESC', 55.6, 60.8]);
 
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);

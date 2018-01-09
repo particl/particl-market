@@ -4,6 +4,8 @@ import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAdd
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
+import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 
 describe('/removeItemImage', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -11,40 +13,22 @@ describe('/removeItemImage', () => {
     const keys = [
         'id', 'hash', 'updatedAt', 'createdAt'
     ];
+
     const testDataListingItemTemplate = {
         profile_id: 0,
+        hash: '',
         itemInformation: {
-            title: 'Item Information with Templates First',
-            shortDescription: 'Item short description with Templates First',
-            longDescription: 'Item long description with Templates First',
+        title: 'item title1',
+        shortDescription: 'item short desc1',
+        longDescription: 'item long desc1',
             itemCategory: {
                 key: 'cat_high_luxyry_items'
-            },
-            listingItemId: null
+            }
         },
         paymentInformation: {
-            type: PaymentType.SALE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 100,
-                    seller: 100
-                }
-            },
-            itemPrice: {
-                currency: Currency.BITCOIN,
-                basePrice: 0.0001,
-                shippingPrice: {
-                    domestic: 0.123,
-                    international: 1.234
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.NORMAL,
-                    address: 'This is temp address.'
-                }
-            }
+            type: PaymentType.SALE
         }
-    };
+    } as ListingItemTemplateCreateRequest;
 
     let createdTemplateId;
     let createdItemInfoId;
@@ -56,6 +40,10 @@ describe('/removeItemImage', () => {
         await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
         testDataListingItemTemplate.profile_id = defaultProfile.id;
+
+        // set hash
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+
         // create item template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
         const result: any = addListingItemTempRes.getBody()['result'];
@@ -77,6 +65,9 @@ describe('/removeItemImage', () => {
     test('Should fail to remove ItemImage because there is a ListingItem related to ItemInformation.', async () => {
         // set listing item id
         testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
+        // set hash
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
         const result: any = addListingItemTempRes.getBody()['result'];
         const newCreatedTemplateId = result.id;

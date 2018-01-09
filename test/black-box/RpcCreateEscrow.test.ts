@@ -3,38 +3,24 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
+import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
+import { PaymentType } from '../../src/api/enums/PaymentType';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 
 describe('/CreateEscrow', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const method = 'createescrow';
     let profileId;
+
     const testDataListingItemTemplate = {
         profile_id: 0,
-        itemInformation: {
-            title: 'Item Information with Templates',
-            shortDescription: 'Item short description with Templates',
-            longDescription: 'Item long description with Templates',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            }
-        },
+        hash: '',
         paymentInformation: {
-            type: 'payment',
-            itemPrice: {
-                currency: Currency.PARTICL,
-                basePrice: 12,
-                shippingPrice: {
-                    domestic: 5,
-                    international: 7
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.STEALTH,
-                    address: 'This is temp address.'
-                }
-            }
+            type: PaymentType.SALE
         }
-    };
+    } as ListingItemTemplateCreateRequest;
+
     const testData = {
         type: EscrowType.MAD,
         ratio: {
@@ -50,8 +36,11 @@ describe('/CreateEscrow', () => {
     });
 
     test('Should Create new Escrow by RPC', async () => {
-
+        // set profile
         testDataListingItemTemplate.profile_id = profileId;
+
+        // set hash
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
 
@@ -75,6 +64,8 @@ describe('/CreateEscrow', () => {
 
         delete testDataListingItemTemplate.itemInformation;
         delete testDataListingItemTemplate.paymentInformation;
+
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
         const createdTemplateId = addListingItemTempRes.getBody()['result'].id;

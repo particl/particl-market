@@ -6,6 +6,9 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
+import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { Country } from '../../src/api/enums/Country';
 
 describe('UpdateMessagingInformation', () => {
 
@@ -14,19 +17,29 @@ describe('UpdateMessagingInformation', () => {
 
     const testDataListingItemTemplate = {
         profile_id: 0,
+        hash: '',
         itemInformation: {
-            title: 'Item Information with Templates First',
-            shortDescription: 'Item short description with Templates First',
-            longDescription: 'Item long description with Templates First',
+            title: 'Item Information with Templates',
+            shortDescription: 'Item short description with Templates',
+            longDescription: 'Item long description with Templates',
+            listingItemId: null,
             itemCategory: {
                 key: 'cat_high_luxyry_items'
             },
-            listingItemId: null
+            itemLocation: {
+                region: Country.ASIA,
+                address: 'USA'
+            }
         },
         messagingInformation: [{
-            listingItemId: null
-        }]
-    };
+            listingItemId: null,
+            protocol: MessagingProtocolType.SMSG,
+            publicKey: 'publickey2'
+        }],
+        paymentInformation: {
+            type: PaymentType.SALE
+        }
+    } as ListingItemTemplateCreateRequest;
 
     let createdTemplateId;
     let listingItemId;
@@ -35,6 +48,10 @@ describe('UpdateMessagingInformation', () => {
         await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
         testDataListingItemTemplate.profile_id = defaultProfile.id;
+
+        // set hash
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+
         // create listing-item-template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
         const result: any = addListingItemTempRes.getBody()['result'];
@@ -47,7 +64,7 @@ describe('UpdateMessagingInformation', () => {
 
     const messageInfoData = {
         protocol: MessagingProtocolType.SMSG,
-        publicKey: 'publickey1'
+        publicKey: 'publickey2'
     };
 
     test('Should update the message-information', async () => {
@@ -65,10 +82,14 @@ describe('UpdateMessagingInformation', () => {
         // set listing item id in item information
         testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
         // set listing item id in message information
-        testDataListingItemTemplate.messagingInformation[0].listingItemId = 1;
+        testDataListingItemTemplate.messagingInformation[0].listingItemId = listingItemId;
+
+        // set hash
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
         // create new item template
         const listingItemTemplate = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
+
         const listingItemTemplateId = listingItemTemplate.getBody()['result'].id;
         const res = await rpc(method, [listingItemTemplateId, messageInfoData.protocol, messageInfoData.publicKey]);
         res.expectJson();
