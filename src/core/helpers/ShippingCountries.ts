@@ -1,4 +1,5 @@
 import { getDataSet, reduce } from 'iso3166-2-db';
+import { NotFoundException } from '../../api/exceptions/NotFoundException';
 
 export class ShippingCountries {
     public static countryCodeList;
@@ -12,6 +13,20 @@ export class ShippingCountries {
                 this.countryList[this.countryCodeList[x].name] = x;
             }
         }
+    }
+
+    public static getCountry( countryCode: string ): string {
+        if ( this.countryCodeList[countryCode] ) {
+            return this.countryCodeList[countryCode].iso;
+        }
+        throw new NotFoundException('Could not find country code <' + countryCode + '>');
+    }
+
+    public static getCountryCode( country: string ): string {
+        if ( this.countryList[country] ) {
+            return this.countryList[country];
+        }
+        throw new NotFoundException('Could not find country <' + country + '>');
     }
 
     public static isValidCountry( country: string ): boolean {
