@@ -36,7 +36,7 @@ describe('EscrowFactory', () => {
             addressLine2: 'march city, 2017',
             city: 'city',
             country: Country.FINLAND,
-            zipCode: 85001
+            zipCode: '85001'
         };
 
         const escrowMessage: EscrowMessage = await escrowFactory.getMessage(request, escrow, address);
