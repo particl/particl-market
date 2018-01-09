@@ -283,10 +283,10 @@ describe('ListingItem', () => {
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
-        const listingItemTemplateModel: ListingItem = await listingItemService.create(testDataToSave);
-        createdId = listingItemTemplateModel.Id;
+        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
+        createdId = listingItemModel.Id;
 
-        const result = listingItemTemplateModel.toJSON();
+        const result = listingItemModel.toJSON();
         // log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result.hash).toBe(testDataToSave.hash);
@@ -298,7 +298,7 @@ describe('ListingItem', () => {
     test('Should list listing items with our new create one', async () => {
         const listingItemCollection = await listingItemService.findAll();
         const listingItem = listingItemCollection.toJSON();
-        expect(listingItem.length).toBe(1);
+        expect(listingItem).toHaveLength(1);
 
         const result = listingItem[0];
 
@@ -306,8 +306,8 @@ describe('ListingItem', () => {
     });
 
     test('Should return one simple listing item', async () => {
-        const listingItemTemplateModel: ListingItem = await listingItemService.findOne(createdId);
-        const result = listingItemTemplateModel.toJSON();
+        const listingItemModel: ListingItem = await listingItemService.findOne(createdId);
+        const result = listingItemModel.toJSON();
 
         expect(result.hash).toBe(testData.hash);
     });
@@ -316,8 +316,8 @@ describe('ListingItem', () => {
 
         testDataUpdated.market_id = defaultMarket.Id;
 
-        const listingItemTemplateModel: ListingItem = await listingItemService.update(createdId, testDataUpdated);
-        const result = listingItemTemplateModel.toJSON();
+        const listingItemModel: ListingItem = await listingItemService.update(createdId, testDataUpdated);
+        const result = listingItemModel.toJSON();
 
         expect(result.hash).toBe(testDataUpdated.hash);
         expect(result.Market.name).toBe(defaultMarket.Name);
@@ -350,11 +350,9 @@ describe('ListingItem', () => {
         expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.international);
         expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.type);
         expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.address);
-        // expect(result.PaymentInformation.listingItemTemplateId).toBe(null);
 
-        expect(result.MessagingInformation.protocol).toBe(testDataUpdated.messagingInformation.protocol);
-        expect(result.MessagingInformation.publicKey).toBe(testDataUpdated.messagingInformation.publicKey);
-        // expect(result.MessagingInformation.listingItemTemplateId).toBe(null);
+        expect(result.MessagingInformation[0].protocol).toBe(testDataUpdated.messagingInformation[0].protocol);
+        expect(result.MessagingInformation[0].publicKey).toBe(testDataUpdated.messagingInformation[0].publicKey);
         // tslint:enable:max-line-length
 
     });
@@ -832,6 +830,389 @@ describe('ListingItem', () => {
         await listingItemTemplateService.destroy(listingItemTemplateModel.id);
         await listingItemTemplateService.findOne(listingItemTemplateModel.id, false).catch(e =>
             expect(e).toEqual(new NotFoundException(listingItemTemplateModel.id))
+        );
+    });
+
+    // update test cases
+    test('Should update listing-item with item-information + payment-informataion', async () => {
+        // create listing-item
+        const testDataToSave = JSON.parse(JSON.stringify(testData));
+        testData.hash = crypto.SHA256(new Date().getTime().toString()).toString();
+        testDataToSave.market_id = defaultMarket.Id;
+
+        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
+        const resultCreate = listingItemModel.toJSON();
+
+        createdId = resultCreate.id;
+        createdItemInformation = resultCreate.ItemInformation;
+        createdPaymentInformation = resultCreate.PaymentInformation;
+        createdMessagingInformation = resultCreate.MessagingInformation;
+
+        const testDataToUpdate = JSON.parse(JSON.stringify(testDataUpdated));
+        testDataToUpdate.market_id = defaultMarket.Id;
+
+        // remove the stuff that we dont need in this test
+        delete testDataToUpdate.messagingInformation;
+        delete testDataToUpdate.listingitemobjects;
+
+        const listingItemModel2: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
+        const result = listingItemModel2.toJSON();
+
+        expect(result.hash).toBe(testDataToUpdate.hash);
+        expect(result.Market.name).toBe(defaultMarket.Name);
+        expect(result.Market.address).toBe(defaultMarket.Address);
+
+        // tslint:disable:max-line-length
+        // check updated same record
+        expect(result.ItemInformation.id).toBe(createdItemInformation.id);
+
+        expect(result.ItemInformation.title).toBe(testDataUpdated.itemInformation.title);
+        expect(result.ItemInformation.shortDescription).toBe(testDataUpdated.itemInformation.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(testDataUpdated.itemInformation.longDescription);
+        expect(result.ItemInformation.ItemCategory.name).toBe(testDataUpdated.itemInformation.itemCategory.name);
+        expect(result.ItemInformation.ItemCategory.description).toBe(testDataUpdated.itemInformation.itemCategory.description);
+        expect(result.ItemInformation.ItemLocation.region).toBe(testDataUpdated.itemInformation.itemLocation.region);
+        expect(result.ItemInformation.ItemLocation.address).toBe(testDataUpdated.itemInformation.itemLocation.address);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.markerTitle);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.markerText);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.lat);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.lng);
+        expect(result.ItemInformation.ShippingDestinations).toHaveLength(1);
+        expect(result.ItemInformation.ItemImages).toHaveLength(1);
+        expect(result.ItemInformation.listingItemTemplateId).toBe(null);
+
+        // check updated same record
+        expect(result.PaymentInformation.id).toBe(createdPaymentInformation.id);
+
+        expect(result.PaymentInformation.type).toBe(testDataUpdated.paymentInformation.type);
+        expect(result.PaymentInformation.Escrow.type).toBe(testDataUpdated.paymentInformation.escrow.type);
+        expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testDataUpdated.paymentInformation.escrow.ratio.buyer);
+        expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testDataUpdated.paymentInformation.escrow.ratio.seller);
+        expect(result.PaymentInformation.ItemPrice.currency).toBe(testDataUpdated.paymentInformation.itemPrice.currency);
+        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testDataUpdated.paymentInformation.itemPrice.basePrice);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.domestic);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.international);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.type);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.address);
+
+        expect(result.MessagingInformation).toHaveLength(0);
+        expect(result.ListingItemObjects).toHaveLength(0);
+        // tslint:enable:max-line-length
+    });
+
+    test('Should update same listing-item with payment-informataion', async () => {
+        // create listing-item
+        const testDataToUpdate = JSON.parse(JSON.stringify(testDataUpdated));
+        testDataToUpdate.market_id = defaultMarket.Id;
+
+        // remove the stuff that we dont need in this test
+        delete testDataToUpdate.itemInformation;
+        delete testDataToUpdate.messagingInformation;
+        delete testDataToUpdate.listingitemobjects;
+
+        const listingItemModel: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
+        const result = listingItemModel.toJSON();
+
+        expect(result.hash).toBe(testDataToUpdate.hash);
+        expect(result.Market.name).toBe(defaultMarket.Name);
+        expect(result.Market.address).toBe(defaultMarket.Address);
+
+        // tslint:disable:max-line-length
+
+        expect(result.PaymentInformation.id).toBe(createdPaymentInformation.id);
+        expect(result.PaymentInformation.type).toBe(testDataUpdated.paymentInformation.type);
+        expect(result.PaymentInformation.Escrow.type).toBe(testDataUpdated.paymentInformation.escrow.type);
+        expect(result.PaymentInformation.Escrow.Ratio.buyer).toBe(testDataUpdated.paymentInformation.escrow.ratio.buyer);
+        expect(result.PaymentInformation.Escrow.Ratio.seller).toBe(testDataUpdated.paymentInformation.escrow.ratio.seller);
+        expect(result.PaymentInformation.ItemPrice.currency).toBe(testDataUpdated.paymentInformation.itemPrice.currency);
+        expect(result.PaymentInformation.ItemPrice.basePrice).toBe(testDataUpdated.paymentInformation.itemPrice.basePrice);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.domestic).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.domestic);
+        expect(result.PaymentInformation.ItemPrice.ShippingPrice.international).toBe(testDataUpdated.paymentInformation.itemPrice.shippingPrice.international);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.type);
+        expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.address);
+
+        expect(result.ItemInformation).toEqual({});
+        // check ItemInformation deleted from db
+        // item-information
+        await itemInformationService.findOne(createdItemInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdItemInformation.id))
+        );
+
+        // item-location
+        const itemLocationId = createdItemInformation.ItemLocation.id;
+        await itemLocationService.findOne(itemLocationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemLocationId))
+        );
+
+        // location marker
+        const locationMarkerId = createdItemInformation.ItemLocation.LocationMarker.id;
+        await locationMarkerService.findOne(locationMarkerId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(locationMarkerId))
+        );
+
+        // shipping-destination
+        const shipDestinationId = createdItemInformation.ShippingDestinations[0].id;
+        await shippingDestinationService.findOne(shipDestinationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shipDestinationId))
+        );
+
+        // item image
+        const itemImageId = createdItemInformation.ItemImages[0].id;
+        await itemImageService.findOne(itemImageId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemImageId))
+        );
+
+        expect(result.MessagingInformation).toHaveLength(0);
+
+        // check message-information deleted from DB
+        // messagingInformation
+        const messagingInformationId = createdMessagingInformation[0].id;
+        await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(messagingInformationId))
+        );
+
+        expect(result.ListingItemObjects).toHaveLength(0);
+        // tslint:enable:max-line-length
+    });
+
+    test('Should update same listing-item with messaging-information + item-information', async () => {
+        // create listing-item
+        const testDataToUpdate = JSON.parse(JSON.stringify(testDataUpdated));
+        testDataToUpdate.market_id = defaultMarket.Id;
+
+        // remove the stuff that we dont need in this test
+        delete testDataToUpdate.paymentInformation;
+        delete testDataToUpdate.listingitemobjects;
+
+        const listingItemModel: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
+        const result = listingItemModel.toJSON();
+
+        expect(result.hash).toBe(testDataToUpdate.hash);
+        expect(result.Market.name).toBe(defaultMarket.Name);
+        expect(result.Market.address).toBe(defaultMarket.Address);
+
+        // tslint:disable:max-line-length
+
+        expect(result.MessagingInformation).not.toHaveLength(0);
+        expect(result.ListingItemObjects).toHaveLength(0);
+
+        // check item-information created again
+        expect(createdItemInformation.id).not.toBe(result.ItemInformation.id);
+
+        expect(result.ItemInformation.title).toBe(testDataUpdated.itemInformation.title);
+        expect(result.ItemInformation.shortDescription).toBe(testDataUpdated.itemInformation.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(testDataUpdated.itemInformation.longDescription);
+        expect(result.ItemInformation.ItemCategory.name).toBe(testDataUpdated.itemInformation.itemCategory.name);
+        expect(result.ItemInformation.ItemCategory.description).toBe(testDataUpdated.itemInformation.itemCategory.description);
+        expect(result.ItemInformation.ItemLocation.region).toBe(testDataUpdated.itemInformation.itemLocation.region);
+        expect(result.ItemInformation.ItemLocation.address).toBe(testDataUpdated.itemInformation.itemLocation.address);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.markerTitle);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.markerText);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.lat);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.lng);
+        expect(result.ItemInformation.ShippingDestinations).toHaveLength(1);
+        expect(result.ItemInformation.ItemImages).toHaveLength(1);
+        expect(result.ItemInformation.listingItemTemplateId).toBe(null);
+
+        // check messaging-information created again
+        expect(createdMessagingInformation[0].id).not.toBe(result.MessagingInformation[0].id);
+
+        expect(result.MessagingInformation[0].protocol).toBe(testDataUpdated.messagingInformation[0].protocol);
+        expect(result.MessagingInformation[0].publicKey).toBe(testDataUpdated.messagingInformation[0].publicKey);
+        // tslint:enable:max-line-length
+
+        expect(result.PaymentInformation).toEqual({});
+        // check payment-information deleted from db
+        // paymentInformation
+        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        );
+
+        // escrow
+        const escrowId = createdPaymentInformation.Escrow.id;
+        await escrowService.findOne(escrowId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(escrowId))
+        );
+
+        // escrow-ratio
+        const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
+        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        );
+
+        // itemPrice
+        const itemPriceId = createdPaymentInformation.ItemPrice.id;
+        await itemPriceService.findOne(itemPriceId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemPriceId))
+        );
+
+        // shippingPrice
+        const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
+        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shippingPriceId))
+        );
+
+        // cryptoCurrencyAddress
+        const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
+        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
+        );
+
+        createdItemInformation = result.ItemInformation;
+        createdMessagingInformation = result.MessagingInformation;
+
+        // delete data
+        await listingItemService.destroy(createdId);
+        await listingItemService.findOne(createdId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
+
+        // item-information
+        await itemInformationService.findOne(createdItemInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdItemInformation.id))
+        );
+
+        // item-location
+        const itemLocationId = createdItemInformation.ItemLocation.id;
+        await itemLocationService.findOne(itemLocationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemLocationId))
+        );
+
+        // location marker
+        const locationMarkerId = createdItemInformation.ItemLocation.LocationMarker.id;
+        await locationMarkerService.findOne(locationMarkerId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(locationMarkerId))
+        );
+
+        // shipping-destination
+        const shipDestinationId = createdItemInformation.ShippingDestinations[0].id;
+        await shippingDestinationService.findOne(shipDestinationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shipDestinationId))
+        );
+
+        // item image
+        const itemImageId = createdItemInformation.ItemImages[0].id;
+        await itemImageService.findOne(itemImageId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemImageId))
+        );
+
+        // messagingInformation
+        const messagingInformationId = createdMessagingInformation[0].id;
+        await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(messagingInformationId))
+        );
+    });
+
+    test('Should update listing-item without related models', async () => {
+        // create listing-item
+        const testDataToSave = JSON.parse(JSON.stringify(testData));
+        testData.hash = crypto.SHA256(new Date().getTime().toString()).toString();
+        testDataToSave.market_id = defaultMarket.Id;
+
+        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
+        const resultCreate = listingItemModel.toJSON();
+
+        createdId = resultCreate.id;
+        createdItemInformation = resultCreate.ItemInformation;
+        createdPaymentInformation = resultCreate.PaymentInformation;
+        createdMessagingInformation = resultCreate.MessagingInformation;
+
+        const testDataToUpdate = JSON.parse(JSON.stringify(testDataUpdated));
+        testDataToUpdate.market_id = defaultMarket.Id;
+
+        // remove the stuff that we dont need in this test
+        delete testDataToUpdate.itemInformation;
+        delete testDataToUpdate.paymentInformation;
+        delete testDataToUpdate.messagingInformation;
+        delete testDataToUpdate.listingitemobjects;
+
+        const listingItemModel2: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
+        const result = listingItemModel2.toJSON();
+
+        expect(result.hash).toBe(testDataToUpdate.hash);
+        expect(result.Market.name).toBe(defaultMarket.Name);
+        expect(result.Market.address).toBe(defaultMarket.Address);
+
+        expect(result.ItemInformation).toEqual({});
+        expect(result.PaymentInformation).toEqual({});
+        expect(result.MessagingInformation).toHaveLength(0);
+        expect(result.ListingItemObjects).toHaveLength(0);
+
+        // check its deleted from db after update
+        // item-information
+        await itemInformationService.findOne(createdItemInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdItemInformation.id))
+        );
+
+        // item-location
+        const itemLocationId = createdItemInformation.ItemLocation.id;
+        await itemLocationService.findOne(itemLocationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemLocationId))
+        );
+
+        // location marker
+        const locationMarkerId = createdItemInformation.ItemLocation.LocationMarker.id;
+        await locationMarkerService.findOne(locationMarkerId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(locationMarkerId))
+        );
+
+        // shipping-destination
+        const shipDestinationId = createdItemInformation.ShippingDestinations[0].id;
+        await shippingDestinationService.findOne(shipDestinationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shipDestinationId))
+        );
+
+        // item image
+        const itemImageId = createdItemInformation.ItemImages[0].id;
+        await itemImageService.findOne(itemImageId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemImageId))
+        );
+
+        // paymentInformation
+        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        );
+
+        // escrow
+        const escrowId = createdPaymentInformation.Escrow.id;
+        await escrowService.findOne(escrowId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(escrowId))
+        );
+
+        // escrow-ratio
+        const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
+        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        );
+
+        // itemPrice
+        const itemPriceId = createdPaymentInformation.ItemPrice.id;
+        await itemPriceService.findOne(itemPriceId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemPriceId))
+        );
+
+        // shippingPrice
+        const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
+        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shippingPriceId))
+        );
+
+        // cryptoCurrencyAddress
+        const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
+        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
+        );
+
+        // messagingInformation
+        const messagingInformationId = createdMessagingInformation[0].id;
+        await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(messagingInformationId))
+        );
+
+        // delete listing-item
+        await listingItemService.destroy(createdId);
+        await listingItemService.findOne(createdId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
         );
     });
 });

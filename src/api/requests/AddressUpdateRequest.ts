@@ -23,7 +23,7 @@ export class AddressUpdateRequest extends RequestBody {
     public country: Country;
 
     @IsNotEmpty()
-    public zipCode: string | number;
+    public zipCode: string;
 
 }
 // tslint:enable:variable-name

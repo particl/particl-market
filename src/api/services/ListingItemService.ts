@@ -141,25 +141,12 @@ export class ListingItemService {
         // update listingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
 
-        // find related record and delete it and recreate related data
-        // const itemInformation = updatedListingItem.related('ItemInformation').toJSON();
-        // const paymentInformation = updatedListingItem.related('PaymentInformation').toJSON();
-
-        // if (!_.isEmpty(paymentInformation)) {
-        //     body.paymentInformation.listing_item_id = id;
-        //     await this.paymentInformationService.update(paymentInformation.id, body.paymentInformation as PaymentInformationUpdateRequest);
-
-        // } else {
-        //     body.paymentInformation.listing_item_id = id;
-        //     await this.paymentInformationService.create(body.paymentInformation as PaymentInformationCreateRequest);
-        // }
-
         // update listingItem record
         this.log.debug('updatedListingItem.toJSON():', updatedListingItem.toJSON());
 
         // Item-information
         let itemInformation = updatedListingItem.related('ItemInformation').toJSON() || {};
-
+        // if the related one exists allready, then update. if it doesnt exist, create. and if the related one is missing, then remove.
         if (!_.isEmpty(body.itemInformation)) {
             if (!_.isEmpty(itemInformation)) {
                 const itemInformationId = itemInformation.id;
@@ -171,6 +158,8 @@ export class ListingItemService {
                 itemInformation.listing_item_id = id;
                 await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
             }
+        } else if (!_.isEmpty(itemInformation)) {
+            await this.itemInformationService.destroy(itemInformation.id);
         }
 
         // payment-information
@@ -187,6 +176,8 @@ export class ListingItemService {
                 paymentInformation.listing_item_id = id;
                 await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
             }
+        } else if (!_.isEmpty(paymentInformation)) {
+            await this.paymentInformationService.destroy(paymentInformation.id);
         }
 
         // find related record and delete it and recreate related data

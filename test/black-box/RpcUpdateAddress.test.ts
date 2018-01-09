@@ -17,7 +17,7 @@ describe('/RpcUpdateAddress', () => {
             addressLine2: 'ADD 22',
             city: 'city',
             country: Country.SWEDEN,
-            zipCode: 85001
+            zipCode: '85001'
         }]
     };
 
@@ -27,7 +27,7 @@ describe('/RpcUpdateAddress', () => {
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
         country: Country.FINLAND,
-        zipCode: 85001
+        zipCode: '85001'
     };
 
     beforeAll(async () => {
