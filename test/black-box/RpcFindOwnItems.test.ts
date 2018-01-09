@@ -8,13 +8,15 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
+import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
+import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';
 
 describe('/findOwnItems', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = 'findownitems';
 
     const testData = {
-        market_id: 0,
+        market_id: null,
         hash: 'hash1',
         itemInformation: {
             title: 'item title1',
@@ -95,35 +97,17 @@ describe('/findOwnItems', () => {
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1'
         }]
-    };
+    } as ListingItemCreateRequest;
 
     const testDataListingItemTemplate = {
         profile_id: 0,
-        itemInformation: {
-            title: 'Item Information with Templates',
-            shortDescription: 'Item short description with Templates',
-            longDescription: 'Item long description with Templates',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            }
-        },
+        hash: 'itemhash',
         paymentInformation: {
-            type: 'payment',
-            itemPrice: {
-                currency: Currency.PARTICL,
-                basePrice: 12,
-                shippingPrice: {
-                    domestic: 5,
-                    international: 7
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.STEALTH,
-                    address: 'This is temp address.'
-                }
-            }
+            type: PaymentType.SALE
         }
-    };
-
+    } as ListingItemTemplateCreateRequest;
+    const pageNumber = 1;
+    const pageLimit = 2;
     let createdHash;
     let profileId;
     let createdTemplateId;
@@ -131,9 +115,10 @@ describe('/findOwnItems', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        // profile
+        // get default profile
         const defaultProfile = await testUtil.getDefaultProfile();
         profileId = defaultProfile.id;
+
         // add market
         const resMarket = await rpc('addmarket', ['Test Market', 'privateKey', 'Market Address']);
         marketId = resMarket.getBody()['result'].id;
@@ -142,18 +127,18 @@ describe('/findOwnItems', () => {
         testDataListingItemTemplate.profile_id = profileId;
 
         // create item template
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
+        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate as ListingItemTemplateCreateRequest);
         createdTemplateId = addListingItemTempRes.getBody()['result'].id;
         testData['listing_item_template_id'] = createdTemplateId;
 
         // create listing item
-        const addListingItemRes: any = await testUtil.addData('listingitem', testData);
+        const addListingItemRes: any = await testUtil.addData('listingitem', testData as ListingItemCreateRequest);
         createdHash = addListingItemRes.getBody()['result'].hash;
     });
 
     test('Should get all own listing items by profile id', async () => {
         // get own items
-        const addDataRes: any = await rpc(method, [1, 2, 'ASC', profileId, '', '', true]);
+        const addDataRes: any = await rpc(method, [pageNumber, pageLimit, 'ASC', profileId, '', '', true]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         const result: any = addDataRes.getBody()['result'];
@@ -164,11 +149,12 @@ describe('/findOwnItems', () => {
     });
 
     test('Should get emply own listing items, because invalid profile id ', async () => {
-        const res: any = await rpc(method, [1, 2, 'ASC', '', '', '', true]);
+        const res: any = await rpc(method, [pageNumber, pageLimit, 'ASC', '', '', '', true]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(0);
+
     });
 
 });

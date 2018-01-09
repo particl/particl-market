@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { ValidateIf, IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 
@@ -12,6 +12,7 @@ export class ItemImageDataCreateRequest extends RequestBody {
     public dataId: string;
 
     // @IsNotEmpty()
+    @ValidateIf(o => o.protocol)
     @IsEnum(ImageDataProtocolType)
     public protocol: ImageDataProtocolType;
 
