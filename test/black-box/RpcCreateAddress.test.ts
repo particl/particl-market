@@ -15,7 +15,7 @@ describe('CreateAddress', () => {
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
         country: Country.FINLAND,
-        zipCode: 85001
+        zipCode: '85001'
     };
 
     beforeAll(async () => {
