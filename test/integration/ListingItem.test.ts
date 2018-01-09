@@ -283,10 +283,10 @@ describe('ListingItem', () => {
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
-        const listingItemTemplateModel: ListingItem = await listingItemService.create(testDataToSave);
-        createdId = listingItemTemplateModel.Id;
+        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
+        createdId = listingItemModel.Id;
 
-        const result = listingItemTemplateModel.toJSON();
+        const result = listingItemModel.toJSON();
         // log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result.hash).toBe(testDataToSave.hash);
@@ -306,8 +306,8 @@ describe('ListingItem', () => {
     });
 
     test('Should return one simple listing item', async () => {
-        const listingItemTemplateModel: ListingItem = await listingItemService.findOne(createdId);
-        const result = listingItemTemplateModel.toJSON();
+        const listingItemModel: ListingItem = await listingItemService.findOne(createdId);
+        const result = listingItemModel.toJSON();
 
         expect(result.hash).toBe(testData.hash);
     });
@@ -316,8 +316,8 @@ describe('ListingItem', () => {
 
         testDataUpdated.market_id = defaultMarket.Id;
 
-        const listingItemTemplateModel: ListingItem = await listingItemService.update(createdId, testDataUpdated);
-        const result = listingItemTemplateModel.toJSON();
+        const listingItemModel: ListingItem = await listingItemService.update(createdId, testDataUpdated);
+        const result = listingItemModel.toJSON();
 
         expect(result.hash).toBe(testDataUpdated.hash);
         expect(result.Market.name).toBe(defaultMarket.Name);
@@ -351,8 +351,8 @@ describe('ListingItem', () => {
         expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.type).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.type);
         expect(result.PaymentInformation.ItemPrice.CryptocurrencyAddress.address).toBe(testDataUpdated.paymentInformation.itemPrice.cryptocurrencyAddress.address);
 
-        expect(result.MessagingInformation.protocol).toBe(testDataUpdated.messagingInformation.protocol);
-        expect(result.MessagingInformation.publicKey).toBe(testDataUpdated.messagingInformation.publicKey);
+        expect(result.MessagingInformation[0].protocol).toBe(testDataUpdated.messagingInformation[0].protocol);
+        expect(result.MessagingInformation[0].publicKey).toBe(testDataUpdated.messagingInformation[0].publicKey);
         // tslint:enable:max-line-length
 
     });
@@ -855,8 +855,8 @@ describe('ListingItem', () => {
         delete testDataToUpdate.messagingInformation;
         delete testDataToUpdate.listingitemobjects;
 
-        const listingItemTemplateModel: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
-        const result = listingItemTemplateModel.toJSON();
+        const listingItemModel2: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
+        const result = listingItemModel2.toJSON();
 
         expect(result.hash).toBe(testDataToUpdate.hash);
         expect(result.Market.name).toBe(defaultMarket.Name);
@@ -910,8 +910,8 @@ describe('ListingItem', () => {
         delete testDataToUpdate.messagingInformation;
         delete testDataToUpdate.listingitemobjects;
 
-        const listingItemTemplateModel: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
-        const result = listingItemTemplateModel.toJSON();
+        const listingItemModel: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
+        const result = listingItemModel.toJSON();
 
         expect(result.hash).toBe(testDataToUpdate.hash);
         expect(result.Market.name).toBe(defaultMarket.Name);
@@ -984,8 +984,8 @@ describe('ListingItem', () => {
         delete testDataToUpdate.paymentInformation;
         delete testDataToUpdate.listingitemobjects;
 
-        const listingItemTemplateModel: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
-        const result = listingItemTemplateModel.toJSON();
+        const listingItemModel: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
+        const result = listingItemModel.toJSON();
 
         expect(result.hash).toBe(testDataToUpdate.hash);
         expect(result.Market.name).toBe(defaultMarket.Name);
@@ -1126,8 +1126,8 @@ describe('ListingItem', () => {
         delete testDataToUpdate.messagingInformation;
         delete testDataToUpdate.listingitemobjects;
 
-        const listingItemTemplateModel: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
-        const result = listingItemTemplateModel.toJSON();
+        const listingItemModel2: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
+        const result = listingItemModel2.toJSON();
 
         expect(result.hash).toBe(testDataToUpdate.hash);
         expect(result.Market.name).toBe(defaultMarket.Name);
