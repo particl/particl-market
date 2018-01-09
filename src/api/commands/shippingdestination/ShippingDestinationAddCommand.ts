@@ -9,7 +9,7 @@ import { ShippingDestination } from '../../models/ShippingDestination';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as _ from 'lodash';
 import { MessageException } from '../../exceptions/MessageException';
-import { Country } from '../../enums/Country';
+import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
 
@@ -53,11 +53,11 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
     }
 
     public help(): string {
-        return 'addshippingdestination <itemInformationId> <country> <shippingAvailability>\n'
+        return 'addshippingdestination <itemInformationId> (<country> | <countryCode>) <shippingAvailability>\n'
             + '    <itemInformationId>        - Numeric - ID of the item information object we want\n'
             + '                                  to link this shipping destination to.\n'
-            + '    <country>                  - Enum{EU, USA, ASIA, FINLAND, SWEDEN,\n'
-            + '                                  SOUTH_AFRICAN, UNITED_KINGDOM} - The country\n'
+            + '    <country>                  - String - The country name.\n'
+            + '    <countryCode>              - String - Two letter country code.\n'
             + '                                  associated with this shipping destination.\n'
             + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
             + '                                  availability of shipping to the specified area.';
@@ -84,17 +84,25 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
             throw new MessageException(`ItemInformation with the listing template id=${data.params[0]} was not found!`);
         }
 
-        // check valid Country and ShippingAvailability
-        if (Country[data.params[1]] === undefined || ShippingAvailability[data.params[2]] === undefined) {
-            this.log.warn(`Country or Shipping Availability was not valid!`);
-            throw new MessageException('Country or shipping availability was not valid!');
+        // Check valid country (not country code), and if it is convert to country code
+        let countryCode: string = data.params[1];
+        const shippingAvail = data.params[2];
+        if ( ShippingCountries.isValidCountry(countryCode) ) {
+            countryCode = ShippingCountries.getCountryCode(countryCode);
+        } else if (ShippingCountries.isValidCountryCode(countryCode) === false)  { //  Check if valid country code
+            this.log.warn(`Country code <${countryCode}> was not valid!`);
+            throw new MessageException(`Country code <${countryCode}> was not valid!`);
+        }
+        if ( ShippingAvailability[shippingAvail] === undefined ) {
+            this.log.warn(`Shipping Availability <${shippingAvail}> was not valid!`);
+            throw new MessageException(`Shipping Availability <${shippingAvail}> was not valid!`);
         }
 
         // check if ShippingDestination already exist for the given Country ShippingAvailability and itemInformation.
         const shippingDest = await this.shippingDestinationService.search({
             item_information_id: itemInformation.id,
-            country: data.params[1],
-            shippingAvailability: data.params[2]
+            country: countryCode,
+            shippingAvailability: shippingAvail
         } as ShippingDestinationSearchParams);
 
         return [shippingDest, itemInformation];
