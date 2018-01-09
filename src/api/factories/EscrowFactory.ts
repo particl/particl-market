@@ -182,7 +182,7 @@ export class EscrowFactory {
 
 
     private getAddressOneLiner(address: resources.Address = {} as resources.Address): string {
-        const addressArray: string[] = [];
+        const addressArray: any = [];
 
         if (!_.isEmpty(address)) {
             if (address.addressLine1) {
@@ -190,6 +190,9 @@ export class EscrowFactory {
             }
             if (address.addressLine2) {
                 addressArray.push(address.addressLine2);
+            }
+            if (address.zipCode) {
+                addressArray.push(address.zipCode);
             }
             if (address.city) {
                 addressArray.push(address.city);

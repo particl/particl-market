@@ -8,10 +8,10 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.string('title').nullable();
             table.string('address_line_1').notNullable();
-            table.string('address_line_2').notNullable();
+            table.string('address_line_2').nullable();
             table.string('city').notNullable();
             table.string('country').notNullable();
-
+            table.string('zip_code').notNullable();
             table.integer('profile_id').unsigned().notNullable();
             table.foreign('profile_id').references('id')
                 .inTable('profiles').onDelete('CASCADE');

@@ -26,9 +26,10 @@ export class AddressUpdateCommand implements RpcCommandInterface<Address> {
      *  [1]: title
      *  [2]: addressLine1
      *  [3]: addressLine2
-     *  [4]: city
-     *  [5]: country
-     *  [6]: profileId
+     *  [4]: zipCode
+     *  [5]: city
+     *  [6]: country
+     *  [7]: profileId
      *
      * @param data
      * @returns {Promise<Address>}
@@ -39,9 +40,10 @@ export class AddressUpdateCommand implements RpcCommandInterface<Address> {
             title : data.params[1],
             addressLine1 : data.params[2],
             addressLine2 : data.params[3],
-            city : data.params[4],
-            country : data.params[5],
-            profile_id : data.params[6]
+            zipCode : data.params[4],
+            city : data.params[5],
+            country : data.params[6],
+            profile_id : data.params[7]
         } as AddressUpdateRequest);
     }
 

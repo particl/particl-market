@@ -22,5 +22,8 @@ export class AddressUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public country: Country;
 
+    @IsNotEmpty()
+    public zipCode: string | number;
+
 }
 // tslint:enable:variable-name
