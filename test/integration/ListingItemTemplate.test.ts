@@ -980,7 +980,7 @@ describe('ListingItemTemplate', () => {
         expect(result.Profile.name).toBe(defaultProfile.Name);
 
         // tslint:disable:max-line-length
-        expect(result.MessagingInformation.length).not.toBe(0);
+        expect(result.MessagingInformation).not.toHaveLength(0);
         expect(result.ListingItemObjects).toHaveLength(0);
 
         // check item-information created again
