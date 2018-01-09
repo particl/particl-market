@@ -118,6 +118,8 @@ export class ListingItemTemplateService {
         const updatedListingItemTemplate = await this.listingItemTemplateRepo.update(id, listingItemTemplate.toJSON());
         this.log.debug('updatedListingItemTemplate.toJSON():', updatedListingItemTemplate.toJSON());
 
+
+        // if the related one exists allready, then update. if it doesnt exist, create. and if the related one is missing, then remove.
         // Item-information
         let itemInformation = updatedListingItemTemplate.related('ItemInformation').toJSON() || {};
 
@@ -132,6 +134,8 @@ export class ListingItemTemplateService {
                 itemInformation.listing_item_template_id = id;
                 await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
             }
+        } else if (!_.isEmpty(itemInformation)) {
+            await this.itemInformationService.destroy(itemInformation.id);
         }
 
         // payment-information
@@ -148,6 +152,8 @@ export class ListingItemTemplateService {
                 paymentInformation.listing_item_template_id = id;
                 await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
             }
+        } else if (!_.isEmpty(paymentInformation)) {
+            await this.paymentInformationService.destroy(paymentInformation.id);
         }
 
         // find related record and delete it and recreate related data
