@@ -30,7 +30,7 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
     /**
      * data.params[]:
      *  [0]: listing_item_template_id
-     *  [1]: country (Country enum)
+     *  [1]: country
      *  [2]: shipping availability (ShippingAvailability enum)
      *
      * @param data
@@ -38,15 +38,32 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<ShippingDestination> {
-        const searchRes = await this.searchShippingDestination(data);
+        // Check valid country (not country code), and if it is convert to country code
+        const listingItemTemplateId: number = data.params[0];
+        let countryCode: string = data.params[1];
+        const shippingAvailStr: string = data.params[2];
+        if ( ShippingCountries.isValidCountry(countryCode) ) {
+            countryCode = ShippingCountries.getCountryCode(countryCode);
+        } else if (ShippingCountries.isValidCountryCode(countryCode) === false)  { //  Check if valid country code
+            this.log.warn(`Country code <${countryCode}> was not valid!`);
+            throw new MessageException(`Country code <${countryCode}> was not valid!`);
+        }
+        const shippingAvail: ShippingAvailability = ShippingAvailability[shippingAvailStr];
+        if ( ShippingAvailability[shippingAvail] === undefined ) {
+            this.log.warn(`Shipping Availability <${shippingAvailStr}> was not valid!`);
+            throw new MessageException(`Shipping Availability <${shippingAvailStr}> was not valid!`);
+        }
+
+        const searchRes = await this.searchShippingDestination(listingItemTemplateId, countryCode, shippingAvail);
         const itemInformation = searchRes[1];
         let shippingDestination = searchRes[0];
 
         // create ShippingDestination if not already exist.
         if (shippingDestination === null) {
-            shippingDestination = await this.shippingDestinationService.create({ item_information_id: itemInformation.id,
-                country: Country[data.params[1]],
-                shippingAvailability: ShippingAvailability[data.params[2]]
+            shippingDestination = await this.shippingDestinationService.create({
+                item_information_id: itemInformation.id,
+                country: countryCode,
+                shippingAvailability: shippingAvail
             });
         }
         return shippingDestination;
@@ -66,43 +83,29 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
     /**
      * TODO: NOTE: This function may be duplicated between commands.
      * data.params[]:
-     *  [0]: listing_item_template_id
-     *  [1]: country (Country enum)
+     *  [0]: listingItemTemplateId
+     *  [1]: country
      *  [2]: shipping availability (ShippingAvailability enum)
      *
      */
-    private async searchShippingDestination(data: any): Promise<any> {
+    private async searchShippingDestination(listingItemTemplateId: number, countryCode: string, shippingAvail: ShippingAvailability): Promise<any> {
         // find listingTemplate
-        const listingTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
+        const listingTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId);
 
         // find itemInformation
         const itemInformation = listingTemplate.related('ItemInformation').toJSON();
 
         // check if itemInformation exist
         if (_.size(itemInformation) === 0) {
-            this.log.warn(`ItemInformation with the listing template id=${data.params[0]} was not found!`);
-            throw new MessageException(`ItemInformation with the listing template id=${data.params[0]} was not found!`);
-        }
-
-        // Check valid country (not country code), and if it is convert to country code
-        let countryCode: string = data.params[1];
-        const shippingAvail = data.params[2];
-        if ( ShippingCountries.isValidCountry(countryCode) ) {
-            countryCode = ShippingCountries.getCountryCode(countryCode);
-        } else if (ShippingCountries.isValidCountryCode(countryCode) === false)  { //  Check if valid country code
-            this.log.warn(`Country code <${countryCode}> was not valid!`);
-            throw new MessageException(`Country code <${countryCode}> was not valid!`);
-        }
-        if ( ShippingAvailability[shippingAvail] === undefined ) {
-            this.log.warn(`Shipping Availability <${shippingAvail}> was not valid!`);
-            throw new MessageException(`Shipping Availability <${shippingAvail}> was not valid!`);
+            this.log.warn(`ItemInformation with the listing template id=${listingItemTemplateId} was not found!`);
+            throw new MessageException(`ItemInformation with the listing template id=${listingItemTemplateId} was not found!`);
         }
 
         // check if ShippingDestination already exist for the given Country ShippingAvailability and itemInformation.
         const shippingDest = await this.shippingDestinationService.search({
             item_information_id: itemInformation.id,
             country: countryCode,
-            shippingAvailability: shippingAvail
+            shippingAvailability: shippingAvail.toString()
         } as ShippingDestinationSearchParams);
 
         return [shippingDest, itemInformation];
