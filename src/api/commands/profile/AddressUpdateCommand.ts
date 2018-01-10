@@ -7,6 +7,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressUpdateRequest } from '../../requests/AddressUpdateRequest';
+import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 
 export class AddressUpdateCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
@@ -36,13 +37,18 @@ export class AddressUpdateCommand implements RpcCommandInterface<Address> {
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<Address> {
+        // If countryCode is country, convert to countryCode.
+        // If countryCode is country code, validate, and possibly throw error.
+        let countryCode: string = data.params[5];
+        countryCode = ShippingCountries.validate(this.log, countryCode);
+
         return this.addressService.update(data.params[0], {
             title : data.params[1],
             addressLine1 : data.params[2],
             addressLine2 : data.params[3],
             zipCode : data.params[4],
             city : data.params[5],
-            country : data.params[6],
+            country : countryCode,
             profile_id : data.params[7]
         } as AddressUpdateRequest);
     }

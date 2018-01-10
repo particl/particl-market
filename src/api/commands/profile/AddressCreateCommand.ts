@@ -7,6 +7,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
+import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 
 export class AddressCreateCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
@@ -36,13 +37,19 @@ export class AddressCreateCommand implements RpcCommandInterface<Address> {
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<Address> {
         this.log.debug('Attempting to create address');
+
+        // If countryCode is country, convert to countryCode.
+        // If countryCode is country code, validate, and possibly throw error.
+        let countryCode: string = data.params[5];
+        countryCode = ShippingCountries.validate(this.log, countryCode);
+
         return await this.addressService.create({
             title : data.params[0],
             addressLine1 : data.params[1],
             addressLine2 : data.params[2],
             zipCode : data.params[3],
             city : data.params[4],
-            country : data.params[5],
+            country : countryCode,
             profile_id : data.params[6]
         } as AddressCreateRequest);
     }

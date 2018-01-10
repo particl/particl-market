@@ -39,11 +39,12 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<ShippingDestination> {
-        // Check valid country (not country code), and if it is convert to country code
         const listingItemTemplateId: number = data.params[0];
         let countryCode: string = data.params[1];
         const shippingAvailStr: string = data.params[2];
 
+        // If countryCode is country, convert to countryCode.
+        // If countryCode is country code, validate, and possibly throw error.
         countryCode = ShippingCountries.validate(this.log, countryCode);
 
         const shippingAvail: ShippingAvailability = ShippingAvailability[shippingAvailStr];

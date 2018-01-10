@@ -42,6 +42,8 @@ export class ShippingDestinationRemoveCommand implements RpcCommandInterface<voi
         let countryCode: string = data.params[1];
         const shippingAvailStr: string = data.params[2];
 
+        // If countryCode is country, convert to countryCode.
+        // If countryCode is country code, validate, and possibly throw error.
         countryCode = ShippingCountries.validate(this.log, countryCode);
 
         const shippingAvail: ShippingAvailability = ShippingAvailability[shippingAvailStr];
