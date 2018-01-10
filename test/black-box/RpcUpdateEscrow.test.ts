@@ -58,7 +58,7 @@ describe('/UpdateEscrow', () => {
     });
 
     test('Should update Escrow by RPC', async () => {
-
+        // set profile id
         testDataListingItemTemplate.profile_id = profileId;
 
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);

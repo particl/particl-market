@@ -25,10 +25,10 @@ describe('CreateAddress', () => {
     });
 
     test('Should create a new address by RPC', async () => {
-        const res = await rpc(method, [testData.title, testData.addressLine1, testData.addressLine2, testData.city, testData.country, defaultProfileId]);
+        const res = await rpc(method, [testData.title, testData.addressLine1, testData.addressLine2, testData.zipCode, testData.city,
+            testData.country, defaultProfileId]);
         res.expectJson();
         res.expectStatusCode(200);
-
         const result: any = res.getBody()['result'];
         expect(result.title).toBe(testData.title);
         expect(result.addressLine1).toBe(testData.addressLine1);

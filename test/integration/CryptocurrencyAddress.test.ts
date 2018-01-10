@@ -31,11 +31,13 @@ describe('CryptocurrencyAddress', () => {
     let defaultProfile;
 
     const testData = {
+        profile_id: 0,
         type: CryptocurrencyAddressType.NORMAL,
         address: '123'
     } as CryptocurrencyAddressCreateRequest;
 
     const testDataUpdated = {
+        profile_id: 0,
         type: CryptocurrencyAddressType.STEALTH,
         address: '456'
     } as CryptocurrencyAddressUpdateRequest;
@@ -52,21 +54,6 @@ describe('CryptocurrencyAddress', () => {
 
         defaultProfile = await profileService.getDefault();
         defaultProfile = defaultProfile.toJSON();
-        log.debug('defaultProfile: ', defaultProfile);
-
-/*
-        createdListingItemTemplate = await testDataService.generate({
-            model: 'listingitemtemplate',
-            amount: 1,
-            withRelated: true
-        }).then(result => {
-            log.info('created: ', result);
-        }).catch(e => {
-            log.error('098: ' + e);
-        });
-*/
-        log.debug('beforeAll DONE');
-
     });
 
     test('Should create a new cryptocurrency address related to profile', async () => {
@@ -117,6 +104,7 @@ describe('CryptocurrencyAddress', () => {
     });
 
     test('Should update the cryptocurrency address', async () => {
+        testDataUpdated.profile_id = defaultProfile.id;
         const cryptocurrencyAddressModel: CryptocurrencyAddress = await cryptocurrencyAddressService.update(createdId, testDataUpdated);
         const result = cryptocurrencyAddressModel.toJSON();
 

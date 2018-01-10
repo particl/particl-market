@@ -30,16 +30,18 @@ describe('/RpcUpdateAddress', () => {
         zipCode: '85001'
     };
 
+    let profileId;
+    let addressId;
+
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
 
     test('Should update the address', async () => {
-
         // set up the test data, create profile + addresses
         const addDataRes: any = await testUtil.addData('profile', testData);
-        const profileId = addDataRes.getBody()['result'].id;
-        const addressId = addDataRes.getBody()['result'].ShippingAddresses[0].id;
+        profileId = addDataRes.getBody()['result'].id;
+        addressId = addDataRes.getBody()['result'].ShippingAddresses[0].id;
 
         // update address
         const res = await rpc(method, [
@@ -47,6 +49,7 @@ describe('/RpcUpdateAddress', () => {
             testDataUpdated.title,
             testDataUpdated.addressLine1,
             testDataUpdated.addressLine2,
+            testDataUpdated.zipCode,
             testDataUpdated.city,
             testDataUpdated.country,
             testDataUpdated.zipCode,
@@ -62,5 +65,25 @@ describe('/RpcUpdateAddress', () => {
         expect(result.country).toBe(testDataUpdated.country);
         expect(result.zipCode).toBe(testDataUpdated.zipCode);
 
+    });
+
+    test('Should fail because we want to update without profile id', async () => {
+        const res = await rpc(method, [
+            addressId,
+            testDataUpdated.title,
+            testDataUpdated.addressLine1,
+            testDataUpdated.addressLine2,
+            testDataUpdated.zipCode,
+            testDataUpdated.city,
+            testDataUpdated.country
+        ]);
+        res.expectJson();
+        res.expectStatusCode(400);
+    });
+
+    test('Should fail because we want to update with an empty address', async () => {
+        const getDataRes: any = await rpc(method, []);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(400);
     });
 });

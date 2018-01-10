@@ -4,6 +4,9 @@ import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
+import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { PaymentType } from '../../src/api/enums/PaymentType';
 
 describe('/addShippingDestination', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -11,30 +14,24 @@ describe('/addShippingDestination', () => {
 
     const testDataListingItemTemplate = {
         profile_id: 0,
+        hash: '',
         itemInformation: {
             title: 'Item Information with Templates',
             shortDescription: 'Item short description with Templates',
             longDescription: 'Item long description with Templates',
+            listingItemId: null,
             itemCategory: {
                 key: 'cat_high_luxyry_items'
+            },
+            itemLocation: {
+                region: Country.ASIA,
+                address: 'USA'
             }
         },
         paymentInformation: {
-            type: 'payment',
-            itemPrice: {
-                currency: Currency.PARTICL,
-                basePrice: 12,
-                shippingPrice: {
-                    domestic: 5,
-                    international: 7
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.STEALTH,
-                    address: 'This is temp address.'
-                }
-            }
+            type: PaymentType.SALE
         }
-    };
+    } as ListingItemTemplateCreateRequest;
 
     let createdTemplateId;
     let createdItemInformationId;
@@ -46,6 +43,9 @@ describe('/addShippingDestination', () => {
         const defaultProfile = await testUtil.getDefaultProfile();
         const profileId = defaultProfile.id;
         testDataListingItemTemplate.profile_id = profileId;
+
+         // set hash
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
         // create item template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);

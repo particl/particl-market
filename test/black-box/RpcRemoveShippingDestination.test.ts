@@ -2,8 +2,11 @@ import { rpc, api } from './lib/api';
 import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { Currency } from '../../src/api/enums/Currency';
+import { PaymentType } from '../../src/api/enums/PaymentType';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
+import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 
 describe('/removeShippingDestination', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -11,6 +14,10 @@ describe('/removeShippingDestination', () => {
 
     const testDataListingItemTemplate = {
         profile_id: 0,
+        hash: '',
+        paymentInformation: {
+            type: PaymentType.SALE
+        },
         itemInformation: {
             listingItemId: null,
             title: 'Item Information with Templates',
@@ -19,23 +26,8 @@ describe('/removeShippingDestination', () => {
             itemCategory: {
                 key: 'cat_high_luxyry_items'
             }
-        },
-        paymentInformation: {
-            type: 'payment',
-            itemPrice: {
-                currency: Currency.PARTICL,
-                basePrice: 12,
-                shippingPrice: {
-                    domestic: 5,
-                    international: 7
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.STEALTH,
-                    address: 'This is temp address.'
-                }
-            }
         }
-    };
+    } as ListingItemTemplateCreateRequest;
 
     let createdTemplateId;
     let createdlistingItemsId;
@@ -46,7 +38,11 @@ describe('/removeShippingDestination', () => {
         await testUtil.cleanDb();
         // create profile
         const defaultProfile = await testUtil.getDefaultProfile();
+        // set profile
         testDataListingItemTemplate.profile_id = defaultProfile.id;
+
+        // set hash
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
         // create item template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
@@ -56,6 +52,7 @@ describe('/removeShippingDestination', () => {
 
         // create shipping destination
         const addDataRes: any = await rpc('addshippingdestination', [createdTemplateId, Country.SOUTH_AFRICA, ShippingAvailability.SHIPS]);
+
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         createdShippingDestinationId = addDataRes.getBody()['result'].id;
@@ -112,8 +109,11 @@ describe('/removeShippingDestination', () => {
         // set listing item id
         testDataListingItemTemplate.itemInformation.listingItemId = createdlistingItemsId;
 
+        // set hash in listingItemTemplate
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+
         // create item template information with listing item id
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
+        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate as ListingItemTemplateCreateRequest);
         const newTemplateId = addListingItemTempRes.getBody()['result'].id;
 
         // remove shipping destination
