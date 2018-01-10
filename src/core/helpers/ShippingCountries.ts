@@ -20,14 +20,14 @@ export class ShippingCountries {
         if ( this.countryCodeList[countryCode] ) {
             return this.countryCodeList[countryCode].iso;
         }
-        throw new NotFoundException('Could not find country code <' + countryCode + '>');
+        throw new NotFoundException(`Could not find country code <${countryCode}>`);
     }
 
     public static getCountryCode( country: string ): string {
         if ( this.countryList[country] ) {
             return this.countryList[country];
         }
-        throw new NotFoundException('Could not find country <' + country + '>');
+        throw new NotFoundException(`Could not find country <${country}>`);
     }
 
     public static isValidCountry( country: string ): boolean {
