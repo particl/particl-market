@@ -30,7 +30,7 @@ export class ShippingDestinationRemoveCommand implements RpcCommandInterface<voi
     /**
      * data.params[]:
      *  [0]: listing_item_template_id
-     *  [1]: country (Country enum)
+     *  [1]: country/countryCode
      *  [2]: shipping availability (ShippingAvailability enum)
      *
      * @param data
@@ -70,11 +70,11 @@ export class ShippingDestinationRemoveCommand implements RpcCommandInterface<voi
     }
 
     public help(): string {
-        return 'removeshippingdestination <listingTemplateId> <country> <shippingAvailability>\n'
+        return 'removeshippingdestination <listingTemplateId> (<country> | <countryCode>) <shippingAvailability>\n'
             + '    <itemInformationId>        - Numeric - ID of the item information object we want\n'
             + '                                  to link this shipping destination to.\n'
-            + '    <country>                  - Enum{EU, USA, ASIA, FINLAND, SWEDEN,\n'
-            + '                                  SOUTH_AFRICAN, UNITED_KINGDOM} - The country\n'
+            + '    <country>                  - String - The country name.\n'
+            + '    <countryCode>              - String - Two letter country code.\n'
             + '                                  associated with this shipping destination.\n'
             + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
             + '                                  availability of shipping to the specified area.';
@@ -84,7 +84,7 @@ export class ShippingDestinationRemoveCommand implements RpcCommandInterface<voi
      * TODO: NOTE: This function may be duplicated between commands.
      * data.params[]:
      *  [0]: listingItemTemplateId
-     *  [1]: country
+     *  [1]: countryCode
      *  [2]: shipping availability (ShippingAvailability enum)
      *
      */

@@ -28,7 +28,7 @@ export class AddressCreateCommand implements RpcCommandInterface<Address> {
      *  [2]: addressLine2
      *  [3]: zipCode
      *  [4]: city
-     *  [5]: country
+     *  [5]: country/countryCode
      *  [6]: profileId
      *
      * @param data
@@ -55,12 +55,13 @@ export class AddressCreateCommand implements RpcCommandInterface<Address> {
     }
 
     public help(): string {
-        return 'createaddress <title> <addressLine1> <addressLine2> <city> <country> <profileId>\n'
+        return 'createaddress <title> <addressLine1> <addressLine2> <city> (<country> | <countryCode>) <profileId>\n'
             + '    <title>                - String - A short identifier for the address.\n'
             + '    <addressLine1>         - String - The first line of the address.\n'
             + '    <addressLine2>         - String - The second line of the address.\n'
             + '    <city>                 - String - The city of the address.\n'
-            + '    <country>              - String - The country of the address.\n'
+            + '    <country>              - String - The country name of the address.\n'
+            + '    <countryCode>          - String - Two letter country code of the address.\n'
             + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
             + '                              this address with.';
     }

@@ -29,7 +29,7 @@ export class ItemLocationUpdateCommand implements RpcCommandInterface<ItemLocati
     /**
      * data.params[]:
      * [0]: listing_item_template_id
-     * [1]: region (Country)
+     * [1]: region (country/countryCode)
      * [2]: address
      * [3]: gps marker title
      * [4]: gps marker description
@@ -74,7 +74,7 @@ export class ItemLocationUpdateCommand implements RpcCommandInterface<ItemLocati
         return 'updateitemlocation <listingItemTemplateId> <region> <address> <gpsMarkerTitle>'
             + ' <gpsMarkerDescription> <gpsMarkerLatitude> <gpsMarkerLongitude>\n'
             + '    <listingItemTemplateId>    - Numeric - [TODO]\n'
-            + '    <region>                   - [TODO] - [TODO]\n'
+            + '    <region>                   - String - Region, i.e. country or country code.\n'
             + '    <address>                  - [TODO] - [TODO]\n'
             + '    <gpsMarkerTitle>           - String - [TODO]\n'
             + '    <gpsMarkerDescription>     - Numeric - [TODO]\n'
