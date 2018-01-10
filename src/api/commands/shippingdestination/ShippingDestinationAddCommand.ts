@@ -12,6 +12,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
+import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
 
 export class ShippingDestinationAddCommand implements RpcCommandInterface<ShippingDestination> {
 
@@ -42,12 +43,9 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
         const listingItemTemplateId: number = data.params[0];
         let countryCode: string = data.params[1];
         const shippingAvailStr: string = data.params[2];
-        if ( ShippingCountries.isValidCountry(countryCode) ) {
-            countryCode = ShippingCountries.getCountryCode(countryCode);
-        } else if (ShippingCountries.isValidCountryCode(countryCode) === false)  { //  Check if valid country code
-            this.log.warn(`Country code <${countryCode}> was not valid!`);
-            throw new MessageException(`Country code <${countryCode}> was not valid!`);
-        }
+
+        countryCode = ShippingCountries.validate(this.log, countryCode);
+
         const shippingAvail: ShippingAvailability = ShippingAvailability[shippingAvailStr];
         if ( ShippingAvailability[shippingAvail] === undefined ) {
             this.log.warn(`Shipping Availability <${shippingAvailStr}> was not valid!`);
@@ -64,7 +62,7 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
                 item_information_id: itemInformation.id,
                 country: countryCode,
                 shippingAvailability: shippingAvail
-            });
+            } as ShippingDestinationCreateRequest);
         }
         return shippingDestination;
     }
@@ -105,7 +103,7 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
         const shippingDest = await this.shippingDestinationService.search({
             item_information_id: itemInformation.id,
             country: countryCode,
-            shippingAvailability: shippingAvail.toString()
+            shippingAvailability: shippingAvail
         } as ShippingDestinationSearchParams);
 
         return [shippingDest, itemInformation];
