@@ -6,6 +6,7 @@ import { MarketService } from '../../services/MarketService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Market } from '../../models/Market';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { MarketCreateRequest } from '../../requests/MarketCreateRequest';
 
 export class MarketCreateCommand implements RpcCommandInterface<Market> {
 
@@ -35,7 +36,7 @@ export class MarketCreateCommand implements RpcCommandInterface<Market> {
             name : data.params[0],
             private_key : data.params[1],
             address : data.params[2]
-        });
+        } as MarketCreateRequest);
     }
 
     public help(): string {
