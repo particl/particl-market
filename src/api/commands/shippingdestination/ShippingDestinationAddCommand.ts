@@ -12,6 +12,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { Country } from '../../enums/Country';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
+import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
 
 export class ShippingDestinationAddCommand implements RpcCommandInterface<ShippingDestination> {
 
@@ -47,7 +48,7 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
             shippingDestination = await this.shippingDestinationService.create({ item_information_id: itemInformation.id,
                 country: Country[data.params[1]],
                 shippingAvailability: ShippingAvailability[data.params[2]]
-            });
+            } as ShippingDestinationCreateRequest);
         }
         return shippingDestination;
     }
