@@ -51,14 +51,14 @@ describe('Profile', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
-            country: Country.SWEDEN,
+            country: 'Sweden',
             zipCode: '85001'
         }, {
             title: 'Tite',
             addressLine1: 'Ad',
             addressLine2: 'ADD 222',
             city: 'city',
-            country: Country.FINLAND,
+            country: 'Finland',
             zipCode: '85001'
         }] as any
     } as ProfileCreateRequest;
@@ -185,13 +185,11 @@ describe('Profile', () => {
     });
 
     test('Should create a new profile with delivery addresses and cryptoaddresses', async () => {
-
         const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
             model: 'profile',
             amount: 1,
             withRelated: true
         } as TestDataGenerateRequest);
-
         const profileModel = profiles[0];
         // expect(profileModel).toBe(1);
         const result = profileModel.toJSON();
@@ -202,7 +200,6 @@ describe('Profile', () => {
         expect(result.ShippingAddresses).not.toHaveLength(0);
         expect(result.CryptocurrencyAddresses).not.toHaveLength(0);
         expect(result.FavoriteItems).toHaveLength(0);
-
         await profileService.destroy(result.id);
         await profileService.findOne(result.id).catch(e => {
             expect(e).toEqual(new NotFoundException(result.id));
