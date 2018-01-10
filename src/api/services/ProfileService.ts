@@ -57,7 +57,6 @@ export class ProfileService {
 
     @validate()
     public async create( @request(ProfileCreateRequest) data: ProfileCreateRequest): Promise<Profile> {
-
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
@@ -65,10 +64,8 @@ export class ProfileService {
         delete body.shippingAddresses;
         const cryptocurrencyAddresses = body.cryptocurrencyAddresses || [];
         delete body.cryptocurrencyAddresses;
-
         // If the request body was valid we will create the profile
         const profile = await this.profileRepo.create(body);
-
         // then create related models
         for (const address of shippingAddresses) {
             address.profile_id = profile.Id;

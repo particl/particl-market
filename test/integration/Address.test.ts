@@ -34,7 +34,7 @@ describe('Address', () => {
         addressLine1: 'Add',
         addressLine2: 'ADD 22',
         city: 'city',
-        country: Country.FINLAND,
+        country: 'Finland',
         zipCode: '85001',
         profile_id: 0
     } as AddressCreateRequest;
@@ -44,7 +44,7 @@ describe('Address', () => {
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
-        country: Country.SWEDEN,
+        country: 'Sweden',
         zipCode: '85001',
         profile_id: 0
     } as AddressUpdateRequest;
