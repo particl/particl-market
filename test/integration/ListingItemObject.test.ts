@@ -4,6 +4,8 @@ import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ProfileService } from '../../src/api/services/ProfileService';
+import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -12,7 +14,6 @@ import { ListingItemObject } from '../../src/api/models/ListingItemObject';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
-import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../../src/api/requests/ListingItemObjectUpdateRequest';
@@ -26,18 +27,21 @@ describe('ListingItemObject', () => {
     let testDataService: TestDataService;
     let listingItemObjectService: ListingItemObjectService;
     let profileService: ProfileService;
+    let listingItemTemplateService: ListingItemTemplateService;
 
     let createdId;
     let createdListingItemTemplate;
     let defaultProfile;
 
     const testData = {
+        listing_item_template_id: null,
         type: ListingItemObjectType.DROPDOWN,
         description: 'where to store the dropdown data...',
         order: 0
     } as ListingItemObjectCreateRequest;
 
     const testDataUpdated = {
+        listing_item_template_id: null,
         type: ListingItemObjectType.TABLE,
         description: 'table desc',
         order: 1
@@ -49,6 +53,7 @@ describe('ListingItemObject', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
@@ -77,7 +82,7 @@ describe('ListingItemObject', () => {
     });
 
     test('Should create a new listing item object', async () => {
-        testData['listing_item_template_id'] = createdListingItemTemplate.Id;
+        testData.listing_item_template_id = createdListingItemTemplate.Id;
         const listingItemObjectModel: ListingItemObject = await listingItemObjectService.create(testData);
         createdId = listingItemObjectModel.Id;
 
@@ -124,7 +129,7 @@ describe('ListingItemObject', () => {
     });
 
     test('Should update the listing item object', async () => {
-        testDataUpdated['listing_item_template_id'] = 0;
+        testDataUpdated.listing_item_template_id = createdListingItemTemplate.Id;
         const listingItemObjectModel: ListingItemObject = await listingItemObjectService.update(createdId, testDataUpdated);
         const result = listingItemObjectModel.toJSON();
 
@@ -134,10 +139,16 @@ describe('ListingItemObject', () => {
     });
 
     test('Should delete the listing item object', async () => {
-        expect.assertions(1);
+        expect.assertions(2);
         await listingItemObjectService.destroy(createdId);
         await listingItemObjectService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
+        );
+
+        // delete listing-item-template
+        await listingItemTemplateService.destroy(createdListingItemTemplate.id);
+        await listingItemTemplateService.findOne(createdListingItemTemplate.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdListingItemTemplate.id))
         );
     });
 
