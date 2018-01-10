@@ -7,6 +7,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplateCreateRequest } from '../../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
 
 export class ListingItemTemplateCreateCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -66,7 +67,7 @@ export class ListingItemTemplateCreateCommand implements RpcCommandInterface<Lis
                             international: data.params[9]
                         },
                         cryptocurrencyAddress: {
-                            type: 'address-type',
+                            type: CryptocurrencyAddressType.NORMAL,
                             address: data.params[10]
                         }
                     }
