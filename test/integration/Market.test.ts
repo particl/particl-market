@@ -10,6 +10,8 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Market } from '../../src/api/models/Market';
 
 import { MarketService } from '../../src/api/services/MarketService';
+import { MarketCreateRequest } from '../../src/api/requests/MarketCreateRequest';
+import { MarketUpdateRequest } from '../../src/api/requests/MarketUpdateRequest';
 
 describe('Market', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -26,13 +28,13 @@ describe('Market', () => {
         name: 'TEST-MARKET',
         private_key: 'TEST-PRIVATE-KEY',
         address: 'TEST-MARKET-ADDRESS'
-    };
+    } as MarketCreateRequest;
 
     const testDataUpdated = {
         name: 'TEST-UPDATE-MARKET',
         private_key: 'TEST-UPDATE-PRIVATE-KEY',
         address: 'TEST-UPDATE-MARKET-ADDRESS'
-    };
+    } as MarketUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -62,7 +64,7 @@ describe('Market', () => {
 
     test('Should throw ValidationException because we want to create a empty market', async () => {
         expect.assertions(1);
-        await marketService.create({}).catch(e =>
+        await marketService.create({} as MarketCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });

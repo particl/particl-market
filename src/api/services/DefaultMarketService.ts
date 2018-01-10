@@ -4,6 +4,8 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { Market } from '../models/Market';
 import { MarketService } from './MarketService';
+import { MarketCreateRequest } from '../requests/MarketCreateRequest';
+import { MarketUpdateRequest } from '../requests/MarketUpdateRequest';
 
 
 export class DefaultMarketService {
@@ -23,18 +25,18 @@ export class DefaultMarketService {
             name: 'DEFAULT',
             private_key: 'DEFAULT-PRIVATE-KEY',
             address: 'DEFAULT-MARKET-ADDRESS'
-        };
+        } as MarketCreateRequest;
         await this.insertOrUpdateMarket(defaultMarket);
         return;
     }
 
-    public async insertOrUpdateMarket(market: any): Promise<Market> {
+    public async insertOrUpdateMarket(market: MarketCreateRequest): Promise<Market> {
         let newMarket = await this.marketService.findByAddress('DEFAULT-MARKET-ADDRESS');
         if (newMarket === null) {
-            newMarket = await this.marketService.create(market);
+            newMarket = await this.marketService.create(market as MarketCreateRequest);
             this.log.debug('created new default Market');
         } else {
-            newMarket = await this.marketService.update(newMarket.Id, market);
+            newMarket = await this.marketService.update(newMarket.Id, market as MarketUpdateRequest);
             this.log.debug('updated new default Market');
         }
         return newMarket;

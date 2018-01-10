@@ -154,7 +154,7 @@ describe('ItemImageData', () => {
     test('Should list item image datas with our new create one', async () => {
         const itemImageDataCollection = await itemImageDataService.findAll();
         const itemImageData = itemImageDataCollection.toJSON();
-        expect(itemImageData.length).toBe(2;
+        expect(itemImageData.length).toBe(2);
 
         const result = itemImageData[0];
 
