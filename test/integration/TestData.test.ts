@@ -249,6 +249,45 @@ describe('TestDataService', () => {
             amount: 1,
             withRelated: true
         } as TestDataGenerateRequest);
+        const createdProfile = profiles[0].toJSON();
+        // CryptocurrencyAddresses
+        expect(createdProfile.CryptocurrencyAddresses).not.toHaveLength(0);
+        expect(createdProfile.CryptocurrencyAddresses[0].profileId).toBe(createdProfile.id);
+        expect(createdProfile.CryptocurrencyAddresses[0].address).not.toBeNull();
+        expect(createdProfile.CryptocurrencyAddresses[0].type).not.toBeNull();
+        // FavoriteItems
+        expect(createdProfile.FavoriteItems).toHaveLength(0);
+        // ShippingAddresses
+        expect(createdProfile.ShippingAddresses).not.toHaveLength(0);
+        expect(createdProfile.ShippingAddresses[0].profileId).toBe(createdProfile.id);
+        expect(createdProfile.ShippingAddresses[0].addressLine1).not.toBeNull();
+        expect(createdProfile.ShippingAddresses[0].addressLine2).not.toBeNull();
+        expect(createdProfile.ShippingAddresses[0].city).not.toBeNull();
+        expect(createdProfile.ShippingAddresses[0].country).not.toBeNull();
+        expect(createdProfile.ShippingAddresses[0].title).not.toBeNull();
+        expect(createdProfile.ShippingAddresses[0].zipCode).not.toBeNull();
+        // normal field
+        expect(createdProfile.address).not.toBeNull();
+        expect(createdProfile.name).not.toBeNull();
+
+        const profile = await profileService.findAll();
+        expect(profile).toHaveLength(1);
+    });
+
+    test('Should generate single test data as par model with withRelated: false', async () => {
+        await testDataService.clean([], false);
+        const model = 'profile';
+        const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
+            model,
+            amount: 1,
+            withRelated: false
+        } as TestDataGenerateRequest);
+        const createdProfile = profiles[0];
+        expect(createdProfile).toBeGreaterThan(0);
+        // CryptocurrencyAddresses
+        expect(createdProfile.CryptocurrencyAddresses).not.toBeDefined();
+        expect(createdProfile.FavoriteItems).not.toBeDefined();
+        expect(createdProfile.ShippingAddresses).not.toBeDefined();
 
         const profile = await profileService.findAll();
         expect(profile).toHaveLength(1);
