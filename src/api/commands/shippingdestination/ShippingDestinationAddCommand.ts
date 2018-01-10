@@ -59,16 +59,10 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
 
         // create ShippingDestination if not already exist.
         if (shippingDestination === null) {
-<<<<<<< HEAD
             shippingDestination = await this.shippingDestinationService.create({
                 item_information_id: itemInformation.id,
                 country: countryCode,
                 shippingAvailability: shippingAvail
-=======
-            shippingDestination = await this.shippingDestinationService.create({ item_information_id: itemInformation.id,
-                country: Country[data.params[1]],
-                shippingAvailability: ShippingAvailability[data.params[2]]
->>>>>>> f174ba52258265b0e4996f74b3d2dcd15d293728
             } as ShippingDestinationCreateRequest);
         }
         return shippingDestination;
