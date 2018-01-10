@@ -56,7 +56,7 @@ export class ItemLocationUpdateCommand implements RpcCommandInterface<ItemLocati
             // set body to update
             const body = {
                 item_information_id: itemInformation.id,
-                region: data.params[1],
+                region: countryCode,
                 address: data.params[2],
                 locationMarker: {
                     markerTitle: data.params[3],
