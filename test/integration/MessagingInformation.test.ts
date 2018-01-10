@@ -4,18 +4,20 @@ import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ProfileService } from '../../src/api/services/ProfileService';
+import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { MessagingInformation } from '../../src/api/models/MessagingInformation';
+import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
+
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
-import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
 import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
 import { MessagingInformationUpdateRequest } from '../../src/api/requests/MessagingInformationUpdateRequest';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
 describe('MessagingInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -25,6 +27,7 @@ describe('MessagingInformation', () => {
 
     let testDataService: TestDataService;
     let messagingInformationService: MessagingInformationService;
+    let listingItemTemplateService: ListingItemTemplateService;
     let profileService: ProfileService;
 
     let createdId;
@@ -33,11 +36,13 @@ describe('MessagingInformation', () => {
 
 
     const testData = {
+        listing_item_template_id: null,
         protocol: MessagingProtocolType.SMSG,
         publicKey: 'publickey1'
     } as MessagingInformationCreateRequest;
 
     const testDataUpdated = {
+        listing_item_template_id: null,
         protocol: MessagingProtocolType.SMSG,
         publicKey: 'publickey2'
     } as MessagingInformationUpdateRequest;
@@ -48,6 +53,7 @@ describe('MessagingInformation', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
@@ -75,7 +81,7 @@ describe('MessagingInformation', () => {
     });
 
     test('Should create a new messaging information', async () => {
-        testData['listing_item_template_id'] = createdListingItemTemplate.Id;
+        testData.listing_item_template_id = createdListingItemTemplate.Id;
         const messagingInformationModel: MessagingInformation = await messagingInformationService.create(testData);
         createdId = messagingInformationModel.Id;
 
@@ -87,7 +93,7 @@ describe('MessagingInformation', () => {
 
     test('Should throw ValidationException because we want to create a empty messaging information', async () => {
         expect.assertions(1);
-        await messagingInformationService.create({}).catch(e =>
+        await messagingInformationService.create({} as MessagingInformationCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -119,7 +125,7 @@ describe('MessagingInformation', () => {
     });
 
     test('Should update the messaging information', async () => {
-        testDataUpdated['listing_item_template_id'] = createdListingItemTemplate.Id;
+        testDataUpdated.listing_item_template_id = createdListingItemTemplate.Id;
         const messagingInformationModel: MessagingInformation = await messagingInformationService.update(createdId, testDataUpdated);
         const result = messagingInformationModel.toJSON();
 
@@ -128,10 +134,16 @@ describe('MessagingInformation', () => {
     });
 
     test('Should delete the messaging information', async () => {
-        expect.assertions(1);
+        expect.assertions(2);
         await messagingInformationService.destroy(createdId);
         await messagingInformationService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
+        );
+
+        // delete listing-item-template
+        await listingItemTemplateService.destroy(createdListingItemTemplate.id);
+        await listingItemTemplateService.findOne(createdListingItemTemplate.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdListingItemTemplate.id))
         );
     });
 
