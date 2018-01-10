@@ -9,7 +9,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
 import * as _ from 'lodash';
-import { Country } from '../../enums/Country';
+import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
 
@@ -38,7 +38,19 @@ export class ShippingDestinationRemoveCommand implements RpcCommandInterface<voi
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<void> {
-        const searchRes = await this.searchShippingDestination(data);
+        const listingItemTemplateId: number = data.params[0];
+        let countryCode: string = data.params[1];
+        const shippingAvailStr: string = data.params[2];
+
+        countryCode = ShippingCountries.validate(this.log, countryCode);
+
+        const shippingAvail: ShippingAvailability = ShippingAvailability[shippingAvailStr];
+        if ( ShippingAvailability[shippingAvail] === undefined ) {
+            this.log.warn(`Shipping Availability <${shippingAvailStr}> was not valid!`);
+            throw new MessageException(`Shipping Availability <${shippingAvailStr}> was not valid!`);
+        }
+
+        const searchRes = await this.searchShippingDestination(listingItemTemplateId, countryCode, shippingAvail);
         const shippingDestination = searchRes[0];
         const itemInformation = searchRes[1];
 
@@ -48,8 +60,8 @@ export class ShippingDestinationRemoveCommand implements RpcCommandInterface<voi
         }
 
         if (shippingDestination === null) {
-            this.log.warn(`ShippingDestination was not found!`);
-            throw new NotFoundException(data.params[0]);
+            this.log.warn(`ShippingDestination <${shippingAvailStr}> was not found!`);
+            throw new NotFoundException(listingItemTemplateId);
         }
 
         return this.shippingDestinationService.destroy(shippingDestination.toJSON().id);
@@ -69,35 +81,29 @@ export class ShippingDestinationRemoveCommand implements RpcCommandInterface<voi
     /**
      * TODO: NOTE: This function may be duplicated between commands.
      * data.params[]:
-     *  [0]: listing_item_template_id
-     *  [1]: country (Country enum)
+     *  [0]: listingItemTemplateId
+     *  [1]: country
      *  [2]: shipping availability (ShippingAvailability enum)
      *
      */
-    private async searchShippingDestination(data: any): Promise<any> {
+    private async searchShippingDestination(listingItemTemplateId: number, countryCode: string, shippingAvail: ShippingAvailability): Promise<any> {
         // find listingTemplate
-        const listingTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
+        const listingTemplate = await this.listingItemTemplateService.findOne(listingItemTemplateId);
 
         // find itemInformation
         const itemInformation = listingTemplate.related('ItemInformation').toJSON();
 
         // check if itemInformation exist
         if (_.size(itemInformation) === 0) {
-            this.log.warn(`ItemInformation with the listing template id=${data.params[0]} was not found!`);
-            throw new MessageException(`ItemInformation with the listing template id=${data.params[0]} was not found!`);
-        }
-
-        // check valid Country and ShippingAvailability
-        if (Country[data.params[1]] === undefined || ShippingAvailability[data.params[2]] === undefined) {
-            this.log.warn(`Country or Shipping Availability was not valid!`);
-            throw new MessageException('Country or shipping availability was not valid!');
+            this.log.warn(`ItemInformation with the listing template id=${listingItemTemplateId} was not found!`);
+            throw new MessageException(`ItemInformation with the listing template id=${listingItemTemplateId} was not found!`);
         }
 
         // check if ShippingDestination already exist for the given Country ShippingAvailability and itemInformation.
         const shippingDest = await this.shippingDestinationService.search({
             item_information_id: itemInformation.id,
-            country: data.params[1],
-            shippingAvailability: data.params[2]
+            country: countryCode,
+            shippingAvailability: shippingAvail
         } as ShippingDestinationSearchParams);
 
         return [shippingDest, itemInformation];
