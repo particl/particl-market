@@ -5,6 +5,8 @@ this.countryCodeList = reduce(getDataSet(), 'en');
 this.invalidCountryCodes = ['ASDF', 'A', 'ASD', '1', '11', 'Z1', 'Z11'];
 // Countries that never or no longer exist, lost their independence, or have changed their name.
 this.invalidCountries = ['Cobrastan', 'Ottoman Empire', 'Rhodesia', 'Czechoslovakia', 'Tibet', 'Yugoslavia', 'Burma'];
+this.questionableCountryCodes = ['EU'];
+this.questionableCountries = ['Europe', 'Asia'];
 
 describe('ShippingCountries', () => {
     test('isValidCountryCode() should return true for all country codes', () => {
@@ -33,6 +35,22 @@ describe('ShippingCountries', () => {
 
     test('isValidCountry() should return false for invalid countries', () => {
         for ( const x in this.invalidCountries ) {
+            if ( x ) {
+                expect(ShippingCountries.isValidCountry(x)).toBe(false);
+            }
+        }
+    });
+
+    test('isValidCountryCode() should return false for questionable country codes', () => {
+        for ( const x in this.questionableCountryCodes ) {
+            if ( x ) {
+                expect(ShippingCountries.isValidCountryCode(x)).toBe(false);
+            }
+        }
+    });
+
+    test('isValidCountry() should return false for questionable countries', () => {
+        for ( const x in this.questionableCountries ) {
             if ( x ) {
                 expect(ShippingCountries.isValidCountry(x)).toBe(false);
             }
