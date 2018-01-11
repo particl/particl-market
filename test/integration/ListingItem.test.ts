@@ -10,7 +10,6 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ListingItem } from '../../src/api/models/ListingItem';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
@@ -88,7 +87,7 @@ describe('ListingItem', () => {
                 description: ''
             },
             itemLocation: {
-                region: Country.SOUTH_AFRICA,
+                region: 'South Africa',
                 address: 'asdf, asdf, asdf',
                 locationMarker: {
                     markerTitle: 'Helsinki',
@@ -98,13 +97,13 @@ describe('ListingItem', () => {
                 }
             },
             shippingDestinations: [{
-                country: Country.UNITED_KINGDOM,
+                country: 'United Kingdom',
                 shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
             }, {
-                country: Country.ASIA,
+                country: 'Asia',
                 shippingAvailability: ShippingAvailability.SHIPS
             }, {
-                country: Country.SOUTH_AFRICA,
+                country: 'South Africa',
                 shippingAvailability: ShippingAvailability.ASK
             }],
             itemImages: [{
@@ -174,7 +173,7 @@ describe('ListingItem', () => {
                 description: ''
             },
             itemLocation: {
-                region: Country.FINLAND,
+                region: 'Finland',
                 address: 'asdf UPDATED',
                 locationMarker: {
                     markerTitle: 'UPDATED',
@@ -184,7 +183,7 @@ describe('ListingItem', () => {
                 }
             },
             shippingDestinations: [{
-                country: Country.EU,
+                country: 'EU',
                 shippingAvailability: ShippingAvailability.SHIPS
             }],
             itemImages: [{
