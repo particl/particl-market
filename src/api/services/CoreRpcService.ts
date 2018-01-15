@@ -56,59 +56,6 @@ export class CoreRpcService {
         }
 
         return result.result;
-
-/*
-                let data = '';
-                response.setEncoding('utf8');
-                response.on('data', chunk => data += chunk);
-                response.on('end', () => {
-
-                    if (response.statusCode === 401) {
-                        callback({
-                            status: 401,
-                            message: 'Unauthorized'
-                        });
-                        return ;
-                    }
-
-                    try {
-                        log.debug('parsing data: ', data);
-                        data = JSON.parse(data);
-                    } catch(e) {
-                        data.error = e;
-                        log.error('ERROR: response not valid json', e, data);
-                    }
-
-                    if (data.error !== null) {
-                        callback(null, data);
-                        return ;
-                    }
-
-                    callback(null, data);
-                });
-
-//                this.log.debug('call response:', response.message)
-                return response;
-            })
-            .catch(reason => {
-                this.log.debug('call error:', reason);
-                return reason;
-            });
-
-*/
-        /*
-        return new Promise((resolve, reject) => {
-            rpc.call(method, params, (error, response) => {
-                if (error) {
-                    this.log.error('CoreRpcService, ERROR method: ' + method + ' returned error:', error);
-                    reject(error);
-                } else if (response) {
-                    this.log.debug('CoreRpcService, RESPONSE method: ' + method + ' returned error:', error);
-                    resolve(response);
-                }
-            });
-        });
-        */
     }
 
     private getOptions(): any {
