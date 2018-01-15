@@ -10,6 +10,10 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as crypto from 'crypto-js';
 import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
 
+import images = require('images');
+
+declare const Buffer;
+
 export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
 
     public log: LoggerType;
@@ -43,6 +47,11 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
         // find related itemInformation
         const itemInformation = listingItemTemplate.related('ItemInformation').toJSON();
 
+        let dataRaw = data.params[4];
+        const dataBuffer = Buffer.from(dataRaw, 'base64');
+        const imageBuffer = images(dataBuffer); // TODO: Error handling for invalid types, or maybe checking type based on args?
+        dataRaw = new Buffer(imageBuffer.encode('jpg')).toString('base64');
+
         // create item images
         return await this.itemImageService.create({
             item_information_id: itemInformation.id,
@@ -52,7 +61,7 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
                 dataId: data.params[1] || '',
                 protocol: data.params[2] || '',
                 encoding: data.params[3] || '',
-                data: data.params[4] || ''
+                data: dataRaw || ''
             }
         } as ItemImageCreateRequest);
     }
@@ -64,6 +73,8 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
             + '    <dataId>                         - [optional] Numeric - [TODO]\n'
             + '        <protocol>                   - [optional] String - [TODO]\n'
             + '            <encoding>               - [optional] String - [TODO]\n'
-            + '                <data>               - [optional] [TODO] - [TODO]';
+            + '                <data>               - [optional] String - Base64 representation\n'
+            + '                                        (as produced by `base64` *NIX command) of the\n'
+            + '                                        image we want to add.';
     }
 }
