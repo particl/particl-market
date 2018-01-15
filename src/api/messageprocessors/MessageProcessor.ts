@@ -1,4 +1,3 @@
-import * as rpc from 'particl-rpc-service';
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -35,6 +34,7 @@ export class MessageProcessor implements MessageProcessorInterface {
         this.timeout = setTimeout(
             async () => {
                 await this.poll();
+                console.log('polled, scheduling next');
                 this.schedulePoll();
             },
             this.interval
@@ -58,15 +58,15 @@ export class MessageProcessor implements MessageProcessorInterface {
     }
 
     private async pollMessages(): Promise<any> {
-        this.log.debug('timeout ', this.interval);
+        this.log.debug('polling getnetworkinfo: ', this.interval);
 
-        return await this.coreRpcService.call('getinfo')
+        return await this.coreRpcService.call('getnetworkinfo')
             .then((response) => {
-                this.log.info('smsginbox: ' + JSON.stringify(response.result));
-                return response.result;
+                this.log.info('got response:', JSON.stringify(response));
+                return response;
             })
             .catch(reason => {
-                this.log.error('error: ', reason);
+                this.log.error('got error:', reason);
                 return reason;
             });
     }
