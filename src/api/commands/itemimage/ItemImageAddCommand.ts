@@ -9,10 +9,7 @@ import { ItemImage } from '../../models/ItemImage';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as crypto from 'crypto-js';
 import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
-
-import images = require('images');
-
-declare const Buffer;
+import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
 
 export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
 
@@ -47,10 +44,9 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
         // find related itemInformation
         const itemInformation = listingItemTemplate.related('ItemInformation').toJSON();
 
-        let dataRaw = data.params[4];
-        const dataBuffer = Buffer.from(dataRaw, 'base64');
-        const imageBuffer = images(dataBuffer); // TODO: Error handling for invalid types, or maybe checking type based on args?
-        dataRaw = new Buffer(imageBuffer.encode('jpg')).toString('base64');
+        // Convert to JPEG and strip out metadata
+        let dataRaw: string = data.params[4];
+        dataRaw = ImageProcessing.prepareImageForSaving(dataRaw);
 
         // create item images
         return await this.itemImageService.create({
@@ -75,6 +71,6 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
             + '            <encoding>               - [optional] String - [TODO]\n'
             + '                <data>               - [optional] String - Base64 representation\n'
             + '                                        (as produced by `base64` *NIX command) of the\n'
-            + '                                        image we want to add.';
+            + '                                        image we want to add. Supports JPEG, PNG, GIF.';
     }
 }
