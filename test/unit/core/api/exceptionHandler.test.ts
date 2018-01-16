@@ -24,7 +24,7 @@ describe('exceptionHandler', () => {
     test('Should fail, because it is a exception with the given error code', () => {
         const e = new Exception(400, 'message');
         exceptionHandler(e, req, res, next);
-        expect(res.failed).toHaveBeenCalledWith(400, 'message', null);
+        expect(res.failed).toHaveBeenCalledWith(400, 'message', 'message');
     });
 
     test('Should fail, because it is a system error with 500', () => {
