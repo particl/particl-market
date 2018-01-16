@@ -5,6 +5,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ItemCategory } from '../models/ItemCategory';
 import { MessageException } from '../exceptions/MessageException';
+import * as resources from 'resources';
 
 export class ItemCategoryFactory {
 
@@ -16,15 +17,17 @@ export class ItemCategoryFactory {
         this.log = new Logger(__filename);
     }
 
+    public async getModel(category: resources.ItemCategory, rootCategoryWithRelated: ItemCategory): Promise<string[]> {
+        // TODO: implement
+    }
+
     /**
-     * data:
-     *  categoryAsArray: []
-     *  rootCategoryWithRelated: ItemCategory
      *
-     * @param data
-     * @returns {Promise<ItemCategory>}
+     * @param categoryAsArray
+     * @param rootCategoryWithRelated
+     * @returns {Promise<any>}
      */
-    public async get(categoryAsArray: string[], rootCategoryWithRelated: ItemCategory): Promise<ItemCategory> {
+    public async getModel(categoryAsArray: string[], rootCategoryWithRelated: ItemCategory): Promise<ItemCategory> {
         const rootCategory: any = rootCategoryWithRelated;
         let childItemCategories;
         const createdCategories: any = [];
