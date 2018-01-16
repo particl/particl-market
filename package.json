@@ -102,6 +102,7 @@
     "inquirer": "^3.2.0",
     "inversify": "^4.2.0",
     "inversify-express-utils": "^4.0.0",
+    "iso3166-2-db": "^2.2.1",
     "jayson": "^2.0.5",
     "jsonwebtoken": "^7.4.1",
     "knex": "^0.12.9",
