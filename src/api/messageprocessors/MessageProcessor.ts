@@ -34,7 +34,6 @@ export class MessageProcessor implements MessageProcessorInterface {
         this.timeout = setTimeout(
             async () => {
                 await this.poll();
-                console.log('polled, scheduling next');
                 this.schedulePoll();
             },
             this.interval
@@ -48,22 +47,21 @@ export class MessageProcessor implements MessageProcessorInterface {
      */
     private async poll(): Promise<void> {
         await this.pollMessages()
-            .then((messages) => {
-                this.log.info('poll() response:', messages);
+            .then( messages => {
+                // this.log.debug('poll() response:', messages);
+                // TODO: if we have new message, pass those to processing
+
+                return;
             })
-            .catch(reason => {
+            .catch( reason => {
                 this.log.error('poll() error:', reason);
+                return;
             });
-        return;
     }
 
     private async pollMessages(): Promise<any> {
-        this.log.debug('polling getnetworkinfo: ', this.interval);
-
-        return await this.coreRpcService.call('getnetworkinfo')
-            .then((response) => {
-                // this.log.debug('got response:', JSON.stringify(response));
-                return response;
-            });
+        const response = await this.coreRpcService.call('smsginbox', ['all']);
+        // this.log.debug('got response:', response);
+        return response;
     }
 }

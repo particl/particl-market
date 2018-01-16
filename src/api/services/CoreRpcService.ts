@@ -24,6 +24,10 @@ export class CoreRpcService {
 
     }
 
+    public async getNetworkInfo(): Promise<any> {
+        return this.call('getnetworkinfo');
+    }
+
     public async call(method: string, params: any[] = []): Promise<any> {
 
         const id = RPC_REQUEST_ID++;
@@ -40,8 +44,8 @@ export class CoreRpcService {
         // this.log.debug('call url:', url);
         // this.log.debug('call postData:', postData);
 
-        await WebRequest.post(url, options, postData)
-            .then((response) => {
+        return await WebRequest.post(url, options, postData)
+            .then( response => {
 
                 // this.log.debug('response.headers: ', response.headers);
                 // this.log.debug('response.statusCode: ', response.statusCode);
@@ -49,31 +53,32 @@ export class CoreRpcService {
                 // this.log.debug('response.content: ', response.content);
 
                 if (response.statusCode !== 200) {
-                    this.log.error('ERROR: ' + response.statusCode + ': ' + response.statusMessage);
                     throw new HttpException(response.statusCode, response.statusMessage);
                 }
 
-                const result = JSON.parse(response.content) as JsonRpc2Response;
-                if (result.error) {
-                    this.log.error('ERROR: ' + result.error.code + ': ' + result.error.message);
-                    throw new InternalServerException([result.error.code, result.error.message]);
+                const jsonRpcResponse = JSON.parse(response.content) as JsonRpc2Response;
+                if (jsonRpcResponse.error) {
+                    throw new InternalServerException([jsonRpcResponse.error.code, jsonRpcResponse.error.message]);
                 }
 
-                this.log.error('RESULT:', result.result);
-                return result.result;
+                this.log.debug('RESULT:', jsonRpcResponse.result);
+                return jsonRpcResponse.result;
             })
             .catch(error => {
-                this.log.error('ERROR:', error.message);
-                throw new InternalServerException([error.name, error.message]);
+                this.log.error('ERROR:', error);
+                if (error instanceof HttpException || error instanceof InternalServerException) {
+                    throw error;
+                } else {
+                    throw new InternalServerException([error.name, error.message]);
+                }
             });
-
 
     }
 
     private getOptions(): any {
 
         const auth = {
-            user: (process.env.RPCUSER ? process.env.RPCUSER : this.DEFAULT_USER),
+            user: 'test' + (process.env.RPCUSER ? process.env.RPCUSER : this.DEFAULT_USER),
             pass: (process.env.RPCPASSWORD ? process.env.RPCPASSWORD : this.DEFAULT_PASSWORD),
             sendImmediately: false
         };
