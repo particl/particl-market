@@ -14,25 +14,22 @@ export enum THUMBNAIL_IMAGE_SIZE {
 }
 
 export class ImageProcessing {
-    public static PIEXIF_JPEG_START_STR: string = 'data:image/jpeg;base64,';
+    public static PIEXIF_JPEG_START_STR = 'data:image/jpeg;base64,';
 
     /*
      * Takes a PNG, GIF, or JPEG image in base64 string format, and converts it to a JPEG, stripping out the metadata in the process.
      * Then resize the image to three sizes and return them.
-     * TODO: Error handling for invalid types, or maybe checking type based on args?
      */
     public static prepareImageForSaving(imageRaw: string): ImageTriplet {
         // Convert image to JPEG (and strip metadata in the process)
-        // TODO: trycatch 'Unknow format'
         let imageBuffer;
         try {
             const dataBuffer = Buffer.from(imageRaw, 'base64');
             imageBuffer = images(dataBuffer);
         } catch ( ex ) {
-            if( ex.toString() === 'Error: ../src/Image.cc:341 Unknow format' ){
+            if ( ex.toString() === 'Error: ../src/Image.cc:341 Unknow format' ) {
                 throw new Error('Image data was an unknown format. Supports: JPEG, PNG, GIF.');
-            }
-            else {
+            } else {
                 throw ex;
             }
         }
@@ -51,10 +48,10 @@ export class ImageProcessing {
      */
     public static tripleSizeImage(imageRaw: string): ImageTriplet {
         // Shrink medium image
-        let medImage: string = this.resizeImage(imageRaw, MEDIUM_IMAGE_SIZE.width, MEDIUM_IMAGE_SIZE.height);
+        const medImage: string = this.resizeImage(imageRaw, MEDIUM_IMAGE_SIZE.width, MEDIUM_IMAGE_SIZE.height);
 
         // Shrink thumbnail image
-        let thumbImage: string = this.resizeImage(imageRaw, THUMBNAIL_IMAGE_SIZE.width, THUMBNAIL_IMAGE_SIZE.height);
+        const thumbImage: string = this.resizeImage(imageRaw, THUMBNAIL_IMAGE_SIZE.width, THUMBNAIL_IMAGE_SIZE.height);
 
         return {
             big: imageRaw,
@@ -77,7 +74,7 @@ export class ImageProcessing {
             imageBuffer.width() * scale,
             imageBuffer.height() * scale
         );
-        
+
         return new Buffer(resizedImage.encode('jpg')).toString('base64');
     }
 }

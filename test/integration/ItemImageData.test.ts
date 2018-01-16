@@ -141,7 +141,16 @@ describe('ItemImageData', () => {
         expect(result.dataId).toBe(testData.dataId);
         expect(result.protocol).toBe(testData.protocol);
         expect(result.encoding).toBe(testData.encoding);
-        expect(result.data).toBe(testData.data);
+        if (!testData.data) {
+            expect(result.dataBig).toBeUndefined();
+            expect(result.dataMedium).toBeUndefined();
+            expect(result.dataThumbnail).toBeUndefined();
+        } else {
+            // TODO: If image is in test data check size and validity of processed image
+            expect(result.dataBig).not.toBeUndefined();
+            expect(result.dataMedium).not.toBeUndefined();
+            expect(result.dataThumbnail).not.toBeUndefined();
+        }
     });
 
     test('Should throw ValidationException because we want to create a empty item image data', async () => {
@@ -161,7 +170,16 @@ describe('ItemImageData', () => {
         expect(result.dataId).toBe(testData.dataId);
         expect(result.protocol).toBe(testData.protocol);
         expect(result.encoding).toBe(testData.encoding);
-        expect(result.data).toBe(testData.data);
+        if (!testData.data) {
+            expect(result.dataBig).toBeUndefined();
+            expect(result.dataMedium).toBeUndefined();
+            expect(result.dataThumbnail).toBeUndefined();
+        } else {
+            // TODO: If image is in test data check size and validity of processed image
+            expect(result.dataBig).not.toBeUndefined();
+            expect(result.dataMedium).not.toBeUndefined();
+            expect(result.dataThumbnail).not.toBeUndefined();
+        }
     });
 
     test('Should return one item image data', async () => {
@@ -171,7 +189,16 @@ describe('ItemImageData', () => {
         expect(result.dataId).toBe(testData.dataId);
         expect(result.protocol).toBe(testData.protocol);
         expect(result.encoding).toBe(testData.encoding);
-        expect(result.data).toBe(testData.data);
+        if (!testData.data) {
+            expect(result.dataBig).toBeUndefined();
+            expect(result.dataMedium).toBeUndefined();
+            expect(result.dataThumbnail).toBeUndefined();
+        } else {
+            // TODO: If image is in test data check size and validity of processed image
+            expect(result.dataBig).not.toBeUndefined();
+            expect(result.dataMedium).not.toBeUndefined();
+            expect(result.dataThumbnail).not.toBeUndefined();
+        }
     });
 
     test('Should throw ValidationException because there is no item_image_id', async () => {
@@ -196,7 +223,16 @@ describe('ItemImageData', () => {
         expect(result.dataId).toBe(testDataUpdated.dataId);
         expect(result.protocol).toBe(testDataUpdated.protocol);
         expect(result.encoding).toBe(testDataUpdated.encoding);
-        expect(result.data).toBe(testDataUpdated.data);
+        if (!testDataUpdated.data) {
+            expect(result.dataBig).toBeUndefined();
+            expect(result.dataMedium).toBeUndefined();
+            expect(result.dataThumbnail).toBeUndefined();
+        } else {
+            // TODO: If image is in test data check size and validity of processed image
+            expect(result.dataBig).not.toBeUndefined();
+            expect(result.dataMedium).not.toBeUndefined();
+            expect(result.dataThumbnail).not.toBeUndefined();
+        }
     });
 
     test('Should delete the item image data', async () => {
