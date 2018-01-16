@@ -36,22 +36,25 @@ export class CoreRpcService {
         const url = this.getUrl();
         const options = this.getOptions();
 
-        this.log.debug('call url:', url);
-        this.log.debug('call postData:', postData);
+        this.log.debug('CALL: ' + method + ' ' + params);
+        // this.log.debug('call url:', url);
+        // this.log.debug('call postData:', postData);
 
         const response = await WebRequest.post(url, options, postData);
 
-        this.log.debug('response.headers: ', response.headers);
-        this.log.debug('response.statusCode: ', response.statusCode);
-        this.log.debug('response.statusMessage: ', response.statusMessage);
-        this.log.debug('response.content: ', response.content);
+        // this.log.debug('response.headers: ', response.headers);
+        // this.log.debug('response.statusCode: ', response.statusCode);
+        // this.log.debug('response.statusMessage: ', response.statusMessage);
+        // this.log.debug('response.content: ', response.content);
 
         if (response.statusCode !== 200) {
+            this.log.error('ERROR: ' + response.statusCode + ': ' + response.statusMessage);
             throw new HttpException(response.statusCode, response.statusMessage);
         }
 
         const result = JSON.parse(response.content) as JsonRpc2Response;
         if (result.error) {
+            this.log.error('ERROR: ' + result.error.code + ': ' + result.error.message);
             throw new InternalServerException(result.error.code + ': ' + result.error.message);
         }
 
