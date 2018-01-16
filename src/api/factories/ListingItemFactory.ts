@@ -3,9 +3,10 @@ import * as crypto from 'crypto-js';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
-import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplatePostRequest';
 import { PaymentType } from '../enums/PaymentType';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
+import * as resources from 'resources';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
 
 export class ListingItemFactory {
 
@@ -18,52 +19,36 @@ export class ListingItemFactory {
     }
 
     /**
-     * Factory which will create an ListingItemMessage
-     * @param ListingItemTemplatePostRequest
-     * @param marketId
-     *
-     * @returns {ListingItemMessage}
+     * Creates a ListingItemMessage from given data
+     * @param listingItemTemplate
+     * @returns {Promise<ListingItemMessage>}
      */
+    public async getMessage(
+        listingItemTemplate: resources.ListingItemTemplate
+    ): Promise<ListingItemMessage> {
 
-    public async getMessage(data: ListingItemTemplatePostRequest, marketId: number): Promise<ListingItemMessage> {
+        // set hash
+        listingItemTemplate.hash = ObjectHash.getHash(listingItemTemplate);
+
         return {
-            hash: data.hash,
-            listingItemTemplateId: data.id,
-            marketId,
-            information: {
-                title: data.ItemInformation.title,
-                shortDescription: data.ItemInformation.shortDescription,
-                longDescription: data.ItemInformation.longDescription,
-                itemCategory: {
-                    id: data.ItemInformation.itemCategoryId
-                },
-                itemLocation: data.ItemInformation.itemLocation,
-                data: data.ItemInformation.itemImages,
-                shippingDestinations: data.ItemInformation.shippingDestinations
-            },
-            payment: {
-                type: PaymentType[data.PaymentInformation.type],
-                escrow: {
-                    type: data.PaymentInformation.escrow
-                },
-                itemPrice: data.PaymentInformation.itemPrice
-            },
-            messaging: data.MessagingInformation
+            hash: undefined, // TODO: implement
+            information: undefined, // TODO: implement
+            payment: undefined, // TODO: implement
+            messaging: undefined, // TODO: implement
+            objects: undefined // TODO: implement
         } as ListingItemMessage;
     }
 
     /**
      * Factory will return model based on the message
      *
-     * @param ListingItemMessage
+     * @param data
      * @returns {ListingItemCreateRequest}
      */
-
     public getModel(data: ListingItemMessage): ListingItemCreateRequest {
+        // TODO: is not working, fix
         return {
             hash: data.hash,
-            market_id: data.marketId,
-            listing_item_template_id: data.listingItemTemplateId,
             itemInformation: {
                 title: data.information.title,
                 shortDescription: data.information.shortDescription,
