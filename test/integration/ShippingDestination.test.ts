@@ -9,7 +9,6 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ShippingDestination } from '../../src/api/models/ShippingDestination';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { Country } from '../../src/api/enums/Country';
 
 import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
 
@@ -20,6 +19,11 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 import { MarketService } from '../../src/api/services/MarketService';
+import { ListingItemService } from '../../src/api/services/ListingItemService';
+import { ItemInformationService } from '../../src/api/services/ItemInformationService';
+import { ShippingDestinationCreateRequest } from '../../src/api/requests/ShippingDestinationCreateRequest';
+import { ShippingDestinationUpdateRequest } from '../../src/api/requests/ShippingDestinationUpdateRequest';
+import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 
 describe('ShippingDestination', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -30,6 +34,8 @@ describe('ShippingDestination', () => {
     let testDataService: TestDataService;
     let shippingDestinationService: ShippingDestinationService;
     let marketService: MarketService;
+    let listingItemService: ListingItemService;
+    let itemInformationService: ItemInformationService;
 
     let createdId;
 
@@ -38,17 +44,19 @@ describe('ShippingDestination', () => {
     let defaultMarket;
 
     const testData = {
-        country: Country.UNITED_KINGDOM,
+        item_information_id: null,
+        country: 'United Kingdom',
         shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
-    };
+    } as ShippingDestinationCreateRequest;
 
     const testDataUpdated = {
-        country: Country.EU,
+        country: 'EU',
         shippingAvailability: ShippingAvailability.SHIPS
-    };
+    } as ShippingDestinationUpdateRequest;
 
     const listingItemData = {
         hash: 'hash1',
+        market_id: 0,
         itemInformation: {
             title: 'item title1',
             shortDescription: 'item short desc1',
@@ -57,80 +65,8 @@ describe('ShippingDestination', () => {
                 key: 'cat_high_luxyry_items',
                 name: 'Luxury Items',
                 description: ''
-            },
-            itemLocation: {
-                region: Country.SOUTH_AFRICA,
-                address: 'asdf, asdf, asdf',
-                locationMarker: {
-                    markerTitle: 'Helsinki',
-                    markerText: 'Helsinki',
-                    lat: 12.1234,
-                    lng: 23.2314
-                }
-            },
-            shippingDestinations: [ /*{
-                    country: Country.UNITED_KINGDOM,
-                    shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
-                }, {
-                    country: Country.ASIA,
-                    shippingAvailability: ShippingAvailability.SHIPS
-                }, {
-                    country: Country.SOUTH_AFRICA,
-                    shippingAvailability: ShippingAvailability.ASK
-                }*/ ],
-            itemImages: [{
-                hash: 'imagehash1',
-                data: {
-                    dataId: 'dataid1',
-                    protocol: ImageDataProtocolType.IPFS,
-                    encoding: null,
-                    data: null
-                }
-            }, {
-                hash: 'imagehash2',
-                data: {
-                    dataId: 'dataid2',
-                    protocol: ImageDataProtocolType.LOCAL,
-                    encoding: 'BASE64',
-                    data: 'BASE64 encoded image data'
-                }
-            }, {
-                hash: 'imagehash3',
-                data: {
-                    dataId: 'dataid3',
-                    protocol: ImageDataProtocolType.SMSG,
-                    encoding: null,
-                    data: 'smsgdata'
-                }
-            }]
-        },
-        paymentInformation: {
-            type: PaymentType.SALE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 100,
-                    seller: 100
-                }
-            },
-            itemPrice: {
-                currency: Currency.BITCOIN,
-                basePrice: 0.0001,
-                shippingPrice: {
-                    domestic: 0.123,
-                    international: 1.234
-                }
-                /*,
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.NORMAL,
-                    address: '1234'
-                }*/
             }
-        },
-        messagingInformation: [{
-            protocol: MessagingProtocolType.SMSG,
-            publicKey: 'publickey1'
-        }]
+        }
         // TODO: ignoring listingitemobjects for now
     };
 
@@ -140,15 +76,15 @@ describe('ShippingDestination', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.ShippingDestinationService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
 
         defaultMarket = await marketService.getDefault();
         defaultMarket = defaultMarket.toJSON();
-        log.debug('defaultMarket: ', defaultMarket);
-
-        listingItemData['market_id'] = defaultMarket.id;
+        listingItemData.market_id = defaultMarket.id;
     });
 
     afterAll(async () => {
@@ -167,9 +103,9 @@ describe('ShippingDestination', () => {
             model: 'listingitem',
             withRelated: true,
             data: listingItemData
-        });
+        } as TestDataCreateRequest);
         listingItem = listingItem.toJSON();
-        testData['item_information_id'] = listingItem.ItemInformation.id;
+        testData.item_information_id = listingItem.ItemInformation.id;
 
         const shippingDestinationModel: ShippingDestination = await shippingDestinationService.create(testData);
         createdId = shippingDestinationModel.Id;
@@ -182,7 +118,7 @@ describe('ShippingDestination', () => {
 
     test('Should throw ValidationException because we want to create a empty shipping destination', async () => {
         expect.assertions(1);
-        await shippingDestinationService.create({}).catch(e =>
+        await shippingDestinationService.create({} as ShippingDestinationCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -214,7 +150,7 @@ describe('ShippingDestination', () => {
     });
 
     test('Should update the shipping destination', async () => {
-        testDataUpdated['item_information_id'] = 0;
+        testDataUpdated.item_information_id = listingItem.ItemInformation.id;
         const shippingDestinationModel: ShippingDestination = await shippingDestinationService.update(createdId, testDataUpdated);
         const result = shippingDestinationModel.toJSON();
 
@@ -223,11 +159,22 @@ describe('ShippingDestination', () => {
     });
 
     test('Should delete the shipping destination', async () => {
-        expect.assertions(1);
+        expect.assertions(3);
         await shippingDestinationService.destroy(createdId);
         await shippingDestinationService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );
+
+        // delete listing-item and related stuffs
+        await listingItemService.destroy(listingItem.id);
+        await listingItemService.findOne(listingItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItem.id))
+        );
+
+        await itemInformationService.findOne(listingItem.ItemInformation.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItem.ItemInformation.id))
+        );
+
     });
 
 });

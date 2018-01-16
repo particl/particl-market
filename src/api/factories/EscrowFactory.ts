@@ -31,9 +31,11 @@ export class EscrowFactory {
      *
      * @returns {EscrowMessage}
      */
-    public async getMessage(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest,
-                            escrow?: resources.Escrow,
-                            address?: resources.Address): Promise<EscrowMessage> {
+    public async getMessage(
+        request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest,
+        escrow?: resources.Escrow,
+        address?: resources.Address
+    ): Promise<EscrowMessage> {
 
         switch (request.action) {
 
@@ -191,14 +193,14 @@ export class EscrowFactory {
             if (address.addressLine2) {
                 addressArray.push(address.addressLine2);
             }
-            if (address.zipCode) {
-                addressArray.push(address.zipCode);
-            }
             if (address.city) {
                 addressArray.push(address.city);
             }
             if (address.country) {
                 addressArray.push(address.country);
+            }
+            if (address.zipCode) {
+                addressArray.push(address.zipCode);
             }
         }
 

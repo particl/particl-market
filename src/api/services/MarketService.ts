@@ -48,7 +48,7 @@ export class MarketService {
     }
 
     @validate()
-    public async create( @request(MarketCreateRequest) body: any): Promise<Market> {
+    public async create( @request(MarketCreateRequest) body: MarketCreateRequest): Promise<Market> {
 
         // If the request body was valid we will create the market
         const market = await this.marketRepo.create(body);
@@ -59,7 +59,7 @@ export class MarketService {
     }
 
     @validate()
-    public async update(id: number, @request(MarketUpdateRequest) body: any): Promise<Market> {
+    public async update(id: number, @request(MarketUpdateRequest) body: MarketUpdateRequest): Promise<Market> {
 
         // find the existing one without related
         const market = await this.findOne(id, false);

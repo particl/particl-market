@@ -23,6 +23,7 @@ import { ItemCategoryGetCommand } from '../commands/itemcategory/ItemCategoryGet
 import { ItemCategoryRemoveCommand } from '../commands/itemcategory/ItemCategoryRemoveCommand';
 import { ItemCategoryUpdateCommand } from '../commands/itemcategory/ItemCategoryUpdateCommand';
 import { ItemImageAddCommand } from '../commands/itemimage/ItemImageAddCommand';
+import { ItemImageGetsCommand } from '../commands/itemimage/ItemImageGetsCommand';
 import { ItemImageRemoveCommand } from '../commands/itemimage/ItemImageRemoveCommand';
 import { ItemInformationCreateCommand } from '../commands/iteminformation/ItemInformationCreateCommand';
 import { ItemInformationGetCommand } from '../commands/iteminformation/ItemInformationGetCommand';
@@ -80,6 +81,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryRemoveCommand) private itemCategoryRemoveCommand: ItemCategoryRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryUpdateCommand) private itemCategoryUpdateCommand: ItemCategoryUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageAddCommand) private itemImageAddCommand: ItemImageAddCommand,
+        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageGetsCommand) private itemImageGetsCommand: ItemImageGetsCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRemoveCommand) private itemImageRemoveCommand: ItemImageRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationCreateCommand) private itemInformationCreateCommand: ItemInformationCreateCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationGetCommand) private itemInformationGetCommand: ItemInformationGetCommand,
@@ -143,6 +145,7 @@ export class RpcCommandFactory {
         this.commands.push(itemCategoryRemoveCommand);
         this.commands.push(itemCategoryUpdateCommand);
         this.commands.push(itemImageAddCommand);
+        this.commands.push(itemImageGetsCommand);
         this.commands.push(itemImageRemoveCommand);
         this.commands.push(itemInformationCreateCommand);
         this.commands.push(itemInformationGetCommand);

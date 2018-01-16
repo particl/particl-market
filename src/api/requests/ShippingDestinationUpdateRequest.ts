@@ -1,5 +1,6 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import { ShippingAvailability } from '../../api/enums/ShippingAvailability';
 
 // tslint:disable:variable-name
 export class ShippingDestinationUpdateRequest extends RequestBody {
@@ -10,8 +11,9 @@ export class ShippingDestinationUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public country: string;
 
+    @IsEnum(ShippingAvailability)
     @IsNotEmpty()
-    public shippingAvailability: string;
+    public shippingAvailability: ShippingAvailability;
 
 }
 // tslint:enable:variable-name

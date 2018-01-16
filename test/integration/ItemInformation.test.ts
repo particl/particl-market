@@ -9,7 +9,6 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ItemInformation } from '../../src/api/models/ItemInformation';
-import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 
@@ -43,7 +42,7 @@ describe('ItemInformation', () => {
             description: ''
         },
         itemLocation: {
-            region: Country.SOUTH_AFRICA,
+            region: 'South Africa',
             address: 'asdf, asdf, asdf',
             locationMarker: {
                 markerTitle: 'Helsinki',
@@ -53,13 +52,13 @@ describe('ItemInformation', () => {
             }
         },
         shippingDestinations: [{
-            country: Country.UNITED_KINGDOM,
+            country: 'United Kingdom',
             shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
         }, {
-            country: Country.ASIA,
+            country: 'Asia',
             shippingAvailability: ShippingAvailability.SHIPS
         }, {
-            country: Country.SOUTH_AFRICA,
+            country: 'South Africa',
             shippingAvailability: ShippingAvailability.ASK
         }],
         itemImages: [{
@@ -99,7 +98,7 @@ describe('ItemInformation', () => {
             description: ''
         },
         itemLocation: {
-            region: Country.EU,
+            region: 'EU',
             address: 'zxcv, zxcv, zxcv',
             locationMarker: {
                 markerTitle: 'Stockholm',
@@ -109,13 +108,13 @@ describe('ItemInformation', () => {
             }
         },
         shippingDestinations: [{
-            country: Country.SWEDEN,
+            country: 'Sweden',
             shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
         }, {
-            country: Country.EU,
+            country: 'EU',
             shippingAvailability: ShippingAvailability.SHIPS
         }, {
-            country: Country.FINLAND,
+            country: 'Finland',
             shippingAvailability: ShippingAvailability.ASK
         }],
         itemImages: [{
