@@ -78,7 +78,7 @@ export class CoreRpcService {
     private getOptions(): any {
 
         const auth = {
-            user: 'test' + (process.env.RPCUSER ? process.env.RPCUSER : this.DEFAULT_USER),
+            user: (process.env.RPCUSER ? process.env.RPCUSER : this.DEFAULT_USER),
             pass: (process.env.RPCPASSWORD ? process.env.RPCPASSWORD : this.DEFAULT_PASSWORD),
             sendImmediately: false
         };
