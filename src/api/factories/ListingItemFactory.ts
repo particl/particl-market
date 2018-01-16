@@ -31,7 +31,7 @@ export class ListingItemFactory {
         listingItemTemplate.hash = ObjectHash.getHash(listingItemTemplate);
 
         return {
-            hash: undefined, // TODO: implement
+            hash: '', // TODO: implement
             information: undefined, // TODO: implement
             payment: undefined, // TODO: implement
             messaging: undefined, // TODO: implement

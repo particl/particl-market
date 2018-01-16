@@ -50,7 +50,7 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
 
     private async createCategoryIfNotExist(category: string[]): Promise<number> {
         const rootCategoryWithRelated: any = await this.itemCategoryService.findRoot();
-        const itemCategoryOutPut: any = await this.itemCategoryFactory.get(category, rootCategoryWithRelated);
+        const itemCategoryOutPut: any = await this.itemCategoryFactory.getModel(category, rootCategoryWithRelated);
         const itemCategory = itemCategoryOutPut.createdCategories;
         const lastCreatedIndex = itemCategoryOutPut.lastCheckIndex;
         let itemCategoryId: number;

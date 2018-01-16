@@ -17,8 +17,9 @@ export class ItemCategoryFactory {
         this.log = new Logger(__filename);
     }
 
-    public async getModel(category: resources.ItemCategory, rootCategoryWithRelated: ItemCategory): Promise<string[]> {
+    public async getArray(category: resources.ItemCategory, rootCategoryWithRelated: ItemCategory): Promise<string[]> {
         // TODO: implement
+        return ['root', 'parent', 'category'];
     }
 
     /**

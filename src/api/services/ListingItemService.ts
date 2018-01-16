@@ -27,6 +27,7 @@ import { MessageException } from '../exceptions/MessageException';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { MessageBroadcastService } from './MessageBroadcastService';
+import { Market } from '../models/Market';
 
 export class ListingItemService {
 
@@ -249,9 +250,9 @@ export class ListingItemService {
         const itemTemplate = itemTemplateModel.toJSON();
 
         // fetch the market, dont remove, will be used later with the broadcast
-        const marketModel = _.isEmpty(data.marketId)
-            ? this.marketService.getDefault()
-            : this.marketService.findOne(data.marketId);
+        const marketModel: Market = await _.isEmpty(data.marketId)
+        ? await this.marketService.getDefault()
+        : await this.marketService.findOne(data.marketId);
         const market = marketModel.toJSON();
 
         // create ListingItemMessage

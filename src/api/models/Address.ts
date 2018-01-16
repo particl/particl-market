@@ -8,9 +8,9 @@ export class Address extends Bookshelf.Model<Address> {
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Address> {
         if (withRelated) {
             return await Address.where<Address>({ id: value }).fetch({
-                // withRelated: [
-                //    'Profile'
-                // ]
+                withRelated: [
+                   'Profile'
+                ]
             });
         } else {
             return await Address.where<Address>({ id: value }).fetch();
