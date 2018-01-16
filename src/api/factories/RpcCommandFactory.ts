@@ -58,6 +58,7 @@ import { AcceptBidCommand } from '../commands/bid/AcceptBidCommand';
 import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
 import { RejectBidCommand } from '../commands/bid/RejectBidCommand';
 import { SendBidCommand } from '../commands/bid/SendBidCommand';
+import { ListingItemPostCommand } from '../commands/listingitem/ListingItemPostCommand';
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -92,6 +93,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemGetCommand) private listingItemGetCommand: ListingItemGetCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemSearchCommand) private listingItemSearchCommand: ListingItemSearchCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.OwnListingItemSearchCommand) private ownListingItemSearchCommand: OwnListingItemSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemPostCommand) private listingItemPostCommand: ListingItemPostCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateCreateCommand) private listingItemTemplateCreateCommand: ListingItemTemplateCreateCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateDestroyCommand) private listingItemTemplateDestroyCommand: ListingItemTemplateDestroyCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateGetCommand) private listingItemTemplateGetCommand: ListingItemTemplateGetCommand,
@@ -156,6 +158,7 @@ export class RpcCommandFactory {
         this.commands.push(listingItemGetCommand);
         this.commands.push(listingItemSearchCommand);
         this.commands.push(ownListingItemSearchCommand);
+        this.commands.push(listingItemPostCommand);
         this.commands.push(listingItemTemplateCreateCommand);
         this.commands.push(listingItemTemplateDestroyCommand);
         this.commands.push(listingItemTemplateGetCommand);

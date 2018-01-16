@@ -6,7 +6,7 @@ describe('ListingItemFactory', () => {
     let req;
     let listingItemFactory;
     beforeEach(() => {
-        process.env.AUTH0_HOST = 'test';
+
         listingItemFactory = new ListingItemFactory(LogMock);
         req = {
             information: {
@@ -29,6 +29,7 @@ describe('ListingItemFactory', () => {
     test('Should get the listing-item data', () => {
         listingItemFactory.get(req).then((res, error) => {
             expect(res.hash).not.toBeNull();
+
             // itemInformation
             expect(res.itemInformation).not.toBe(undefined);
             expect(res.itemInformation.title).toBe(req.information.title);
