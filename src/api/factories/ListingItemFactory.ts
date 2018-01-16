@@ -7,6 +7,7 @@ import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ItemMessageInterface } from '../messages/ItemMessageInterface';
 import { PaymentType } from '../enums/PaymentType';
 import { EscrowType } from '../enums/EscrowType';
+import * as _ from 'lodash';
 
 export class ListingItemFactory {
 
@@ -18,29 +19,45 @@ export class ListingItemFactory {
         this.log = new Logger(__filename);
     }
 
-    public async get(data: ItemMessageInterface, marketId: number): Promise<ListingItemCreateRequest> {
-        // const hash = crypto.SHA256(new Date().getTime().toString()).toString();
+    public async get(data: ItemMessageInterface): Promise<ListingItemCreateRequest> {
+        const escrowType = data.payment.escrow ? EscrowType[data.payment.escrow.type] : EscrowType.MAD;
+
         const listingItem = {
-            hash: crypto.SHA256(new Date().getTime().toString()).toString(),
-            market_id: marketId,
+            hash: data.hash,
+            market_id: data.marketId,
+            listing_item_template_id: data.listingItemTemplateId,
             itemInformation: {
                 title: data.information.title,
-                shortDescription: data.information.short_description,
-                longDescription: data.information.long_description,
+                shortDescription: data.information.shortDescription,
+                longDescription: data.information.longDescription,
                 itemCategory: {
-                    id: data.information.itemCategory
-                }
+                    id: data.information.itemCategoryId
+                },
+                itemLocation: data.information.itemLocation,
+                itemImages: this.renameItemImageDataToData(data.information.itemImages),
+                shippingDestinations: data.information.shippingDestinations
             },
             paymentInformation: {
                 type: PaymentType[data.payment.type],
                 escrow: {
-                    type: EscrowType[data.payment.escrow.type]
+                    type: escrowType
                 },
                 itemPrice: data.payment.itemPrice
             },
             messagingInformation: data.messaging
         };
-        return listingItem as any;
+        return listingItem as ListingItemCreateRequest;
     }
 
+    private renameItemImageDataToData(itemImages: string[]): any {
+        // convert the itemImageData proverty to data in information.itemImages
+        const itemInfo = _.map(itemImages, (itemImage) => {
+            if (itemImage['itemImageData']) {
+                itemImage['data'] = itemImage['itemImageData'];
+                delete itemImage['itemImageData'];
+            }
+            return itemImage;
+        });
+        return itemInfo;
+    }
 }

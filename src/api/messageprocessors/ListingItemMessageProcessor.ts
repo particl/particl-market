@@ -37,19 +37,14 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         // get Category
         const itemCategoryId = await this.createUserDefinedItemCategories(data.information.category);
         data.information.itemCategory = itemCategoryId;
-        // get itemPrice
-        const itemPrice = {
-            currency: data.payment.cryptocurrency.currency,
-            basePrice: data.payment.cryptocurrency.base_price
-        };
-        data.payment.itemPrice = itemPrice;
+
         // get messagingInformation
         const messagingInformation = await this.mesInfoFactory.get(data.messaging);
         data.messaging = messagingInformation;
         // Convert the ListingItemMessage to ListingItem
         const market = await this.marketService.getDefault();
-        const listingItem = await this.listingItemFactory.get(data, market.id);
         // create listing-item
+        const listingItem = await this.listingItemFactory.get(data);
         return await this.listingItemService.create(listingItem as ListingItemCreateRequest);
     }
 
