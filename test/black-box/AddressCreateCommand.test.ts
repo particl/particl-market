@@ -1,7 +1,6 @@
 import { rpc, api } from './lib/api';
 
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Country } from '../../src/api/enums/Country';
 import { Logger } from '../../src/core/Logger';
 import { AddressCreateCommand } from '../../src/api/commands/profile/AddressCreateCommand';
 
@@ -16,7 +15,7 @@ describe('CreateAddress', () => {
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
-        country: Country.FINLAND,
+        country: 'Finland',
         zipCode: '85001'
     };
 

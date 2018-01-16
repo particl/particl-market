@@ -12,8 +12,6 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { LocationMarker } from '../../src/api/models/LocationMarker';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
-import { Country } from '../../src/api/enums/Country';
-
 import { LocationMarkerCreateRequest } from '../../src/api/requests/LocationMarkerCreateRequest';
 import { LocationMarkerUpdateRequest } from '../../src/api/requests/LocationMarkerUpdateRequest';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
@@ -68,7 +66,7 @@ describe('LocationMarker', () => {
                         key: 'cat_high_luxyry_items'
                     },
                     itemLocation: {
-                        region: Country.FINLAND,
+                        region: 'Finland',
                         address: 'UPDATED'
                     }
                 }

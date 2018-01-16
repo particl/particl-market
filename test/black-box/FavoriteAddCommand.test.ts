@@ -2,7 +2,6 @@ import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
-import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
@@ -33,7 +32,7 @@ describe('/FavoriteAddCommand', () => {
                 key: 'cat_high_luxyry_items'
             },
             itemLocation: {
-                region: Country.SOUTH_AFRICA,
+                region: 'South Africa',
                 address: 'asdf, asdf, asdf',
                 locationMarker: {
                     markerTitle: 'Helsinki',
@@ -43,13 +42,13 @@ describe('/FavoriteAddCommand', () => {
                 }
             },
             shippingDestinations: [{
-                country: Country.UNITED_KINGDOM,
+                country: 'United Kingdom',
                 shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
             }, {
-                country: Country.ASIA,
+                country: 'China',
                 shippingAvailability: ShippingAvailability.SHIPS
             }, {
-                country: Country.SOUTH_AFRICA,
+                country: 'South Africa',
                 shippingAvailability: ShippingAvailability.ASK
             }],
             itemImages: [{

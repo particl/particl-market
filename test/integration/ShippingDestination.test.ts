@@ -9,7 +9,6 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ShippingDestination } from '../../src/api/models/ShippingDestination';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { Country } from '../../src/api/enums/Country';
 
 import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
 
@@ -46,12 +45,12 @@ describe('ShippingDestination', () => {
 
     const testData = {
         item_information_id: null,
-        country: Country.UNITED_KINGDOM,
+        country: 'United Kingdom',
         shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
     } as ShippingDestinationCreateRequest;
 
     const testDataUpdated = {
-        country: Country.EU,
+        country: 'EU',
         shippingAvailability: ShippingAvailability.SHIPS
     } as ShippingDestinationUpdateRequest;
 

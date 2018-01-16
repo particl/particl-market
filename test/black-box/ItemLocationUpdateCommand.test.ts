@@ -5,7 +5,6 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { Country } from '../../src/api/enums/Country';
 import { Logger } from '../../src/core/Logger';
 import { ItemLocationUpdateCommand } from '../../src/api/commands/itemlocation/ItemLocationUpdateCommand';
 
@@ -27,7 +26,7 @@ describe('/ItemLocationUpdateCommand', () => {
                 key: 'cat_high_luxyry_items'
             },
             itemLocation: {
-                region: Country.ASIA,
+                region: 'China',
                 address: 'USA'
             }
         },
@@ -36,7 +35,7 @@ describe('/ItemLocationUpdateCommand', () => {
         }
     } as ListingItemTemplateCreateRequest;
 
-    const testDataUpdated = [Country.ASIA, 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
+    const testDataUpdated = ['China', 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
 
     let createdTemplateId;
     let createdItemInformationId;
@@ -117,7 +116,7 @@ describe('/ItemLocationUpdateCommand', () => {
         const newTemplateId = newListingItemTemplate.getBody()['result'].id;
 
         // update item location
-        const addDataRes: any = await rpc(method, [newTemplateId, Country.ASIA, 'TEST ADDRESS', 'TEST TITLE', 'TEST DESC', 55.6, 60.8]);
+        const addDataRes: any = await rpc(method, [newTemplateId, 'China', 'TEST ADDRESS', 'TEST TITLE', 'TEST DESC', 55.6, 60.8]);
 
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);

@@ -1,5 +1,4 @@
 import { rpc, api } from './lib/api';
-import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
@@ -30,7 +29,7 @@ describe('/ShippingDestinationAddCommand', () => {
                 key: 'cat_high_luxyry_items'
             },
             itemLocation: {
-                region: Country.ASIA,
+                region: 'China',
                 address: 'USA'
             }
         },
@@ -63,27 +62,27 @@ describe('/ShippingDestinationAddCommand', () => {
 
     test('Should add shipping destination', async () => {
         // add shipping destination
-        const addDataRes: any = await rpc(method, [createdTemplateId, Country.SOUTH_AFRICA, ShippingAvailability.SHIPS]);
+        const addDataRes: any = await rpc(method, [createdTemplateId, 'South Africa', ShippingAvailability.SHIPS]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         const result: any = addDataRes.getBody()['result'];
         createdShippingDestinationId = result.id;
-        expect(Country.SOUTH_AFRICA).toBe(result.country);
+        expect('South Africa').toBe(result.country);
         expect(ShippingAvailability.SHIPS).toBe(result.shippingAvailability);
-        expect(Country.SOUTH_AFRICA).toBe(result.country);
+        expect('South Africa').toBe(result.country);
         expect(createdItemInformationId).toBe(result.itemInformationId);
     });
 
     test('Should not add shipping destination again for the same country and shipping availability', async () => {
         // add shipping destination
-        const addDataRes: any = await rpc(method, [createdTemplateId, Country.SOUTH_AFRICA, ShippingAvailability.SHIPS]);
+        const addDataRes: any = await rpc(method, [createdTemplateId, 'South Africa', ShippingAvailability.SHIPS]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         const result: any = addDataRes.getBody()['result'];
         expect(createdShippingDestinationId).toBe(result.id);
-        expect(Country.SOUTH_AFRICA).toBe(result.country);
+        expect('South Africa').toBe(result.country);
         expect(ShippingAvailability.SHIPS).toBe(result.shippingAvailability);
-        expect(Country.SOUTH_AFRICA).toBe(result.country);
+        expect('South Africa').toBe(result.country);
         expect(createdItemInformationId).toBe(result.itemInformationId);
     });
 
@@ -99,7 +98,7 @@ describe('/ShippingDestinationAddCommand', () => {
 
     test('Should fail to add shipping destination for invalid ShippingAvailability', async () => {
         // add shipping destination
-        const addDataRes: any = await rpc(method, [createdTemplateId, Country.SOUTH_AFRICA, 'TEST']);
+        const addDataRes: any = await rpc(method, [createdTemplateId, 'South Africa', 'TEST']);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
@@ -108,7 +107,7 @@ describe('/ShippingDestinationAddCommand', () => {
 
     test('Should fail to add shipping destination for invalid item template id', async () => {
         // add shipping destination
-        const addDataRes: any = await rpc(method, [0, Country.SOUTH_AFRICA, ShippingAvailability.SHIPS]);
+        const addDataRes: any = await rpc(method, [0, 'South Africa', ShippingAvailability.SHIPS]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
