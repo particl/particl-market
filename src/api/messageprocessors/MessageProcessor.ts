@@ -49,10 +49,10 @@ export class MessageProcessor implements MessageProcessorInterface {
     private async poll(): Promise<void> {
         await this.pollMessages()
             .then((messages) => {
-                this.log.info('response: ', messages);
+                this.log.info('poll() response:', messages);
             })
             .catch(reason => {
-                this.log.info('error: ', reason);
+                this.log.error('poll() error:', reason);
             });
         return;
     }
@@ -62,12 +62,8 @@ export class MessageProcessor implements MessageProcessorInterface {
 
         return await this.coreRpcService.call('getnetworkinfo')
             .then((response) => {
-                this.log.info('got response:', JSON.stringify(response));
+                // this.log.debug('got response:', JSON.stringify(response));
                 return response;
-            })
-            .catch(reason => {
-                this.log.error('got error:', reason);
-                return reason;
             });
     }
 }
