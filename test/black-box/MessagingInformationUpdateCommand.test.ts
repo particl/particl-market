@@ -8,7 +8,6 @@ import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { Country } from '../../src/api/enums/Country';
 import { Logger } from '../../src/core/Logger';
 import { MessagingInformationUpdateCommand } from '../../src/api/commands/messaginginformation/MessagingInformationUpdateCommand';
 
@@ -31,7 +30,7 @@ describe('MessagingInformationUpdateCommand', () => {
                 key: 'cat_high_luxyry_items'
             },
             itemLocation: {
-                region: Country.ASIA,
+                region: 'China',
                 address: 'USA'
             }
         },

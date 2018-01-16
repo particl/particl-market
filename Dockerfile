@@ -14,6 +14,9 @@ COPY . /app
 
 VOLUME /app/data
 
+RUN rm -rf /app/data/marketplace*db; npm run db:migrate; cp /app/data/marketplace.db /app/data/marketplace-test.db
+
 # CMD npm run serve
 CMD [ "yarn", "serve" ]
 EXPOSE 3000
+EXPOSE 51935

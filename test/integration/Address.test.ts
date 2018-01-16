@@ -7,7 +7,6 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
-import { Country } from '../../src/api/enums/Country';
 import { Address } from '../../src/api/models/Address';
 
 import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
@@ -34,7 +33,7 @@ describe('Address', () => {
         addressLine1: 'Add',
         addressLine2: 'ADD 22',
         city: 'city',
-        country: Country.FINLAND,
+        country: 'Finland',
         zipCode: '85001',
         profile_id: 0
     } as AddressCreateRequest;
@@ -44,7 +43,7 @@ describe('Address', () => {
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
-        country: Country.SWEDEN,
+        country: 'Sweden',
         zipCode: '85001',
         profile_id: 0
     } as AddressUpdateRequest;
@@ -70,7 +69,7 @@ describe('Address', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
-            country: Country.FINLAND,
+            country: 'Finland',
             zipCode: '85001'
         } as AddressCreateRequest).catch(e => {
             expect(e).toEqual(new ValidationException('Request body is not valid', []));
@@ -133,7 +132,7 @@ describe('Address', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
-            country: Country.FINLAND,
+            country: 'Finland',
             zipCode: '85001'
         } as AddressUpdateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))

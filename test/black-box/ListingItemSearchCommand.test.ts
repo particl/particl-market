@@ -1,6 +1,5 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
@@ -30,7 +29,7 @@ describe('/ListingItemSearchCommand', () => {
                 key: 'cat_high_luxyry_items'
             },
             itemLocation: {
-                region: Country.SOUTH_AFRICA,
+                region: 'South Africa',
                 address: 'asdf, asdf, asdf',
                 locationMarker: {
                     markerTitle: 'Helsinki',
@@ -40,13 +39,13 @@ describe('/ListingItemSearchCommand', () => {
                 }
             },
             shippingDestinations: [{
-                country: Country.UNITED_KINGDOM,
+                country: 'United Kingdom',
                 shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
             }, {
-                country: Country.ASIA,
+                country: 'China',
                 shippingAvailability: ShippingAvailability.SHIPS
             }, {
-                country: Country.SOUTH_AFRICA,
+                country: 'South Africa',
                 shippingAvailability: ShippingAvailability.ASK
             }],
             itemImages: [{
@@ -114,7 +113,7 @@ describe('/ListingItemSearchCommand', () => {
                 key: 'cat_high_luxyry_items'
             },
             itemLocation: {
-                region: Country.FINLAND,
+                region: 'Finland',
                 address: 'UPDATED',
                 locationMarker: {
                     markerTitle: 'UPDATED',
@@ -124,7 +123,7 @@ describe('/ListingItemSearchCommand', () => {
                 }
             },
             shippingDestinations: [{
-                country: Country.EU,
+                country: 'EU',
                 shippingAvailability: ShippingAvailability.SHIPS
             }],
             itemImages: [{

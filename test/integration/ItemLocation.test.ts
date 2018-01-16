@@ -17,8 +17,6 @@ import { ItemLocation } from '../../src/api/models/ItemLocation';
 import { ListingItem } from '../../src/api/models/ListingItem';
 import { ItemInformation } from '../../src/api/models/ItemInformation';
 
-import { Country } from '../../src/api/enums/Country';
-
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ItemLocationCreateRequest } from '../../src/api/requests/ItemLocationCreateRequest';
 import { ItemLocationUpdateRequest } from '../../src/api/requests/ItemLocationUpdateRequest';
@@ -42,7 +40,7 @@ describe('ItemLocation', () => {
 
     const testData = {
         item_information_id: null,
-        region: Country.SOUTH_AFRICA,
+        region: 'South Africa',
         address: 'asdf, asdf, asdf',
         locationMarker: {
             markerTitle: 'Helsinki',
@@ -54,7 +52,7 @@ describe('ItemLocation', () => {
 
     const testDataUpdated = {
         item_information_id: null,
-        region: Country.EU,
+        region: 'EU',
         address: 'zxcv, zxcv, zxcv',
         locationMarker: {
             markerTitle: 'Stockholm',

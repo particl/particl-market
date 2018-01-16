@@ -1,6 +1,5 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Country } from '../../src/api/enums/Country';
 import { Logger } from '../../src/core/Logger';
 import { AddressUpdateCommand } from '../../src/api/commands/profile/AddressUpdateCommand';
 
@@ -17,7 +16,7 @@ describe('/RpcUpdateAddress', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
-            country: Country.SWEDEN,
+            country: 'Sweden',
             zipCode: '85001'
         }]
     };
@@ -27,7 +26,7 @@ describe('/RpcUpdateAddress', () => {
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
-        country: Country.FINLAND,
+        country: 'Finland',
         zipCode: '85001'
     };
 

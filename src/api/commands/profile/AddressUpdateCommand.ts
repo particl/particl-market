@@ -7,6 +7,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressUpdateRequest } from '../../requests/AddressUpdateRequest';
+import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 
 export class AddressUpdateCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
@@ -28,7 +29,7 @@ export class AddressUpdateCommand implements RpcCommandInterface<Address> {
      *  [3]: addressLine2
      *  [4]: zipCode
      *  [5]: city
-     *  [6]: country
+     *  [6]: country/countryCode
      *  [7]: profileId
      *
      * @param data
@@ -36,25 +37,31 @@ export class AddressUpdateCommand implements RpcCommandInterface<Address> {
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<Address> {
+        // If countryCode is country, convert to countryCode.
+        // If countryCode is country code, validate, and possibly throw error.
+        let countryCode: string = data.params[5];
+        countryCode = ShippingCountries.validate(this.log, countryCode);
+
         return this.addressService.update(data.params[0], {
             title : data.params[1],
             addressLine1 : data.params[2],
             addressLine2 : data.params[3],
             zipCode : data.params[4],
             city : data.params[5],
-            country : data.params[6],
+            country : countryCode,
             profile_id : data.params[7]
         } as AddressUpdateRequest);
     }
 
     public help(): string {
-        return 'updateaddress <addressId> <title> <addressLine1> <addressLine2> <city> <country> <profileId>\n'
+        return 'updateaddress <addressId> <title> <addressLine1> <addressLine2> <city> (<country> | <countryCode>) <profileId>\n'
             + '    <addressId>            - Numeric - The ID of the address we want to modify.\n'
             + '    <title>                - String - A short identifier for the address.\n'
             + '    <addressLine1>         - String - The first line of the address.\n'
             + '    <addressLine2>         - String - The second line of the address.\n'
             + '    <city>                 - String - The city of the address.\n'
-            + '    <country>              - String - The country of the address.\n'
+            + '    <country>              - String - The country name of the address.\n'
+            + '    <countryCode>          - String - Two letter country code of the address.\n'
             + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
             + '                              this address with.';
     }

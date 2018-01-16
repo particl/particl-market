@@ -1,7 +1,6 @@
 import { EscrowFactory } from '../../../../src/api/factories/EscrowFactory';
 import { LogMock } from '../../lib/LogMock';
 import { EscrowMessageType } from '../../../../src/api/enums/EscrowMessageType';
-import { Country } from '../../../../src/api/enums/Country';
 import { EscrowType } from '../../../../src/api/enums/EscrowType';
 import { EscrowMessage } from '../../../../src/api/messages/EscrowMessage';
 
@@ -35,7 +34,7 @@ describe('EscrowFactory', () => {
             addressLine1: '20 seventeen street',
             addressLine2: 'march city, 2017',
             city: 'city',
-            country: Country.FINLAND,
+            country: 'Finland',
             zipCode: '85001'
         };
 

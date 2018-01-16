@@ -32,14 +32,14 @@ describe('/ProfileGetCommand', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
-            country: Country.SWEDEN,
+            country: 'Sweden',
             zipCode: '85001'
         }, {
             title: 'Tite',
             addressLine1: 'Ad',
             addressLine2: 'ADD 222',
             city: 'city',
-            country: Country.FINLAND,
+            country: 'Finland',
             zipCode: '85001'
         }]
     };

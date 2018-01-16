@@ -8,7 +8,7 @@ import * as _ from 'lodash';
 import * as Faker from 'faker';
 import { MessageException } from '../exceptions/MessageException';
 import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
-import { Country } from '../enums/Country';
+import { ShippingCountries } from '../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../enums/ShippingAvailability';
 import { MessagingProtocolType } from '../enums/MessagingProtocolType';
 import { CryptocurrencyAddressType } from '../enums/CryptocurrencyAddressType';
@@ -310,7 +310,7 @@ export class TestDataService {
                 addressLine2: Faker.address.secondaryAddress(),
                 zipCode: Faker.address.zipCode(),
                 city: Faker.address.city(),
-                country: Faker.random.arrayElement(Object.getOwnPropertyNames(Country))
+                country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryList))
             });
         }
         return addresses;
@@ -349,7 +349,7 @@ export class TestDataService {
         const items: any[] = [];
         for (let i = amount; i !== 0; i--) {
             items.push({
-                country: Faker.random.arrayElement(Object.getOwnPropertyNames(Country)),
+                country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryList)),
                 shippingAvailability: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingAvailability))
             });
         }
@@ -384,7 +384,7 @@ export class TestDataService {
                 key: this.randomCategoryKey()
             },
             itemLocation: {
-                region: Faker.random.arrayElement(Object.getOwnPropertyNames(Country)),
+                region: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryList)),
                 address: Faker.address.streetAddress(),
                 locationMarker: {
                     markerTitle: Faker.lorem.word(),

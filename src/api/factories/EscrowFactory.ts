@@ -31,9 +31,11 @@ export class EscrowFactory {
      *
      * @returns {EscrowMessage}
      */
-    public async getMessage(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest,
-                            escrow?: resources.Escrow,
-                            address?: resources.Address): Promise<EscrowMessage> {
+    public async getMessage(
+        request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest,
+        escrow?: resources.Escrow,
+        address?: resources.Address
+    ): Promise<EscrowMessage> {
 
         switch (request.action) {
 

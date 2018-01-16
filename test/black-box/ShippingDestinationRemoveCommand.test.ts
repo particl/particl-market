@@ -1,5 +1,4 @@
 import { rpc, api } from './lib/api';
-import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { Currency } from '../../src/api/enums/Currency';
 import { PaymentType } from '../../src/api/enums/PaymentType';
@@ -58,7 +57,7 @@ describe('/ShippingDestinationRemoveCommand', () => {
         createdItemInformationId = result.ItemInformation.id;
 
         // create shipping destination
-        const addDataRes: any = await rpc(addShippingMethod, [createdTemplateId, Country.SOUTH_AFRICA, ShippingAvailability.SHIPS]);
+        const addDataRes: any = await rpc(addShippingMethod, [createdTemplateId, 'South Africa', ShippingAvailability.SHIPS]);
 
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
@@ -80,7 +79,7 @@ describe('/ShippingDestinationRemoveCommand', () => {
 
     test('Should fail to remove shipping destination for invalid ShippingAvailability', async () => {
         // remove shipping destination
-        const addDataRes: any = await rpc(method, [createdTemplateId, Country.SOUTH_AFRICA, 'TEST']);
+        const addDataRes: any = await rpc(method, [createdTemplateId, 'South Africa', 'TEST']);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
@@ -89,7 +88,7 @@ describe('/ShippingDestinationRemoveCommand', () => {
 
     test('Should fail to remove shipping destination for invalid item template id', async () => {
         // remove shipping destination
-        const addDataRes: any = await rpc(method, [0, Country.SOUTH_AFRICA, ShippingAvailability.SHIPS]);
+        const addDataRes: any = await rpc(method, [0, 'South Africa', ShippingAvailability.SHIPS]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
@@ -98,7 +97,7 @@ describe('/ShippingDestinationRemoveCommand', () => {
 
     test('Should remove shipping destination', async () => {
         // remove shipping destination
-        const addDataRes: any = await rpc(method, [createdTemplateId, Country.SOUTH_AFRICA, ShippingAvailability.SHIPS]);
+        const addDataRes: any = await rpc(method, [createdTemplateId, 'South Africa', ShippingAvailability.SHIPS]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
 
@@ -106,7 +105,7 @@ describe('/ShippingDestinationRemoveCommand', () => {
 
     test('Should fail remove shipping destination because it already removed', async () => {
         // remove shipping destination
-        const addDataRes: any = await rpc(method, [createdTemplateId, Country.SOUTH_AFRICA, ShippingAvailability.SHIPS]);
+        const addDataRes: any = await rpc(method, [createdTemplateId, 'South Africa', ShippingAvailability.SHIPS]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
     });
@@ -124,7 +123,7 @@ describe('/ShippingDestinationRemoveCommand', () => {
         const newTemplateId = addListingItemTempRes.getBody()['result'].id;
 
         // remove shipping destination
-        const addDataRes: any = await rpc(method, [newTemplateId, Country.SOUTH_AFRICA, ShippingAvailability.SHIPS]);
+        const addDataRes: any = await rpc(method, [newTemplateId, 'South Africa', ShippingAvailability.SHIPS]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
