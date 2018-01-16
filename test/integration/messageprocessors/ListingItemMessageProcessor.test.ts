@@ -49,8 +49,8 @@ describe('ListingItemMessageProcessor', () => {
         hash: '',
         information: {
             title: 'item title1',
-            short_description: 'item short desc1',
-            long_description: 'item long desc1',
+            shortDescription: 'item short desc1',
+            longDescription: 'item long desc1',
             category: [
                 'cat_ROOT',
                 'Subcategory',
@@ -171,8 +171,8 @@ describe('ListingItemMessageProcessor', () => {
         expect(result.id).not.toBeNull();
         // ItemInformation
         expect(result.ItemInformation.title).toBe(testData.information.title);
-        expect(result.ItemInformation.shortDescription).toBe(testData.information.short_description);
-        expect(result.ItemInformation.longDescription).toBe(testData.information.long_description);
+        expect(result.ItemInformation.shortDescription).toBe(testData.information.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(testData.information.longDescription);
         expect(result.ItemInformation.ItemCategory.name).toBe(testData.information.category[2]);
 
         // paymentInformation
@@ -199,8 +199,8 @@ describe('ListingItemMessageProcessor', () => {
         expect(result.id).not.toBeNull();
         // ItemInformation
         expect(result.ItemInformation.title).toBe(testData.information.title);
-        expect(result.ItemInformation.shortDescription).toBe(testData.information.short_description);
-        expect(result.ItemInformation.longDescription).toBe(testData.information.long_description);
+        expect(result.ItemInformation.shortDescription).toBe(testData.information.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(testData.information.longDescription);
         expect(result.ItemInformation.ItemCategory.name).toBe(testData.information.category[2]);
 
         // paymentInformation
@@ -225,8 +225,8 @@ describe('ListingItemMessageProcessor', () => {
         expect(result.id).not.toBeNull();
         // ItemInformation
         expect(result.ItemInformation.title).toBe(testData.information.title);
-        expect(result.ItemInformation.shortDescription).toBe(testData.information.short_description);
-        expect(result.ItemInformation.longDescription).toBe(testData.information.long_description);
+        expect(result.ItemInformation.shortDescription).toBe(testData.information.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(testData.information.longDescription);
         expect(result.ItemInformation.ItemCategory.name).toBe(testData.information.category[2]);
 
         // paymentInformation

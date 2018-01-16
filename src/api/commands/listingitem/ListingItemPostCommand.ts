@@ -14,7 +14,6 @@ import { MessageException } from '../../exceptions/MessageException';
 import { MessageBroadcastService } from '../../services/MessageBroadcastService';
 import { MarketService } from '../../services/MarketService';
 import { ObjectHash } from '../../../core/helpers/ObjectHash';
-import camelcaseObject = require('camelcase-object');
 
 export class ListingItemPostCommand implements RpcCommandInterface<ListingItem> {
 
@@ -60,17 +59,14 @@ export class ListingItemPostCommand implements RpcCommandInterface<ListingItem> 
                 marketId = defaultMarket.id;
             }
 
-            // convert listing Item template object to camelcaseObject
-            const newListingTemplate = camelcaseObject(itemTemplate);
-
-            const addItemMessage = await this.listingItemFactory.get({
-                hash: ObjectHash.getHash(newListingTemplate),
-                marketId: data.params[1] || marketId,
-                listingItemTemplateId: newListingTemplate.id,
-                information: newListingTemplate.itemInformation || {},
-                payment:  newListingTemplate.paymentInformation || {},
-                messaging: newListingTemplate.messagingInformation || {}
-            } as ListingItemMessage);
+            // get the ListingItemMessage from listing item template
+            const addItemMessage = await this.listingItemFactory.getMessage({
+                hash: ObjectHash.getHash(itemTemplate),
+                listingItemTemplateId: itemTemplate.id,
+                information: itemTemplate.itemInformation || {},
+                payment:  itemTemplate.paymentInformation || {},
+                messaging: itemTemplate.messagingInformation || {}
+            } as ListingItemMessage, marketId);
 
             // TODO: Need to update broadcast message return after broadcast functionality will be done.
             this.messageBroadcastService.broadcast(addItemMessage as any);

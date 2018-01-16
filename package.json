@@ -84,7 +84,6 @@
     "body-parser": "^1.17.2",
     "bookshelf": "^0.10.3",
     "bookshelf-camelcase": "^1.1.4",
-    "camelcase-object": "^1.0.0",
     "chalk": "^2.0.1",
     "class-validator": "^0.7.2",
     "commander": "^2.11.0",

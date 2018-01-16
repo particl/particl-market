@@ -2,12 +2,9 @@ import { inject, named } from 'inversify';
 import * as crypto from 'crypto-js';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { ListingItem } from '../models/ListingItem';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
-import { ItemMessageInterface } from '../messages/ItemMessageInterface';
 import { PaymentType } from '../enums/PaymentType';
-import { EscrowType } from '../enums/EscrowType';
-import * as _ from 'lodash';
+import { ListingItemMessage } from '../messages/ListingItemMessage';
 
 export class ListingItemFactory {
 
@@ -19,10 +16,50 @@ export class ListingItemFactory {
         this.log = new Logger(__filename);
     }
 
-    public async get(data: ItemMessageInterface): Promise<ListingItemCreateRequest> {
-        const escrowType = data.payment.escrow ? EscrowType[data.payment.escrow.type] : EscrowType.MAD;
+    /**
+     * Factory which will create an ListingItemMessage
+     * @param ListingItemMessage
+     * @param marketId
+     *
+     * @returns {ListingItemMessage}
+     */
 
-        const listingItem = {
+    public async getMessage(data: ListingItemMessage, marketId: number): Promise<ListingItemMessage> {
+        return {
+            hash: data.hash,
+            listingItemTemplateId: data.listingItemTemplateId,
+            marketId,
+            information: {
+                title: data.information.title,
+                shortDescription: data.information.shortDescription,
+                longDescription: data.information.longDescription,
+                itemCategory: {
+                    id: data.information.itemCategoryId
+                },
+                itemLocation: data.information.itemLocation,
+                data: data.information.itemImages,
+                shippingDestinations: data.information.shippingDestinations
+            },
+            payment: {
+                type: PaymentType[data.payment.type],
+                escrow: {
+                    type: data.payment.escrow
+                },
+                itemPrice: data.payment.itemPrice
+            },
+            messaging: data.messaging
+        } as ListingItemMessage;
+    }
+
+    /**
+     * Factory will return model based on the message
+     *
+     * @param data
+     * @returns {ListingItemCreateRequest}
+     */
+
+    public getModel(data: ListingItemMessage): ListingItemCreateRequest {
+        return {
             hash: data.hash,
             market_id: data.marketId,
             listing_item_template_id: data.listingItemTemplateId,
@@ -31,33 +68,15 @@ export class ListingItemFactory {
                 shortDescription: data.information.shortDescription,
                 longDescription: data.information.longDescription,
                 itemCategory: {
-                    id: data.information.itemCategoryId
+                    id: data.information.itemCategory
                 },
                 itemLocation: data.information.itemLocation,
-                itemImages: this.renameItemImageDataToData(data.information.itemImages),
+                itemImages: data.information.itemImages,
                 shippingDestinations: data.information.shippingDestinations
             },
-            paymentInformation: {
-                type: PaymentType[data.payment.type],
-                escrow: {
-                    type: escrowType
-                },
-                itemPrice: data.payment.itemPrice
-            },
-            messagingInformation: data.messaging
-        };
-        return listingItem as ListingItemCreateRequest;
-    }
-
-    private renameItemImageDataToData(itemImages: string[]): any {
-        // convert the itemImageData proverty to data in information.itemImages
-        const itemInfo = _.map(itemImages, (itemImage) => {
-            if (itemImage['itemImageData']) {
-                itemImage['data'] = itemImage['itemImageData'];
-                delete itemImage['itemImageData'];
-            }
-            return itemImage;
-        });
-        return itemInfo;
+            paymentInformation: data.payment,
+            messagingInformation: data.messaging,
+            listingItemObjects: {} // we will change it later
+        } as ListingItemCreateRequest;
     }
 }
