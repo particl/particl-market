@@ -248,7 +248,7 @@ export class ListingItemService {
         const itemTemplateModel = await this.findOne(data.listingItemTemplateId);
         const itemTemplate = itemTemplateModel.toJSON();
 
-        // fetch the market
+        // fetch the market, dont remove, will be used later with the broadcast
         const marketModel = _.isEmpty(data.marketId)
             ? this.marketService.getDefault()
             : this.marketService.findOne(data.marketId);

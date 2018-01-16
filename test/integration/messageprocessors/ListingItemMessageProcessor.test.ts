@@ -40,12 +40,12 @@ describe('ListingItemMessageProcessor', () => {
     let defaultProfile;
     let createdListingItemTemplate;
 
-    const messaging = [{ protocol: 'SMSG', public_key: 'publickey2' }];
+    const messaging = [{ protocol: MessagingProtocolType.SMSG, public_key: 'publickey2' }];
 
     const testData = {
-        marketId: null,
-        listingItemTemplateId: null,
-        hash: '',
+        marketId: null,  // TODO: MESSAGE DOES NOT CONTAIN THIS
+        listingItemTemplateId: null, // TODO: MESSAGE DOES NOT CONTAIN THIS
+        hash: '',   // TODO: CREATE HASH
         information: {
             title: 'item title1',
             shortDescription: 'item short desc1',
@@ -56,7 +56,7 @@ describe('ListingItemMessageProcessor', () => {
                 'Subsubcategory'
             ],
             itemLocation: {
-                region: 'South Africa',
+                region: 'South Africa', // TODO INVALID
                 address: 'asdf, asdf, asdf',
                 locationMarker: {
                     markerTitle: 'Helsinki',
@@ -66,13 +66,13 @@ describe('ListingItemMessageProcessor', () => {
                 }
             },
             shippingDestinations: [{
-                country: 'United Kingdom',
+                country: 'United Kingdom', // TODO INVALID
                 shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
             }, {
-                country: 'Asia',
+                country: 'Asia', // TODO INVALID
                 shippingAvailability: ShippingAvailability.SHIPS
             }, {
-                country: 'South Africa',
+                country: 'South Africa', // TODO INVALID
                 shippingAvailability: ShippingAvailability.ASK
             }],
             itemImages: [{
@@ -125,10 +125,11 @@ describe('ListingItemMessageProcessor', () => {
             }
         },
         messaging
-    };
+    }; // TODO:  no type
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
+
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
         listingItemMessageProcessor = app.IoC.getNamed<ListingItemMessageProcessor>(Types.MessageProcessor,
