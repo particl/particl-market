@@ -17,7 +17,6 @@ import { TestDataCreateRequest } from '../../../src/api/requests/TestDataCreateR
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { EscrowType } from '../../../src/api/enums/EscrowType';
 import { Currency } from '../../../src/api/enums/Currency';
-import { Country } from '../../../src/api/enums/Country';
 import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
 import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
@@ -57,7 +56,7 @@ describe('ListingItemMessageProcessor', () => {
                 'Subsubcategory'
             ],
             itemLocation: {
-                region: Country.SOUTH_AFRICA,
+                region: 'South Africa',
                 address: 'asdf, asdf, asdf',
                 locationMarker: {
                     markerTitle: 'Helsinki',
@@ -67,13 +66,13 @@ describe('ListingItemMessageProcessor', () => {
                 }
             },
             shippingDestinations: [{
-                country: Country.UNITED_KINGDOM,
+                country: 'United Kingdom',
                 shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
             }, {
-                country: Country.ASIA,
+                country: 'Asia',
                 shippingAvailability: ShippingAvailability.SHIPS
             }, {
-                country: Country.SOUTH_AFRICA,
+                country: 'South Africa',
                 shippingAvailability: ShippingAvailability.ASK
             }],
             itemImages: [{

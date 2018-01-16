@@ -14,6 +14,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { MessageBroadcastService } from '../../services/MessageBroadcastService';
 import { MarketService } from '../../services/MarketService';
 import { ObjectHash } from '../../../core/helpers/ObjectHash';
+import { ListingItemTemplatePostRequest } from '../../requests/ListingItemTemplatePostRequest';
 
 export class ListingItemPostCommand implements RpcCommandInterface<ListingItem> {
 
@@ -60,16 +61,10 @@ export class ListingItemPostCommand implements RpcCommandInterface<ListingItem> 
             }
 
             // get the ListingItemMessage from listing item template
-            const addItemMessage = await this.listingItemFactory.getMessage({
-                hash: ObjectHash.getHash(itemTemplate),
-                listingItemTemplateId: itemTemplate.id,
-                information: itemTemplate.itemInformation || {},
-                payment:  itemTemplate.paymentInformation || {},
-                messaging: itemTemplate.messagingInformation || {}
-            } as ListingItemMessage, marketId);
+            const addItemMessage = await this.listingItemFactory.getMessage(itemTemplate as ListingItemTemplatePostRequest, marketId as number);
 
             // TODO: Need to update broadcast message return after broadcast functionality will be done.
-            this.messageBroadcastService.broadcast(addItemMessage as any);
+            this.messageBroadcastService.broadcast(addItemMessage as ListingItemMessage);
             return itemTemplate;
         }
     }

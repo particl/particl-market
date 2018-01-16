@@ -3,6 +3,7 @@ import * as crypto from 'crypto-js';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
+import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplatePostRequest';
 import { PaymentType } from '../enums/PaymentType';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 
@@ -21,33 +22,33 @@ export class ListingItemFactory {
      * @param ListingItemMessage
      * @param marketId
      *
-     * @returns {ListingItemMessage}
+     * @returns {ListingItemTemplatePostRequest}
      */
 
-    public async getMessage(data: ListingItemMessage, marketId: number): Promise<ListingItemMessage> {
+    public async getMessage(data: ListingItemTemplatePostRequest, marketId: number): Promise<ListingItemMessage> {
         return {
             hash: data.hash,
-            listingItemTemplateId: data.listingItemTemplateId,
+            listingItemTemplateId: data.id,
             marketId,
             information: {
-                title: data.information.title,
-                shortDescription: data.information.shortDescription,
-                longDescription: data.information.longDescription,
+                title: data.ItemInformation.title,
+                shortDescription: data.ItemInformation.shortDescription,
+                longDescription: data.ItemInformation.longDescription,
                 itemCategory: {
-                    id: data.information.itemCategoryId
+                    id: data.ItemInformation.itemCategoryId
                 },
-                itemLocation: data.information.itemLocation,
-                data: data.information.itemImages,
-                shippingDestinations: data.information.shippingDestinations
+                itemLocation: data.ItemInformation.itemLocation,
+                data: data.ItemInformation.itemImages,
+                shippingDestinations: data.ItemInformation.shippingDestinations
             },
             payment: {
-                type: PaymentType[data.payment.type],
+                type: PaymentType[data.PaymentInformation.type],
                 escrow: {
-                    type: data.payment.escrow
+                    type: data.PaymentInformation.escrow
                 },
-                itemPrice: data.payment.itemPrice
+                itemPrice: data.PaymentInformation.itemPrice
             },
-            messaging: data.messaging
+            messaging: data.MessagingInformation
         } as ListingItemMessage;
     }
 
