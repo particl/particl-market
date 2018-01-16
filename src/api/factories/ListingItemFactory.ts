@@ -19,10 +19,10 @@ export class ListingItemFactory {
 
     /**
      * Factory which will create an ListingItemMessage
-     * @param ListingItemMessage
+     * @param ListingItemTemplatePostRequest
      * @param marketId
      *
-     * @returns {ListingItemTemplatePostRequest}
+     * @returns {ListingItemMessage}
      */
 
     public async getMessage(data: ListingItemTemplatePostRequest, marketId: number): Promise<ListingItemMessage> {
@@ -55,7 +55,7 @@ export class ListingItemFactory {
     /**
      * Factory will return model based on the message
      *
-     * @param data
+     * @param ListingItemMessage
      * @returns {ListingItemCreateRequest}
      */
 
