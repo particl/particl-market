@@ -54,8 +54,8 @@ services:
     volumes:
       - ./data/particl1:/root/.particl
     ports:
-      - 51738:51738
-      - 51935:51935
+      - 52738:51738
+      - 52935:51935
     environment:
       - CONF_TESTNET=1                 # Use the test chain
       - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set
@@ -81,8 +81,8 @@ services:
     volumes:
       - ./data/particl2:/root/.particl
     ports:
-      - 41738:51738
-      - 41935:51935
+      - 53738:51738
+      - 53935:51935
     environment:
       - CONF_TESTNET=1                 # Use the test chain
       - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set

@@ -51,8 +51,8 @@ docker-compose up
 ```
 
 > This starts two marketplace applications and two particl daemons for you.
-> app1 cli: http://localhost:3100/cli, connecting to particl1 on port 51935
-> app2 cli: http://localhost:3200/cli, connecting to particl2 on port 41935
+> app1 cli: http://localhost:3100/cli, connecting to particl1 on port 52935
+> app2 cli: http://localhost:3200/cli, connecting to particl2 on port 53935
 
 
 ## Scripts / Tasks
