@@ -1,5 +1,7 @@
 import { ImageTriplet } from './ImageTriplet';
-import images = require('images');
+// import images = require('images');
+import sharp = require('sharp');
+
 
 declare const Buffer;
 
@@ -14,71 +16,7 @@ export enum THUMBNAIL_IMAGE_SIZE {
 }
 
 export class ImageProcessing {
-    public static PIEXIF_JPEG_START_STR = 'data:image/jpeg;base64,';
-
-    /*
-     * Takes a PNG, GIF, or JPEG image in base64 string format, and converts it to a JPEG, stripping out the metadata in the process.
-     * Then resize the image to three sizes and return them.
-     */
-    public static prepareImageForSaving(imageRaw: string): ImageTriplet {
-        // Convert image to JPEG (and strip metadata in the process)
-        let imageBuffer;
-        try {
-            const dataBuffer = Buffer.from(imageRaw, 'base64');
-            imageBuffer = images(dataBuffer);
-        } catch ( ex ) {
-            if ( ex.toString() === 'Error: ../src/Image.cc:341 Unknow format' ) {
-                throw new Error('Image data was an unknown format. Supports: JPEG, PNG, GIF.');
-            } else {
-                throw ex;
-            }
-        }
-
-        imageRaw = imageBuffer.encode('jpg');
-        imageRaw = new Buffer(imageRaw).toString('base64');
-
-        // Resize to three sizes (big, medium, and thumbnail)
-        const imageResized: ImageTriplet = this.tripleSizeImage(imageRaw);
-
-        return imageResized;
-    }
-
-    /*
-     * Takes a JPEG image in base64 string format and resizes it to three different sizes, big, medium, and thumbmail.
-     */
-    public static tripleSizeImage(imageRaw: string): ImageTriplet {
-        // Shrink medium image
-        const medImage: string = this.resizeImage(imageRaw, MEDIUM_IMAGE_SIZE.width, MEDIUM_IMAGE_SIZE.height);
-
-        // Shrink thumbnail image
-        const thumbImage: string = this.resizeImage(imageRaw, THUMBNAIL_IMAGE_SIZE.width, THUMBNAIL_IMAGE_SIZE.height);
-
-        return {
-            big: imageRaw,
-            medium: medImage,
-            thumbnail: thumbImage
-        } as ImageTriplet;
-    }
-
-    /*
-     * Resize a single image.
-     */
-    public static resizeImage(imageRaw: string, maxWidth: number, maxHeight: number): string {
-        const dataBuffer = Buffer.from(imageRaw, 'base64');
-        const imageBuffer = images(dataBuffer);
-
-        const widthScale = maxWidth / imageBuffer.width();
-        const heightScale = maxHeight / imageBuffer.height();
-        const scale = Math.min(heightScale, widthScale);
-        const resizedImage = imageBuffer.resize(
-            imageBuffer.width() * scale,
-            imageBuffer.height() * scale
-        );
-
-        return new Buffer(resizedImage.encode('jpg')).toString('base64');
-    }
-
-    public static milkcat =  '/9j/4AAQSkZJRgABAQEAoACgAAD/4ReaRXhpZgAASUkqAAgAAAAMAA4BAgAgAAAAngAAAA8BAgAYAAAAvgAAABABAgAQAAAA1gAA'
+public static milkcat =  '/9j/4AAQSkZJRgABAQEAoACgAAD/4ReaRXhpZgAASUkqAAgAAAAMAA4BAgAgAAAAngAAAA8BAgAYAAAAvgAAABABAgAQAAAA1gAA'
                        + 'ABIBAwABAAAAAQAAABoBBQABAAAA5gAAABsBBQABAAAA7gAAACgBAwABAAAAAgAAADEBAgAMAAAA9gAAADIBAgAUAAAAAgEAABMC'
                        + 'AwABAAAAAgAAAGmHBAABAAAAOAMAAKXEBwAiAgAAFgEAAMINAABPTFlNUFVTIERJR0lUQUwgQ0FNRVJBICAgICAgICAgAE9MWU1Q'
                        + 'VVMgSU1BR0lORyBDT1JQLiAgAEZFMzEwLFg4NDAsQzUzMACgAAAAAQAAAKAAAAABAAAAR0lNUCAyLjguMTYAMjAxODowMToxNiAy'
@@ -792,4 +730,62 @@ public static milkcatWide = '/9j/4AAQSkZJRgABAQEAoACgAAD/4RI9RXhpZgAASUkqAAgAAAA
                    + 'fUTwxK1zDDaaHMOoV0z7oW9QtgHqXltnWI+XEdjlCstF6gO4Kj46litc+4WndYhU6ya7gWhrk6hRo0EcMfJ5iatsV2QTzC/dbuWa'
                    + 'qWrhfUC80fcWgfMyGq5ghdL9xWRvxCNDfmKrZ7ZStrB2El4tBO2bFcE7b9XFu13j9RNb0PmYkP4m/BqcfMyE4ILQ6qbDi5TKs3Db'
                    + 'MjMC7lFpxUFn/9k=';
+
+    public static PIEXIF_JPEG_START_STR = 'data:image/jpeg;base64,';
+
+    /*
+     * Takes a PNG, GIF, or JPEG image in base64 string format, and converts it to a JPEG, stripping out the metadata in the process.
+     * Then resize the image to three sizes and return them.
+     */
+    public static async prepareImageForSaving(imageRaw: string): Promise<ImageTriplet> {
+        // Convert image to JPEG (and strip metadata in the process)
+        let imageBuffer;
+        try {
+            const dataBuffer = Buffer.from(imageRaw, 'base64');
+            imageBuffer = sharp(dataBuffer);
+            imageBuffer = await imageBuffer.jpeg().toBuffer();
+        } catch ( ex ) {
+            if ( ex.toString() === 'Error: Input buffer has corrupt header' ) {
+                throw new Error('Image data was an unknown format. Supports: JPEG, PNG, GIF.');
+            } else {
+                console.log('prepareImageForSaving(): ' + ex);
+                throw ex;
+            }
+        }
+
+        imageRaw = imageBuffer.toString('base64');
+
+        // Resize to three sizes (big, medium, and thumbnail)
+        return this.tripleSizeImage(imageRaw);
+    }
+
+    /*
+     * Takes a JPEG image in base64 string format and resizes it to three different sizes, big, medium, and thumbmail.
+     */
+    public static async tripleSizeImage(imageRaw: string): Promise<ImageTriplet> {
+        // Shrink medium image
+        const medImage: string = await this.resizeImage(imageRaw, MEDIUM_IMAGE_SIZE.width, MEDIUM_IMAGE_SIZE.height);
+
+        // Shrink thumbnail image
+        const thumbImage: string = await this.resizeImage(imageRaw, THUMBNAIL_IMAGE_SIZE.width, THUMBNAIL_IMAGE_SIZE.height);
+
+        return {
+            big: imageRaw,
+            medium: medImage,
+            thumbnail: thumbImage
+        } as ImageTriplet;
+    }
+
+    /*
+     * Resize a single image.
+     */
+    public static async resizeImage(imageRaw: string, maxWidth: number, maxHeight: number): Promise<string> {
+      const dataBuffer = Buffer.from(imageRaw, 'base64');
+      const imageBuffer = sharp(dataBuffer);
+
+      let resizedImage = imageBuffer.resize(maxWidth, maxHeight).max();
+
+      resizedImage = await resizedImage.jpeg().toBuffer();
+      return resizedImage.toString('base64');
+    }
 }
