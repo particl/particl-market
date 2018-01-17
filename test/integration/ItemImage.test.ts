@@ -22,6 +22,12 @@ import { ItemImageCreateRequest } from '../../src/api/requests/ItemImageCreateRe
 import { ItemImageUpdateRequest } from '../../src/api/requests/ItemImageUpdateRequest';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 
+import { ImageProcessing, MEDIUM_IMAGE_SIZE, THUMBNAIL_IMAGE_SIZE } from '../../src/core/helpers/ImageProcessing';
+import { ImageTriplet } from '../../src/core/helpers/ImageTriplet';
+
+import images = require('images');
+import piexif = require('piexifjs');
+
 describe('ItemImage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -55,7 +61,7 @@ describe('ItemImage', () => {
             dataId: null,
             protocol: ImageDataProtocolType.LOCAL,
             encoding: 'BASE64',
-            data: 'BASE64 encoded image data'
+            data: ImageProcessing.milkcat
         }
     } as ItemImageUpdateRequest;
 
@@ -123,7 +129,29 @@ describe('ItemImage', () => {
         expect(result.ItemImageData.dataId).toBe(testData.data.dataId);
         expect(result.ItemImageData.protocol).toBe(testData.data.protocol);
         expect(result.ItemImageData.encoding).toBe(testData.data.encoding);
-        expect(result.ItemImageData.data).toBe(testData.data.data);
+
+        if (!testData.data && testData.data != null) {
+            expect(result.ItemImageData.dataBig).toBeUndefined();
+            expect(result.ItemImageData.dataMedium).toBeUndefined();
+            expect(result.ItemImageData.dataThumbnail).toBeUndefined();
+        } else {
+            // TODO: If image is in test data check size and validity of processed image
+            expect(result.ItemImageData.dataBig).toBeDefined();
+            expect(result.ItemImageData.dataMedium).toBeDefined();
+            if (result.ItemImageData.dataMedium !== null) {
+                const dataBuffer = Buffer.from(result.ItemImageData.dataMedium, 'base64');
+                const imageBuffer = images(dataBuffer);
+                expect(imageBuffer.height()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
+                expect(imageBuffer.width()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
+            }
+            expect(result.ItemImageData.dataMedium).toBeDefined();
+            if (result.ItemImageData.dataMedium !== null) {
+                const dataBuffer = Buffer.from(result.dataThumbnail, 'base64');
+                const imageBuffer = images(dataBuffer);
+                expect(imageBuffer.height()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
+                expect(imageBuffer.width()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
+            }
+        }
     });
 
     test('Should throw ValidationException because we want to create a empty item image', async () => {
@@ -149,7 +177,29 @@ describe('ItemImage', () => {
         expect(result.ItemImageData.dataId).toBe(testData.data.dataId);
         expect(result.ItemImageData.protocol).toBe(testData.data.protocol);
         expect(result.ItemImageData.encoding).toBe(testData.data.encoding);
-        expect(result.ItemImageData.data).toBe(testData.data.data);
+
+        if (!testData.data && testData.data != null) {
+            expect(result.ItemImageData.dataBig).toBeUndefined();
+            expect(result.ItemImageData.dataMedium).toBeUndefined();
+            expect(result.ItemImageData.dataThumbnail).toBeUndefined();
+        } else {
+            // TODO: If image is in test data check size and validity of processed image
+            expect(result.ItemImageData.dataBig).toBeDefined();
+            expect(result.ItemImageData.dataMedium).toBeDefined();
+            if (result.ItemImageData.dataMedium !== null) {
+                const dataBuffer = Buffer.from(result.ItemImageData.dataMedium, 'base64');
+                const imageBuffer = images(dataBuffer);
+                expect(imageBuffer.height()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
+                expect(imageBuffer.width()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
+            }
+            expect(result.ItemImageData.dataMedium).toBeDefined();
+            if (result.ItemImageData.dataMedium !== null) {
+                const dataBuffer = Buffer.from(result.ItemImageData.dataThumbnail, 'base64');
+                const imageBuffer = images(dataBuffer);
+                expect(imageBuffer.height()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
+                expect(imageBuffer.width()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
+            }
+        }
     });
 
     test('Should throw ValidationException because there is no item_information_id', async () => {
@@ -168,7 +218,29 @@ describe('ItemImage', () => {
         expect(result.ItemImageData.dataId).toBe(testDataUpdated.data.dataId);
         expect(result.ItemImageData.protocol).toBe(testDataUpdated.data.protocol);
         expect(result.ItemImageData.encoding).toBe(testDataUpdated.data.encoding);
-        expect(result.ItemImageData.data).toBe(testDataUpdated.data.data);
+
+        if (!testDataUpdated.data && testDataUpdated.data != null) {
+            expect(result.ItemImageData.dataBig).toBeUndefined();
+            expect(result.ItemImageData.dataMedium).toBeUndefined();
+            expect(result.ItemImageData.dataThumbnail).toBeUndefined();
+        } else {
+            // TODO: If image is in test data check size and validity of processed image
+            expect(result.ItemImageData.dataBig).toBeDefined();
+            expect(result.ItemImageData.dataMedium).toBeDefined();
+            if (result.ItemImageData.dataMedium !== null) {
+                const dataBuffer = Buffer.from(result.ItemImageData.dataMedium, 'base64');
+                const imageBuffer = images(dataBuffer);
+                expect(imageBuffer.height()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
+                expect(imageBuffer.width()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
+            }
+            expect(result.ItemImageData.dataMedium).toBeDefined();
+            if (result.ItemImageData.dataMedium !== null) {
+                const dataBuffer = Buffer.from(result.ItemImageData.dataThumbnail, 'base64');
+                const imageBuffer = images(dataBuffer);
+                expect(imageBuffer.height()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
+                expect(imageBuffer.width()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
+            }
+        }
     });
 
     test('Should delete the item image', async () => {

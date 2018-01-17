@@ -41,6 +41,8 @@ import { ListingItemTemplateCreateRequest } from '../../src/api/requests/Listing
 import { ListingItemTemplateUpdateRequest } from '../../src/api/requests/ListingItemTemplateUpdateRequest';
 import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';
 
+import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
+
 describe('ListingItemTemplate', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -119,7 +121,7 @@ describe('ListingItemTemplate', () => {
                     dataId: 'dataid2',
                     protocol: ImageDataProtocolType.LOCAL,
                     encoding: 'BASE64',
-                    data: 'BASE64 encoded image data'
+                    data: ImageProcessing.milkcat
                 }
             }, {
                 hash: 'imagehash3',
