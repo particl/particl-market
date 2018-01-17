@@ -41,3 +41,5 @@ data/app1
 data/app2
 
 *.paw
+
+codeship*.yml
