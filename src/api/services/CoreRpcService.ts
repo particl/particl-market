@@ -65,7 +65,7 @@ export class CoreRpcService {
                 return jsonRpcResponse.result;
             })
             .catch(error => {
-                this.log.error('ERROR:', error);
+                this.log.error('ERROR: ' + error.name + ': ' + error.message);
                 if (error instanceof HttpException || error instanceof InternalServerException) {
                     throw error;
                 } else {

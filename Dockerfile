@@ -14,9 +14,10 @@ COPY . /app
 
 VOLUME /app/data
 
+RUN mkdir -p /app/node_modules/images/vendor/linux_musl-x64-57
+COPY docker/linux_musl-x64-57/binding.node /app/node_modules/images/vendor/linux_musl-x64-57/binding.node
 RUN rm -rf /app/data/marketplace*db; npm run db:migrate; cp /app/data/marketplace.db /app/data/marketplace-test.db
 
 # CMD npm run serve
 CMD [ "yarn", "serve" ]
-EXPOSE 3000
-EXPOSE 51935
+EXPOSE 3000 3100 3200 41738 41935 51738 51935
