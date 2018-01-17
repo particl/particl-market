@@ -18,6 +18,8 @@ import { ItemInformationUpdateRequest } from '../../src/api/requests/ItemInforma
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
+import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
+
 describe('ItemInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -75,7 +77,7 @@ describe('ItemInformation', () => {
                 dataId: 'dataid2',
                 protocol: ImageDataProtocolType.LOCAL,
                 encoding: 'BASE64',
-                data: 'BASE64 encoded image data'
+                data: ImageProcessing.milkcat
             }
         }, {
             hash: 'imagehash3',
@@ -131,7 +133,7 @@ describe('ItemInformation', () => {
                 dataId: 'dataid5',
                 protocol: ImageDataProtocolType.LOCAL,
                 encoding: 'BASE64',
-                data: 'BASE64 encoded image data'
+                data: ImageProcessing.milkcat
             }
         }, {
             hash: 'imagehash6',

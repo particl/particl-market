@@ -25,6 +25,8 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
+import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
+
 describe('TestDataService', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -141,7 +143,7 @@ describe('TestDataService', () => {
                         dataId: 'dataid2',
                         protocol: ImageDataProtocolType.LOCAL,
                         encoding: 'BASE64',
-                        data: 'BASE64 encoded image data'
+                        data: ImageProcessing.milkcat
                     }
                 }, {
                     hash: 'imagehash3',

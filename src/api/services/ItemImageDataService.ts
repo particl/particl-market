@@ -47,12 +47,15 @@ export class ItemImageDataService {
 
         // Convert, scale, and remove metadata from item image.
         const newBody: any = body;
-        if (newBody.data) {
+        if (body.encoding === 'BASE64' && newBody.data) {
             const dataProcessed: ImageTriplet = ImageProcessing.prepareImageForSaving(newBody.data);
             newBody.dataBig = dataProcessed.big;
             newBody.dataMedium = dataProcessed.medium;
             newBody.dataThumbnail = dataProcessed.thumbnail;
         } else {
+            if(body.encoding !== 'BASE64') {
+                this.log.warn('Unsupported image encoding. Only supports BASE64.');
+            }
             newBody.dataBig = null;
             newBody.dataMedium = null;
             newBody.dataThumbnail = null;
@@ -78,12 +81,15 @@ export class ItemImageDataService {
 
         // Convert, scale, and remove metadata from item image.
         const newBody: any = body;
-        if (newBody.data) {
+        if (body.encoding === 'BASE64' && newBody.data) {
             const dataProcessed: ImageTriplet = ImageProcessing.prepareImageForSaving(newBody.data);
             newBody.dataBig = dataProcessed.big;
             newBody.dataMedium = dataProcessed.medium;
             newBody.dataThumbnail = dataProcessed.thumbnail;
         } else {
+            if(body.encoding !== 'BASE64') {
+                this.log.warn('Unsupported image encoding. Only supports BASE64.');
+            }
             newBody.dataBig = null;
             newBody.dataMedium = null;
             newBody.dataThumbnail = null;
