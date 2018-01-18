@@ -40,6 +40,7 @@ import { ShippingPriceService } from '../../src/api/services/ShippingPriceServic
 import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
 import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
 
+import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 
 describe('ListingItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -120,7 +121,7 @@ describe('ListingItem', () => {
                     dataId: 'dataid2',
                     protocol: ImageDataProtocolType.LOCAL,
                     encoding: 'BASE64',
-                    data: 'BASE64 encoded image data'
+                    data: ImageProcessing.milkcat
                 }
             }, {
                 hash: 'imagehash3',

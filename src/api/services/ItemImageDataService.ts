@@ -10,7 +10,8 @@ import { ItemImageData } from '../models/ItemImageData';
 import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { ItemImageDataUpdateRequest } from '../requests/ItemImageDataUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
-
+import { ImageProcessing } from '../../core/helpers/ImageProcessing';
+import { ImageTriplet } from '../../core/helpers/ImageTriplet';
 
 export class ItemImageDataService {
 
@@ -38,14 +39,31 @@ export class ItemImageDataService {
 
     @validate()
     public async create( @request(ItemImageDataCreateRequest) body: ItemImageDataCreateRequest): Promise<ItemImageData> {
-
         // todo: could this be annotated in ItemImageDataCreateRequest?
         // todo: improve validation
         if (body.dataId == null && body.protocol == null && body.encoding == null && body.data == null ) {
             throw new ValidationException('Request body is not valid', ['dataId, protocol, encoding and data cannot all be null']);
         }
-        // If the request body was valid we will create the itemImageData
-        const itemImageData = await this.itemImageDataRepo.create(body);
+
+        // Convert, scale, and remove metadata from item image.
+        const newBody: any = body;
+        if (body.encoding === 'BASE64' && newBody.data) {
+            const dataProcessed: ImageTriplet = await ImageProcessing.prepareImageForSaving(newBody.data);
+            newBody.dataBig = dataProcessed.big;
+            newBody.dataMedium = dataProcessed.medium;
+            newBody.dataThumbnail = dataProcessed.thumbnail;
+        } else {
+            if (body.encoding !== 'BASE64') {
+                this.log.warn('Unsupported image encoding. Only supports BASE64.');
+            }
+            newBody.dataBig = null;
+            newBody.dataMedium = null;
+            newBody.dataThumbnail = null;
+        }
+        delete newBody.data;
+
+        // If the request newBody was valid we will create the itemImageData
+        const itemImageData = await this.itemImageDataRepo.create(newBody);
 
         // finally find and return the created itemImageData
         const newItemImageData = await this.findOne(itemImageData.Id);
@@ -61,14 +79,33 @@ export class ItemImageDataService {
             throw new ValidationException('Request body is not valid', ['dataId, protocol, encoding and data cannot all be null']);
         }
 
+        // Convert, scale, and remove metadata from item image.
+        const newBody: any = body;
+        if (body.encoding === 'BASE64' && newBody.data) {
+            const dataProcessed: ImageTriplet = await ImageProcessing.prepareImageForSaving(newBody.data);
+            newBody.dataBig = dataProcessed.big;
+            newBody.dataMedium = dataProcessed.medium;
+            newBody.dataThumbnail = dataProcessed.thumbnail;
+        } else {
+            if (body.encoding !== 'BASE64') {
+                this.log.warn('Unsupported image encoding. Only supports BASE64.');
+            }
+            newBody.dataBig = null;
+            newBody.dataMedium = null;
+            newBody.dataThumbnail = null;
+        }
+        delete newBody.data;
+
         // find the existing one without related
         const itemImageData = await this.findOne(id, false);
 
         // set new values
-        itemImageData.DataId = body.dataId;
-        itemImageData.Protocol = body.protocol;
-        itemImageData.Encoding = body.encoding;
-        itemImageData.Data = body.data;
+        itemImageData.DataId = newBody.dataId;
+        itemImageData.Protocol = newBody.protocol;
+        itemImageData.Encoding = newBody.encoding;
+        itemImageData.DataBig = newBody.dataBig;
+        itemImageData.DataMedium = newBody.dataMedium;
+        itemImageData.DataThumbnail = newBody.dataThumbnail;
 
         // update itemImageData record
         const updatedItemImageData = await this.itemImageDataRepo.update(id, itemImageData.toJSON());
