@@ -5,6 +5,8 @@ import { Types, Core, Targets } from '../../constants';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { PaymentType } from '../enums/PaymentType';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
+import { ItemCategoryFactory } from './ItemCategoryFactory';
+import { ItemCategory } from '../models/ItemCategory';
 import * as resources from 'resources';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 
@@ -13,7 +15,8 @@ export class ListingItemFactory {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory
     ) {
         this.log = new Logger(__filename);
     }
@@ -24,19 +27,24 @@ export class ListingItemFactory {
      * @returns {Promise<ListingItemMessage>}
      */
     public async getMessage(
-        listingItemTemplate: resources.ListingItemTemplate
+        listingItemTemplate: resources.ListingItemTemplate,
+        rootCategoryWithRelated: ItemCategory
     ): Promise<ListingItemMessage> {
 
-        // set hash
         listingItemTemplate.hash = ObjectHash.getHash(listingItemTemplate);
+        const category = listingItemTemplate.ItemInformation.ItemCategory;
+        const itemCategory = this.itemCategoryFactory.getArray(category as resources.ItemCategory, rootCategoryWithRelated as ItemCategory);
 
+        const itemInformation = listingItemTemplate.ItemInformation;
+        itemInformation['category'] = itemCategory;
         return {
-            hash: '', // TODO: implement
-            information: undefined, // TODO: implement
-            payment: undefined, // TODO: implement
-            messaging: undefined, // TODO: implement
-            objects: undefined // TODO: implement
+            hash: listingItemTemplate.hash,
+            information: itemInformation,
+            payment: listingItemTemplate.PaymentInformation,
+            messaging: listingItemTemplate.MessagingInformation,
+            objects: listingItemTemplate.ListingItemObjects
         } as ListingItemMessage;
+
     }
 
     /**

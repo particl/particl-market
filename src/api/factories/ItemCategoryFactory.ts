@@ -18,8 +18,32 @@ export class ItemCategoryFactory {
     }
 
     public async getArray(category: resources.ItemCategory, rootCategoryWithRelated: ItemCategory): Promise<string[]> {
-        // TODO: implement
-        return ['root', 'parent', 'category'];
+        const rootCategory: any = rootCategoryWithRelated;
+        const categoryArray = ['cat_ROOT']; // first category should be cat_ROOT
+        // find category under 2nd hierarchy child
+        const childItemCategories = rootCategory.ChildItemCategories || [];
+        let findItemCategory;
+        childItemCategories.forEach((childCategory) => {
+            // const innerChildItemCat = childCategory.childItemCategories;
+            // if (innerChildItemCat.length > 0) {
+            //     findItemCategory = this.checkCategory(innerChildItemCat, category.key);
+            //     if (findItemCategory) {
+            //         categoryArray[1] = childCategory.key;
+            //         categoryArray[2] = findItemCategory.key; // should be category.key
+            //         return;
+            //     }
+            // }
+            if (childCategory.id === category.parentItemCategoryId) {
+                findItemCategory = true;
+                categoryArray[1] = childCategory.key;
+                categoryArray[2] = category.key; // should be category.key
+                return;
+            }
+        });
+        if (!findItemCategory) {
+            categoryArray[1] = category.key;
+        }
+        return categoryArray;
     }
 
     /**
@@ -35,7 +59,7 @@ export class ItemCategoryFactory {
         let findItemCategory;
         let lastCheckIndex = 0;
         // check cat1 match with root itemcategory.key
-        if (categoryAsArray[0] !== rootCategory.Key) { // cat_ROOT
+        if (categoryAsArray[0] !== rootCategory.key) { // cat_ROOT
             this.log.warn(`${categoryAsArray[0]} should be root ItemCategory`);
         }
         // insert root category
@@ -51,7 +75,7 @@ export class ItemCategoryFactory {
                 findItemCategory = await this.checkCategory(childItemCategories, categoryAsArray[c]);
                 if (findItemCategory) {
                     createdCategories.push({
-                        parentCategoryId: findItemCategory.parent_item_category_id,
+                        parentCategoryId: findItemCategory.parentItemCategoryId,
                         id: findItemCategory.id
                     });
                     childItemCategories = findItemCategory.ChildItemCategories || [];
@@ -74,7 +98,7 @@ export class ItemCategoryFactory {
 
     private async checkCategory(categories: string[], value: string): Promise<any> {
         return _.find(categories, (itemcategory) => {
-            return (itemcategory['Key'] === value || itemcategory['name'] === value);
+            return (itemcategory['key'] === value || itemcategory['name'] === value);
         });
     }
 }

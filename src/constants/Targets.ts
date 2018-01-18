@@ -144,7 +144,8 @@ export const Targets = {
             ListingItemGetCommand: 'ListingItemGetCommand',
             ListingItemSearchCommand: 'ListingItemSearchCommand',
             OwnListingItemSearchCommand: 'OwnListingItemSearchCommand',
-            ListingItemPostCommand: 'ListingItemPostCommand'
+            ListingItemPostCommand: 'ListingItemPostCommand',
+            ListingItemUpdateCommand : 'ListingItemUpdateCommand'
         },
         listingitemtemplate: {
             ListingItemTemplateCreateCommand: 'ListingItemTemplateCreateCommand',
@@ -191,6 +192,7 @@ export const Targets = {
         BidMessageProcessor: 'BidMessageProcessor',
         CancelBidMessageProcessor: 'CancelBidMessageProcessor',
         ListingItemMessageProcessor: 'ListingItemMessageProcessor',
+        UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
         RejectBidMessageProcessor: 'RejectBidMessageProcessor',

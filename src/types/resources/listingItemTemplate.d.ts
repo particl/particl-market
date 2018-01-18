@@ -5,6 +5,10 @@ declare module 'resources' {
         hash: string;
         createdAt: Date;
         updatedAt: Date;
+        ItemInformation: any;
+        PaymentInformation: any;
+        MessagingInformation: any;
+        ListingItemObjects: any;
     }
 
 }
