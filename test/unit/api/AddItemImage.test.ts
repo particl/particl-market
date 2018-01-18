@@ -1,7 +1,7 @@
 import { ImageProcessing, MEDIUM_IMAGE_SIZE, THUMBNAIL_IMAGE_SIZE } from '../../../src/core/helpers/ImageProcessing';
 import { ImageTriplet } from '../../../src/core/helpers/ImageTriplet';
 
-import images = require('images');
+import sharp = require('sharp');
 import piexif = require('piexifjs');
 
 describe('ShippingCountries', () => {
@@ -50,16 +50,22 @@ describe('ShippingCountries', () => {
             return;
         }
 
+        /*
+         * NOTE: This is a template for future tests
+         */
         try {
             expect(processedImage.big).not.toEqual(null);
             const dataBuffer = Buffer.from(processedImage.big, 'base64');
-            const imageBuffer = images(dataBuffer);
+            const imageBuffer = sharp(dataBuffer);
 
             const dataBufferOriginal = Buffer.from(rawImage, 'base64');
-            const imageBufferOriginal = images(dataBufferOriginal);
+            const imageBufferOriginal = sharp(dataBufferOriginal);
 
-            expect(imageBuffer.height()).toBe(imageBufferOriginal.height());
-            expect(imageBuffer.width()).toBe(imageBufferOriginal.width());
+            const newInfo = await imageBuffer.metadata();
+            const originalInfo = await imageBufferOriginal.metadata();
+
+            expect(newInfo.height).toBe(originalInfo.height;
+            expect(newInfo.width).toBe(originalInfo.width;
         } catch ( ex ) {
             console.log('resizeTallTest(): 100: ' + ex);
         }
@@ -67,18 +73,24 @@ describe('ShippingCountries', () => {
         try {
             expect(processedImage.medium).not.toEqual(null);
             const dataBuffer = Buffer.from(processedImage.medium, 'base64');
-            const imageBuffer = images(dataBuffer);
-            expect(imageBuffer.height()).toBe(MEDIUM_IMAGE_SIZE.height);
-            expect(imageBuffer.width()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
+            const imageBuffer = sharp(dataBuffer);
+
+            const newInfo = await imageBuffer.metadata();
+
+            expect(newInfo.height).toBe(MEDIUM_IMAGE_SIZE.height);
+            expect(newInfo.width).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
         } catch ( ex ) {
             console.log('resizeTallTest(): 200: ' + ex);
         }
         try {
             expect(processedImage.thumbnail).not.toEqual(null);
             const dataBuffer = Buffer.from(processedImage.thumbnail, 'base64');
-            const imageBuffer = images(dataBuffer);
-            expect(imageBuffer.height()).toBe(THUMBNAIL_IMAGE_SIZE.height);
-            expect(imageBuffer.width()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
+            const imageBuffer = sharp(dataBuffer);
+
+            const newInfo = await imageBuffer.metadata();
+
+            expect(newInfo.height).toBe(THUMBNAIL_IMAGE_SIZE.height);
+            expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
         } catch ( ex ) {
             console.log('resizeTallTest(): 300: ' + ex);
         }
@@ -98,13 +110,16 @@ describe('ShippingCountries', () => {
         try {
             expect(processedImage.big).not.toEqual(null);
             const dataBuffer = Buffer.from(processedImage.big, 'base64');
-            const imageBuffer = images(dataBuffer);
+            const imageBuffer = sharp(dataBuffer);
 
             const dataBufferOriginal = Buffer.from(rawImage, 'base64');
-            const imageBufferOriginal = images(dataBufferOriginal);
+            const imageBufferOriginal = sharp(dataBufferOriginal);
 
-            expect(imageBuffer.width()).toBe(imageBufferOriginal.width());
-            expect(imageBuffer.height()).toBe(imageBufferOriginal.height());
+            const newInfo = await imageBuffer.metadata();
+            const originalInfo = await imageBufferOriginal.metadata();
+
+            expect(newInfo.width).toBe(originalInfo.width;
+            expect(newInfo.height).toBe(originalInfo.height;
         } catch ( ex ) {
             console.log('resizeWideTest(): 100: ' + ex);
         }
@@ -112,18 +127,24 @@ describe('ShippingCountries', () => {
         try {
             expect(processedImage.medium).not.toEqual(null);
             const dataBuffer = Buffer.from(processedImage.medium, 'base64');
-            const imageBuffer = images(dataBuffer);
-            expect(imageBuffer.width()).toBe(MEDIUM_IMAGE_SIZE.width);
-            expect(imageBuffer.height()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
+            const imageBuffer = sharp(dataBuffer);
+
+            const newInfo = await imageBuffer.metadata();
+
+            expect(newInfo.width).toBe(MEDIUM_IMAGE_SIZE.width);
+            expect(newInfo.height).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
         } catch ( ex ) {
             console.log('resizeWideTest(): 200: ' + ex);
         }
         try {
             expect(processedImage.thumbnail).not.toEqual(null);
             const dataBuffer = Buffer.from(processedImage.thumbnail, 'base64');
-            const imageBuffer = images(dataBuffer);
-            expect(imageBuffer.width()).toBe(THUMBNAIL_IMAGE_SIZE.width);
-            expect(imageBuffer.height()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
+            const imageBuffer = sharp(dataBuffer);
+
+            const newInfo = await imageBuffer.metadata();
+
+            expect(newInfo.width).toBe(THUMBNAIL_IMAGE_SIZE.width);
+            expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
         } catch ( ex ) {
             console.log('resizeWideTest(): 300: ' + ex);
         }
@@ -144,9 +165,12 @@ describe('ShippingCountries', () => {
         try {
             expect(resizedImage).not.toEqual(null);
             const dataBuffer = Buffer.from(resizedImage, 'base64');
-            const imageBuffer = images(dataBuffer);
-            expect(imageBuffer.height()).toBe(THUMBNAIL_IMAGE_SIZE.height);
-            expect(imageBuffer.width()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
+            const imageBuffer = sharp(dataBuffer);
+
+            const newInfo = await imageBuffer.metadata();
+
+            expect(newInfo.height).toBe(THUMBNAIL_IMAGE_SIZE.height);
+            expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
         } catch ( ex ) {
             console.log('resizeTallToThumb(): 100: ' + ex);
         }
@@ -167,9 +191,12 @@ describe('ShippingCountries', () => {
         try {
             expect(resizedImage).not.toEqual(null);
             const dataBuffer = Buffer.from(resizedImage, 'base64');
-            const imageBuffer = images(dataBuffer);
-            expect(imageBuffer.width()).toBe(THUMBNAIL_IMAGE_SIZE.width);
-            expect(imageBuffer.height()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
+            const imageBuffer = sharp(dataBuffer);
+
+            const newInfo = await imageBuffer.metadata();
+
+            expect(newInfo.width).toBe(THUMBNAIL_IMAGE_SIZE.width);
+            expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
         } catch ( ex ) {
             console.log('resizeWideToThumb(): 100: ' + ex);
         }
