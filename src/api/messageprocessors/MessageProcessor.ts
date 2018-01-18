@@ -1,4 +1,3 @@
-import * as rpc from 'particl-rpc-service';
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -48,26 +47,21 @@ export class MessageProcessor implements MessageProcessorInterface {
      */
     private async poll(): Promise<void> {
         await this.pollMessages()
-            .then((messages) => {
-                this.log.info('response: ', messages);
+            .then( messages => {
+                // this.log.debug('poll() response:', messages);
+                // TODO: if we have new message, pass those to processing
+
+                return;
             })
-            .catch(reason => {
-                this.log.info('error: ', reason);
+            .catch( reason => {
+                this.log.error('poll() error:', reason);
+                return;
             });
-        return;
     }
 
     private async pollMessages(): Promise<any> {
-        this.log.debug('timeout ', this.interval);
-
-        return await this.coreRpcService.call('getinfo')
-            .then((response) => {
-                this.log.info('smsginbox: ' + JSON.stringify(response.result));
-                return response.result;
-            })
-            .catch(reason => {
-                this.log.error('error: ', reason);
-                return reason;
-            });
+        const response = await this.coreRpcService.call('smsginbox', ['all']);
+        // this.log.debug('got response:', response);
+        return response;
     }
 }

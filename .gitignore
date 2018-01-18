@@ -35,6 +35,11 @@ coverage/
 
 data/marketplace.db
 data/marketplace-test.db
-data/particl
+data/particl1
+data/particl2
+data/app1
+data/app2
 
 *.paw
+
+codeship*.yml

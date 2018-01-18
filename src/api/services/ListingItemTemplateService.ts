@@ -156,6 +156,8 @@ export class ListingItemTemplateService {
             await this.paymentInformationService.destroy(paymentInformation.id);
         }
 
+        // TODO: UPDATE!!
+
         // find related record and delete it and recreate related data
 
         // const paymentInformation = updatedListingItemTemplate.related('PaymentInformation').toJSON();

@@ -35,27 +35,22 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
 
     public async process(@message(ListingItemMessage) data: ListingItemMessage): Promise<ListingItem> {
         // get Category
-        const itemCategoryId = await this.createUserDefinedItemCategories(data.information.category);
+        const itemCategoryId = await this.createCategoryIfNotExist(data.information.category);
         data.information.itemCategory = itemCategoryId;
-        // get itemPrice
-        const itemPrice = {
-            currency: data.payment.cryptocurrency.currency,
-            basePrice: data.payment.cryptocurrency.base_price
-        };
-        data.payment.itemPrice = itemPrice;
+
         // get messagingInformation
         const messagingInformation = await this.mesInfoFactory.get(data.messaging);
         data.messaging = messagingInformation;
-        // Convert the ListingItemMessage to ListingItem
-        const market = await this.marketService.getDefault();
-        const listingItem = await this.listingItemFactory.get(data, market.id);
+
         // create listing-item
+        const listingItem = await this.listingItemFactory.getModel(data as ListingItemMessage);
+
         return await this.listingItemService.create(listingItem as ListingItemCreateRequest);
     }
 
-    private async createUserDefinedItemCategories(category: string[]): Promise<number> {
+    private async createCategoryIfNotExist(category: string[]): Promise<number> {
         const rootCategoryWithRelated: any = await this.itemCategoryService.findRoot();
-        const itemCategoryOutPut: any = await this.itemCategoryFactory.get(category, rootCategoryWithRelated);
+        const itemCategoryOutPut: any = await this.itemCategoryFactory.getModel(category, rootCategoryWithRelated);
         const itemCategory = itemCategoryOutPut.createdCategories;
         const lastCreatedIndex = itemCategoryOutPut.lastCheckIndex;
         let itemCategoryId: number;

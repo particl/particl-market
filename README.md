@@ -46,11 +46,13 @@ npm run serve
 
 ### Step 3b: Or serve your App using Docker
 ```
+docker-compose build
 docker-compose up
 ```
 
-> This will also start particld for you.
-
+> This starts two marketplace applications and two particl daemons for you.
+> app1 cli: http://localhost:3100/cli, connecting to particl1 on port 52935
+> app2 cli: http://localhost:3200/cli, connecting to particl2 on port 53935
 
 
 ## Scripts / Tasks
@@ -81,6 +83,7 @@ All script are defined in the package.json file, but the most important ones are
 * Run `npm run db:migrate:rollback` to rollback one migration
 * Run `npm run db:seed` to seed sample data into the database
 * Run `npm run db:reset` to rollback all migrations and migrate any migration again
+* Run recreate-dbs.sh to recreate all databases
 
 ### Console
 * To run your own created command enter `npm run console <command-name>`.

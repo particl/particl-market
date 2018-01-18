@@ -2,11 +2,11 @@ import { inject, named } from 'inversify';
 import * as crypto from 'crypto-js';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { ListingItem } from '../models/ListingItem';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
-import { ItemMessageInterface } from '../messages/ItemMessageInterface';
 import { PaymentType } from '../enums/PaymentType';
-import { EscrowType } from '../enums/EscrowType';
+import { ListingItemMessage } from '../messages/ListingItemMessage';
+import * as resources from 'resources';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
 
 export class ListingItemFactory {
 
@@ -18,29 +18,51 @@ export class ListingItemFactory {
         this.log = new Logger(__filename);
     }
 
-    public async get(data: ItemMessageInterface, marketId: number): Promise<ListingItemCreateRequest> {
-        // const hash = crypto.SHA256(new Date().getTime().toString()).toString();
-        const listingItem = {
-            hash: crypto.SHA256(new Date().getTime().toString()).toString(),
-            market_id: marketId,
-            itemInformation: {
-                title: data.information.title,
-                shortDescription: data.information.short_description,
-                longDescription: data.information.long_description,
-                itemCategory: {
-                    id: data.information.itemCategory
-                }
-            },
-            paymentInformation: {
-                type: PaymentType[data.payment.type],
-                escrow: {
-                    type: EscrowType[data.payment.escrow.type]
-                },
-                itemPrice: data.payment.itemPrice
-            },
-            messagingInformation: data.messaging
-        };
-        return listingItem as any;
+    /**
+     * Creates a ListingItemMessage from given data
+     * @param listingItemTemplate
+     * @returns {Promise<ListingItemMessage>}
+     */
+    public async getMessage(
+        listingItemTemplate: resources.ListingItemTemplate
+    ): Promise<ListingItemMessage> {
+
+        // set hash
+        listingItemTemplate.hash = ObjectHash.getHash(listingItemTemplate);
+
+        return {
+            hash: '', // TODO: implement
+            information: undefined, // TODO: implement
+            payment: undefined, // TODO: implement
+            messaging: undefined, // TODO: implement
+            objects: undefined // TODO: implement
+        } as ListingItemMessage;
     }
 
+    /**
+     * Factory will return model based on the message
+     *
+     * @param data
+     * @returns {ListingItemCreateRequest}
+     */
+    public getModel(data: ListingItemMessage): ListingItemCreateRequest {
+        // TODO: is not working, fix
+        return {
+            hash: data.hash,
+            itemInformation: {
+                title: data.information.title,
+                shortDescription: data.information.shortDescription,
+                longDescription: data.information.longDescription,
+                itemCategory: {
+                    id: data.information.itemCategory
+                },
+                itemLocation: data.information.itemLocation,
+                itemImages: data.information.itemImages,
+                shippingDestinations: data.information.shippingDestinations
+            },
+            paymentInformation: data.payment,
+            messagingInformation: data.messaging,
+            listingItemObjects: {} // we will change it later
+        } as ListingItemCreateRequest;
+    }
 }

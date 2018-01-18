@@ -3,6 +3,8 @@ import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryF
 
 describe('ItemCategoryFactory', () => {
 
+    // TODO: missing tests for getArray
+
     let req;
     let itemCategoryFactory;
     const rootCategoryWithRelated = {
@@ -27,14 +29,14 @@ describe('ItemCategoryFactory', () => {
             }
         ]
     };
+
     beforeEach(() => {
-        process.env.AUTH0_HOST = 'test';
         itemCategoryFactory = new ItemCategoryFactory(LogMock);
     });
 
     test('Should get the item-category data when pass root category only', () => {
         req = ['cat_ROOT', 'Subcategory', 'SubSubcategory'];
-        itemCategoryFactory.get(req, rootCategoryWithRelated).then((res, error) => {
+        itemCategoryFactory.getModel(req, rootCategoryWithRelated).then((res, error) => {
             expect(res.createdCategories.length).toBe(1);
             expect(res.lastCheckIndex).toBe(0);
 
@@ -45,7 +47,7 @@ describe('ItemCategoryFactory', () => {
 
     test('Should get the item-category data when pass two existing category', () => {
         req = ['cat_ROOT', 'cat_high_value', 'SubSubcategory'];
-        itemCategoryFactory.get(req, rootCategoryWithRelated).then((res, error) => {
+        itemCategoryFactory.getModel(req, rootCategoryWithRelated).then((res, error) => {
             expect(res.createdCategories.length).toBe(2);
             expect(res.lastCheckIndex).toBe(1);
 
@@ -60,7 +62,7 @@ describe('ItemCategoryFactory', () => {
 
     test('Should get the item-category data when pass two existing category(key, name)', () => {
         req = ['cat_ROOT', 'High Value', 'SubSubcategory'];
-        itemCategoryFactory.get(req, rootCategoryWithRelated).then((res, error) => {
+        itemCategoryFactory.getModel(req, rootCategoryWithRelated).then((res, error) => {
             expect(res.createdCategories.length).toBe(2);
             expect(res.lastCheckIndex).toBe(1);
 
@@ -75,7 +77,7 @@ describe('ItemCategoryFactory', () => {
 
     test('Should get the item-category data when pass all existing category', () => {
         req = ['cat_ROOT', 'cat_high_value', 'cat_high_business_corporate'];
-        itemCategoryFactory.get(req, rootCategoryWithRelated).then((res, error) => {
+        itemCategoryFactory.getModel(req, rootCategoryWithRelated).then((res, error) => {
             expect(res.createdCategories.length).toBe(req.length);
             expect(res.lastCheckIndex).toBe(req.length - 1);
 
