@@ -7,6 +7,12 @@ import { PaymentType } from '../enums/PaymentType';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ItemCategoryFactory } from './ItemCategoryFactory';
 import { ItemCategory } from '../models/ItemCategory';
+import { ItemLocation } from '../models/ItemLocation';
+import { ItemImage } from '../models/ItemImage';
+import { ShippingDestination } from '../models/ShippingDestination';
+import { PaymentInformation } from '../models/PaymentInformation';
+import { MessagingInformation } from '../models/MessagingInformation';
+import { ListingItemObject } from '../models/ListingItemObject';
 import * as resources from 'resources';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 
@@ -61,16 +67,14 @@ export class ListingItemFactory {
                 title: data.information.title,
                 shortDescription: data.information.shortDescription,
                 longDescription: data.information.longDescription,
-                itemCategory: {
-                    id: data.information.itemCategory
-                },
-                itemLocation: data.information.itemLocation,
-                itemImages: data.information.itemImages,
-                shippingDestinations: data.information.shippingDestinations
+                itemCategory: data.information.itemCategory as ItemCategory,
+                itemLocation: data.information.itemLocation as ItemLocation,
+                itemImages: data.information.itemImages as ItemImage,
+                shippingDestinations: data.information.shippingDestinations as ShippingDestination
             },
-            paymentInformation: data.payment,
-            messagingInformation: data.messaging,
-            listingItemObjects: {} // we will change it later
+            paymentInformation: data.payment as PaymentInformation,
+            messagingInformation: data.messaging as MessagingInformation,
+            listingItemObjects: {} as ListingItemObject// we will change it later
         } as ListingItemCreateRequest;
     }
 }

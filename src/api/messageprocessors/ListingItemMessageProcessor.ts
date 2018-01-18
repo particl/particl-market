@@ -7,6 +7,7 @@ import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ListingItemService } from '../services/ListingItemService';
 import { ListingItem } from '../models/ListingItem';
+import { ItemCategory } from '../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ItemCategoryFactory } from '../factories/ItemCategoryFactory';
@@ -33,10 +34,10 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
 
     @validate()
 
-    public async process(@message(ListingItemMessage) data: ListingItemMessage): Promise<ListingItem> {
+    public async process( @message(ListingItemMessage) data: ListingItemMessage): Promise<ListingItem> {
         // get Category
-        const itemCategoryId = await this.createCategoryIfNotExist(data.information.category);
-        data.information.itemCategory = itemCategoryId;
+        const itemCategory: ItemCategory = await this.createCategoryIfNotExist(data.information.category);
+        data.information.itemCategory = itemCategory;
 
         // get messagingInformation
         const messagingInformation = await this.mesInfoFactory.get(data.messaging);
@@ -48,16 +49,16 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         return await this.listingItemService.create(listingItem as ListingItemCreateRequest);
     }
 
-    private async createCategoryIfNotExist(category: string[]): Promise<number> {
+    private async createCategoryIfNotExist(category: string[]): Promise<ItemCategory> {
         const rootCategoryWithRelated: any = await this.itemCategoryService.findRoot();
         const itemCategoryOutPut: any = await this.itemCategoryFactory.getModel(category, rootCategoryWithRelated);
         const itemCategory = itemCategoryOutPut.createdCategories;
         const lastCreatedIndex = itemCategoryOutPut.lastCheckIndex;
-        let itemCategoryId: number;
+        let itemCategoryData: ItemCategory;
         let parentItemCategoryId;
         if (lastCreatedIndex === category.length) {
             // all category is exist
-            itemCategoryId = itemCategory[lastCreatedIndex].id;
+            itemCategoryData = itemCategory[lastCreatedIndex];
         } else {
             // get and create category
             let newCat;
@@ -69,9 +70,9 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
                 } as ItemCategoryCreateRequest);
                 parentItemCategoryId = newCat.id;
             }
-            itemCategoryId = newCat.id;
+            itemCategoryData = newCat;
         }
-        return itemCategoryId;
+        return itemCategoryData;
     }
 
 }
