@@ -9,7 +9,9 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('data_id'); // .notNullable();
             table.string('protocol'); // .notNullable();
             table.string('encoding'); // .notNullable();
-            table.text('data'); // .notNullable();
+            table.text('data_big'); // .notNullable();
+            table.text('data_medium'); // .notNullable();
+            table.text('data_thumbnail'); // .notNullable();
 
             table.integer('item_image_id').unsigned();
             table.foreign('item_image_id').references('id')

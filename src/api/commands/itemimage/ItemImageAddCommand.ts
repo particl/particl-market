@@ -9,7 +9,6 @@ import { ItemImage } from '../../models/ItemImage';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as crypto from 'crypto-js';
 import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
-import { ImageProcessing } from '../../../core/helpers/ImageProcessing';
 
 export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
 
@@ -44,10 +43,6 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
         // find related itemInformation
         const itemInformation = listingItemTemplate.related('ItemInformation').toJSON();
 
-        // Convert to JPEG and strip out metadata
-        let dataRaw: string = data.params[4];
-        dataRaw = ImageProcessing.prepareImageForSaving(dataRaw);
-
         // create item images
         return await this.itemImageService.create({
             item_information_id: itemInformation.id,
@@ -57,7 +52,7 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
                 dataId: data.params[1] || '',
                 protocol: data.params[2] || '',
                 encoding: data.params[3] || '',
-                data: dataRaw || ''
+                data: data.params[4] || ''
             }
         } as ItemImageCreateRequest);
     }
