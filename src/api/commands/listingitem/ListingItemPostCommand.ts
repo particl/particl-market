@@ -45,6 +45,8 @@ export class ListingItemPostCommand implements RpcCommandInterface<ListingItem> 
     }
 
     public help(): string {
-        return 'ListingItemPostCommand: TODO: Fill in help string.';
+        return 'postitem <listingItemTemplateId> <marketId>\n'
+            + '    <listingItemTemplateId>          - Numeric - The number listingItemTemplateId we want to post\n'
+            + '    <marketId>    - [optional] Numeric - The ID of the market that the related with listingItem we want to post';
     }
 }
