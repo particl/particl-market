@@ -12,6 +12,7 @@ import { ListingItemUpdateRequest } from '../requests/ListingItemUpdateRequest';
 import { ItemCategoryFactory } from '../factories/ItemCategoryFactory';
 import { MessagingInformationFactory } from '../factories/MessagingInformationFactory';
 import { ItemCategoryService } from '../services/ItemCategoryService';
+import { MarketService } from '../services/MarketService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { isArray } from 'util';
 
@@ -24,6 +25,7 @@ export class UpdateListingItemMessageProcessor implements MessageProcessorInterf
         @inject(Types.Factory) @named(Targets.Factory.MessagingInformationFactory) public mesInfoFactory: MessagingInformationFactory,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -42,8 +44,10 @@ export class UpdateListingItemMessageProcessor implements MessageProcessorInterf
 
         // get listing-item id then remove
         const listingItemTobeUpdate = await this.listingItemService.findOneByHash(data.hash);
+        // get default profile
+        const market = await this.marketService.getDefault();
         // create listing-item
-        const listingItem = await this.listingItemFactory.getModel(data as ListingItemMessage);
+        const listingItem = await this.listingItemFactory.getModel(data as ListingItemMessage, market.id);
 
         return await this.listingItemService.update(listingItemTobeUpdate.id, listingItem as ListingItemUpdateRequest);
     }

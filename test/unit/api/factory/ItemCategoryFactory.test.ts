@@ -11,11 +11,12 @@ describe('ItemCategoryFactory', () => {
         id: 1,
         key: 'cat_ROOT',
         name: 'ROOT',
+        parentCategoryId: null,
         ChildItemCategories: [
             {
                 id: 2,
                 key: 'cat_high_value',
-                name: 'High Value 2',
+                name: 'High Value',
                 parentItemCategoryId: 1,
                 ChildItemCategories: [
                     {

@@ -43,8 +43,10 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         const messagingInformation = await this.mesInfoFactory.get(data.messaging);
         data.messaging = messagingInformation;
 
+        // get default profile
+        const market = await this.marketService.getDefault();
         // create listing-item
-        const listingItem = await this.listingItemFactory.getModel(data as ListingItemMessage);
+        const listingItem = await this.listingItemFactory.getModel(data as ListingItemMessage, market.id);
 
         return await this.listingItemService.create(listingItem as ListingItemCreateRequest);
     }

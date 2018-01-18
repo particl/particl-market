@@ -59,10 +59,11 @@ export class ListingItemFactory {
      * @param data
      * @returns {ListingItemCreateRequest}
      */
-    public getModel(data: ListingItemMessage): ListingItemCreateRequest {
+    public getModel(data: ListingItemMessage, marketId: number): ListingItemCreateRequest {
         // TODO: is not working, fix
         return {
             hash: data.hash,
+            market_id: marketId,
             itemInformation: {
                 title: data.information.title,
                 shortDescription: data.information.shortDescription,
