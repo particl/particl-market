@@ -28,7 +28,7 @@ describe('Command', () => {
         expect(Commands.MARKET_LIST.commandName).toBe('list');
         expect(Commands.MARKET_LIST.isRoot).toBe(false);
         expect(Commands.values).toHaveLength(82);
-        expect(Commands.getRootCommands()).toHaveLength(12);
+        expect(Commands.rootCommands).toHaveLength(18);
 
     });
 
