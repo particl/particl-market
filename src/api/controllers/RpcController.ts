@@ -19,7 +19,6 @@ export class RpcController {
     public log: LoggerType;
     private VERSION = '2.0';
     private MAX_INT32 = 2147483647;
-    private exposedMethods = {};
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,

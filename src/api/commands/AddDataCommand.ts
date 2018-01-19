@@ -7,27 +7,22 @@ import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandInterface } from './RpcCommandInterface';
 import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
 import { CommandEnumType } from './CommandEnumType';
-import { Command } from './Command';
+import { BaseCommand } from './BaseCommand';
 
-export class AddDataCommand implements RpcCommandInterface<any> {
+export class AddDataCommand extends BaseCommand implements RpcCommandInterface<any> {
 
     public log: LoggerType;
-    public name = 'adddata';
-    public commands: CommandEnumType = new CommandEnumType();
-    public command: Command = this.commands.DATA_ADD;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.TestDataService) private testDataService: TestDataService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super(new CommandEnumType().DATA_ADD);
         this.log = new Logger(__filename);
-        // this.command = this.commands.DATA_ADD;
     }
 
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<any> {
-        this.log.info('data.params[0]: ', data.params[0]);
-        this.log.info('data.params[1]: ', data.params[1]);
         const withRelated = data.params[2] ? data.params[2] : true;
         return await this.testDataService.create({
             model: data.params[0],
@@ -39,4 +34,5 @@ export class AddDataCommand implements RpcCommandInterface<any> {
     public help(): string {
         return 'AddDataCommand: TODO: Fill in help string.';
     }
+
 }
