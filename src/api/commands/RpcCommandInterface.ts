@@ -3,8 +3,7 @@ import { Command } from './Command';
 
 export interface RpcCommandInterface<T> {
 
-    name: string;
-    // command: Command;
+    command: Command;
 
     execute(data: RpcRequest): Promise<T>;
     help(): string;
