@@ -59,6 +59,7 @@ import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
 import { RejectBidCommand } from '../commands/bid/RejectBidCommand';
 import { SendBidCommand } from '../commands/bid/SendBidCommand';
 import { ListingItemPostCommand } from '../commands/listingitem/ListingItemPostCommand';
+import {Command} from "../commands/Command";
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -189,15 +190,15 @@ export class RpcCommandFactory {
 
     }
 
-    public get(commandName: string): RpcCommandInterface<Bookshelf.Model<any>> {
-        this.log.debug('Looking for command <' + commandName + '>');
-        for (const command of this.commands) {
-            if (command.getName().toLowerCase() === commandName.toLowerCase()) {
-                this.log.debug('Found ' + command.getName().toLowerCase());
-                return command;
+    public get(commandType: Command): RpcCommandInterface<any> {
+        this.log.debug('Looking for command <' + commandType.toString() + '>');
+        for (const commandInstance of this.commands) {
+            if (commandInstance.getCommand().toString() === commandType.toString()) {
+                this.log.debug('Found ' + commandInstance.getCommand().toString());
+                return commandInstance;
             }
         }
-        throw new NotFoundException('Couldn\'t find command <' + commandName + '>\n');
+        throw new NotFoundException('Couldn\'t find command <' + commandType.toString() + '>\n');
     }
 }
 // tslint:enable:array-type
