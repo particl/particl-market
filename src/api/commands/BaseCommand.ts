@@ -1,5 +1,7 @@
 import { CommandEnumType } from './CommandEnumType';
 import { Command } from './Command';
+import { RpcRequest } from '../requests/RpcRequest';
+import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 
 export class BaseCommand {
 
@@ -23,4 +25,16 @@ export class BaseCommand {
         return this.command.childCommands;
     }
 
+    /**
+     * execute the next command in data.params
+     *
+     * @param rpcCommandFactory
+     * @param data
+     * @returns {Promise<Bookshelf.Model<any>>}
+     */
+    public async executeNext(rpcCommandFactory: RpcCommandFactory, data: RpcRequest): Promise<any> {
+        const commandName = data.params.shift();
+        const rpcCommand = rpcCommandFactory.get(commandName);
+        return await rpcCommand.execute(data);
+    }
 }

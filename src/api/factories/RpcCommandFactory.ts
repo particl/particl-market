@@ -192,8 +192,8 @@ export class RpcCommandFactory {
     public get(commandName: string): RpcCommandInterface<Bookshelf.Model<any>> {
         this.log.debug('Looking for command <' + commandName + '>');
         for (const command of this.commands) {
-            if (command.name.toLowerCase() === commandName.toLowerCase()) {
-                this.log.debug('Found ' + command.name.toLowerCase());
+            if (command.getName().toLowerCase() === commandName.toLowerCase()) {
+                this.log.debug('Found ' + command.getName().toLowerCase());
                 return command;
             }
         }
