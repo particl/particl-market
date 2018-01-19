@@ -22,9 +22,39 @@ describe('ItemCategoryFactory', () => {
                     {
                         id: 5,
                         key: 'cat_high_business_corporate',
-                        name: 'Business Corporate',
+                        name: 'Business Corporate 5',
                         parentItemCategoryId: 2,
-                        ChildItemCategories: []
+                        ChildItemCategories: [
+                            {
+                                id: 8,
+                                key: 'cat_high_business_corporate_8',
+                                name: 'Business Corporate 8',
+                                parentItemCategoryId: 5,
+                                ChildItemCategories: [
+                                    {
+                                        id: 10,
+                                        key: 'cat_high_business_corporate_10',
+                                        name: 'Business Corporate 10',
+                                        parentItemCategoryId: 8,
+                                        ChildItemCategories: []
+                                    },
+                                    {
+                                        id: 11,
+                                        key: 'cat_high_business_corporate_11',
+                                        name: 'Business Corporate 11',
+                                        parentItemCategoryId: 8,
+                                        ChildItemCategories: []
+                                    }
+                                ]
+                            },
+                            {
+                                id: 9,
+                                key: 'cat_high_business_corporate_9',
+                                name: 'Business Corporate 9',
+                                parentItemCategoryId: 5,
+                                ChildItemCategories: []
+                            }
+                        ]
                     }
                 ]
             }, {
@@ -125,7 +155,21 @@ describe('ItemCategoryFactory', () => {
     });
 
     // test getArray function
-    test('Should get the categoryArray when pass category', () => {
+    test('Should get the categoryArray when pass category', () => { // for length 2
+        const category = {
+            id: 4,
+            key: 'cat_high_value_4',
+            name: 'High Value 4',
+            parentItemCategoryId: 1
+        };
+        itemCategoryFactory.getArray(category, rootCategoryWithRelated).then((res, error) => {
+            expect(res).toHaveLength(2);
+            expect(res[0]).toBe(rootCategoryWithRelated.key);
+            expect(res[1]).toBe(category.key);
+        });
+    });
+
+    test('Should get the categoryArray when pass category', () => { // for length 3
         const category = {
             id: 7,
             key: 'cat_high_business_corporate_4',
@@ -137,6 +181,23 @@ describe('ItemCategoryFactory', () => {
             expect(res[0]).toBe(rootCategoryWithRelated.key);
             expect(res[1]).toBe(rootCategoryWithRelated.ChildItemCategories[2].key);
             expect(res[2]).toBe(category.key);
+        });
+    });
+
+    test('Should get the categoryArray when pass category', () => { // for length 5
+        const category = {
+            id: 11,
+            key: 'cat_high_business_corporate_11',
+            name: 'Business Corporate',
+            parentItemCategoryId: 8
+        };
+        itemCategoryFactory.getArray(category, rootCategoryWithRelated).then((res, error) => {
+            expect(res).toHaveLength(5);
+            expect(res[0]).toBe(rootCategoryWithRelated.key);
+            expect(res[1]).toBe(rootCategoryWithRelated.ChildItemCategories[0].key);
+            expect(res[2]).toBe(rootCategoryWithRelated.ChildItemCategories[0].ChildItemCategories[0].key);
+            expect(res[3]).toBe(rootCategoryWithRelated.ChildItemCategories[0].ChildItemCategories[0].ChildItemCategories[0].key);
+            expect(res[4]).toBe(category.key);
         });
     });
 

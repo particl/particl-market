@@ -10,6 +10,8 @@ import * as resources from 'resources';
 export class ItemCategoryFactory {
 
     public log: LoggerType;
+    private categoryArray: any;
+    private isFound: boolean;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -19,31 +21,15 @@ export class ItemCategoryFactory {
 
     public async getArray(category: resources.ItemCategory, rootCategoryWithRelated: ItemCategory): Promise<string[]> {
         const rootCategory: any = rootCategoryWithRelated;
-        const categoryArray = ['cat_ROOT']; // first category should be cat_ROOT
-        // find category under 2nd hierarchy child
-        const childItemCategories = rootCategory.ChildItemCategories || [];
-        let findItemCategory;
-        childItemCategories.forEach((childCategory) => {
-            // const innerChildItemCat = childCategory.childItemCategories;
-            // if (innerChildItemCat.length > 0) {
-            //     findItemCategory = this.checkCategory(innerChildItemCat, category.key);
-            //     if (findItemCategory) {
-            //         categoryArray[1] = childCategory.key;
-            //         categoryArray[2] = findItemCategory.key; // should be category.key
-            //         return;
-            //     }
-            // }
-            if (childCategory.id === category.parentItemCategoryId) {
-                findItemCategory = true;
-                categoryArray[1] = childCategory.key;
-                categoryArray[2] = category.key; // should be category.key
-                return;
-            }
-        });
-        if (!findItemCategory) {
-            categoryArray[1] = category.key;
+        this.categoryArray = [];
+        this.isFound = false;
+        if (rootCategory.id === category.parentItemCategoryId) { // rootcategory
+            this.categoryArray = [rootCategory.key];
+        } else {
+            await this.getInnerCategory(rootCategory, category.parentItemCategoryId);
         }
-        return categoryArray;
+        this.categoryArray.push(category.key);
+        return this.categoryArray;
     }
 
     /**
@@ -100,5 +86,25 @@ export class ItemCategoryFactory {
         return _.find(categories, (itemcategory) => {
             return (itemcategory['key'] === value || itemcategory['name'] === value);
         });
+    }
+
+    private async getInnerCategory(theObject: any, findValue: number): Promise<void> {
+        const childCategories = theObject.ChildItemCategories;
+        if (childCategories.length > 0) {
+            for (const childCategory of childCategories) {
+                if (!this.isFound) {
+                    this.categoryArray.push(theObject.key);
+                }
+                if (childCategory.parentItemCategoryId === findValue) {
+                    this.isFound = true;
+                    break;
+                } else if (!this.isFound) {
+                    await this.getInnerCategory(childCategory, findValue);
+                }
+            }
+        } else {
+            this.categoryArray = [];
+        }
+        return this.categoryArray as any;
     }
 }
