@@ -19,4 +19,4 @@ RUN rm -rf /app/data/marketplace*db; npm run db:migrate; cp /app/data/marketplac
 
 # CMD npm run serve
 CMD [ "yarn", "serve" ]
-EXPOSE 3000 3100 3200 51738 51935 52738 52935 53738 53935
+EXPOSE 3000 3100 3200
