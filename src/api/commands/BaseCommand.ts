@@ -22,4 +22,14 @@ export class BaseCommand {
     public getChildCommands(): Command[] {
         return this.command.childCommands;
     }
+
+    public getRootCommands(): Command[] {
+        const rootCommands: Command[] = [];
+        for (const cmd: Command in this.commands.values) {
+            if (cmd.isRoot) {
+                rootCommands.push(cmd);
+            }
+        }
+        return rootCommands;
+    }
 }

@@ -126,4 +126,13 @@ export class CommandEnumType extends Enum<Command> {
         this.initEnum('Command');
     }
 
+    public getRootCommands(): Command[] {
+        const rootCommands: Command[] = [];
+        for (const cmd: Command in this.values.values) {
+            if (cmd.isRoot) {
+                rootCommands.push(cmd);
+            }
+        }
+        return rootCommands;
+    }
 }
