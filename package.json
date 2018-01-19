@@ -116,6 +116,7 @@
     "swagger-jsdoc": "^1.9.6",
     "swagger-ui-express": "^2.0.1",
     "trash-cli": "^1.4.0",
+    "ts-enums": "0.0.6",
     "ts-node": "^3.2.0",
     "tslint": "^5.5.0",
     "typescript": "^2.4.1",

@@ -8,6 +8,7 @@ export enum CommandName {
     MARKET              = 'market',
     MARKET_LIST         =   'list',
     MARKET_ADD          =   'add',
+
     PROFILE             = 'profile',
     PROFILE_LIST        =   'list',
     PROFILE_GET         =   'get',

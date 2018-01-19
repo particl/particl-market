@@ -6,18 +6,22 @@ import { TestDataService } from '../services/TestDataService';
 import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandInterface } from './RpcCommandInterface';
 import { TestDataCreateRequest } from '../requests/TestDataCreateRequest';
+import { CommandEnumType } from './CommandEnumType';
+import { Command } from './Command';
 
 export class AddDataCommand implements RpcCommandInterface<any> {
 
     public log: LoggerType;
-    public name: string;
+    public name = 'adddata';
+    public commands: CommandEnumType = new CommandEnumType();
+    public command: Command = this.commands.DATA_ADD;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.TestDataService) private testDataService: TestDataService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'adddata';
+        // this.command = this.commands.DATA_ADD;
     }
 
     @validate()
