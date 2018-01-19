@@ -10,7 +10,7 @@ export class ListingItemTemplateUpdateRequest extends RequestBody {
     public itemInformation;
     public paymentInformation;
     public messagingInformation;
-    public listingitemobjects;
+    public listingItemObjects;
 
 }
 // tslint:enable:variable-name

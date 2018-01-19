@@ -31,7 +31,6 @@ import { ItemLocationService } from '../../src/api/services/ItemLocationService'
 import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
 import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
 import { ItemImageService } from '../../src/api/services/ItemImageService';
-
 import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
 import { EscrowService } from '../../src/api/services/EscrowService';
 import { EscrowRatioService } from '../../src/api/services/EscrowRatioService';
@@ -39,8 +38,10 @@ import { ItemPriceService } from '../../src/api/services/ItemPriceService';
 import { ShippingPriceService } from '../../src/api/services/ShippingPriceService';
 import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
 import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
+import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
 
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
+import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 
 describe('ListingItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -68,11 +69,13 @@ describe('ListingItem', () => {
     let cryptocurrencyAddressService: CryptocurrencyAddressService;
 
     let messagingInformationService: MessagingInformationService;
+    let listingItemObjectService: ListingItemObjectService;
 
     let createdId;
     let createdItemInformation;
     let createdPaymentInformation;
     let createdMessagingInformation;
+    let createdListingItemObjects;
     let defaultProfile;
     let defaultMarket;
 
@@ -158,6 +161,19 @@ describe('ListingItem', () => {
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1'
+        }],
+        listingItemObjects: [{
+            type: ListingItemObjectType.CHECKBOX,
+            description: 'Test Description',
+            order: 1
+        }, {
+            type: ListingItemObjectType.TABLE,
+            description: 'Test Description',
+            order: 2
+        }, {
+            type: ListingItemObjectType.DROPDOWN,
+            description: 'Test Description',
+            order: 3
         }]
         // TODO: ignoring listingitemobjects for now
     } as ListingItemCreateRequest;
@@ -222,6 +238,19 @@ describe('ListingItem', () => {
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1 UPDATED'
+        }],
+        listingItemObjects: [{
+            type: ListingItemObjectType.CHECKBOX,
+            description: 'Test Description',
+            order: 1
+        }, {
+            type: ListingItemObjectType.TABLE,
+            description: 'Test Description',
+            order: 2
+        }, {
+            type: ListingItemObjectType.DROPDOWN,
+            description: 'Test Description',
+            order: 3
         }]
         // TODO: ignoring listingitemobjects for now
     } as ListingItemUpdateRequest;
@@ -240,16 +269,14 @@ describe('ListingItem', () => {
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.ShippingDestinationService);
         itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
-
         paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.EscrowService);
         escrowRatioService = app.IoC.getNamed<EscrowRatioService>(Types.Service, Targets.Service.EscrowRatioService);
         itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.ItemPriceService);
         shippingPriceService = app.IoC.getNamed<ShippingPriceService>(Types.Service, Targets.Service.ShippingPriceService);
         cryptocurrencyAddressService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.CryptocurrencyAddressService);
-
         messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
-
+        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
 
@@ -575,17 +602,13 @@ describe('ListingItem', () => {
         );
     });
 
-    test('Should create a new listing item without objects', async () => {
+    test('Should create a new listing item', async () => {
         // update the hash
         testData.hash = crypto.SHA256(new Date().getTime().toString()).toString();
 
         const testDataToSave = JSON.parse(JSON.stringify(testData));
         testDataToSave.market_id = defaultMarket.Id;
         // testDataToSave.profile_id = defaultProfile.Id;
-
-        // remove the stuff that we dont need in this test
-        delete testDataToSave.listingItemObjects;
-
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         const result = listingItemModel.toJSON();
@@ -594,6 +617,7 @@ describe('ListingItem', () => {
         createdItemInformation = result.ItemInformation;
         createdPaymentInformation = result.PaymentInformation;
         createdMessagingInformation = result.MessagingInformation;
+        createdListingItemObjects = result.ListingItemObjects;
 
         expect(result.hash).toBe(testData.hash);
         expect(result.Market.name).toBe(defaultMarket.Name);
@@ -632,10 +656,15 @@ describe('ListingItem', () => {
         expect(result.MessagingInformation[0].publicKey).toBe(testData.messagingInformation[0].publicKey);
         expect(result.MessagingInformation[0].listingItemTemplateId).toBe(null);
 
+        expect(result.ListingItemObjects[0].type).toBe(testData.listingItemObjects[0].type);
+        expect(result.ListingItemObjects[0].description).toBe(testData.listingItemObjects[0].description);
+        expect(result.ListingItemObjects[0].order).toBe(testData.listingItemObjects[0].order);
+        expect(result.ListingItemObjects[0].listingItemTemplateId).toBe(null);
+
     });
 
     test('Should delete the listing item with item info and payment info', async () => {
-        expect.assertions(13);
+        expect.assertions(14);
 
         await listingItemService.destroy(createdId);
         await listingItemService.findOne(createdId, false).catch(e =>
@@ -711,6 +740,12 @@ describe('ListingItem', () => {
         await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(messagingInformationId))
         );
+
+        // listingItemObjects
+        const listingItemObjectId = createdListingItemObjects[0].id;
+        await listingItemObjectService.findOne(listingItemObjectId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemObjectId))
+        );
     });
 
 
@@ -743,6 +778,7 @@ describe('ListingItem', () => {
         createdItemInformation = result.ItemInformation;
         createdPaymentInformation = result.PaymentInformation;
         createdMessagingInformation = result.MessagingInformation;
+        createdListingItemObjects = result.ListingItemObjects;
 
         // find listing-item-template
         const listingItemTemplateModel2: ListingItemTemplate = await listingItemTemplateService.findOne(testDataToSave.listing_item_template_id);
@@ -826,6 +862,12 @@ describe('ListingItem', () => {
             expect(e).toEqual(new NotFoundException(messagingInformationId))
         );
 
+        // listingItemObjects
+        const listintItemObjectId = createdListingItemObjects[0].id;
+        await listingItemObjectService.findOne(listintItemObjectId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(listintItemObjectId))
+        );
+
         // delete listing-item-template
         await listingItemTemplateService.destroy(listingItemTemplateModel.id);
         await listingItemTemplateService.findOne(listingItemTemplateModel.id, false).catch(e =>
@@ -847,13 +889,14 @@ describe('ListingItem', () => {
         createdItemInformation = resultCreate.ItemInformation;
         createdPaymentInformation = resultCreate.PaymentInformation;
         createdMessagingInformation = resultCreate.MessagingInformation;
+        createdListingItemObjects = resultCreate.ListingItemObjects;
 
         const testDataToUpdate = JSON.parse(JSON.stringify(testDataUpdated));
         testDataToUpdate.market_id = defaultMarket.Id;
 
         // remove the stuff that we dont need in this test
         delete testDataToUpdate.messagingInformation;
-        delete testDataToUpdate.listingitemobjects;
+        delete testDataToUpdate.listingItemObjects;
 
         const listingItemModel2: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
         const result = listingItemModel2.toJSON();
@@ -908,7 +951,7 @@ describe('ListingItem', () => {
         // remove the stuff that we dont need in this test
         delete testDataToUpdate.itemInformation;
         delete testDataToUpdate.messagingInformation;
-        delete testDataToUpdate.listingitemobjects;
+        delete testDataToUpdate.listingItemObjects;
 
         const listingItemModel: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
         const result = listingItemModel.toJSON();
@@ -972,6 +1015,14 @@ describe('ListingItem', () => {
         );
 
         expect(result.ListingItemObjects).toHaveLength(0);
+
+        // check listingItemObject deleted from DB
+        // ListingItemObjects
+        const listingItemObjectId = createdListingItemObjects[0].id;
+        await listingItemObjectService.findOne(listingItemObjectId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemObjectId))
+        );
+
         // tslint:enable:max-line-length
     });
 
@@ -982,7 +1033,7 @@ describe('ListingItem', () => {
 
         // remove the stuff that we dont need in this test
         delete testDataToUpdate.paymentInformation;
-        delete testDataToUpdate.listingitemobjects;
+        delete testDataToUpdate.listingItemObjects;
 
         const listingItemModel: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
         const result = listingItemModel.toJSON();
@@ -1058,8 +1109,101 @@ describe('ListingItem', () => {
             expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
         );
 
+    });
+
+    test('Should update same listing-item with messaging-information + item-information and listingItemObjects', async () => {
+        // create listing-item
+        const testDataToUpdate = JSON.parse(JSON.stringify(testDataUpdated));
+        testDataToUpdate.market_id = defaultMarket.Id;
+
+        // remove the stuff that we dont need in this test
+        delete testDataToUpdate.paymentInformation;
+
+        const listingItemModel: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
+        const result = listingItemModel.toJSON();
+
+        expect(result.hash).toBe(testDataToUpdate.hash);
+        expect(result.Market.name).toBe(defaultMarket.Name);
+        expect(result.Market.address).toBe(defaultMarket.Address);
+
+        // tslint:disable:max-line-length
+
+        expect(result.MessagingInformation).not.toHaveLength(0);
+        expect(result.ListingItemObjects).not.toHaveLength(0);
+
+        // check item-information created again
+        expect(createdItemInformation.id).not.toBe(result.ItemInformation.id);
+
+        expect(result.ItemInformation.title).toBe(testDataUpdated.itemInformation.title);
+        expect(result.ItemInformation.shortDescription).toBe(testDataUpdated.itemInformation.shortDescription);
+        expect(result.ItemInformation.longDescription).toBe(testDataUpdated.itemInformation.longDescription);
+        expect(result.ItemInformation.ItemCategory.name).toBe(testDataUpdated.itemInformation.itemCategory.name);
+        expect(result.ItemInformation.ItemCategory.description).toBe(testDataUpdated.itemInformation.itemCategory.description);
+        expect(result.ItemInformation.ItemLocation.region).toBe(testDataUpdated.itemInformation.itemLocation.region);
+        expect(result.ItemInformation.ItemLocation.address).toBe(testDataUpdated.itemInformation.itemLocation.address);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerTitle).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.markerTitle);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.markerText).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.markerText);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.lat);
+        expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(testDataUpdated.itemInformation.itemLocation.locationMarker.lng);
+        expect(result.ItemInformation.ShippingDestinations).toHaveLength(1);
+        expect(result.ItemInformation.ItemImages).toHaveLength(1);
+        expect(result.ItemInformation.listingItemTemplateId).toBe(null);
+
+        // check messaging-information created again
+        expect(createdMessagingInformation[0].id).not.toBe(result.MessagingInformation[0].id);
+
+        expect(result.MessagingInformation[0].protocol).toBe(testDataUpdated.messagingInformation[0].protocol);
+        expect(result.MessagingInformation[0].publicKey).toBe(testDataUpdated.messagingInformation[0].publicKey);
+        // tslint:enable:max-line-length
+
+        // check listingItemObject created again
+        expect(createdListingItemObjects[0].id).not.toBe(result.ListingItemObjects[0].id);
+
+        expect(result.ListingItemObjects[0].type).toBe(testDataUpdated.listingItemObjects[0].type);
+        expect(result.ListingItemObjects[0].description).toBe(testDataUpdated.listingItemObjects[0].description);
+        expect(result.ListingItemObjects[0].order).toBe(testDataUpdated.listingItemObjects[0].order);
+        // tslint:enable:max-line-length
+
+        expect(result.PaymentInformation).toEqual({});
+        // check payment-information deleted from db
+        // paymentInformation
+        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        );
+
+        // escrow
+        const escrowId = createdPaymentInformation.Escrow.id;
+        await escrowService.findOne(escrowId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(escrowId))
+        );
+
+        // escrow-ratio
+        const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
+        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        );
+
+        // itemPrice
+        const itemPriceId = createdPaymentInformation.ItemPrice.id;
+        await itemPriceService.findOne(itemPriceId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemPriceId))
+        );
+
+        // shippingPrice
+        const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
+        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(shippingPriceId))
+        );
+
+        // cryptoCurrencyAddress
+        const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
+        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
+        );
+
         createdItemInformation = result.ItemInformation;
         createdMessagingInformation = result.MessagingInformation;
+        createdListingItemObjects = result.ListingItemObjects;
 
         // delete data
         await listingItemService.destroy(createdId);
@@ -1101,6 +1245,12 @@ describe('ListingItem', () => {
         await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(messagingInformationId))
         );
+
+        // listingItemObject
+        const listingItemObjectId = createdListingItemObjects[0].id;
+        await listingItemObjectService.findOne(listingItemObjectId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemObjectId))
+        );
     });
 
     test('Should update listing-item without related models', async () => {
@@ -1116,6 +1266,7 @@ describe('ListingItem', () => {
         createdItemInformation = resultCreate.ItemInformation;
         createdPaymentInformation = resultCreate.PaymentInformation;
         createdMessagingInformation = resultCreate.MessagingInformation;
+        createdListingItemObjects = resultCreate.ListingItemObjects;
 
         const testDataToUpdate = JSON.parse(JSON.stringify(testDataUpdated));
         testDataToUpdate.market_id = defaultMarket.Id;
@@ -1124,7 +1275,7 @@ describe('ListingItem', () => {
         delete testDataToUpdate.itemInformation;
         delete testDataToUpdate.paymentInformation;
         delete testDataToUpdate.messagingInformation;
-        delete testDataToUpdate.listingitemobjects;
+        delete testDataToUpdate.listingItemObjects;
 
         const listingItemModel2: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
         const result = listingItemModel2.toJSON();
@@ -1207,6 +1358,12 @@ describe('ListingItem', () => {
         const messagingInformationId = createdMessagingInformation[0].id;
         await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(messagingInformationId))
+        );
+
+        // messagingInformation
+        const listingItemObjectId = createdListingItemObjects[0].id;
+        await listingItemObjectService.findOne(listingItemObjectId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemObjectId))
         );
 
         // delete listing-item

@@ -22,12 +22,16 @@ import { PaymentInformationCreateRequest } from '../requests/PaymentInformationC
 import { PaymentInformationUpdateRequest } from '../requests/PaymentInformationUpdateRequest';
 import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
 import { ListingItemPostRequest } from '../requests/ListingItemPostRequest';
+import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
+import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
+
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { MessageException } from '../exceptions/MessageException';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { MessageBroadcastService } from './MessageBroadcastService';
 import { Market } from '../models/Market';
+import { ListingItemObjectService } from './ListingItemObjectService';
 
 export class ListingItemService {
 
@@ -39,6 +43,7 @@ export class ListingItemService {
                 @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
                 @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
                 @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+                @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
                 @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) public messageBroadcastService: MessageBroadcastService,
                 @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
                 @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
@@ -110,7 +115,7 @@ export class ListingItemService {
         delete body.paymentInformation;
         const messagingInformation = body.messagingInformation || [];
         delete body.messagingInformation;
-        const listingItemObjects = body.listingItemObjects || {};
+        const listingItemObjects = body.listingItemObjects || [];
         delete body.listingItemObjects;
 
         // If the request body was valid we will create the listingItem
@@ -130,8 +135,11 @@ export class ListingItemService {
             msgInfo.listing_item_id = listingItem.Id;
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
         }
-        if (!_.isEmpty(listingItemObjects)) {
-            // TODO: implement
+
+        // create listingItemObjects
+        for (const object of listingItemObjects) {
+            object.listing_item_id = listingItem.Id;
+            await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
         }
 
         // finally find and return the created listingItem
@@ -155,13 +163,8 @@ export class ListingItemService {
         // set new values
         listingItem.Hash = body.hash;
 
-        this.log.debug('listingItem.toJSON():', listingItem.toJSON());
-
         // update listingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
-
-        // update listingItem record
-        this.log.debug('updatedListingItem.toJSON():', updatedListingItem.toJSON());
 
         // Item-information
         let itemInformation = updatedListingItem.related('ItemInformation').toJSON() || {};
@@ -209,6 +212,22 @@ export class ListingItemService {
             msgInfo.listing_item_id = id;
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
         }
+
+        // find related record and delete it and recreate related data
+        let listingItemObjects = updatedListingItem.related('ListingItemObjects').toJSON() || [];
+
+        for (const object of listingItemObjects) {
+            object.listing_item_id = id;
+            await this.listingItemObjectService.destroy(object.id);
+        }
+
+        // add new
+        listingItemObjects = body.listingItemObjects || [];
+        for (const object of listingItemObjects) {
+            object.listing_item_id = id;
+            await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
+        }
+
 
         // finally find and return the updated listingItem
         return await this.findOne(id);

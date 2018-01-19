@@ -10,6 +10,7 @@ import { ItemInformationService } from './ItemInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { MessagingInformationService } from './MessagingInformationService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
+import { ListingItemObjectService } from './ListingItemObjectService';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplateUpdateRequest } from '../requests/ListingItemTemplateUpdateRequest';
@@ -20,6 +21,8 @@ import { PaymentInformationCreateRequest } from '../requests/PaymentInformationC
 import { PaymentInformationUpdateRequest } from '../requests/PaymentInformationUpdateRequest';
 import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
 import { MessagingInformationUpdateRequest } from '../requests/MessagingInformationUpdateRequest';
+import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
+import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
 
 export class ListingItemTemplateService {
 
@@ -31,6 +34,7 @@ export class ListingItemTemplateService {
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -64,8 +68,6 @@ export class ListingItemTemplateService {
     @validate()
     public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest): Promise<ListingItemTemplate> {
 
-        // this.log.debug('ListingItemTemplateService.create, data:', JSON.stringify(data, null, 2));
-
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
@@ -75,12 +77,8 @@ export class ListingItemTemplateService {
         delete body.paymentInformation;
         const messagingInformation = body.messagingInformation || [];
         delete body.messagingInformation;
+        const listingItemObjects = body.listingItemObjects || [];
         delete body.listingItemObjects;
-
-        // this.log.debug('itemInformation to save: ', JSON.stringify(itemInformation, null, 2));
-        // this.log.debug('paymentInformation to save: ', JSON.stringify(paymentInformation, null, 2));
-        // this.log.debug('messagingInformation to save: ', JSON.stringify(messagingInformation, null, 2));
-        // this.log.debug('listingItemObjects to save: ', JSON.stringify(listingItemObjects, null, 2));
 
         // If the request body was valid we will create the listingItemTemplate
         const listingItemTemplate: any = await this.listingItemTemplateRepo.create(body);
@@ -88,16 +86,20 @@ export class ListingItemTemplateService {
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.Id;
             const result = await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
-            // this.log.debug('saved itemInformation ' + listingItemTemplate.Id + ': ', result.toJSON());
         }
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.Id;
             const result = await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
-            // this.log.info('saved paymentInformation: ', result.toJSON());
         }
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_template_id = listingItemTemplate.Id;
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
+        }
+
+        // create listingItemObjects
+        for (const object of listingItemObjects) {
+            object.listing_item_template_id = listingItemTemplate.Id;
+            await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
         }
 
         // finally find and return the created listingItemTemplate
@@ -116,8 +118,6 @@ export class ListingItemTemplateService {
 
         // update listingItemTemplate record
         const updatedListingItemTemplate = await this.listingItemTemplateRepo.update(id, listingItemTemplate.toJSON());
-        this.log.debug('updatedListingItemTemplate.toJSON():', updatedListingItemTemplate.toJSON());
-
 
         // if the related one exists allready, then update. if it doesnt exist, create. and if the related one is missing, then remove.
         // Item-information
@@ -156,15 +156,6 @@ export class ListingItemTemplateService {
             await this.paymentInformationService.destroy(paymentInformation.id);
         }
 
-        // TODO: UPDATE!!
-
-        // find related record and delete it and recreate related data
-
-        // const paymentInformation = updatedListingItemTemplate.related('PaymentInformation').toJSON();
-        // await this.paymentInformationService.destroy(paymentInformation.id);
-        // body.paymentInformation.listing_item_template_id = id;
-        // await this.paymentInformationService.create(body.paymentInformation);
-
         // find related record and delete it and recreate related data
         let messagingInformation = updatedListingItemTemplate.related('MessagingInformation').toJSON() || [];
         for (const msgInfo of messagingInformation) {
@@ -178,6 +169,21 @@ export class ListingItemTemplateService {
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
         }
 
+        // find related record and delete it and recreate related data
+        let listingItemObjects = updatedListingItemTemplate.related('ListingItemObjects').toJSON() || [];
+
+        for (const object of listingItemObjects) {
+            object.listing_item_template_id = id;
+            await this.listingItemObjectService.destroy(object.id);
+        }
+
+        // add new
+        listingItemObjects = body.listingItemObjects || [];
+        for (const object of listingItemObjects) {
+            object.listing_item_template_id = id;
+            await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
+        }
+
         // finally find and return the updated listingItem
         return await this.findOne(id);
     }
@@ -188,12 +194,6 @@ export class ListingItemTemplateService {
         const relatedCryptocurrencyAddress = listingItemTemplate
             .related('PaymentInformation')
             .toJSON();
-        // const relatedCryptocurrencyAddress = listingItemTemplate
-        //     .related('PaymentInformation')
-        //     .related('ItemPrice')
-        //     .related('CryptocurrencyAddress')
-        //     .toJSON();
-        // this.log.debug('relatedCryptocurrencyAddress: ', JSON.stringify(relatedCryptocurrencyAddress, null, 2));
 
         await this.listingItemTemplateRepo.destroy(id);
         // if we have cryptoaddress and it's not related to profile -> delete

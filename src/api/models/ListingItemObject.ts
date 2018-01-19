@@ -1,5 +1,6 @@
 import { Bookshelf } from '../../config/Database';
-
+import { ListingItem } from './ListingItem';
+import { ListingItemTemplate } from './ListingItemTemplate';
 
 export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
 
@@ -7,9 +8,8 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
         if (withRelated) {
             return await ListingItemObject.where<ListingItemObject>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'ListingItemObjectRelated',
-                    // 'ListingItemObjectRelated.Related'
+                    'ListingItem',
+                    'ListingItemTemplate'
                 ]
             });
         } else {
@@ -38,8 +38,13 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public ListingItemObjectRelated(): ListingItemObjectRelated {
-    //    return this.hasOne(ListingItemObjectRelated);
-    // }
+
+    public ListingItem(): ListingItem {
+        return this.belongsTo(ListingItem, 'listing_item_id', 'id');
+    }
+
+    public ListingItemTemplate(): ListingItemTemplate {
+        return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
+    }
+
 }
