@@ -4,21 +4,24 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandInterface } from './RpcCommandInterface';
+import { BaseCommand } from './BaseCommand';
+import { CommandEnumType } from './CommandEnumType';
+import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 
-export class HelpCommand implements RpcCommandInterface<string> {
+export class HelpCommand extends BaseCommand implements RpcCommandInterface<string> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().HELP, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'help';
     }
 
     /**
-     * data.params[]: none
+     * data.params[]: [command]
      *
      * @param data
      * @returns {Promise<Escrow>}
@@ -61,6 +64,11 @@ export class HelpCommand implements RpcCommandInterface<string> {
     }
 
     public help(): string {
-        return 'help';
+        return '[command]';
     }
+
+    public example(): string {
+        return null;
+    }
+
 }
