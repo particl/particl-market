@@ -11,25 +11,38 @@ describe('Command', () => {
         //
     });
 
-    test('Should return correct name, type, isRoot and parent', async () => {
+    test('Should return correct instance for Command', async () => {
+        expect(Commands.MARKET_ROOT).toBeInstanceOf(Command);
+    });
 
-        expect(Commands.MARKET).toBeInstanceOf(Command);
-        expect(Commands.MARKET.toString()).toBe('Command.MARKET');
-        expect(Commands.MARKET.propName).toBe('MARKET');
-        expect(Commands.MARKET.description).toBe('market');
-        expect(Commands.MARKET.commandName).toBe('market');
-        expect(Commands.MARKET.isRoot).toBe(true);
-        expect(Commands.MARKET.childCommands).toHaveLength(2);
-        expect(Commands.MARKET.childCommands.sort()).toEqual([Commands.MARKET_ADD, Commands.MARKET_LIST].sort());
+    test('Should return correct toString for Command', async () => {
+        expect(Commands.MARKET_ROOT.toString()).toBe('Command.MARKET_ROOT');
+        expect(Commands.MARKET_ADD.toString()).toBe('Command.MARKET_ADD');
+        expect(Commands.MARKET_LIST.toString()).toBe('Command.MARKET_LIST');
+    });
+
+    test('Should return correct propName, description, commandName and isRoot for Command', async () => {
+        expect(Commands.MARKET_ROOT.propName).toBe('MARKET_ROOT');
+        expect(Commands.MARKET_ROOT.description).toBe('market');
+        expect(Commands.MARKET_ROOT.commandName).toBe('market');
+        expect(Commands.MARKET_ROOT.isRoot).toBe(true);
+        expect(Commands.MARKET_ADD.propName).toBe('MARKET_ADD');
         expect(Commands.MARKET_ADD.description).toBe('marketadd');
         expect(Commands.MARKET_ADD.commandName).toBe('add');
         expect(Commands.MARKET_ADD.isRoot).toBe(false);
+        expect(Commands.MARKET_LIST.propName).toBe('MARKET_LIST');
         expect(Commands.MARKET_LIST.description).toBe('marketlist');
         expect(Commands.MARKET_LIST.commandName).toBe('list');
         expect(Commands.MARKET_LIST.isRoot).toBe(false);
-        expect(Commands.values).toHaveLength(82);
-        expect(Commands.rootCommands).toHaveLength(18);
-
     });
 
+    test('Should return correct childCommands for Command', async () => {
+        expect(Commands.MARKET_ROOT.childCommands).toHaveLength(2);
+        expect(Commands.MARKET_ROOT.childCommands.sort()).toEqual([Commands.MARKET_ADD, Commands.MARKET_LIST].sort());
+    });
+
+    test('Should return all types of Commands and all root Commands', async () => {
+        expect(Commands.values).toHaveLength(76);
+        expect(Commands.rootCommands).toHaveLength(19);
+    });
 });

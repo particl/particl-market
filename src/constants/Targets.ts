@@ -94,7 +94,10 @@ export const Targets = {
         UserService: 'UserService'
     },
     Command:     {
-        AddDataCommand: 'AddDataCommand',
+        admin: {
+            AdminCommand: 'AdminCommand'
+        },
+        BaseCommand: 'BaseCommand',
         bid: {
             AcceptBidCommand: 'AcceptBidCommand',
             BidSearchCommand: 'BidSearchCommand',
@@ -102,7 +105,13 @@ export const Targets = {
             RejectBidCommand: 'RejectBidCommand',
             SendBidCommand: 'SendBidCommand'
         },
-        CleanDbCommand: 'CleanDbCommand',
+        Command: 'Command',
+        CommandEnumType: 'CommandEnumType',
+        data: {
+            DataAddCommand: 'DataAddCommand',
+            DataCleanCommand: 'DataCleanCommand',
+            DataGenerateCommand: 'DataGenerateCommand'
+        },
         escrow: {
             EscrowCreateCommand: 'EscrowCreateCommand',
             EscrowDestroyCommand: 'EscrowDestroyCommand',
@@ -115,7 +124,6 @@ export const Targets = {
             FavoriteAddCommand: 'FavoriteAddCommand',
             FavoriteRemoveCommand: 'FavoriteRemoveCommand'
         },
-        GenerateDataCommand: 'GenerateDataCommand',
         HelpCommand: 'HelpCommand',
         itemcategory: {
             ItemCategoriesGetCommand: 'ItemCategoriesGetCommand',
@@ -142,9 +150,9 @@ export const Targets = {
         },
         listingitem: {
             ListingItemGetCommand: 'ListingItemGetCommand',
+            ListingItemPostCommand: 'ListingItemPostCommand',
             ListingItemSearchCommand: 'ListingItemSearchCommand',
-            OwnListingItemSearchCommand: 'OwnListingItemSearchCommand',
-            ListingItemPostCommand: 'ListingItemPostCommand'
+            OwnListingItemSearchCommand: 'OwnListingItemSearchCommand'
         },
         listingitemtemplate: {
             ListingItemTemplateCreateCommand: 'ListingItemTemplateCreateCommand',

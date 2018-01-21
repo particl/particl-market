@@ -5,9 +5,9 @@ import { Types, Core, Targets } from '../../constants';
 import { RpcCommandInterface} from '../commands/RpcCommandInterface';
 import { NotFoundException } from '../exceptions/NotFoundException';
 
-import { AddDataCommand} from '../commands/AddDataCommand';
-import { CleanDbCommand} from '../commands/CleanDbCommand';
-import { GenerateDataCommand} from '../commands/GenerateDataCommand';
+import { AddDataCommand} from '../commands/data/AddDataCommand';
+import { CleanDbCommand} from '../commands/data/CleanDbCommand';
+import { GenerateDataCommand} from '../commands/data/GenerateDataCommand';
 import { HelpCommand} from '../commands/HelpCommand';
 
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
@@ -190,6 +190,13 @@ export class RpcCommandFactory {
 
     }
 
+    /**
+     * todo: if requested commandType is rootCommand, the loop through the rootCommands and match using name.
+     * this should allow 'links' from subcommands back to root commadns
+     *
+     * @param commandType
+     * @returns {RpcCommandInterface<any>}
+     */
     public get(commandType: Command): RpcCommandInterface<any> {
         this.log.debug('Looking for command <' + commandType.toString() + '>');
         for (const commandInstance of this.commands) {

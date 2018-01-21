@@ -36,9 +36,9 @@ export class BaseCommand {
      * @param data
      * @returns {Promise<Bookshelf.Model<any>>}
      */
-    public async executeNext(data: RpcRequest): Promise<any> {
-        const commandName = data.params.shift();
-        const rpcCommand = this.rpcCommandFactory.get(this.command);
-        return await rpcCommand.execute(data);
+    public async executeNext(request: RpcRequest): Promise<any> {
+        const commandName = request.params.shift();
+        const rpcCommand = this.rpcCommandFactory.get(commandName);
+        return await rpcCommand.execute(request);
     }
 }
