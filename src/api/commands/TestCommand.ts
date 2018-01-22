@@ -7,17 +7,21 @@ import { FavoriteItemService } from '../services/FavoriteItemService';
 import { RpcRequest } from '../requests/RpcRequest';
 import { FavoriteItem } from '../models/FavoriteItem';
 import { RpcCommandInterface } from './RpcCommandInterface';
+import { CommandEnumType } from 'CommandEnumType';
+import { BaseCommand } from 'BaseCommand';
+import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 
-export class TestCommand implements RpcCommandInterface<Bookshelf.Collection<FavoriteItem>> {
+export class TestCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<FavoriteItem>> {
+
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) public favoriteItemService: FavoriteItemService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().TEST, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'TestCommand';
     }
 
     public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
@@ -27,4 +31,9 @@ export class TestCommand implements RpcCommandInterface<Bookshelf.Collection<Fav
     public help(): string {
         return 'CreateCategoryCommand: TODO: Fill in help string.';
     }
+
+    public example(): any {
+        return null;
+    }
+
 }
