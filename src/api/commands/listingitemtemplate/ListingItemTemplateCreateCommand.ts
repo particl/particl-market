@@ -8,18 +8,21 @@ import { ListingItemTemplateCreateRequest } from '../../requests/ListingItemTemp
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ListingItemTemplateCreateCommand implements RpcCommandInterface<ListingItemTemplate> {
+export class ListingItemTemplateCreateCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().TEMPLATE_ADD, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'createlistingitemtemplate';
     }
 
     /**
@@ -110,4 +113,9 @@ export class ListingItemTemplateCreateCommand implements RpcCommandInterface<Lis
             + '                                      recieving funds to associate with the listing\n'
             + '                                      item template we\'re creating.';
     }
+
+    public example(): any {
+        return null;
+    }
+
 }

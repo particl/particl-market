@@ -6,18 +6,21 @@ import { ListingItemTemplateService } from '../../services/ListingItemTemplateSe
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ListingItemTemplateGetCommand implements RpcCommandInterface<ListingItemTemplate> {
+export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().TEMPLATE_GET, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'getlistingitemtemplate';
     }
 
     /**
@@ -36,5 +39,9 @@ export class ListingItemTemplateGetCommand implements RpcCommandInterface<Listin
         return 'getlistingitemtemplate <listingTemplateId>\n'
             + '    <listingTemplateId>   -    Numeric - The ID of the listing item template that we\n'
             + '                                want to retrieve.';
+    }
+
+    public example(): any {
+        return null;
     }
 }

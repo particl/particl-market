@@ -8,18 +8,21 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ListingItemTemplateSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
+export class ListingItemTemplateSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().TEMPLATE_SEARCH, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'searchlistingitemtemplate';
     }
 
     /**
@@ -59,5 +62,9 @@ export class ListingItemTemplateSearchCommand implements RpcCommandInterface<Boo
             + '                             search for.\n'
             + '        <searchString>    - [optional] String - A string that is used to search for\n'
             + '                             listing item templats via title.';
+    }
+
+    public example(): any {
+        return null;
     }
 }
