@@ -10,19 +10,22 @@ import { MessagingInformation } from '../../models/MessagingInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import * as _ from 'lodash';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class MessagingInformationUpdateCommand implements RpcCommandInterface<MessagingInformation> {
+export class MessagingInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<MessagingInformation> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().MESSAGINGINFORMATION_UPDATE, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'updatemessaginginformation';
     }
 
     /**
@@ -55,6 +58,10 @@ export class MessagingInformationUpdateCommand implements RpcCommandInterface<Me
             + '    <listingTemplateId>      - Numeric - [TODO]\n'
             + '    <protocol>               - ENUM{SMSG} - [TODO]\n'
             + '    <publicKey>              - String - [TODO]';
+    }
+
+    public example(): any {
+        return null;
     }
 
     /**
