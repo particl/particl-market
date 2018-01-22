@@ -25,7 +25,8 @@ export class ItemLocationCreateCommand implements RpcCommandInterface<ItemLocati
     ) {
         this.log = new Logger(__filename);
         this.name = 'additemlocation';
-        this.helpStr = 'additemlocation <listingItemTemplateId> <region> <address> <gpsMarkerTitle> <gpsMarkerDescription> <gpsMarkerLatitude> <gpsMarkerLongitude>\n'
+        this.helpStr = 'additemlocation <listingItemTemplateId> <region> <address> <gpsMarkerTitle> <gpsMarkerDescription> <gpsMarkerLatitude>'
+            + ' <gpsMarkerLongitude>\n'
             + '    <listingItemTemplateId>    - Numeric - The ID of the listing item template we want\n'
             + '                                  to associate with this item location.\n'
             + '    <region>                   - String - Region, i.e. country or country code.\n'

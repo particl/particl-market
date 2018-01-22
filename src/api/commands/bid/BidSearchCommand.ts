@@ -27,7 +27,7 @@ export class BidSearchCommand implements RpcCommandInterface<Bookshelf.Collectio
             + '    <listingItemId>    - [optional] Numeric - The ID of the listing item that the\n'
             + '                          bids we\'re searching for are associated with.\n'
             + '    <profileId>        - [optional] Numeric - The ID of the profile that made the\n'
-            + '                          bids we\'re searching for [TODO confirm this is true].'
+            + '                          bids we\'re searching for [TODO confirm this is true].';
     }
 
     /**

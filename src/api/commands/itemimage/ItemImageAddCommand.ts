@@ -68,6 +68,6 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
     }
 
     public help(): string {
-        return this.helpStr
+        return this.helpStr;
     }
 }

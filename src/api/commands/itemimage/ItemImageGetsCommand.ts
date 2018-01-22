@@ -39,6 +39,6 @@ export class ItemImageGetsCommand implements RpcCommandInterface<Bookshelf.Colle
     }
 
     public help(): string {
-        return this.helpStr
+        return this.helpStr;
     }
 }

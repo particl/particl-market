@@ -44,6 +44,6 @@ export class ItemImageRemoveCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return this.helpStr
+        return this.helpStr;
     }
 }

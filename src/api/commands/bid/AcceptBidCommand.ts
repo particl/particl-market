@@ -29,7 +29,7 @@ export class AcceptBidCommand implements RpcCommandInterface<Bid> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'acceptbid';
-        this.helpStr = 'AcceptBidCommand: TODO: Fill in help string.'
+        this.helpStr = 'AcceptBidCommand: TODO: Fill in help string.';
     }
 
     /**

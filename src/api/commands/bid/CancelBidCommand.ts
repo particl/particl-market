@@ -28,7 +28,7 @@ export class CancelBidCommand implements RpcCommandInterface<Bid> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'cancelbid';
-        this.helpStr = 'CancelBidCommand: TODO: Fill in help string.'
+        this.helpStr = 'CancelBidCommand: TODO: Fill in help string.';
     }
 
     /**
