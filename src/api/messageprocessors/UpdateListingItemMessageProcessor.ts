@@ -9,7 +9,7 @@ import { ListingItemService } from '../services/ListingItemService';
 import { ListingItem } from '../models/ListingItem';
 import { ItemCategory } from '../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
-import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
+import { ListingItemUpdateRequest } from '../requests/ListingItemUpdateRequest';
 import { ItemCategoryFactory } from '../factories/ItemCategoryFactory';
 import { MessagingInformationFactory } from '../factories/MessagingInformationFactory';
 import { ItemCategoryService } from '../services/ItemCategoryService';
@@ -17,7 +17,7 @@ import { MarketService } from '../services/MarketService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { isArray } from 'util';
 
-export class ListingItemMessageProcessor implements MessageProcessorInterface {
+export class UpdateListingItemMessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
     constructor(
@@ -36,23 +36,21 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
 
     public async process( @message(ListingItemMessage) data: ListingItemMessage): Promise<ListingItem> {
         // get Category
-        const itemCategory: ItemCategory = await this.createCategories(data.information.category);
+        const itemCategory = await this.createCategories(data.information.category);
         data.information.itemCategory = itemCategory;
 
         // get messagingInformation
         const messagingInformation = await this.mesInfoFactory.get(data.messaging);
         data.messaging = messagingInformation;
 
+        // get listing-item id then remove
+        const listingItemTobeUpdate = await this.listingItemService.findOneByHash(data.hash);
         // get default profile
         const market = await this.marketService.getDefault();
         // create listing-item
         const listingItem = await this.listingItemFactory.getModel(data as ListingItemMessage, market.id);
 
-        // NOTE: It is only for the testing purpose for the test cases later we will remove the getting default market
-        const defaultMarket = await this.marketService.getDefault();
-        listingItem.market_id = defaultMarket.id;
-
-        return await this.listingItemService.create(listingItem as ListingItemCreateRequest);
+        return await this.listingItemService.update(listingItemTobeUpdate.id, listingItem as ListingItemUpdateRequest);
     }
 
     /**
@@ -108,4 +106,5 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
             });
         }
     }
+
 }

@@ -68,6 +68,10 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
         }
     }
 
+    public static async fetchCategoryByNameAndParentID(categoryName: string, parentCategoryId: number | null): Promise<ItemCategory> {
+        return await ItemCategory.where<ItemCategory>({ name: categoryName, parent_item_category_id: parentCategoryId }).fetch();
+    }
+
     public get tableName(): string { return 'item_categories'; }
     public get hasTimestamps(): boolean { return true; }
 
