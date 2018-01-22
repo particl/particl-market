@@ -7,18 +7,21 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ProfileCreateRequest } from '../../requests/ProfileCreateRequest';
 import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ProfileCreateCommand implements RpcCommandInterface<Profile> {
+export class ProfileCreateCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().PROFILE_ADD, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'createprofile';
     }
 
     /**
@@ -44,5 +47,9 @@ export class ProfileCreateCommand implements RpcCommandInterface<Profile> {
             + '                              This is the address that\'s used in the particl\n'
             + '                              messaging system. Will be automatically generated\n'
             + '                              if omitted.';
+    }
+
+    public example(): any {
+        return null;
     }
 }

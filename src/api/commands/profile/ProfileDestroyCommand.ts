@@ -4,19 +4,22 @@ import { validate, request } from '../../../core/api/Validate';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { MessageException } from '../../exceptions/MessageException';
-import {ProfileService} from '../../services/ProfileService';
+import { ProfileService } from '../../services/ProfileService';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ProfileDestroyCommand implements RpcCommandInterface<void> {
+export class ProfileDestroyCommand extends BaseCommand implements RpcCommandInterface<void> {
     public log: LoggerType;
     public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().PROFILE_REMOVE, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'removeprofile';
     }
 
     /**
@@ -36,5 +39,9 @@ export class ProfileDestroyCommand implements RpcCommandInterface<void> {
             + '    <profileID>            -  That profile ID of the profile we want to destroy.\n'
             + '    <profileName>          -  [TODO implement] The name of the profile we\n'
             + '                               want to destroy.';
+    }
+
+    public example(): any {
+        return null;
     }
 }

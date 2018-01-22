@@ -6,18 +6,21 @@ import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ProfileGetCommand implements RpcCommandInterface<Profile> {
+export class ProfileGetCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().PROFILE_GET, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'getprofile';
     }
 
     /**
@@ -48,5 +51,9 @@ export class ProfileGetCommand implements RpcCommandInterface<Profile> {
             + '                             retrieve.\n'
             + '    <profileName>         - [optional] String - The name of the profile we want to\n'
             + '                             retrieve.';
+    }
+
+    public example(): any {
+        return null;
     }
 }
