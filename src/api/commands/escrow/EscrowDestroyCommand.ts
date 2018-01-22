@@ -5,18 +5,21 @@ import { Types, Core, Targets } from '../../../constants';
 import { EscrowService } from '../../services/EscrowService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class EscrowDestroyCommand implements RpcCommandInterface<void> {
+export class EscrowDestroyCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().ESCROW_REMOVE, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'destroyescrow';
     }
 
     /**
@@ -36,4 +39,9 @@ export class EscrowDestroyCommand implements RpcCommandInterface<void> {
             + '                                       template that the escrow we want to delete is\n'
             + '                                       associated with.';
     }
+
+    public example(): any {
+        return null;
+    }
+
 }

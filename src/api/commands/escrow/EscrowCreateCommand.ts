@@ -6,18 +6,21 @@ import { EscrowService } from '../../services/EscrowService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class EscrowCreateCommand implements RpcCommandInterface<Escrow> {
+export class EscrowCreateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().ESCROW_ADD, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'createescrow';
     }
 
     /**
@@ -50,4 +53,9 @@ export class EscrowCreateCommand implements RpcCommandInterface<Escrow> {
             + '    <buyerRatio>              - Numeric - [TODO]\n' // TODO: this
             + '    <sellerRatio>             - Numeric - [TODO]'; // TODO: this
     }
+
+    public example(): any {
+        return null;
+    }
+
 }

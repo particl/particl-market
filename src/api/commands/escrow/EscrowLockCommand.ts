@@ -6,21 +6,23 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
-
 import { EscrowLockRequest } from '../../requests/EscrowLockRequest';
 import { EscrowMessageType } from '../../enums/EscrowMessageType';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class EscrowLockCommand implements RpcCommandInterface<Escrow> {
+export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().ESCROW_LOCK, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'lockescrow';
     }
 
     /**
@@ -50,4 +52,9 @@ export class EscrowLockCommand implements RpcCommandInterface<Escrow> {
     public help(): string {
         return 'EscrowLockCommand: TODO: Fill in help string.';
     }
+
+    public example(): any {
+        return null;
+    }
+
 }
