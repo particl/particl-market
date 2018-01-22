@@ -108,7 +108,6 @@ export class CommandEnumType extends Enum<Command> {
     public FAVORITE_ROOT: Command       = new Command('favorite', 'favorite', true,
         [this.FAVORITE_LIST, this.FAVORITE_ADD, this.FAVORITE_REMOVE]);
 
-
     public ADDRESS_LIST: Command        = new Command('addresslist', 'list', false);
     public ADDRESS_ADD: Command         = new Command('addressadd', 'add', false);
     public ADDRESS_UPDATE: Command      = new Command('addressupdate', 'update', false);
@@ -132,6 +131,21 @@ export class CommandEnumType extends Enum<Command> {
     public MARKET_ROOT: Command         = new Command('market', 'market', true,
         [this.MARKET_LIST, this.MARKET_ADD]);
 
+    public SHOPPINGCART_LIST: Command   = new Command('cartlist', 'list', false);
+    public SHOPPINGCART_GET: Command    = new Command('cartget', 'get', false);
+    public SHOPPINGCART_ADD: Command    = new Command('cartadd', 'add', false);
+    public SHOPPINGCART_UPDATE: Command = new Command('cartupdate', 'update', false);
+    public SHOPPINGCART_REMOVE: Command = new Command('cartremove', 'remove', false);
+    public SHOPPINGCART_CLEAR: Command  = new Command('cartclear', 'clear', false);
+    public SHOPPINGCART_ROOT: Command   = new Command('cart', 'cart', true,
+        [this.SHOPPINGCART_LIST, this.SHOPPINGCART_GET, this.SHOPPINGCART_ADD, this.SHOPPINGCART_UPDATE,
+            this.SHOPPINGCART_REMOVE, this.SHOPPINGCART_CLEAR]);
+
+    public SHOPPINGCARTITEM_LIST: Command   = new Command('cartitemlist', 'list', false);
+    public SHOPPINGCARTITEM_ADD: Command    = new Command('cartitemadd', 'add', false);
+    public SHOPPINGCARTITEM_REMOVE: Command = new Command('cartitemremove', 'remove', false);
+    public SHOPPINGCARTITEM_ROOT: Command   = new Command('cartitem', 'cartitem', true,
+        [this.SHOPPINGCARTITEM_LIST, this.SHOPPINGCARTITEM_ADD, this.SHOPPINGCARTITEM_REMOVE]);
 
     constructor() {
         super();
