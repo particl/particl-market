@@ -6,14 +6,16 @@ import { FavoriteItemService } from '../../services/FavoriteItemService';
 import { ListingItemService } from '../../services/ListingItemService';
 import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
+import { FavoriteItem } from '../../models/FavoriteItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
+import { NotFoundException } from '../../exceptions/NotFoundException';
+import { FavoriteItemCreateRequest } from '../../requests/FavoriteItemCreateRequest';
 
 /*
- * Command for removing an item from your favorites, identified by ID or hash.
+ * Get a list of all favorites for profile
  */
-export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
+export class FavoriteListCommand implements RpcCommandInterface<FavoriteItem> {
 
     public log: LoggerType;
     public name: string;
@@ -27,32 +29,26 @@ export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'remove';
-        this.helpStr = 'remove <profileId> (<itemId> | <hash>)\n'
-            + '    <profileId>                     - Numeric - The ID of the profile\n'
-            + '                                       associated with the favorite we want to remove.\n'
-            + '    <itemId>                        - Numeric - The ID of the listing item you want\n'
-            + '                                       to remove from your favorites.\n'
-            + '    <hash>                          - String - The hash of the listing item you want\n'
-            + '                                       to remove from your favourites.\n';
-        this.descriptionStr = 'Command for removing an item from your favorites, identified by ID or hash.';
+        this.name = 'list';
+        this.helpStr = 'list <profileId>\n'
+            + '    <profileId>                     - Numeric - The ID of the profile we\n'
+            + '                                       want to associate this favorite with.';
+        this.descriptionStr = 'Get a list of all favorites for profile';
     }
 
     /**
-     *
-     *  data.params[]:
+     * data.params[]:
      *  [0]: item_id or hash
-     *  [1]: profile_id or null if null then use the default profile
+     *  [1]: profile_id or null
+     *
+     * when data.params[0] is number then findById, else findOneByHash
+     *
+     * @param data
+     * @returns {Promise<FavoriteItem>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
-        const favoriteParams = await this.getSearchParams(data);
-        const favoriteItem = await this.favoriteItemService.search({ itemId: favoriteParams[0], profileId: favoriteParams[1] } as FavoriteSearchParams);
-        if (favoriteItem === null) {
-            this.log.warn(`FavoriteItem with the item id=${favoriteParams.itemId} was not found!`);
-            throw new NotFoundException(favoriteParams.itemId);
-        }
-        return this.favoriteItemService.destroy(favoriteItem.Id);
+    public async execute( @request(RpcRequest) data: any): Promise<FavoriteItem> {
+        throw new Error('Not implemented');
     }
 
     public help(): string {

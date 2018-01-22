@@ -12,11 +12,15 @@ import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FavoriteItemCreateRequest } from '../../requests/FavoriteItemCreateRequest';
 
+/*
+ * Command for adding an item to your favorites, identified by ID or hash.
+ */
 export class FavoriteAddCommand implements RpcCommandInterface<FavoriteItem> {
 
     public log: LoggerType;
     public name: string;
     public helpStr: string;
+    public descriptionStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
@@ -25,17 +29,19 @@ export class FavoriteAddCommand implements RpcCommandInterface<FavoriteItem> {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
-        this.name = 'addfavorite';
-        this.helpStr = 'addfavorite (<itemId> | <hash>) [<profileId>]\n'
+        this.name = 'add';
+        this.helpStr = 'add <profileId> (<itemId> | <hash>)\n'
+            + '    <profileId>                     - Numeric - The ID of the profile we\n'
+            + '                                       want to associate this favorite with.'
             + '    <itemId>                        - Numeric - The ID of the listing item you want to\n'
             + '                                       add to your favorites.\n'
             + '    <hash>                          - String - The hash of the listing item you want\n'
-            + '                                       to add to your favorites.\n'
-            + '    <profileId>                     - [optional] Numeric - The ID of the profile we\n'
-            + '                                       want to associate this favorite with.';
+            + '                                       to add to your favorites.\n';
+        this.descriptionStr = 'Command for adding an item to your favorites, identified by ID or hash.';
     }
 
     /**
+     * TODO: Update command to match help().
      * data.params[]:
      *  [0]: item_id or hash
      *  [1]: profile_id or null

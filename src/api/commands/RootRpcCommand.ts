@@ -23,17 +23,16 @@ export class RootRpcCommand implements RpcCommandInterface<any> {
 
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
-        data.method = data.params.pop();
-        this.log.error(data.method);
-        for ( const param of data.params ) {
-            this.log.error(', ' + param);
-        }
+        data.method = data.params.shift();
 
         for ( const command of this.commands ) {
             if ( command.name === data.method ) {
-                const deleteme = 0;
+                this.log.debug('Found ' + data.method);
+                return command.execute(data);
             }
         }
+        this.log.debug('Couldn\' find ' + data.method);
+        return this.help();
     }
 
     public help(): string {

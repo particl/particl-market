@@ -113,6 +113,7 @@ export const Targets = {
         },
         favorite: {
             FavoriteAddCommand: 'FavoriteAddCommand',
+            FavoriteListCommand: 'FavoriteListCommand',
             FavoriteRemoveCommand: 'FavoriteRemoveCommand',
             FavoriteRootCommand: 'FavoriteRootCommand'
         },
