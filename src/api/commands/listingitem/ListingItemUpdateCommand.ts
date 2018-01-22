@@ -8,19 +8,20 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemUpdatePostRequest } from '../../requests/ListingItemUpdatePostRequest';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-
-export class ListingItemUpdateCommand implements RpcCommandInterface<ListingItem> {
+export class ListingItemUpdateCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
 
     public log: LoggerType;
     public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService
     ) {
+        super(Commands.ITEM_UPDATE);
         this.log = new Logger(__filename);
-        this.name = 'updateitem';
     }
 
     /**

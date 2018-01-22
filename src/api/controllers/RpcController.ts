@@ -8,6 +8,8 @@ import { JsonRpcError } from '../../core/api/JsonRpcError';
 
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { RpcRequest } from '../requests/RpcRequest';
+import {CommandEnumType, Commands} from '../commands/CommandEnumType';
+import { MessageException } from '../exceptions/MessageException';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -16,10 +18,10 @@ let rpcIdCount = 0;
 @controller('/rpc', rpc.use)
 export class RpcController {
 
-    public log: LoggerType;
+    private log: LoggerType;
     private VERSION = '2.0';
     private MAX_INT32 = 2147483647;
-    private exposedMethods = {};
+    // private commands: CommandEnumType = new CommandEnumType();
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -34,11 +36,15 @@ export class RpcController {
         const rpcRequest = this.createRequest(body.method, body.params, body.id);
         this.log.debug('controller.handleRPC() rpcRequest:', JSON.stringify(rpcRequest, null, 2));
 
-        // My code goes here
-        const result = await this.rpcCommandFactory.get(body.method).execute(rpcRequest);
-        // todo: no error handling here yet
-        // todo: return this.createResponse(rpcRequest.id, null, error);
-        return this.createResponse(rpcRequest.id, result);
+        // get the commandType for the method name
+        const commandType = Commands.byPropName(body.method);
+        if (commandType) {
+            // ... use the commandType to get the correct RpcCommand implementation and execute
+            const result = await this.rpcCommandFactory.get(commandType).execute(rpcRequest, this.rpcCommandFactory);
+            return this.createResponse(rpcRequest.id, result);
+        } else {
+            throw new MessageException('Unknown command.');
+        }
     }
 
     private createRequest(method: string, params?: any, id?: string | number): RpcRequest {

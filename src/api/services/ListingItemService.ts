@@ -252,7 +252,7 @@ export class ListingItemService {
     public async post( @request(ListingItemPostRequest) data: ListingItemPostRequest): Promise<void> {
 
         // fetch the listingItemTemplate
-        const itemTemplateModel = await this.findOne(data.listingItemTemplateId);
+        const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId);
         const itemTemplate = itemTemplateModel.toJSON();
 
         // fetch the market, dont remove, will be used later with the broadcast

@@ -6,21 +6,21 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
-
 import { EscrowLockRequest } from '../../requests/EscrowLockRequest';
 import { EscrowMessageType } from '../../enums/EscrowMessageType';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class EscrowLockCommand implements RpcCommandInterface<Escrow> {
+export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService
     ) {
+        super(Commands.ESCROW_LOCK);
         this.log = new Logger(__filename);
-        this.name = 'lockescrow';
     }
 
     /**
@@ -48,6 +48,7 @@ export class EscrowLockCommand implements RpcCommandInterface<Escrow> {
     }
 
     public help(): string {
-        return 'EscrowLockCommand: TODO: Fill in help string.';
+        return this.getName() + ' TODO: Fill in help string.';
     }
+
 }

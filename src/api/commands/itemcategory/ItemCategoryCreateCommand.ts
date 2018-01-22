@@ -7,18 +7,19 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategoryCreateRequest } from '../../requests/ItemCategoryCreateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ItemCategoryCreateCommand implements RpcCommandInterface<ItemCategory> {
+export class ItemCategoryCreateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService
     ) {
+        super(Commands.CATEGORY_ADD);
         this.log = new Logger(__filename);
-        this.name = 'createcategory';
     }
 
     /**
@@ -46,7 +47,7 @@ export class ItemCategoryCreateCommand implements RpcCommandInterface<ItemCatego
     }
 
     public help(): string {
-        return 'createcategory <categoryName> <description> (<parentItemCategoryId>|<parentItemCategoryKey>)\n'
+        return this.getName() + ' <categoryName> <description> (<parentItemCategoryId>|<parentItemCategoryKey>)\n'
             + '    <categoryName>                  - String - The name of the category to create.\n'
             + '    <description>                   - String - A description of the category to\n'
             + '                                       create.\n'

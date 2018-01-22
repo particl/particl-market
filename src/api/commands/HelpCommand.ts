@@ -4,27 +4,29 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandInterface } from './RpcCommandInterface';
+import { BaseCommand } from './BaseCommand';
+import { Commands} from './CommandEnumType';
+import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 
-export class HelpCommand implements RpcCommandInterface<string> {
+export class HelpCommand extends BaseCommand implements RpcCommandInterface<string> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super(Commands.HELP_ROOT);
         this.log = new Logger(__filename);
-        this.name = 'help';
     }
 
     /**
-     * data.params[]: none
      *
      * @param data
-     * @returns {Promise<Escrow>}
+     * @param rpcCommandFactory
+     * @returns {Promise<string>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<string> {
+    public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<string> {
         return  'available commands: \n' +
         'createprofile \n' +
         'updateprofile \n' +
@@ -61,6 +63,7 @@ export class HelpCommand implements RpcCommandInterface<string> {
     }
 
     public help(): string {
-        return 'help';
+        return this.getName() + ' [command]';
     }
+
 }

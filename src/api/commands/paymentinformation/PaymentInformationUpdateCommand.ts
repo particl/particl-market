@@ -8,18 +8,19 @@ import { PaymentInformationUpdateRequest } from '../../requests/PaymentInformati
 import { PaymentInformation } from '../../models/PaymentInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class PaymentInformationUpdateCommand implements RpcCommandInterface<PaymentInformation> {
+export class PaymentInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<PaymentInformation> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService
     ) {
+        super(Commands.PAYMENTINFORMATION_UPDATE);
         this.log = new Logger(__filename);
-        this.name = 'updatepaymentinformation';
     }
 
     /**
@@ -63,7 +64,7 @@ export class PaymentInformationUpdateCommand implements RpcCommandInterface<Paym
     }
 
     public help(): string {
-        return 'updatepaymentinformation <listingItemTemplateId> <paymentType> <currency> <basePrice> <domesticShippingPrice>'
+        return this.getName() + ' <listingItemTemplateId> <paymentType> <currency> <basePrice> <domesticShippingPrice>'
             + ' <internationalShippingPrice> <paymentAddress>\n'
             + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template\n'
             + '                                     we want to associate this payment information\n'
@@ -81,4 +82,5 @@ export class PaymentInformationUpdateCommand implements RpcCommandInterface<Paym
             + '    <paymentAddress>              - String  - The cryptocurrency address we want to\n'
             + '                                     receive payment in.';
     }
+
 }

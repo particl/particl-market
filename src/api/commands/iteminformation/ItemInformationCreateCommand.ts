@@ -7,18 +7,19 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemInformationCreateRequest } from '../../requests/ItemInformationCreateRequest';
 import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ItemInformationCreateCommand implements RpcCommandInterface<ItemInformation> {
+export class ItemInformationCreateCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService
     ) {
+        super(Commands.ITEMINFORMATION_ADD);
         this.log = new Logger(__filename);
-        this.name = 'createiteminformation';
     }
 
     /**
@@ -46,7 +47,7 @@ export class ItemInformationCreateCommand implements RpcCommandInterface<ItemInf
     }
 
     public help(): string {
-        return 'createiteminformation <listingTemplateId> <title> <shortDescription> <longDescription> <category>\n'
+        return this.getName() + ' <listingTemplateId> <title> <shortDescription> <longDescription> <category>\n'
             + '    <listingTemplateId>             - Numeric - The ID of the listing item template we\n'
             + '                                       want to associate the created item information\n'
             + '                                       with.\n'
@@ -60,4 +61,5 @@ export class ItemInformationCreateCommand implements RpcCommandInterface<ItemInf
             + '                                       category we want to associate the created\n'
             + '                                       item information with.';
     }
+
 }

@@ -25,7 +25,7 @@ import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequ
 import { ImageProcessing, MEDIUM_IMAGE_SIZE, THUMBNAIL_IMAGE_SIZE } from '../../src/core/helpers/ImageProcessing';
 import { ImageTriplet } from '../../src/core/helpers/ImageTriplet';
 
-import images = require('images');
+import sharp = require('sharp');
 import piexif = require('piexifjs');
 
 describe('ItemImage', () => {
@@ -140,16 +140,22 @@ describe('ItemImage', () => {
             expect(result.ItemImageData.dataMedium).toBeDefined();
             if (result.ItemImageData.dataMedium !== null) {
                 const dataBuffer = Buffer.from(result.ItemImageData.dataMedium, 'base64');
-                const imageBuffer = images(dataBuffer);
-                expect(imageBuffer.height()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
-                expect(imageBuffer.width()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
+                const imageBuffer = sharp(dataBuffer);
+
+                const newInfo = await imageBuffer.metadata();
+
+                expect(newInfo.height).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
+                expect(newInfo.width).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
             }
             expect(result.ItemImageData.dataMedium).toBeDefined();
             if (result.ItemImageData.dataMedium !== null) {
                 const dataBuffer = Buffer.from(result.dataThumbnail, 'base64');
-                const imageBuffer = images(dataBuffer);
-                expect(imageBuffer.height()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
-                expect(imageBuffer.width()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
+                const imageBuffer = sharp(dataBuffer);
+
+                const newInfo = await imageBuffer.metadata();
+
+                expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
+                expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
             }
         }
     });
@@ -188,16 +194,22 @@ describe('ItemImage', () => {
             expect(result.ItemImageData.dataMedium).toBeDefined();
             if (result.ItemImageData.dataMedium !== null) {
                 const dataBuffer = Buffer.from(result.ItemImageData.dataMedium, 'base64');
-                const imageBuffer = images(dataBuffer);
-                expect(imageBuffer.height()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
-                expect(imageBuffer.width()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
+                const imageBuffer = sharp(dataBuffer);
+
+                const newInfo = await imageBuffer.metadata();
+
+                expect(newInfo.height).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
+                expect(newInfo.width).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
             }
             expect(result.ItemImageData.dataMedium).toBeDefined();
             if (result.ItemImageData.dataMedium !== null) {
                 const dataBuffer = Buffer.from(result.ItemImageData.dataThumbnail, 'base64');
-                const imageBuffer = images(dataBuffer);
-                expect(imageBuffer.height()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
-                expect(imageBuffer.width()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
+                const imageBuffer = sharp(dataBuffer);
+
+                const newInfo = await imageBuffer.metadata();
+
+                expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
+                expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
             }
         }
     });
@@ -229,16 +241,22 @@ describe('ItemImage', () => {
             expect(result.ItemImageData.dataMedium).toBeDefined();
             if (result.ItemImageData.dataMedium !== null) {
                 const dataBuffer = Buffer.from(result.ItemImageData.dataMedium, 'base64');
-                const imageBuffer = images(dataBuffer);
-                expect(imageBuffer.height()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
-                expect(imageBuffer.width()).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
+                const imageBuffer = sharp(dataBuffer);
+
+                const newInfo = await imageBuffer.metadata();
+
+                expect(newInfo.height).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
+                expect(newInfo.width).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
             }
             expect(result.ItemImageData.dataMedium).toBeDefined();
             if (result.ItemImageData.dataMedium !== null) {
                 const dataBuffer = Buffer.from(result.ItemImageData.dataThumbnail, 'base64');
-                const imageBuffer = images(dataBuffer);
-                expect(imageBuffer.height()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
-                expect(imageBuffer.width()).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
+                const imageBuffer = sharp(dataBuffer);
+
+                const newInfo = await imageBuffer.metadata();
+
+                expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
+                expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
             }
         }
     });

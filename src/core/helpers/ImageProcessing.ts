@@ -1,7 +1,5 @@
 import { ImageTriplet } from './ImageTriplet';
-// import images = require('images');
 import sharp = require('sharp');
-
 
 declare const Buffer;
 

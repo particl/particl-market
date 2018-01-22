@@ -13,20 +13,21 @@ import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
 import { BidMessageType } from '../../enums/BidMessageType';
 import { Bid } from '../../models/Bid';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class RejectBidCommand implements RpcCommandInterface<Bid> {
+export class RejectBidCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory
     ) {
+        super(Commands.BID_REJECT);
         this.log = new Logger(__filename);
-        this.name = 'rejectbid';
     }
 
     /**
@@ -74,6 +75,7 @@ export class RejectBidCommand implements RpcCommandInterface<Bid> {
     }
 
     public help(): string {
-        return 'RejectBidCommand: TODO: Fill in help string.';
+        return this.getName() + ' <TODO>';
     }
+
 }

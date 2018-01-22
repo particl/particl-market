@@ -13,19 +13,20 @@ import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
 import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ShippingDestinationAddCommand implements RpcCommandInterface<ShippingDestination> {
+export class ShippingDestinationAddCommand extends BaseCommand implements RpcCommandInterface<ShippingDestination> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ShippingDestinationService) private shippingDestinationService: ShippingDestinationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
+        super(Commands.SHIPPINGDESTINATION_ADD);
         this.log = new Logger(__filename);
-        this.name = 'addshippingdestination';
     }
 
     /**
@@ -69,7 +70,7 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
     }
 
     public help(): string {
-        return 'addshippingdestination <itemInformationId> (<country> | <countryCode>) <shippingAvailability>\n'
+        return this.getName() + ' <itemInformationId> (<country> | <countryCode>) <shippingAvailability>\n'
             + '    <itemInformationId>        - Numeric - ID of the item information object we want\n'
             + '                                  to link this shipping destination to.\n'
             + '    <country>                  - String - The country name.\n'

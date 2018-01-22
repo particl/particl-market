@@ -9,23 +9,28 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
+/**
+ * Command for removing an item from your favorites, identified by ID or hash.
+ */
+export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
     ) {
+        super(Commands.FAVORITE_REMOVE);
         this.log = new Logger(__filename);
-        this.name = 'removefavorite';
     }
 
     /**
+     * TODO: Update command to match help().
      *
      *  data.params[]:
      *  [0]: item_id or hash
@@ -43,13 +48,17 @@ export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'removefavorite (<itemId> | <hash>) [<profileId>]\n'
+        return this.getName() + ' <profileId> (<itemId> | <hash>)\n'
+            + '    <profileId>                     - Numeric - The ID of the profile\n'
+            + '                                       associated with the favorite we want to remove.\n'
             + '    <itemId>                        - Numeric - The ID of the listing item you want\n'
             + '                                       to remove from your favorites.\n'
             + '    <hash>                          - String - The hash of the listing item you want\n'
-            + '                                       to remove from your favourites.\n'
-            + '    <profileId>                     - [optional] Numeric - The ID of the profile\n'
-            + '                                       associated with the favorite we want to remove.\n';
+            + '                                       to remove from your favourites.\n';
+    }
+
+    public description(): string {
+        return 'Command for removing an item from your favorites, identified by ID or hash.';
     }
 
     /**

@@ -7,18 +7,19 @@ import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ItemCategoryFindCommand implements RpcCommandInterface<Bookshelf.Collection<ItemCategory>> {
+export class ItemCategoryFindCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ItemCategory>> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService
     ) {
+        super(Commands.CATEGORY_SEARCH);
         this.log = new Logger(__filename);
-        this.name = 'findcategory';
     }
 
     /**
@@ -34,8 +35,9 @@ export class ItemCategoryFindCommand implements RpcCommandInterface<Bookshelf.Co
     }
 
     public help(): string {
-        return 'findcategory [<searchString>]\n'
+        return this.getName() + ' [<searchString>]\n'
             + '    <searchString>                  - [optional] String - A search string for finding\n'
             + '                                       categories by name.';
     }
+
 }

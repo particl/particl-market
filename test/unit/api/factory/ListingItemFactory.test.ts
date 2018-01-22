@@ -66,7 +66,6 @@ describe('ListingItemFactory', () => {
         listingItemFactory.getMessage(req).then((res, error) => {
             listingItemForModal = res;
             expect(res.hash).not.toBeNull();
-
             // itemInformation
             expect(res.information).not.toBe(undefined);
             expect(res.information.title).toBe(req.ItemInformation.title);

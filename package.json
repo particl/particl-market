@@ -37,22 +37,16 @@
     "ts-node": "./node_modules/.bin/ts-node",
     "ts-node:fast": "./node_modules/.bin/ts-node -F"
   },
-  "repository": "git+ssh://git@github.com:xludx/dapp-shell.git",
+  "repository": "git+ssh://git@github.com:particl/dapp-shell.git",
   "keywords": [
     "particl"
   ],
-  "homepage": "https://github.com/w3tec/express-typescript-boilerplate#readme",
-  "author": "w3tec.ch <info@w3tec.ch>",
+  "homepage": "https://github.com/particl/dapp-shell#readme",
   "contributors": [
     {
-      "name": "David Weber",
-      "email": "david.weber@w3tec.ch",
-      "url": "https://github.com/dweber019"
-    },
-    {
-      "name": "Gery Hirschfeld",
-      "email": "gery.hirschfeld@w3tec.ch",
-      "url": "https://github.com/hirsch88"
+      "name": "Juha Kovanen",
+      "email": "juha@particl.io",
+      "url": "https://github.com/xludx"
     }
   ],
   "dependencies": {
@@ -99,7 +93,6 @@
     "glob": "^7.1.2",
     "handlebars": "^4.0.10",
     "helmet": "^3.6.1",
-    "images": "^3.0.1",
     "inquirer": "^3.2.0",
     "inversify": "^4.2.0",
     "inversify-express-utils": "^4.0.0",
@@ -123,6 +116,7 @@
     "swagger-jsdoc": "^1.9.6",
     "swagger-ui-express": "^2.0.1",
     "trash-cli": "^1.4.0",
+    "ts-enums": "0.0.6",
     "ts-node": "^3.2.0",
     "tslint": "^5.5.0",
     "typescript": "^2.4.1",

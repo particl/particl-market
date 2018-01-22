@@ -8,18 +8,19 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ListingItemSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItem>> {
+export class ListingItemSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItem>> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService
     ) {
+        super(Commands.ITEM_SEARCH);
         this.log = new Logger(__filename);
-        this.name = 'finditems';
     }
 
     /**
@@ -45,7 +46,7 @@ export class ListingItemSearchCommand implements RpcCommandInterface<Bookshelf.C
     }
 
     public help(): string {
-        return 'finditems [<page> [<pageLimit> [<order> [(<categoryId> | <categoryName>) [<searchString>]]]]]\n'
+        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId> | <categoryName>) [<searchString>]]]]]\n'
             + '    <page>                          - [optional] Numeric - The number page we want to\n'
             + '                                       view of search listing item results.\n'
             + '        <pageLimit>                 - [optional] Numeric - The number of results per\n'
@@ -60,4 +61,5 @@ export class ListingItemSearchCommand implements RpcCommandInterface<Bookshelf.C
             + '                    <searchString>  - [optional] String - A string that is used to\n'
             + '                                       find listing items by their titles.';
     }
+
 }

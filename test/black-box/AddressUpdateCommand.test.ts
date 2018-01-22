@@ -1,7 +1,7 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Logger } from '../../src/core/Logger';
-import { AddressUpdateCommand } from '../../src/api/commands/profile/AddressUpdateCommand';
+import { AddressUpdateCommand } from '../../src/api/commands/address/AddressUpdateCommand';
 
 describe('/RpcUpdateAddress', () => {
     const testUtil = new BlackBoxTestUtil();

@@ -8,18 +8,19 @@ import { ListingItemTemplateCreateRequest } from '../../requests/ListingItemTemp
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ListingItemTemplateCreateCommand implements RpcCommandInterface<ListingItemTemplate> {
+export class ListingItemTemplateCreateCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
+        super(Commands.TEMPLATE_ADD);
         this.log = new Logger(__filename);
-        this.name = 'createlistingitemtemplate';
     }
 
     /**
@@ -82,7 +83,7 @@ export class ListingItemTemplateCreateCommand implements RpcCommandInterface<Lis
     }
 
     public help(): string {
-        return 'createlistingitemtemplate <profileId> <title> <shortDescription> <longDescription> <categoryName>'
+        return this.getName() + 'createlistingitemtemplate <profileId> <title> <shortDescription> <longDescription> <categoryName>'
             + ' <paymentType> <currency> <basePrice> <domesticShippingPrice> <internationalShippingPrice> <paymentAddress>\n'
             + '    <profileId>                    - Numeric - The ID of the profile to associate this\n'
             + '                                      item listing template with.\n'
@@ -110,4 +111,5 @@ export class ListingItemTemplateCreateCommand implements RpcCommandInterface<Lis
             + '                                      recieving funds to associate with the listing\n'
             + '                                      item template we\'re creating.';
     }
+
 }

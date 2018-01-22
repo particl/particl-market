@@ -6,18 +6,19 @@ import { EscrowService } from '../../services/EscrowService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class EscrowUpdateCommand implements RpcCommandInterface<Escrow> {
+export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService
     ) {
+        super(Commands.ESCROW_UPDATE);
         this.log = new Logger(__filename);
-        this.name = 'updateescrow';
     }
 
     /**
@@ -42,14 +43,16 @@ export class EscrowUpdateCommand implements RpcCommandInterface<Escrow> {
     }
 
     public help(): string {
-        return 'escrow update <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio>\n'
+        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio>\n'
             + '    <listingItemTemplateId>         - Numeric - The ID of the listing item template\n'
             + '                                       associated with the escrow we want to modify.\n'
             + '    <escrowType>                    - String - The escrow type we want to give to the\n'
             + '                                       escrow we are modifying.\n'
             + '                                    - ENUM{NOP,MAD} - The escrow type to give to the\n'
             + '                                       escrow we are modifying.\n'
-            + '    <buyerRatio>                    - Numeric - [TODO]\n' // TODO: this
-            + '    <sellerRatio>                   - Numeric - [TODO]'; // TODO: this
+            + '    <buyerRatio>                    - Numeric - [TODO]\n'
+            + '    <sellerRatio>                   - Numeric - [TODO]';
     }
+
+
 }
