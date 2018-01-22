@@ -162,6 +162,9 @@ describe('ListingItemTemplate', () => {
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1'
+        }, {
+            protocol: MessagingProtocolType.SMSG,
+            publicKey: 'publickey2'
         }],
         listingItemObjects: [{
             type: ListingItemObjectType.CHECKBOX,
@@ -239,6 +242,9 @@ describe('ListingItemTemplate', () => {
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1 UPDATED'
+        }, {
+            protocol: MessagingProtocolType.SMSG,
+            publicKey: 'publickey2 UPDATED'
         }],
         listingItemObjects: [{
             type: ListingItemObjectType.CHECKBOX,
@@ -1021,8 +1027,12 @@ describe('ListingItemTemplate', () => {
         delete testDataToUpdate.paymentInformation;
         delete testDataToUpdate.listingItemObjects;
 
+
+
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.update(createdId, testDataToUpdate);
         const result = listingItemTemplateModel.toJSON();
+
+        createdMessagingInformation = result.MessagingInformation;
 
         expect(result.hash).toBe(testDataToUpdate.hash);
         expect(result.Profile.name).toBe(defaultProfile.Name);
@@ -1050,8 +1060,6 @@ describe('ListingItemTemplate', () => {
         expect(result.ItemInformation.listingItemId).toBe(null);
 
         // check messaging-information created again
-        expect(createdMessagingInformation[0].id).not.toBe(result.MessagingInformation[0].id);
-
         expect(result.MessagingInformation[0].protocol).toBe(testDataUpdated.messagingInformation[0].protocol);
         expect(result.MessagingInformation[0].publicKey).toBe(testDataUpdated.messagingInformation[0].publicKey);
         // tslint:enable:max-line-length
@@ -1093,6 +1101,57 @@ describe('ListingItemTemplate', () => {
         );
     });
 
+    test('Should update messaging-information, listingItemObjects', async () => {
+        // create listing-item
+        const testDataToUpdate = JSON.parse(JSON.stringify(testDataUpdated));
+        testDataToUpdate.market_id = defaultMarket.Id;
+
+        // remove the stuff that we dont need in this test
+        delete testDataToUpdate.paymentInformation;
+        delete testDataToUpdate.paymentInformation;
+        delete testDataToUpdate.itemInformation;
+
+        testDataToUpdate.messagingInformation[0].id = createdMessagingInformation[0].id;
+
+        testDataToUpdate.messagingInformation[1].id = createdMessagingInformation[1].id;
+
+        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.update(createdId, testDataToUpdate);
+        const result = listingItemTemplateModel.toJSON();
+
+        expect(result.hash).toBe(testDataToUpdate.hash);
+        expect(result.Profile.name).toBe(defaultProfile.Name);
+
+        // tslint:disable:max-line-length
+        expect(result.MessagingInformation).not.toHaveLength(0);
+        expect(result.ListingItemObjects).not.toHaveLength(0);
+
+        expect(result.MessagingInformation[0].protocol).toBe(testDataUpdated.messagingInformation[0].protocol);
+        expect(result.MessagingInformation[0].publicKey).toBe(testDataUpdated.messagingInformation[0].publicKey);
+        // tslint:enable:max-line-length
+        // check messaging-information created again
+        expect(createdListingItemObjects[0].id).not.toBe(result.ListingItemObjects[0].id);
+
+        expect(result.ListingItemObjects[0].protocol).toBe(testDataUpdated.listingItemObjects[0].protocol);
+        expect(result.ListingItemObjects[0].publicKey).toBe(testDataUpdated.listingItemObjects[0].publicKey);
+        // tslint:enable:max-line-length
+
+         // one messageing should be updated and one new should be created
+        expect(result.MessagingInformation.length).toBe(2);
+        expect(result.MessagingInformation[0].id).toBe(createdMessagingInformation[0].id);
+        expect(result.MessagingInformation[0].publicKey).toBe(createdMessagingInformation[0].publicKey);
+
+        // check listingItemObject data updated
+        expect(result.ListingItemObjects[0].order).toBe(createdListingItemObjects[0].order);
+        expect(result.ListingItemObjects[1].order).toBe(createdListingItemObjects[1].order);
+        expect(result.ListingItemObjects.length).toBe(3);
+        expect(result.ListingItemObjects[result.ListingItemObjects.length - 1].order)
+        .toBe(testDataToUpdate.listingItemObjects[testDataToUpdate.listingItemObjects.length - 1].order);
+
+        expect(result.PaymentInformation).toEqual({});
+        expect(result.ItemInformation).toEqual({});
+
+    });
+
     test('Should update same listing-item-template with messaging-information + item-information and listingItemObjects', async () => {
         // create listing-item
         const testDataToUpdate = JSON.parse(JSON.stringify(testDataUpdated));
@@ -1113,7 +1172,6 @@ describe('ListingItemTemplate', () => {
 
         // check item-information created again
         expect(createdItemInformation.id).not.toBe(result.ItemInformation.id);
-
         expect(result.ItemInformation.title).toBe(testDataUpdated.itemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(testDataUpdated.itemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(testDataUpdated.itemInformation.longDescription);
@@ -1129,13 +1187,9 @@ describe('ListingItemTemplate', () => {
         expect(result.ItemInformation.ItemImages).toHaveLength(1);
         expect(result.ItemInformation.listingItemId).toBe(null);
 
-        // check messaging-information created again
-        expect(createdMessagingInformation[0].id).not.toBe(result.MessagingInformation[0].id);
-
         expect(result.MessagingInformation[0].protocol).toBe(testDataUpdated.messagingInformation[0].protocol);
         expect(result.MessagingInformation[0].publicKey).toBe(testDataUpdated.messagingInformation[0].publicKey);
         // tslint:enable:max-line-length
-
         // check messaging-information created again
         expect(createdListingItemObjects[0].id).not.toBe(result.ListingItemObjects[0].id);
 

@@ -161,6 +161,12 @@ describe('ListingItem', () => {
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1'
+        }, {
+            protocol: MessagingProtocolType.SMSG,
+            publicKey: 'publickey2'
+        }, {
+            protocol: MessagingProtocolType.SMSG,
+            publicKey: 'publickey3'
         }],
         listingItemObjects: [{
             type: ListingItemObjectType.CHECKBOX,
@@ -173,7 +179,7 @@ describe('ListingItem', () => {
         }, {
             type: ListingItemObjectType.DROPDOWN,
             description: 'Test Description',
-            order: 3
+            order: 7
         }]
         // TODO: ignoring listingitemobjects for now
     } as ListingItemCreateRequest;
@@ -237,7 +243,10 @@ describe('ListingItem', () => {
         },
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
-            publicKey: 'publickey1 UPDATED'
+            publicKey: 'publickey1'
+        }, {
+            protocol: MessagingProtocolType.SMSG,
+            publicKey: 'publickey4'
         }],
         listingItemObjects: [{
             type: ListingItemObjectType.CHECKBOX,
@@ -250,7 +259,11 @@ describe('ListingItem', () => {
         }, {
             type: ListingItemObjectType.DROPDOWN,
             description: 'Test Description',
-            order: 3
+            order: 5
+        }, {
+            type: ListingItemObjectType.DROPDOWN,
+            description: 'Test Description',
+            order: 6
         }]
         // TODO: ignoring listingitemobjects for now
     } as ListingItemUpdateRequest;
@@ -1365,6 +1378,51 @@ describe('ListingItem', () => {
         await listingItemObjectService.findOne(listingItemObjectId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(listingItemObjectId))
         );
+
+        // delete listing-item
+        await listingItemService.destroy(createdId);
+        await listingItemService.findOne(createdId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdId))
+        );
+    });
+
+
+    test('Should update listing-item with messagingInformation and listingItemObject', async () => {
+        // create listing-item
+        const testDataToSave = JSON.parse(JSON.stringify(testData));
+        testData.hash = crypto.SHA256(new Date().getTime().toString()).toString();
+        testDataToSave.market_id = defaultMarket.Id;
+
+        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
+        const resultCreate = listingItemModel.toJSON();
+        createdId = resultCreate.id;
+        createdMessagingInformation = resultCreate.MessagingInformation;
+        createdListingItemObjects = resultCreate.ListingItemObjects;
+        const testDataToUpdate = JSON.parse(JSON.stringify(testDataUpdated));
+        testDataToUpdate.market_id = defaultMarket.Id;
+
+        // remove the stuff that we dont need in this test
+        delete testDataToUpdate.itemInformation;
+        delete testDataToUpdate.paymentInformation;
+
+        const listingItemModel2: ListingItem = await listingItemService.update(createdId, testDataToUpdate);
+        const result = listingItemModel2.toJSON();
+
+        expect(result.hash).toBe(testDataToUpdate.hash);
+        expect(result.Market.name).toBe(defaultMarket.Name);
+        expect(result.Market.address).toBe(defaultMarket.Address);
+
+        // one messageing should be updated and one new should be created
+        expect(result.MessagingInformation.length).toBe(2);
+        expect(result.MessagingInformation[0].id).toBe(createdMessagingInformation[0].id);
+        expect(result.MessagingInformation[0].publicKey).toBe(createdMessagingInformation[0].publicKey);
+
+        // check listingItemObject data updated
+        expect(result.ListingItemObjects[0].order).toBe(createdListingItemObjects[0].order);
+        expect(result.ListingItemObjects[1].order).toBe(createdListingItemObjects[1].order);
+        expect(result.ListingItemObjects.length).toBe(4);
+        expect(result.ListingItemObjects[result.ListingItemObjects.length - 1].order)
+        .toBe(testDataToUpdate.listingItemObjects[testDataToUpdate.listingItemObjects.length - 1].order);
 
         // delete listing-item
         await listingItemService.destroy(createdId);
