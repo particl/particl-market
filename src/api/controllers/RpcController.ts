@@ -8,7 +8,7 @@ import { JsonRpcError } from '../../core/api/JsonRpcError';
 
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { RpcRequest } from '../requests/RpcRequest';
-import { CommandEnumType } from '../commands/CommandEnumType';
+import {CommandEnumType, Commands} from '../commands/CommandEnumType';
 import { MessageException } from '../exceptions/MessageException';
 
 // Get middlewares
@@ -21,7 +21,7 @@ export class RpcController {
     private log: LoggerType;
     private VERSION = '2.0';
     private MAX_INT32 = 2147483647;
-    private commands: CommandEnumType = new CommandEnumType();
+    // private commands: CommandEnumType = new CommandEnumType();
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -37,10 +37,10 @@ export class RpcController {
         this.log.debug('controller.handleRPC() rpcRequest:', JSON.stringify(rpcRequest, null, 2));
 
         // get the commandType for the method name
-        const commandType = this.commands.byPropName(body.method);
+        const commandType = Commands.byPropName(body.method);
         if (commandType) {
             // ... use the commandType to get the correct RpcCommand implementation and execute
-            const result = await this.rpcCommandFactory.get(commandType).execute(rpcRequest);
+            const result = await this.rpcCommandFactory.get(commandType).execute(rpcRequest, this.rpcCommandFactory);
             return this.createResponse(rpcRequest.id, result);
         } else {
             throw new MessageException('Unknown command.');

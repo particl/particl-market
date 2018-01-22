@@ -11,7 +11,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import * as _ from 'lodash';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -22,10 +22,9 @@ export class ItemLocationCreateCommand extends BaseCommand implements RpcCommand
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemLocationService) private itemLocationService: ItemLocationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
-        super(new CommandEnumType().ITEMLOCATION_ADD, rpcCommandFactory);
+        super(Commands.ITEMLOCATION_ADD);
         this.log = new Logger(__filename);
     }
 

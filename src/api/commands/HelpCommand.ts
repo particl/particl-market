@@ -5,7 +5,7 @@ import { Types, Core, Targets } from '../../constants';
 import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandInterface } from './RpcCommandInterface';
 import { BaseCommand } from './BaseCommand';
-import { CommandEnumType } from './CommandEnumType';
+import {CommandEnumType, Commands} from './CommandEnumType';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 
 export class HelpCommand extends BaseCommand implements RpcCommandInterface<string> {
@@ -13,21 +13,20 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(new CommandEnumType().HELP_ROOT, rpcCommandFactory);
+        super(Commands.HELP_ROOT);
         this.log = new Logger(__filename);
     }
 
     /**
-     * data.params[]: [command]
      *
      * @param data
-     * @returns {Promise<Escrow>}
+     * @param rpcCommandFactory
+     * @returns {Promise<string>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<string> {
+    public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<string> {
         return  'available commands: \n' +
         'createprofile \n' +
         'updateprofile \n' +

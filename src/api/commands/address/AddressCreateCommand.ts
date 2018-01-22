@@ -8,7 +8,7 @@ import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
-import { CommandEnumType } from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -17,10 +17,9 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService
     ) {
-        super(new CommandEnumType().ADDRESS_ADD, rpcCommandFactory);
+        super(Commands.ADDRESS_ADD);
         this.log = new Logger(__filename);
     }
 
@@ -35,10 +34,11 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
      *  [6]: profileId
      *
      * @param data
+     * @param rpcCommandFactory
      * @returns {Promise<Address>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Address> {
+    public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
         this.log.debug('Attempting to create address');
 
         // If countryCode is country, convert to countryCode.

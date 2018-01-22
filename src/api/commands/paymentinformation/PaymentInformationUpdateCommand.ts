@@ -8,7 +8,7 @@ import { PaymentInformationUpdateRequest } from '../../requests/PaymentInformati
 import { PaymentInformation } from '../../models/PaymentInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -18,10 +18,9 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService
     ) {
-        super(new CommandEnumType().PAYMENTINFORMATION_UPDATE, rpcCommandFactory);
+        super(Commands.PAYMENTINFORMATION_UPDATE);
         this.log = new Logger(__filename);
     }
 

@@ -8,7 +8,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidSearchParams } from '../../requests/BidSearchParams';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -18,10 +18,9 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService
     ) {
-        super(new CommandEnumType().BID_SEARCH, rpcCommandFactory);
+        super(Commands.BID_SEARCH);
         this.log = new Logger(__filename);
     }
 

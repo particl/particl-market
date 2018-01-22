@@ -8,7 +8,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
 import { EscrowRefundRequest } from '../../requests/EscrowRefundRequest';
 import { EscrowMessageType } from '../../enums/EscrowMessageType';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -18,10 +18,9 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService
     ) {
-        super(new CommandEnumType().ESCROW_REFUND, rpcCommandFactory);
+        super(Commands.ESCROW_REFUND);
         this.log = new Logger(__filename);
     }
 

@@ -1,16 +1,16 @@
-import { CommandEnumType } from './CommandEnumType';
+import { CommandEnumType, Commands } from './CommandEnumType';
 import { Command } from './Command';
 import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 
 export class BaseCommand {
 
-    public commands: CommandEnumType = new CommandEnumType();
+    public commands: CommandEnumType;
     public command: Command;
 
-    constructor(command: Command, private commandFactory: RpcCommandFactory) {
+    constructor(command: Command) {
         this.command = command;
-        this.commands = new CommandEnumType();
+        this.commands = Commands;
     }
 
     public getName(): string {
@@ -36,9 +36,9 @@ export class BaseCommand {
      * @param data
      * @returns {Promise<Bookshelf.Model<any>>}
      */
-    public async executeNext(request: RpcRequest): Promise<any> {
+    public async executeNext(request: RpcRequest, commandFactory: RpcCommandFactory): Promise<any> {
         const commandName = request.params.shift();
-        const rpcCommand = this.commandFactory.get(commandName);
-        return await rpcCommand.execute(request);
+        const rpcCommand = commandFactory.get(commandName);
+        return await rpcCommand.execute(request, commandFactory);
     }
 }

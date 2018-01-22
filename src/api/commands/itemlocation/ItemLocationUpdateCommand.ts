@@ -11,7 +11,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as _ from 'lodash';
 import { MessageException } from '../../exceptions/MessageException';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -22,10 +22,9 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemLocationService) public itemLocationService: ItemLocationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
-        super(new CommandEnumType().ITEMLOCATION_UPDATE, rpcCommandFactory);
+        super(Commands.ITEMLOCATION_UPDATE);
         this.log = new Logger(__filename);
     }
 

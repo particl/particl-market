@@ -8,7 +8,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -18,10 +18,9 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
-        super(new CommandEnumType().TEMPLATE_SEARCH, rpcCommandFactory);
+        super(Commands.TEMPLATE_SEARCH);
         this.log = new Logger(__filename);
     }
 

@@ -5,7 +5,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -15,10 +15,9 @@ export class ListingItemTemplateDestroyCommand extends BaseCommand implements Rp
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
-        super(new CommandEnumType().TEMPLATE_REMOVE, rpcCommandFactory);
+        super(Commands.TEMPLATE_REMOVE);
         this.log = new Logger(__filename);
     }
 

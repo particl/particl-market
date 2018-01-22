@@ -6,7 +6,7 @@ import { TestDataService } from '../../services/TestDataService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { TestDataCreateRequest } from '../../requests/TestDataCreateRequest';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -16,10 +16,9 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.TestDataService) private testDataService: TestDataService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.TestDataService) private testDataService: TestDataService
     ) {
-        super(new CommandEnumType().DATA_ADD, rpcCommandFactory);
+        super(Commands.DATA_ADD);
         this.log = new Logger(__filename);
     }
 

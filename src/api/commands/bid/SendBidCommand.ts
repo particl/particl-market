@@ -12,7 +12,7 @@ import { BidFactory } from '../../factories/BidFactory';
 import { Bid } from '../../models/Bid';
 import { MessageBroadcastService } from '../../services/MessageBroadcastService';
 import { BidMessageType } from '../../enums/BidMessageType';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -24,10 +24,9 @@ export class SendBidCommand extends BaseCommand implements RpcCommandInterface<B
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
-        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory
     ) {
-        super(new CommandEnumType().DATA_ADD, rpcCommandFactory);
+        super(Commands.DATA_ADD);
         this.log = new Logger(__filename);
     }
 

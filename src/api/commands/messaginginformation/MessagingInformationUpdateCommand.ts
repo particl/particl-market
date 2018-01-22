@@ -10,7 +10,7 @@ import { MessagingInformation } from '../../models/MessagingInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import * as _ from 'lodash';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -21,10 +21,9 @@ export class MessagingInformationUpdateCommand extends BaseCommand implements Rp
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.MessagingInformationService) private messagingInformationService: MessagingInformationService
     ) {
-        super(new CommandEnumType().MESSAGINGINFORMATION_UPDATE, rpcCommandFactory);
+        super(Commands.MESSAGINGINFORMATION_UPDATE);
         this.log = new Logger(__filename);
     }
 

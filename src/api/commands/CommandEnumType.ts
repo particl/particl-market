@@ -3,8 +3,6 @@ import { Command } from './Command';
 
 export class CommandEnumType extends Enum<Command> {
 
-    public TEST: Command            = new Command('test', 'test', true, []); // todo: test, remove later
-
     public DAEMON_ROOT: Command     = new Command('daemon', 'daemon', true, []);
     public HELP_ROOT: Command       = new Command('help', 'help', true, []);
 
@@ -150,3 +148,5 @@ export class CommandEnumType extends Enum<Command> {
     }
 
 }
+
+export const Commands: CommandEnumType = new CommandEnumType();

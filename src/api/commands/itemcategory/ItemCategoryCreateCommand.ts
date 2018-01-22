@@ -7,7 +7,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategoryCreateRequest } from '../../requests/ItemCategoryCreateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -17,10 +17,9 @@ export class ItemCategoryCreateCommand extends BaseCommand implements RpcCommand
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService
     ) {
-        super(new CommandEnumType().CATEGORY_ADD, rpcCommandFactory);
+        super(Commands.CATEGORY_ADD);
         this.log = new Logger(__filename);
     }
 

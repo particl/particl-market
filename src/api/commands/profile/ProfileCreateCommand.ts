@@ -7,7 +7,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ProfileCreateRequest } from '../../requests/ProfileCreateRequest';
 import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -17,10 +17,9 @@ export class ProfileCreateCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
     ) {
-        super(new CommandEnumType().PROFILE_ADD, rpcCommandFactory);
+        super(Commands.PROFILE_ADD);
         this.log = new Logger(__filename);
     }
 

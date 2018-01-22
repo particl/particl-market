@@ -10,7 +10,7 @@ import { ItemCategoryUpdateRequest } from '../../requests/ItemCategoryUpdateRequ
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -22,10 +22,9 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService
     ) {
-        super(new CommandEnumType().CATEGORY_UPDATE, rpcCommandFactory);
+        super(Commands.CATEGORY_UPDATE);
         this.log = new Logger(__filename);
     }
 

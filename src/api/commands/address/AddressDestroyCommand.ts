@@ -5,7 +5,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressService } from '../../services/AddressService';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -15,10 +15,9 @@ export class AddressDestroyCommand extends BaseCommand implements RpcCommandInte
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService
     ) {
-        super(new CommandEnumType().ADDRESS_REMOVE, rpcCommandFactory);
+        super(Commands.ADDRESS_REMOVE);
         this.log = new Logger(__filename);
     }
 
@@ -28,10 +27,11 @@ export class AddressDestroyCommand extends BaseCommand implements RpcCommandInte
      *  [1]: address id
      *
      * @param data
+     * @param rpcCommandFactory
      * @returns {Promise<void>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
+    public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<void> {
         return await this.addressService.destroy(data.params[0]);
     }
 

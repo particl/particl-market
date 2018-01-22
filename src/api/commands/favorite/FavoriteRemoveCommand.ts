@@ -9,7 +9,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -21,10 +21,9 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
     ) {
-        super(new CommandEnumType().FAVORITE_REMOVE, rpcCommandFactory);
+        super(Commands.FAVORITE_REMOVE);
         this.log = new Logger(__filename);
     }
 

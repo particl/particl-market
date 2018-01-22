@@ -7,7 +7,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Market } from '../../models/Market';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MarketCreateRequest } from '../../requests/MarketCreateRequest';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -17,10 +17,9 @@ export class MarketCreateCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService
     ) {
-        super(new CommandEnumType().MARKET_ADD, rpcCommandFactory);
+        super(Commands.MARKET_ADD);
         this.log = new Logger(__filename);
     }
 

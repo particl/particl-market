@@ -8,7 +8,7 @@ import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressUpdateRequest } from '../../requests/AddressUpdateRequest';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -18,10 +18,9 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService
     ) {
-        super(new CommandEnumType().ADDRESS_UPDATE, rpcCommandFactory);
+        super(Commands.ADDRESS_UPDATE);
         this.log = new Logger(__filename);
     }
 
@@ -37,10 +36,11 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
      *  [7]: profileId
      *
      * @param data
+     * @param rpcCommandFactory
      * @returns {Promise<Address>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Address> {
+    public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
         let countryCode: string = data.params[5];

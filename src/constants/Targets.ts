@@ -184,8 +184,7 @@ export const Targets = {
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
             ShippingDestinationRemoveCommand: 'ShippingDestinationRemoveCommand'
-        },
-        TestCommand: 'TestCommand'
+        }
     },
     Factory:     {
         BidFactory: 'BidFactory',

@@ -6,7 +6,7 @@ import { ItemImageService } from '../../services/ItemImageService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -16,10 +16,9 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService
     ) {
-        super(new CommandEnumType().ITEMIMAGE_REMOVE, rpcCommandFactory);
+        super(Commands.ITEMIMAGE_REMOVE);
         this.log = new Logger(__filename);
     }
 

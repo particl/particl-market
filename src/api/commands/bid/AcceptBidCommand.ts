@@ -13,7 +13,7 @@ import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
 import { BidMessageType } from '../../enums/BidMessageType';
 import { Bid } from '../../models/Bid';
-import { CommandEnumType } from '../CommandEnumType';
+import {CommandEnumType, Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -25,10 +25,9 @@ export class AcceptBidCommand extends BaseCommand implements RpcCommandInterface
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
-        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
-        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
+        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory
     ) {
-        super(new CommandEnumType().BID_ACCEPT, rpcCommandFactory);
+        super(Commands.BID_ACCEPT);
         this.log = new Logger(__filename);
     }
 
