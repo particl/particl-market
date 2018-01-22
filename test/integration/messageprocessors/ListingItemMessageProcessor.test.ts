@@ -84,7 +84,7 @@ describe('ListingItemMessageProcessor', () => {
                 'Subsubcategory'
             ],
             itemLocation: {
-                region: 'South Africa', // TODO INVALID
+                region: 'CA',
                 address: 'asdf, asdf, asdf',
                 locationMarker: {
                     markerTitle: 'Helsinki',
@@ -94,13 +94,13 @@ describe('ListingItemMessageProcessor', () => {
                 }
             },
             shippingDestinations: [{
-                country: 'United Kingdom', // TODO INVALID
+                country: 'UK',
                 shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
             }, {
-                country: 'Asia', // TODO INVALID
+                country: 'EU',
                 shippingAvailability: ShippingAvailability.SHIPS
             }, {
-                country: 'South Africa', // TODO INVALID
+                country: 'CA',
                 shippingAvailability: ShippingAvailability.ASK
             }],
             itemImages: [{

@@ -15,7 +15,6 @@ import { MessagingInformationFactory } from '../factories/MessagingInformationFa
 import { ItemCategoryService } from '../services/ItemCategoryService';
 import { MarketService } from '../services/MarketService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
-import { ItemCategoryMessage } from '../messages/ItemCategoryMessage';
 import { isArray } from 'util';
 
 export class UpdateListingItemMessageProcessor implements MessageProcessorInterface {
@@ -37,7 +36,7 @@ export class UpdateListingItemMessageProcessor implements MessageProcessorInterf
 
     public async process( @message(ListingItemMessage) data: ListingItemMessage): Promise<ListingItem> {
         // get Category
-        const itemCategory = await this.createCategoryIfNotExist(data.information.category);
+        const itemCategory = await this.createCategories(data.information.category);
         data.information.itemCategory = itemCategory;
 
         // get messagingInformation
@@ -54,39 +53,50 @@ export class UpdateListingItemMessageProcessor implements MessageProcessorInterf
         return await this.listingItemService.update(listingItemTobeUpdate.id, listingItem as ListingItemUpdateRequest);
     }
 
-    private async createCategoryIfNotExist(categoryArray: string[]): Promise<ItemCategory> {
+    /**
+     * create categories from array and will return last category <ItemCategory> Model
+     *
+     * @param categoryArray : string[]
+     * @returns {Promise<ItemCategory>}
+     */
+    private async createCategories(categoryArray: string[]): Promise<ItemCategory> {
         const rootCategoryWithRelated: any = await this.itemCategoryService.findRoot();
         let parentItemCategoryId = 0;
         let returnCategory;
         for (const category of categoryArray) { // [cat0, cat1, cat2, cat3, cat4]
-            const catExist = await this.checkCategory(rootCategoryWithRelated, category);
+            const catExist = await this.findCategory(rootCategoryWithRelated, category);
             let categoryExist;
             if (!catExist) {
                 // not found
-                const categoryCreateReqMessage = await this.itemCategoryFactory.getModel({
-                    name: category,
+                const categoryCreateReq = await this.itemCategoryFactory.getModel(
+                    category,
                     parentItemCategoryId
-                } as ItemCategoryMessage);
-                // check with parenID and name
+                );
+                // check with parentID and name
                 categoryExist = await this.itemCategoryService.isCategoryExists(
-                    categoryCreateReqMessage.name,
+                    categoryCreateReq.name,
                     returnCategory // as parentCategory
                 );
                 if (categoryExist === null) {
                     // create and return Id
-                    categoryExist = await this.itemCategoryService.create(categoryCreateReqMessage);
+                    categoryExist = await this.itemCategoryService.create(categoryCreateReq);
                 }
             } else {
                 categoryExist = await this.itemCategoryService.findOneByKey(category);
             }
             parentItemCategoryId = categoryExist.id;
-            // parentCategory = categoryExist;
             returnCategory = categoryExist;
         }
         return returnCategory as ItemCategory;
     }
 
-    private async checkCategory(categories: ItemCategory, value: string): Promise<any> {
+    /**
+     *
+     * @param categories : ItemCategory
+     * @param value : string(key/name of category)
+     * @returns {Promise<string[]>}
+     */
+    private async findCategory(categories: ItemCategory, value: string): Promise<any> {
         if (categories['key'] === value) { // check cat_ROOT
             return categories;
         } else {
