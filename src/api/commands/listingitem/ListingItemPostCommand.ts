@@ -18,7 +18,7 @@ export class ListingItemPostCommand extends BaseCommand implements RpcCommandInt
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService
     ) {
-        super(Commands.DATA_ADD);
+        super(Commands.TEMPLATE_POST);
         this.log = new Logger(__filename);
     }
 

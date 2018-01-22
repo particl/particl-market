@@ -24,11 +24,11 @@ export class CommandEnumType extends Enum<Command> {
     public BID_ROOT: Command        = new Command('bid', 'bid', true,
         [this.BID_SEARCH, this.BID_ACCEPT, this.BID_CANCEL, this.BID_REJECT, this.BID_SEND]);
 
-    public ITEM_SEARCH: Command     = new Command('itemsearch', 'search', false);
-    public ITEM_SEARCH_OWN: Command = new Command('itemsearchown', 'searchown', false);
-    public ITEM_GET: Command        = new Command('itemget', 'get', false);
-    public ITEM_POST_UPDATE: Command     = new Command('updateitem', 'update', false);
-    public ITEM_ROOT: Command       = new Command('item', 'item', true,
+    public ITEM_SEARCH: Command         = new Command('itemsearch', 'search', false);
+    public ITEM_SEARCH_OWN: Command     = new Command('itemsearchown', 'searchown', false);
+    public ITEM_GET: Command            = new Command('itemget', 'get', false);
+    public ITEM_POST_UPDATE: Command    = new Command('itempostupdate', 'update', false);
+    public ITEM_ROOT: Command           = new Command('item', 'item', true,
         [this.ITEM_SEARCH, this.ITEM_SEARCH_OWN, this.ITEM_GET, this.ITEM_POST_UPDATE]);
     // TODO: bids
 
@@ -77,14 +77,6 @@ export class CommandEnumType extends Enum<Command> {
     public TEMPLATE_GET: Command            = new Command('templateget', 'get', false);
     public TEMPLATE_ADD: Command            = new Command('templateadd', 'add', false);
     public TEMPLATE_REMOVE: Command         = new Command('templateremove', 'remove', false);
-    // public TEMPLATE_INFORMATION: Command    = this.ITEMINFORMATION;    // TODO: cant do this, need some other way to link to root command
-    // public TEMPLATE_INFORMATION: Command    = new Command('templateinformation', 'information', true);  // link to root
-    // public TEMPLATE_IMAGE: Command          = new Command('templateimage', 'image', true);              // link to root
-    // public TEMPLATE_LOCATION: Command       = new Command('templatelocation', 'location', true);        // link to root
-    // public TEMPLATE_SHIPPING: Command       = new Command('templateshipping', 'shipping', true);        // link to root
-    // public TEMPLATE_MESSAGING: Command      = new Command('templatemessaging', 'messaging', true);      // link to root
-    // public TEMPLATE_PAYMENT: Command        = new Command('templatepayment', 'payment', true);          // link to root
-    // public TEMPLATE_ESCROW: Command         = new Command('templateescrow', 'escrow', true);            // link to root
     public TEMPLATE_POST: Command           = new Command('templatepost', 'post', false);
     public TEMPLATE_IMPORT: Command         = new Command('templateimport', 'import', false);
     public TEMPLATE_ROOT: Command           = new Command('template', 'template', true,
