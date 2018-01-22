@@ -9,20 +9,23 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
+export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().FAVORITE_REMOVE, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'removefavorite';
     }
 
     /**
@@ -50,6 +53,10 @@ export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
             + '                                       to remove from your favourites.\n'
             + '    <profileId>                     - [optional] Numeric - The ID of the profile\n'
             + '                                       associated with the favorite we want to remove.\n';
+    }
+
+    public example(): any {
+        return null;
     }
 
     /**

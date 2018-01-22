@@ -11,20 +11,23 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FavoriteItemCreateRequest } from '../../requests/FavoriteItemCreateRequest';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class FavoriteAddCommand implements RpcCommandInterface<FavoriteItem> {
+export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterface<FavoriteItem> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().FAVORITE_ADD, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'addfavorite';
     }
 
     /**
@@ -61,6 +64,10 @@ export class FavoriteAddCommand implements RpcCommandInterface<FavoriteItem> {
             + '                                       to add to your favorites.\n'
             + '    <profileId>                     - [optional] Numeric - The ID of the profile we\n'
             + '                                       want to associate this favorite with.';
+    }
+
+    public example(): any {
+        return null;
     }
 
     /**
