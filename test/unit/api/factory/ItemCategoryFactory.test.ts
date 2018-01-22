@@ -93,64 +93,14 @@ describe('ItemCategoryFactory', () => {
         itemCategoryFactory = new ItemCategoryFactory(LogMock);
     });
 
-    test('Should get the item-category data when pass root category only', () => {
-        req = ['cat_ROOT', 'Subcategory', 'SubSubcategory'];
-        itemCategoryFactory.getModel(req, rootCategoryWithRelated).then((res, error) => {
-            expect(res.createdCategories.length).toBe(1);
-            expect(res.lastCheckIndex).toBe(0);
-
-            expect(res.createdCategories[0].parentCategoryId).toBe(null); // should be null
-            expect(res.createdCategories[0].id).toBe(rootCategoryWithRelated.id); // cat_ROOT id
-        });
-    });
-
-    test('Should get the item-category data when pass two existing category', () => {
-        req = ['cat_ROOT', 'cat_high_value', 'SubSubcategory'];
-        itemCategoryFactory.getModel(req, rootCategoryWithRelated).then((res, error) => {
-            expect(res.createdCategories.length).toBe(2);
-            expect(res.lastCheckIndex).toBe(1);
-
-            expect(res.createdCategories[0].parentCategoryId).toBe(null); // should be null
-            expect(res.createdCategories[0].id).toBe(rootCategoryWithRelated.id); // cat_ROOT id
-
-            expect(res.createdCategories[1].parentCategoryId).toBe(rootCategoryWithRelated.id);
-            expect(res.createdCategories[1].parentCategoryId).toBe(rootCategoryWithRelated.ChildItemCategories[0].parentItemCategoryId);
-            expect(res.createdCategories[1].id).toBe(rootCategoryWithRelated.ChildItemCategories[0].id); // cat_high_value id
-        });
-    });
-
-    test('Should get the item-category data when pass two existing category(key, name)', () => {
-        req = ['cat_ROOT', 'High Value', 'SubSubcategory'];
-        itemCategoryFactory.getModel(req, rootCategoryWithRelated).then((res, error) => {
-            expect(res.createdCategories.length).toBe(2);
-            expect(res.lastCheckIndex).toBe(1);
-
-            expect(res.createdCategories[0].parentCategoryId).toBe(null); // should be null
-            expect(res.createdCategories[0].id).toBe(rootCategoryWithRelated.id); // cat_ROOT id
-
-            expect(res.createdCategories[1].parentCategoryId).toBe(rootCategoryWithRelated.id);
-            expect(res.createdCategories[1].parentCategoryId).toBe(rootCategoryWithRelated.ChildItemCategories[0].parentItemCategoryId);
-            expect(res.createdCategories[1].id).toBe(rootCategoryWithRelated.ChildItemCategories[0].id); // cat_high_value id
-        });
-    });
-
-    test('Should get the item-category data when pass all existing category', () => {
-        req = ['cat_ROOT', 'cat_high_value', 'cat_high_business_corporate'];
-        itemCategoryFactory.getModel(req, rootCategoryWithRelated).then((res, error) => {
-            expect(res.createdCategories.length).toBe(req.length);
-            expect(res.lastCheckIndex).toBe(req.length - 1);
-
-            expect(res.createdCategories[0].parentCategoryId).toBe(null); // should be null
-            expect(res.createdCategories[0].id).toBe(rootCategoryWithRelated.id); // cat_ROOT id
-
-            expect(res.createdCategories[1].parentCategoryId).toBe(rootCategoryWithRelated.id);
-            expect(res.createdCategories[1].parentCategoryId).toBe(rootCategoryWithRelated.ChildItemCategories[0].parentItemCategoryId);
-            expect(res.createdCategories[1].id).toBe(rootCategoryWithRelated.ChildItemCategories[0].id); // cat_high_value id
-
-            const childCate = rootCategoryWithRelated.ChildItemCategories[0];
-            expect(res.createdCategories[2].parentCategoryId).toBe(childCate.id);
-            expect(res.createdCategories[2].parentCategoryId).toBe(childCate.ChildItemCategories[0].parentItemCategoryId);
-            expect(res.createdCategories[2].id).toBe(childCate.ChildItemCategories[0].id); // cat_high_business_corporate id
+    test('Should get the categoryCreateMessage from categoryFactory.getModal', () => {
+        req = {
+            name: 'categoryName',
+            parentItemCategoryId: 10
+        };
+        itemCategoryFactory.getModel(req).then((res, error) => {
+            expect(res.name).toBe(req.name);
+            expect(res.parent_item_category_id).toBe(req.parentItemCategoryId);
         });
     });
 

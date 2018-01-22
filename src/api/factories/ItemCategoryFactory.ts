@@ -4,7 +4,9 @@ import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ItemCategory } from '../models/ItemCategory';
+import { ItemCategoryMessage } from '../messages/ItemCategoryMessage';
 import { MessageException } from '../exceptions/MessageException';
+import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
 import * as resources from 'resources';
 
 export class ItemCategoryFactory {
@@ -19,6 +21,12 @@ export class ItemCategoryFactory {
         this.log = new Logger(__filename);
     }
 
+    /**
+     *
+     * @param category : resources.ItemCategory
+     * @param rootCategoryWithRelated : ItemCategory
+     * @returns {Promise<string[]>}
+     */
     public async getArray(category: resources.ItemCategory, rootCategoryWithRelated: ItemCategory): Promise<string[]> {
         const rootCategory: any = rootCategoryWithRelated;
         this.categoryArray = [];
@@ -34,58 +42,14 @@ export class ItemCategoryFactory {
 
     /**
      *
-     * @param categoryAsArray
-     * @param rootCategoryWithRelated
-     * @returns {Promise<any>}
+     * @param category : ItemCategoryMessage
+     * @returns {Promise<ItemCategoryCreateRequest>}
      */
-    public async getModel(categoryAsArray: string[], rootCategoryWithRelated: ItemCategory): Promise<ItemCategory> {
-        const rootCategory: any = rootCategoryWithRelated;
-        let childItemCategories;
-        const createdCategories: any = [];
-        let findItemCategory;
-        let lastCheckIndex = 0;
-        // check cat1 match with root itemcategory.key
-        if (categoryAsArray[0] !== rootCategory.key) { // cat_ROOT
-            this.log.warn(`${categoryAsArray[0]} should be root ItemCategory`);
-        }
-        // insert root category
-        createdCategories.push({
-            parentCategoryId: null,
-            id: rootCategory.id
-        });
-        childItemCategories = rootCategory.ChildItemCategories;
-        for (let c = 1; c <= categoryAsArray.length; c++) {
-            // check category have ChildItemCategories
-            if (childItemCategories.length > 0) {
-                // search catgeory
-                findItemCategory = await this.checkCategory(childItemCategories, categoryAsArray[c]);
-                if (findItemCategory) {
-                    createdCategories.push({
-                        parentCategoryId: findItemCategory.parentItemCategoryId,
-                        id: findItemCategory.id
-                    });
-                    childItemCategories = findItemCategory.ChildItemCategories || [];
-                } else {
-                    // created all category till from
-                    break;
-                }
-            } else {
-                // created all category till from
-                break;
-            }
-            lastCheckIndex = c;
-        }
-        const ItemCategoryOutput = {
-            lastCheckIndex, // created all category till that index
-            createdCategories
-        };
-        return ItemCategoryOutput as any;
-    }
-
-    private async checkCategory(categories: string[], value: string): Promise<any> {
-        return _.find(categories, (itemcategory) => {
-            return (itemcategory['key'] === value || itemcategory['name'] === value);
-        });
+    public async getModel(category: ItemCategoryMessage): Promise<ItemCategoryCreateRequest> {
+        return {
+            parent_item_category_id: category.parentItemCategoryId,
+            name: category.name
+        } as ItemCategoryCreateRequest;
     }
 
     private async getInnerCategory(theObject: any, findValue: number): Promise<void> {

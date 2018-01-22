@@ -38,6 +38,10 @@ export class ItemCategoryRepository {
         return this.ItemCategoryModel.fetchAllByName(name, withRelated);
     }
 
+    public async isCategoryExists(categoryName: string, parentCategoryId: number | null): Promise<ItemCategory> {
+        return this.ItemCategoryModel.fetchCategoryByNameAndParentID(categoryName, parentCategoryId);
+    }
+
     public async create(data: any): Promise<ItemCategory> {
         const itemCategory = this.ItemCategoryModel.forge<ItemCategory>(data);
         try {
@@ -51,7 +55,7 @@ export class ItemCategoryRepository {
     public async update(id: number, data: any, patching: boolean = true): Promise<ItemCategory> {
         const itemCategory = this.ItemCategoryModel.forge<ItemCategory>({ id });
         try {
-           // this.log.debug('data: ', data);
+            // this.log.debug('data: ', data);
 
             const itemCategoryUpdated = await itemCategory.save(data, { defaults: true, patch: patching });
             return await this.ItemCategoryModel.fetchById(itemCategoryUpdated.id);

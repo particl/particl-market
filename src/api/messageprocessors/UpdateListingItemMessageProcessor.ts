@@ -7,6 +7,7 @@ import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ListingItemService } from '../services/ListingItemService';
 import { ListingItem } from '../models/ListingItem';
+import { ItemCategory } from '../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
 import { ListingItemUpdateRequest } from '../requests/ListingItemUpdateRequest';
 import { ItemCategoryFactory } from '../factories/ItemCategoryFactory';
@@ -14,6 +15,7 @@ import { MessagingInformationFactory } from '../factories/MessagingInformationFa
 import { ItemCategoryService } from '../services/ItemCategoryService';
 import { MarketService } from '../services/MarketService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
+import { ItemCategoryMessage } from '../messages/ItemCategoryMessage';
 import { isArray } from 'util';
 
 export class UpdateListingItemMessageProcessor implements MessageProcessorInterface {
@@ -35,8 +37,8 @@ export class UpdateListingItemMessageProcessor implements MessageProcessorInterf
 
     public async process( @message(ListingItemMessage) data: ListingItemMessage): Promise<ListingItem> {
         // get Category
-        const itemCategoryId = await this.createCategoryIfNotExist(data.information.category);
-        data.information.itemCategory = itemCategoryId;
+        const itemCategory = await this.createCategoryIfNotExist(data.information.category);
+        data.information.itemCategory = itemCategory;
 
         // get messagingInformation
         const messagingInformation = await this.mesInfoFactory.get(data.messaging);
@@ -52,30 +54,47 @@ export class UpdateListingItemMessageProcessor implements MessageProcessorInterf
         return await this.listingItemService.update(listingItemTobeUpdate.id, listingItem as ListingItemUpdateRequest);
     }
 
-    private async createCategoryIfNotExist(category: string[]): Promise<number> {
+    private async createCategoryIfNotExist(categoryArray: string[]): Promise<ItemCategory> {
         const rootCategoryWithRelated: any = await this.itemCategoryService.findRoot();
-        const itemCategoryOutPut: any = await this.itemCategoryFactory.getModel(category, rootCategoryWithRelated);
-        const itemCategory = itemCategoryOutPut.createdCategories;
-        const lastCreatedIndex = itemCategoryOutPut.lastCheckIndex;
-        let itemCategoryId: number;
-        let parentItemCategoryId;
-        if (lastCreatedIndex === category.length) {
-            // all category is exist
-            itemCategoryId = itemCategory[lastCreatedIndex].id;
-        } else {
-            // get and create category
-            let newCat;
-            parentItemCategoryId = itemCategory[lastCreatedIndex].id;
-            for (let i = lastCreatedIndex + 1; i < category.length; i++) {
-                newCat = await this.itemCategoryService.create({
-                    name: category[i],
-                    parent_item_category_id: parentItemCategoryId
-                } as ItemCategoryCreateRequest);
-                parentItemCategoryId = newCat.id;
+        let parentItemCategoryId = 0;
+        let returnCategory;
+        for (const category of categoryArray) { // [cat0, cat1, cat2, cat3, cat4]
+            const catExist = await this.checkCategory(rootCategoryWithRelated, category);
+            let categoryExist;
+            if (!catExist) {
+                // not found
+                const categoryCreateReqMessage = await this.itemCategoryFactory.getModel({
+                    name: category,
+                    parentItemCategoryId
+                } as ItemCategoryMessage);
+                // check with parenID and name
+                categoryExist = await this.itemCategoryService.isCategoryExists(
+                    categoryCreateReqMessage.name,
+                    returnCategory // as parentCategory
+                );
+                if (categoryExist === null) {
+                    // create and return Id
+                    categoryExist = await this.itemCategoryService.create(categoryCreateReqMessage);
+                }
+            } else {
+                categoryExist = await this.itemCategoryService.findOneByKey(category);
             }
-            itemCategoryId = newCat.id;
+            parentItemCategoryId = categoryExist.id;
+            // parentCategory = categoryExist;
+            returnCategory = categoryExist;
         }
-        return itemCategoryId;
+        return returnCategory as ItemCategory;
+    }
+
+    private async checkCategory(categories: ItemCategory, value: string): Promise<any> {
+        if (categories['key'] === value) { // check cat_ROOT
+            return categories;
+        } else {
+            const categoriesArray = categories.ChildItemCategories;
+            return _.find(categoriesArray, (itemcategory) => {
+                return (itemcategory['key'] === value || itemcategory['name'] === value);
+            });
+        }
     }
 
 }

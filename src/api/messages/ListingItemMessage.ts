@@ -1,6 +1,4 @@
 import { IsEnum, IsNotEmpty } from 'class-validator';
-import { ActionMessageInterface } from './ActionMessageInterface';
-import { BidMessageType } from '../enums/BidMessageType';
 import { MessageBody } from '../../core/api/MessageBody';
 import { ItemMessageInterface } from './ItemMessageInterface';
 
