@@ -1,3 +1,4 @@
+import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -10,12 +11,13 @@ import { FavoriteItem } from '../../models/FavoriteItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
 import { NotFoundException } from '../../exceptions/NotFoundException';
+import { InternalServerException } from '../../exceptions/InternalServerException';
 import { FavoriteItemCreateRequest } from '../../requests/FavoriteItemCreateRequest';
 
 /*
  * Get a list of all favorites for profile
  */
-export class FavoriteListCommand implements RpcCommandInterface<FavoriteItem> {
+export class FavoriteListCommand implements RpcCommandInterface<Bookshelf.Collection<FavoriteItem>> {
 
     public log: LoggerType;
     public name: string;
@@ -23,9 +25,6 @@ export class FavoriteListCommand implements RpcCommandInterface<FavoriteItem> {
     public descriptionStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -38,54 +37,17 @@ export class FavoriteListCommand implements RpcCommandInterface<FavoriteItem> {
 
     /**
      * data.params[]:
-     *  [0]: item_id or hash
-     *  [1]: profile_id or null
-     *
-     * when data.params[0] is number then findById, else findOneByHash
+     *  [0]: profileId
      *
      * @param data
-     * @returns {Promise<FavoriteItem>}
+     * @returns {Promise<Bookshelf.Collection<FavoriteItem>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<FavoriteItem> {
-        throw new Error('Not implemented');
+    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
+        throw new InternalServerException('Not implemented');
     }
 
     public help(): string {
         return this.helpStr;
-    }
-
-    /**
-     * TODO: NOTE: This function may be duplicated between commands.
-     * data.params[]:
-     *  [0]: item_id or hash
-     *  [1]: profile_id or null
-     *
-     * when data.params[0] is number then findById, else findOneByHash
-     *
-     */
-    private async getSearchParams(data: any): Promise<any> {
-        let itemId = data.params[0] || 0;
-        let profileId = data.params[1];
-
-        // if item hash is in the params
-        if (itemId && typeof itemId === 'string') {
-            const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
-            itemId = listingItem.id;
-        }
-        // find listing item by id
-        const item = await this.listingItemService.findOne(itemId);
-
-
-        // if profile id not found in the params then find default profile
-        if (!profileId || typeof profileId !== 'number') {
-            const profile = await this.profileService.findOneByName('DEFAULT');
-            profileId = profile.id;
-        }
-        if (item === null) {
-            this.log.warn(`ListingItem with the id=${itemId} was not found!`);
-            throw new NotFoundException(itemId);
-        }
-        return [item.id, profileId];
     }
 }
