@@ -8,9 +8,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as _ from 'lodash';
 import { MessageException } from '../../exceptions/MessageException';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -43,12 +42,8 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
     }
 
     public help(): string {
-        return 'removeitemlocation <itemLocationId>\n'
+        return this.getName() + ' <itemLocationId>\n'
             + '    <itemLocationId>           - Numeric - [TODO]';
-    }
-
-    public example(): any {
-        return null;
     }
 
     /*

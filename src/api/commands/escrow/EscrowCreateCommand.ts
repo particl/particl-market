@@ -6,9 +6,8 @@ import { EscrowService } from '../../services/EscrowService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class EscrowCreateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -44,17 +43,13 @@ export class EscrowCreateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return 'escrow create <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio>\n'
+        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio>\n'
             + '    <listingItemTemplateId>   - Numeric - The ID of the listing item template we want\n'
             + '                                 to associate with this escrow.\n'
             + '    <escrowType>              - Enum{NOP,MAD} - The type of the escrow we want to\n'
             + '                                 create.\n'
-            + '    <buyerRatio>              - Numeric - [TODO]\n' // TODO: this
-            + '    <sellerRatio>             - Numeric - [TODO]'; // TODO: this
-    }
-
-    public example(): any {
-        return null;
+            + '    <buyerRatio>              - Numeric - [TODO]\n'
+            + '    <sellerRatio>             - Numeric - [TODO]';
     }
 
 }

@@ -12,9 +12,8 @@ import { BidFactory } from '../../factories/BidFactory';
 import { Bid } from '../../models/Bid';
 import { MessageBroadcastService } from '../../services/MessageBroadcastService';
 import { BidMessageType } from '../../enums/BidMessageType';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class SendBidCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
@@ -70,11 +69,7 @@ export class SendBidCommand extends BaseCommand implements RpcCommandInterface<B
     }
 
     public help(): string {
-        return 'SendBidCommand: TODO: Fill in help string.';
-    }
-
-    public example(): any {
-        return null;
+        return this.getName() + ' <TODO>';
     }
 
     /**

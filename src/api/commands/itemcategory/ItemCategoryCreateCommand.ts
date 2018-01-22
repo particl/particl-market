@@ -7,9 +7,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategoryCreateRequest } from '../../requests/ItemCategoryCreateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemCategoryCreateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -48,7 +47,7 @@ export class ItemCategoryCreateCommand extends BaseCommand implements RpcCommand
     }
 
     public help(): string {
-        return 'createcategory <categoryName> <description> (<parentItemCategoryId>|<parentItemCategoryKey>)\n'
+        return this.getName() + ' <categoryName> <description> (<parentItemCategoryId>|<parentItemCategoryKey>)\n'
             + '    <categoryName>                  - String - The name of the category to create.\n'
             + '    <description>                   - String - A description of the category to\n'
             + '                                       create.\n'
@@ -56,10 +55,6 @@ export class ItemCategoryCreateCommand extends BaseCommand implements RpcCommand
             + '                                       category we\'re creating.\n'
             + '    <parentItemCategoryKey>         - String - The identifying key of the parent\n'
             + '                                       category of the category we\'re creating.';
-    }
-
-    public example(): any {
-        return null;
     }
 
     /**

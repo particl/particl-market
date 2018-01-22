@@ -6,9 +6,8 @@ import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
@@ -38,12 +37,9 @@ export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return 'updateprofile <profileId> <newProfileName>\n'
+        return this.getName() + ' <profileId> <newProfileName>\n'
             + '    <profileId>          - Numeric - The ID of the profile we want to modify.\n'
             + '    <newProfileName>     - String - The new name we want to apply to the profile.';
     }
 
-    public example(): any {
-        return null;
-    }
 }

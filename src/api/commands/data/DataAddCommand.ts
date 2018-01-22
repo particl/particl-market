@@ -6,9 +6,8 @@ import { TestDataService } from '../../services/TestDataService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { TestDataCreateRequest } from '../../requests/TestDataCreateRequest';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class DataAddCommand extends BaseCommand implements RpcCommandInterface<any> {
 
@@ -38,11 +37,7 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
     }
 
     public help(): string {
-        return '<model> <json> [<withRelated>]';
-    }
-
-    public example(): any {
-        return null;
+        return this.getName() + '<model> <json> [<withRelated>]';
     }
 
 }

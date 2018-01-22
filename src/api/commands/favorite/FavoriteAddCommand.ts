@@ -11,10 +11,12 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FavoriteItemCreateRequest } from '../../requests/FavoriteItemCreateRequest';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
+/**
+ * Command for adding an item to your favorites, identified by ID or hash.
+ */
 export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterface<FavoriteItem> {
 
     public log: LoggerType;
@@ -30,6 +32,8 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     /**
+     * TODO: Update command to match help().
+     *
      * data.params[]:
      *  [0]: item_id or hash
      *  [1]: profile_id or null
@@ -56,17 +60,17 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public help(): string {
-        return 'addfavorite (<itemId> | <hash>) [<profileId>]\n'
+        return this.getName() + ' <profileId> (<itemId> | <hash>)\n'
+            + '    <profileId>                     - Numeric - The ID of the profile we\n'
+            + '                                       want to associate this favorite with.'
             + '    <itemId>                        - Numeric - The ID of the listing item you want to\n'
             + '                                       add to your favorites.\n'
             + '    <hash>                          - String - The hash of the listing item you want\n'
-            + '                                       to add to your favorites.\n'
-            + '    <profileId>                     - [optional] Numeric - The ID of the profile we\n'
-            + '                                       want to associate this favorite with.';
+            + '                                       to add to your favorites.\n';
     }
 
-    public example(): any {
-        return null;
+    public description(): string {
+        return 'Command for adding an item to your favorites, identified by ID or hash.';
     }
 
     /**

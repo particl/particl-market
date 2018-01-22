@@ -8,9 +8,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemImage } from '../../models/ItemImage';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemImageGetsCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ItemImage>> {
 
@@ -37,12 +36,8 @@ export class ItemImageGetsCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return 'getitemimages <listingItemId>\n'
+        return this.getName() + ' <listingItemId>\n'
             + '<listingItemId>           - Numeric - The ID of the listing item template whose associated images we want to find.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

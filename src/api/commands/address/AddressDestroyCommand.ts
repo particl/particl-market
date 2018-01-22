@@ -5,7 +5,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressService } from '../../services/AddressService';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -36,11 +36,7 @@ export class AddressDestroyCommand extends BaseCommand implements RpcCommandInte
     }
 
     public help(): string {
-        return 'removeaddress <addressId>\n'
+        return this.getName() + ' <addressId>\n'
             + '    <addressId>            - The ID of the address we want to remove.';
-    }
-
-    public example(): any {
-        return null;
     }
 }

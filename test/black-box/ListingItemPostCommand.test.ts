@@ -8,12 +8,8 @@ import { ListingItemTemplateCreateRequest } from '../../src/api/requests/Listing
 
 describe('ListingItemPostCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const listingItemTemplateService = null;
-    const messageBroadcastService = null;
-    const itemFactory = null;
-    const marketService = null;
     const listingItemService = null;
-    const method =  new ListingItemPostCommand(listingItemTemplateService, messageBroadcastService, itemFactory, marketService, null, Logger).name;
+    const method =  new ListingItemPostCommand(listingItemService, Logger).name;
     const addMakretMethod =  new MarketCreateCommand(listingItemService, Logger).name;
     let listingItemTemplace;
 
@@ -41,7 +37,6 @@ describe('ListingItemPostCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result = res.getBody()['result'];
-        expect(result.hash).toBe(listingItemTemplace[0].hash);
         expect(result).toHaveProperty('ItemInformation');
         expect(result).toHaveProperty('PaymentInformation');
         expect(result).toHaveProperty('MessagingInformation');
@@ -56,7 +51,6 @@ describe('ListingItemPostCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result = res.getBody()['result'];
-        expect(result.hash).toBe(listingItemTemplace[0].hash);
         expect(result).toHaveProperty('ItemInformation');
         expect(result).toHaveProperty('PaymentInformation');
         expect(result).toHaveProperty('MessagingInformation');

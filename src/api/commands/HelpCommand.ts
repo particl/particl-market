@@ -11,12 +11,22 @@ import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 export class HelpCommand extends BaseCommand implements RpcCommandInterface<string> {
 
     public log: LoggerType;
+<<<<<<< HEAD
+=======
+    public name: string;
+    public helpStr: string;
+>>>>>>> 5bb2be92396c05a15a0a4f670f7d10cfc7b3c5c7
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.HELP_ROOT);
         this.log = new Logger(__filename);
+<<<<<<< HEAD
+=======
+        this.name = 'help';
+        this.helpStr = 'help';
+>>>>>>> 5bb2be92396c05a15a0a4f670f7d10cfc7b3c5c7
     }
 
     /**
@@ -63,7 +73,11 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
     }
 
     public help(): string {
+<<<<<<< HEAD
         return '[command]';
+=======
+        return this.helpStr;
+>>>>>>> 5bb2be92396c05a15a0a4f670f7d10cfc7b3c5c7
     }
 
     public example(): any {

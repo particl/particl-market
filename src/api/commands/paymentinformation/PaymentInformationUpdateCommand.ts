@@ -8,9 +8,8 @@ import { PaymentInformationUpdateRequest } from '../../requests/PaymentInformati
 import { PaymentInformation } from '../../models/PaymentInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class PaymentInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<PaymentInformation> {
 
@@ -65,7 +64,7 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
     }
 
     public help(): string {
-        return 'updatepaymentinformation <listingItemTemplateId> <paymentType> <currency> <basePrice> <domesticShippingPrice>'
+        return this.getName() + ' <listingItemTemplateId> <paymentType> <currency> <basePrice> <domesticShippingPrice>'
             + ' <internationalShippingPrice> <paymentAddress>\n'
             + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template\n'
             + '                                     we want to associate this payment information\n'
@@ -82,10 +81,6 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
             + '                                     the item associated with this object.\n'
             + '    <paymentAddress>              - String  - The cryptocurrency address we want to\n'
             + '                                     receive payment in.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

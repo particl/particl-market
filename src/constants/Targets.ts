@@ -127,7 +127,9 @@ export const Targets = {
         },
         favorite: {
             FavoriteAddCommand: 'FavoriteAddCommand',
-            FavoriteRemoveCommand: 'FavoriteRemoveCommand'
+            FavoriteListCommand: 'FavoriteListCommand',
+            FavoriteRemoveCommand: 'FavoriteRemoveCommand',
+            FavoriteRootCommand: 'FavoriteRootCommand'
         },
         HelpCommand: 'HelpCommand',
         itemcategory: {
@@ -180,6 +182,7 @@ export const Targets = {
             ProfileGetCommand: 'ProfileGetCommand',
             ProfileUpdateCommand: 'ProfileUpdateCommand'
         },
+        RootRpcCommand: 'RootRpcCommand',
         RpcCommandInterface: 'RpcCommandInterface',
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',

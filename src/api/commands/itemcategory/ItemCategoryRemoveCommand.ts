@@ -9,9 +9,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -55,13 +54,9 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
     }
 
     public help(): string {
-        return 'removecategory <categoryId>\n'
+        return this.getName() + ' <categoryId>\n'
             + '    <categoryId>                    - Numeric - The ID belonging to the category we\n'
             + '                                       want to destroy.';
-    }
-
-    public example(): any {
-        return null;
     }
 
     /**

@@ -5,13 +5,13 @@ import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ProfileService } from '../../services/ProfileService';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ProfileDestroyCommand extends BaseCommand implements RpcCommandInterface<void> {
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -34,13 +34,10 @@ export class ProfileDestroyCommand extends BaseCommand implements RpcCommandInte
     }
 
     public help(): string {
-        return 'removeprofile (<profileId>|<profileName>)\n'
+        return this.getName() + ' (<profileId>|<profileName>)\n'
             + '    <profileID>            -  That profile ID of the profile we want to destroy.\n'
             + '    <profileName>          -  [TODO implement] The name of the profile we\n'
             + '                               want to destroy.';
     }
 
-    public example(): any {
-        return null;
-    }
 }

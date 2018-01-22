@@ -11,9 +11,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as _ from 'lodash';
 import { MessageException } from '../../exceptions/MessageException';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
 
@@ -73,7 +72,7 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
     }
 
     public help(): string {
-        return 'updateitemlocation <listingItemTemplateId> <region> <address> <gpsMarkerTitle>'
+        return this.getName() + ' <listingItemTemplateId> <region> <address> <gpsMarkerTitle>'
             + ' <gpsMarkerDescription> <gpsMarkerLatitude> <gpsMarkerLongitude>\n'
             + '    <listingItemTemplateId>    - Numeric - [TODO]\n'
             + '    <region>                   - String - Region, i.e. country or country code.\n'
@@ -82,10 +81,6 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             + '    <gpsMarkerDescription>     - Numeric - [TODO]\n'
             + '    <gpsMarkerLatitude>        - Numeric - [TODO]\n'
             + '    <gpsMarkerLongitude>       - Numeric - [TODO]';
-    }
-
-    public example(): any {
-        return null;
     }
 
     /*

@@ -6,9 +6,8 @@ import { ItemInformationService } from '../../services/ItemInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemInformationGetCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -37,13 +36,9 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
     }
 
     public help(): string {
-        return 'getiteminformation <itemInformationId>\n'
+        return this.getName() + ' <itemInformationId>\n'
             + '    <itemInformationId>             - Numeric - The ID of the item information we want\n'
             + '                                       to retrieve.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

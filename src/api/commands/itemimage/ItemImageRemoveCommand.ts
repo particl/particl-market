@@ -6,9 +6,8 @@ import { ItemImageService } from '../../services/ItemImageService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -43,12 +42,8 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
     }
 
     public help(): string {
-        return 'removeitemimage <itemImageId>\n'
+        return this.getName() + ' <itemImageId>\n'
             + '    <itemImageId>                   - Numeric - The ID of the image we want to remove.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

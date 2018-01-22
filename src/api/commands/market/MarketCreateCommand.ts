@@ -7,9 +7,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Market } from '../../models/Market';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MarketCreateRequest } from '../../requests/MarketCreateRequest';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class MarketCreateCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
@@ -42,13 +41,10 @@ export class MarketCreateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return 'addmarket <name> <privateKey> <address>\n'
+        return this.getName() + ' <name> <privateKey> <address>\n'
             + '    <name>           - String - The unique name of the market being created.\n'
             + '    <privateKey>     - String - The private key of the market being creted.\n'
             + '    <address>        - String - [TODO]';
     }
 
-    public example(): any {
-        return null;
-    }
 }

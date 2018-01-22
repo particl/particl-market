@@ -8,9 +8,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ListingItemTemplateSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
 
@@ -49,7 +48,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
     }
 
     public help(): string {
-        return 'searchlistingitemtemplate <page> <pageLimit> <order> <profileId> [<categoryName> [<searchString>]]\n'
+        return this.getName() + ' <page> <pageLimit> <order> <profileId> [<categoryName> [<searchString>]]\n'
             + '    <page>                - Numeric - The number page we want to view of search\n'
             + '                             listing item template results.\n'
             + '    <pageLimit>           - Numeric - The number of results per page.\n'
@@ -63,7 +62,4 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
             + '                             listing item templats via title.';
     }
 
-    public example(): any {
-        return null;
-    }
 }

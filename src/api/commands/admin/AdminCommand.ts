@@ -4,7 +4,7 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
@@ -32,11 +32,7 @@ export class AdminCommand extends BaseCommand implements RpcCommandInterface<any
     }
 
     public help(): string {
-        return '(data)';
-    }
-
-    public example(): any {
-        return null;
+        return this.getName() + ' (data)';
     }
 
 }

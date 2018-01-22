@@ -11,9 +11,18 @@ import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
 import { HelpCommand } from '../commands/HelpCommand';
 
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
+import { AcceptBidCommand } from '../commands/bid/AcceptBidCommand';
+import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
+import { RejectBidCommand } from '../commands/bid/RejectBidCommand';
+import { SendBidCommand } from '../commands/bid/SendBidCommand';
+
 import { EscrowCreateCommand } from '../commands/escrow/EscrowCreateCommand';
 import { EscrowDestroyCommand } from '../commands/escrow/EscrowDestroyCommand';
 import { EscrowUpdateCommand } from '../commands/escrow/EscrowUpdateCommand';
+import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
+import { EscrowRefundCommand } from '../commands/escrow/EscrowRefundCommand';
+import { EscrowReleaseCommand } from '../commands/escrow/EscrowReleaseCommand';
+import { FavoriteRootCommand } from '../commands/favorite/FavoriteRootCommand';
 import { FavoriteAddCommand } from '../commands/favorite/FavoriteAddCommand';
 import { FavoriteRemoveCommand } from '../commands/favorite/FavoriteRemoveCommand';
 import { ItemCategoriesGetCommand } from '../commands/itemcategory/ItemCategoriesGetCommand';
@@ -33,6 +42,7 @@ import { ItemLocationCreateCommand } from '../commands/itemlocation/ItemLocation
 import { ItemLocationUpdateCommand } from '../commands/itemlocation/ItemLocationUpdateCommand';
 import { ListingItemGetCommand } from '../commands/listingitem/ListingItemGetCommand';
 import { ListingItemSearchCommand } from '../commands/listingitem/ListingItemSearchCommand';
+import { ListingItemPostCommand } from '../commands/listingitem/ListingItemPostCommand';
 import { OwnListingItemSearchCommand } from '../commands/listingitem/OwnListingItemSearchCommand';
 import { ListingItemTemplateCreateCommand } from '../commands/listingitemtemplate/ListingItemTemplateCreateCommand';
 import { ListingItemTemplateDestroyCommand } from '../commands/listingitemtemplate/ListingItemTemplateDestroyCommand';
@@ -50,15 +60,7 @@ import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
 import { ProfileGetCommand } from '../commands/profile/ProfileGetCommand';
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
-import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
-import { EscrowRefundCommand } from '../commands/escrow/EscrowRefundCommand';
-import { EscrowReleaseCommand } from '../commands/escrow/EscrowReleaseCommand';
 
-import { AcceptBidCommand } from '../commands/bid/AcceptBidCommand';
-import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
-import { RejectBidCommand } from '../commands/bid/RejectBidCommand';
-import { SendBidCommand } from '../commands/bid/SendBidCommand';
-import { ListingItemPostCommand } from '../commands/listingitem/ListingItemPostCommand';
 import { Command } from '../commands/Command';
 
 // tslint:disable:array-type
@@ -82,6 +84,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowReleaseCommand) private escrowReleaseCommand: EscrowReleaseCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteAddCommand) private favoriteAddCommand: FavoriteAddCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRemoveCommand) private favoriteRemoveCommand: FavoriteRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRootCommand) private favoriteRootCommand: FavoriteRootCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoriesGetCommand) private itemCategoriesGetCommand: ItemCategoriesGetCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryFindCommand) private itemCategoryFindCommand: ItemCategoryFindCommand,
@@ -145,6 +148,7 @@ export class RpcCommandFactory {
         this.commands.push(escrowReleaseCommand);
         this.commands.push(favoriteAddCommand);
         this.commands.push(favoriteRemoveCommand);
+        this.commands.push(favoriteRootCommand);
         this.commands.push(itemCategoriesGetCommand);
         this.commands.push(itemCategoryCreateCommand);
         this.commands.push(itemCategoryFindCommand);

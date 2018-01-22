@@ -10,9 +10,8 @@ import { MessagingInformation } from '../../models/MessagingInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import * as _ from 'lodash';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class MessagingInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<MessagingInformation> {
 
@@ -53,14 +52,10 @@ export class MessagingInformationUpdateCommand extends BaseCommand implements Rp
     }
 
     public help(): string {
-        return 'updatemessaginginformation <listingTemplateId> <protocol> <publicKey>\n'
+        return this.getName() + ' <listingTemplateId> <protocol> <publicKey>\n'
             + '    <listingTemplateId>      - Numeric - [TODO]\n'
             + '    <protocol>               - ENUM{SMSG} - [TODO]\n'
             + '    <publicKey>              - String - [TODO]';
-    }
-
-    public example(): any {
-        return null;
     }
 
     /**

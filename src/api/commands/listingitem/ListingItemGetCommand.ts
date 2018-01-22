@@ -6,9 +6,8 @@ import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
 
@@ -44,12 +43,8 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
     }
 
     public help(): string {
-        return 'getitem <listingItemId>\n'
+        return this.getName() + ' <listingItemId>\n'
             + '    <listingItemId>     - Numeric - The ID of the listing item we want to retrieve.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

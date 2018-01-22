@@ -8,9 +8,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ListingItemSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItem>> {
 
@@ -47,7 +46,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
     }
 
     public help(): string {
-        return 'finditems [<page> [<pageLimit> [<order> [(<categoryId> | <categoryName>) [<searchString>]]]]]\n'
+        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId> | <categoryName>) [<searchString>]]]]]\n'
             + '    <page>                          - [optional] Numeric - The number page we want to\n'
             + '                                       view of search listing item results.\n'
             + '        <pageLimit>                 - [optional] Numeric - The number of results per\n'
@@ -61,10 +60,6 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '                                       we want to search for.\n'
             + '                    <searchString>  - [optional] String - A string that is used to\n'
             + '                                       find listing items by their titles.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

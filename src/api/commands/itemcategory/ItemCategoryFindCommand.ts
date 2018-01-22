@@ -7,9 +7,8 @@ import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemCategoryFindCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ItemCategory>> {
 
@@ -36,13 +35,9 @@ export class ItemCategoryFindCommand extends BaseCommand implements RpcCommandIn
     }
 
     public help(): string {
-        return 'findcategory [<searchString>]\n'
+        return this.getName() + ' [<searchString>]\n'
             + '    <searchString>                  - [optional] String - A search string for finding\n'
             + '                                       categories by name.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

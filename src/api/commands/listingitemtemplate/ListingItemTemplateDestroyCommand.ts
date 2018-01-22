@@ -5,9 +5,8 @@ import { Types, Core, Targets } from '../../../constants';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ListingItemTemplateDestroyCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -33,13 +32,9 @@ export class ListingItemTemplateDestroyCommand extends BaseCommand implements Rp
     }
 
     public help(): string {
-        return 'removelistingitemtemplate <listingTemplateId>\n'
+        return this.getName() + ' <listingTemplateId>\n'
             + '    <listingTemplateId>    -    Numeric - The ID of the listing item template that we\n'
             + '                                 want to destroy.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

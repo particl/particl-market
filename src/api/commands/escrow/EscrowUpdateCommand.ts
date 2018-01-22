@@ -6,9 +6,8 @@ import { EscrowService } from '../../services/EscrowService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -44,19 +43,16 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return 'escrow update <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio>\n'
+        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio>\n'
             + '    <listingItemTemplateId>         - Numeric - The ID of the listing item template\n'
             + '                                       associated with the escrow we want to modify.\n'
             + '    <escrowType>                    - String - The escrow type we want to give to the\n'
             + '                                       escrow we are modifying.\n'
             + '                                    - ENUM{NOP,MAD} - The escrow type to give to the\n'
             + '                                       escrow we are modifying.\n'
-            + '    <buyerRatio>                    - Numeric - [TODO]\n' // TODO: this
-            + '    <sellerRatio>                   - Numeric - [TODO]'; // TODO: this
+            + '    <buyerRatio>                    - Numeric - [TODO]\n'
+            + '    <sellerRatio>                   - Numeric - [TODO]';
     }
 
-    public example(): any {
-        return null;
-    }
 
 }

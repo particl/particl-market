@@ -6,9 +6,8 @@ import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -41,15 +40,11 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
     }
 
     public help(): string {
-        return 'getcategory (<categoryId>|<categoryKey>)\n'
+        return this.getName() + ' (<categoryId>|<categoryKey>)\n'
             + '    <categoryId>                    - Numeric - The ID belonging to the category we\n'
             + '                                       want to retrive.\n'
             + '    <categoryKey>                   - String - The key that identifies the category\n'
             + '                                       we want to retrieve.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

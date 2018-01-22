@@ -7,7 +7,6 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class EscrowDestroyCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -33,14 +32,10 @@ export class EscrowDestroyCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return 'escrow destroy <listingItemTemplateId>\n'
+        return this.getName() + ' <listingItemTemplateId>\n'
             + '    <listingItemTemplateId>         - Numeric - The ID belonging to the listing item\n'
             + '                                       template that the escrow we want to delete is\n'
             + '                                       associated with.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

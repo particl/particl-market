@@ -6,9 +6,8 @@ import { TestDataService } from '../../services/TestDataService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { TestDataGenerateRequest } from '../../requests/TestDataGenerateRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class DataGenerateCommand extends BaseCommand implements RpcCommandInterface<any> {
 
@@ -41,14 +40,10 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return '<model> [<amount> [<withRelated>]]\n'
+        return this.getName() + ' <model> [<amount> [<withRelated>]]\n'
             + '    <model>                 - [TODO] ENUM{} - [TODO]\n'
             + '    <amount>                - [optional] Numeric - [TODO]\n'
             + '    <withRelated>           - [optional] Boolean - [TODO]';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

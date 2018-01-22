@@ -10,14 +10,14 @@ import { ItemCategoryUpdateRequest } from '../../requests/ItemCategoryUpdateRequ
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -57,7 +57,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
     }
 
     public help(): string {
-        return 'updatecategory <categoryId> <categoryName> <description> [<parentItemCategoryId>]\n'
+        return this.getName() + ' <categoryId> <categoryName> <description> [<parentItemCategoryId>]\n'
             + '    <categoryId>                     - Numeric - The ID of the category we want to\n'
             + '                                        update.\n'
             + '    <categoryName>                   - String - The new name of the category we want\n'
@@ -67,10 +67,6 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
             + '    <parentItemCategoryId>           - [optional] Numeric - The ID that identifies the\n'
             + '                                        new parent category of the category we want to\n'
             + '                                        update; default is the root category.';
-    }
-
-    public example(): any {
-        return null;
     }
 
     /**

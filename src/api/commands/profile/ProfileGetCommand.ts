@@ -6,9 +6,8 @@ import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ProfileGetCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
@@ -45,14 +44,11 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public help(): string {
-        return 'getprofile [<profileId>|<profileName>]\n'
+        return this.getName() + ' [<profileId>|<profileName>]\n'
             + '    <profileId>           - [optional] Numeric - The ID of the profile we want to\n'
             + '                             retrieve.\n'
             + '    <profileName>         - [optional] String - The name of the profile we want to\n'
             + '                             retrieve.';
     }
 
-    public example(): any {
-        return null;
-    }
 }

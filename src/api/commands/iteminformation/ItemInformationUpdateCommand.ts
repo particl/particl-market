@@ -7,9 +7,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemInformationUpdateRequest } from '../../requests/ItemInformationUpdateRequest';
 import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -48,7 +47,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
     }
 
     public help(): string {
-        return 'updateiteminformation <listingItemTemplateId> <title> <shortDescription> <longDescription> <category>\n'
+        return this.getName() + ' <listingItemTemplateId> <title> <shortDescription> <longDescription> <category>\n'
             + '    <listingItemTemplateId>         - Numeric - The ID of the listing item template\n'
             + '                                       whose associated item information we want to\n'
             + '                                       update.\n'
@@ -61,10 +60,6 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
             + '    <categoryKey>                   - String - The key that identifies the new\n'
             + '                                       category we want to assign to the item\n'
             + '                                       information we\'re updating.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

@@ -12,14 +12,12 @@ import * as _ from 'lodash';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ShippingDestinationRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -73,7 +71,7 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
     }
 
     public help(): string {
-        return 'removeshippingdestination <listingTemplateId> (<country> | <countryCode>) <shippingAvailability>\n'
+        return this.getName() + ' <listingTemplateId> (<country> | <countryCode>) <shippingAvailability>\n'
             + '    <itemInformationId>        - Numeric - ID of the item information object we want\n'
             + '                                  to link this shipping destination to.\n'
             + '    <country>                  - String - The country name.\n'
@@ -81,10 +79,6 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
             + '                                  associated with this shipping destination.\n'
             + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
             + '                                  availability of shipping to the specified area.';
-    }
-
-    public example(): any {
-        return null;
     }
 
     /**

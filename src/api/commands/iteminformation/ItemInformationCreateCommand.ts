@@ -7,9 +7,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemInformationCreateRequest } from '../../requests/ItemInformationCreateRequest';
 import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemInformationCreateCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -48,7 +47,7 @@ export class ItemInformationCreateCommand extends BaseCommand implements RpcComm
     }
 
     public help(): string {
-        return 'createiteminformation <listingTemplateId> <title> <shortDescription> <longDescription> <category>\n'
+        return this.getName() + ' <listingTemplateId> <title> <shortDescription> <longDescription> <category>\n'
             + '    <listingTemplateId>             - Numeric - The ID of the listing item template we\n'
             + '                                       want to associate the created item information\n'
             + '                                       with.\n'
@@ -61,10 +60,6 @@ export class ItemInformationCreateCommand extends BaseCommand implements RpcComm
             + '    <categoryKey>                   - String - The key that identifies the item\n'
             + '                                       category we want to associate the created\n'
             + '                                       item information with.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

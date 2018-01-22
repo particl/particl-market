@@ -8,9 +8,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
 import { EscrowReleaseRequest } from '../../requests/EscrowReleaseRequest';
 import { EscrowMessageType } from '../../enums/EscrowMessageType';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -44,11 +43,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return 'EscrowReleaseCommand: TODO: Fill in help string.';
-    }
-
-    public example(): any {
-        return null;
+        return this.getName() + ' TODO: Fill in help string.';
     }
 
 }

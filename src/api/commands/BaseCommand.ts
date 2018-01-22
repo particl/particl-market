@@ -42,12 +42,16 @@ export class BaseCommand {
         return await rpcCommand.execute(request, commandFactory);
     }
 
-    public example(): any {
-        return null;
+    public help(): string {
+        return ' <TODO: Command.help()>';
     }
 
     public description(): string {
-        return '';
+        return 'TODO: Command.description()';
+    }
+
+    public example(): any {
+        return null;
     }
 
 }

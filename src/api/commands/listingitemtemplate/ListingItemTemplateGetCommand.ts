@@ -6,9 +6,8 @@ import { ListingItemTemplateService } from '../../services/ListingItemTemplateSe
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -35,12 +34,9 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
     }
 
     public help(): string {
-        return 'getlistingitemtemplate <listingTemplateId>\n'
+        return this.getName() + ' <listingTemplateId>\n'
             + '    <listingTemplateId>   -    Numeric - The ID of the listing item template that we\n'
             + '                                want to retrieve.';
     }
 
-    public example(): any {
-        return null;
-    }
 }

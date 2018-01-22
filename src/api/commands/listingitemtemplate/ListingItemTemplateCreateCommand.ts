@@ -8,9 +8,8 @@ import { ListingItemTemplateCreateRequest } from '../../requests/ListingItemTemp
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ListingItemTemplateCreateCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -84,7 +83,7 @@ export class ListingItemTemplateCreateCommand extends BaseCommand implements Rpc
     }
 
     public help(): string {
-        return 'createlistingitemtemplate <profileId> <title> <shortDescription> <longDescription> <categoryName>'
+        return this.getName() + 'createlistingitemtemplate <profileId> <title> <shortDescription> <longDescription> <categoryName>'
             + ' <paymentType> <currency> <basePrice> <domesticShippingPrice> <internationalShippingPrice> <paymentAddress>\n'
             + '    <profileId>                    - Numeric - The ID of the profile to associate this\n'
             + '                                      item listing template with.\n'
@@ -111,10 +110,6 @@ export class ListingItemTemplateCreateCommand extends BaseCommand implements Rpc
             + '    <paymentAddress>               - String - The default cryptocurrency address for\n'
             + '                                      recieving funds to associate with the listing\n'
             + '                                      item template we\'re creating.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

@@ -9,9 +9,8 @@ import { ItemImage } from '../../models/ItemImage';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as crypto from 'crypto-js';
 import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
@@ -60,7 +59,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return 'additemimage <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]\n'
+        return this.getName() + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]\n'
             + '    <listingItemTemplateId>          - Numeric - The ID of the listing item template\n'
             + '                                        we want to associate this item image with.\n'
             + '    <dataId>                         - [optional] Numeric - [TODO]\n'
@@ -69,10 +68,6 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
             + '                <data>               - [optional] String - Base64 representation\n'
             + '                                        (as produced by `base64` *NIX command) of the\n'
             + '                                        image we want to add. Supports JPEG, PNG, GIF.';
-    }
-
-    public example(): any {
-        return null;
     }
 
 }

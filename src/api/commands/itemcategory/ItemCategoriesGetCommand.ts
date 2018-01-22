@@ -6,9 +6,8 @@ import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ItemCategoriesGetCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -33,11 +32,7 @@ export class ItemCategoriesGetCommand extends BaseCommand implements RpcCommandI
     }
 
     public help(): string {
-        return 'getcategories';
-    }
-
-    public example(): any {
-        return null;
+        return this.getName() + ' TODO';
     }
 
 }

@@ -7,9 +7,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemPostRequest } from '../../requests/ListingItemPostRequest';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ListingItemPostCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
 
@@ -44,11 +43,7 @@ export class ListingItemPostCommand extends BaseCommand implements RpcCommandInt
     }
 
     public help(): string {
-        return 'ListingItemPostCommand: TODO: Fill in help string.';
-    }
-
-    public example(): any {
-        return null;
+        return this.getName() + 'ListingItemPostCommand: TODO: Fill in help string.';
     }
 
 }

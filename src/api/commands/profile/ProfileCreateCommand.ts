@@ -7,9 +7,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ProfileCreateRequest } from '../../requests/ProfileCreateRequest';
 import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import {CommandEnumType, Commands} from '../CommandEnumType';
+import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
 export class ProfileCreateCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
@@ -40,7 +39,7 @@ export class ProfileCreateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return 'createprofile <profileName> [<profileAddress>]\n'
+        return this.getName() + ' <profileName> [<profileAddress>]\n'
             + '    <profileName>          - The name of the profile we want to create.\n'
             + '    <profileAddress>       - [optional] the particl address of this profile.\n'
             + '                              This is the address that\'s used in the particl\n'
@@ -48,7 +47,4 @@ export class ProfileCreateCommand extends BaseCommand implements RpcCommandInter
             + '                              if omitted.';
     }
 
-    public example(): any {
-        return null;
-    }
 }

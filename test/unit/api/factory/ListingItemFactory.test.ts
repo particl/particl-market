@@ -9,28 +9,28 @@ describe('ListingItemFactory', () => {
 
         listingItemFactory = new ListingItemFactory(LogMock);
         req = {
-            information: {
+            itemInformation: {
                 title: 'Title of the item',
                 short_description: 'A short description / summary of item',
                 long_description: 'A longer description of the item or service',
                 itemCategory: 1
             },
-            payment: {
+            paymentInformation: {
                 type: 'SALE',
                 escrow: {
                     type: 'NOP'
                 },
                 itemPrice: { currency: 'BITCOIN', basePrice: 100000000 }
             },
-            messaging: [{ protocol: 'SMSG', publicKey: 'publickey2' }]
+            messagingInformation: [{ protocol: 'SMSG', publicKey: 'publickey2' }],
+            listingItemObjects: {}
         };
     });
 
     // TODO: broken and description doesnt really explain what this tests
     test('Should get the listing-item data', () => {
-        listingItemFactory.get(req).then((res, error) => {
+        listingItemFactory.getMessage(req).then((res, error) => {
             expect(res.hash).not.toBeNull();
-
             // itemInformation
             expect(res.itemInformation).not.toBe(undefined);
             expect(res.itemInformation.title).toBe(req.information.title);
