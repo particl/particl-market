@@ -3,36 +3,25 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { FavoriteItemService } from '../../services/FavoriteItemService';
-import { ListingItemService } from '../../services/ListingItemService';
-import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { FavoriteItem } from '../../models/FavoriteItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
-import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
-import { FavoriteItemCreateRequest } from '../../requests/FavoriteItemCreateRequest';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
 /*
  * Get a list of all favorites for profile
  */
-export class FavoriteListCommand implements RpcCommandInterface<Bookshelf.Collection<FavoriteItem>> {
+export class FavoriteListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<FavoriteItem>> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
-    public descriptionStr: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super(Commands.FAVORITE_LIST);
         this.log = new Logger(__filename);
-        this.name = 'list';
-        this.helpStr = 'list <profileId>\n'
-            + '    <profileId>                     - Numeric - The ID of the profile we\n'
-            + '                                       want to associate this favorite with.';
-        this.descriptionStr = 'Get a list of all favorites for profile';
     }
 
     /**
@@ -50,6 +39,8 @@ export class FavoriteListCommand implements RpcCommandInterface<Bookshelf.Collec
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <profileId>\n'
+            + '    <profileId>                     - Numeric - The ID of the profile we\n'
+            + '                                       want to associate this favorite with.';
     }
 }

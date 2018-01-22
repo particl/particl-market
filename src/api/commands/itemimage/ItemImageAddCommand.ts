@@ -9,29 +9,20 @@ import { ItemImage } from '../../models/ItemImage';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as crypto from 'crypto-js';
 import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
+export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
+        super(Commands.ITEMIMAGE_ADD);
         this.log = new Logger(__filename);
-        this.name = 'additemimage';
-        this.helpStr = 'additemimage <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]\n'
-            + '    <listingItemTemplateId>          - Numeric - The ID of the listing item template\n'
-            + '                                        we want to associate this item image with.\n'
-            + '    <dataId>                         - [optional] Numeric - [TODO]\n'
-            + '        <protocol>                   - [optional] String - [TODO]\n'
-            + '            <encoding>               - [optional] String - [TODO]\n'
-            + '                <data>               - [optional] String - Base64 representation\n'
-            + '                                        (as produced by `base64` *NIX command) of the\n'
-            + '                                        image we want to add. Supports JPEG, PNG, GIF.';
     }
 
     /**
@@ -68,6 +59,15 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]\n'
+            + '    <listingItemTemplateId>          - Numeric - The ID of the listing item template\n'
+            + '                                        we want to associate this item image with.\n'
+            + '    <dataId>                         - [optional] Numeric - [TODO]\n'
+            + '        <protocol>                   - [optional] String - [TODO]\n'
+            + '            <encoding>               - [optional] String - [TODO]\n'
+            + '                <data>               - [optional] String - Base64 representation\n'
+            + '                                        (as produced by `base64` *NIX command) of the\n'
+            + '                                        image we want to add. Supports JPEG, PNG, GIF.';
     }
+
 }

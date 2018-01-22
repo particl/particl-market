@@ -6,24 +6,19 @@ import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ItemCategoryGetCommand implements RpcCommandInterface<ItemCategory> {
+export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService
     ) {
+        super(Commands.CATEGORY_GET);
         this.log = new Logger(__filename);
-        this.name = 'getcategory';
-        this.helpStr = 'getcategory (<categoryId>|<categoryKey>)\n'
-            + '    <categoryId>                    - Numeric - The ID belonging to the category we\n'
-            + '                                       want to retrive.\n'
-            + '    <categoryKey>                   - String - The key that identifies the category\n'
-            + '                                       we want to retrieve.';
     }
 
     /**
@@ -45,6 +40,11 @@ export class ItemCategoryGetCommand implements RpcCommandInterface<ItemCategory>
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' (<categoryId>|<categoryKey>)\n'
+            + '    <categoryId>                    - Numeric - The ID belonging to the category we\n'
+            + '                                       want to retrive.\n'
+            + '    <categoryKey>                   - String - The key that identifies the category\n'
+            + '                                       we want to retrieve.';
     }
+
 }

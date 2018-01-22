@@ -8,22 +8,20 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as _ from 'lodash';
 import { MessageException } from '../../exceptions/MessageException';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ItemLocationRemoveCommand implements RpcCommandInterface<void> {
+export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemLocationService) public itemLocationService: ItemLocationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
+        super(Commands.ITEMLOCATION_REMOVE);
         this.log = new Logger(__filename);
-        this.name = 'removeitemlocation';
-        this.helpStr = 'removeitemlocation <itemLocationId>\n'
-            + '    <itemLocationId>           - Numeric - [TODO]';
     }
 
     /**
@@ -44,7 +42,8 @@ export class ItemLocationRemoveCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <itemLocationId>\n'
+            + '    <itemLocationId>           - Numeric - [TODO]';
     }
 
     /*

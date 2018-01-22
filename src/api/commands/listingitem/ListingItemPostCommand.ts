@@ -2,28 +2,24 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { ListingItemService } from '../../services/ListingItemService';
-
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { MessageBroadcastService } from '../../services/MessageBroadcastService';
 import { ListingItemPostRequest } from '../../requests/ListingItemPostRequest';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ListingItemPostCommand implements RpcCommandInterface<ListingItem> {
+export class ListingItemPostCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService
     ) {
+        super(Commands.DATA_ADD);
         this.log = new Logger(__filename);
-        this.name = 'postitem';
-        this.helpStr = 'ListingItemPostCommand: TODO: Fill in help string.';
     }
 
     /**
@@ -47,6 +43,7 @@ export class ListingItemPostCommand implements RpcCommandInterface<ListingItem> 
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + 'ListingItemPostCommand: TODO: Fill in help string.';
     }
+
 }

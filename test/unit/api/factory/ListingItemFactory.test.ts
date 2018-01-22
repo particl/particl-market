@@ -27,6 +27,7 @@ describe('ListingItemFactory', () => {
         };
     });
 
+    // TODO: broken and description doesnt really explain what this tests
     test('Should get the listing-item data', () => {
         listingItemFactory.getMessage(req).then((res, error) => {
             expect(res.hash).not.toBeNull();

@@ -6,21 +6,19 @@ import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ListingItemGetCommand implements RpcCommandInterface<ListingItem> {
+export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService
     ) {
+        super(Commands.ITEM_GET);
         this.log = new Logger(__filename);
-        this.name = 'getitem';
-        this.helpStr = 'getitem <listingItemId>\n'
-            + '    <listingItemId>     - Numeric - The ID of the listing item we want to retrieve.';
     }
 
     /**
@@ -45,6 +43,8 @@ export class ListingItemGetCommand implements RpcCommandInterface<ListingItem> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <listingItemId>\n'
+            + '    <listingItemId>     - Numeric - The ID of the listing item we want to retrieve.';
     }
+
 }

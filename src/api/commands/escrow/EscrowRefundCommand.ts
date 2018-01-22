@@ -8,20 +8,19 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
 import { EscrowRefundRequest } from '../../requests/EscrowRefundRequest';
 import { EscrowMessageType } from '../../enums/EscrowMessageType';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class EscrowRefundCommand implements RpcCommandInterface<Escrow> {
+export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService
     ) {
+        super(Commands.ESCROW_REFUND);
         this.log = new Logger(__filename);
-        this.name = 'refundescrow';
-        this.helpStr = 'EscrowRefundCommand: TODO: Fill in help string.';
     }
 
     /**
@@ -46,6 +45,7 @@ export class EscrowRefundCommand implements RpcCommandInterface<Escrow> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' TODO: Fill in help string.';
     }
+
 }

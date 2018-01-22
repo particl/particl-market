@@ -8,27 +8,19 @@ import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class AddressCreateCommand implements RpcCommandInterface<Address> {
+export class AddressCreateCommand extends BaseCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService
     ) {
+        super(Commands.ADDRESS_ADD);
         this.log = new Logger(__filename);
-        this.name = 'createaddress';
-        this.helpStr = 'createaddress <title> <addressLine1> <addressLine2> <city> (<country> | <countryCode>) <profileId>\n'
-            + '    <title>                - String - A short identifier for the address.\n'
-            + '    <addressLine1>         - String - The first line of the address.\n'
-            + '    <addressLine2>         - String - The second line of the address.\n'
-            + '    <city>                 - String - The city of the address.\n'
-            + '    <country>              - String - The country name of the address.\n'
-            + '    <countryCode>          - String - Two letter country code of the address.\n'
-            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
-            + '                              this address with.';
     }
 
     /**
@@ -42,10 +34,11 @@ export class AddressCreateCommand implements RpcCommandInterface<Address> {
      *  [6]: profileId
      *
      * @param data
+     * @param rpcCommandFactory
      * @returns {Promise<Address>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Address> {
+    public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
         this.log.debug('Attempting to create address');
 
         // If countryCode is country, convert to countryCode.
@@ -65,6 +58,15 @@ export class AddressCreateCommand implements RpcCommandInterface<Address> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <title> <addressLine1> <addressLine2> <city> (<country> | <countryCode>) <profileId>\n'
+            + '    <title>                - String - A short identifier for the address.\n'
+            + '    <addressLine1>         - String - The first line of the address.\n'
+            + '    <addressLine2>         - String - The second line of the address.\n'
+            + '    <city>                 - String - The city of the address.\n'
+            + '    <country>              - String - The country name of the address.\n'
+            + '    <countryCode>          - String - Two letter country code of the address.\n'
+            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
+            + '                              this address with.';
     }
+
 }

@@ -8,28 +8,21 @@ import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressUpdateRequest } from '../../requests/AddressUpdateRequest';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class AddressUpdateCommand implements RpcCommandInterface<Address> {
+export class AddressUpdateCommand extends BaseCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
     public name: string;
     public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService
     ) {
+        super(Commands.ADDRESS_UPDATE);
         this.log = new Logger(__filename);
-        this.name = 'updateaddress';
-        this.helpStr = 'updateaddress <addressId> <title> <addressLine1> <addressLine2> <city> (<country> | <countryCode>) <profileId>\n'
-            + '    <addressId>            - Numeric - The ID of the address we want to modify.\n'
-            + '    <title>                - String - A short identifier for the address.\n'
-            + '    <addressLine1>         - String - The first line of the address.\n'
-            + '    <addressLine2>         - String - The second line of the address.\n'
-            + '    <city>                 - String - The city of the address.\n'
-            + '    <country>              - String - The country name of the address.\n'
-            + '    <countryCode>          - String - Two letter country code of the address.\n'
-            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
-            + '                              this address with.';
     }
 
     /**
@@ -44,10 +37,11 @@ export class AddressUpdateCommand implements RpcCommandInterface<Address> {
      *  [7]: profileId
      *
      * @param data
+     * @param rpcCommandFactory
      * @returns {Promise<Address>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Address> {
+    public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
         let countryCode: string = data.params[5];
@@ -65,6 +59,16 @@ export class AddressUpdateCommand implements RpcCommandInterface<Address> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <addressId> <title> <addressLine1> <addressLine2> <city> (<country> | <countryCode>) <profileId>\n'
+            + '    <addressId>            - Numeric - The ID of the address we want to modify.\n'
+            + '    <title>                - String - A short identifier for the address.\n'
+            + '    <addressLine1>         - String - The first line of the address.\n'
+            + '    <addressLine2>         - String - The second line of the address.\n'
+            + '    <city>                 - String - The city of the address.\n'
+            + '    <country>              - String - The country name of the address.\n'
+            + '    <countryCode>          - String - Two letter country code of the address.\n'
+            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
+            + '                              this address with.';
     }
+
 }

@@ -7,25 +7,19 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ProfileCreateRequest } from '../../requests/ProfileCreateRequest';
 import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ProfileCreateCommand implements RpcCommandInterface<Profile> {
+export class ProfileCreateCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
     ) {
+        super(Commands.PROFILE_ADD);
         this.log = new Logger(__filename);
-        this.name = 'createprofile';
-        this.helpStr =  'createprofile <profileName> [<profileAddress>]\n'
-            + '    <profileName>          - The name of the profile we want to create.\n'
-            + '    <profileAddress>       - [optional] the particl address of this profile.\n'
-            + '                              This is the address that\'s used in the particl\n'
-            + '                              messaging system. Will be automatically generated\n'
-            + '                              if omitted.';
     }
 
     /**
@@ -45,6 +39,12 @@ export class ProfileCreateCommand implements RpcCommandInterface<Profile> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <profileName> [<profileAddress>]\n'
+            + '    <profileName>          - The name of the profile we want to create.\n'
+            + '    <profileAddress>       - [optional] the particl address of this profile.\n'
+            + '                              This is the address that\'s used in the particl\n'
+            + '                              messaging system. Will be automatically generated\n'
+            + '                              if omitted.';
     }
+
 }

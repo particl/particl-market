@@ -11,29 +11,20 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as _ from 'lodash';
 import { MessageException } from '../../exceptions/MessageException';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ItemLocationUpdateCommand implements RpcCommandInterface<ItemLocation> {
+export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemLocationService) public itemLocationService: ItemLocationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
+        super(Commands.ITEMLOCATION_UPDATE);
         this.log = new Logger(__filename);
-        this.name = 'updateitemlocation';
-        this.helpStr = 'updateitemlocation <listingItemTemplateId> <region> <address> <gpsMarkerTitle>'
-            + ' <gpsMarkerDescription> <gpsMarkerLatitude> <gpsMarkerLongitude>\n'
-            + '    <listingItemTemplateId>    - Numeric - [TODO]\n'
-            + '    <region>                   - String - Region, i.e. country or country code.\n'
-            + '    <address>                  - [TODO] - [TODO]\n'
-            + '    <gpsMarkerTitle>           - String - [TODO]\n'
-            + '    <gpsMarkerDescription>     - Numeric - [TODO]\n'
-            + '    <gpsMarkerLatitude>        - Numeric - [TODO]\n'
-            + '    <gpsMarkerLongitude>       - Numeric - [TODO]';
     }
 
     /**
@@ -81,7 +72,15 @@ export class ItemLocationUpdateCommand implements RpcCommandInterface<ItemLocati
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <listingItemTemplateId> <region> <address> <gpsMarkerTitle>'
+            + ' <gpsMarkerDescription> <gpsMarkerLatitude> <gpsMarkerLongitude>\n'
+            + '    <listingItemTemplateId>    - Numeric - [TODO]\n'
+            + '    <region>                   - String - Region, i.e. country or country code.\n'
+            + '    <address>                  - [TODO] - [TODO]\n'
+            + '    <gpsMarkerTitle>           - String - [TODO]\n'
+            + '    <gpsMarkerDescription>     - Numeric - [TODO]\n'
+            + '    <gpsMarkerLatitude>        - Numeric - [TODO]\n'
+            + '    <gpsMarkerLongitude>       - Numeric - [TODO]';
     }
 
     /*

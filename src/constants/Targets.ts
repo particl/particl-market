@@ -94,7 +94,15 @@ export const Targets = {
         UserService: 'UserService'
     },
     Command:     {
-        AddDataCommand: 'AddDataCommand',
+        address: {
+            AddressCreateCommand: 'AddressCreateCommand',
+            AddressDestroyCommand: 'AddressDestroyCommand',
+            AddressUpdateCommand: 'AddressUpdateCommand'
+        },
+        admin: {
+            AdminCommand: 'AdminCommand'
+        },
+        BaseCommand: 'BaseCommand',
         bid: {
             AcceptBidCommand: 'AcceptBidCommand',
             BidSearchCommand: 'BidSearchCommand',
@@ -102,7 +110,13 @@ export const Targets = {
             RejectBidCommand: 'RejectBidCommand',
             SendBidCommand: 'SendBidCommand'
         },
-        CleanDbCommand: 'CleanDbCommand',
+        Command: 'Command',
+        CommandEnumType: 'CommandEnumType',
+        data: {
+            DataAddCommand: 'DataAddCommand',
+            DataCleanCommand: 'DataCleanCommand',
+            DataGenerateCommand: 'DataGenerateCommand'
+        },
         escrow: {
             EscrowCreateCommand: 'EscrowCreateCommand',
             EscrowDestroyCommand: 'EscrowDestroyCommand',
@@ -117,7 +131,6 @@ export const Targets = {
             FavoriteRemoveCommand: 'FavoriteRemoveCommand',
             FavoriteRootCommand: 'FavoriteRootCommand'
         },
-        GenerateDataCommand: 'GenerateDataCommand',
         HelpCommand: 'HelpCommand',
         itemcategory: {
             ItemCategoriesGetCommand: 'ItemCategoriesGetCommand',
@@ -164,9 +177,6 @@ export const Targets = {
             PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'
         },
         profile: {
-            AddressCreateCommand: 'AddressCreateCommand',
-            AddressDestroyCommand: 'AddressDestroyCommand',
-            AddressUpdateCommand: 'AddressUpdateCommand',
             ProfileCreateCommand: 'ProfileCreateCommand',
             ProfileDestroyCommand: 'ProfileDestroyCommand',
             ProfileGetCommand: 'ProfileGetCommand',
@@ -177,8 +187,7 @@ export const Targets = {
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
             ShippingDestinationRemoveCommand: 'ShippingDestinationRemoveCommand'
-        },
-        TestCommand: 'TestCommand'
+        }
     },
     Factory:     {
         BidFactory: 'BidFactory',

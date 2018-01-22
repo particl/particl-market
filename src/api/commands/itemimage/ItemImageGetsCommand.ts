@@ -3,27 +3,24 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-// import { ItemImageService } from '../../services/ItemImageService';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemImage } from '../../models/ItemImage';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ItemImageGetsCommand implements RpcCommandInterface<Bookshelf.Collection<ItemImage>> {
+export class ItemImageGetsCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ItemImage>> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
+        super(Commands.ITEMIMAGE_LIST);
         this.log = new Logger(__filename);
-        this.name = 'getitemimages';
-        this.helpStr = 'getitemimages <listingItemId>\n'
-            + '<listingItemId>           - Numeric - The ID of the listing item template whose associated images we want to find.';
     }
 
     /**
@@ -39,6 +36,8 @@ export class ItemImageGetsCommand implements RpcCommandInterface<Bookshelf.Colle
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <listingItemId>\n'
+            + '<listingItemId>           - Numeric - The ID of the listing item template whose associated images we want to find.';
     }
+
 }

@@ -8,33 +8,19 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class OwnListingItemSearchCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItem>> {
+export class OwnListingItemSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItem>> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService
     ) {
+        super(Commands.ITEM_SEARCH_OWN);
         this.log = new Logger(__filename);
-        this.name = 'findownitems';
-        this.helpStr = 'findownitems [<page> [<pageLimit> [<order> [(<categoryId> | <categoryName>) [<searchString>]]]]]\n'
-            + '    <page>                          - [optional] Numeric - The number page we want to\n'
-            + '                                       view of search listing item results.\n'
-            + '        <pageLimit>                 - [optional] Numeric - The number of results per\n'
-            + '                                       page.\n'
-            + '            <order>                 - ENUM{ASC} - The order of the returned results.\n'
-            + '                <categoryId>        - [optional] Numeric - The ID identifying the\n'
-            + '                                       category associated with the listing items\n'
-            + '                                       we want to search for.\n'
-            + '                <categoryName>      - [optional] String - The key identifying the\n'
-            + '                                       category associated with the listing items\n'
-            + '                                       we want to search for.\n'
-            + '                    <searchString>  - [optional] String - A string that is used to\n'
-            + '                                       find listing items by their titles.';
     }
 
     /**
@@ -62,6 +48,20 @@ export class OwnListingItemSearchCommand implements RpcCommandInterface<Bookshel
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId> | <categoryName>) [<searchString>]]]]]\n'
+            + '    <page>                          - [optional] Numeric - The number page we want to\n'
+            + '                                       view of search listing item results.\n'
+            + '        <pageLimit>                 - [optional] Numeric - The number of results per\n'
+            + '                                       page.\n'
+            + '            <order>                 - ENUM{ASC} - The order of the returned results.\n'
+            + '                <categoryId>        - [optional] Numeric - The ID identifying the\n'
+            + '                                       category associated with the listing items\n'
+            + '                                       we want to search for.\n'
+            + '                <categoryName>      - [optional] String - The key identifying the\n'
+            + '                                       category associated with the listing items\n'
+            + '                                       we want to search for.\n'
+            + '                    <searchString>  - [optional] String - A string that is used to\n'
+            + '                                       find listing items by their titles.';
     }
+
 }

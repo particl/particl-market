@@ -5,16 +5,26 @@ import { Types, Core, Targets } from '../../constants';
 import { RpcCommandInterface} from '../commands/RpcCommandInterface';
 import { NotFoundException } from '../exceptions/NotFoundException';
 
-import { AddDataCommand} from '../commands/AddDataCommand';
-import { CleanDbCommand} from '../commands/CleanDbCommand';
-import { GenerateDataCommand} from '../commands/GenerateDataCommand';
-import { HelpCommand} from '../commands/HelpCommand';
+import { DataAddCommand } from '../commands/data/DataAddCommand';
+import { DataCleanCommand } from '../commands/data/DataCleanCommand';
+import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
+import { HelpCommand } from '../commands/HelpCommand';
 
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
+import { AcceptBidCommand } from '../commands/bid/AcceptBidCommand';
+import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
+import { RejectBidCommand } from '../commands/bid/RejectBidCommand';
+import { SendBidCommand } from '../commands/bid/SendBidCommand';
+
 import { EscrowCreateCommand } from '../commands/escrow/EscrowCreateCommand';
 import { EscrowDestroyCommand } from '../commands/escrow/EscrowDestroyCommand';
 import { EscrowUpdateCommand } from '../commands/escrow/EscrowUpdateCommand';
+import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
+import { EscrowRefundCommand } from '../commands/escrow/EscrowRefundCommand';
+import { EscrowReleaseCommand } from '../commands/escrow/EscrowReleaseCommand';
 import { FavoriteRootCommand } from '../commands/favorite/FavoriteRootCommand';
+import { FavoriteAddCommand } from '../commands/favorite/FavoriteAddCommand';
+import { FavoriteRemoveCommand } from '../commands/favorite/FavoriteRemoveCommand';
 import { ItemCategoriesGetCommand } from '../commands/itemcategory/ItemCategoriesGetCommand';
 import { ItemCategoryCreateCommand } from '../commands/itemcategory/ItemCategoryCreateCommand';
 import { ItemCategoryFindCommand } from '../commands/itemcategory/ItemCategoryFindCommand';
@@ -32,6 +42,7 @@ import { ItemLocationCreateCommand } from '../commands/itemlocation/ItemLocation
 import { ItemLocationUpdateCommand } from '../commands/itemlocation/ItemLocationUpdateCommand';
 import { ListingItemGetCommand } from '../commands/listingitem/ListingItemGetCommand';
 import { ListingItemSearchCommand } from '../commands/listingitem/ListingItemSearchCommand';
+import { ListingItemPostCommand } from '../commands/listingitem/ListingItemPostCommand';
 import { OwnListingItemSearchCommand } from '../commands/listingitem/OwnListingItemSearchCommand';
 import { ListingItemTemplateCreateCommand } from '../commands/listingitemtemplate/ListingItemTemplateCreateCommand';
 import { ListingItemTemplateDestroyCommand } from '../commands/listingitemtemplate/ListingItemTemplateDestroyCommand';
@@ -40,24 +51,17 @@ import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplat
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
 import { MarketCreateCommand } from '../commands/market/MarketCreateCommand';
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
-import { AddressCreateCommand } from '../commands/profile/AddressCreateCommand';
-import { AddressDestroyCommand } from '../commands/profile/AddressDestroyCommand';
-import { AddressUpdateCommand } from '../commands/profile/AddressUpdateCommand';
+import { AddressCreateCommand } from '../commands/address/AddressCreateCommand';
+import { AddressDestroyCommand } from '../commands/address/AddressDestroyCommand';
+import { AddressUpdateCommand } from '../commands/address/AddressUpdateCommand';
 import { ProfileCreateCommand } from '../commands/profile/ProfileCreateCommand';
 import { ProfileDestroyCommand } from '../commands/profile/ProfileDestroyCommand';
 import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
 import { ProfileGetCommand } from '../commands/profile/ProfileGetCommand';
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
-import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
-import { EscrowRefundCommand } from '../commands/escrow/EscrowRefundCommand';
-import { EscrowReleaseCommand } from '../commands/escrow/EscrowReleaseCommand';
 
-import { AcceptBidCommand } from '../commands/bid/AcceptBidCommand';
-import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
-import { RejectBidCommand } from '../commands/bid/RejectBidCommand';
-import { SendBidCommand } from '../commands/bid/SendBidCommand';
-import { ListingItemPostCommand } from '../commands/listingitem/ListingItemPostCommand';
+import { Command } from '../commands/Command';
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -67,11 +71,19 @@ export class RpcCommandFactory {
     public commands: Array<RpcCommandInterface<any>> = [];
 
     constructor(
-
         @inject(Types.Command) @named(Targets.Command.bid.BidSearchCommand) private bidSearchCommand: BidSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.AcceptBidCommand) private bidAcceptCommand: AcceptBidCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.CancelBidCommand) private bidCancelCommand: CancelBidCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.RejectBidCommand) private bidRejectCommand: RejectBidCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.SendBidCommand) private bidSendCommand: SendBidCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowCreateCommand) private escrowCreateCommand: EscrowCreateCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowDestroyCommand) private escrowDestroyCommand: EscrowDestroyCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowUpdateCommand) private escrowUpdateCommand: EscrowUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowLockCommand) private escrowLockCommand: EscrowLockCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowRefundCommand) private escrowRefundCommand: EscrowRefundCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowReleaseCommand) private escrowReleaseCommand: EscrowReleaseCommand,
+        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteAddCommand) private favoriteAddCommand: FavoriteAddCommand,
+        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRemoveCommand) private favoriteRemoveCommand: FavoriteRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRootCommand) private favoriteRootCommand: FavoriteRootCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoriesGetCommand) private itemCategoriesGetCommand: ItemCategoriesGetCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
@@ -99,9 +111,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.market.MarketCreateCommand) private marketCreateCommand: MarketCreateCommand,
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationUpdateCommand) private messagingInformationUpdateCommand: MessagingInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
-        @inject(Types.Command) @named(Targets.Command.profile.AddressCreateCommand) private addresscreateCommand: AddressCreateCommand,
-        @inject(Types.Command) @named(Targets.Command.profile.AddressDestroyCommand) private addressDestroyCommand: AddressDestroyCommand,
-        @inject(Types.Command) @named(Targets.Command.profile.AddressUpdateCommand) private addressUpdateCommand: AddressUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.address.AddressCreateCommand) private addresscreateCommand: AddressCreateCommand,
+        @inject(Types.Command) @named(Targets.Command.address.AddressDestroyCommand) private addressDestroyCommand: AddressDestroyCommand,
+        @inject(Types.Command) @named(Targets.Command.address.AddressUpdateCommand) private addressUpdateCommand: AddressUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileCreateCommand) private profileCreateCommand: ProfileCreateCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileDestroyCommand) private profileDestroyCommand: ProfileDestroyCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileGetCommand) private profileGetCommand: ProfileGetCommand,
@@ -109,19 +121,10 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationAddCommand) private shippingDestinationAddCommand: ShippingDestinationAddCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationRemoveCommand) private shippingDestinationRemoveCommand: ShippingDestinationRemoveCommand,
 
-        @inject(Types.Command) @named(Targets.Command.AddDataCommand) private addDataCommand: AddDataCommand,
-        @inject(Types.Command) @named(Targets.Command.CleanDbCommand) private cleanDbCommand: CleanDbCommand,
-        @inject(Types.Command) @named(Targets.Command.GenerateDataCommand) private generateDataCommand: GenerateDataCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataAddCommand) private dataAddCommand: DataAddCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
-
-        @inject(Types.Command) @named(Targets.Command.escrow.EscrowLockCommand) private escrowLockCommand: EscrowLockCommand,
-        @inject(Types.Command) @named(Targets.Command.escrow.EscrowRefundCommand) private escrowRefundCommand: EscrowRefundCommand,
-        @inject(Types.Command) @named(Targets.Command.escrow.EscrowReleaseCommand) private escrowReleaseCommand: EscrowReleaseCommand,
-
-        @inject(Types.Command) @named(Targets.Command.bid.AcceptBidCommand) private acceptBidCommand: AcceptBidCommand,
-        @inject(Types.Command) @named(Targets.Command.bid.CancelBidCommand) private cancelBidCommand: CancelBidCommand,
-        @inject(Types.Command) @named(Targets.Command.bid.RejectBidCommand) private rejectBidCommand: RejectBidCommand,
-        @inject(Types.Command) @named(Targets.Command.bid.SendBidCommand) private sendBidCommand: SendBidCommand,
 
 
         //  ---
@@ -133,9 +136,18 @@ export class RpcCommandFactory {
         this.log = new Logger(__filename);
 
         this.commands.push(bidSearchCommand);
+        this.commands.push(bidAcceptCommand);
+        this.commands.push(bidCancelCommand);
+        this.commands.push(bidRejectCommand);
+        this.commands.push(bidSendCommand);
         this.commands.push(escrowCreateCommand);
         this.commands.push(escrowDestroyCommand);
         this.commands.push(escrowUpdateCommand);
+        this.commands.push(escrowLockCommand);
+        this.commands.push(escrowRefundCommand);
+        this.commands.push(escrowReleaseCommand);
+        this.commands.push(favoriteAddCommand);
+        this.commands.push(favoriteRemoveCommand);
         this.commands.push(favoriteRootCommand);
         this.commands.push(itemCategoriesGetCommand);
         this.commands.push(itemCategoryCreateCommand);
@@ -172,32 +184,32 @@ export class RpcCommandFactory {
         this.commands.push(profileUpdateCommand);
         this.commands.push(shippingDestinationAddCommand);
         this.commands.push(shippingDestinationRemoveCommand);
-        this.commands.push(escrowLockCommand);
-        this.commands.push(escrowRefundCommand);
-        this.commands.push(escrowReleaseCommand);
 
-        this.commands.push(addDataCommand);
-        this.commands.push(cleanDbCommand);
-        this.commands.push(generateDataCommand);
+        this.commands.push(dataAddCommand);
+        this.commands.push(dataCleanCommand);
+        this.commands.push(dataGenerateCommand);
         this.commands.push(helpCommand);
-        this.commands.push(acceptBidCommand);
-        this.commands.push(cancelBidCommand);
-        this.commands.push(rejectBidCommand);
-        this.commands.push(sendBidCommand);
 
         this.log.debug(this.commands.length + ' commands initialized.');
 
     }
 
-    public get(commandName: string): RpcCommandInterface<Bookshelf.Model<any>> {
-        this.log.debug('Looking for command <' + commandName + '>');
-        for (const command of this.commands) {
-            if (command.name.toLowerCase() === commandName.toLowerCase()) {
-                this.log.debug('Found ' + command.name.toLowerCase());
-                return command;
+    /**
+     * todo: if requested commandType is rootCommand, the loop through the rootCommands and match using name.
+     * this should allow 'links' from subcommands back to root commadns
+     *
+     * @param commandType
+     * @returns {RpcCommandInterface<any>}
+     */
+    public get(commandType: Command): RpcCommandInterface<any> {
+        this.log.debug('Looking for command <' + commandType.toString() + '>');
+        for (const commandInstance of this.commands) {
+            if (commandInstance.getCommand().toString() === commandType.toString()) {
+                this.log.debug('Found ' + commandInstance.getCommand().toString());
+                return commandInstance;
             }
         }
-        throw new NotFoundException('Couldn\'t find command <' + commandName + '>\n');
+        throw new NotFoundException('Couldn\'t find command <' + commandType.toString() + '>\n');
     }
 }
 // tslint:enable:array-type

@@ -6,21 +6,19 @@ import { ItemImageService } from '../../services/ItemImageService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ItemImageRemoveCommand implements RpcCommandInterface<void> {
+export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService
     ) {
+        super(Commands.ITEMIMAGE_REMOVE);
         this.log = new Logger(__filename);
-        this.name = 'removeitemimage';
-        this.helpStr = 'removeitemimage <itemImageId>\n'
-            + '    <itemImageId>                   - Numeric - The ID of the image we want to remove.';
     }
 
     /**
@@ -44,6 +42,8 @@ export class ItemImageRemoveCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <itemImageId>\n'
+            + '    <itemImageId>                   - Numeric - The ID of the image we want to remove.';
     }
+
 }

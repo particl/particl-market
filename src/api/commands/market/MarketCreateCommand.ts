@@ -7,23 +7,19 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Market } from '../../models/Market';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MarketCreateRequest } from '../../requests/MarketCreateRequest';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class MarketCreateCommand implements RpcCommandInterface<Market> {
+export class MarketCreateCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService
     ) {
+        super(Commands.MARKET_ADD);
         this.log = new Logger(__filename);
-        this.name = 'addmarket';
-        this.helpStr = 'addmarket <name> <privateKey> <address>\n'
-            + '    <name>           - String - The unique name of the market being created.\n'
-            + '    <privateKey>     - String - The private key of the market being creted.\n'
-            + '    <address>        - String - [TODO]';
     }
 
     /**
@@ -45,6 +41,10 @@ export class MarketCreateCommand implements RpcCommandInterface<Market> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <name> <privateKey> <address>\n'
+            + '    <name>           - String - The unique name of the market being created.\n'
+            + '    <privateKey>     - String - The private key of the market being creted.\n'
+            + '    <address>        - String - [TODO]';
     }
+
 }

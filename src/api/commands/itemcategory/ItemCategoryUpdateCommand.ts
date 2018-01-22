@@ -10,30 +10,22 @@ import { ItemCategoryUpdateRequest } from '../../requests/ItemCategoryUpdateRequ
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ItemCategoryUpdateCommand implements RpcCommandInterface<ItemCategory> {
+export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
     public log: LoggerType;
     public name: string;
     public helpStr: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService
     ) {
+        super(Commands.CATEGORY_UPDATE);
         this.log = new Logger(__filename);
-        this.name = 'updatecategory';
-        this.helpStr = 'updatecategory <categoryId> <categoryName> <description> [<parentItemCategoryId>]\n'
-            + '    <categoryId>                     - Numeric - The ID of the category we want to\n'
-            + '                                        update.\n'
-            + '    <categoryName>                   - String - The new name of the category we want\n'
-            + '                                        to update.\n'
-            + '    <description>                    - String - The new description of the category\n'
-            + '                                        we want to update.\n'
-            + '    <parentItemCategoryId>           - [optional] Numeric - The ID that identifies the\n'
-            + '                                        new parent category of the category we want to\n'
-            + '                                        update; default is the root category.';
     }
 
     /**
@@ -65,7 +57,16 @@ export class ItemCategoryUpdateCommand implements RpcCommandInterface<ItemCatego
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <categoryId> <categoryName> <description> [<parentItemCategoryId>]\n'
+            + '    <categoryId>                     - Numeric - The ID of the category we want to\n'
+            + '                                        update.\n'
+            + '    <categoryName>                   - String - The new name of the category we want\n'
+            + '                                        to update.\n'
+            + '    <description>                    - String - The new description of the category\n'
+            + '                                        we want to update.\n'
+            + '    <parentItemCategoryId>           - [optional] Numeric - The ID that identifies the\n'
+            + '                                        new parent category of the category we want to\n'
+            + '                                        update; default is the root category.';
     }
 
     /**

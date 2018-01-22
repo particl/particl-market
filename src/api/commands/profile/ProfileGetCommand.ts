@@ -6,24 +6,19 @@ import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ProfileGetCommand implements RpcCommandInterface<Profile> {
+export class ProfileGetCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
     ) {
+        super(Commands.PROFILE_GET);
         this.log = new Logger(__filename);
-        this.name = 'getprofile';
-        this.helpStr = 'getprofile [<profileId>|<profileName>]\n'
-            + '    <profileId>           - [optional] Numeric - The ID of the profile we want to\n'
-            + '                             retrieve.\n'
-            + '    <profileName>         - [optional] String - The name of the profile we want to\n'
-            + '                             retrieve.';
     }
 
     /**
@@ -49,6 +44,11 @@ export class ProfileGetCommand implements RpcCommandInterface<Profile> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' [<profileId>|<profileName>]\n'
+            + '    <profileId>           - [optional] Numeric - The ID of the profile we want to\n'
+            + '                             retrieve.\n'
+            + '    <profileName>         - [optional] String - The name of the profile we want to\n'
+            + '                             retrieve.';
     }
+
 }

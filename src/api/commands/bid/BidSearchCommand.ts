@@ -8,26 +8,19 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidSearchParams } from '../../requests/BidSearchParams';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class BidSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
+export class BidSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService
     ) {
+        super(Commands.BID_SEARCH);
         this.log = new Logger(__filename);
-        this.name = 'findbids';
-        this.helpStr = 'findbids [<status> <listingItemId> <profileId>]\n'
-            + '    <status>           - [optional] Enum{ACCEPTED,REJECTED,CANCELLED,ACTIVE} - The\n'
-            + '                          status of the bids we\'re searching for.\n'
-            + '    <listingItemId>    - [optional] Numeric - The ID of the listing item that the\n'
-            + '                          bids we\'re searching for are associated with.\n'
-            + '    <profileId>        - [optional] Numeric - The ID of the profile that made the\n'
-            + '                          bids we\'re searching for [TODO confirm this is true].';
     }
 
     /**
@@ -49,6 +42,13 @@ export class BidSearchCommand implements RpcCommandInterface<Bookshelf.Collectio
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' [<status> <listingItemId> <profileId>]\n'
+            + '    <status>           - [optional] Enum{ACCEPTED,REJECTED,CANCELLED,ACTIVE} - The\n'
+            + '                          status of the bids we\'re searching for.\n'
+            + '    <listingItemId>    - [optional] Numeric - The ID of the listing item that the\n'
+            + '                          bids we\'re searching for are associated with.\n'
+            + '    <profileId>        - [optional] Numeric - The ID of the profile that made the\n'
+            + '                          bids we\'re searching for [TODO confirm this is true].';
     }
+
 }

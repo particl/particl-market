@@ -6,22 +6,19 @@ import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ProfileUpdateCommand implements RpcCommandInterface<Profile> {
+export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
     ) {
+        super(Commands.PROFILE_UPDATE);
         this.log = new Logger(__filename);
-        this.name = 'updateprofile';
-        this.helpStr = 'updateprofile <profileId> <newProfileName>\n'
-            + '    <profileId>          - Numeric - The ID of the profile we want to modify.\n'
-            + '    <newProfileName>     - String - The new name we want to apply to the profile.';
     }
 
     /**
@@ -40,6 +37,9 @@ export class ProfileUpdateCommand implements RpcCommandInterface<Profile> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <profileId> <newProfileName>\n'
+            + '    <profileId>          - Numeric - The ID of the profile we want to modify.\n'
+            + '    <newProfileName>     - String - The new name we want to apply to the profile.';
     }
+
 }

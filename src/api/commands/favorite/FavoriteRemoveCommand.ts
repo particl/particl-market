@@ -9,33 +9,24 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-/*
+/**
  * Command for removing an item from your favorites, identified by ID or hash.
  */
-export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
+export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
-    public descriptionStr: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
     ) {
+        super(Commands.FAVORITE_REMOVE);
         this.log = new Logger(__filename);
-        this.name = 'remove';
-        this.helpStr = 'remove <profileId> (<itemId> | <hash>)\n'
-            + '    <profileId>                     - Numeric - The ID of the profile\n'
-            + '                                       associated with the favorite we want to remove.\n'
-            + '    <itemId>                        - Numeric - The ID of the listing item you want\n'
-            + '                                       to remove from your favorites.\n'
-            + '    <hash>                          - String - The hash of the listing item you want\n'
-            + '                                       to remove from your favourites.\n';
-        this.descriptionStr = 'Command for removing an item from your favorites, identified by ID or hash.';
     }
 
     /**
@@ -57,7 +48,17 @@ export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <profileId> (<itemId> | <hash>)\n'
+            + '    <profileId>                     - Numeric - The ID of the profile\n'
+            + '                                       associated with the favorite we want to remove.\n'
+            + '    <itemId>                        - Numeric - The ID of the listing item you want\n'
+            + '                                       to remove from your favorites.\n'
+            + '    <hash>                          - String - The hash of the listing item you want\n'
+            + '                                       to remove from your favourites.\n';
+    }
+
+    public description(): string {
+        return 'Command for removing an item from your favorites, identified by ID or hash.';
     }
 
     /**

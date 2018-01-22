@@ -2,7 +2,7 @@ import { rpc, api } from './lib/api';
 
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Logger } from '../../src/core/Logger';
-import { AddressCreateCommand } from '../../src/api/commands/profile/AddressCreateCommand';
+import { AddressCreateCommand } from '../../src/api/commands/address/AddressCreateCommand';
 
 describe('CreateAddress', () => {
     const testUtil = new BlackBoxTestUtil();

@@ -6,26 +6,19 @@ import { EscrowService } from '../../services/EscrowService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class EscrowCreateCommand implements RpcCommandInterface<Escrow> {
+export class EscrowCreateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService
     ) {
+        super(Commands.ESCROW_ADD);
         this.log = new Logger(__filename);
-        this.name = 'createescrow';
-        this.helpStr = 'escrow create <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio>\n'
-            + '    <listingItemTemplateId>   - Numeric - The ID of the listing item template we want\n'
-            + '                                 to associate with this escrow.\n'
-            + '    <escrowType>              - Enum{NOP,MAD} - The type of the escrow we want to\n'
-            + '                                 create.\n'
-            + '    <buyerRatio>              - Numeric - [TODO]\n'
-            + '    <sellerRatio>             - Numeric - [TODO]';
     }
 
     /**
@@ -50,6 +43,13 @@ export class EscrowCreateCommand implements RpcCommandInterface<Escrow> {
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio>\n'
+            + '    <listingItemTemplateId>   - Numeric - The ID of the listing item template we want\n'
+            + '                                 to associate with this escrow.\n'
+            + '    <escrowType>              - Enum{NOP,MAD} - The type of the escrow we want to\n'
+            + '                                 create.\n'
+            + '    <buyerRatio>              - Numeric - [TODO]\n'
+            + '    <sellerRatio>             - Numeric - [TODO]';
     }
+
 }

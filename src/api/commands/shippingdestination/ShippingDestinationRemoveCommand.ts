@@ -12,28 +12,20 @@ import * as _ from 'lodash';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 
-export class ShippingDestinationRemoveCommand implements RpcCommandInterface<void> {
+export class ShippingDestinationRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ShippingDestinationService) private shippingDestinationService: ShippingDestinationService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
+        super(Commands.SHIPPINGDESTINATION_REMOVE);
         this.log = new Logger(__filename);
-        this.name = 'removeshippingdestination';
-        this.helpStr = 'removeshippingdestination <listingTemplateId> (<country> | <countryCode>) <shippingAvailability>\n'
-            + '    <itemInformationId>        - Numeric - ID of the item information object we want\n'
-            + '                                  to link this shipping destination to.\n'
-            + '    <country>                  - String - The country name.\n'
-            + '    <countryCode>              - String - Two letter country code.\n'
-            + '                                  associated with this shipping destination.\n'
-            + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
-            + '                                  availability of shipping to the specified area.';
     }
 
     /**
@@ -79,7 +71,14 @@ export class ShippingDestinationRemoveCommand implements RpcCommandInterface<voi
     }
 
     public help(): string {
-        return this.helpStr;
+        return this.getName() + ' <listingTemplateId> (<country> | <countryCode>) <shippingAvailability>\n'
+            + '    <itemInformationId>        - Numeric - ID of the item information object we want\n'
+            + '                                  to link this shipping destination to.\n'
+            + '    <country>                  - String - The country name.\n'
+            + '    <countryCode>              - String - Two letter country code.\n'
+            + '                                  associated with this shipping destination.\n'
+            + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
+            + '                                  availability of shipping to the specified area.';
     }
 
     /**
