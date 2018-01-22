@@ -48,7 +48,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
             + '    <withRelated>           - [optional] Boolean - [TODO]';
     }
 
-    public example(): string {
+    public example(): any {
         return null;
     }
 

@@ -16,7 +16,7 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
-        super(new CommandEnumType().HELP, rpcCommandFactory);
+        super(new CommandEnumType().HELP_ROOT, rpcCommandFactory);
         this.log = new Logger(__filename);
     }
 
@@ -67,7 +67,7 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
         return '[command]';
     }
 
-    public example(): string {
+    public example(): any {
         return null;
     }
 

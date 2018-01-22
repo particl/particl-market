@@ -9,6 +9,7 @@ import { JsonRpcError } from '../../core/api/JsonRpcError';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { RpcRequest } from '../requests/RpcRequest';
 import { CommandEnumType } from '../commands/CommandEnumType';
+import { MessageException } from '../exceptions/MessageException';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -37,9 +38,13 @@ export class RpcController {
 
         // get the commandType for the method name
         const commandType = this.commands.byPropName(body.method);
-        // ... use the commandType to get the correct RpcCommand implementation and execute
-        const result = await this.rpcCommandFactory.get(commandType).execute(rpcRequest);
-        return this.createResponse(rpcRequest.id, result);
+        if (commandType) {
+            // ... use the commandType to get the correct RpcCommand implementation and execute
+            const result = await this.rpcCommandFactory.get(commandType).execute(rpcRequest);
+            return this.createResponse(rpcRequest.id, result);
+        } else {
+            throw new MessageException('Unknown command.');
+        }
     }
 
     private createRequest(method: string, params?: any, id?: string | number): RpcRequest {

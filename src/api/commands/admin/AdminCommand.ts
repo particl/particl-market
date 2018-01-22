@@ -16,7 +16,7 @@ export class AdminCommand extends BaseCommand implements RpcCommandInterface<any
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
-        super(new CommandEnumType().ADMIN, rpcCommandFactory);
+        super(new CommandEnumType().ADMIN_ROOT, rpcCommandFactory);
         this.log = new Logger(__filename);
     }
 
@@ -35,7 +35,7 @@ export class AdminCommand extends BaseCommand implements RpcCommandInterface<any
         return '(data)';
     }
 
-    public example(): string {
+    public example(): any {
         return null;
     }
 

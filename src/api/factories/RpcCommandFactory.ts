@@ -5,10 +5,10 @@ import { Types, Core, Targets } from '../../constants';
 import { RpcCommandInterface} from '../commands/RpcCommandInterface';
 import { NotFoundException } from '../exceptions/NotFoundException';
 
-import { AddDataCommand} from '../commands/data/AddDataCommand';
-import { CleanDbCommand} from '../commands/data/CleanDbCommand';
-import { GenerateDataCommand} from '../commands/data/GenerateDataCommand';
-import { HelpCommand} from '../commands/HelpCommand';
+import { DataAddCommand } from '../commands/data/DataAddCommand';
+import { DataCleanCommand } from '../commands/data/DataCleanCommand';
+import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
+import { HelpCommand } from '../commands/HelpCommand';
 
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
 import { EscrowCreateCommand } from '../commands/escrow/EscrowCreateCommand';
@@ -59,7 +59,7 @@ import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
 import { RejectBidCommand } from '../commands/bid/RejectBidCommand';
 import { SendBidCommand } from '../commands/bid/SendBidCommand';
 import { ListingItemPostCommand } from '../commands/listingitem/ListingItemPostCommand';
-import {Command} from "../commands/Command";
+import { Command } from '../commands/Command';
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -118,9 +118,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationAddCommand) private shippingDestinationAddCommand: ShippingDestinationAddCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationRemoveCommand) private shippingDestinationRemoveCommand: ShippingDestinationRemoveCommand,
 
-        @inject(Types.Command) @named(Targets.Command.AddDataCommand) private addDataCommand: AddDataCommand,
-        @inject(Types.Command) @named(Targets.Command.CleanDbCommand) private cleanDbCommand: CleanDbCommand,
-        @inject(Types.Command) @named(Targets.Command.GenerateDataCommand) private generateDataCommand: GenerateDataCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataAddCommand) private dataAddCommand: DataAddCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
 
@@ -181,9 +181,9 @@ export class RpcCommandFactory {
         this.commands.push(shippingDestinationAddCommand);
         this.commands.push(shippingDestinationRemoveCommand);
 
-        this.commands.push(addDataCommand);
-        this.commands.push(cleanDbCommand);
-        this.commands.push(generateDataCommand);
+        this.commands.push(dataAddCommand);
+        this.commands.push(dataCleanCommand);
+        this.commands.push(dataGenerateCommand);
         this.commands.push(helpCommand);
 
         this.log.debug(this.commands.length + ' commands initialized.');

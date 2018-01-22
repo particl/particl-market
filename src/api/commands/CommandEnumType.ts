@@ -139,7 +139,7 @@ export class CommandEnumType extends Enum<Command> {
 
     get rootCommands(): Command[] {
         const rootCommands: Command[] = [];
-        for (const cmd: Command of this.values) {
+        for (const cmd of this.values) {
             if (cmd.isRoot) {
                 rootCommands.push(cmd);
             }

@@ -18,7 +18,7 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
         @inject(Types.Service) @named(Targets.Service.TestDataService) private testDataService: TestDataService,
         @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
-        super(new CommandEnumType().ADMIN, rpcCommandFactory);
+        super(new CommandEnumType().DATA_CLEAN, rpcCommandFactory);
         this.log = new Logger(__filename);
     }
 
@@ -31,7 +31,7 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
         return '';
     }
 
-    public example(): string {
+    public example(): any {
         return null;
     }
 }

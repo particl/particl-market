@@ -42,7 +42,7 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
         return '<model> <json> [<withRelated>]';
     }
 
-    public example(): string {
+    public example(): any {
         return null;
     }
 

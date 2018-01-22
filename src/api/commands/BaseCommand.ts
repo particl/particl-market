@@ -8,7 +8,7 @@ export class BaseCommand {
     public commands: CommandEnumType = new CommandEnumType();
     public command: Command;
 
-    constructor(command: Command, protected rpcCommandFactory: RpcCommandFactory) {
+    constructor(command: Command, private commandFactory: RpcCommandFactory) {
         this.command = command;
         this.commands = new CommandEnumType();
     }
@@ -38,7 +38,7 @@ export class BaseCommand {
      */
     public async executeNext(request: RpcRequest): Promise<any> {
         const commandName = request.params.shift();
-        const rpcCommand = this.rpcCommandFactory.get(commandName);
+        const rpcCommand = this.commandFactory.get(commandName);
         return await rpcCommand.execute(request);
     }
 }
