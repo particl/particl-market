@@ -9,20 +9,23 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ItemCategoryRemoveCommand implements RpcCommandInterface<void> {
+export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().CATEGORY_REMOVE, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'removecategory';
     }
 
     /**
@@ -56,6 +59,10 @@ export class ItemCategoryRemoveCommand implements RpcCommandInterface<void> {
         return 'removecategory <categoryId>\n'
             + '    <categoryId>                    - Numeric - The ID belonging to the category we\n'
             + '                                       want to destroy.';
+    }
+
+    public example(): any {
+        return null;
     }
 
     /**

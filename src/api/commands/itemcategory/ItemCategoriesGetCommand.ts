@@ -6,18 +6,21 @@ import { ItemCategoryService } from '../../services/ItemCategoryService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ItemCategoriesGetCommand implements RpcCommandInterface<ItemCategory> {
+export class ItemCategoriesGetCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().CATEGORY_LIST, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'getcategories';
     }
 
     /**
@@ -33,4 +36,9 @@ export class ItemCategoriesGetCommand implements RpcCommandInterface<ItemCategor
     public help(): string {
         return 'getcategories';
     }
+
+    public example(): any {
+        return null;
+    }
+
 }

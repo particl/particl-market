@@ -10,19 +10,23 @@ import { ItemCategoryUpdateRequest } from '../../requests/ItemCategoryUpdateRequ
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ItemCategoryUpdateCommand implements RpcCommandInterface<ItemCategory> {
+export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
     public log: LoggerType;
     public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().CATEGORY_UPDATE, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'updatecategory';
     }
 
     /**
@@ -64,6 +68,10 @@ export class ItemCategoryUpdateCommand implements RpcCommandInterface<ItemCatego
             + '    <parentItemCategoryId>           - [optional] Numeric - The ID that identifies the\n'
             + '                                        new parent category of the category we want to\n'
             + '                                        update; default is the root category.';
+    }
+
+    public example(): any {
+        return null;
     }
 
     /**
