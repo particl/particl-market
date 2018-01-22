@@ -45,6 +45,10 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         // create listing-item
         const listingItem = await this.listingItemFactory.getModel(data as ListingItemMessage);
 
+        // NOTE: It is only for the testing purpose for the test cases later we will remove the getting default market
+        const defaultMarket = await this.marketService.getDefault();
+        listingItem.market_id = defaultMarket.id;
+
         return await this.listingItemService.create(listingItem as ListingItemCreateRequest);
     }
 
