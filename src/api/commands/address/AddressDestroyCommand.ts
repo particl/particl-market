@@ -4,20 +4,22 @@ import { validate, request } from '../../../core/api/Validate';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { MessageException } from '../../exceptions/MessageException';
 import { AddressService } from '../../services/AddressService';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
+export class AddressDestroyCommand extends BaseCommand implements RpcCommandInterface<void> {
 
-export class AddressDestroyCommand implements RpcCommandInterface<void> {
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().ADDRESS_REMOVE, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'removeaddress';
     }
 
     /**
@@ -36,5 +38,9 @@ export class AddressDestroyCommand implements RpcCommandInterface<void> {
     public help(): string {
         return 'removeaddress <addressId>\n'
             + '    <addressId>            - The ID of the address we want to remove.';
+    }
+
+    public example(): any {
+        return null;
     }
 }

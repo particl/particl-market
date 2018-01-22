@@ -41,9 +41,9 @@ import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplat
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
 import { MarketCreateCommand } from '../commands/market/MarketCreateCommand';
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
-import { AddressCreateCommand } from '../commands/profile/AddressCreateCommand';
-import { AddressDestroyCommand } from '../commands/profile/AddressDestroyCommand';
-import { AddressUpdateCommand } from '../commands/profile/AddressUpdateCommand';
+import { AddressCreateCommand } from '../commands/address/AddressCreateCommand';
+import { AddressDestroyCommand } from '../commands/address/AddressDestroyCommand';
+import { AddressUpdateCommand } from '../commands/address/AddressUpdateCommand';
 import { ProfileCreateCommand } from '../commands/profile/ProfileCreateCommand';
 import { ProfileDestroyCommand } from '../commands/profile/ProfileDestroyCommand';
 import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';

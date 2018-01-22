@@ -94,6 +94,11 @@ export const Targets = {
         UserService: 'UserService'
     },
     Command:     {
+        address: {
+            AddressCreateCommand: 'AddressCreateCommand',
+            AddressDestroyCommand: 'AddressDestroyCommand',
+            AddressUpdateCommand: 'AddressUpdateCommand'
+        },
         admin: {
             AdminCommand: 'AdminCommand'
         },
@@ -170,9 +175,6 @@ export const Targets = {
             PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'
         },
         profile: {
-            AddressCreateCommand: 'AddressCreateCommand',
-            AddressDestroyCommand: 'AddressDestroyCommand',
-            AddressUpdateCommand: 'AddressUpdateCommand',
             ProfileCreateCommand: 'ProfileCreateCommand',
             ProfileDestroyCommand: 'ProfileDestroyCommand',
             ProfileGetCommand: 'ProfileGetCommand',
