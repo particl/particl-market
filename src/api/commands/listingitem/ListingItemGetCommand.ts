@@ -6,18 +6,21 @@ import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ListingItemGetCommand implements RpcCommandInterface<ListingItem> {
+export class ListingItemGetCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().ITEM_GET, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'getitem';
     }
 
     /**
@@ -45,4 +48,9 @@ export class ListingItemGetCommand implements RpcCommandInterface<ListingItem> {
         return 'getitem <listingItemId>\n'
             + '    <listingItemId>     - Numeric - The ID of the listing item we want to retrieve.';
     }
+
+    public example(): any {
+        return null;
+    }
+
 }
