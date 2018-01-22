@@ -241,7 +241,7 @@ export class ListingItemService {
         const existingListingItemObjects = updatedListingItem.related('ListingItemObjects').toJSON() || [];
 
         // find highestOrderNumber
-        const highestOrderNumber = await this.findHighesOrderNumber(newListingItemObjects);
+        const highestOrderNumber = await this.findHighestOrderNumber(newListingItemObjects);
 
         const objectsToBeUpdated = [] as any;
         for (const object of existingListingItemObjects) {
@@ -346,6 +346,7 @@ export class ListingItemService {
             this.log.warn(`No listingItem related with listing_item_template_id=${data.hash}!`);
             throw new MessageException(`No listingItem related with listing_item_template_id=${data.hash}!`);
         }
+    }
 
     // check if object is exist in a array
     private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
@@ -355,7 +356,7 @@ export class ListingItemService {
     }
 
     // find highest order number from listingItemObjects
-    private async findHighesOrderNumber(listingItemObjects: string[]): Promise<any> {
+    private async findHighestOrderNumber(listingItemObjects: string[]): Promise<any> {
         const highestOrder = await _.maxBy(listingItemObjects, (itemObject) => {
           return itemObject['order'];
         });
