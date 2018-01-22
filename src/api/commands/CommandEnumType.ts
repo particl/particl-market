@@ -66,11 +66,11 @@ export class CommandEnumType extends Enum<Command> {
     public ITEMIMAGE_ROOT: Command          = new Command('itemimage', 'image', true,
         [this.ITEMIMAGE_LIST, this.ITEMIMAGE_ADD, this.ITEMIMAGE_REMOVE]);
 
-    public ITEMINFORMATION_LIST: Command    = new Command('iteminformationlist', 'list', false);
+    public ITEMINFORMATION_GET: Command    = new Command('iteminformationget', 'get', false);
     public ITEMINFORMATION_ADD: Command     = new Command('iteminformationadd', 'add', false);
-    public ITEMINFORMATION_REMOVE: Command  = new Command('iteminformationremove', 'remove', false);
+    public ITEMINFORMATION_UPDATE: Command  = new Command('iteminformationupdate', 'update', false);
     public ITEMINFORMATION_ROOT: Command    = new Command('iteminformation', 'information', true,
-        [this.ITEMINFORMATION_LIST, this.ITEMINFORMATION_ADD, this.ITEMINFORMATION_REMOVE]);
+        [this.ITEMINFORMATION_GET, this.ITEMINFORMATION_ADD, this.ITEMINFORMATION_UPDATE]);
 
     public TEMPLATE_SEARCH: Command         = new Command('templatesearch', 'search', false);
     public TEMPLATE_GET: Command            = new Command('templateget', 'get', false);

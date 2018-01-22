@@ -6,18 +6,21 @@ import { ItemInformationService } from '../../services/ItemInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ItemInformationGetCommand implements RpcCommandInterface<ItemInformation> {
+export class ItemInformationGetCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().ITEMINFORMATION_GET, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'getiteminformation';
     }
 
     /**
@@ -39,4 +42,9 @@ export class ItemInformationGetCommand implements RpcCommandInterface<ItemInform
             + '    <itemInformationId>             - Numeric - The ID of the item information we want\n'
             + '                                       to retrieve.';
     }
+
+    public example(): any {
+        return null;
+    }
+
 }

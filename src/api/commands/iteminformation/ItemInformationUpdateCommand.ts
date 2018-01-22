@@ -7,18 +7,21 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemInformationUpdateRequest } from '../../requests/ItemInformationUpdateRequest';
 import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ItemInformationUpdateCommand implements RpcCommandInterface<ItemInformation> {
+export class ItemInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().ITEMINFORMATION_UPDATE, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'updateiteminformation';
     }
 
     /**
@@ -60,4 +63,9 @@ export class ItemInformationUpdateCommand implements RpcCommandInterface<ItemInf
             + '                                       category we want to assign to the item\n'
             + '                                       information we\'re updating.';
     }
+
+    public example(): any {
+        return null;
+    }
+
 }
