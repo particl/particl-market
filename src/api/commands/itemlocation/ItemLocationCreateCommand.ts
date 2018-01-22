@@ -11,19 +11,22 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import * as _ from 'lodash';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ItemLocationCreateCommand implements RpcCommandInterface<ItemLocation> {
+export class ItemLocationCreateCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemLocationService) private itemLocationService: ItemLocationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().ITEMLOCATION_ADD, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'additemlocation';
     }
 
     /**
@@ -79,6 +82,10 @@ export class ItemLocationCreateCommand implements RpcCommandInterface<ItemLocati
             + '    <gpsMarkerDescription>     - Numeric - [TODO]\n'
             + '    <gpsMarkerLatitude>        - Numeric - [TODO]\n'
             + '    <gpsMarkerLongitude>       - Numeric - [TODO]';
+    }
+
+    public example(): any {
+        return null;
     }
 
     /*

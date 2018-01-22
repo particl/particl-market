@@ -8,19 +8,22 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as _ from 'lodash';
 import { MessageException } from '../../exceptions/MessageException';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ItemLocationRemoveCommand implements RpcCommandInterface<void> {
+export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemLocationService) public itemLocationService: ItemLocationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().ITEMLOCATION_REMOVE, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'removeitemlocation';
     }
 
     /**
@@ -43,6 +46,10 @@ export class ItemLocationRemoveCommand implements RpcCommandInterface<void> {
     public help(): string {
         return 'removeitemlocation <itemLocationId>\n'
             + '    <itemLocationId>           - Numeric - [TODO]';
+    }
+
+    public example(): any {
+        return null;
     }
 
     /*
