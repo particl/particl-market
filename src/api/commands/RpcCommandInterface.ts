@@ -14,4 +14,5 @@ export interface RpcCommandInterface<T> {
     getChildCommands(): Command[];
     help(): string;
     example(): any;
+    description(): string;
 }

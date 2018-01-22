@@ -41,4 +41,13 @@ export class BaseCommand {
         const rpcCommand = commandFactory.get(commandName);
         return await rpcCommand.execute(request, commandFactory);
     }
+
+    public example(): any {
+        return null;
+    }
+
+    public description(): string {
+        return '';
+    }
+
 }
