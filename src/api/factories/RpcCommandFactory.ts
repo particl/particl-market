@@ -23,6 +23,7 @@ import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
 import { EscrowRefundCommand } from '../commands/escrow/EscrowRefundCommand';
 import { EscrowReleaseCommand } from '../commands/escrow/EscrowReleaseCommand';
 import { FavoriteRootCommand } from '../commands/favorite/FavoriteRootCommand';
+import { FavoriteListCommand } from '../commands/favorite/FavoriteListCommand';
 import { FavoriteAddCommand } from '../commands/favorite/FavoriteAddCommand';
 import { FavoriteRemoveCommand } from '../commands/favorite/FavoriteRemoveCommand';
 import { ItemCategoriesGetCommand } from '../commands/itemcategory/ItemCategoriesGetCommand';
@@ -51,9 +52,11 @@ import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplat
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
 import { MarketCreateCommand } from '../commands/market/MarketCreateCommand';
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
+import { AddressRootCommand } from '../commands/address/AddressRootCommand';
+import { AddressListCommand } from '../commands/address/AddressListCommand';
 import { AddressCreateCommand } from '../commands/address/AddressCreateCommand';
-import { AddressDestroyCommand } from '../commands/address/AddressDestroyCommand';
 import { AddressUpdateCommand } from '../commands/address/AddressUpdateCommand';
+import { AddressRemoveCommand } from '../commands/address/AddressRemoveCommand';
 import { ProfileCreateCommand } from '../commands/profile/ProfileCreateCommand';
 import { ProfileDestroyCommand } from '../commands/profile/ProfileDestroyCommand';
 import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
@@ -82,9 +85,10 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowLockCommand) private escrowLockCommand: EscrowLockCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRefundCommand) private escrowRefundCommand: EscrowRefundCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowReleaseCommand) private escrowReleaseCommand: EscrowReleaseCommand,
+        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRootCommand) private favoriteRootCommand: FavoriteRootCommand,
+        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteListCommand) private favoriteListCommand: FavoriteListCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteAddCommand) private favoriteAddCommand: FavoriteAddCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRemoveCommand) private favoriteRemoveCommand: FavoriteRemoveCommand,
-        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRootCommand) private favoriteRootCommand: FavoriteRootCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoriesGetCommand) private itemCategoriesGetCommand: ItemCategoriesGetCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryFindCommand) private itemCategoryFindCommand: ItemCategoryFindCommand,
@@ -111,9 +115,11 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.market.MarketCreateCommand) private marketCreateCommand: MarketCreateCommand,
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationUpdateCommand) private messagingInformationUpdateCommand: MessagingInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
-        @inject(Types.Command) @named(Targets.Command.address.AddressCreateCommand) private addresscreateCommand: AddressCreateCommand,
-        @inject(Types.Command) @named(Targets.Command.address.AddressDestroyCommand) private addressDestroyCommand: AddressDestroyCommand,
+        @inject(Types.Command) @named(Targets.Command.address.AddressRootCommand) private addressRootCommand: AddressRootCommand,
+        @inject(Types.Command) @named(Targets.Command.address.AddressListCommand) private addressListCommand: AddressListCommand,
+        @inject(Types.Command) @named(Targets.Command.address.AddressCreateCommand) private addressCreateCommand: AddressCreateCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressUpdateCommand) private addressUpdateCommand: AddressUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.address.AddressRemoveCommand) private addressRemoveCommand: AddressRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileCreateCommand) private profileCreateCommand: ProfileCreateCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileDestroyCommand) private profileDestroyCommand: ProfileDestroyCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileGetCommand) private profileGetCommand: ProfileGetCommand,
@@ -146,9 +152,10 @@ export class RpcCommandFactory {
         this.commands.push(escrowLockCommand);
         this.commands.push(escrowRefundCommand);
         this.commands.push(escrowReleaseCommand);
+        this.commands.push(favoriteRootCommand);
+        this.commands.push(favoriteListCommand);
         this.commands.push(favoriteAddCommand);
         this.commands.push(favoriteRemoveCommand);
-        this.commands.push(favoriteRootCommand);
         this.commands.push(itemCategoriesGetCommand);
         this.commands.push(itemCategoryCreateCommand);
         this.commands.push(itemCategoryFindCommand);
@@ -175,9 +182,11 @@ export class RpcCommandFactory {
         this.commands.push(marketCreateCommand);
         this.commands.push(messagingInformationUpdateCommand);
         this.commands.push(paymentInformationUpdateCommand);
-        this.commands.push(addresscreateCommand);
-        this.commands.push(addressDestroyCommand);
+        this.commands.push(addressRootCommand);
+        this.commands.push(addressListCommand);
+        this.commands.push(addressCreateCommand);
         this.commands.push(addressUpdateCommand);
+        this.commands.push(addressRemoveCommand);
         this.commands.push(profileCreateCommand);
         this.commands.push(profileDestroyCommand);
         this.commands.push(profileGetCommand);

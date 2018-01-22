@@ -24,6 +24,8 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
     }
 
     /**
+     * TODO: Update command to match help().
+     *
      * data.params[]:
      *  [0]: title
      *  [1]: addressLine1
@@ -58,15 +60,19 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return this.getName() + ' <title> <addressLine1> <addressLine2> <city> (<country> | <countryCode>) <profileId>\n'
+        return this.getName() + ' <profileId> <title> <addressLine1> <addressLine2> <city> (<countryName>|<countryCode>) [<zip>]'
+            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
+            + '                              this address with.\n'
             + '    <title>                - String - A short identifier for the address.\n'
             + '    <addressLine1>         - String - The first line of the address.\n'
             + '    <addressLine2>         - String - The second line of the address.\n'
             + '    <city>                 - String - The city of the address.\n'
             + '    <country>              - String - The country name of the address.\n'
             + '    <countryCode>          - String - Two letter country code of the address.\n'
-            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
-            + '                              this address with.';
+            + '    <zip>                  - String - The ZIP code of your address.';
     }
 
+    public description(): string {
+        return 'Create an address and associate it with a profile.';
+    }
 }

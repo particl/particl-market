@@ -26,6 +26,8 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
     }
 
     /**
+     * TODO: Update command to match help().
+     *
      * data.params[]:
      *  [0]: address id
      *  [1]: title
@@ -59,7 +61,7 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return this.getName() + ' <addressId> <title> <addressLine1> <addressLine2> <city> (<country> | <countryCode>) <profileId>\n'
+        return this.getName() + ' <addressId> <title> <addressLine1> <addressLine2> <city> (<countryName>|<countryCode>) [<zip>]\n'
             + '    <addressId>            - Numeric - The ID of the address we want to modify.\n'
             + '    <title>                - String - A short identifier for the address.\n'
             + '    <addressLine1>         - String - The first line of the address.\n'
@@ -67,8 +69,10 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
             + '    <city>                 - String - The city of the address.\n'
             + '    <country>              - String - The country name of the address.\n'
             + '    <countryCode>          - String - Two letter country code of the address.\n'
-            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
-            + '                              this address with.';
+            + '    <zip>                  - String - The ZIP code of your address.';
     }
 
+    public description(): string {
+        return 'Update the details of an address given by ID.';
+    }
 }
