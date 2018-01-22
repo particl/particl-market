@@ -1,11 +1,10 @@
-
-import { CommandEnumType } from '../../../src/api/commands/CommandEnumType';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Command } from '../../../src/api/commands/Command';
 
 describe('Command', () => {
     // jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
-    const Commands: CommandEnumType = new CommandEnumType();
+    // const Commands: CommandEnumType = new CommandEnumType();
 
     beforeEach(() => {
         //
@@ -42,7 +41,7 @@ describe('Command', () => {
     });
 
     test('Should return all types of Commands and all root Commands', async () => {
-        expect(Commands.values).toHaveLength(76);
+        expect(Commands.values).toHaveLength(77);
         expect(Commands.rootCommands).toHaveLength(19);
     });
 });
