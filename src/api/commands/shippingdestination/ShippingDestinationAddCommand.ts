@@ -13,19 +13,22 @@ import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
 import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
 import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ShippingDestinationAddCommand implements RpcCommandInterface<ShippingDestination> {
+export class ShippingDestinationAddCommand extends BaseCommand implements RpcCommandInterface<ShippingDestination> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ShippingDestinationService) private shippingDestinationService: ShippingDestinationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().SHIPPINGDESTINATION_ADD, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'addshippingdestination';
     }
 
     /**
@@ -77,6 +80,10 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
             + '                                  associated with this shipping destination.\n'
             + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
             + '                                  availability of shipping to the specified area.';
+    }
+
+    public example(): any {
+        return null;
     }
 
     /**
