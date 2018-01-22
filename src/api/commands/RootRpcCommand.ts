@@ -11,6 +11,7 @@ export class RootRpcCommand implements RpcCommandInterface<any> {
     public commands: Array<RpcCommandInterface<any>>;
     public name: string;
     public helpStr: string;
+    public descriptionStr: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -18,7 +19,8 @@ export class RootRpcCommand implements RpcCommandInterface<any> {
         this.log = new Logger(__filename);
         this.commands = new Array<RpcCommandInterface<any>>();
         this.name = 'DefaultRootCommand';
-        this.helpStr = 'DefaultRootCommand';
+        this.helpStr = 'DefaultRootCommand help';
+        this.descriptionStr = 'DefaultRootCommand description';
     }
 
     @validate()
