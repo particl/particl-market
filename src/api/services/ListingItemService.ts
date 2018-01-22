@@ -175,14 +175,14 @@ export class ListingItemService {
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
 
         // Item-information
-        let itemInformation = updatedListingItem.related('ItemInformation').toJSON() || {};
+        let itemInformation = updatedListingItem.related('ItemInformation').toJSON() as ItemInformationUpdateRequest;
         // if the related one exists allready, then update. if it doesnt exist, create. and if the related one is missing, then remove.
         if (!_.isEmpty(body.itemInformation)) {
             if (!_.isEmpty(itemInformation)) {
                 const itemInformationId = itemInformation.id;
                 itemInformation = body.itemInformation;
                 itemInformation.listing_item_id = id;
-                await this.itemInformationService.update(itemInformationId, itemInformation as ItemInformationUpdateRequest);
+                await this.itemInformationService.update(itemInformationId, itemInformation);
             } else {
                 itemInformation = body.itemInformation;
                 itemInformation.listing_item_id = id;
@@ -193,14 +193,14 @@ export class ListingItemService {
         }
 
         // payment-information
-        let paymentInformation = updatedListingItem.related('PaymentInformation').toJSON() || {};
+        let paymentInformation = updatedListingItem.related('PaymentInformation').toJSON() as PaymentInformationUpdateRequest;
 
         if (!_.isEmpty(body.paymentInformation)) {
             if (!_.isEmpty(paymentInformation)) {
                 const paymentInformationId = paymentInformation.id;
                 paymentInformation = body.paymentInformation;
                 paymentInformation.listing_item_id = id;
-                await this.paymentInformationService.update(paymentInformationId, paymentInformation as PaymentInformationUpdateRequest);
+                await this.paymentInformationService.update(paymentInformationId, paymentInformation);
             } else {
                 paymentInformation = body.paymentInformation;
                 paymentInformation.listing_item_id = id;
