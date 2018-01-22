@@ -13,10 +13,10 @@ export class RootRpcCommand implements RpcCommandInterface<any> {
     public helpStr: string;
 
     constructor(
-        commands: new () => RpcCommandInterface<any>,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
+        this.commands = new Array<RpcCommandInterface<any>>();
         this.name = 'DefaultRootCommand';
         this.helpStr = 'DefaultRootCommand';
     }

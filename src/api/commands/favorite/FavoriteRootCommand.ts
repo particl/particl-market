@@ -15,12 +15,11 @@ export class FavoriteRootCommand extends RootRpcCommand {
     public helpStr: string;
 
     constructor(
-        @inject(Types.Command) @named(Types.Command.FavoriteAddCommand) public favoriteAddCommand: typeof FavoriteAddCommand,
-        @inject(Types.Command) @named(Types.Command.FavoriteRemoveCommand) public favoriteRemoveCommand: typeof FavoriteRemoveCommand,
-        commands: new () => RpcCommandInterface<any>,
+        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteAddCommand) private favoriteAddCommand: FavoriteAddCommand,
+        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRemoveCommand) private favoriteRemoveCommand: FavoriteRemoveCommand,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(commands, Logger);
+        super(Logger);
 
         this.name = 'favorite';
         this.helpStr = 'favorite (add|remove) asd';
