@@ -3,24 +3,26 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-// import { ItemImageService } from '../../services/ItemImageService';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemImage } from '../../models/ItemImage';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ItemImageGetsCommand implements RpcCommandInterface<Bookshelf.Collection<ItemImage>> {
+export class ItemImageGetsCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ItemImage>> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().ITEMIMAGE_LIST, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'getitemimages';
     }
 
     /**
@@ -39,4 +41,9 @@ export class ItemImageGetsCommand implements RpcCommandInterface<Bookshelf.Colle
         return 'getitemimages <listingItemId>\n'
             + '<listingItemId>           - Numeric - The ID of the listing item template whose associated images we want to find.';
     }
+
+    public example(): any {
+        return null;
+    }
+
 }

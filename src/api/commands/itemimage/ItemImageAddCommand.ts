@@ -9,19 +9,22 @@ import { ItemImage } from '../../models/ItemImage';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as crypto from 'crypto-js';
 import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
+export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().ITEMIMAGE_ADD, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'additemimage';
     }
 
     /**
@@ -68,4 +71,9 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
             + '                                        (as produced by `base64` *NIX command) of the\n'
             + '                                        image we want to add. Supports JPEG, PNG, GIF.';
     }
+
+    public example(): any {
+        return null;
+    }
+
 }
