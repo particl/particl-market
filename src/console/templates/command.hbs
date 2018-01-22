@@ -1,4 +1,3 @@
-import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../{{deepness}}core/api/Validate';
 import { Logger as LoggerType } from '../../{{deepness}}core/Logger';
@@ -6,28 +5,39 @@ import { Types, Core, Targets } from '../../{{deepness}}constants';
 import { {{name.capitalize}}Service } from '../{{deepness}}services/{{name.capitalize}}Service';
 import { RpcRequest } from '../{{deepness}}requests/RpcRequest';
 import { {{name.capitalize}} } from '../{{deepness}}models/{{name.capitalize}}';
-import {RpcCommand} from './RpcCommand';
+import { RpcCommandInterface } from '../RpcCommandInterface';
+import { Commands} from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class {{name.capitalize}}Command implements RpcCommand<Bookshelf.Collection<{{name.capitalize}}>> {
+export class {{name.capitalize}}Command implements RpcCommand<{{name.capitalize}}> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
+        super(Commands.CHANGE_THIS);
         this.log = new Logger(__filename);
         this.name = '{{name.capitalize}}';//TODO: replace me with the command name
     }
 
+    /**
+    * command description
+    *
+    * @param data, RpcRequest
+    * @param rpcCommandFactory, RpcCommandFactory
+    * @returns {Promise<any>}
+    */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<{{name.capitalize}}>> {
-        // TODO: Fill me in
+    public async execute( @request(RpcRequest) data: any): Promise<{{name.capitalize}}> {
         throw new NotFoundException();
-        // Maybe try: return this.{{name.camelCase}}Service.findAll();
+        // root commands:
+        // return await this.executeNext(data, rpcCommandFactory);
     }
 
     public help(): string {
+        return this.getName() + ' TODO: (command param help)';
         return '{{name.capitalize}}Command: TODO: Fill in help string.';
     }
 }

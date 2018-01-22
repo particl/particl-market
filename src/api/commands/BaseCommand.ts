@@ -2,6 +2,8 @@ import { CommandEnumType, Commands } from './CommandEnumType';
 import { Command } from './Command';
 import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
+import * as _ from 'lodash';
+import { NotFoundException } from '../exceptions/NotFoundException';
 
 export class BaseCommand {
 
@@ -38,8 +40,15 @@ export class BaseCommand {
      */
     public async executeNext(request: RpcRequest, commandFactory: RpcCommandFactory): Promise<any> {
         const commandName = request.params.shift();
-        const rpcCommand = commandFactory.get(commandName);
-        return await rpcCommand.execute(request, commandFactory);
+        // find a matching command from current commands childCommands
+        const commandType = _.find(this.getChildCommands(), command => command.commandName === commandName);
+        if (commandType) {
+            const rpcCommand = commandFactory.get(commandType);
+            // execute
+            return await rpcCommand.execute(request, commandFactory);
+        } else {
+            throw new NotFoundException('Unknown subcommand: ' + commandName + '\n');
+        }
     }
 
     public help(): string {
