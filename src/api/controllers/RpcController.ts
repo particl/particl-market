@@ -5,11 +5,12 @@ import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
 import { JsonRpc2Request, JsonRpc2Response, RpcErrorCode } from '../../core/api/jsonrpc';
 import { JsonRpcError } from '../../core/api/JsonRpcError';
+import { NotFoundException } from '../exceptions/NotFoundException';
+import * as _ from 'lodash';
 
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { RpcRequest } from '../requests/RpcRequest';
-import {CommandEnumType, Commands} from '../commands/CommandEnumType';
-import { MessageException } from '../exceptions/MessageException';
+import { Commands} from '../commands/CommandEnumType';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -37,13 +38,13 @@ export class RpcController {
         this.log.debug('controller.handleRPC() rpcRequest:', JSON.stringify(rpcRequest, null, 2));
 
         // get the commandType for the method name
-        const commandType = Commands.byPropName(body.method);
+        const commandType = _.find(Commands.rootCommands, command => command.commandName === body.method);
         if (commandType) {
             // ... use the commandType to get the correct RpcCommand implementation and execute
             const result = await this.rpcCommandFactory.get(commandType).execute(rpcRequest, this.rpcCommandFactory);
             return this.createResponse(rpcRequest.id, result);
         } else {
-            throw new MessageException('Unknown command.');
+            throw new NotFoundException('Unknown command: ' + body.method + '\n');
         }
     }
 
