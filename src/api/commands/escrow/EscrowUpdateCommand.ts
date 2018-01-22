@@ -11,6 +11,7 @@ export class EscrowUpdateCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
@@ -18,6 +19,15 @@ export class EscrowUpdateCommand implements RpcCommandInterface<Escrow> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'updateescrow';
+        this.helpStr = 'escrow update <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio>\n'
+            + '    <listingItemTemplateId>         - Numeric - The ID of the listing item template\n'
+            + '                                       associated with the escrow we want to modify.\n'
+            + '    <escrowType>                    - String - The escrow type we want to give to the\n'
+            + '                                       escrow we are modifying.\n'
+            + '                                    - ENUM{NOP,MAD} - The escrow type to give to the\n'
+            + '                                       escrow we are modifying.\n'
+            + '    <buyerRatio>                    - Numeric - [TODO]\n'
+            + '    <sellerRatio>                   - Numeric - [TODO]';
     }
 
     /**
@@ -42,14 +52,6 @@ export class EscrowUpdateCommand implements RpcCommandInterface<Escrow> {
     }
 
     public help(): string {
-        return 'escrow update <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio>\n'
-            + '    <listingItemTemplateId>         - Numeric - The ID of the listing item template\n'
-            + '                                       associated with the escrow we want to modify.\n'
-            + '    <escrowType>                    - String - The escrow type we want to give to the\n'
-            + '                                       escrow we are modifying.\n'
-            + '                                    - ENUM{NOP,MAD} - The escrow type to give to the\n'
-            + '                                       escrow we are modifying.\n'
-            + '    <buyerRatio>                    - Numeric - [TODO]\n' // TODO: this
-            + '    <sellerRatio>                   - Numeric - [TODO]'; // TODO: this
+        return this.helpStr;
     }
 }

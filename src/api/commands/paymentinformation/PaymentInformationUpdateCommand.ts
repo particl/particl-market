@@ -13,6 +13,7 @@ export class PaymentInformationUpdateCommand implements RpcCommandInterface<Paym
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
@@ -20,6 +21,23 @@ export class PaymentInformationUpdateCommand implements RpcCommandInterface<Paym
     ) {
         this.log = new Logger(__filename);
         this.name = 'updatepaymentinformation';
+        this.helpStr = 'updatepaymentinformation <listingItemTemplateId> <paymentType> <currency> <basePrice> <domesticShippingPrice>'
+            + ' <internationalShippingPrice> <paymentAddress>\n'
+            + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template\n'
+            + '                                     we want to associate this payment information\n'
+            + '                                     with.\n'
+            + '    <paymentType>                 - String  - Whether associated items are for free or\n'
+            + '                                     for sale.\n'
+            + '    <currency>                    - String  - The currency that we want to receive\n'
+            + '                                     payment in.\n'
+            + '    <basePrice>                   - Numeric - The base price of the item associated\n'
+            + '                                     with this object.\n'
+            + '    <domesticShippingPrice>       - Numeric - The domestic shipping price of the\n'
+            + '                                     item associated with this object.\n'
+            + '    <internationalShippingPrice>  - Numeric - The international shipping price of\n'
+            + '                                     the item associated with this object.\n'
+            + '    <paymentAddress>              - String  - The cryptocurrency address we want to\n'
+            + '                                     receive payment in.';
     }
 
     /**
@@ -63,22 +81,6 @@ export class PaymentInformationUpdateCommand implements RpcCommandInterface<Paym
     }
 
     public help(): string {
-        return 'updatepaymentinformation <listingItemTemplateId> <paymentType> <currency> <basePrice> <domesticShippingPrice>'
-            + ' <internationalShippingPrice> <paymentAddress>\n'
-            + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template\n'
-            + '                                     we want to associate this payment information\n'
-            + '                                     with.\n'
-            + '    <paymentType>                 - String  - Whether associated items are for free or\n'
-            + '                                     for sale.\n'
-            + '    <currency>                    - String  - The currency that we want to receive\n'
-            + '                                     payment in.\n'
-            + '    <basePrice>                   - Numeric - The base price of the item associated\n'
-            + '                                     with this object.\n'
-            + '    <domesticShippingPrice>       - Numeric - The domestic shipping price of the\n'
-            + '                                     item associated with this object.\n'
-            + '    <internationalShippingPrice>  - Numeric - The international shipping price of\n'
-            + '                                     the item associated with this object.\n'
-            + '    <paymentAddress>              - String  - The cryptocurrency address we want to\n'
-            + '                                     receive payment in.';
+        return this.helpStr;
     }
 }

@@ -11,6 +11,7 @@ export class ProfileGetCommand implements RpcCommandInterface<Profile> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
@@ -18,6 +19,11 @@ export class ProfileGetCommand implements RpcCommandInterface<Profile> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'getprofile';
+        this.helpStr = 'getprofile [<profileId>|<profileName>]\n'
+            + '    <profileId>           - [optional] Numeric - The ID of the profile we want to\n'
+            + '                             retrieve.\n'
+            + '    <profileName>         - [optional] String - The name of the profile we want to\n'
+            + '                             retrieve.';
     }
 
     /**
@@ -43,10 +49,6 @@ export class ProfileGetCommand implements RpcCommandInterface<Profile> {
     }
 
     public help(): string {
-        return 'getprofile [<profileId>|<profileName>]\n'
-            + '    <profileId>           - [optional] Numeric - The ID of the profile we want to\n'
-            + '                             retrieve.\n'
-            + '    <profileName>         - [optional] String - The name of the profile we want to\n'
-            + '                             retrieve.';
+        return this.helpStr;
     }
 }

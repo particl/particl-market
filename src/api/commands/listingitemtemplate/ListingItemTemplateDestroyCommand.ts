@@ -11,6 +11,7 @@ export class ListingItemTemplateDestroyCommand implements RpcCommandInterface<vo
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
@@ -18,6 +19,9 @@ export class ListingItemTemplateDestroyCommand implements RpcCommandInterface<vo
     ) {
         this.log = new Logger(__filename);
         this.name = 'removelistingitemtemplate';
+        this.helpStr = 'removelistingitemtemplate <listingTemplateId>\n'
+            + '    <listingTemplateId>    -    Numeric - The ID of the listing item template that we\n'
+            + '                                 want to destroy.';
     }
 
     /**
@@ -32,8 +36,6 @@ export class ListingItemTemplateDestroyCommand implements RpcCommandInterface<vo
     }
 
     public help(): string {
-        return 'removelistingitemtemplate <listingTemplateId>\n'
-            + '    <listingTemplateId>    -    Numeric - The ID of the listing item template that we\n'
-            + '                                 want to destroy.';
+        return this.helpStr;
     }
 }

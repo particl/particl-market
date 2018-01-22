@@ -10,6 +10,7 @@ import {ProfileService} from '../../services/ProfileService';
 export class ProfileDestroyCommand implements RpcCommandInterface<void> {
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
@@ -17,6 +18,10 @@ export class ProfileDestroyCommand implements RpcCommandInterface<void> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'removeprofile';
+        this.helpStr = 'removeprofile (<profileId>|<profileName>)\n'
+            + '    <profileID>            -  That profile ID of the profile we want to destroy.\n'
+            + '    <profileName>          -  [TODO implement] The name of the profile we\n'
+            + '                               want to destroy.';
     }
 
     /**
@@ -32,9 +37,6 @@ export class ProfileDestroyCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'removeprofile (<profileId>|<profileName>)\n'
-            + '    <profileID>            -  That profile ID of the profile we want to destroy.\n'
-            + '    <profileName>          -  [TODO implement] The name of the profile we\n'
-            + '                               want to destroy.';
+        return this.helpStr;
     }
 }

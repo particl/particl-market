@@ -11,6 +11,7 @@ export class GenerateDataCommand implements RpcCommandInterface<any> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.TestDataService) private testDataService: TestDataService,
@@ -18,6 +19,10 @@ export class GenerateDataCommand implements RpcCommandInterface<any> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'generatedata';
+        this.helpStr = 'generatedata <model> [<amount> [<withRelated>]]\n'
+            + '    <model>                 - [TODO] ENUM{} - [TODO]\n'
+            + '    <amount>                - [optional] Numeric - [TODO]\n'
+            + '    <withRelated>           - [optional] Boolean - [TODO]';
     }
 
     @validate()
@@ -33,9 +38,6 @@ export class GenerateDataCommand implements RpcCommandInterface<any> {
     }
 
     public help(): string {
-        return 'generatedata <model> [<amount> [<withRelated>]]\n'
-            + '    <model>                 - [TODO] ENUM{} - [TODO]\n'
-            + '    <amount>                - [optional] Numeric - [TODO]\n'
-            + '    <withRelated>           - [optional] Boolean - [TODO]';
+        return this.helpStr;
     }
 }

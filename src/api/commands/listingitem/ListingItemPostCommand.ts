@@ -15,6 +15,7 @@ export class ListingItemPostCommand implements RpcCommandInterface<ListingItem> 
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
@@ -22,6 +23,7 @@ export class ListingItemPostCommand implements RpcCommandInterface<ListingItem> 
     ) {
         this.log = new Logger(__filename);
         this.name = 'postitem';
+        this.helpStr = 'ListingItemPostCommand: TODO: Fill in help string.';
     }
 
     /**
@@ -45,6 +47,6 @@ export class ListingItemPostCommand implements RpcCommandInterface<ListingItem> 
     }
 
     public help(): string {
-        return 'ListingItemPostCommand: TODO: Fill in help string.';
+        return this.helpStr;
     }
 }

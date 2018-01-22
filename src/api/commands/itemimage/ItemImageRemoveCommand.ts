@@ -11,6 +11,7 @@ export class ItemImageRemoveCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
@@ -18,6 +19,8 @@ export class ItemImageRemoveCommand implements RpcCommandInterface<void> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'removeitemimage';
+        this.helpStr = 'removeitemimage <itemImageId>\n'
+            + '    <itemImageId>                   - Numeric - The ID of the image we want to remove.';
     }
 
     /**
@@ -41,7 +44,6 @@ export class ItemImageRemoveCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'removeitemimage <itemImageId>\n'
-            + '    <itemImageId>                   - Numeric - The ID of the image we want to remove.';
+        return this.helpStr
     }
 }

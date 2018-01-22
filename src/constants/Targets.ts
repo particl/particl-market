@@ -113,7 +113,8 @@ export const Targets = {
         },
         favorite: {
             FavoriteAddCommand: 'FavoriteAddCommand',
-            FavoriteRemoveCommand: 'FavoriteRemoveCommand'
+            FavoriteRemoveCommand: 'FavoriteRemoveCommand',
+            FavoriteRootCommand: 'FavoriteRootCommand'
         },
         GenerateDataCommand: 'GenerateDataCommand',
         HelpCommand: 'HelpCommand',
@@ -142,9 +143,9 @@ export const Targets = {
         },
         listingitem: {
             ListingItemGetCommand: 'ListingItemGetCommand',
+            ListingItemPostCommand: 'ListingItemPostCommand',
             ListingItemSearchCommand: 'ListingItemSearchCommand',
-            OwnListingItemSearchCommand: 'OwnListingItemSearchCommand',
-            ListingItemPostCommand: 'ListingItemPostCommand'
+            OwnListingItemSearchCommand: 'OwnListingItemSearchCommand'
         },
         listingitemtemplate: {
             ListingItemTemplateCreateCommand: 'ListingItemTemplateCreateCommand',
@@ -170,6 +171,7 @@ export const Targets = {
             ProfileGetCommand: 'ProfileGetCommand',
             ProfileUpdateCommand: 'ProfileUpdateCommand'
         },
+        RootRpcCommand: 'RootRpcCommand',
         RpcCommandInterface: 'RpcCommandInterface',
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',

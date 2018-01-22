@@ -18,6 +18,7 @@ export class RejectBidCommand implements RpcCommandInterface<Bid> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
@@ -27,6 +28,7 @@ export class RejectBidCommand implements RpcCommandInterface<Bid> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'rejectbid';
+        this.helpStr = 'RejectBidCommand: TODO: Fill in help string.';
     }
 
     /**
@@ -74,6 +76,6 @@ export class RejectBidCommand implements RpcCommandInterface<Bid> {
     }
 
     public help(): string {
-        return 'RejectBidCommand: TODO: Fill in help string.';
+        return this.helpStr;
     }
 }

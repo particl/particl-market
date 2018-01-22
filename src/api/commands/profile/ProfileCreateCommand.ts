@@ -12,6 +12,7 @@ export class ProfileCreateCommand implements RpcCommandInterface<Profile> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
@@ -19,6 +20,12 @@ export class ProfileCreateCommand implements RpcCommandInterface<Profile> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'createprofile';
+        this.helpStr =  'createprofile <profileName> [<profileAddress>]\n'
+            + '    <profileName>          - The name of the profile we want to create.\n'
+            + '    <profileAddress>       - [optional] the particl address of this profile.\n'
+            + '                              This is the address that\'s used in the particl\n'
+            + '                              messaging system. Will be automatically generated\n'
+            + '                              if omitted.';
     }
 
     /**
@@ -38,11 +45,6 @@ export class ProfileCreateCommand implements RpcCommandInterface<Profile> {
     }
 
     public help(): string {
-        return 'createprofile <profileName> [<profileAddress>]\n'
-            + '    <profileName>          - The name of the profile we want to create.\n'
-            + '    <profileAddress>       - [optional] the particl address of this profile.\n'
-            + '                              This is the address that\'s used in the particl\n'
-            + '                              messaging system. Will be automatically generated\n'
-            + '                              if omitted.';
+        return this.helpStr;
     }
 }

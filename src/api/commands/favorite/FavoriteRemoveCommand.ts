@@ -14,6 +14,7 @@ export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
@@ -23,6 +24,13 @@ export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'removefavorite';
+        this.helpStr = 'removefavorite (<itemId> | <hash>) [<profileId>]\n'
+            + '    <itemId>                        - Numeric - The ID of the listing item you want\n'
+            + '                                       to remove from your favorites.\n'
+            + '    <hash>                          - String - The hash of the listing item you want\n'
+            + '                                       to remove from your favourites.\n'
+            + '    <profileId>                     - [optional] Numeric - The ID of the profile\n'
+            + '                                       associated with the favorite we want to remove.\n';
     }
 
     /**
@@ -43,13 +51,7 @@ export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'removefavorite (<itemId> | <hash>) [<profileId>]\n'
-            + '    <itemId>                        - Numeric - The ID of the listing item you want\n'
-            + '                                       to remove from your favorites.\n'
-            + '    <hash>                          - String - The hash of the listing item you want\n'
-            + '                                       to remove from your favourites.\n'
-            + '    <profileId>                     - [optional] Numeric - The ID of the profile\n'
-            + '                                       associated with the favorite we want to remove.\n';
+        return this.helpStr;
     }
 
     /**

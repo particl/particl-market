@@ -9,12 +9,14 @@ export class HelpCommand implements RpcCommandInterface<string> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
         this.name = 'help';
+        this.helpStr = 'help';
     }
 
     /**
@@ -61,6 +63,6 @@ export class HelpCommand implements RpcCommandInterface<string> {
     }
 
     public help(): string {
-        return 'help';
+        return this.helpStr;
     }
 }

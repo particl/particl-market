@@ -16,6 +16,7 @@ export class ItemLocationUpdateCommand implements RpcCommandInterface<ItemLocati
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemLocationService) public itemLocationService: ItemLocationService,
@@ -24,6 +25,15 @@ export class ItemLocationUpdateCommand implements RpcCommandInterface<ItemLocati
     ) {
         this.log = new Logger(__filename);
         this.name = 'updateitemlocation';
+        this.helpStr = 'updateitemlocation <listingItemTemplateId> <region> <address> <gpsMarkerTitle>'
+            + ' <gpsMarkerDescription> <gpsMarkerLatitude> <gpsMarkerLongitude>\n'
+            + '    <listingItemTemplateId>    - Numeric - [TODO]\n'
+            + '    <region>                   - String - Region, i.e. country or country code.\n'
+            + '    <address>                  - [TODO] - [TODO]\n'
+            + '    <gpsMarkerTitle>           - String - [TODO]\n'
+            + '    <gpsMarkerDescription>     - Numeric - [TODO]\n'
+            + '    <gpsMarkerLatitude>        - Numeric - [TODO]\n'
+            + '    <gpsMarkerLongitude>       - Numeric - [TODO]';
     }
 
     /**
@@ -71,15 +81,7 @@ export class ItemLocationUpdateCommand implements RpcCommandInterface<ItemLocati
     }
 
     public help(): string {
-        return 'updateitemlocation <listingItemTemplateId> <region> <address> <gpsMarkerTitle>'
-            + ' <gpsMarkerDescription> <gpsMarkerLatitude> <gpsMarkerLongitude>\n'
-            + '    <listingItemTemplateId>    - Numeric - [TODO]\n'
-            + '    <region>                   - String - Region, i.e. country or country code.\n'
-            + '    <address>                  - [TODO] - [TODO]\n'
-            + '    <gpsMarkerTitle>           - String - [TODO]\n'
-            + '    <gpsMarkerDescription>     - Numeric - [TODO]\n'
-            + '    <gpsMarkerLatitude>        - Numeric - [TODO]\n'
-            + '    <gpsMarkerLongitude>       - Numeric - [TODO]';
+        return this.helpStr;
     }
 
     /*

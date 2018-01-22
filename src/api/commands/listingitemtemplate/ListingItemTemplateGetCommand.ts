@@ -11,6 +11,7 @@ export class ListingItemTemplateGetCommand implements RpcCommandInterface<Listin
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
@@ -18,6 +19,9 @@ export class ListingItemTemplateGetCommand implements RpcCommandInterface<Listin
     ) {
         this.log = new Logger(__filename);
         this.name = 'getlistingitemtemplate';
+        this.helpStr = 'getlistingitemtemplate <listingTemplateId>\n'
+            + '    <listingTemplateId>   -    Numeric - The ID of the listing item template that we\n'
+            + '                                want to retrieve.';
     }
 
     /**
@@ -33,8 +37,6 @@ export class ListingItemTemplateGetCommand implements RpcCommandInterface<Listin
     }
 
     public help(): string {
-        return 'getlistingitemtemplate <listingTemplateId>\n'
-            + '    <listingTemplateId>   -    Numeric - The ID of the listing item template that we\n'
-            + '                                want to retrieve.';
+        return this.helpStr;
     }
 }

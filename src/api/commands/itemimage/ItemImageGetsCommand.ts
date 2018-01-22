@@ -14,6 +14,7 @@ export class ItemImageGetsCommand implements RpcCommandInterface<Bookshelf.Colle
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
@@ -21,6 +22,8 @@ export class ItemImageGetsCommand implements RpcCommandInterface<Bookshelf.Colle
     ) {
         this.log = new Logger(__filename);
         this.name = 'getitemimages';
+        this.helpStr = 'getitemimages <listingItemId>\n'
+            + '<listingItemId>           - Numeric - The ID of the listing item template whose associated images we want to find.';
     }
 
     /**
@@ -36,7 +39,6 @@ export class ItemImageGetsCommand implements RpcCommandInterface<Bookshelf.Colle
     }
 
     public help(): string {
-        return 'getitemimages <listingItemId>\n'
-            + '<listingItemId>           - Numeric - The ID of the listing item template whose associated images we want to find.';
+        return this.helpStr
     }
 }

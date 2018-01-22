@@ -14,6 +14,7 @@ import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
 import { EscrowCreateCommand } from '../commands/escrow/EscrowCreateCommand';
 import { EscrowDestroyCommand } from '../commands/escrow/EscrowDestroyCommand';
 import { EscrowUpdateCommand } from '../commands/escrow/EscrowUpdateCommand';
+import { FavoriteRootCommand } from '../commands/favorite/FavoriteRootCommand';
 import { FavoriteAddCommand } from '../commands/favorite/FavoriteAddCommand';
 import { FavoriteRemoveCommand } from '../commands/favorite/FavoriteRemoveCommand';
 import { ItemCategoriesGetCommand } from '../commands/itemcategory/ItemCategoriesGetCommand';
@@ -73,6 +74,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowCreateCommand) private escrowCreateCommand: EscrowCreateCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowDestroyCommand) private escrowDestroyCommand: EscrowDestroyCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowUpdateCommand) private escrowUpdateCommand: EscrowUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRootCommand) private favoriteRootCommand: FavoriteRootCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteAddCommand) private favoriteAddCommand: FavoriteAddCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRemoveCommand) private favoriteRemoveCommand: FavoriteRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoriesGetCommand) private itemCategoriesGetCommand: ItemCategoriesGetCommand,
@@ -138,6 +140,7 @@ export class RpcCommandFactory {
         this.commands.push(escrowCreateCommand);
         this.commands.push(escrowDestroyCommand);
         this.commands.push(escrowUpdateCommand);
+        this.commands.push(favoriteRootCommand);
         this.commands.push(favoriteAddCommand);
         this.commands.push(favoriteRemoveCommand);
         this.commands.push(itemCategoriesGetCommand);

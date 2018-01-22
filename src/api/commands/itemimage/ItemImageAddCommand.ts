@@ -14,6 +14,7 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
@@ -22,6 +23,15 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'additemimage';
+        this.helpStr = 'additemimage <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]\n'
+            + '    <listingItemTemplateId>          - Numeric - The ID of the listing item template\n'
+            + '                                        we want to associate this item image with.\n'
+            + '    <dataId>                         - [optional] Numeric - [TODO]\n'
+            + '        <protocol>                   - [optional] String - [TODO]\n'
+            + '            <encoding>               - [optional] String - [TODO]\n'
+            + '                <data>               - [optional] String - Base64 representation\n'
+            + '                                        (as produced by `base64` *NIX command) of the\n'
+            + '                                        image we want to add. Supports JPEG, PNG, GIF.';
     }
 
     /**
@@ -58,14 +68,6 @@ export class ItemImageAddCommand implements RpcCommandInterface<ItemImage> {
     }
 
     public help(): string {
-        return 'additemimage <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]\n'
-            + '    <listingItemTemplateId>          - Numeric - The ID of the listing item template\n'
-            + '                                        we want to associate this item image with.\n'
-            + '    <dataId>                         - [optional] Numeric - [TODO]\n'
-            + '        <protocol>                   - [optional] String - [TODO]\n'
-            + '            <encoding>               - [optional] String - [TODO]\n'
-            + '                <data>               - [optional] String - Base64 representation\n'
-            + '                                        (as produced by `base64` *NIX command) of the\n'
-            + '                                        image we want to add. Supports JPEG, PNG, GIF.';
+        return this.helpStr
     }
 }

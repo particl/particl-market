@@ -13,6 +13,7 @@ export class ItemLocationRemoveCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemLocationService) public itemLocationService: ItemLocationService,
@@ -21,6 +22,8 @@ export class ItemLocationRemoveCommand implements RpcCommandInterface<void> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'removeitemlocation';
+        this.helpStr = 'removeitemlocation <itemLocationId>\n'
+            + '    <itemLocationId>           - Numeric - [TODO]';
     }
 
     /**
@@ -41,8 +44,7 @@ export class ItemLocationRemoveCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'removeitemlocation <itemLocationId>\n'
-            + '    <itemLocationId>           - Numeric - [TODO]';
+        return this.helpStr;
     }
 
     /*

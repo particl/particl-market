@@ -11,6 +11,7 @@ import { AddressService } from '../../services/AddressService';
 export class AddressDestroyCommand implements RpcCommandInterface<void> {
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
@@ -18,6 +19,8 @@ export class AddressDestroyCommand implements RpcCommandInterface<void> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'removeaddress';
+        this.helpStr = 'removeaddress <addressId>\n'
+            + '    <addressId>            - The ID of the address we want to remove.';
     }
 
     /**
@@ -34,7 +37,6 @@ export class AddressDestroyCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'removeaddress <addressId>\n'
-            + '    <addressId>            - The ID of the address we want to remove.';
+        return this.helpStr;
     }
 }

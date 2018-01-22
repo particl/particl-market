@@ -11,6 +11,7 @@ export class AddDataCommand implements RpcCommandInterface<any> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.TestDataService) private testDataService: TestDataService,
@@ -18,6 +19,7 @@ export class AddDataCommand implements RpcCommandInterface<any> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'adddata';
+        this.helpStr = 'AddDataCommand: TODO: Fill in help string.';
     }
 
     @validate()
@@ -33,6 +35,6 @@ export class AddDataCommand implements RpcCommandInterface<any> {
     }
 
     public help(): string {
-        return 'AddDataCommand: TODO: Fill in help string.';
+        return this.helpStr;
     }
 }

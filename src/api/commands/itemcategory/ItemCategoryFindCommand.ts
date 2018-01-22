@@ -12,6 +12,7 @@ export class ItemCategoryFindCommand implements RpcCommandInterface<Bookshelf.Co
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
@@ -19,6 +20,9 @@ export class ItemCategoryFindCommand implements RpcCommandInterface<Bookshelf.Co
     ) {
         this.log = new Logger(__filename);
         this.name = 'findcategory';
+        this.helpStr = 'findcategory [<searchString>]\n'
+            + '    <searchString>                  - [optional] String - A search string for finding\n'
+            + '                                       categories by name.';
     }
 
     /**
@@ -34,8 +38,6 @@ export class ItemCategoryFindCommand implements RpcCommandInterface<Bookshelf.Co
     }
 
     public help(): string {
-        return 'findcategory [<searchString>]\n'
-            + '    <searchString>                  - [optional] String - A search string for finding\n'
-            + '                                       categories by name.';
+        return this.helpStr;
     }
 }

@@ -18,6 +18,7 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ShippingDestinationService) private shippingDestinationService: ShippingDestinationService,
@@ -26,6 +27,14 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
     ) {
         this.log = new Logger(__filename);
         this.name = 'addshippingdestination';
+        this.helpStr = 'addshippingdestination <itemInformationId> (<country> | <countryCode>) <shippingAvailability>\n'
+            + '    <itemInformationId>        - Numeric - ID of the item information object we want\n'
+            + '                                  to link this shipping destination to.\n'
+            + '    <country>                  - String - The country name.\n'
+            + '    <countryCode>              - String - Two letter country code.\n'
+            + '                                  associated with this shipping destination.\n'
+            + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
+            + '                                  availability of shipping to the specified area.';
     }
 
     /**
@@ -69,14 +78,7 @@ export class ShippingDestinationAddCommand implements RpcCommandInterface<Shippi
     }
 
     public help(): string {
-        return 'addshippingdestination <itemInformationId> (<country> | <countryCode>) <shippingAvailability>\n'
-            + '    <itemInformationId>        - Numeric - ID of the item information object we want\n'
-            + '                                  to link this shipping destination to.\n'
-            + '    <country>                  - String - The country name.\n'
-            + '    <countryCode>              - String - Two letter country code.\n'
-            + '                                  associated with this shipping destination.\n'
-            + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
-            + '                                  availability of shipping to the specified area.';
+        return this.helpStr;
     }
 
     /**

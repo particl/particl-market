@@ -13,6 +13,7 @@ export class EscrowReleaseCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
@@ -20,6 +21,7 @@ export class EscrowReleaseCommand implements RpcCommandInterface<Escrow> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'releaseescrow';
+        this.helpStr = 'EscrowReleaseCommand: TODO: Fill in help string.';
     }
 
     /**
@@ -42,6 +44,6 @@ export class EscrowReleaseCommand implements RpcCommandInterface<Escrow> {
     }
 
     public help(): string {
-        return 'EscrowReleaseCommand: TODO: Fill in help string.';
+        return this.helpStr;
     }
 }

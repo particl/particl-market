@@ -14,6 +14,7 @@ export class ItemCategoryRemoveCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
@@ -23,6 +24,9 @@ export class ItemCategoryRemoveCommand implements RpcCommandInterface<void> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'removecategory';
+        this.helpStr = 'removecategory <categoryId>\n'
+            + '    <categoryId>                    - Numeric - The ID belonging to the category we\n'
+            + '                                       want to destroy.';
     }
 
     /**
@@ -53,9 +57,7 @@ export class ItemCategoryRemoveCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'removecategory <categoryId>\n'
-            + '    <categoryId>                    - Numeric - The ID belonging to the category we\n'
-            + '                                       want to destroy.';
+        return this.helpStr;
     }
 
     /**

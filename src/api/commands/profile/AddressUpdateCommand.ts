@@ -12,6 +12,7 @@ import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 export class AddressUpdateCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
@@ -19,6 +20,16 @@ export class AddressUpdateCommand implements RpcCommandInterface<Address> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'updateaddress';
+        this.helpStr = 'updateaddress <addressId> <title> <addressLine1> <addressLine2> <city> (<country> | <countryCode>) <profileId>\n'
+            + '    <addressId>            - Numeric - The ID of the address we want to modify.\n'
+            + '    <title>                - String - A short identifier for the address.\n'
+            + '    <addressLine1>         - String - The first line of the address.\n'
+            + '    <addressLine2>         - String - The second line of the address.\n'
+            + '    <city>                 - String - The city of the address.\n'
+            + '    <country>              - String - The country name of the address.\n'
+            + '    <countryCode>          - String - Two letter country code of the address.\n'
+            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
+            + '                              this address with.';
     }
 
     /**
@@ -54,15 +65,6 @@ export class AddressUpdateCommand implements RpcCommandInterface<Address> {
     }
 
     public help(): string {
-        return 'updateaddress <addressId> <title> <addressLine1> <addressLine2> <city> (<country> | <countryCode>) <profileId>\n'
-            + '    <addressId>            - Numeric - The ID of the address we want to modify.\n'
-            + '    <title>                - String - A short identifier for the address.\n'
-            + '    <addressLine1>         - String - The first line of the address.\n'
-            + '    <addressLine2>         - String - The second line of the address.\n'
-            + '    <city>                 - String - The city of the address.\n'
-            + '    <country>              - String - The country name of the address.\n'
-            + '    <countryCode>          - String - Two letter country code of the address.\n'
-            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
-            + '                              this address with.';
+        return this.helpStr;
     }
 }

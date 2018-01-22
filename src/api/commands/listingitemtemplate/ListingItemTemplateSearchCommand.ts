@@ -13,6 +13,7 @@ export class ListingItemTemplateSearchCommand implements RpcCommandInterface<Boo
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
@@ -20,6 +21,18 @@ export class ListingItemTemplateSearchCommand implements RpcCommandInterface<Boo
     ) {
         this.log = new Logger(__filename);
         this.name = 'searchlistingitemtemplate';
+        this.helpStr = 'searchlistingitemtemplate <page> <pageLimit> <order> <profileId> [<categoryName> [<searchString>]]\n'
+            + '    <page>                - Numeric - The number page we want to view of search\n'
+            + '                             listing item template results.\n'
+            + '    <pageLimit>           - Numeric - The number of results per page.\n'
+            + '    <order>               - ENUM{ASC} - The order of the returned results.\n'
+            + '    <profileId>           - Numeric - The ID of the profile linked to the listing item\n'
+            + '                             templates we want to search for.\n'
+            + '    <categoryName>        - [optional] String - The key identifying the category\n'
+            + '                             associated with the listing item templates we want to\n'
+            + '                             search for.\n'
+            + '        <searchString>    - [optional] String - A string that is used to search for\n'
+            + '                             listing item templats via title.';
     }
 
     /**
@@ -47,17 +60,6 @@ export class ListingItemTemplateSearchCommand implements RpcCommandInterface<Boo
     }
 
     public help(): string {
-        return 'searchlistingitemtemplate <page> <pageLimit> <order> <profileId> [<categoryName> [<searchString>]]\n'
-            + '    <page>                - Numeric - The number page we want to view of search\n'
-            + '                             listing item template results.\n'
-            + '    <pageLimit>           - Numeric - The number of results per page.\n'
-            + '    <order>               - ENUM{ASC} - The order of the returned results.\n'
-            + '    <profileId>           - Numeric - The ID of the profile linked to the listing item\n'
-            + '                             templates we want to search for.\n'
-            + '    <categoryName>        - [optional] String - The key identifying the category\n'
-            + '                             associated with the listing item templates we want to\n'
-            + '                             search for.\n'
-            + '        <searchString>    - [optional] String - A string that is used to search for\n'
-            + '                             listing item templats via title.';
+        return this.helpStr;
     }
 }

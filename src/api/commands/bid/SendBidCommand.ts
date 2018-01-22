@@ -17,6 +17,7 @@ export class SendBidCommand implements RpcCommandInterface<Bid> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
@@ -26,6 +27,7 @@ export class SendBidCommand implements RpcCommandInterface<Bid> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'sendbid';
+        this.helpStr = 'SendBidCommand: TODO: Fill in help string.';
     }
 
     /**
@@ -68,7 +70,7 @@ export class SendBidCommand implements RpcCommandInterface<Bid> {
     }
 
     public help(): string {
-        return 'SendBidCommand: TODO: Fill in help string.';
+        return this.helpStr;
     }
 
     /**

@@ -11,6 +11,7 @@ export class ListingItemGetCommand implements RpcCommandInterface<ListingItem> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
@@ -18,6 +19,8 @@ export class ListingItemGetCommand implements RpcCommandInterface<ListingItem> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'getitem';
+        this.helpStr = 'getitem <listingItemId>\n'
+            + '    <listingItemId>     - Numeric - The ID of the listing item we want to retrieve.';
     }
 
     /**
@@ -42,7 +45,6 @@ export class ListingItemGetCommand implements RpcCommandInterface<ListingItem> {
     }
 
     public help(): string {
-        return 'getitem <listingItemId>\n'
-            + '    <listingItemId>     - Numeric - The ID of the listing item we want to retrieve.';
+        return this.helpStr;
     }
 }

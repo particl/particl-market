@@ -11,6 +11,7 @@ import { RpcCommandInterface } from './RpcCommandInterface';
 export class TestCommand implements RpcCommandInterface<Bookshelf.Collection<FavoriteItem>> {
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) public favoriteItemService: FavoriteItemService,
@@ -18,6 +19,7 @@ export class TestCommand implements RpcCommandInterface<Bookshelf.Collection<Fav
     ) {
         this.log = new Logger(__filename);
         this.name = 'TestCommand';
+        this.helpStr = 'CreateCategoryCommand: TODO: Fill in help string.';
     }
 
     public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
@@ -25,6 +27,6 @@ export class TestCommand implements RpcCommandInterface<Bookshelf.Collection<Fav
     }
 
     public help(): string {
-        return 'CreateCategoryCommand: TODO: Fill in help string.';
+        return this.helpStr;
     }
 }

@@ -11,6 +11,7 @@ export class ItemCategoriesGetCommand implements RpcCommandInterface<ItemCategor
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
@@ -18,6 +19,7 @@ export class ItemCategoriesGetCommand implements RpcCommandInterface<ItemCategor
     ) {
         this.log = new Logger(__filename);
         this.name = 'getcategories';
+        this.helpStr = 'getcategories';
     }
 
     /**
@@ -31,6 +33,6 @@ export class ItemCategoriesGetCommand implements RpcCommandInterface<ItemCategor
     }
 
     public help(): string {
-        return 'getcategories';
+        return this.helpStr;
     }
 }

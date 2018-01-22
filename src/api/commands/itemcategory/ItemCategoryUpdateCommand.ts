@@ -15,6 +15,7 @@ export class ItemCategoryUpdateCommand implements RpcCommandInterface<ItemCatego
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
@@ -23,6 +24,16 @@ export class ItemCategoryUpdateCommand implements RpcCommandInterface<ItemCatego
     ) {
         this.log = new Logger(__filename);
         this.name = 'updatecategory';
+        this.helpStr = 'updatecategory <categoryId> <categoryName> <description> [<parentItemCategoryId>]\n'
+            + '    <categoryId>                     - Numeric - The ID of the category we want to\n'
+            + '                                        update.\n'
+            + '    <categoryName>                   - String - The new name of the category we want\n'
+            + '                                        to update.\n'
+            + '    <description>                    - String - The new description of the category\n'
+            + '                                        we want to update.\n'
+            + '    <parentItemCategoryId>           - [optional] Numeric - The ID that identifies the\n'
+            + '                                        new parent category of the category we want to\n'
+            + '                                        update; default is the root category.';
     }
 
     /**
@@ -54,16 +65,7 @@ export class ItemCategoryUpdateCommand implements RpcCommandInterface<ItemCatego
     }
 
     public help(): string {
-        return 'updatecategory <categoryId> <categoryName> <description> [<parentItemCategoryId>]\n'
-            + '    <categoryId>                     - Numeric - The ID of the category we want to\n'
-            + '                                        update.\n'
-            + '    <categoryName>                   - String - The new name of the category we want\n'
-            + '                                        to update.\n'
-            + '    <description>                    - String - The new description of the category\n'
-            + '                                        we want to update.\n'
-            + '    <parentItemCategoryId>           - [optional] Numeric - The ID that identifies the\n'
-            + '                                        new parent category of the category we want to\n'
-            + '                                        update; default is the root category.';
+        return this.helpStr;
     }
 
     /**

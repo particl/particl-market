@@ -11,6 +11,7 @@ export class ItemInformationGetCommand implements RpcCommandInterface<ItemInform
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
@@ -18,6 +19,9 @@ export class ItemInformationGetCommand implements RpcCommandInterface<ItemInform
     ) {
         this.log = new Logger(__filename);
         this.name = 'getiteminformation';
+        this.helpStr = 'getiteminformation <itemInformationId>\n'
+            + '    <itemInformationId>             - Numeric - The ID of the item information we want\n'
+            + '                                       to retrieve.';
     }
 
     /**
@@ -35,8 +39,6 @@ export class ItemInformationGetCommand implements RpcCommandInterface<ItemInform
     }
 
     public help(): string {
-        return 'getiteminformation <itemInformationId>\n'
-            + '    <itemInformationId>             - Numeric - The ID of the item information we want\n'
-            + '                                       to retrieve.';
+        return this.helpStr;
     }
 }

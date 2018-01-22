@@ -11,6 +11,7 @@ export class ProfileUpdateCommand implements RpcCommandInterface<Profile> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
@@ -18,6 +19,9 @@ export class ProfileUpdateCommand implements RpcCommandInterface<Profile> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'updateprofile';
+        this.helpStr = 'updateprofile <profileId> <newProfileName>\n'
+            + '    <profileId>          - Numeric - The ID of the profile we want to modify.\n'
+            + '    <newProfileName>     - String - The new name we want to apply to the profile.';
     }
 
     /**
@@ -36,8 +40,6 @@ export class ProfileUpdateCommand implements RpcCommandInterface<Profile> {
     }
 
     public help(): string {
-        return 'updateprofile <profileId> <newProfileName>\n'
-            + '    <profileId>          - Numeric - The ID of the profile we want to modify.\n'
-            + '    <newProfileName>     - String - The new name we want to apply to the profile.';
+        return this.helpStr;
     }
 }

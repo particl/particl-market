@@ -11,6 +11,7 @@ export class ItemCategoryGetCommand implements RpcCommandInterface<ItemCategory>
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
@@ -18,6 +19,11 @@ export class ItemCategoryGetCommand implements RpcCommandInterface<ItemCategory>
     ) {
         this.log = new Logger(__filename);
         this.name = 'getcategory';
+        this.helpStr = 'getcategory (<categoryId>|<categoryKey>)\n'
+            + '    <categoryId>                    - Numeric - The ID belonging to the category we\n'
+            + '                                       want to retrive.\n'
+            + '    <categoryKey>                   - String - The key that identifies the category\n'
+            + '                                       we want to retrieve.';
     }
 
     /**
@@ -39,10 +45,6 @@ export class ItemCategoryGetCommand implements RpcCommandInterface<ItemCategory>
     }
 
     public help(): string {
-        return 'getcategory (<categoryId>|<categoryKey>)\n'
-            + '    <categoryId>                    - Numeric - The ID belonging to the category we\n'
-            + '                                       want to retrive.\n'
-            + '    <categoryKey>                   - String - The key that identifies the category\n'
-            + '                                       we want to retrieve.';
+        return this.helpStr;
     }
 }

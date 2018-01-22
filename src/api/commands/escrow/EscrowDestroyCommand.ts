@@ -10,6 +10,7 @@ export class EscrowDestroyCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
@@ -17,6 +18,10 @@ export class EscrowDestroyCommand implements RpcCommandInterface<void> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'destroyescrow';
+        this.helpStr = 'escrow destroy <listingItemTemplateId>\n'
+            + '    <listingItemTemplateId>         - Numeric - The ID belonging to the listing item\n'
+            + '                                       template that the escrow we want to delete is\n'
+            + '                                       associated with.';
     }
 
     /**
@@ -31,9 +36,6 @@ export class EscrowDestroyCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'escrow destroy <listingItemTemplateId>\n'
-            + '    <listingItemTemplateId>         - Numeric - The ID belonging to the listing item\n'
-            + '                                       template that the escrow we want to delete is\n'
-            + '                                       associated with.';
+        return this.helpStr;
     }
 }

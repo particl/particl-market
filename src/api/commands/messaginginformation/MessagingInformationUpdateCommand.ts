@@ -15,6 +15,7 @@ export class MessagingInformationUpdateCommand implements RpcCommandInterface<Me
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
@@ -23,6 +24,10 @@ export class MessagingInformationUpdateCommand implements RpcCommandInterface<Me
     ) {
         this.log = new Logger(__filename);
         this.name = 'updatemessaginginformation';
+        this.helpStr = 'updatemessaginginformation <listingTemplateId> <protocol> <publicKey>\n'
+            + '    <listingTemplateId>      - Numeric - [TODO]\n'
+            + '    <protocol>               - ENUM{SMSG} - [TODO]\n'
+            + '    <publicKey>              - String - [TODO]';
     }
 
     /**
@@ -51,10 +56,7 @@ export class MessagingInformationUpdateCommand implements RpcCommandInterface<Me
     }
 
     public help(): string {
-        return 'updatemessaginginformation <listingTemplateId> <protocol> <publicKey>\n'
-            + '    <listingTemplateId>      - Numeric - [TODO]\n'
-            + '    <protocol>               - ENUM{SMSG} - [TODO]\n'
-            + '    <publicKey>              - String - [TODO]';
+        return this.helpStr;
     }
 
     /**

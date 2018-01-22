@@ -10,6 +10,7 @@ export class CleanDbCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
     public name: string;
+    public helpStr: string;
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.TestDataService) private testDataService: TestDataService,
@@ -17,6 +18,7 @@ export class CleanDbCommand implements RpcCommandInterface<void> {
     ) {
         this.log = new Logger(__filename);
         this.name = 'cleandb';
+        this.helpStr = 'cleandb';
     }
 
     @validate()
@@ -25,6 +27,6 @@ export class CleanDbCommand implements RpcCommandInterface<void> {
     }
 
     public help(): string {
-        return 'cleandb';
+        return this.helpStr;
     }
 }
