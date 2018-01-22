@@ -8,18 +8,21 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidSearchParams } from '../../requests/BidSearchParams';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class BidSearchCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
+export class BidSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().BID_SEARCH, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'findbids';
     }
 
     /**
@@ -49,4 +52,9 @@ export class BidSearchCommand implements RpcCommandInterface<Bookshelf.Collectio
             + '    <profileId>        - [optional] Numeric - The ID of the profile that made the\n'
             + '                          bids we\'re searching for [TODO confirm this is true].';
     }
+
+    public example(): any {
+        return null;
+    }
+
 }

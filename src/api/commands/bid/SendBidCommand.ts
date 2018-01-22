@@ -12,20 +12,23 @@ import { BidFactory } from '../../factories/BidFactory';
 import { Bid } from '../../models/Bid';
 import { MessageBroadcastService } from '../../services/MessageBroadcastService';
 import { BidMessageType } from '../../enums/BidMessageType';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class SendBidCommand implements RpcCommandInterface<Bid> {
+export class SendBidCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().DATA_ADD, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'sendbid';
     }
 
     /**
@@ -69,6 +72,10 @@ export class SendBidCommand implements RpcCommandInterface<Bid> {
 
     public help(): string {
         return 'SendBidCommand: TODO: Fill in help string.';
+    }
+
+    public example(): any {
+        return null;
     }
 
     /**

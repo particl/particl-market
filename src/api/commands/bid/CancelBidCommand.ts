@@ -13,20 +13,23 @@ import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
 import { BidMessageType } from '../../enums/BidMessageType';
 import { Bid } from '../../models/Bid';
+import { CommandEnumType } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class CancelBidCommand implements RpcCommandInterface<Bid> {
+export class CancelBidCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
     public log: LoggerType;
-    public name: string;
 
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
+        @inject(Types.Factory) @named(Targets.Factory.RpcCommandFactory) private rpcCommandFactory: RpcCommandFactory
     ) {
+        super(new CommandEnumType().BID_CANCEL, rpcCommandFactory);
         this.log = new Logger(__filename);
-        this.name = 'cancelbid';
     }
 
     /**
@@ -75,4 +78,9 @@ export class CancelBidCommand implements RpcCommandInterface<Bid> {
     public help(): string {
         return 'CancelBidCommand: TODO: Fill in help string.';
     }
+
+    public example(): any {
+        return null;
+    }
+
 }
