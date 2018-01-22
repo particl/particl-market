@@ -11,7 +11,7 @@ import { FavoriteItem } from '../../models/FavoriteItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
 import { NotFoundException } from '../../exceptions/NotFoundException';
-import { InternalServerException } from '../../exceptions/InternalServerException';
+import { MessageException } from '../../exceptions/MessageException';
 import { FavoriteItemCreateRequest } from '../../requests/FavoriteItemCreateRequest';
 
 /*
@@ -36,6 +36,8 @@ export class FavoriteListCommand implements RpcCommandInterface<Bookshelf.Collec
     }
 
     /**
+     * TODO: implement.
+     *
      * data.params[]:
      *  [0]: profileId
      *
@@ -44,7 +46,7 @@ export class FavoriteListCommand implements RpcCommandInterface<Bookshelf.Collec
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
-        throw new InternalServerException('Not implemented');
+        throw new MessageException('Not implemented');
     }
 
     public help(): string {

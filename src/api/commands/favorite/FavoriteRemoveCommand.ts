@@ -39,6 +39,7 @@ export class FavoriteRemoveCommand implements RpcCommandInterface<void> {
     }
 
     /**
+     * TODO: Update command to match help().
      *
      *  data.params[]:
      *  [0]: item_id or hash
