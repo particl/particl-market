@@ -12,22 +12,24 @@ Install [Node.js and NPM](https://nodejs.org/en/download/)
 * on Linux (Ubuntu) use `curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -`<br/>
 `sudo apt-get install -y nodejs`
 
-Install yarn globally
+Then install yarn globally
 ```
 npm install yarn -g
 ```
 
-If you want to use Docker
+And finally install Docker
 * Installation instructions on [docs.docker.com](https://docs.docker.com/engine/installation/)
-
-
-> If you work with a mac, we recommend to use homebrew for the installation.
 
 
 ### Step 2: Set up the Project
 Fork this project.
 
 Then copy the `.env.example` file and rename it to `.env`. In this file you can edit your database connection information among other stuff, but everything should really work out of the box.
+
+Do it manually or run:
+```
+./bin/copy-env.sh
+```
 
 Then setup your application environment.
 ```
@@ -47,6 +49,7 @@ npm run serve
 
 
 ### Step 3b: Or serve your App using Docker
+Build the docker image defined in Dockerfile and start the services.
 ```
 docker-compose build
 docker-compose up
@@ -55,7 +58,6 @@ docker-compose up
 > This starts two marketplace applications and two particl daemons for you.
 > app1 cli: http://localhost:3100/cli, connecting to particl1 on port 52935
 > app2 cli: http://localhost:3200/cli, connecting to particl2 on port 53935
-
 
 ## Scripts / Tasks
 All script are defined in the package.json file, but the most important ones are listed here.
@@ -68,9 +70,13 @@ All script are defined in the package.json file, but the most important ones are
 * There is also a vscode task for this called `lint`.
 
 ### Tests
+Black-box tests are run against the applications rpc-api, so you need to start the application for those to work.
+Integration tests start the application container and do not require the application to be running.
+
 * Run the unit tests using `npm test` (There is also a vscode task for this called `test`).
 * Run the integration tests using `npm run test:integration:pretty` and don't forget to start your application.
 * Run the black-box tests using `npm run test:black-box:pretty` and don't forget to start your application.
+* To run just some certain test(s) try `TEST=Market* npm run test:integration:single`
 
 ### Running in dev mode
 * Run `npm run serve` to start nodemon with ts-node, to serve the app.
@@ -85,17 +91,11 @@ All script are defined in the package.json file, but the most important ones are
 * Run `npm run db:migrate:rollback` to rollback one migration
 * Run `npm run db:seed` to seed sample data into the database
 * Run `npm run db:reset` to rollback all migrations and migrate any migration again
-* Run recreate-dbs.sh to recreate all databases
+* Run `./bin/recreate-dbs.sh` to recreate dev/test databases
 
 ### Console
 * To run your own created command enter `npm run console <command-name>`.
 * This list all your created commands `npm run console:help`.
-
-### WEB CLI
-* This CLI gives you easy access to the RPC commands.
-* Run `npm run serve` to serve the app.
-* Go to `http://localhost:3000/cli` to access the CLI.
-* Type `help` to get a list of supported commands.
 
 ### Scaffolding Commands
 All the templates for the commands are located in `src/console/templates`.
@@ -118,7 +118,6 @@ All the templates for the commands are located in `src/console/templates`.
 * `npm run console make:seed` - Generates a seeder.
 * `npm run console update:targets` - Reads all the API files and generate a new `constants/Targets.ts` file out of it.
 
-
 **Example**
 ```
 $ npm run console make:service ExampleService
@@ -128,12 +127,18 @@ $ npm run console make:model user
 // -> creates `api/models/User.ts
 ```
 
+### WEB CLI
+* This CLI gives you easy access to the RPC commands.
+* Run `npm run serve` to serve the app.
+* Go to `http://localhost:3000/cli` to access the CLI.
+* Type `help` to get a list of supported commands.
+
+
 ## IoC
 Our IoC automatically looks through the `controllers`, `listeners` , `middlewares`, `services`,
-`repositories` and `models` folders in `src/api/` for files to bound automatically into the IoC - Container, so you have nothing to do.
+`repositories`, `commands`, `factories`, `messageprocessors` and `models` folders in `src/api/` for files to bound automatically into the IoC - Container, so you have nothing to do.
 
-**However it is very important to keep the naming right, because otherwise our IoC will not find your
-created files!!**
+**However it is very important to keep the naming right, because otherwise our IoC will not find your created files!!**
 
 
 ## API Routes
