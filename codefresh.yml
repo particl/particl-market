@@ -4,7 +4,7 @@ steps:
   build_docker_image_notify_step:
     image: tutum/curl
     commands:
-      - curl -d '{"content": "building xludx/dapp-shell...", "username": "CI"}' -H "Content-Type: application/json" -X POST https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
+      - curl -d '{\"content\": \"building xludx/dapp-shell...\", \"username\": \"CI\"}' -H \"Content-Type: application/json\" -X POST https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
 
   build_docker_image_step:
     title: building docker image
@@ -17,7 +17,7 @@ steps:
   unit_tests_notify_step:
     image: tutum/curl
     commands:
-      - curl -d '{"content": "running unit tests...", "username": "CI"}' -H "Content-Type: application/json" -X POST https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
+      - curl -d '{\"content\": \"running unit tests...\", \"username\": \"CI\"}' -H \"Content-Type: application/json\" -X POST https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
 
   unit_tests_step:
     title: Running Unit Tests
