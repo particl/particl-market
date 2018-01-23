@@ -181,7 +181,6 @@ describe('ListingItem', () => {
             description: 'Test Description',
             order: 7
         }]
-        // TODO: ignoring listingitemobjects for now
     } as ListingItemCreateRequest;
 
     const testDataUpdated = {
@@ -265,7 +264,6 @@ describe('ListingItem', () => {
             description: 'Test Description',
             order: 6
         }]
-        // TODO: ignoring listingitemobjects for now
     } as ListingItemUpdateRequest;
 
     beforeAll(async () => {
@@ -393,6 +391,10 @@ describe('ListingItem', () => {
 
         expect(result.MessagingInformation[0].protocol).toBe(testDataUpdated.messagingInformation[0].protocol);
         expect(result.MessagingInformation[0].publicKey).toBe(testDataUpdated.messagingInformation[0].publicKey);
+
+        expect(result.ListingItemObjects[0].type).toBe(testDataUpdated.listingItemObjects[0].type);
+        expect(result.ListingItemObjects[0].description).toBe(testDataUpdated.listingItemObjects[0].description);
+        expect(result.ListingItemObjects[0].order).toBe(testDataUpdated.listingItemObjects[0].order);
         // tslint:enable:max-line-length
 
     });
@@ -543,7 +545,7 @@ describe('ListingItem', () => {
     });
 
     test('Should delete the listing item with item info and payment info', async () => {
-        expect.assertions(12);
+        expect.assertions(11);
 
         await listingItemService.destroy(createdId);
         await listingItemService.findOne(createdId, false).catch(e =>
@@ -592,7 +594,7 @@ describe('ListingItem', () => {
 
         // escrow-ratio
         const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
-        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+        await escrowRatioService.findOne(createdPaymentInformation.id, false).catch(e =>
             expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
         );
 
@@ -604,13 +606,13 @@ describe('ListingItem', () => {
 
         // shippingPrice
         const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
-        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+        await shippingPriceService.findOne(shippingPriceId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(shippingPriceId))
         );
 
         // cryptoCurrencyAddress
         const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
-        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+        await cryptocurrencyAddressService.findOne(cryptoCurrencyId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
         );
     });
@@ -677,7 +679,7 @@ describe('ListingItem', () => {
     });
 
     test('Should delete the listing item with item info and payment info', async () => {
-        expect.assertions(14);
+        expect.assertions(13);
 
         await listingItemService.destroy(createdId);
         await listingItemService.findOne(createdId, false).catch(e =>
@@ -726,7 +728,7 @@ describe('ListingItem', () => {
 
         // escrow-ratio
         const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
-        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+        await escrowRatioService.findOne(createdPaymentInformation.id, false).catch(e =>
             expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
         );
 
@@ -738,13 +740,13 @@ describe('ListingItem', () => {
 
         // shippingPrice
         const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
-        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+        await shippingPriceService.findOne(shippingPriceId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(shippingPriceId))
         );
 
         // cryptoCurrencyAddress
         const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
-        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+        await cryptocurrencyAddressService.findOne(cryptoCurrencyId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
         );
 
@@ -847,7 +849,7 @@ describe('ListingItem', () => {
 
         // escrow-ratio
         const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
-        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+        await escrowRatioService.findOne(createdPaymentInformation.id, false).catch(e =>
             expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
         );
 
@@ -859,13 +861,13 @@ describe('ListingItem', () => {
 
         // shippingPrice
         const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
-        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+        await shippingPriceService.findOne(shippingPriceId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(shippingPriceId))
         );
 
         // cryptoCurrencyAddress
         const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
-        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+        await cryptocurrencyAddressService.findOne(cryptoCurrencyId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
         );
 
@@ -1100,7 +1102,7 @@ describe('ListingItem', () => {
 
         // escrow-ratio
         const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
-        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+        await escrowRatioService.findOne(createdPaymentInformation.id, false).catch(e =>
             expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
         );
 
@@ -1112,13 +1114,13 @@ describe('ListingItem', () => {
 
         // shippingPrice
         const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
-        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+        await shippingPriceService.findOne(shippingPriceId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(shippingPriceId))
         );
 
         // cryptoCurrencyAddress
         const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
-        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+        await cryptocurrencyAddressService.findOne(cryptoCurrencyId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
         );
 
@@ -1192,7 +1194,7 @@ describe('ListingItem', () => {
 
         // escrow-ratio
         const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
-        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+        await escrowRatioService.findOne(createdPaymentInformation.id, false).catch(e =>
             expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
         );
 
@@ -1204,13 +1206,13 @@ describe('ListingItem', () => {
 
         // shippingPrice
         const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
-        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+        await shippingPriceService.findOne(shippingPriceId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(shippingPriceId))
         );
 
         // cryptoCurrencyAddress
         const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
-        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+        await cryptocurrencyAddressService.findOne(cryptoCurrencyId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
         );
 
@@ -1345,7 +1347,7 @@ describe('ListingItem', () => {
 
         // escrow-ratio
         const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
-        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+        await escrowRatioService.findOne(createdPaymentInformation.id, false).catch(e =>
             expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
         );
 
@@ -1357,13 +1359,13 @@ describe('ListingItem', () => {
 
         // shippingPrice
         const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
-        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+        await shippingPriceService.findOne(shippingPriceId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(shippingPriceId))
         );
 
         // cryptoCurrencyAddress
         const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
-        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+        await cryptocurrencyAddressService.findOne(cryptoCurrencyId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
         );
 
