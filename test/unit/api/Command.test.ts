@@ -41,7 +41,7 @@ describe('Command', () => {
     });
 
     test('Should return all types of Commands and all root Commands', async () => {
-        expect(Commands.values).toHaveLength(77);
-        expect(Commands.rootCommands).toHaveLength(19);
+        expect(Commands.values.length).toBeGreaterThanOrEqual(88);
+        expect(Commands.rootCommands.length).toBeGreaterThanOrEqual(21);
     });
 });
