@@ -1,0 +1,63 @@
+version: '1.0'
+steps:
+
+  build_docker_image_notify_step:
+    image: tutum/curl
+    commands:
+    #  - curl -d '{"content": "building xludx/dapp-shell...","username": "CI"}' -H "Content-Type: application/json" -X POST https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
+
+  build_docker_image_step:
+    title: building docker image
+    type: build
+    image_name: ludx/dapp-shell
+    working_directory: ./
+    dockerfile: Dockerfile.ci
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
+
+  unit_tests_notify_step:
+    image: tutum/curl
+    commands:
+    #  - curl -d '{"content": "running unit tests...","username": "CI"}' -H "Content-Type: application/json" -X POST https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
+
+  unit_tests_step:
+    title: Running Unit Tests
+    image: ${{build_docker_image_step}}
+    working_directory: IMAGE_WORK_DIR
+    entry_point:
+      - /bin/sh
+      - /codefresh/volume/cf-generated/unit_test_script
+    create_file:
+      path: /codefresh/volume/cf-generated
+      name: unit_test_script
+      content: npm test
+    on_success:
+      metadata:
+        set:
+          - '${{BuildingDockerImage.imageId}}':
+              - CF_QUALITY: true
+    on_fail:
+      metadata:
+        set:
+          - '${{BuildingDockerImage.imageId}}':
+              - CF_QUALITY: false
+#    fail-fast: false
+#    commands:
+#      - npm test
+
+#  integration_step:
+#    type: composition
+#    composition:
+#      version: '2'
+#      services:
+#        app:
+#          image: ${{build_step}}
+#          links:
+#            - mongo
+#          ports:
+#            - 5000
+#        mongo:
+#          image: mongo
+#    composition-candidates:
+#      main:
+#        image: nhoag/curl
+#        command: bash -c "sleep 30 && curl http://app:5000/" | echo 'works'
