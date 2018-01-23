@@ -8,9 +8,11 @@ import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
+import { ShippingZips } from '../../../core/helpers/ShippingZips';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
+import { NotFoundException } from '../../exceptions/NotFoundException';
 
 export class AddressCreateCommand extends BaseCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
@@ -48,6 +50,12 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
         let countryCode: string = data.params[5];
         countryCode = ShippingCountries.validate(this.log, countryCode);
 
+        // Validate ZIP code
+        const zipCodeStr = data.params[6];
+        if (!ShippingZips.validate(countryCode, zipCodeStr)) {
+            throw new NotFoundException('ZIP/postal-code, country code, combination not valid.');
+        }
+
         return await this.addressService.create({
             profile_id : data.params[0],
             title : data.params[1],
@@ -55,7 +63,7 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
             addressLine2 : data.params[3],
             city : data.params[4],
             country : countryCode,
-            zipCode : data.params[6]
+            zipCode : zipCodeStr
         } as AddressCreateRequest);
     }
 
