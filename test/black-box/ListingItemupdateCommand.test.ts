@@ -44,7 +44,7 @@ describe('ListingItemUpdateCommand', () => {
                 key: 'cat_high_luxyry_items'
             },
             itemLocation: {
-                region: "South Africa",
+                region: 'CA',
                 address: 'asdf, asdf, asdf',
                 locationMarker: {
                     markerTitle: 'Helsinki',
@@ -54,13 +54,13 @@ describe('ListingItemUpdateCommand', () => {
                 }
             },
             shippingDestinations: [{
-                country: "United Kingdom",
+                country: 'UK',
                 shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
             }, {
-                country: "China",
+                country: 'US',
                 shippingAvailability: ShippingAvailability.SHIPS
             }, {
-                country: "South Africa",
+                country: 'SA',
                 shippingAvailability: ShippingAvailability.ASK
             }],
             itemImages: [{

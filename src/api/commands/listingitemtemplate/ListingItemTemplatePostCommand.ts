@@ -6,11 +6,11 @@ import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ListingItemPostRequest } from '../../requests/ListingItemPostRequest';
+import { ListingItemTemplatePostRequest } from '../../requests/ListingItemTemplatePostRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class ListingItemPostCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
+export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
 
     public log: LoggerType;
 
@@ -38,12 +38,12 @@ export class ListingItemPostCommand extends BaseCommand implements RpcCommandInt
         return this.listingItemService.post({
             listingItemTemplateId: data.params[0],
             marketId: data.params[1] || undefined
-        } as ListingItemPostRequest);
+        } as ListingItemTemplatePostRequest);
 
     }
 
     public help(): string {
-        return this.getName() + 'ListingItemPostCommand: TODO: Fill in help string.';
+        return this.getName() + 'ListingItemTemplatePostCommand: TODO: Fill in help string.';
     }
 
 }

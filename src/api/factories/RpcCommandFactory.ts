@@ -42,12 +42,12 @@ import { ItemLocationCreateCommand } from '../commands/itemlocation/ItemLocation
 import { ItemLocationUpdateCommand } from '../commands/itemlocation/ItemLocationUpdateCommand';
 import { ListingItemGetCommand } from '../commands/listingitem/ListingItemGetCommand';
 import { ListingItemSearchCommand } from '../commands/listingitem/ListingItemSearchCommand';
-import { ListingItemPostCommand } from '../commands/listingitem/ListingItemPostCommand';
 import { OwnListingItemSearchCommand } from '../commands/listingitem/OwnListingItemSearchCommand';
 import { ListingItemTemplateCreateCommand } from '../commands/listingitemtemplate/ListingItemTemplateCreateCommand';
 import { ListingItemTemplateDestroyCommand } from '../commands/listingitemtemplate/ListingItemTemplateDestroyCommand';
 import { ListingItemTemplateGetCommand } from '../commands/listingitemtemplate/ListingItemTemplateGetCommand';
 import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplate/ListingItemTemplateSearchCommand';
+import { ListingItemTemplatePostCommand } from '../commands/listingitemtemplate/ListingItemTemplatePostCommand';
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
 import { MarketCreateCommand } from '../commands/market/MarketCreateCommand';
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
@@ -103,11 +103,11 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemGetCommand) private listingItemGetCommand: ListingItemGetCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemSearchCommand) private listingItemSearchCommand: ListingItemSearchCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.OwnListingItemSearchCommand) private ownListingItemSearchCommand: OwnListingItemSearchCommand,
-        @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemPostCommand) private listingItemPostCommand: ListingItemPostCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateCreateCommand) private listingItemTemplateCreateCommand: ListingItemTemplateCreateCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateDestroyCommand) private listingItemTemplateDestroyCommand: ListingItemTemplateDestroyCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateGetCommand) private listingItemTemplateGetCommand: ListingItemTemplateGetCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateSearchCommand) private listingItemTemplateSearchCommand: ListingItemTemplateSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplatePostCommand) private listingItemTemplatePostCommand: ListingItemTemplatePostCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketCreateCommand) private marketCreateCommand: MarketCreateCommand,
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationUpdateCommand) private messagingInformationUpdateCommand: MessagingInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
@@ -167,7 +167,7 @@ export class RpcCommandFactory {
         this.commands.push(listingItemGetCommand);
         this.commands.push(listingItemSearchCommand);
         this.commands.push(ownListingItemSearchCommand);
-        this.commands.push(listingItemPostCommand);
+        this.commands.push(listingItemTemplatePostCommand);
         this.commands.push(listingItemTemplateCreateCommand);
         this.commands.push(listingItemTemplateDestroyCommand);
         this.commands.push(listingItemTemplateGetCommand);
