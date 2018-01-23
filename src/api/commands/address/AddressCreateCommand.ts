@@ -27,13 +27,13 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
      * TODO: Update command to match help().
      *
      * data.params[]:
-     *  [0]: title
-     *  [1]: addressLine1
-     *  [2]: addressLine2
-     *  [3]: zipCode
+     *  [0]: profileId
+     *  [1]: title
+     *  [2]: addressLine1
+     *  [3]: addressLine2
      *  [4]: city
      *  [5]: country/countryCode
-     *  [6]: profileId
+     *  [6]: zipCode
      *
      * @param data
      * @param rpcCommandFactory
@@ -49,13 +49,13 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
         countryCode = ShippingCountries.validate(this.log, countryCode);
 
         return await this.addressService.create({
-            title : data.params[0],
-            addressLine1 : data.params[1],
-            addressLine2 : data.params[2],
-            zipCode : data.params[3],
+            profile_id : data.params[0],
+            title : data.params[1],
+            addressLine1 : data.params[2],
+            addressLine2 : data.params[3],
             city : data.params[4],
             country : countryCode,
-            profile_id : data.params[6]
+            zipCode : data.params[6]
         } as AddressCreateRequest);
     }
 
