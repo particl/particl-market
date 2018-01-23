@@ -52,7 +52,13 @@ describe('ListingItemFactory', () => {
                 },
                 ItemPrice: { currency: 'BITCOIN', basePrice: 100000000 }
             },
-            MessagingInformation: [{ protocol: 'SMSG', publicKey: 'publickey2' }]
+            MessagingInformation: [{ protocol: 'SMSG', publicKey: 'publickey2' }],
+            ListingItemObjects: [{
+                type: 'DROPDOWN',
+                description: 'Test Description',
+                order: 1
+            }]
+
         };
     });
 
@@ -88,6 +94,13 @@ describe('ListingItemFactory', () => {
             const messagingInformation = res.messaging[0];
             expect(messagingInformation.protocol).toBe(req.MessagingInformation[0].protocol);
             expect(messagingInformation.publicKey).toBe(req.MessagingInformation[0].publicKey);
+
+            // listingObjects
+            expect(res.objects).not.toBe(undefined);
+            const listingItemObjects = res.objects[0];
+            expect(listingItemObjects.type).toBe(req.ListingItemObjects[0].type);
+            expect(listingItemObjects.description).toBe(req.ListingItemObjects[0].description);
+            expect(listingItemObjects.order).toBe(req.ListingItemObjects[0].order);
         });
     });
 

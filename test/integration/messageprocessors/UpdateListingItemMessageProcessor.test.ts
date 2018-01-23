@@ -19,6 +19,7 @@ import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailabilit
 import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
 import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
 import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
+import { ListingItemObjectType } from '../../../src/api/enums/ListingItemObjectType';
 import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
 
 import { ItemInformationService } from '../../../src/api/services/ItemInformationService';
@@ -34,6 +35,7 @@ import { ItemPriceService } from '../../../src/api/services/ItemPriceService';
 import { ShippingPriceService } from '../../../src/api/services/ShippingPriceService';
 import { CryptocurrencyAddressService } from '../../../src/api/services/CryptocurrencyAddressService';
 import { MessagingInformationService } from '../../../src/api/services/MessagingInformationService';
+import { ListingItemObjectService } from '../../../src/api/services/ListingItemObjectService';
 import { delete } from 'web-request';
 
 
@@ -62,15 +64,22 @@ describe('ListingItemMessageProcessor', () => {
     let cryptocurrencyAddressService: CryptocurrencyAddressService;
 
     let messagingInformationService: MessagingInformationService;
+    let listingItemObjectService: ListingItemObjectService;
 
     let createdListingItem;
     let updatedListingItem;
     let createdItemInformation;
     let createdPaymentInformation;
     let createdMessagingInformation;
+    let createtListingItemObject;
     let defaultMarket;
 
     const messaging = [{ protocol: MessagingProtocolType.SMSG, public_key: 'publickey2' }];
+    const objects = [{
+        type: ListingItemObjectType.CHECKBOX,
+        description: 'Test Description',
+        order: 1
+    }];
 
     const testData = {
         hash: 'default-hash',
@@ -152,7 +161,7 @@ describe('ListingItemMessageProcessor', () => {
             }
         },
         messaging,
-        objects: {}
+        objects
     } as ListingItemMessage; // TODO:  no type
 
     beforeAll(async () => {
@@ -179,6 +188,7 @@ describe('ListingItemMessageProcessor', () => {
         cryptocurrencyAddressService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.CryptocurrencyAddressService);
 
         messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
+        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
@@ -207,6 +217,7 @@ describe('ListingItemMessageProcessor', () => {
         createdItemInformation = result.ItemInformation;
         createdPaymentInformation = result.PaymentInformation;
         createdMessagingInformation = result.MessagingInformation[0];
+        createtListingItemObject = result.ListingItemObjects[0];
         // test the values
         expect(result.id).toBe(createdListingItem.id);
         // ItemInformation
@@ -227,6 +238,11 @@ describe('ListingItemMessageProcessor', () => {
         // messaging-infomration
         expect(result.MessagingInformation[0].protocol).toBe(messaging[0].protocol);
         expect(result.MessagingInformation[0].publicKey).toBe(messaging[0].public_key);
+
+        // listingitem-object
+        expect(result.ListingItemObjects[0].type).toBe(objects[0].type);
+        expect(result.ListingItemObjects[0].description).toBe(objects[0].description);
+        expect(result.ListingItemObjects[0].order).toBe(objects[0].order);
     });
 
     test('Should delete the created listing items', async () => {
@@ -278,7 +294,7 @@ describe('ListingItemMessageProcessor', () => {
 
         // escrow-ratio
         const escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
-        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
+        await escrowRatioService.findOne(createdPaymentInformation.id, false).catch(e =>
             expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
         );
 
@@ -290,13 +306,13 @@ describe('ListingItemMessageProcessor', () => {
 
         // shippingPrice
         const shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
-        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+        await shippingPriceService.findOne(shippingPriceId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(shippingPriceId))
         );
 
         // cryptoCurrencyAddress
         const cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
-        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+        await cryptocurrencyAddressService.findOne(cryptoCurrencyId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
         );
 
@@ -304,6 +320,12 @@ describe('ListingItemMessageProcessor', () => {
         const messagingInformationId = createdMessagingInformation.id;
         await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(messagingInformationId))
+        );
+
+        // listingitemObject
+        const listingItemObjectsId = createtListingItemObject.id;
+        await listingItemObjectService.findOne(listingItemObjectsId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemObjectsId))
         );
 
     });

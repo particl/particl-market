@@ -64,7 +64,7 @@ export class ItemCategoryFactory {
         if (childCategories.length > 0) {
             for (const childCategory of childCategories) {
                 if (!this.isFound) {
-                    this.categoryArray.push(theObject.Key);
+                    this.categoryArray.push(theObject['key']);
                 }
                 if (childCategory.parentItemCategoryId === findValue) {
                     this.isFound = true;

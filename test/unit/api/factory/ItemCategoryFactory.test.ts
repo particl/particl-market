@@ -3,8 +3,6 @@ import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryF
 
 describe('ItemCategoryFactory', () => {
 
-    // TODO: missing tests for getArray
-
     let req;
     let itemCategoryFactory;
     const rootCategoryWithRelated = {
@@ -98,7 +96,7 @@ describe('ItemCategoryFactory', () => {
             name: 'categoryName',
             parentItemCategoryId: 10
         };
-        itemCategoryFactory.getModel(req).then((res, error) => {
+        itemCategoryFactory.getModel(req.name, req.parentItemCategoryId).then((res, error) => {
             expect(res.name).toBe(req.name);
             expect(res.parent_item_category_id).toBe(req.parentItemCategoryId);
         });

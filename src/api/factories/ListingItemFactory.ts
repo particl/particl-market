@@ -75,7 +75,7 @@ export class ListingItemFactory {
             },
             paymentInformation: data.payment as PaymentInformation,
             messagingInformation: data.messaging as MessagingInformation,
-            listingItemObjects: {} as ListingItemObject// we will change it later
+            listingItemObjects: data.objects as ListingItemObject
         } as ListingItemCreateRequest;
     }
 }
