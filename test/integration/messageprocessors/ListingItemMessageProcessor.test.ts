@@ -18,6 +18,7 @@ import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailabilit
 import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
 import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
 import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
+import { ListingItemObjectType } from '../../../src/api/enums/ListingItemObjectType';
 import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
 
 import { ItemInformationService } from '../../../src/api/services/ItemInformationService';
@@ -33,6 +34,7 @@ import { ItemPriceService } from '../../../src/api/services/ItemPriceService';
 import { ShippingPriceService } from '../../../src/api/services/ShippingPriceService';
 import { CryptocurrencyAddressService } from '../../../src/api/services/CryptocurrencyAddressService';
 import { MessagingInformationService } from '../../../src/api/services/MessagingInformationService';
+import { ListingItemObjectService } from '../../../src/api/services/ListingItemObjectService';
 
 
 describe('ListingItemMessageProcessor', () => {
@@ -59,18 +61,26 @@ describe('ListingItemMessageProcessor', () => {
     let cryptocurrencyAddressService: CryptocurrencyAddressService;
 
     let messagingInformationService: MessagingInformationService;
+    let listingItemObjectService: ListingItemObjectService;
 
     let createdListingItem;
     let createdItemInformation;
     let createdPaymentInformation;
     let createdMessagingInformation;
+    let createtListingItemObject;
 
     let createdListingItemTwo;
     let createdItemInformation2;
     let createdPaymentInformation2;
     let createdMessagingInformation2;
+    let createtListingItemObject2;
 
     const messaging = [{ protocol: MessagingProtocolType.SMSG, public_key: 'publickey2' }];
+    const objects = [{
+        type: ListingItemObjectType.CHECKBOX,
+        description: 'Test Description',
+        order: 1
+    }];
 
     const testData = {
         hash: '123132',
@@ -152,7 +162,7 @@ describe('ListingItemMessageProcessor', () => {
             }
         },
         messaging,
-        objects: {}
+        objects
     } as ListingItemMessage;
 
     beforeAll(async () => {
@@ -177,6 +187,7 @@ describe('ListingItemMessageProcessor', () => {
         cryptocurrencyAddressService = app.IoC.getNamed<CryptocurrencyAddressService>(Types.Service, Targets.Service.CryptocurrencyAddressService);
 
         messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
+        listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
@@ -194,6 +205,7 @@ describe('ListingItemMessageProcessor', () => {
         createdItemInformation = result.ItemInformation;
         createdPaymentInformation = result.PaymentInformation;
         createdMessagingInformation = result.MessagingInformation;
+        createtListingItemObject = result.ListingItemObjects;
         // test the values
         expect(result.id).not.toBeNull();
         // ItemInformation
@@ -214,6 +226,11 @@ describe('ListingItemMessageProcessor', () => {
         // messaging-infomration
         expect(result.MessagingInformation[0].protocol).toBe(messaging[0].protocol);
         expect(result.MessagingInformation[0].publicKey).toBe(messaging[0].public_key);
+
+        // listingitem-object
+        expect(result.ListingItemObjects[0].type).toBe(objects[0].type);
+        expect(result.ListingItemObjects[0].description).toBe(objects[0].description);
+        expect(result.ListingItemObjects[0].order).toBe(objects[0].order);
     });
 
     test('Should create a Listing without messaging information', async () => {
@@ -225,6 +242,7 @@ describe('ListingItemMessageProcessor', () => {
         createdItemInformation2 = result.ItemInformation;
         createdPaymentInformation2 = result.PaymentInformation;
         createdMessagingInformation2 = result.MessagingInformation;
+        createtListingItemObject2 = result.ListingItemObjects;
 
         // test the values
         expect(result.id).not.toBeNull();
@@ -240,6 +258,11 @@ describe('ListingItemMessageProcessor', () => {
         const itemPrice = result.PaymentInformation.ItemPrice;
         expect(itemPrice.currency).toBe(testData.payment.itemPrice.currency);
         expect(itemPrice.basePrice).toBe(testData.payment.itemPrice.basePrice);
+
+        // listingitem-object
+        expect(result.ListingItemObjects[0].type).toBe(objects[0].type);
+        expect(result.ListingItemObjects[0].description).toBe(objects[0].description);
+        expect(result.ListingItemObjects[0].order).toBe(objects[0].order);
     });
 
 
@@ -292,8 +315,8 @@ describe('ListingItemMessageProcessor', () => {
 
         // escrow-ratio
         let escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
-        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        await escrowRatioService.findOne(escrowRatioId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(escrowRatioId))
         );
 
         // itemPrice
@@ -304,95 +327,102 @@ describe('ListingItemMessageProcessor', () => {
 
         // shippingPrice
         let shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
-        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+        await shippingPriceService.findOne(shippingPriceId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(shippingPriceId))
         );
 
         // cryptoCurrencyAddress
         let cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
-        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+        await cryptocurrencyAddressService.findOne(cryptoCurrencyId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
         );
 
         // messagingInformation
-        let messagingInformationId = createdMessagingInformation[0].id;
+        const messagingInformationId = createdMessagingInformation[0].id;
         await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(messagingInformationId))
         );
 
+        // listingitemObject
+        let listingItemObjectsId = createtListingItemObject[0].id;
+        await listingItemObjectService.findOne(listingItemObjectsId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemObjectsId))
+        );
+
+        // remove 2nd
         await listingItemService.destroy(createdListingItemTwo.id);
         await listingItemService.findOne(createdListingItemTwo.id).catch(e =>
             expect(e).toEqual(new NotFoundException(createdListingItemTwo.id))
         );
 
         // item-information
-        await itemInformationService.findOne(createdItemInformation.id, false).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdItemInformation.id))
+        await itemInformationService.findOne(createdItemInformation2.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdItemInformation2.id))
         );
 
         // item-location
-        itemLocationId = createdItemInformation.ItemLocation.id;
+        itemLocationId = createdItemInformation2.ItemLocation.id;
         await itemLocationService.findOne(itemLocationId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(itemLocationId))
         );
 
         // location marker
-        locationMarkerId = createdItemInformation.ItemLocation.LocationMarker.id;
+        locationMarkerId = createdItemInformation2.ItemLocation.LocationMarker.id;
         await locationMarkerService.findOne(locationMarkerId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(locationMarkerId))
         );
 
         // shipping-destination
-        shipDestinationId = createdItemInformation.ShippingDestinations[0].id;
+        shipDestinationId = createdItemInformation2.ShippingDestinations[0].id;
         await shippingDestinationService.findOne(shipDestinationId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(shipDestinationId))
         );
 
         // item image
-        itemImageId = createdItemInformation.ItemImages[0].id;
+        itemImageId = createdItemInformation2.ItemImages[0].id;
         await itemImageService.findOne(itemImageId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(itemImageId))
         );
 
         // paymentInformation
-        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        await paymentInformationService.findOne(createdPaymentInformation2.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation2.id))
         );
 
         // escrow
-        escrowId = createdPaymentInformation.Escrow.id;
+        escrowId = createdPaymentInformation2.Escrow.id;
         await escrowService.findOne(escrowId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(escrowId))
         );
 
         // escrow-ratio
-        escrowRatioId = createdPaymentInformation.Escrow.Ratio.id;
-        await paymentInformationService.findOne(createdPaymentInformation.id, false).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdPaymentInformation.id))
+        escrowRatioId = createdPaymentInformation2.Escrow.Ratio.id;
+        await escrowRatioService.findOne(createdPaymentInformation2.id, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdPaymentInformation2.id))
         );
 
         // itemPrice
-        itemPriceId = createdPaymentInformation.ItemPrice.id;
+        itemPriceId = createdPaymentInformation2.ItemPrice.id;
         await itemPriceService.findOne(itemPriceId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(itemPriceId))
         );
 
         // shippingPrice
-        shippingPriceId = createdPaymentInformation.ItemPrice.ShippingPrice.id;
-        await paymentInformationService.findOne(shippingPriceId, false).catch(e =>
+        shippingPriceId = createdPaymentInformation2.ItemPrice.ShippingPrice.id;
+        await shippingPriceService.findOne(shippingPriceId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(shippingPriceId))
         );
 
         // cryptoCurrencyAddress
-        cryptoCurrencyId = createdPaymentInformation.ItemPrice.CryptocurrencyAddress.id;
-        await paymentInformationService.findOne(cryptoCurrencyId, false).catch(e =>
+        cryptoCurrencyId = createdPaymentInformation2.ItemPrice.CryptocurrencyAddress.id;
+        await cryptocurrencyAddressService.findOne(cryptoCurrencyId, false).catch(e =>
             expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
         );
 
-        // messagingInformation
-        messagingInformationId = createdMessagingInformation[0].id;
-        await messagingInformationService.findOne(messagingInformationId, false).catch(e =>
-            expect(e).toEqual(new NotFoundException(messagingInformationId))
+        // listingitemObject
+        listingItemObjectsId = createtListingItemObject2[0].id;
+        await listingItemObjectService.findOne(listingItemObjectsId, false).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemObjectsId))
         );
     });
 

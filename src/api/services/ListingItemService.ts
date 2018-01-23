@@ -24,7 +24,7 @@ import { PaymentInformationUpdateRequest } from '../requests/PaymentInformationU
 import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
 import { MessagingInformationUpdateRequest } from '../requests/MessagingInformationUpdateRequest';
 
-import { ListingItemPostRequest } from '../requests/ListingItemPostRequest';
+import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplatePostRequest';
 import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostRequest';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
@@ -297,7 +297,7 @@ export class ListingItemService {
      * @returns {Promise<any>}
      */
     @validate()
-    public async post( @request(ListingItemPostRequest) data: ListingItemPostRequest): Promise<void> {
+    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<void> {
 
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId);
