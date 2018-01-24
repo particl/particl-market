@@ -8,8 +8,8 @@ describe('MarketListCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const marketService = null;
-    const method: any =  Commands.MARKET_ROOT;
-    const subCommand =  Commands.MARKET_LIST;
+    const method =  Commands.MARKET_ROOT.commandName;
+    const subCommand =  Commands.MARKET_LIST.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();

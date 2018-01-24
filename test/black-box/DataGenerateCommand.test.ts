@@ -6,8 +6,8 @@ describe('DataGenerateCommand', () => {
 
   const testUtil = new BlackBoxTestUtil();
   const marketService = null;
-  const method: any =  Commands.DATA_ROOT;
-  const subCommand =  Commands.DATA_GENERATE;
+  const method =  Commands.DATA_ROOT.commandName;
+  const subCommand =  Commands.DATA_GENERATE.commandName;
 
   beforeAll(async () => {
       await testUtil.cleanDb();

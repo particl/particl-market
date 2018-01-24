@@ -6,8 +6,8 @@ describe('DataAddCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const marketService = null;
-    const method: any =  Commands.DATA_ROOT;
-    const subCommand =  Commands.DATA_ADD;
+    const method = Commands.DATA_ROOT.commandName;
+    const subCommand =  Commands.DATA_ADD.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
