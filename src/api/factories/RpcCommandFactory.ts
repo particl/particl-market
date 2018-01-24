@@ -51,6 +51,8 @@ import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplat
 import { ListingItemTemplatePostCommand } from '../commands/listingitemtemplate/ListingItemTemplatePostCommand';
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
 import { MarketCreateCommand } from '../commands/market/MarketCreateCommand';
+import { MarketRootCommand } from '../commands/market/MarketRootCommand';
+import { MarketListCommand } from '../commands/market/MarketListCommand';
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
 import { AddressCreateCommand } from '../commands/address/AddressCreateCommand';
 import { AddressDestroyCommand } from '../commands/address/AddressDestroyCommand';
@@ -112,6 +114,8 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateSearchCommand) private listingItemTemplateSearchCommand: ListingItemTemplateSearchCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplatePostCommand) private listingItemTemplatePostCommand: ListingItemTemplatePostCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketCreateCommand) private marketCreateCommand: MarketCreateCommand,
+        @inject(Types.Command) @named(Targets.Command.market.MarketRootCommand) private marketRootCommand: MarketRootCommand,
+        @inject(Types.Command) @named(Targets.Command.market.MarketListCommand) private marketListCommand: MarketListCommand,
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationUpdateCommand) private messagingInformationUpdateCommand: MessagingInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressCreateCommand) private addresscreateCommand: AddressCreateCommand,
@@ -179,6 +183,8 @@ export class RpcCommandFactory {
         this.commands.push(listingItemTemplateGetCommand);
         this.commands.push(listingItemTemplateSearchCommand);
         this.commands.push(marketCreateCommand);
+        this.commands.push(marketRootCommand);
+        this.commands.push(marketListCommand);
         this.commands.push(messagingInformationUpdateCommand);
         this.commands.push(paymentInformationUpdateCommand);
         this.commands.push(addresscreateCommand);
