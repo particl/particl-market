@@ -26,8 +26,6 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
     }
 
     /**
-     * TODO: Update command to match help().
-     *
      * data.params[]:
      *  [0]: profileId
      *  [1]: title
