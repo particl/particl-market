@@ -8,6 +8,7 @@ import { NotFoundException } from '../exceptions/NotFoundException';
 import { DataAddCommand } from '../commands/data/DataAddCommand';
 import { DataCleanCommand } from '../commands/data/DataCleanCommand';
 import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
+import { DataRootCommand } from '../commands/data/DataRootCommand';
 import { HelpCommand } from '../commands/HelpCommand';
 
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
@@ -128,6 +129,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.data.DataAddCommand) private dataAddCommand: DataAddCommand,
         @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
         @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
 
@@ -194,6 +196,7 @@ export class RpcCommandFactory {
         this.commands.push(dataAddCommand);
         this.commands.push(dataCleanCommand);
         this.commands.push(dataGenerateCommand);
+        this.commands.push(dataRootCommand);
         this.commands.push(helpCommand);
 
         this.log.debug(this.commands.length + ' commands initialized.');

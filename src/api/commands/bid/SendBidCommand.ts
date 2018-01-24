@@ -25,7 +25,7 @@ export class SendBidCommand extends BaseCommand implements RpcCommandInterface<B
         @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory
     ) {
-        super(Commands.DATA_ADD);
+        super(Commands.BID_SEND);
         this.log = new Logger(__filename);
     }
 
