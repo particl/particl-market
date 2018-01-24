@@ -1,25 +1,23 @@
 import * as _ from 'lodash';
 import { api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Country } from '../../src/api/enums/Country';
+// import { Country } from '../../src/api/enums/Country';
 import { Logger } from '../../src/core/Logger';
 import { ProfileGetCommand } from '../../src/api/commands/profile/ProfileGetCommand';
 import { ProfileCreateCommand } from '../../src/api/commands/profile/ProfileCreateCommand';
 
 describe('/ProfileGetCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const profileService = null;
-    const getProfileMethod =  new ProfileGetCommand(profileService, Logger).name;
-    const createProfileMethod =  new ProfileCreateCommand(profileService, Logger).name;
+    const method = 'profile';
 
     const keys = [
         'id', 'name', 'updatedAt', 'createdAt'
     ];
 
     const testData = {
-        method: createProfileMethod,
+        method: method,
         params: [
-            'DEFAULT-PROFILE', 'DEFAULT-PROFILE-ADDRESS'
+            'add', 'DEFAULT-PROFILE', 'DEFAULT-PROFILE-ADDRESS'
         ],
         jsonrpc: '2.0'
     };
@@ -45,8 +43,9 @@ describe('/ProfileGetCommand', () => {
     };
 
     const testDataGet = {
-        method: getProfileMethod,
+        method: method,
         params: [
+            'get',
             '0'
         ],
         jsonrpc: '2.0'
@@ -69,7 +68,7 @@ describe('/ProfileGetCommand', () => {
         createdId = result['id'];
 
         // get profile
-        testDataGet.params[0] = createdId;
+        testDataGet.params[1] = createdId;
         const resMain = await api('POST', '/api/rpc', {
             body: testDataGet
         });
@@ -77,7 +76,7 @@ describe('/ProfileGetCommand', () => {
         resMain.expectStatusCode(200);
         resMain.expectDataRpc(keys);
         const resultMain: any = resMain.getBody()['result'];
-        expect(resultMain.id).toBe(testDataGet.params[0]);
+        expect(resultMain.id).toBe(testDataGet.params[1]);
     });
 
     test('Should return one profile with addresses by ID', async () => {
@@ -91,7 +90,7 @@ describe('/ProfileGetCommand', () => {
         createdId = res.getData()['id'];
 
         // get profile
-        testDataGet.params[0] = createdId;
+        testDataGet.params[1] = createdId;
         const resMain = await api('POST', '/api/rpc', {
             body: testDataGet
         });
@@ -99,12 +98,12 @@ describe('/ProfileGetCommand', () => {
         resMain.expectStatusCode(200);
         resMain.expectDataRpc(keys);
         const resultMain: any = resMain.getBody()['result'];
-        expect(resultMain.id).toBe(testDataGet.params[0]);
+        expect(resultMain.id).toBe(testDataGet.params[1]);
         expect(resultMain.ShippingAddresses).toHaveLength(2);
     });
 
     test('Should return one profile by Name', async () => {
-        testDataGet.params[0] = 'DEFAULT-PROFILE-NAME';
+        testDataGet.params[1] = 'DEFAULT-PROFILE-NAME';
         const res = await api('POST', '/api/rpc', {
             body: testDataGet
         });

@@ -58,6 +58,8 @@ import { ProfileCreateCommand } from '../commands/profile/ProfileCreateCommand';
 import { ProfileDestroyCommand } from '../commands/profile/ProfileDestroyCommand';
 import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
 import { ProfileGetCommand } from '../commands/profile/ProfileGetCommand';
+import { ProfileListCommand } from '../commands/profile/ProfileListCommand';
+import { ProfileRootCommand } from '../commands/profile/ProfileRootCommand';
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
 
@@ -118,6 +120,8 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.profile.ProfileDestroyCommand) private profileDestroyCommand: ProfileDestroyCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileGetCommand) private profileGetCommand: ProfileGetCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileUpdateCommand) private profileUpdateCommand: ProfileUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.profile.ProfileListCommand) private profileListCommand: ProfileListCommand,
+        @inject(Types.Command) @named(Targets.Command.profile.ProfileRootCommand) private profileRootCommand: ProfileRootCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationAddCommand) private shippingDestinationAddCommand: ShippingDestinationAddCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationRemoveCommand) private shippingDestinationRemoveCommand: ShippingDestinationRemoveCommand,
 
@@ -182,6 +186,8 @@ export class RpcCommandFactory {
         this.commands.push(profileDestroyCommand);
         this.commands.push(profileGetCommand);
         this.commands.push(profileUpdateCommand);
+        this.commands.push(profileListCommand);
+        this.commands.push(profileRootCommand);
         this.commands.push(shippingDestinationAddCommand);
         this.commands.push(shippingDestinationRemoveCommand);
 
