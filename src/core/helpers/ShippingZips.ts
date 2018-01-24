@@ -8,7 +8,7 @@ export class ShippingZips {
         if ( !countryCode ) {
             return false;
         }
-        countryCode = countryCode.toUpperCase();
+        countryCode = countryCode.toString().toUpperCase();
 
         // Countries not supported by the lib but should be.
         switch ( countryCode ) {
@@ -92,7 +92,7 @@ export class ShippingZips {
     /*
      */
     public static validate( countryCode: string, zip: string ): boolean {
-        countryCode = countryCode.toUpperCase();
+        countryCode = countryCode.toString().toUpperCase();
         zip = zip.toString().toUpperCase();
 
         // Non-standard postal codes

@@ -17,7 +17,7 @@ export class ShippingCountries {
     }
 
     public static getCountry( countryCode: string ): string {
-        countryCode = countryCode.toUpperCase();
+        countryCode = countryCode.toString().toUpperCase();
         if ( this.countryCodeList[countryCode] ) {
             return this.countryCodeList[countryCode].iso;
         }
@@ -25,7 +25,7 @@ export class ShippingCountries {
     }
 
     public static getCountryCode( country: string ): string {
-        country = country.toUpperCase();
+        country = country.toString().toUpperCase();
         if ( this.countryList[country] ) {
             return this.countryList[country];
         }
@@ -33,7 +33,7 @@ export class ShippingCountries {
     }
 
     public static isValidCountry( country: string ): boolean {
-        country = country.toUpperCase();
+        country = country.toString().toUpperCase();
         if ( this.countryList[country] ) {
             return true;
         } else {
@@ -42,7 +42,7 @@ export class ShippingCountries {
     }
 
     public static isValidCountryCode( countryCode: string ): boolean {
-        countryCode = countryCode.toUpperCase();
+        countryCode = countryCode.toString().toUpperCase();
         if ( this.countryCodeList[countryCode] ) {
             return true;
         } else {
@@ -55,7 +55,7 @@ export class ShippingCountries {
      * If country code and invalid, throw exception and print to log.
      */
     public static validate( log: LoggerType, countryCode: string ): string {
-        countryCode = countryCode.toUpperCase();
+        countryCode = countryCode.toString().toUpperCase();
         if ( ShippingCountries.isValidCountry(countryCode) ) {
             countryCode = ShippingCountries.getCountryCode(countryCode);
         } else if (ShippingCountries.isValidCountryCode(countryCode) === false)  { //  Check if valid country code
