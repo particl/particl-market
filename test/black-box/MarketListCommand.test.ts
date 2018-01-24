@@ -2,28 +2,36 @@ import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Logger } from '../../src/core/Logger';
 import { MarketListCommand } from '../../src/api/commands/market/MarketListCommand';
+import { Commands} from '../../src/api/commands/CommandEnumType';
 
 describe('MarketListCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const marketService = null;
-    const method =  'market';
+    const method: any =  Commands.MARKET_ROOT;
+    const subCommand =  Commands.MARKET_LIST;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
 
-    test('Should list all markets', async () => {
-        // generate market
-        // const listingItems = await testUtil.generateData('market', 3);
+    test('Should return empty market list', async () => {
+        const res = await rpc(method, [subCommand]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        expect(result).toHaveLength(0);
+    });
 
-        // const res = await rpc(method, ['list']);
-        // res.expectJson();
-        // res.expectStatusCode(200);
-        // const result: any = res.getBody()['result'];
+    test('Should list all created markets', async () => {
+        // generate markets
+        await testUtil.generateData('market', 3);
 
-        // TODO: need to add more test cases after dataRootCommand will be merged
-
+        const res = await rpc(method, [subCommand]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        expect(result).toHaveLength(3);
     });
 
 });
