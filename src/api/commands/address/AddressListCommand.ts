@@ -55,7 +55,7 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
         //  then there's multiple addresses per profile and we can't get them through the profile service
         // => We need an address service method to list addresses for profile id
 
-        // throw new MessageException('Not implemented.');
+        throw new MessageException('Not implemented.');
     }
 
     public help(): string {
