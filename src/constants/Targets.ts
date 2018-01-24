@@ -117,7 +117,8 @@ export const Targets = {
         data: {
             DataAddCommand: 'DataAddCommand',
             DataCleanCommand: 'DataCleanCommand',
-            DataGenerateCommand: 'DataGenerateCommand'
+            DataGenerateCommand: 'DataGenerateCommand',
+            DataRootCommand: 'DataRootCommand'
         },
         escrow: {
             EscrowCreateCommand: 'EscrowCreateCommand',
@@ -159,18 +160,21 @@ export const Targets = {
         },
         listingitem: {
             ListingItemGetCommand: 'ListingItemGetCommand',
-            ListingItemPostCommand: 'ListingItemPostCommand',
             ListingItemSearchCommand: 'ListingItemSearchCommand',
-            OwnListingItemSearchCommand: 'OwnListingItemSearchCommand'
+            OwnListingItemSearchCommand: 'OwnListingItemSearchCommand',
+            ListingItemUpdateCommand : 'ListingItemUpdateCommand'
         },
         listingitemtemplate: {
             ListingItemTemplateCreateCommand: 'ListingItemTemplateCreateCommand',
             ListingItemTemplateDestroyCommand: 'ListingItemTemplateDestroyCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
-            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
+            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
+            ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand'
         },
         market: {
-            MarketCreateCommand: 'MarketCreateCommand'
+            MarketCreateCommand: 'MarketCreateCommand',
+            MarketRootCommand: 'MarketRootCommand',
+            MarketListCommand: 'MarketListCommand'
         },
         messaginginformation: {
             MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
@@ -182,7 +186,9 @@ export const Targets = {
             ProfileCreateCommand: 'ProfileCreateCommand',
             ProfileDestroyCommand: 'ProfileDestroyCommand',
             ProfileGetCommand: 'ProfileGetCommand',
-            ProfileUpdateCommand: 'ProfileUpdateCommand'
+            ProfileUpdateCommand: 'ProfileUpdateCommand',
+            ProfileRootCommand: 'ProfileRootCommand',
+            ProfileListCommand: 'ProfileListCommand'
         },
         RpcCommandInterface: 'RpcCommandInterface',
         shippingdestination: {
@@ -203,6 +209,7 @@ export const Targets = {
         BidMessageProcessor: 'BidMessageProcessor',
         CancelBidMessageProcessor: 'CancelBidMessageProcessor',
         ListingItemMessageProcessor: 'ListingItemMessageProcessor',
+        UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
         RejectBidMessageProcessor: 'RejectBidMessageProcessor',

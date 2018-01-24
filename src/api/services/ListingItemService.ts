@@ -12,6 +12,7 @@ import { ListingItemUpdateRequest } from '../requests/ListingItemUpdateRequest';
 import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemInformationService } from './ItemInformationService';
+import { ItemCategoryService } from './ItemCategoryService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { MarketService } from './MarketService';
 import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
@@ -21,28 +22,38 @@ import { ItemInformationUpdateRequest } from '../requests/ItemInformationUpdateR
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
 import { PaymentInformationUpdateRequest } from '../requests/PaymentInformationUpdateRequest';
 import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
-import { ListingItemPostRequest } from '../requests/ListingItemPostRequest';
+import { MessagingInformationUpdateRequest } from '../requests/MessagingInformationUpdateRequest';
+
+import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplatePostRequest';
+import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostRequest';
+import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
+import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
+
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { MessageException } from '../exceptions/MessageException';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { MessageBroadcastService } from './MessageBroadcastService';
 import { Market } from '../models/Market';
+import { ListingItemObjectService } from './ListingItemObjectService';
 
 export class ListingItemService {
 
     public log: LoggerType;
 
-    constructor(@inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-                @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
-                @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
-                @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
-                @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
-                @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-                @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) public messageBroadcastService: MessageBroadcastService,
-                @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
-                @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
-                @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+    constructor(
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
+        @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
+        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
+        @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) public messageBroadcastService: MessageBroadcastService,
+        @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
+        @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
     }
 
@@ -86,8 +97,10 @@ export class ListingItemService {
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */
     @validate()
-    public async search(@request(ListingItemSearchParams) options: ListingItemSearchParams,
-                        withRelated: boolean = false): Promise<Bookshelf.Collection<ListingItem>> {
+    public async search(
+        @request(ListingItemSearchParams) options: ListingItemSearchParams,
+        withRelated: boolean = false
+        ): Promise<Bookshelf.Collection<ListingItem>> {
         // if valid params
         // todo: check whether category is string or number, if string, try to find the Category by key
         return this.listingItemRepo.search(options, withRelated);
@@ -99,7 +112,7 @@ export class ListingItemService {
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async create(@request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
+    public async create( @request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -110,7 +123,7 @@ export class ListingItemService {
         delete body.paymentInformation;
         const messagingInformation = body.messagingInformation || [];
         delete body.messagingInformation;
-        const listingItemObjects = body.listingItemObjects || {};
+        const listingItemObjects = body.listingItemObjects || [];
         delete body.listingItemObjects;
 
         // If the request body was valid we will create the listingItem
@@ -130,8 +143,11 @@ export class ListingItemService {
             msgInfo.listing_item_id = listingItem.Id;
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
         }
-        if (!_.isEmpty(listingItemObjects)) {
-            // TODO: implement
+
+        // create listingItemObjects
+        for (const object of listingItemObjects) {
+            object.listing_item_id = listingItem.Id;
+            await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
         }
 
         // finally find and return the created listingItem
@@ -155,23 +171,18 @@ export class ListingItemService {
         // set new values
         listingItem.Hash = body.hash;
 
-        this.log.debug('listingItem.toJSON():', listingItem.toJSON());
-
         // update listingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
 
-        // update listingItem record
-        this.log.debug('updatedListingItem.toJSON():', updatedListingItem.toJSON());
-
         // Item-information
-        let itemInformation = updatedListingItem.related('ItemInformation').toJSON() || {};
+        let itemInformation = updatedListingItem.related('ItemInformation').toJSON() as ItemInformationUpdateRequest;
         // if the related one exists allready, then update. if it doesnt exist, create. and if the related one is missing, then remove.
         if (!_.isEmpty(body.itemInformation)) {
             if (!_.isEmpty(itemInformation)) {
                 const itemInformationId = itemInformation.id;
                 itemInformation = body.itemInformation;
                 itemInformation.listing_item_id = id;
-                await this.itemInformationService.update(itemInformationId, itemInformation as ItemInformationUpdateRequest);
+                await this.itemInformationService.update(itemInformationId, itemInformation);
             } else {
                 itemInformation = body.itemInformation;
                 itemInformation.listing_item_id = id;
@@ -182,14 +193,14 @@ export class ListingItemService {
         }
 
         // payment-information
-        let paymentInformation = updatedListingItem.related('PaymentInformation').toJSON() || {};
+        let paymentInformation = updatedListingItem.related('PaymentInformation').toJSON() as PaymentInformationUpdateRequest;
 
         if (!_.isEmpty(body.paymentInformation)) {
             if (!_.isEmpty(paymentInformation)) {
                 const paymentInformationId = paymentInformation.id;
                 paymentInformation = body.paymentInformation;
                 paymentInformation.listing_item_id = id;
-                await this.paymentInformationService.update(paymentInformationId, paymentInformation as PaymentInformationUpdateRequest);
+                await this.paymentInformationService.update(paymentInformationId, paymentInformation);
             } else {
                 paymentInformation = body.paymentInformation;
                 paymentInformation.listing_item_id = id;
@@ -200,14 +211,57 @@ export class ListingItemService {
         }
 
         // find related record and delete it and recreate related data
-        let messagingInformation = updatedListingItem.related('MessagingInformation').toJSON() || [];
-        for (const msgInfo of messagingInformation) {
-            await this.messagingInformationService.destroy(msgInfo.id);
+        const existintMessagingInformation = updatedListingItem.related('MessagingInformation').toJSON() || [];
+
+        const newMessagingInformation = body.messagingInformation || [];
+
+        // delete MessagingInformation if not exist with new params
+        for (const msgInfo of existintMessagingInformation) {
+            if (!await this.checkExistingObject(newMessagingInformation, 'publicKey', msgInfo.publicKey)) {
+                await this.messagingInformationService.destroy(msgInfo.id);
+            }
         }
-        messagingInformation = body.messagingInformation || [];
-        for (const msgInfo of messagingInformation) {
+
+        // update or create messaging itemInformation
+        for (const msgInfo of newMessagingInformation) {
             msgInfo.listing_item_id = id;
-            await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
+            const message = await this.checkExistingObject(existintMessagingInformation, 'publicKey', msgInfo.publicKey);
+            if (message) {
+                message.protocol = msgInfo.protocol;
+                message.publicKey = msgInfo.publicKey;
+                await this.messagingInformationService.update(message.id, msgInfo as MessagingInformationUpdateRequest);
+            } else {
+                await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
+            }
+        }
+
+        const newListingItemObjects = body.listingItemObjects || [];
+
+        // find related listingItemObjects
+        const existingListingItemObjects = updatedListingItem.related('ListingItemObjects').toJSON() || [];
+
+        // find highestOrderNumber
+        const highestOrderNumber = await this.findHighestOrderNumber(newListingItemObjects);
+
+        const objectsToBeUpdated = [] as any;
+        for (const object of existingListingItemObjects) {
+            // check if order number is greter than highestOrderNumber then delete
+            if (object.order > highestOrderNumber) {
+                await this.listingItemObjectService.destroy(object.id);
+            } else {
+                objectsToBeUpdated.push(object);
+            }
+        }
+        // create or update listingItemObjects
+        for (const object of newListingItemObjects) {
+            object.listing_item_id = id;
+            const itemObject = await this.checkExistingObject(objectsToBeUpdated, 'order', object.order);
+
+            if (itemObject) {
+                await this.listingItemObjectService.update(itemObject.id, object as ListingItemObjectUpdateRequest);
+            } else {
+                await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
+            }
         }
 
         // finally find and return the updated listingItem
@@ -243,7 +297,7 @@ export class ListingItemService {
      * @returns {Promise<any>}
      */
     @validate()
-    public async post(@request(ListingItemPostRequest) data: ListingItemPostRequest): Promise<void> {
+    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<void> {
 
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId);
@@ -251,16 +305,61 @@ export class ListingItemService {
 
         // fetch the market, dont remove, will be used later with the broadcast
         const marketModel: Market = await _.isEmpty(data.marketId)
-        ? await this.marketService.getDefault()
-        : await this.marketService.findOne(data.marketId);
+            ? await this.marketService.getDefault()
+            : await this.marketService.findOne(data.marketId);
         const market = marketModel.toJSON();
 
         // create ListingItemMessage
-        const addItemMessage = await this.listingItemFactory.getMessage(itemTemplate);
+        const rootCategoryWithRelated = await this.itemCategoryService.findRoot();
+        const addItemMessage = await this.listingItemFactory.getMessage(itemTemplate, rootCategoryWithRelated);
 
         // TODO: Need to update broadcast message return after broadcast functionality will be done.
         this.messageBroadcastService.broadcast(addItemMessage as ListingItemMessage);
         return itemTemplate;
 
+    }
+
+    /**
+     * update a ListingItem based on a given ListingItem as ListingItemUpdateMessage
+     *
+     * @param data
+     * @returns {Promise<any>}
+     */
+    @validate()
+    public async updatePostItem( @request(ListingItemUpdatePostRequest) data: ListingItemUpdatePostRequest): Promise<void> {
+
+        // fetch the listingItemTemplate
+        const itemTemplateModel = await this.findOne(data.listingItemTemplateId);
+        const itemTemplate = itemTemplateModel.toJSON();
+
+        // check listing-item
+        const listingItems = itemTemplateModel.related('ListingItem').toJSON() || [];
+        if (listingItems.length > 0) {
+            // ListingItemMessage for update
+            const rootCategoryWithRelated: any = await this.itemCategoryService.findRoot();
+            const updateItemMessage = await this.listingItemFactory.getMessage(itemTemplate, rootCategoryWithRelated);
+            updateItemMessage.hash = data.hash; // replace with param hash of listing-item
+
+            // TODO: Need to update broadcast message return after broadcast functionality will be done.
+            this.messageBroadcastService.broadcast(updateItemMessage as ListingItemMessage);
+        } else {
+            this.log.warn(`No listingItem related with listing_item_template_id=${data.hash}!`);
+            throw new MessageException(`No listingItem related with listing_item_template_id=${data.hash}!`);
+        }
+    }
+
+    // check if object is exist in a array
+    private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
+        return await _.find(objectArray, (object) => {
+            return ( object[fieldName] === value );
+        });
+    }
+
+    // find highest order number from listingItemObjects
+    private async findHighestOrderNumber(listingItemObjects: string[]): Promise<any> {
+        const highestOrder = await _.maxBy(listingItemObjects, (itemObject) => {
+          return itemObject['order'];
+        });
+        return highestOrder ? highestOrder['order'] : 0;
     }
 }

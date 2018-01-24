@@ -1,4 +1,5 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -46,6 +47,15 @@ export class ItemCategoryService {
 
     public async findByName(name: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ItemCategory>> {
         return await this.itemCategoryRepo.findByName(name, withRelated);
+    }
+
+    // find by name and parent_item_category_id
+    public async isCategoryExists(categoryName: string, parentCategory: ItemCategory): Promise<ItemCategory> {
+        let parentCategoryId = null;
+        if (!_.isEmpty(parentCategory)) {
+            parentCategoryId = parentCategory.id;
+        }
+        return await this.itemCategoryRepo.isCategoryExists(categoryName, parentCategoryId);
     }
 
     @validate()

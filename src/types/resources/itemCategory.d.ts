@@ -7,6 +7,7 @@ declare module 'resources' {
         description: string;
         createdAt: Date;
         updatedAt: Date;
+        parentItemCategoryId: any;
     }
 
 }

@@ -24,11 +24,12 @@ export class CommandEnumType extends Enum<Command> {
     public BID_ROOT: Command        = new Command('bid', 'bid', true,
         [this.BID_SEARCH, this.BID_ACCEPT, this.BID_CANCEL, this.BID_REJECT, this.BID_SEND]);
 
-    public ITEM_SEARCH: Command     = new Command('itemsearch', 'search', false);
-    public ITEM_SEARCH_OWN: Command = new Command('itemsearchown', 'searchown', false);
-    public ITEM_GET: Command        = new Command('itemget', 'get', false);
-    public ITEM_ROOT: Command       = new Command('item', 'item', true,
-        [this.ITEM_SEARCH, this.ITEM_SEARCH_OWN, this.ITEM_GET]);
+    public ITEM_SEARCH: Command         = new Command('itemsearch', 'search', false);
+    public ITEM_SEARCH_OWN: Command     = new Command('itemsearchown', 'searchown', false);
+    public ITEM_GET: Command            = new Command('itemget', 'get', false);
+    public ITEM_POST_UPDATE: Command    = new Command('itempostupdate', 'update', false);
+    public ITEM_ROOT: Command           = new Command('item', 'item', true,
+        [this.ITEM_SEARCH, this.ITEM_SEARCH_OWN, this.ITEM_GET, this.ITEM_POST_UPDATE]);
     // TODO: bids
 
     public ESCROW_ADD: Command      = new Command('escrowadd', 'add', false);
@@ -76,14 +77,6 @@ export class CommandEnumType extends Enum<Command> {
     public TEMPLATE_GET: Command            = new Command('templateget', 'get', false);
     public TEMPLATE_ADD: Command            = new Command('templateadd', 'add', false);
     public TEMPLATE_REMOVE: Command         = new Command('templateremove', 'remove', false);
-    // public TEMPLATE_INFORMATION: Command    = this.ITEMINFORMATION;    // TODO: cant do this, need some other way to link to root command
-    // public TEMPLATE_INFORMATION: Command    = new Command('templateinformation', 'information', true);  // link to root
-    // public TEMPLATE_IMAGE: Command          = new Command('templateimage', 'image', true);              // link to root
-    // public TEMPLATE_LOCATION: Command       = new Command('templatelocation', 'location', true);        // link to root
-    // public TEMPLATE_SHIPPING: Command       = new Command('templateshipping', 'shipping', true);        // link to root
-    // public TEMPLATE_MESSAGING: Command      = new Command('templatemessaging', 'messaging', true);      // link to root
-    // public TEMPLATE_PAYMENT: Command        = new Command('templatepayment', 'payment', true);          // link to root
-    // public TEMPLATE_ESCROW: Command         = new Command('templateescrow', 'escrow', true);            // link to root
     public TEMPLATE_POST: Command           = new Command('templatepost', 'post', false);
     public TEMPLATE_IMPORT: Command         = new Command('templateimport', 'import', false);
     public TEMPLATE_ROOT: Command           = new Command('template', 'template', true,
@@ -106,7 +99,6 @@ export class CommandEnumType extends Enum<Command> {
     public FAVORITE_REMOVE: Command     = new Command('favoriteremove', 'remove', false);
     public FAVORITE_ROOT: Command       = new Command('favorite', 'favorite', true,
         [this.FAVORITE_LIST, this.FAVORITE_ADD, this.FAVORITE_REMOVE]);
-
 
     public ADDRESS_LIST: Command        = new Command('addresslist', 'list', false);
     public ADDRESS_ADD: Command         = new Command('addressadd', 'add', false);
@@ -131,6 +123,21 @@ export class CommandEnumType extends Enum<Command> {
     public MARKET_ROOT: Command         = new Command('market', 'market', true,
         [this.MARKET_LIST, this.MARKET_ADD]);
 
+    public SHOPPINGCART_LIST: Command   = new Command('cartlist', 'list', false);
+    public SHOPPINGCART_GET: Command    = new Command('cartget', 'get', false);
+    public SHOPPINGCART_ADD: Command    = new Command('cartadd', 'add', false);
+    public SHOPPINGCART_UPDATE: Command = new Command('cartupdate', 'update', false);
+    public SHOPPINGCART_REMOVE: Command = new Command('cartremove', 'remove', false);
+    public SHOPPINGCART_CLEAR: Command  = new Command('cartclear', 'clear', false);
+    public SHOPPINGCART_ROOT: Command   = new Command('cart', 'cart', true,
+        [this.SHOPPINGCART_LIST, this.SHOPPINGCART_GET, this.SHOPPINGCART_ADD, this.SHOPPINGCART_UPDATE,
+            this.SHOPPINGCART_REMOVE, this.SHOPPINGCART_CLEAR]);
+
+    public SHOPPINGCARTITEM_LIST: Command   = new Command('cartitemlist', 'list', false);
+    public SHOPPINGCARTITEM_ADD: Command    = new Command('cartitemadd', 'add', false);
+    public SHOPPINGCARTITEM_REMOVE: Command = new Command('cartitemremove', 'remove', false);
+    public SHOPPINGCARTITEM_ROOT: Command   = new Command('cartitem', 'cartitem', true,
+        [this.SHOPPINGCARTITEM_LIST, this.SHOPPINGCARTITEM_ADD, this.SHOPPINGCARTITEM_REMOVE]);
 
     constructor() {
         super();

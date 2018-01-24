@@ -1,7 +1,7 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Logger } from '../../src/core/Logger';
-import { ListingItemPostCommand } from '../../src/api/commands/listingitem/ListingItemPostCommand';
+import { ListingItemTemplatePostCommand } from '../../src/api/commands/listingitemtemplate/ListingItemTemplatePostCommand';
 import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
@@ -9,7 +9,7 @@ import { ListingItemTemplateCreateRequest } from '../../src/api/requests/Listing
 describe('ListingItemPostCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const listingItemService = null;
-    const method =  new ListingItemPostCommand(listingItemService, Logger).name;
+    const method =  new ListingItemTemplatePostCommand(listingItemService, Logger).name;
     const addMakretMethod =  new MarketCreateCommand(listingItemService, Logger).name;
     let listingItemTemplace;
 

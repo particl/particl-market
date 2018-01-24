@@ -8,6 +8,7 @@ import { NotFoundException } from '../exceptions/NotFoundException';
 import { DataAddCommand } from '../commands/data/DataAddCommand';
 import { DataCleanCommand } from '../commands/data/DataCleanCommand';
 import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
+import { DataRootCommand } from '../commands/data/DataRootCommand';
 import { HelpCommand } from '../commands/HelpCommand';
 
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
@@ -43,14 +44,16 @@ import { ItemLocationCreateCommand } from '../commands/itemlocation/ItemLocation
 import { ItemLocationUpdateCommand } from '../commands/itemlocation/ItemLocationUpdateCommand';
 import { ListingItemGetCommand } from '../commands/listingitem/ListingItemGetCommand';
 import { ListingItemSearchCommand } from '../commands/listingitem/ListingItemSearchCommand';
-import { ListingItemPostCommand } from '../commands/listingitem/ListingItemPostCommand';
 import { OwnListingItemSearchCommand } from '../commands/listingitem/OwnListingItemSearchCommand';
 import { ListingItemTemplateCreateCommand } from '../commands/listingitemtemplate/ListingItemTemplateCreateCommand';
 import { ListingItemTemplateDestroyCommand } from '../commands/listingitemtemplate/ListingItemTemplateDestroyCommand';
 import { ListingItemTemplateGetCommand } from '../commands/listingitemtemplate/ListingItemTemplateGetCommand';
 import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplate/ListingItemTemplateSearchCommand';
+import { ListingItemTemplatePostCommand } from '../commands/listingitemtemplate/ListingItemTemplatePostCommand';
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
 import { MarketCreateCommand } from '../commands/market/MarketCreateCommand';
+import { MarketRootCommand } from '../commands/market/MarketRootCommand';
+import { MarketListCommand } from '../commands/market/MarketListCommand';
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
 import { AddressRootCommand } from '../commands/address/AddressRootCommand';
 import { AddressListCommand } from '../commands/address/AddressListCommand';
@@ -61,6 +64,8 @@ import { ProfileCreateCommand } from '../commands/profile/ProfileCreateCommand';
 import { ProfileDestroyCommand } from '../commands/profile/ProfileDestroyCommand';
 import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
 import { ProfileGetCommand } from '../commands/profile/ProfileGetCommand';
+import { ProfileListCommand } from '../commands/profile/ProfileListCommand';
+import { ProfileRootCommand } from '../commands/profile/ProfileRootCommand';
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
 
@@ -107,12 +112,14 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemGetCommand) private listingItemGetCommand: ListingItemGetCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemSearchCommand) private listingItemSearchCommand: ListingItemSearchCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.OwnListingItemSearchCommand) private ownListingItemSearchCommand: OwnListingItemSearchCommand,
-        @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemPostCommand) private listingItemPostCommand: ListingItemPostCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateCreateCommand) private listingItemTemplateCreateCommand: ListingItemTemplateCreateCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateDestroyCommand) private listingItemTemplateDestroyCommand: ListingItemTemplateDestroyCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateGetCommand) private listingItemTemplateGetCommand: ListingItemTemplateGetCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateSearchCommand) private listingItemTemplateSearchCommand: ListingItemTemplateSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplatePostCommand) private listingItemTemplatePostCommand: ListingItemTemplatePostCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketCreateCommand) private marketCreateCommand: MarketCreateCommand,
+        @inject(Types.Command) @named(Targets.Command.market.MarketRootCommand) private marketRootCommand: MarketRootCommand,
+        @inject(Types.Command) @named(Targets.Command.market.MarketListCommand) private marketListCommand: MarketListCommand,
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationUpdateCommand) private messagingInformationUpdateCommand: MessagingInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressRootCommand) private addressRootCommand: AddressRootCommand,
@@ -124,12 +131,15 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.profile.ProfileDestroyCommand) private profileDestroyCommand: ProfileDestroyCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileGetCommand) private profileGetCommand: ProfileGetCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileUpdateCommand) private profileUpdateCommand: ProfileUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.profile.ProfileListCommand) private profileListCommand: ProfileListCommand,
+        @inject(Types.Command) @named(Targets.Command.profile.ProfileRootCommand) private profileRootCommand: ProfileRootCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationAddCommand) private shippingDestinationAddCommand: ShippingDestinationAddCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationRemoveCommand) private shippingDestinationRemoveCommand: ShippingDestinationRemoveCommand,
 
         @inject(Types.Command) @named(Targets.Command.data.DataAddCommand) private dataAddCommand: DataAddCommand,
         @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
         @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
 
@@ -174,12 +184,14 @@ export class RpcCommandFactory {
         this.commands.push(listingItemGetCommand);
         this.commands.push(listingItemSearchCommand);
         this.commands.push(ownListingItemSearchCommand);
-        this.commands.push(listingItemPostCommand);
+        this.commands.push(listingItemTemplatePostCommand);
         this.commands.push(listingItemTemplateCreateCommand);
         this.commands.push(listingItemTemplateDestroyCommand);
         this.commands.push(listingItemTemplateGetCommand);
         this.commands.push(listingItemTemplateSearchCommand);
         this.commands.push(marketCreateCommand);
+        this.commands.push(marketRootCommand);
+        this.commands.push(marketListCommand);
         this.commands.push(messagingInformationUpdateCommand);
         this.commands.push(paymentInformationUpdateCommand);
         this.commands.push(addressRootCommand);
@@ -191,12 +203,15 @@ export class RpcCommandFactory {
         this.commands.push(profileDestroyCommand);
         this.commands.push(profileGetCommand);
         this.commands.push(profileUpdateCommand);
+        this.commands.push(profileListCommand);
+        this.commands.push(profileRootCommand);
         this.commands.push(shippingDestinationAddCommand);
         this.commands.push(shippingDestinationRemoveCommand);
 
         this.commands.push(dataAddCommand);
         this.commands.push(dataCleanCommand);
         this.commands.push(dataGenerateCommand);
+        this.commands.push(dataRootCommand);
         this.commands.push(helpCommand);
 
         this.log.debug(this.commands.length + ' commands initialized.');
