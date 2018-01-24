@@ -181,7 +181,9 @@ export const Targets = {
             ProfileCreateCommand: 'ProfileCreateCommand',
             ProfileDestroyCommand: 'ProfileDestroyCommand',
             ProfileGetCommand: 'ProfileGetCommand',
-            ProfileUpdateCommand: 'ProfileUpdateCommand'
+            ProfileUpdateCommand: 'ProfileUpdateCommand',
+            ProfileRootCommand: 'ProfileRootCommand',
+            ProfileListCommand: 'ProfileListCommand'
         },
         RootRpcCommand: 'RootRpcCommand',
         RpcCommandInterface: 'RpcCommandInterface',
