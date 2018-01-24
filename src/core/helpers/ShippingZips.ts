@@ -16,7 +16,7 @@ export class ShippingZips {
             return true;
         }*/
 
-        //Countries not supported by the lib but should be.
+        // Countries not supported by the lib but should be.
         switch ( countryCode ) {
             case 'AQ':
             case 'GS':
@@ -85,9 +85,9 @@ export class ShippingZips {
             case 'ZW':
                 return true;
         }
-        
+
         try {
-            let retval = postalCodes.validate(countryCode, '___SOMETHINGTHATISNTAPOSTCODE___');
+            const retval = postalCodes.validate(countryCode, '___SOMETHINGTHATISNTAPOSTCODE___');
             const regex = new RegExp('^(Missing country code.|Unknown alpha2/alpha3 country code: )');
             return ( regex.test(retval) === false );
         } catch ( ex ) {
@@ -169,7 +169,7 @@ export class ShippingZips {
             case 'YE':
             case 'ZW':
                 return true;
-                //Below may be regions / states, or may be postal regions, not clear
+                // Below may be regions / states, or may be postal regions, not clear
             /* case 'AG': {
                 // https://en.wikipedia.org/wiki/ISO_3166-2:AG
                 const regex = new RegExp('^[ \t]*AG[ \t-]*(03|04|05|06|07|08|10|11)[ \t]*$');
@@ -196,7 +196,9 @@ export class ShippingZips {
             }
             case 'BF': {
                 // https://en.wikipedia.org/wiki/ISO_3166-2:AE
-                const regex = new RegExp('^[ \t]*BF[ \t-]*(01|02|03|04|05|06|07|08|09|10|11|12|13)[ \t-]*(BAL|BAM|BAN|BAZ|BGR|BLG|BLK|COM|GAN|GNA|GOU|HOU|IOB|KAD|KEN|KMD|KMP|KOS|KOP|KOT|KOW|LER|LOR|MOU|NAO|NAM|NAY|NOU|OUB|OUD|PAS|PON|SNG|SMT|SEN|SIS|SOM|SOR|TAP|TUI|YAG|YAT|ZIR|ZON|ZOU)[ \t]*$');
+                const regex = new RegExp('^[ \t]*BF[ \t-]*(01|02|03|04|05|06|07|08|09|10|11|12|13)[ \t-]*'
+                + '(BAL|BAM|BAN|BAZ|BGR|BLG|BLK|COM|GAN|GNA|GOU|HOU|IOB|KAD|KEN|KMD|KMP|KOS|KOP|KOT|KOW|LER|LOR|MOU|NAO|NAM|NAY|NOU|OUB|OUD|PAS|PON|SNG'
+                + '|SMT|SEN|SIS|SOM|SOR|TAP|TUI|YAG|YAT|ZIR|ZON|ZOU)[ \t]*$');
                 if ( regex.test(zip) ) {
                     return true;
                 }
@@ -228,7 +230,8 @@ export class ShippingZips {
             }
             case 'BS': {
                 // https://en.wikipedia.org/wiki/ISO_3166-2:AE
-                const regex = new RegExp('^[ \t]*BS[ \t-]*(AK|BY|BI|BP|CI|CO|CS|CE|FP|CK|EG|EX|GC|HI|HT|IN|LI|MC|MG|MI|NO|NS|NE|RI|RC|SS|SO|SA|SE|SW|WG)[ \t]*$');
+                const regex = new RegExp('^[ \t]*BS[ \t-]*(AK|BY|BI|BP|CI|CO|CS|CE|FP|CK|EG|EX|GC|HI|HT|IN|LI|'
+                + 'MC|MG|MI|NO|NS|NE|RI|RC|SS|SO|SA|SE|SW|WG)[ \t]*$');
                 if ( regex.test(zip) ) {
                     return true;
                 }
