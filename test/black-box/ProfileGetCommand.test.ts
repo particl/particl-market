@@ -43,7 +43,7 @@ describe('/ProfileGetCommand', () => {
     };
 
     const testDataGet = {
-        method: method,
+        method,
         params: [
             subCommand,
             '0'
