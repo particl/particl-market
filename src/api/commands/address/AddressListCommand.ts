@@ -29,8 +29,6 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     /**
-     * TODO: Update command to match help().
-     *
      * data.params[]:
      *  [0]: profile id
      *
@@ -47,15 +45,8 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
         }
 
         // Get only addresses associated with a given profile ID.
-        // const profile = await this.profileService.findOne(profileId, true);
-        // return profile.toJSON().Address;
-
-        // TODO: NOTE: Address can have one profile, profile can have one address.
-        // If multiple addresses exist with the same profile id but different values
-        //  then there's multiple addresses per profile and we can't get them through the profile service
-        // => We need an address service method to list addresses for profile id
-
-        throw new MessageException('Not implemented.');
+        const profile = await this.profileService.findOne(profileId, true);
+        return profile.toJSON().ShippingAddresses;
     }
 
     public help(): string {
