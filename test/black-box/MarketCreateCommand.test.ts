@@ -7,7 +7,7 @@ describe('MarketCreateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const marketService = null;
-    const method =  new MarketCreateCommand(marketService, Logger).name;
+    const method =  'market';
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -20,7 +20,7 @@ describe('MarketCreateCommand', () => {
     };
 
     test('Should create a new market', async () => {
-        const res = await rpc(method, [marketData.name, marketData.private_key, marketData.address]);
+        const res = await rpc(method, ['add', marketData.name, marketData.private_key, marketData.address]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -30,7 +30,7 @@ describe('MarketCreateCommand', () => {
     });
 
     test('Should fail because we want to create an empty market', async () => {
-        const res = await rpc(method, []);
+        const res = await rpc(method, ['add']);
         res.expectJson();
         res.expectStatusCode(400);
     });

@@ -169,7 +169,9 @@ export const Targets = {
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand'
         },
         market: {
-            MarketCreateCommand: 'MarketCreateCommand'
+            MarketCreateCommand: 'MarketCreateCommand',
+            MarketRootCommand: 'MarketRootCommand',
+            MarketListCommand: 'MarketListCommand'
         },
         messaginginformation: {
             MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
