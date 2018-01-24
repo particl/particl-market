@@ -3,21 +3,21 @@ import { api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 // import { Country } from '../../src/api/enums/Country';
 import { Logger } from '../../src/core/Logger';
-import { ProfileGetCommand } from '../../src/api/commands/profile/ProfileGetCommand';
-import { ProfileCreateCommand } from '../../src/api/commands/profile/ProfileCreateCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/ProfileGetCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const method = 'profile';
+    const method: any = Commands.PROFILE_ROOT;
+    const subCommand = Commands.PROFILE_GET;
 
     const keys = [
         'id', 'name', 'updatedAt', 'createdAt'
     ];
 
     const testData = {
-        method: method,
+        method,
         params: [
-            'add', 'DEFAULT-PROFILE', 'DEFAULT-PROFILE-ADDRESS'
+            Commands.PROFILE_ADD, 'DEFAULT-PROFILE', 'DEFAULT-PROFILE-ADDRESS'
         ],
         jsonrpc: '2.0'
     };
@@ -45,7 +45,7 @@ describe('/ProfileGetCommand', () => {
     const testDataGet = {
         method: method,
         params: [
-            'get',
+            subCommand,
             '0'
         ],
         jsonrpc: '2.0'

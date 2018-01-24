@@ -2,12 +2,13 @@ import { rpc, api } from './lib/api';
 
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Logger } from '../../src/core/Logger';
-import { ProfileUpdateCommand } from '../../src/api/commands/profile/ProfileUpdateCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('ProfileUpdateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const method = 'profile';
+    const method: any = Commands.PROFILE_ROOT;
+    const subCommand = Commands.PROFILE_UPDATE;
 
     const testData = {
         name: 'DEFAULT-PROFILE-TEST',
@@ -41,7 +42,7 @@ describe('ProfileUpdateCommand', () => {
         // update profile
         const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';
         const profileAddress = 'UPDATED-DEFAULT-PROFILE-TEST-ADDRESS';
-        const res = await rpc(method, ['update', createdId, profileName, profileAddress]);
+        const res = await rpc(method, [subCommand, createdId, profileName, profileAddress]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
