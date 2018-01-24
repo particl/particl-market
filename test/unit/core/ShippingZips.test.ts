@@ -6,7 +6,6 @@ import zipit = require('zip-it');
 const invalidCountryCodes = [
     'ZZ',
     'ZZZ',
-    'USA',
     'EU',
     'TX',
     '1',
@@ -22,7 +21,8 @@ const invalidCombinations = [
     { countryCode: '??', zip: 1000 }
 ];
 
-const validUsCombinations = [
+// TODO: Add these to tests
+const validUsCombinations = [ // US?
     { countryCode: 'DC', zip: [
         '20500', // President of the United States
         '20500-0001' // President of the United States
@@ -32,10 +32,14 @@ const validUsCombinations = [
     ] },
     { countryCode: 'NY', zip: [
         '10004' // M̶J̶1̶2̶ ̶F̶a̶c̶i̶l̶i̶t̶y̶  Statue of Liberty
+    ] },
+    { countryCode: 'CO', zip: [
+        '81226' // Ross Ulbricht (Prison)
     ] }
 ];
 
 
+// TODO: More
 const validCombinations = [
     { countryCode: 'GB', zip: [
         'SK9 2BJ',  // Alan Turing's house
