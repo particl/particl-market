@@ -115,7 +115,8 @@ export const Targets = {
         data: {
             DataAddCommand: 'DataAddCommand',
             DataCleanCommand: 'DataCleanCommand',
-            DataGenerateCommand: 'DataGenerateCommand'
+            DataGenerateCommand: 'DataGenerateCommand',
+            DataRootCommand: 'DataRootCommand'
         },
         escrow: {
             EscrowCreateCommand: 'EscrowCreateCommand',
