@@ -1,11 +1,13 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('DataAddCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const marketService = null;
-    const method =  'data';
+    const method: any =  Commands.DATA_ROOT;
+    const subCommand =  Commands.DATA_ADD;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -18,7 +20,7 @@ describe('DataAddCommand', () => {
     };
 
     test('Should create a test data for profile', async () => {
-        const res = await rpc('data', ['add', modelName, JSON.stringify(testProfileData)]);
+        const res = await rpc(method, [subCommand, modelName, JSON.stringify(testProfileData)]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
