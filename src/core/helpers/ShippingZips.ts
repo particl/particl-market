@@ -1,7 +1,6 @@
 import { NotFoundException } from '../../api/exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 
-// import zipit = require('zip-it');
 import postalCodes = require('postal-codes-js');
 
 export class ShippingZips {
@@ -10,11 +9,6 @@ export class ShippingZips {
             return false;
         }
         countryCode = countryCode.toUpperCase();
-
-        /* countryCode = countryCode.toUpperCase();
-        if ( zipit.isCountrySupported(countryCode) ) {
-            return true;
-        }*/
 
         // Countries not supported by the lib but should be.
         switch ( countryCode ) {

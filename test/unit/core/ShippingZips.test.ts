@@ -1,8 +1,6 @@
 import { ShippingZips } from '../../../src/core/helpers/ShippingZips';
 import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
 
-import zipit = require('zip-it');
-
 const invalidCountryCodes = [
     'ZZ',
     'ZZZ',
