@@ -22,11 +22,8 @@ export class AddressRemoveCommand extends BaseCommand implements RpcCommandInter
     }
 
     /**
-     * TODO: Update command to match help().
-     *
      * data.params[]:
-     *  [0]: profile id or name
-     *  [1]: address id
+     *  [0]: address id
      *
      * @param data
      * @param rpcCommandFactory
