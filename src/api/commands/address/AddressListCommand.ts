@@ -4,6 +4,7 @@ import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { AddressService } from '../../services/AddressService';
+import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -20,7 +21,8 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService
+        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService
     ) {
         super(Commands.ADDRESS_LIST);
         this.log = new Logger(__filename);
@@ -29,13 +31,31 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
     /**
      * TODO: Update command to match help().
      *
+     * data.params[]:
+     *  [0]: profile id
+     *
      * @param data
      * @param rpcCommandFactory
      * @returns {Promise<Bookshelf.Collection<Address>>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Address>> {
-        throw new MessageException('Not implemented.');
+        const profileId = data.params[0];
+        if ( !profileId ) {
+            // Get all addresses.
+            return this.addressService.findAll();
+        }
+
+        // Get only addresses associated with a given profile ID.
+        // const profile = await this.profileService.findOne(profileId, true);
+        // return profile.toJSON().Address;
+
+        // TODO: NOTE: Address can have one profile, profile can have one address.
+        // If multiple addresses exist with the same profile id but different values
+        //  then there's multiple addresses per profile and we can't get them through the profile service
+        // => We need an address service method to list addresses for profile id
+
+        // throw new MessageException('Not implemented.');
     }
 
     public help(): string {
