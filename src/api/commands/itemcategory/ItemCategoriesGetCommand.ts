@@ -32,7 +32,7 @@ export class ItemCategoriesGetCommand extends BaseCommand implements RpcCommandI
     }
 
     public help(): string {
-        return this.getName() + ' TODO';
+        return this.getName();
     }
 
 }

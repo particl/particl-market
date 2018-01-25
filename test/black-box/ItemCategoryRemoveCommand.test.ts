@@ -27,7 +27,6 @@ describe('ItemCategoryRemoveCommand', () => {
         // create category
         const res = await rpc(method, [Commands.CATEGORY_ADD.commandName, parentCategory.key]);
         const categoryResult: any = res.getBody()['result'];
-        // expect(categoryResult).toBe(1);
         rootItemCategory = categoryResult.ParentItemCategory;
         parentCategory.id = categoryResult.id;
         const addCategoryRes: any = await testUtil.addData('itemcategory', {
@@ -36,22 +35,18 @@ describe('ItemCategoryRemoveCommand', () => {
             parent_item_category_id: parentCategory.id
         });
         newCategory = addCategoryRes.getBody()['result'];
-        // expect(newCategory).toBe(1);
         // profile
         const defaultProfile = await testUtil.getDefaultProfile();
         profileId = defaultProfile.id;
-        // expect(defaultProfile).toBe(1);
-
+        
         // market
         const resMarket = await rpc(makretMethod, [subCommandMarket, 'Test Market', 'privateKey', 'Market Address']);
         const resultMarket: any = resMarket.getBody()['result'];
         marketId = resultMarket.id;
-        // expect(resultMarket).toBe(1);
     });
 
     test('Should delete the category', async () => {
-        // expect([subCommand, newCategory.id]).toBe(1);
-        const res = await rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_REMOVE.commandName, newCategory.id]);
+        const res = await rpc(method, [subCommand, newCategory.id]);
         res.expectJson();
         res.expectStatusCode(200);
     });
