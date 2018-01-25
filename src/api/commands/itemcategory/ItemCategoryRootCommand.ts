@@ -5,7 +5,7 @@ import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 
-import { ItemCategoriesGetCommand } from './ItemCategoriesGetCommand';
+import { ItemCategoryListCommand } from './ItemCategoryListCommand';
 import { ItemCategoryCreateCommand } from './ItemCategoryCreateCommand';
 import { ItemCategoryFindCommand } from './ItemCategoryFindCommand';
 import { ItemCategoryGetCommand } from './ItemCategoryGetCommand';
@@ -21,7 +21,7 @@ export class ItemCategoryRootCommand extends BaseCommand implements RpcCommandIn
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoriesGetCommand) private itemCategoriesGetCommand: ItemCategoriesGetCommand,
+        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryListCommand) private itemCategoryListCommand: ItemCategoryListCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryFindCommand) private itemCategoryFindCommand: ItemCategoryFindCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryGetCommand) private itemCategoryGetCommand: ItemCategoryGetCommand,

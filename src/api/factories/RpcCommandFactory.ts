@@ -27,7 +27,7 @@ import { FavoriteRootCommand } from '../commands/favorite/FavoriteRootCommand';
 import { FavoriteAddCommand } from '../commands/favorite/FavoriteAddCommand';
 import { FavoriteRemoveCommand } from '../commands/favorite/FavoriteRemoveCommand';
 
-import { ItemCategoriesGetCommand } from '../commands/itemcategory/ItemCategoriesGetCommand';
+import { ItemCategoryListCommand } from '../commands/itemcategory/ItemCategoryListCommand';
 import { ItemCategoryCreateCommand } from '../commands/itemcategory/ItemCategoryCreateCommand';
 import { ItemCategoryFindCommand } from '../commands/itemcategory/ItemCategoryFindCommand';
 import { ItemCategoryGetCommand } from '../commands/itemcategory/ItemCategoryGetCommand';
@@ -103,7 +103,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteAddCommand) private favoriteAddCommand: FavoriteAddCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRemoveCommand) private favoriteRemoveCommand: FavoriteRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRootCommand) private favoriteRootCommand: FavoriteRootCommand,
-        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoriesGetCommand) private itemCategoriesGetCommand: ItemCategoriesGetCommand,
+        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryListCommand) private itemCategoryListCommand: ItemCategoryListCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryFindCommand) private itemCategoryFindCommand: ItemCategoryFindCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryGetCommand) private itemCategoryGetCommand: ItemCategoryGetCommand,
@@ -173,7 +173,7 @@ export class RpcCommandFactory {
         this.commands.push(favoriteAddCommand);
         this.commands.push(favoriteRemoveCommand);
         this.commands.push(favoriteRootCommand);
-        this.commands.push(itemCategoriesGetCommand);
+        this.commands.push(ItemCategoryListCommand);
         this.commands.push(itemCategoryCreateCommand);
         this.commands.push(itemCategoryFindCommand);
         this.commands.push(itemCategoryGetCommand);
