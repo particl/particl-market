@@ -44,7 +44,7 @@ describe('Address', () => {
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
         country: 'Sweden',
-        zipCode: '85001',
+        zipCode: '85001'
     } as AddressUpdateRequest;
 
     beforeAll(async () => {
