@@ -10,13 +10,14 @@ import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType
 import { Logger } from '../../src/core/Logger';
 import { ListingItemSearchCommand } from '../../src/api/commands/listingitem/ListingItemSearchCommand';
 import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
-
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/ListingItemSearchCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const listingItemService = null;
-    const method =  new ListingItemSearchCommand(listingItemService, Logger).name;
-    const addMakretMethod =  new MarketCreateCommand(listingItemService, Logger).name;
+    const method = Commands.ITEM_ROOT.commandName;
+    const addMakretMethod = Commands.MARKET_ADD.commandName;
+    const subCommand = Commands.ITEM_SEARCH.commandName;
+    const marketRootMethod = Commands.MARKET_ROOT.commandName;
 
     const testData = {
         market_id: 0,
@@ -55,22 +56,6 @@ describe('/ListingItemSearchCommand', () => {
                     protocol: ImageDataProtocolType.IPFS,
                     encoding: null,
                     data: null
-                }
-            }, {
-                hash: 'imagehash2',
-                data: {
-                    dataId: 'dataid2',
-                    protocol: ImageDataProtocolType.LOCAL,
-                    encoding: 'BASE64',
-                    data: 'BASE64 encoded image data'
-                }
-            }, {
-                hash: 'imagehash3',
-                data: {
-                    dataId: 'dataid3',
-                    protocol: ImageDataProtocolType.SMSG,
-                    encoding: null,
-                    data: 'smsgdata'
                 }
             }]
         },
@@ -171,9 +156,10 @@ describe('/ListingItemSearchCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
         // add market
-        const res = await rpc(addMakretMethod, ['Test Market', 'privateKey', 'Market Address']);
+        const res = await rpc(marketRootMethod, [addMakretMethod, 'Test Market', 'privateKey', 'Market Address']);
         const result: any = res.getBody()['result'];
         testData.market_id = result.id;
+
         // create listing item
         const addListingItem1: any = await testUtil.addData('listingitem', testData);
         const addListingItem1Result = addListingItem1.getBody()['result'];
@@ -187,7 +173,7 @@ describe('/ListingItemSearchCommand', () => {
 
     test('Should get all listing items', async () => {
         // get all listing items
-        const getDataRes: any = await rpc(method, [1, 2, 'ASC', '', '', true]);
+        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', '', '', '', true]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -197,7 +183,7 @@ describe('/ListingItemSearchCommand', () => {
     });
 
     test('Should get only first listing item by pagination', async () => {
-        const getDataRes: any = await rpc(method, [1, 1, 'ASC']);
+        const getDataRes: any = await rpc(method, [subCommand, 1, 1, 'ASC']);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -206,7 +192,7 @@ describe('/ListingItemSearchCommand', () => {
     });
 
     test('Should get second listing item by pagination', async () => {
-        const getDataRes: any = await rpc(method, [2, 1, 'ASC']);
+        const getDataRes: any = await rpc(method, [subCommand, 2, 1, 'ASC']);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -216,7 +202,7 @@ describe('/ListingItemSearchCommand', () => {
 
     // TODO: maybe we should rather return an error?
     test('Should return empty listing items array if invalid pagination', async () => {
-        const getDataRes: any = await rpc(method, [2, 2, 'ASC']);
+        const getDataRes: any = await rpc(method, [subCommand, 2, 2, 'ASC']);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -224,7 +210,7 @@ describe('/ListingItemSearchCommand', () => {
     });
 
     test('Should search listing items by category key', async () => {
-        const getDataRes: any = await rpc(method, [1, 2, 'ASC', 'cat_high_luxyry_items', '', true]);
+        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', 'cat_high_luxyry_items', '', '', true]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -235,7 +221,7 @@ describe('/ListingItemSearchCommand', () => {
     });
 
     test('Should search listing items by category id', async () => {
-        const getDataRes: any = await rpc(method, [1, 2, 'ASC', categoryId, '', true]);
+        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', categoryId, '', '', true]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -244,26 +230,16 @@ describe('/ListingItemSearchCommand', () => {
         expect(categoryId).toBe(category.id);
     });
 
-    /**
-     * TODO
-     * result [{
-     *      id: 1,
-     *      hash: '694193c4-1ff2-45b3-94db-11ab45b4db61',
-     *      listingItemTemplateId: null,
-     *      updatedAt: 1511919276560,
-     *      createdAt: 1511919276560
-     * }]
-     * ...search doesnt seem to be returning relations
-     */
     test('Should search listing items by ItemInformation title', async () => {
-        const getDataRes: any = await rpc(method, [1, 2, 'ASC', '', testData.itemInformation.title, true]);
+        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', '', '', testData.itemInformation.title, true]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(1);
         expect(testData.itemInformation.title).toBe(result[0].ItemInformation.title);
     });
+
+
+    // TODO: NOTE: Need to add more test cases for the search by profile. we will write those once itemTemplate rootCommand will be done
 });
-
-
 
