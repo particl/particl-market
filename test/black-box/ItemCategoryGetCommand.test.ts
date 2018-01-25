@@ -1,14 +1,12 @@
 import { rpc, api } from './lib/api';
-
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-import { ItemCategoryGetCommand } from '../../src/api/commands/itemcategory/ItemCategoryGetCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('ItemCategoryGetCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const itemCategoryService = null;
-    const method =  new ItemCategoryGetCommand(itemCategoryService, Logger).name;
+    const method = Commands.CATEGORY_ROOT.commandName;
+    const subCommand = Commands.CATEGORY_GET.commandName;
 
     const categoryIdToFind = 'cat_ROOT';
 
@@ -18,7 +16,7 @@ describe('ItemCategoryGetCommand', () => {
 
     test('Should find category by key', async () => {
         //  test default category data
-        const res = await rpc(method, [categoryIdToFind]);
+        const res = await rpc(method, [subCommand, categoryIdToFind]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

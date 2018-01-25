@@ -139,7 +139,8 @@ export const Targets = {
             ItemCategoryFindCommand: 'ItemCategoryFindCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
             ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
-            ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
+            ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand',
+            ItemCategoryRootCommand: 'ItemCategoryRootCommand'
         },
         itemimage: {
             ItemImageAddCommand: 'ItemImageAddCommand',
