@@ -115,7 +115,8 @@ export const Targets = {
         data: {
             DataAddCommand: 'DataAddCommand',
             DataCleanCommand: 'DataCleanCommand',
-            DataGenerateCommand: 'DataGenerateCommand'
+            DataGenerateCommand: 'DataGenerateCommand',
+            DataRootCommand: 'DataRootCommand'
         },
         escrow: {
             EscrowCreateCommand: 'EscrowCreateCommand',
@@ -169,7 +170,9 @@ export const Targets = {
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand'
         },
         market: {
-            MarketCreateCommand: 'MarketCreateCommand'
+            MarketCreateCommand: 'MarketCreateCommand',
+            MarketRootCommand: 'MarketRootCommand',
+            MarketListCommand: 'MarketListCommand'
         },
         messaginginformation: {
             MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
@@ -181,7 +184,9 @@ export const Targets = {
             ProfileCreateCommand: 'ProfileCreateCommand',
             ProfileDestroyCommand: 'ProfileDestroyCommand',
             ProfileGetCommand: 'ProfileGetCommand',
-            ProfileUpdateCommand: 'ProfileUpdateCommand'
+            ProfileUpdateCommand: 'ProfileUpdateCommand',
+            ProfileRootCommand: 'ProfileRootCommand',
+            ProfileListCommand: 'ProfileListCommand'
         },
         RootRpcCommand: 'RootRpcCommand',
         RpcCommandInterface: 'RpcCommandInterface',

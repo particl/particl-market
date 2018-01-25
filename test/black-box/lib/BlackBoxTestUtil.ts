@@ -1,5 +1,6 @@
 import { api, rpc, ApiOptions } from './api';
 import * as Faker from 'faker';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
 
 export class BlackBoxTestUtil {
 
@@ -14,7 +15,8 @@ export class BlackBoxTestUtil {
      * @returns {Promise<void>}
      */
     public async cleanDb(ignoreTables: string[] = []): Promise<any> {
-        const res = await rpc('cleandb', ignoreTables);
+        const res = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName, ignoreTables]);
+
         res.expectJson();
         res.expectStatusCode(200);
     }
@@ -27,7 +29,7 @@ export class BlackBoxTestUtil {
      * @returns {Promise<any>}
      */
     public async addData(model: string, data: any): Promise<any> {
-        const res = await rpc('adddata', [model, JSON.stringify(data)]);
+        const res = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_ADD.commandName, model, JSON.stringify(data)]);
         res.expectJson();
         res.expectStatusCode(200);
         return res;
@@ -42,7 +44,7 @@ export class BlackBoxTestUtil {
      * @returns {Promise<any>}
      */
     public async generateData(model: string, amount: number = 1, withRelated: boolean = true): Promise<any> {
-        const res: any = await rpc('generatedata', [model, amount, withRelated]);
+        const res: any = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_GENERATE.commandName, model, amount, withRelated]);
         res.expectJson();
         res.expectStatusCode(200);
         return res.getBody()['result'];
@@ -54,7 +56,7 @@ export class BlackBoxTestUtil {
      * @returns {Promise<any>}
      */
     public async getDefaultProfile(): Promise<any> {
-        const res: any = await rpc('getprofile', ['DEFAULT']);
+        const res: any = await rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT']);
         res.expectJson();
         res.expectStatusCode(200);
         return res.getBody()['result'];
