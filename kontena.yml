@@ -16,7 +16,7 @@ services:
       - CREATEDEFAULTMASTERKEY=true
     affinity:
       - node==kontena-agent2
-      - label==faucet=1
+      - label==devenv=1
 
   particld2:
     image: ludx/particl:0.15.1.1
@@ -31,4 +31,4 @@ services:
       - CREATEDEFAULTMASTERKEY=true
     affinity:
       - node==kontena-agent2
-      - label==faucet=1
+      - label==devenv=1
