@@ -11,15 +11,13 @@ import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType
 import { Logger } from '../../src/core/Logger';
 import { FavoriteRemoveCommand } from '../../src/api/commands/favorite/FavoriteRemoveCommand';
 import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/FavoriteRemoveCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const favoriteItemService = null;
-    const listingItemService = null;
-    const profileService = null;
-    const marketService = null;
-    const method =  new FavoriteRemoveCommand(favoriteItemService, listingItemService, profileService, Logger).name;
-    const addMakretMethod =  new MarketCreateCommand(marketService, Logger).name;
+    const method =  Commands.FAVORITE_ROOT.commandName;
+    const subCommand =  Commands.FAVORITE_REMOVE.commandName;
+    const addMakretMethod =  Commands.MARKET_ADD.commandName;
 
     const testData = {
         market_id: 0,
@@ -110,18 +108,22 @@ describe('/FavoriteRemoveCommand', () => {
     let profileId;
     let listingItemHash;
     let listingItemId;
+    const favoriteModel = 'favoriteitem'
+
     beforeAll(async () => {
         await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
         defaultProfileId = defaultProfile.id;
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME', address: 'TESTING-PROFILE-ADDRESS' });
+        const profileModel = 'profile';
+        const listingModel = 'listingitem';
+        const addProfileRes: any = await testUtil.addData(profileModel, { name: 'TESTING-PROFILE-NAME', address: 'TESTING-PROFILE-ADDRESS' });
         profileId = addProfileRes.getBody()['result'].id;
         // create market
-        const resMarket = await rpc('addmarket', ['Test Market', 'privateKey', 'Market Address']);
+        const resMarket = await rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_ADD.commandName, 'Test Market', 'privateKey', 'Market Address']);
         const resultMarket: any = resMarket.getBody()['result'];
         testData.market_id = resultMarket.id;
         // create listing item
-        const addListingItem: any = await testUtil.addData('listingitem', testData);
+        const addListingItem: any = await testUtil.addData(listingModel, testData);
         const addListingItemResult = addListingItem.getBody()['result'];
         listingItemHash = addListingItemResult.hash;
         listingItemId = addListingItemResult.id;
@@ -129,25 +131,25 @@ describe('/FavoriteRemoveCommand', () => {
 
     test('Should remove favorite item by listing id and profile id', async () => {
         // add favorite item
-        const addFavItem: any = await testUtil.addData('favoriteitem', { listing_item_id: listingItemId, profile_id: profileId });
+        const addFavItem: any = await testUtil.addData(favoriteModel, { listing_item_id: listingItemId, profile_id: profileId });
         // remove favorite item by item id and profile
-        const getDataRes: any = await rpc(method, [listingItemId, profileId]);
+        const getDataRes: any = await rpc(method, [subCommand, profileId, listingItemId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
     });
 
     test('Should remove favorite item by listing id and with default profile', async () => {
         // add favorite item
-        const addFavItem: any = await testUtil.addData('favoriteitem', { listing_item_id: listingItemId, profile_id: defaultProfileId });
+        const addFavItem: any = await testUtil.addData(favoriteModel, { listing_item_id: listingItemId, profile_id: defaultProfileId });
         // remove favorite item by item id without passing profile
-        const getDataRes: any = await rpc(method, [listingItemId]);
+        const getDataRes: any = await rpc(method, [subCommand, null, listingItemId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
     });
 
     test('Should fail remove favorite because favorite already removed', async () => {
         // remove favorite
-        const getDataRes: any = await rpc(method, [listingItemId]);
+        const getDataRes: any = await rpc(method, [subCommand, null, listingItemId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(404);
     });

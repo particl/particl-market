@@ -11,6 +11,7 @@ import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType
 import { Logger } from '../../src/core/Logger';
 import { FavoriteAddCommand } from '../../src/api/commands/favorite/FavoriteAddCommand';
 import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/FavoriteAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -18,8 +19,9 @@ describe('/FavoriteAddCommand', () => {
     const listingItemService = null;
     const profileService = null;
     const marketService = null;
-    const method =  new FavoriteAddCommand(favoriteItemService, listingItemService, profileService, Logger).name;
-    const addMakretMethod =  new MarketCreateCommand(marketService, Logger).name;
+    const method =  Commands.FAVORITE_ROOT.commandName;
+    const subCommand = Commands.FAVORITE_ADD.commandName;
+    const addMakretMethod =  Commands.MARKET_ADD.commandName;
 
     const testData = {
         market_id: 0,
@@ -103,7 +105,6 @@ describe('/FavoriteAddCommand', () => {
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey'
         }]
-        // TODO: ignoring listingitemobjects for now
     };
 
     let defaultProfileId;
@@ -115,7 +116,8 @@ describe('/FavoriteAddCommand', () => {
         await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
         defaultProfileId = defaultProfile.id;
-        const addProfileRes: any = await testUtil.addData('profile', { name: 'TESTING-PROFILE-NAME', address: 'TESTING-PROFILE-ADDRESS' });
+        const profileModel = 'profile';
+        const addProfileRes: any = await testUtil.addData(profileModel, { name: 'TESTING-PROFILE-NAME', address: 'TESTING-PROFILE-ADDRESS' });
         profileId = addProfileRes.getBody()['result'].id;
         // create market
         const resMarket = await rpc(addMakretMethod, ['Test Market', 'privateKey', 'Market Address']);
@@ -130,7 +132,7 @@ describe('/FavoriteAddCommand', () => {
 
     test('Should add favorite item by listing id and profile id', async () => {
         // add favorite item
-        const getDataRes: any = await rpc(method, [listingItemId, profileId]);
+        const getDataRes: any = await rpc(method, [subCommand, profileId, listingItemId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -140,7 +142,7 @@ describe('/FavoriteAddCommand', () => {
 
     test('Should add favorite item by listing hash and profile id', async () => {
         // add favorite item by item hash and profile
-        const getDataRes: any = await rpc(method, [listingItemHash, profileId]);
+        const getDataRes: any = await rpc(method, [subCommand, profileId, listingItemHash]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -150,7 +152,7 @@ describe('/FavoriteAddCommand', () => {
 
     test('Should add favorite item by listing id and with default profile', async () => {
         // add favorite item without profile
-        const getDataRes: any = await rpc(method, [listingItemId]);
+        const getDataRes: any = await rpc(method, [subCommand, null, listingItemId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -159,7 +161,7 @@ describe('/FavoriteAddCommand', () => {
     });
 
     test('Should fail because we want to create an empty favorite', async () => {
-        const getDataRes: any = await rpc(method, []);
+        const getDataRes: any = await rpc(method, [subCommand]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(404);
     });
