@@ -7,7 +7,7 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/ProfileGetCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const method: any = Commands.PROFILE_ROOT.commandName;
+    const method = Commands.PROFILE_ROOT.commandName;
     const subCommand = Commands.PROFILE_GET.commandName;
 
     const keys = [

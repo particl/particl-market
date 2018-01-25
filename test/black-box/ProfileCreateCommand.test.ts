@@ -5,7 +5,7 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 describe('ProfileCreateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const method: any = Commands.PROFILE_ROOT.commandName;
+    const method = Commands.PROFILE_ROOT.commandName;
     const subCommand = Commands.PROFILE_ADD.commandName;
     beforeAll(async () => {
         await testUtil.cleanDb();
