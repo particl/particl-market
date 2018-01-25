@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 rm -rf data/marketplace*db
 rm -rf data/app1/marketplace*db
 rm -rf data/app2/marketplace*db
