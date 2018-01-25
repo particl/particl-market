@@ -35,7 +35,7 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
-        throw new MessageException('Not implemented');
+        throw new MessageException('Not implemented.');
     }
 
     public help(): string {

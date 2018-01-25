@@ -1,0 +1,34 @@
+---
+stack: ludx/dappshelldev-stack
+version: 0.1.0
+services:
+
+  particld1:
+    image: ludx/particl:0.15.1.1
+    volumes:
+      - /root/data/particld-dev1:/root/.particl
+    environment:
+      - CONF_TESTNET=1                  # Use the test chain
+      - CONF_PRINTTOCONSOLE=0           # Send trace/debug info to console instead of debug.log file
+      - CONF_SERVER=1                   # Accept command line and JSON-RPC commands
+      - CONF_RPCALLOWIP=0.0.0.0/0       # Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24).
+      - CONF_LISTEN=1                   # Accept connections from outside (default: 1 if no -proxy or -connect)
+      - CREATEDEFAULTMASTERKEY=true
+    affinity:
+      - node==kontena-agent2
+      - label==faucet=1
+
+  particld2:
+    image: ludx/particl:0.15.1.1
+    volumes:
+      - /root/data/particld-dev2:/root/.particl
+    environment:
+      - CONF_TESTNET=1                  # Use the test chain
+      - CONF_PRINTTOCONSOLE=0           # Send trace/debug info to console instead of debug.log file
+      - CONF_SERVER=1                   # Accept command line and JSON-RPC commands
+      - CONF_RPCALLOWIP=0.0.0.0/0       # Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24).
+      - CONF_LISTEN=1                   # Accept connections from outside (default: 1 if no -proxy or -connect)
+      - CREATEDEFAULTMASTERKEY=true
+    affinity:
+      - node==kontena-agent2
+      - label==faucet=1

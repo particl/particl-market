@@ -46,8 +46,6 @@ export class AddressService {
 
     @validate()
     public async update(id: number, @request(AddressUpdateRequest) body: AddressUpdateRequest): Promise<Address> {
-        // TODO: validate that the profile exists
-
         // find the existing one without related
         const address = await this.findOne(id, false);
         // set new values

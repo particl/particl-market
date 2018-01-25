@@ -96,7 +96,9 @@ export const Targets = {
     Command:     {
         address: {
             AddressCreateCommand: 'AddressCreateCommand',
-            AddressDestroyCommand: 'AddressDestroyCommand',
+            AddressListCommand: 'AddressListCommand',
+            AddressRemoveCommand: 'AddressRemoveCommand',
+            AddressRootCommand: 'AddressRootCommand',
             AddressUpdateCommand: 'AddressUpdateCommand'
         },
         admin: {
@@ -134,12 +136,13 @@ export const Targets = {
         },
         HelpCommand: 'HelpCommand',
         itemcategory: {
-            ItemCategoriesGetCommand: 'ItemCategoriesGetCommand',
+            ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryCreateCommand: 'ItemCategoryCreateCommand',
             ItemCategoryFindCommand: 'ItemCategoryFindCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
             ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
-            ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
+            ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand',
+            ItemCategoryRootCommand: 'ItemCategoryRootCommand'
         },
         itemimage: {
             ItemImageAddCommand: 'ItemImageAddCommand',
@@ -188,7 +191,6 @@ export const Targets = {
             ProfileRootCommand: 'ProfileRootCommand',
             ProfileListCommand: 'ProfileListCommand'
         },
-        RootRpcCommand: 'RootRpcCommand',
         RpcCommandInterface: 'RpcCommandInterface',
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
@@ -201,8 +203,7 @@ export const Targets = {
         ItemCategoryFactory: 'ItemCategoryFactory',
         ListingItemFactory: 'ListingItemFactory',
         MessagingInformationFactory: 'MessagingInformationFactory',
-        RpcCommandFactory: 'RpcCommandFactory',
-        TestFactory: 'TestFactory'
+        RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {
         AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',

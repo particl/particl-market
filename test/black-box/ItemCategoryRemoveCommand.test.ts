@@ -1,21 +1,15 @@
 import { rpc, api } from './lib/api';
 import * as crypto from 'crypto-js';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-import { ItemCategoryRemoveCommand } from '../../src/api/commands/itemcategory/ItemCategoryRemoveCommand';
-import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
-import { ItemCategoryGetCommand } from '../../src/api/commands/itemcategory/ItemCategoryGetCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('ItemCategoryRemoveCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const itemCategoryService = null;
-    const listingItemService = null;
-    const listingItemTemplateService = null;
-    const marketService = null;
-    const method =  new ItemCategoryRemoveCommand(itemCategoryService, listingItemService, listingItemTemplateService, Logger).name;
-    const addMakretMethod =  new MarketCreateCommand(marketService, Logger).name;
-    const getCategoryMethod =  new ItemCategoryGetCommand(itemCategoryService, Logger).name;
+    const method = Commands.CATEGORY_ROOT.commandName;
+    const subCommand = Commands.CATEGORY_REMOVE.commandName;
+    const makretMethod = Commands.MARKET_ROOT.commandName;
+    const subCommandMarket = Commands.MARKET_ADD.commandName;
 
     const parentCategory = {
         id: 0,
@@ -25,14 +19,15 @@ describe('ItemCategoryRemoveCommand', () => {
     let newCategory;
     let profileId;
     let marketId;
+    let rootItemCategory;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
         // create category
-        const res = await rpc(getCategoryMethod, [parentCategory.key]);
+        const res = await rpc(method, [Commands.CATEGORY_ADD.commandName, parentCategory.key]);
         const categoryResult: any = res.getBody()['result'];
-
+        rootItemCategory = categoryResult.ParentItemCategory;
         parentCategory.id = categoryResult.id;
         const addCategoryRes: any = await testUtil.addData('itemcategory', {
             name: 'sample category',
@@ -45,19 +40,19 @@ describe('ItemCategoryRemoveCommand', () => {
         profileId = defaultProfile.id;
 
         // market
-        const resMarket = await rpc(addMakretMethod, ['Test Market', 'privateKey', 'Market Address']);
+        const resMarket = await rpc(makretMethod, [subCommandMarket, 'Test Market', 'privateKey', 'Market Address']);
         const resultMarket: any = resMarket.getBody()['result'];
         marketId = resultMarket.id;
     });
 
     test('Should delete the category', async () => {
-        const res = await rpc(method, [newCategory.id]);
+        const res = await rpc(method, [subCommand, newCategory.id]);
         res.expectJson();
         res.expectStatusCode(200);
     });
 
     test('Should not delete the default category', async () => {
-        const res = await rpc(method, [parentCategory.id]);
+        const res = await rpc(method, [subCommand, rootItemCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
     });
@@ -85,7 +80,7 @@ describe('ItemCategoryRemoveCommand', () => {
             }
         };
         const listingItems = await testUtil.addData('listingitem', listingitemData);
-        const res = await rpc(method, [newCategory.id]);
+        const res = await rpc(method, [subCommand, newCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
     });
@@ -111,7 +106,7 @@ describe('ItemCategoryRemoveCommand', () => {
             }
         };
         const listingItems = await testUtil.addData('listingitemtemplate', listingItemTemplate);
-        const res = await rpc(method, [newCategory.id]);
+        const res = await rpc(method, [subCommand, newCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
     });

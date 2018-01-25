@@ -1,14 +1,12 @@
 import { rpc, api } from './lib/api';
-
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-import { ItemCategoryCreateCommand } from '../../src/api/commands/itemcategory/ItemCategoryCreateCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('ItemCategoryCreateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const itemCategoryService = null;
-    const method =  new ItemCategoryCreateCommand(itemCategoryService, Logger).name;
+    const method = Commands.CATEGORY_ROOT.commandName;
+    const subCommand = Commands.CATEGORY_ADD.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -25,7 +23,7 @@ describe('ItemCategoryCreateCommand', () => {
             name: 'Sample Category 1',
             description: 'Sample Category Description 1'
         };
-        const res = await rpc(method, [categoryData.name, categoryData.description, parentCategory.key]);
+        const res = await rpc(method, [subCommand, categoryData.name, categoryData.description, parentCategory.key]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -41,7 +39,7 @@ describe('ItemCategoryCreateCommand', () => {
             name: 'Sample Category 2',
             description: 'Sample Category Description 2'
         };
-        const res = await rpc(method, [categoryData.name, categoryData.description, parentCategory.id]);
+        const res = await rpc(method, [subCommand, categoryData.name, categoryData.description, parentCategory.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -57,7 +55,7 @@ describe('ItemCategoryCreateCommand', () => {
             name: 'Sample Category 3',
             description: 'Sample Category Description 3'
         };
-        const res = await rpc(method, [categoryData.name, categoryData.description]);
+        const res = await rpc(method, [subCommand, categoryData.name, categoryData.description]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

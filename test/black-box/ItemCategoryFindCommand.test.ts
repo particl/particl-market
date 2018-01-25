@@ -1,22 +1,33 @@
 import { rpc, api } from './lib/api';
-
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-import { ItemCategoryFindCommand } from '../../src/api/commands/itemcategory/ItemCategoryFindCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('ItemCategoryFindCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const itemCategoryService = null;
-    const method =  new ItemCategoryFindCommand(itemCategoryService, Logger).name;
+    const method = Commands.CATEGORY_ROOT.commandName;
+    const subCommand = Commands.CATEGORY_SEARCH.commandName;
+
+    const parentCategory = {
+        id: 0,
+        key: 'cat_high_real_estate'
+    };
 
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
 
     test('Should get categories, if found by category name string', async () => {
+
+        // create category
+        const categoryData = {
+            name: 'Sample Category 1',
+            description: 'Sample Category Description 1'
+        };
+        await rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_ADD.commandName, categoryData.name, categoryData.description]);
+
         //  find categories
-        const res = await rpc(method, ['Apparel']);
+        const res = await rpc(method, [subCommand, 'Sample Category 1']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -25,7 +36,7 @@ describe('ItemCategoryFindCommand', () => {
 
     test('Should not get categories, if found by blank string', async () => {
         //  find categories
-        const res = await rpc(method, []);
+        const res = await rpc(method, [subCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -34,7 +45,7 @@ describe('ItemCategoryFindCommand', () => {
 
     test('Should not get any categories, if found by non-existing category name string', async () => {
         //  find categories
-        const res = await rpc(method, ['NOTFOUNDCATEGORY']);
+        const res = await rpc(method, [subCommand, 'NOTFOUNDCATEGORY']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
