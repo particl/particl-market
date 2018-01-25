@@ -3,10 +3,6 @@ import { RequestBody } from '../../core/api/RequestBody';
 
 // tslint:disable:variable-name
 export class AddressUpdateRequest extends RequestBody {
-
-    @IsNotEmpty()
-    public profile_id: number;
-
     public title: string;
 
     @IsNotEmpty()

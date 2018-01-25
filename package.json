@@ -108,6 +108,7 @@
     "path": "^0.12.7",
     "piexifjs": "^1.0.3",
     "pluralize": "^5.0.0",
+    "postal-codes-js": "^1.0.0",
     "reflect-metadata": "^0.1.10",
     "request": "^2.81.0",
     "request-promise": "^4.2.1",

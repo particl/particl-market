@@ -9,7 +9,7 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 
-export class AddressDestroyCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class AddressRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
 
@@ -23,8 +23,7 @@ export class AddressDestroyCommand extends BaseCommand implements RpcCommandInte
 
     /**
      * data.params[]:
-     *  [0]: profile id or name
-     *  [1]: address id
+     *  [0]: address id
      *
      * @param data
      * @param rpcCommandFactory
@@ -37,6 +36,10 @@ export class AddressDestroyCommand extends BaseCommand implements RpcCommandInte
 
     public help(): string {
         return this.getName() + ' <addressId>\n'
-            + '    <addressId>            - The ID of the address we want to remove.';
+            + '    <addressId>            - The ID of the address we want to remove and destroy.';
+    }
+
+    public description(): string {
+        return 'Remove and destroy an address via ID.';
     }
 }

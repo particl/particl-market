@@ -8,14 +8,14 @@ import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
 
-export class FavoriteRootCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class AddressRootCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(Commands.FAVORITE_ROOT);
+        super(Commands.ADDRESS_ROOT);
         this.log = new Logger(__filename);
     }
 
@@ -25,10 +25,10 @@ export class FavoriteRootCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return this.getName() + ' (list|add|remove)';
+        return this.getName() + ' (list|add|update|remove)';
     }
 
     public description(): string {
-        return 'Commands for managing favorite listings.';
+        return 'Manage addresses associated with profiles.';
     }
 }

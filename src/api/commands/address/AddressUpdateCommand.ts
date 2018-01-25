@@ -8,9 +8,11 @@ import { Address } from '../../models/Address';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressUpdateRequest } from '../../requests/AddressUpdateRequest';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
+import { ShippingZips } from '../../../core/helpers/ShippingZips';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
+import { NotFoundException } from '../../exceptions/NotFoundException';
 
 export class AddressUpdateCommand extends BaseCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
@@ -26,15 +28,16 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
     }
 
     /**
+     * TODO: Update command to match help().
+     *
      * data.params[]:
      *  [0]: address id
      *  [1]: title
      *  [2]: addressLine1
      *  [3]: addressLine2
-     *  [4]: zipCode
-     *  [5]: city
-     *  [6]: country/countryCode
-     *  [7]: profileId
+     *  [4]: city
+     *  [5]: country/countryCode
+     *  [6]: zipCode
      *
      * @param data
      * @param rpcCommandFactory
@@ -42,24 +45,33 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
      */
     @validate()
     public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
+        this.log.debug('AddressUpdateCommand.update(): 100');
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
         let countryCode: string = data.params[5];
         countryCode = ShippingCountries.validate(this.log, countryCode);
+        this.log.debug('AddressUpdateCommand.update(): 200');
+
+        // Validate ZIP code
+        const zipCodeStr = data.params[6];
+        if (!ShippingZips.validate(countryCode, zipCodeStr)) {
+            this.log.debug('AddressUpdateCommand.update(): 250');
+            throw new NotFoundException('ZIP/postal-code, country code, combination not valid.');
+        }
+        this.log.debug('AddressUpdateCommand.update(): 300');
 
         return this.addressService.update(data.params[0], {
             title : data.params[1],
             addressLine1 : data.params[2],
             addressLine2 : data.params[3],
-            zipCode : data.params[4],
-            city : data.params[5],
+            city : data.params[4],
             country : countryCode,
-            profile_id : data.params[7]
+            zipCode : zipCodeStr
         } as AddressUpdateRequest);
     }
 
     public help(): string {
-        return this.getName() + ' <addressId> <title> <addressLine1> <addressLine2> <city> (<country> | <countryCode>) <profileId>\n'
+        return this.getName() + ' <addressId> <title> <addressLine1> <addressLine2> <city> (<countryName>|<countryCode>) [<zip>]\n'
             + '    <addressId>            - Numeric - The ID of the address we want to modify.\n'
             + '    <title>                - String - A short identifier for the address.\n'
             + '    <addressLine1>         - String - The first line of the address.\n'
@@ -67,8 +79,10 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
             + '    <city>                 - String - The city of the address.\n'
             + '    <country>              - String - The country name of the address.\n'
             + '    <countryCode>          - String - Two letter country code of the address.\n'
-            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
-            + '                              this address with.';
+            + '    <zip>                  - String - The ZIP code of your address.';
     }
 
+    public description(): string {
+        return 'Update the details of an address given by ID.';
+    }
 }
