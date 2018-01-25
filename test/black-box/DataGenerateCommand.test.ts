@@ -1,11 +1,13 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('DataGenerateCommand', () => {
 
   const testUtil = new BlackBoxTestUtil();
   const marketService = null;
-  const method =  'data';
+  const method =  Commands.DATA_ROOT.commandName;
+  const subCommand =  Commands.DATA_GENERATE.commandName;
 
   beforeAll(async () => {
       await testUtil.cleanDb();
@@ -15,7 +17,7 @@ describe('DataGenerateCommand', () => {
   const withRelated = true;
 
   test('Should generate one profile by RPC', async () => {
-    const res = await rpc(method, ['generate', modelName, 1, withRelated]);
+    const res = await rpc(method, [subCommand, modelName, 1, withRelated]);
     res.expectJson();
     res.expectStatusCode(200);
     const result: any = res.getBody()['result'];
@@ -24,12 +26,11 @@ describe('DataGenerateCommand', () => {
   });
 
   test('Should generate two profile by RPC', async () => {
-    const res = await rpc(method, ['generate', modelName, 2, withRelated]);
+    const res = await rpc(method, [subCommand, modelName, 2, withRelated]);
     res.expectJson();
     res.expectStatusCode(200);
     const result: any = res.getBody()['result'];
     expect(result).toHaveLength(2);
   });
 
-  // todo : need to put more test after adding market and profile root command.
 });

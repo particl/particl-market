@@ -7,8 +7,8 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/ProfileGetCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const method: any = Commands.PROFILE_ROOT;
-    const subCommand = Commands.PROFILE_GET;
+    const method = Commands.PROFILE_ROOT.commandName;
+    const subCommand = Commands.PROFILE_GET.commandName;
 
     const keys = [
         'id', 'name', 'updatedAt', 'createdAt'
@@ -17,7 +17,7 @@ describe('/ProfileGetCommand', () => {
     const testData = {
         method,
         params: [
-            Commands.PROFILE_ADD, 'DEFAULT-PROFILE', 'DEFAULT-PROFILE-ADDRESS'
+            Commands.PROFILE_ADD.commandName, 'DEFAULT-PROFILE', 'DEFAULT-PROFILE-ADDRESS'
         ],
         jsonrpc: '2.0'
     };
@@ -43,7 +43,7 @@ describe('/ProfileGetCommand', () => {
     };
 
     const testDataGet = {
-        method: method,
+        method,
         params: [
             subCommand,
             '0'

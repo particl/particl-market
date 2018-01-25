@@ -7,8 +7,8 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 describe('ProfileUpdateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const method: any = Commands.PROFILE_ROOT;
-    const subCommand = Commands.PROFILE_UPDATE;
+    const method = Commands.PROFILE_ROOT.commandName;
+    const subCommand = Commands.PROFILE_UPDATE.commandName;
 
     const testData = {
         name: 'DEFAULT-PROFILE-TEST',
