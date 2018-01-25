@@ -27,45 +27,58 @@ import { FavoriteRootCommand } from '../commands/favorite/FavoriteRootCommand';
 import { FavoriteListCommand } from '../commands/favorite/FavoriteListCommand';
 import { FavoriteAddCommand } from '../commands/favorite/FavoriteAddCommand';
 import { FavoriteRemoveCommand } from '../commands/favorite/FavoriteRemoveCommand';
-import { ItemCategoriesGetCommand } from '../commands/itemcategory/ItemCategoriesGetCommand';
+
+import { ItemCategoryListCommand } from '../commands/itemcategory/ItemCategoryListCommand';
 import { ItemCategoryCreateCommand } from '../commands/itemcategory/ItemCategoryCreateCommand';
 import { ItemCategoryFindCommand } from '../commands/itemcategory/ItemCategoryFindCommand';
 import { ItemCategoryGetCommand } from '../commands/itemcategory/ItemCategoryGetCommand';
 import { ItemCategoryRemoveCommand } from '../commands/itemcategory/ItemCategoryRemoveCommand';
 import { ItemCategoryUpdateCommand } from '../commands/itemcategory/ItemCategoryUpdateCommand';
+import { ItemCategoryRootCommand } from '../commands/itemcategory/ItemCategoryRootCommand';
+
 import { ItemImageAddCommand } from '../commands/itemimage/ItemImageAddCommand';
 import { ItemImageGetsCommand } from '../commands/itemimage/ItemImageGetsCommand';
 import { ItemImageRemoveCommand } from '../commands/itemimage/ItemImageRemoveCommand';
+
 import { ItemInformationCreateCommand } from '../commands/iteminformation/ItemInformationCreateCommand';
 import { ItemInformationGetCommand } from '../commands/iteminformation/ItemInformationGetCommand';
 import { ItemInformationUpdateCommand } from '../commands/iteminformation/ItemInformationUpdateCommand';
+
 import { ItemLocationRemoveCommand } from '../commands/itemlocation/ItemLocationRemoveCommand';
 import { ItemLocationCreateCommand } from '../commands/itemlocation/ItemLocationCreateCommand';
 import { ItemLocationUpdateCommand } from '../commands/itemlocation/ItemLocationUpdateCommand';
+
 import { ListingItemGetCommand } from '../commands/listingitem/ListingItemGetCommand';
 import { ListingItemSearchCommand } from '../commands/listingitem/ListingItemSearchCommand';
 import { OwnListingItemSearchCommand } from '../commands/listingitem/OwnListingItemSearchCommand';
+
 import { ListingItemTemplateCreateCommand } from '../commands/listingitemtemplate/ListingItemTemplateCreateCommand';
 import { ListingItemTemplateDestroyCommand } from '../commands/listingitemtemplate/ListingItemTemplateDestroyCommand';
 import { ListingItemTemplateGetCommand } from '../commands/listingitemtemplate/ListingItemTemplateGetCommand';
 import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplate/ListingItemTemplateSearchCommand';
 import { ListingItemTemplatePostCommand } from '../commands/listingitemtemplate/ListingItemTemplatePostCommand';
+
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
+
 import { MarketCreateCommand } from '../commands/market/MarketCreateCommand';
 import { MarketRootCommand } from '../commands/market/MarketRootCommand';
 import { MarketListCommand } from '../commands/market/MarketListCommand';
+
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
+
 import { AddressRootCommand } from '../commands/address/AddressRootCommand';
 import { AddressListCommand } from '../commands/address/AddressListCommand';
 import { AddressCreateCommand } from '../commands/address/AddressCreateCommand';
 import { AddressUpdateCommand } from '../commands/address/AddressUpdateCommand';
 import { AddressRemoveCommand } from '../commands/address/AddressRemoveCommand';
+
 import { ProfileCreateCommand } from '../commands/profile/ProfileCreateCommand';
 import { ProfileDestroyCommand } from '../commands/profile/ProfileDestroyCommand';
 import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
 import { ProfileGetCommand } from '../commands/profile/ProfileGetCommand';
 import { ProfileListCommand } from '../commands/profile/ProfileListCommand';
 import { ProfileRootCommand } from '../commands/profile/ProfileRootCommand';
+
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
 
@@ -94,12 +107,14 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteListCommand) private favoriteListCommand: FavoriteListCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteAddCommand) private favoriteAddCommand: FavoriteAddCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRemoveCommand) private favoriteRemoveCommand: FavoriteRemoveCommand,
-        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoriesGetCommand) private itemCategoriesGetCommand: ItemCategoriesGetCommand,
+        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRootCommand) private favoriteRootCommand: FavoriteRootCommand,
+        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryListCommand) private itemCategoryListCommand: ItemCategoryListCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryFindCommand) private itemCategoryFindCommand: ItemCategoryFindCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryGetCommand) private itemCategoryGetCommand: ItemCategoryGetCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryRemoveCommand) private itemCategoryRemoveCommand: ItemCategoryRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryUpdateCommand) private itemCategoryUpdateCommand: ItemCategoryUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryRootCommand) private itemCategoryRootCommand: ItemCategoryRootCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageAddCommand) private itemImageAddCommand: ItemImageAddCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageGetsCommand) private itemImageGetsCommand: ItemImageGetsCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRemoveCommand) private itemImageRemoveCommand: ItemImageRemoveCommand,
@@ -166,12 +181,14 @@ export class RpcCommandFactory {
         this.commands.push(favoriteListCommand);
         this.commands.push(favoriteAddCommand);
         this.commands.push(favoriteRemoveCommand);
-        this.commands.push(itemCategoriesGetCommand);
+        this.commands.push(favoriteRootCommand);
+        this.commands.push(itemCategoryListCommand);
         this.commands.push(itemCategoryCreateCommand);
         this.commands.push(itemCategoryFindCommand);
         this.commands.push(itemCategoryGetCommand);
         this.commands.push(itemCategoryRemoveCommand);
         this.commands.push(itemCategoryUpdateCommand);
+        this.commands.push(itemCategoryRootCommand);
         this.commands.push(itemImageAddCommand);
         this.commands.push(itemImageGetsCommand);
         this.commands.push(itemImageRemoveCommand);

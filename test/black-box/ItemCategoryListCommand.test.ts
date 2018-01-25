@@ -1,14 +1,12 @@
 import { rpc, api } from './lib/api';
-
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-import { ItemCategoriesGetCommand } from '../../src/api/commands/itemcategory/ItemCategoriesGetCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('ItemCategoriesGetCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const itemCategoryService = null;
-    const method =  new ItemCategoriesGetCommand(itemCategoryService, Logger).name;
+    const method = Commands.CATEGORY_ROOT.commandName;
+    const subCommand = Commands.CATEGORY_LIST.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -16,7 +14,7 @@ describe('ItemCategoriesGetCommand', () => {
 
     test('Should get the categories by RPC', async () => {
         //  test default category data
-        const res = await rpc(method, []);
+        const res = await rpc(method, [subCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

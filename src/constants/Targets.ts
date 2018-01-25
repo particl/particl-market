@@ -136,12 +136,13 @@ export const Targets = {
         },
         HelpCommand: 'HelpCommand',
         itemcategory: {
-            ItemCategoriesGetCommand: 'ItemCategoriesGetCommand',
+            ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryCreateCommand: 'ItemCategoryCreateCommand',
             ItemCategoryFindCommand: 'ItemCategoryFindCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
             ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
-            ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
+            ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand',
+            ItemCategoryRootCommand: 'ItemCategoryRootCommand'
         },
         itemimage: {
             ItemImageAddCommand: 'ItemImageAddCommand',
