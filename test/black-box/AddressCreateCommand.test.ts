@@ -1,13 +1,14 @@
 import { rpc, api } from './lib/api';
-
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
+import { Logger as LoggerType } from '../../src/core/Logger';
 import { AddressCreateCommand } from '../../src/api/commands/address/AddressCreateCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('CreateAddress', () => {
     const testUtil = new BlackBoxTestUtil();
     const addressService = null;
-    const method =  new AddressCreateCommand(addressService, Logger).name;
+    const method = Commands.ADDRESS_ROOT.commandName;
+    const subCommand = Commands.ADDRESS_ADD.commandName;
     let defaultProfileId;
 
     const testData = {
@@ -19,15 +20,22 @@ describe('CreateAddress', () => {
         zipCode: '85001'
     };
 
+    let defaultProfile;
+
     beforeAll(async () => {
-        await testUtil.cleanDb();
-        const defaultProfile = await testUtil.getDefaultProfile();
+        await testUtil.cleanDb([]);
+        defaultProfile = await testUtil.getDefaultProfile();
         defaultProfileId = defaultProfile.id;
     });
 
     test('Should create a new address by RPC', async () => {
-        const res = await rpc(method, [testData.title, testData.addressLine1, testData.addressLine2, testData.zipCode, testData.city,
-            testData.country, defaultProfileId]);
+        console.log(`ASDASFASDA: ${subCommand},${defaultProfileId},${testData.title},${testData.addressLine1},${testData.addressLine2},${testData.city},${testData.country},${testData.zipCode}`);
+        console.log('ADSSA: ' + JSON.stringify(defaultProfile));
+        const res = await rpc(method, [subCommand,
+            defaultProfileId,
+            testData.title,
+            testData.addressLine1, testData.addressLine2,
+            testData.city, testData.country, testData.zipCode]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -40,13 +48,13 @@ describe('CreateAddress', () => {
     });
 
     test('Should fail because we want to create an empty address without required fields', async () => {
-        const res = await rpc(method, [testData.title, testData.addressLine1, testData.addressLine2, testData.city, testData.country]);
+        const res = await rpc(method, [subCommand, testData.title, testData.addressLine1, testData.addressLine2, testData.city, testData.country]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
     test('Should fail because we want to create an empty address', async () => {
-        const res = await rpc(method, []);
+        const res = await rpc(method, [subCommand]);
         res.expectJson();
         res.expectStatusCode(400);
     });
