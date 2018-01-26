@@ -107,7 +107,6 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteListCommand) private favoriteListCommand: FavoriteListCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteAddCommand) private favoriteAddCommand: FavoriteAddCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRemoveCommand) private favoriteRemoveCommand: FavoriteRemoveCommand,
-        @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRootCommand) private favoriteRootCommand: FavoriteRootCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryListCommand) private itemCategoryListCommand: ItemCategoryListCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryFindCommand) private itemCategoryFindCommand: ItemCategoryFindCommand,
@@ -181,7 +180,6 @@ export class RpcCommandFactory {
         this.commands.push(favoriteListCommand);
         this.commands.push(favoriteAddCommand);
         this.commands.push(favoriteRemoveCommand);
-        this.commands.push(favoriteRootCommand);
         this.commands.push(itemCategoryListCommand);
         this.commands.push(itemCategoryCreateCommand);
         this.commands.push(itemCategoryFindCommand);
