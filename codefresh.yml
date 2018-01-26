@@ -5,7 +5,7 @@ steps:
     image: tutum/curl
     commands:
       - >-
-        curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n ${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\ngithub: ${{CF_COMMIT_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+        curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\ngithub: ${{CF_COMMIT_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
     fail_fast: false
 
   build_docker_image_step:
