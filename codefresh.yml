@@ -60,7 +60,7 @@ steps:
     image: tutum/curl
     commands:
       - >-
-        curl -d "{\"content\": \"build success.\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+        curl -d "{\"content\": \"build success. build_docker_image_step.imageId.CF_QUALITY: ${{build_docker_image_step.imageId.CF_QUALITY}}, CF_QUALITY: ${{CF_QUALITY}} \", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
     fail_fast: false
     when:
       condition:
