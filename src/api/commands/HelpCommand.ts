@@ -31,14 +31,14 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
         let helpStr = '';
         // if ( params.lenght < 1 ) {
         for ( const rootCommand of Commands.rootCommands ) {
-            let tmp;
-            try {
-                tmp = rpcCommandFactory.get(rootCommand);
-            } catch ( ex ) {
-                this.log.warn(`Couldn't find ${rootCommand}.`);
-                continue;
-            }
-            if ( rootCommand && tmp ) {
+            if ( rootCommand ) {
+                let tmp;
+                try {
+                    tmp = rpcCommandFactory.get(rootCommand);
+                } catch ( ex ) {
+                    this.log.warn(`help(): Couldn't find ${rootCommand}.`);
+                    continue;
+                }
                 helpStr += tmp.help() + '\n';
             }
         }
