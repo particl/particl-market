@@ -29,8 +29,7 @@ describe('CreateAddress', () => {
     });
 
     test('Should create a new address by RPC', async () => {
-        console.log(`ASDASFASDA: ${subCommand},${defaultProfileId},${testData.title},${testData.addressLine1},${testData.addressLine2},${testData.city},${testData.country},${testData.zipCode}`);
-        console.log('ADSSA: ' + JSON.stringify(defaultProfile));
+
         const res = await rpc(method, [subCommand,
             defaultProfileId,
             testData.title,

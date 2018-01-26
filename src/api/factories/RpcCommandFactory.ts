@@ -50,8 +50,7 @@ import { ItemLocationUpdateCommand } from '../commands/itemlocation/ItemLocation
 
 import { ListingItemGetCommand } from '../commands/listingitem/ListingItemGetCommand';
 import { ListingItemSearchCommand } from '../commands/listingitem/ListingItemSearchCommand';
-import { OwnListingItemSearchCommand } from '../commands/listingitem/OwnListingItemSearchCommand';
-
+import { ListingItemRootCommand } from '../commands/listingitem/ListingItemRootCommand';
 import { ListingItemTemplateCreateCommand } from '../commands/listingitemtemplate/ListingItemTemplateCreateCommand';
 import { ListingItemTemplateDestroyCommand } from '../commands/listingitemtemplate/ListingItemTemplateDestroyCommand';
 import { ListingItemTemplateGetCommand } from '../commands/listingitemtemplate/ListingItemTemplateGetCommand';
@@ -125,7 +124,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationUpdateCommand) private itemLocationUpdateCommand: ItemLocationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemGetCommand) private listingItemGetCommand: ListingItemGetCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemSearchCommand) private listingItemSearchCommand: ListingItemSearchCommand,
-        @inject(Types.Command) @named(Targets.Command.listingitem.OwnListingItemSearchCommand) private ownListingItemSearchCommand: OwnListingItemSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemRootCommand) private listingItemRootCommand: ListingItemRootCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateCreateCommand) private listingItemTemplateCreateCommand: ListingItemTemplateCreateCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateDestroyCommand) private listingItemTemplateDestroyCommand: ListingItemTemplateDestroyCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateGetCommand) private listingItemTemplateGetCommand: ListingItemTemplateGetCommand,
@@ -199,7 +198,7 @@ export class RpcCommandFactory {
         this.commands.push(itemLocationUpdateCommand);
         this.commands.push(listingItemGetCommand);
         this.commands.push(listingItemSearchCommand);
-        this.commands.push(ownListingItemSearchCommand);
+        this.commands.push(listingItemRootCommand);
         this.commands.push(listingItemTemplatePostCommand);
         this.commands.push(listingItemTemplateCreateCommand);
         this.commands.push(listingItemTemplateDestroyCommand);

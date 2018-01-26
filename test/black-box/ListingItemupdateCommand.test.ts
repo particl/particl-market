@@ -16,21 +16,20 @@ import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType
 import { ListingItemUpdateCommand } from '../../src/api/commands/listingitem/ListingItemUpdateCommand';
 import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('ListingItemUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const listingItemService = null;
-    const marketService = null;
     let listingItemTemplate;
     let listingItemHash;
     let listingItemId;
     let listingItem;
 
-    const method = new ListingItemUpdateCommand(
-        listingItemService,
-        Logger).name;
+    const method = Commands.ITEM_ROOT.commandName;
+    const subCommand = Commands.ITEM_POST_UPDATE.commandName;
 
-    const addMakretMethod = new MarketCreateCommand(marketService, Logger).name;
+    const makretRootMethod = Commands.MARKET_ROOT.commandName;
+    const addMakretMethod = Commands.MARKET_ADD.commandName;
 
     const testDataListingItem = {
         listing_item_template_id: 0,
@@ -71,22 +70,6 @@ describe('ListingItemUpdateCommand', () => {
                     encoding: null,
                     data: null
                 }
-            }, {
-                hash: 'imagehash2',
-                data: {
-                    dataId: 'dataid2',
-                    protocol: ImageDataProtocolType.LOCAL,
-                    encoding: 'BASE64',
-                    data: 'BASE64 encoded image data'
-                }
-            }, {
-                hash: 'imagehash3',
-                data: {
-                    dataId: 'dataid3',
-                    protocol: ImageDataProtocolType.SMSG,
-                    encoding: null,
-                    data: 'smsgdata'
-                }
             }]
         },
         paymentInformation: {
@@ -121,7 +104,7 @@ describe('ListingItemUpdateCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
         // create market
-        const resMarket = await rpc(addMakretMethod, ['Test Market', 'privateKey', 'Market Address']);
+        const resMarket = await rpc(makretRootMethod, [addMakretMethod, 'Test Market', 'privateKey', 'Market Address']);
         const resultMarket: any = resMarket.getBody()['result'];
         testDataListingItem.market_id = resultMarket.id;
 
@@ -133,7 +116,6 @@ describe('ListingItemUpdateCommand', () => {
         testDataListingItem.listing_item_template_id = listingItemTemplate.id;
         const addListingItem: any = await testUtil.addData('listingitem', testDataListingItem);
         listingItem = addListingItem.getBody()['result'];
-        expect(listingItem).toBe(11);
         listingItemHash = listingItem.hash;
         listingItemId = listingItem.id;
     });
