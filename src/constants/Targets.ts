@@ -162,8 +162,8 @@ export const Targets = {
         listingitem: {
             ListingItemGetCommand: 'ListingItemGetCommand',
             ListingItemSearchCommand: 'ListingItemSearchCommand',
-            OwnListingItemSearchCommand: 'OwnListingItemSearchCommand',
-            ListingItemUpdateCommand : 'ListingItemUpdateCommand'
+            ListingItemUpdateCommand : 'ListingItemUpdateCommand',
+            ListingItemRootCommand: 'ListingItemRootCommand'
         },
         listingitemtemplate: {
             ListingItemTemplateCreateCommand: 'ListingItemTemplateCreateCommand',
