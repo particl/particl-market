@@ -6,7 +6,7 @@ steps:
     commands:
       - >-
         curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n ${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\ngithub: ${{CF_COMMIT_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-    fail-fast: false
+    fail_fast: false
 
   build_docker_image_step:
     title: building docker image
@@ -58,10 +58,10 @@ steps:
     working_directory: IMAGE_WORK_DIR
     entry_point:
       - /bin/sh
-      - /codefresh/volume/cf-generated/unit_test_script
+      - /codefresh/volume/cf-generated/integration_test_script
     create_file:
       path: /codefresh/volume/cf-generated
-      name: unit_test_script
+      name: integration_test_script
       content: >-
         ./bin/recreate-dbs.sh
         npm run test:integration:pretty
