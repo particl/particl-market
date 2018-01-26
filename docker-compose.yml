@@ -50,7 +50,7 @@ services:
       - TESTNET_PORT=51935
 
   particld1:
-    image: ludx/particl:0.15.1.1
+    image: ludx/particl:0.15.1.2
     volumes:
       - ./data/particl1:/root/.particl
     ports:
@@ -77,7 +77,7 @@ services:
 #      - CONF_DEBUG=tor                    # Output debugging information: 0/1, addrman, alert, bench, cmpctblock, coindb, db, http, libevent, lock, mempool, mempoolrej, net, proxy, prune, rand, reindex, rpc, selectcoins, tor, zmq, qt.
 
   particld2:
-    image: ludx/particl:0.15.1.1
+    image: ludx/particl:0.15.1.2
     volumes:
       - ./data/particl2:/root/.particl
     ports:
