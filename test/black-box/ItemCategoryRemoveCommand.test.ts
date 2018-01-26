@@ -38,7 +38,7 @@ describe('ItemCategoryRemoveCommand', () => {
         // profile
         const defaultProfile = await testUtil.getDefaultProfile();
         profileId = defaultProfile.id;
-        
+
         // market
         const resMarket = await rpc(makretMethod, [subCommandMarket, 'Test Market', 'privateKey', 'Market Address']);
         const resultMarket: any = resMarket.getBody()['result'];
