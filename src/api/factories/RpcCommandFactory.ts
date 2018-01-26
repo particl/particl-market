@@ -179,7 +179,6 @@ export class RpcCommandFactory {
         this.commands.push(favoriteListCommand);
         this.commands.push(favoriteAddCommand);
         this.commands.push(favoriteRemoveCommand);
-        this.commands.push(favoriteRootCommand);
         this.commands.push(itemCategoryListCommand);
         this.commands.push(itemCategoryCreateCommand);
         this.commands.push(itemCategoryFindCommand);
