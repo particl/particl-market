@@ -29,22 +29,41 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
     @validate()
     public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<string> {
         let helpStr = '';
-        // if ( params.lenght < 1 ) {
-        for ( const rootCommand of Commands.rootCommands ) {
-            if ( rootCommand ) {
-                let tmp;
-                try {
-                    tmp = rpcCommandFactory.get(rootCommand);
-                } catch ( ex ) {
-                    this.log.warn(`help(): Couldn't find ${rootCommand}.`);
-                    continue;
+        if ( data.params.length < 1 ) {
+            for ( const rootCommand of Commands.rootCommands ) {
+                if ( rootCommand ) {
+                    let command;
+                    try {
+                        command = rpcCommandFactory.get(rootCommand);
+                    } catch ( ex ) {
+                        this.log.warn(`help(): Couldn't find ${rootCommand}.`);
+                        continue;
+                    }
+                    helpStr += command.help() + '\n';
                 }
-                helpStr += tmp.help() + '\n';
+            }
+        } else {
+            const rootCommandName = data.params[0];
+            for ( const rootCommand of Commands.rootCommands ) {
+                if ( rootCommand ) {
+                    if ( rootCommand.commandName === rootCommandName ) {
+                        const rootCommandCommand = rpcCommandFactory.get(rootCommand);
+                        helpStr = rootCommandCommand.help() + '\n';
+
+                        for ( const childCommand of rootCommand.childCommands ) {
+                            let childCommandCommand;
+                            try {
+                                childCommandCommand = rpcCommandFactory.get(childCommand);
+                            } catch ( ex ) {
+                                this.log.warn(`help(): Couldn't find ${childCommand}.`);
+                                continue;
+                            }
+                            helpStr += childCommandCommand.help() + '\n';
+                        }
+                    }
+                }
             }
         }
-        // } else {
-        //     Do help on the subcommands
-        // }
         return helpStr;
     }
 
