@@ -4,9 +4,10 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { RpcRequest } from '../requests/RpcRequest';
 import { RpcCommandInterface } from './RpcCommandInterface';
-import { BaseCommand } from './BaseCommand';
 import { Commands} from './CommandEnumType';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
+import { BaseCommand } from './BaseCommand';
+import { Command } from './Command';
 
 export class HelpCommand extends BaseCommand implements RpcCommandInterface<string> {
 
@@ -27,39 +28,24 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
      */
     @validate()
     public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<string> {
-        return  'available commands: \n' +
-        'createprofile \n' +
-        'updateprofile \n' +
-        'getprofile \n' +
-        'createaddress \n' +
-        'updateaddress \n' +
-        'finditems \n' +
-        'getitem \n' +
-        'findownitems \n' +
-        'createlistingitemtemplate \n' +
-        'getlistingitemtemplate \n' +
-        'searchlistingitemtemplate \n' +
-        'createiteminformation \n' +
-        'updateiteminformation \n' +
-        'createcategory \n' +
-        'updatecategory \n' +
-        'removecategory \n' +
-        'getcategories \n' +
-        'getcategory \n' +
-        'findcategory \n' +
-        'addfavorite \n' +
-        'removefavorite \n' +
-        'updatepaymentinformation \n' +
-        'createescrow \n' +
-        'updateescrow \n' +
-        'destroyescrow \n' +
-        'addshippingdestination \n' +
-        'removeshippingdestination \n' +
-        'updateitemlocation \n' +
-        'removeitemlocation \n' +
-        'cleandb \n' +
-        'adddata \n' +
-        'generatedata \n';
+        let helpStr = '';
+        // if ( params.lenght < 1 ) {
+        for ( const rootCommand of Commands.rootCommands ) {
+            let tmp;
+            try {
+                tmp = rpcCommandFactory.get(rootCommand);
+            } catch ( ex ) {
+                this.log.warn(`Couldn't find ${rootCommand}.`);
+                continue;
+            }
+            if ( rootCommand && tmp ) {
+                helpStr += tmp.help() + '\n';
+            }
+        }
+        // } else {
+        //     Do help on the subcommands
+        // }
+        return helpStr;
     }
 
     public help(): string {
