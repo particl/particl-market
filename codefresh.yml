@@ -5,7 +5,7 @@ steps:
     image: tutum/curl
     commands:
       - >-
-        curl -d "{\"content\": \"building ${{CF_REPO_NAME}}/${{CF_BRANCH}}\n${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\n${{CF_BUILD_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+        curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n ${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\n ${{CF_BUILD_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
     fail_fast: false
 
   build_docker_image_step:
@@ -49,7 +49,7 @@ steps:
     image: tutum/curl
     commands:
       - >-
-        curl -d "{\"content\": \"build failed.\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+        curl -d "{\"content\": \"build_docker_image_step.imageId.CF_QUALITY: ${{build_docker_image_step.imageId.CF_QUALITY}}, CF_QUALITY: ${{CF_QUALITY}}   \", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
     fail_fast: false
     when:
       condition:
