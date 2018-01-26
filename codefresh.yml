@@ -21,7 +21,7 @@ steps:
 #    commands:
 #      - >-
 #        curl -d "{\"content\": \"running unit tests...\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-#    fail-fast: false 
+#    fail-fast: false
 
   unit_test_step:
     title: running unit tests
