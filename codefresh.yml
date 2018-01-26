@@ -5,7 +5,7 @@ steps:
     image: tutum/curl
     commands:
       - >-
-        curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n ${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\ngithub: ${{CF_COMMIT_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+        curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\ngithub: ${{CF_COMMIT_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
     fail_fast: false
 
   build_docker_image_step:
@@ -52,29 +52,29 @@ steps:
 #        curl -d "{\"content\": \"running integration tests...\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
 #    fail-fast: false
 
-  integration_test_step:
-    title: running integration tests
-    image: ${{build_docker_image_step}}
-    working_directory: IMAGE_WORK_DIR
-    entry_point:
-      - /bin/sh
-      - /codefresh/volume/cf-generated/integration_test_script
-    create_file:
-      path: /codefresh/volume/cf-generated
-      name: integration_test_script
-      content: >-
-        ./bin/recreate-dbs.sh
-        npm run test:integration:pretty
-    on_success:
-      metadata:
-        set:
-          - '${{build_docker_image_step.imageId}}':
-              - CF_QUALITY: true
-    on_fail:
-      metadata:
-        set:
-          - '${{build_docker_image_step.imageId}}':
-              - CF_QUALITY: false
+#  integration_test_step:
+#    title: running integration tests
+#    image: ${{build_docker_image_step}}
+#    working_directory: IMAGE_WORK_DIR
+#    entry_point:
+#      - /bin/sh
+#      - /codefresh/volume/cf-generated/integration_test_script
+#    create_file:
+#      path: /codefresh/volume/cf-generated
+#      name: integration_test_script
+#      content: >-
+#        ./bin/recreate-dbs.sh
+#        npm run test:integration:pretty
+#    on_success:
+#      metadata:
+#        set:
+#          - '${{build_docker_image_step.imageId}}':
+#              - CF_QUALITY: true
+#    on_fail:
+#      metadata:
+#        set:
+#          - '${{build_docker_image_step.imageId}}':
+#              - CF_QUALITY: false
 
 #  push_image_notify_step:
 #    image: tutum/curl

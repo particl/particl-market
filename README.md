@@ -1,6 +1,6 @@
 # dapp-shell
 
-[![Codefresh build status]( https://g.codefresh.io/api/badges/build?repoOwner=particl&repoName=dapp-shell&branch=develop&pipelineName=dapp-shell&accountName=ludx&type=cf-2)]( https://g.codefresh.io/repositories/particl/dapp-shell/builds?filter=trigger:build;branch:develop;service:5a686b22df66ad000157d0ef~dapp-shell)
+[![Codefresh build status]( https://g.codefresh.io/api/badges/build?repoOwner=particl&repoName=dapp-shell&branch=develop&pipelineName=dapp-shell&accountName=ludx&type=cf-2)]( https://g.codefresh.io/repositories/particl/dapp-shell/builds?filter=trigger:build;branch:develop;service:5a6b2e1fc09dc20001b37ddb~dapp-shell)
 
 ## Getting Started
 ### Step 1:  Set up the Development Environment
