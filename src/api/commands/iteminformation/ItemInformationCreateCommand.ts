@@ -28,7 +28,7 @@ export class ItemInformationCreateCommand extends BaseCommand implements RpcComm
      *  [1]: title
      *  [2]: short-description
      *  [3]: long-description
-     *  [4]: category
+     *  [4]: categoryId
      *
      * @param data
      * @returns {Promise<ItemInformation>}
@@ -41,13 +41,13 @@ export class ItemInformationCreateCommand extends BaseCommand implements RpcComm
             shortDescription: data.params[2],
             longDescription: data.params[3],
             itemCategory: {
-                key: data.params[4]
+                id: data.params[4]
             }
         } as ItemInformationCreateRequest);
     }
 
     public help(): string {
-        return this.getName() + ' <listingTemplateId> <title> <shortDescription> <longDescription> <category>\n'
+        return this.getName() + ' <listingTemplateId> <title> <shortDescription> <longDescription> <categoryId>\n'
             + '    <listingTemplateId>             - Numeric - The ID of the listing item template we\n'
             + '                                       want to associate the created item information\n'
             + '                                       with.\n'
@@ -57,7 +57,7 @@ export class ItemInformationCreateCommand extends BaseCommand implements RpcComm
             + '                                       item information.\n'
             + '    <longDescription>               - String - A long description of the created\n'
             + '                                       item information.\n'
-            + '    <categoryKey>                   - String - The key that identifies the item\n'
+            + '    <categoryId>                   - String - The id that identifies the item\n'
             + '                                       category we want to associate the created\n'
             + '                                       item information with.';
     }

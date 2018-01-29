@@ -43,6 +43,7 @@ import { ItemImageRemoveCommand } from '../commands/itemimage/ItemImageRemoveCom
 import { ItemInformationCreateCommand } from '../commands/iteminformation/ItemInformationCreateCommand';
 import { ItemInformationGetCommand } from '../commands/iteminformation/ItemInformationGetCommand';
 import { ItemInformationUpdateCommand } from '../commands/iteminformation/ItemInformationUpdateCommand';
+import { ItemInformationRootCommand } from '../commands/iteminformation/ItemInformationRootCommand';
 
 import { ItemLocationRemoveCommand } from '../commands/itemlocation/ItemLocationRemoveCommand';
 import { ItemLocationCreateCommand } from '../commands/itemlocation/ItemLocationCreateCommand';
@@ -119,6 +120,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationCreateCommand) private itemInformationCreateCommand: ItemInformationCreateCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationGetCommand) private itemInformationGetCommand: ItemInformationGetCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationUpdateCommand) private itemInformationUpdateCommand: ItemInformationUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationRootCommand) private itemInformationRootCommand: ItemInformationRootCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationCreateCommand) private itemLocationCreateCommand: ItemLocationCreateCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationRemoveCommand) private itemLocationDestroyCommand: ItemLocationRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationUpdateCommand) private itemLocationUpdateCommand: ItemLocationUpdateCommand,
@@ -192,6 +194,7 @@ export class RpcCommandFactory {
         this.commands.push(itemInformationCreateCommand);
         this.commands.push(itemInformationGetCommand);
         this.commands.push(itemInformationUpdateCommand);
+        this.commands.push(itemInformationRootCommand);
         this.commands.push(itemLocationCreateCommand);
         this.commands.push(itemLocationDestroyCommand);
         this.commands.push(itemLocationUpdateCommand);

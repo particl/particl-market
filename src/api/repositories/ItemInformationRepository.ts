@@ -26,6 +26,10 @@ export class ItemInformationRepository {
         return this.ItemInformationModel.fetchById(id, withRelated);
     }
 
+    public async findByItemTemplateId(listingItemTemplateId: number, withRelated: boolean = true): Promise<ItemInformation> {
+        return this.ItemInformationModel.findByItemTemplateId(listingItemTemplateId, withRelated);
+    }
+
     public async create(data: any): Promise<ItemInformation> {
         const itemInformation = this.ItemInformationModel.forge<ItemInformation>(data);
         try {
