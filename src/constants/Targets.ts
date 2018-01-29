@@ -107,6 +107,7 @@ export const Targets = {
         BaseCommand: 'BaseCommand',
         bid: {
             AcceptBidCommand: 'AcceptBidCommand',
+            BidRootCommand: 'BidRootCommand',
             BidSearchCommand: 'BidSearchCommand',
             CancelBidCommand: 'CancelBidCommand',
             RejectBidCommand: 'RejectBidCommand',
@@ -163,19 +164,20 @@ export const Targets = {
             ListingItemGetCommand: 'ListingItemGetCommand',
             ListingItemSearchCommand: 'ListingItemSearchCommand',
             ListingItemUpdateCommand : 'ListingItemUpdateCommand',
-            ListingItemRootCommand: 'ListingItemRootCommand'
+            ListingItemRootCommand: 'ListingItemRootCommand',
+            OwnListingItemSearchCommand: 'OwnListingItemSearchCommand'
         },
         listingitemtemplate: {
             ListingItemTemplateCreateCommand: 'ListingItemTemplateCreateCommand',
             ListingItemTemplateDestroyCommand: 'ListingItemTemplateDestroyCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
-            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
-            ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand'
+            ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
+            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
         },
         market: {
             MarketCreateCommand: 'MarketCreateCommand',
-            MarketRootCommand: 'MarketRootCommand',
-            MarketListCommand: 'MarketListCommand'
+            MarketListCommand: 'MarketListCommand',
+            MarketRootCommand: 'MarketRootCommand'
         },
         messaginginformation: {
             MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
@@ -187,9 +189,9 @@ export const Targets = {
             ProfileCreateCommand: 'ProfileCreateCommand',
             ProfileDestroyCommand: 'ProfileDestroyCommand',
             ProfileGetCommand: 'ProfileGetCommand',
-            ProfileUpdateCommand: 'ProfileUpdateCommand',
+            ProfileListCommand: 'ProfileListCommand',
             ProfileRootCommand: 'ProfileRootCommand',
-            ProfileListCommand: 'ProfileListCommand'
+            ProfileUpdateCommand: 'ProfileUpdateCommand'
         },
         RpcCommandInterface: 'RpcCommandInterface',
         shippingdestination: {
@@ -210,11 +212,11 @@ export const Targets = {
         BidMessageProcessor: 'BidMessageProcessor',
         CancelBidMessageProcessor: 'CancelBidMessageProcessor',
         ListingItemMessageProcessor: 'ListingItemMessageProcessor',
-        UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
         RejectBidMessageProcessor: 'RejectBidMessageProcessor',
-        TestMessageProcessor: 'TestMessageProcessor'
+        TestMessageProcessor: 'TestMessageProcessor',
+        UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',

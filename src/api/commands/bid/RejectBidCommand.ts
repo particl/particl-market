@@ -31,6 +31,8 @@ export class RejectBidCommand extends BaseCommand implements RpcCommandInterface
     }
 
     /**
+     * TODO: Update to match help().
+     *
      * data.params[]:
      * [0]: action, string
      * [1]: item, string
@@ -75,7 +77,11 @@ export class RejectBidCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public help(): string {
-        return this.getName() + ' <TODO>';
+        return this.getName() + ' <itemhash>\n'
+        + '    <itemhash>  - [TODO] - [TODO]';
     }
 
+    public description(): string {
+        return 'Reject bid.';
+    }
 }

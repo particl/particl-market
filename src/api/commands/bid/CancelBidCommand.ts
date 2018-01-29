@@ -31,6 +31,8 @@ export class CancelBidCommand extends BaseCommand implements RpcCommandInterface
     }
 
     /**
+     * TODO: Update to match help().
+     *
      * data.params[]:
      * [0]: item, string
      *
@@ -74,7 +76,11 @@ export class CancelBidCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public help(): string {
-        return this.getName() + ' <TODO>';
+        return this.getName() + ' <itemhash>\n'
+            + '    <itemhash>  - [TODO] - [TODO]';
     }
 
+    public description(): string {
+        return 'Cancel bid.';
+    }
 }

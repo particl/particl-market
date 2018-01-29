@@ -30,12 +30,14 @@ export class SendBidCommand extends BaseCommand implements RpcCommandInterface<B
     }
 
     /**
+     * TODO: Check works
+     *
      * data.params[]:
-     * [0]: hash, string
-     * [1]: id, string
-     * [2]: value, string
-     * [3]: id, string
-     * [4]: value, string
+     * [0]: itemhash, string
+     * [1]: bidDataId, string
+     * [2]: bidDataValue, string
+     * [3]: bidDataId, string
+     * [4]: bidDataValue, string
      * ......
      *
      * @param data
@@ -69,7 +71,14 @@ export class SendBidCommand extends BaseCommand implements RpcCommandInterface<B
     }
 
     public help(): string {
-        return this.getName() + ' <TODO>';
+        return this.getName() + ' <itemhash> [(<bidDataId>, <bidDataValue>), ...]\n'
+            + '    <itemhash>           - [TODO] - [TODO]\n'
+            + '    <bidDataId>          - [optional] [TODO] - [TODO]\n'
+            + '        <bidDataValue>   - [optional] [TODO] - [TODO]';
+    }
+
+    public description(): string {
+        return 'Send bid.';
     }
 
     /**

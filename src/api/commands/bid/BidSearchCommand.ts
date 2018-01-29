@@ -24,10 +24,11 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     }
 
     /**
+     * TODO: Update to match help().
+     *
      * data.params[]:
-     * [0]: action, string
-     * [1]: listingItemId, number
-     * [2]: profileId, number
+     * [0]: itemhash, string?
+     * [1]: status, string?
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<Bid>>}
@@ -35,20 +36,27 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Bid>> {
         return this.bidService.search({
+            listingItemHash: data.params[0],
+            action: data.params[1]
+        } as BidSearchParams);
+    }
+
+    /*@validate()
+    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Bid>> {
+        return this.bidService.search({
             action: data.params[0],
             listingItemId: data.params[1],
             profileId: data.params[2]
         } as BidSearchParams);
-    }
+    }*/
 
     public help(): string {
-        return this.getName() + ' [<status> <listingItemId> <profileId>]\n'
-            + '    <status>           - [optional] Enum{ACCEPTED,REJECTED,CANCELLED,ACTIVE} - The\n'
-            + '                          status of the bids we\'re searching for.\n'
-            + '    <listingItemId>    - [optional] Numeric - The ID of the listing item that the\n'
-            + '                          bids we\'re searching for are associated with.\n'
-            + '    <profileId>        - [optional] Numeric - The ID of the profile that made the\n'
-            + '                          bids we\'re searching for [TODO confirm this is true].';
+        return this.getName() + ' <itemhash> [<status>]\n'
+            + '    <itemhash>  - [TODO] - [TODO]\n'
+            + '    <status>    - [optional] [TODO] - [TODO]';
     }
 
+    public description(): string {
+            return 'Search bids.';
+    }
 }
