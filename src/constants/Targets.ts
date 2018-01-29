@@ -153,7 +153,8 @@ export const Targets = {
         iteminformation: {
             ItemInformationCreateCommand: 'ItemInformationCreateCommand',
             ItemInformationGetCommand: 'ItemInformationGetCommand',
-            ItemInformationUpdateCommand: 'ItemInformationUpdateCommand'
+            ItemInformationUpdateCommand: 'ItemInformationUpdateCommand',
+            ItemInformationRootCommand: 'ItemInformationRootCommand'
         },
         itemlocation: {
             ItemLocationCreateCommand: 'ItemLocationCreateCommand',
