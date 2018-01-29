@@ -41,12 +41,13 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             pageLimit: data.params[1] || 5,
             order: data.params[2] || 'ASC',
             category: data.params[3],
-            searchString: data.params[4] || ''
-        } as ListingItemSearchParams, data.params[5]);
+            profileId: data.params[4],
+            searchString: data.params[5] || ''
+        } as ListingItemSearchParams, data.params[6]);
     }
 
     public help(): string {
-        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId> | <categoryName>) [<searchString>]]]]]\n'
+        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId> | <categoryName>)[(<profileId> | <ALL>) [<searchString>]]]]]\n'
             + '    <page>                          - [optional] Numeric - The number page we want to\n'
             + '                                       view of search listing item results.\n'
             + '        <pageLimit>                 - [optional] Numeric - The number of results per\n'
@@ -58,7 +59,13 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '                <categoryName>      - [optional] String - The key identifying the\n'
             + '                                       category associated with the listing items\n'
             + '                                       we want to search for.\n'
-            + '                    <searchString>  - [optional] String - A string that is used to\n'
+             + '                <profileId>        -  [optional] Numeric - The ID identifying the\n'
+            + '                                       profile associated with the listing items\n'
+            + '                                       we want to search for.\n'
+            + '                <ALL>                - [optional] any string or * or none \n'
+            + '                                       means dont wnat to search with profile\n'
+            + '                                       we want to search for.\n'
+            + '               <searchString>        - [optional] String - A string that is used to\n'
             + '                                       find listing items by their titles.';
     }
 

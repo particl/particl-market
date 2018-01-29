@@ -1,6 +1,5 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Country } from '../../src/api/enums/Country';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
@@ -10,12 +9,14 @@ import { PaymentType } from '../../src/api/enums/PaymentType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 import { Logger } from '../../src/core/Logger';
 import { ListingItemGetCommand } from '../../src/api/commands/listingitem/ListingItemGetCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('ListingItemGetCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const ListingItemService = null;
-    const method =  new ListingItemGetCommand(ListingItemService, Logger).name;
+    const method = Commands.ITEM_ROOT.commandName;
+    const subCommand = Commands.ITEM_GET.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -29,7 +30,7 @@ describe('ListingItemGetCommand', () => {
         const createdHash = testData['hash'];
 
         // find listing item using hash
-        const res = await rpc(method, [createdHash]);
+        const res = await rpc(method, [subCommand, createdHash]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -79,7 +80,7 @@ describe('ListingItemGetCommand', () => {
         const createdId = testData['id'];
 
         // find listing item using id
-        const res = await rpc(method, [createdId]);
+        const res = await rpc(method, [subCommand, createdId]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

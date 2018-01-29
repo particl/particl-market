@@ -1,12 +1,14 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
+import { Logger as LoggerType } from '../../src/core/Logger';
 import { AddressUpdateCommand } from '../../src/api/commands/address/AddressUpdateCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/RpcUpdateAddress', () => {
     const testUtil = new BlackBoxTestUtil();
     const addressService = null;
-    const method =  new AddressUpdateCommand(addressService, Logger).name;
+    const method = Commands.ADDRESS_ROOT.commandName;
+    const subCommand = Commands.ADDRESS_UPDATE.commandName;
 
     const testData = {
         name: 'TESTING-ADDRESS-PROFILE-NAME',
@@ -16,7 +18,7 @@ describe('/RpcUpdateAddress', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
-            country: 'Sweden',
+            country: 'SW',
             zipCode: '85001'
         }]
     };
@@ -26,7 +28,7 @@ describe('/RpcUpdateAddress', () => {
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
-        country: 'Finland',
+        country: 'FI',
         zipCode: '85001'
     };
 
@@ -44,12 +46,11 @@ describe('/RpcUpdateAddress', () => {
         addressId = addDataRes.getBody()['result'].ShippingAddresses[0].id;
 
         // update address
-        const res = await rpc(method, [
+        const res = await rpc(method, [ subCommand,
             addressId,
             testDataUpdated.title,
             testDataUpdated.addressLine1,
             testDataUpdated.addressLine2,
-            testDataUpdated.zipCode,
             testDataUpdated.city,
             testDataUpdated.country,
             testDataUpdated.zipCode,
@@ -67,8 +68,9 @@ describe('/RpcUpdateAddress', () => {
 
     });
 
-    test('Should fail because we want to update without profile id', async () => {
-        const res = await rpc(method, [
+    // Profile id no longer required
+    /*test('Should fail because we want to update without profile id', async () => {
+        const res = await rpc(method, [ subCommand,
             addressId,
             testDataUpdated.title,
             testDataUpdated.addressLine1,
@@ -79,10 +81,10 @@ describe('/RpcUpdateAddress', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-    });
+    });*/
 
     test('Should fail because we want to update with an empty address', async () => {
-        const getDataRes: any = await rpc(method, []);
+        const getDataRes: any = await rpc(method, [subCommand]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(400);
     });

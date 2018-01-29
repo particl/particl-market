@@ -1,19 +1,19 @@
 import { rpc, api } from './lib/api';
 import * as crypto from 'crypto-js';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-import { ItemCategoryUpdateCommand } from '../../src/api/commands/itemcategory/ItemCategoryUpdateCommand';
-import { ItemCategoryGetCommand } from '../../src/api/commands/itemcategory/ItemCategoryGetCommand';
-import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
+
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('ItemCategoryUpdateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const itemCategoryService = null;
-    const listingItemService = null;
-    const method =  new ItemCategoryUpdateCommand(itemCategoryService, listingItemService, Logger).name;
-    const getCategoryMethod =  new ItemCategoryGetCommand(itemCategoryService, Logger).name;
-    const addMakretMethod =  new MarketCreateCommand(listingItemService, Logger).name;
+    const method = Commands.CATEGORY_ROOT.commandName;
+    const subCommand = Commands.CATEGORY_UPDATE.commandName;
+    const makretMethod = Commands.MARKET_ROOT.commandName;
+    const subCommandMarket = Commands.MARKET_ADD.commandName;
+
+    const categoryMethod = Commands.CATEGORY_ROOT.commandName;
+    const subCommandCategory = Commands.CATEGORY_ADD.commandName;
 
     const parentCategory = {
         id: 0,
@@ -28,19 +28,17 @@ describe('ItemCategoryUpdateCommand', () => {
         await testUtil.cleanDb();
 
         // create category
-        const res = await rpc(getCategoryMethod, [parentCategory.key]);
+        const res = await rpc(categoryMethod, [subCommandCategory, parentCategory.key]);
         const categoryResult: any = res.getBody()['result'];
         parentCategory.id = categoryResult.id;
-
         const addCategoryRes: any = await testUtil.addData('itemcategory', {
             name: 'sample category',
             description: 'sample category description',
             parent_item_category_id: parentCategory.id
         });
         newCategory = addCategoryRes.getBody()['result'];
-
         // market
-        const resMarket = await rpc(addMakretMethod, ['Test Market', 'privateKey', 'Market Address']);
+        const resMarket = await rpc(makretMethod, [subCommandMarket, 'Test Market', 'privateKey', 'Market Address']);
         const resultMarket: any = resMarket.getBody()['result'];
         marketId = resultMarket.id;
     });
@@ -59,14 +57,14 @@ describe('ItemCategoryUpdateCommand', () => {
          *  [3]: parentItemCategoryId
          */
         categoryData.id = newCategory.id;
-        const res = await rpc(method, [categoryData.id, categoryData.name, categoryData.description, parentCategory.id]);
+        const res = await rpc(method, [subCommand, categoryData.id, categoryData.name, categoryData.description, parentCategory.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.name).toBe(categoryData.name);
         expect(result.description).toBe(categoryData.description);
         expect(result.parentItemCategoryId).toBe(parentCategory.id);
-        expect(result.ParentItemCategory.key).toBe(parentCategory.key);
+        expect(result.ParentItemCategory.name).toBe(parentCategory.key);
     });
 
     categoryData = {
@@ -75,20 +73,24 @@ describe('ItemCategoryUpdateCommand', () => {
         description: 'Sample Cat Description update'
     };
 
+    let defaultCategory;
+
     test('Should update the category with parent category key', async () => {
         categoryData.id = newCategory.id;
-        const res = await rpc(method, [categoryData.id, categoryData.name, categoryData.description, parentCategory.key]);
+        const res = await rpc(method, [subCommand, categoryData.id, categoryData.name, categoryData.description, parentCategory.key]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.name).toBe(categoryData.name);
         expect(result.description).toBe(categoryData.description);
         expect(result.parentItemCategoryId).toBe(parentCategory.id);
-        expect(result.ParentItemCategory.key).toBe(parentCategory.key);
+        expect(result.ParentItemCategory.name).toBe(parentCategory.key);
+
+        defaultCategory = result.ParentItemCategory.ParentItemCategory;
     });
 
     test('Should not update the default category', async () => {
-        const res = await rpc(method, [parentCategory.id, categoryData.name, categoryData.description, parentCategory.parentItemCategoryId]);
+        const res = await rpc(method, [subCommand, defaultCategory.id, categoryData.name, categoryData.description, parentCategory.parentItemCategoryId]);
         res.expectJson();
         res.expectStatusCode(404);
     });
@@ -108,7 +110,7 @@ describe('ItemCategoryUpdateCommand', () => {
             }
         };
         const listingItems = await testUtil.addData('listingitem', listingitemData);
-        const res = await rpc(method, [categoryData.id, categoryData.name, categoryData.description, parentCategory.id]);
+        const res = await rpc(method, [subCommand, categoryData.id, categoryData.name, categoryData.description, parentCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
     });

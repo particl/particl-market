@@ -83,10 +83,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 if (typeof options.profileId === 'number') {
                     qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                     qb.where('listing_item_templates.profile_id', '=', options.profileId);
-                } else if (typeof options.profileId === 'string') {
-                    qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
-                    qb.where('profile.name', '=', options.profileId);
-                    qb.innerJoin('profile', 'profile.id', 'listing_item_templates.profile_id');
                 }
 
                 qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id');

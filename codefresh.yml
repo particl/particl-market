@@ -5,8 +5,8 @@ steps:
     image: tutum/curl
     commands:
       - >-
-        curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n ${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\ngithub: ${{CF_COMMIT_URL}}\ncodefresh: ${{CF_BUILD_URL}} \", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-    fail-fast: false
+        curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\ngithub: ${{CF_COMMIT_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+    fail_fast: false
 
   build_docker_image_step:
     title: building docker image
@@ -14,14 +14,14 @@ steps:
     image_name: ludx/dapp-shell
     working_directory: ./
     dockerfile: Dockerfile.ci
-    tag: '${{CF_BRANCH_TAG_NORMALIZED}}'
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}'
 
-  unit_test_notify_step:
-    image: tutum/curl
-    commands:
-      - >-
-        curl -d "{\"content\": \"running unit tests...\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-    fail-fast: false
+#  unit_test_notify_step:
+#    image: tutum/curl
+#    commands:
+#      - >-
+#        curl -d "{\"content\": \"running unit tests...\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+#    fail-fast: false
 
   unit_test_step:
     title: running unit tests
@@ -45,32 +45,53 @@ steps:
           - '${{build_docker_image_step.imageId}}':
               - CF_QUALITY: false
 
-  integration_test_step:
-    image: tutum/curl
-    commands:
-      - >-
-        curl -d "{\"content\": \"running integration tests...\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-    fail-fast: false
+#  integration_test_notify_step:
+#    image: tutum/curl
+#    commands:
+#      - >-
+#        curl -d "{\"content\": \"running integration tests...\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+#    fail-fast: false
 
+#  integration_test_step:
+#    title: running integration tests
+#    image: ${{build_docker_image_step}}
+#    working_directory: IMAGE_WORK_DIR
+#    entry_point:
+#      - /bin/sh
+#      - /codefresh/volume/cf-generated/integration_test_script
+#    create_file:
+#      path: /codefresh/volume/cf-generated
+#      name: integration_test_script
+#      content: >-
+#        ./bin/recreate-dbs.sh
+#        npm run test:integration:pretty
+#    on_success:
+#      metadata:
+#        set:
+#          - '${{build_docker_image_step.imageId}}':
+#              - CF_QUALITY: true
+#    on_fail:
+#      metadata:
+#        set:
+#          - '${{build_docker_image_step.imageId}}':
+#              - CF_QUALITY: false
 
-  push_image_notify_step:
-    image: tutum/curl
-    commands:
-      - >-
-        curl -d "{\"content\": \"pushing image to docker.io/ludx/dapp-shell:${{CF_SHORT_REVISION}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-    fail-fast: false
+#  push_image_notify_step:
+#    image: tutum/curl
+#    commands:
+#      - >-
+#        curl -d "{\"content\": \"pushing image to docker.io/ludx/dapp-shell:${{CF_SHORT_REVISION}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+#    fail-fast: false
 
   push_image_step:
     type: push
     candidate: ${{build_docker_image_step}}
-    tag: ${{CF_SHORT_REVISION}}
+    tag: '${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}'
     registry: dockerhub
 #    credentials:
 #      username: ${{DOCKERHUB_USERNAME}}
 #      password: ${{DOCKERHUB_PASSWORD}}
 #    fail-fast: false
-#    commands:
-#      - npm test
 
 #  integration_step:
 #    type: composition

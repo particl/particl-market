@@ -10,28 +10,37 @@ describe('MarketListCommand', () => {
     const marketService = null;
     const method =  Commands.MARKET_ROOT.commandName;
     const subCommand =  Commands.MARKET_LIST.commandName;
+    const addMarketCommand =  Commands.MARKET_ADD.commandName;
+
+    const marketData = {
+        name: 'Test Market',
+        private_key: 'privateKey',
+        address: 'Market Address'
+    };
 
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
 
-    test('Should return empty market list', async () => {
+    test('Should return only one default market', async () => {
         const res = await rpc(method, [subCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-        expect(result).toHaveLength(0);
+        expect(result).toHaveLength(1);
     });
 
     test('Should list all created markets', async () => {
-        // generate markets
-        await testUtil.generateData('market', 3);
+        // add markets
+        await rpc(method, [addMarketCommand, marketData.name, marketData.private_key, marketData.address]);
+
+        await rpc(method, [addMarketCommand, marketData.name, marketData.private_key, marketData.address]);
 
         const res = await rpc(method, [subCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-        expect(result).toHaveLength(3);
+        expect(result).toHaveLength(2);
     });
 
 });

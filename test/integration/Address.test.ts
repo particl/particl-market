@@ -44,8 +44,7 @@ describe('Address', () => {
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
         country: 'Sweden',
-        zipCode: '85001',
-        profile_id: 0
+        zipCode: '85001'
     } as AddressUpdateRequest;
 
     beforeAll(async () => {
@@ -125,22 +124,7 @@ describe('Address', () => {
 
     });
 
-    test('Should throw ValidationException because there is no profile_id', async () => {
-        expect.assertions(1);
-        await addressService.update(createdId, {
-            title: 'Title',
-            addressLine1: 'Add',
-            addressLine2: 'ADD 22',
-            city: 'city',
-            country: 'Finland',
-            zipCode: '85001'
-        } as AddressUpdateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-            );
-    });
-
     test('Should update the address', async () => {
-        testDataUpdated.profile_id = defaultProfileId;
         const addressModel: Address = await addressService.update(createdId, testDataUpdated);
         const result = addressModel.toJSON();
 
