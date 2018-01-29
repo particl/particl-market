@@ -58,6 +58,7 @@ import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplat
 import { ListingItemTemplatePostCommand } from '../commands/listingitemtemplate/ListingItemTemplatePostCommand';
 
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
+import { MessagingInformationRootCommand } from '../commands/messaginginformation/MessagingInformationRootCommand';
 
 import { MarketCreateCommand } from '../commands/market/MarketCreateCommand';
 import { MarketRootCommand } from '../commands/market/MarketRootCommand';
@@ -134,6 +135,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.market.MarketRootCommand) private marketRootCommand: MarketRootCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketListCommand) private marketListCommand: MarketListCommand,
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationUpdateCommand) private messagingInformationUpdateCommand: MessagingInformationUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationRootCommand) private messagingInformationRootCommand: MessagingInformationRootCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressRootCommand) private addressRootCommand: AddressRootCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressListCommand) private addressListCommand: AddressListCommand,
@@ -207,6 +209,7 @@ export class RpcCommandFactory {
         this.commands.push(marketRootCommand);
         this.commands.push(marketListCommand);
         this.commands.push(messagingInformationUpdateCommand);
+        this.commands.push(messagingInformationRootCommand);
         this.commands.push(paymentInformationUpdateCommand);
         this.commands.push(addressRootCommand);
         this.commands.push(addressListCommand);
