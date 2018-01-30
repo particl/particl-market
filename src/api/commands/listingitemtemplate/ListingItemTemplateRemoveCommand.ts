@@ -8,7 +8,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class ListingItemTemplateDestroyCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class ListingItemTemplateRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
 
