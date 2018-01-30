@@ -153,7 +153,8 @@ export const Targets = {
         iteminformation: {
             ItemInformationCreateCommand: 'ItemInformationCreateCommand',
             ItemInformationGetCommand: 'ItemInformationGetCommand',
-            ItemInformationUpdateCommand: 'ItemInformationUpdateCommand'
+            ItemInformationUpdateCommand: 'ItemInformationUpdateCommand',
+            ItemInformationRootCommand: 'ItemInformationRootCommand'
         },
         itemlocation: {
             ItemLocationCreateCommand: 'ItemLocationCreateCommand',
@@ -180,10 +181,12 @@ export const Targets = {
             MarketRootCommand: 'MarketRootCommand'
         },
         messaginginformation: {
-            MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
+            MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand',
+            MessagingInformationRootCommand: 'MessagingInformationRootCommand'
         },
         paymentinformation: {
-            PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'
+            PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand',
+            PaymentInformationRootCommand: 'PaymentInformationRootCommand'
         },
         profile: {
             ProfileCreateCommand: 'ProfileCreateCommand',
