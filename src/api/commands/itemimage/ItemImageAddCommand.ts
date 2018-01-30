@@ -65,9 +65,9 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
             + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]'
             + '    <listingItemTemplateId>          - Numeric - The ID of the listing item template\n'
             + '                                        we want to associate this item image with.\n'
-            + '    <dataId>                         - [optional] Numeric - [TODO]\n';
-            + '    <protocol>                       - [optional] Enum? - [TODO]\n';
-            + '    <encoding>                       - [optional] Enum? - [TODO]\n';
+            + '    <dataId>                         - [optional] Numeric - [TODO]\n'
+            + '    <protocol>                       - [optional] Enum? - [TODO]\n'
+            + '    <encoding>                       - [optional] Enum? - [TODO]\n'
             + '    <data>                           - [optional] String - [TODO]';
     }
 
