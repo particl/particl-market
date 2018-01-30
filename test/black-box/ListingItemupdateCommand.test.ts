@@ -1,10 +1,6 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-
 import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';
-import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
-
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
@@ -13,9 +9,6 @@ import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
-import { ListingItemUpdateCommand } from '../../src/api/commands/listingitem/ListingItemUpdateCommand';
-import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
-import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('ListingItemUpdateCommand', () => {

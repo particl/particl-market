@@ -182,7 +182,8 @@ export const Targets = {
             MessagingInformationRootCommand: 'MessagingInformationRootCommand'
         },
         paymentinformation: {
-            PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'
+            PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand',
+            PaymentInformationRootCommand: 'PaymentInformationRootCommand'
         },
         profile: {
             ProfileCreateCommand: 'ProfileCreateCommand',

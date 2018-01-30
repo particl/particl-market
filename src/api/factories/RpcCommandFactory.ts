@@ -65,6 +65,7 @@ import { MarketRootCommand } from '../commands/market/MarketRootCommand';
 import { MarketListCommand } from '../commands/market/MarketListCommand';
 
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
+import { PaymentInformationRootCommand } from '../commands/paymentinformation/PaymentInformationRootCommand';
 
 import { AddressRootCommand } from '../commands/address/AddressRootCommand';
 import { AddressListCommand } from '../commands/address/AddressListCommand';
@@ -137,6 +138,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationUpdateCommand) private messagingInformationUpdateCommand: MessagingInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationRootCommand) private messagingInformationRootCommand: MessagingInformationRootCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationRootCommand) private paymentInformationRootCommand: PaymentInformationRootCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressRootCommand) private addressRootCommand: AddressRootCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressListCommand) private addressListCommand: AddressListCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressCreateCommand) private addressCreateCommand: AddressCreateCommand,
@@ -211,6 +213,7 @@ export class RpcCommandFactory {
         this.commands.push(messagingInformationUpdateCommand);
         this.commands.push(messagingInformationRootCommand);
         this.commands.push(paymentInformationUpdateCommand);
+        this.commands.push(paymentInformationRootCommand);
         this.commands.push(addressRootCommand);
         this.commands.push(addressListCommand);
         this.commands.push(addressCreateCommand);
