@@ -95,25 +95,25 @@ steps:
 
 
 
-  integration_test_step:
-    type: composition
-    title: running integration tests
-    working_directory: ${{main_clone}}
-    composition:
-      version: '2'
-      services:
-        dappshell:
-          image: ${{build_docker_image_step}}
-    composition_candidates:
-      test_service:
-        image: ${{build_docker_image_step}}
-        command: npm run test:black-box:pretty
-        working_dir: /app
+#  integration_test_step:
+#    type: composition
+#    title: running integration tests
+#    working_directory: ${{main_clone}}
+#    composition:
+#      version: '2'
+#      services:
+#        dappshell:
+#          image: ${{build_docker_image_step}}
+#    composition_candidates:
+#      test_service:
+#        image: ${{build_docker_image_step}}
+#        command: npm run test:black-box:pretty
+#        working_dir: /app
 #        environment:
 #          - key=value
 #    composition_variables:
 #      - key=value
-    fail_fast: false
+#    fail_fast: false
 #    when:
 #      condition:
 #        all:
