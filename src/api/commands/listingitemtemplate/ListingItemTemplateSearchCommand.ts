@@ -8,7 +8,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
 export class ListingItemTemplateSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
@@ -29,7 +29,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: profile id
-     *  [4]: category, number|string, if string, try to find using key, can be null
+     *  [4]: category, number|string, if string, try to search using key, can be null
      *  [5]: searchString, string, can be null
      *
      * @param data

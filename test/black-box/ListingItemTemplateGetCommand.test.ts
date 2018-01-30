@@ -1,14 +1,12 @@
 import { rpc, api } from './lib/api';
-
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-import { ListingItemTemplateGetCommand } from '../../src/api/commands/listingitemtemplate/ListingItemTemplateGetCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('ListingItemTemplateGetCommand', () => {
-
     const testUtil = new BlackBoxTestUtil();
-    const ListingItemTemplateService = null;
-    const method =  new ListingItemTemplateGetCommand(ListingItemTemplateService, Logger).name;
+
+    const method = Commands.TEMPLATE_ROOT.commandName;
+    const subCommand = Commands.TEMPLATE_GET.commandName;
 
     let profile;
 
@@ -23,7 +21,7 @@ describe('ListingItemTemplateGetCommand', () => {
         const testData = listingItemTemplates[0];
 
         // fetch using id
-        const res = await rpc(method, [listingItemTemplates[0].id]);
+        const res = await rpc(method, [subCommand, listingItemTemplates[0].id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

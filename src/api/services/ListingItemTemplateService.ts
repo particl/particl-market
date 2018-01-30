@@ -200,7 +200,7 @@ export class ListingItemTemplateService {
         const existingListingItemObjects = updatedListingItemTemplate.related('ListingItemObjects').toJSON() || [];
 
         // find highestOrderNumber
-        const highestOrderNumber = await this.findHighesOrderNumber(newListingItemObjects);
+        const highestOrderNumber = await this.findHighestOrderNumber(newListingItemObjects);
 
         const objectsToBeUpdated = [] as any;
         for (const object of existingListingItemObjects) {
@@ -251,7 +251,7 @@ export class ListingItemTemplateService {
     }
 
     // find highest order number from listingItemObjects
-    private async findHighesOrderNumber(listingItemObjects: string[]): Promise<any> {
+    private async findHighestOrderNumber(listingItemObjects: string[]): Promise<any> {
         const highestOrder = await _.maxBy(listingItemObjects, (itemObject) => {
           return itemObject['order'];
         });
