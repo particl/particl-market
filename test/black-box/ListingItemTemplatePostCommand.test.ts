@@ -1,16 +1,17 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-import { ListingItemTemplatePostCommand } from '../../src/api/commands/listingitemtemplate/ListingItemTemplatePostCommand';
-import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('ListingItemPostCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const listingItemService = null;
-    const method =  new ListingItemTemplatePostCommand(listingItemService, Logger).name;
-    const addMakretMethod =  new MarketCreateCommand(listingItemService, Logger).name;
+    const method = Commands.TEMPLATE_ROOT.commandName;
+    const subCommand = Commands.TEMPLATE_POST.commandName;
+
+    const marketMethod = Commands.MARKET_ROOT.commandName;
+    const marketSubCommand = Commands.MARKET_ADD.commandName;
+
     let listingItemTemplace;
 
     beforeAll(async () => {
@@ -26,14 +27,12 @@ describe('ListingItemPostCommand', () => {
         const defaultProfile = await testUtil.getDefaultProfile();
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
-        // const = listingTemplace = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
         listingItemTemplace = await testUtil.generateData('listingitemtemplate', 1);
-        // listingItemTemplace = listingTemplace.getBody()['result'];
     });
 
     test('Should post a item in to the market place without market id', async () => {
         // expect(listingItemTemplace).toBe(4);
-        const res: any = await rpc(method, [listingItemTemplace[0].id]);
+        const res: any = await rpc(method, [subCommand, listingItemTemplace[0].id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result = res.getBody()['result'];
@@ -44,10 +43,10 @@ describe('ListingItemPostCommand', () => {
     });
 
     test('Should post a item in to the market place with market id', async () => {
-        const marketRes = await rpc(addMakretMethod, ['Test Market', 'privateKey', 'Market Address']);
+        const marketRes = await rpc(marketMethod, [marketSubCommand, 'Test Market', 'privateKey', 'Market Address']);
         const resultMarket: any = marketRes.getBody()['result'];
 
-        const res: any = await rpc(method, [listingItemTemplace[0].id, resultMarket.id]);
+        const res: any = await rpc(method, [subCommand, listingItemTemplace[0].id, resultMarket.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result = res.getBody()['result'];
@@ -60,7 +59,7 @@ describe('ListingItemPostCommand', () => {
 
     test('Should fail to post a item in to the market place because of invalid listingItemTemplate id', async () => {
         // post item with invalid listingItemTemplate id
-        const res: any = await rpc(method, [55]);
+        const res: any = await rpc(method, [subCommand, 55]);
         res.expectJson();
         res.expectStatusCode(404);
     });
