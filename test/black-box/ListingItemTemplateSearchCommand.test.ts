@@ -1,20 +1,16 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Country } from '../../src/api/enums/Country';
-import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
-import { Logger } from '../../src/core/Logger';
-import { ListingItemTemplateSearchCommand } from '../../src/api/commands/listingitemtemplate/ListingItemTemplateSearchCommand';
+
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/ListingItemTemplateSearchCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const listingItemTemplateService = null;
-    const method = new ListingItemTemplateSearchCommand(listingItemTemplateService, Logger).name;
+    const method = Commands.TEMPLATE_ROOT.commandName;
+    const subCommand = Commands.TEMPLATE_SEARCH.commandName;
 
     const testDataListingItemTemplate1 = {
         profile_id: 0,
@@ -33,18 +29,6 @@ describe('/ListingItemTemplateSearchCommand', () => {
                 ratio: {
                     buyer: 100,
                     seller: 100
-                }
-            },
-            itemPrice: {
-                currency: Currency.BITCOIN,
-                basePrice: 0.0001,
-                shippingPrice: {
-                    domestic: 0.123,
-                    international: 1.234
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.NORMAL,
-                    address: 'This is temp address.'
                 }
             }
         }
@@ -68,18 +52,6 @@ describe('/ListingItemTemplateSearchCommand', () => {
                     buyer: 100,
                     seller: 100
                 }
-            },
-            itemPrice: {
-                currency: Currency.BITCOIN,
-                basePrice: 0.0001,
-                shippingPrice: {
-                    domestic: 0.123,
-                    international: 1.234
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.NORMAL,
-                    address: 'This is temp address.'
-                }
             }
         }
     };
@@ -100,19 +72,19 @@ describe('/ListingItemTemplateSearchCommand', () => {
 
     test('Should get all Item Templates', async () => {
         // get all listing items
-        const getDataRes: any = await rpc(method, [1, 2, 'ASC', profileId]);
+        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', profileId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(2);
+        expect(result).toHaveLength(2);
     });
 
     test('Should get only first item template by pagination', async () => {
-        const getDataRes: any = await rpc(method, [1, 1, 'ASC', profileId]);
+        const getDataRes: any = await rpc(method, [subCommand, 1, 1, 'ASC', profileId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(1);
+        expect(result).toHaveLength(1);
         // check itemInformation
         expect(result[0]['ItemInformation'].title).toBe(testDataListingItemTemplate1.itemInformation.title);
         expect(result[0]['ItemInformation'].shortDescription).toBe(testDataListingItemTemplate1.itemInformation.shortDescription);
@@ -134,11 +106,11 @@ describe('/ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should get second item template by pagination', async () => {
-        const getDataRes: any = await rpc(method, [2, 1, 'ASC', profileId]);
+        const getDataRes: any = await rpc(method, [subCommand, 2, 1, 'ASC', profileId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(1);
+        expect(result).toHaveLength(1);
         // check itemInformation
         expect(result[0]['ItemInformation'].title).toBe(testDataListingItemTemplate2.itemInformation.title);
         expect(result[0]['ItemInformation'].shortDescription).toBe(testDataListingItemTemplate2.itemInformation.shortDescription);
@@ -159,45 +131,45 @@ describe('/ListingItemTemplateSearchCommand', () => {
         expect(result).hasOwnProperty('ListingItem');
     });
 
-    test('Should return empty listing items array if invalid pagination', async () => {
-        const getDataRes: any = await rpc(method, [2, 2, 'ASC', profileId]);
+    test('Should return empty listing item templates array if invalid pagination', async () => {
+        const getDataRes: any = await rpc(method, [subCommand, 2, 2, 'ASC', profileId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const emptyResults: any = getDataRes.getBody()['result'];
-        expect(emptyResults.length).toBe(0);
+        expect(emptyResults).toHaveLength(0);
     });
 
-    test('Should search listing items by category key', async () => {
-        const getDataRes: any = await rpc(method, [1, 2, 'ASC', profileId, 'cat_high_luxyry_items']);
+    test('Should search listing items templates by category key', async () => {
+        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', profileId, 'cat_high_luxyry_items']);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         const category = result[0].ItemInformation.ItemCategory.key;
-        expect(result.length).toBe(2);
+        expect(result).toHaveLength(2);
         expect('cat_high_luxyry_items').toBe(result[0].ItemInformation.ItemCategory.key);
     });
 
-    test('Should search listing items by category id', async () => {
-        const getDataRes: any = await rpc(method, [1, 2, 'ASC', profileId, categoryId]);
+    test('Should search listing items templates by category id', async () => {
+        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', profileId, categoryId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(2);
+        expect(result).toHaveLength(2);
         const category = result[0].ItemInformation.itemCategoryId;
         expect(category).toBe(categoryId);
     });
 
     test('Should search item templates by ItemInformation title', async () => {
-        const getDataRes: any = await rpc(method, [1, 2, 'ASC', profileId, '', testDataListingItemTemplate1.itemInformation.title]);
+        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', profileId, '', testDataListingItemTemplate1.itemInformation.title]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(1);
+        expect(result).toHaveLength(1);
         expect(testDataListingItemTemplate1.itemInformation.title).toBe(result[0].ItemInformation.title);
     });
 
     test('Should fail because we want to search without profileId', async () => {
-        const getDataRes: any = await rpc(method, [1, 2, 'ASC', '']);
+        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', '']);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(400);
     });

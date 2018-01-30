@@ -7,7 +7,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplatePostRequest } from '../../requests/ListingItemTemplatePostRequest';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
@@ -43,7 +43,10 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     }
 
     public help(): string {
-        return this.getName() + 'ListingItemTemplatePostCommand: TODO: Fill in help string.';
+        return this.getName() + ' <listingTemplateId> <marketId>\n'
+            + '    <listingTemplateId>   -    Numeric - The ID of the listing item template that we\n'
+            + '                                want to post.'
+            + '    <marketId>   -    Numeric - The ID of the markte id.';
     }
 
 }
