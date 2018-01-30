@@ -166,11 +166,12 @@ export const Targets = {
             ListingItemRootCommand: 'ListingItemRootCommand'
         },
         listingitemtemplate: {
-            ListingItemTemplateCreateCommand: 'ListingItemTemplateCreateCommand',
-            ListingItemTemplateDestroyCommand: 'ListingItemTemplateDestroyCommand',
+            ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
+            ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
-            ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand'
+            ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
+            ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand'
         },
         market: {
             MarketCreateCommand: 'MarketCreateCommand',

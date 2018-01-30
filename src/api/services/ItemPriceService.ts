@@ -46,9 +46,8 @@ export class ItemPriceService {
     public async create( @request(ItemPriceCreateRequest) data: ItemPriceCreateRequest): Promise<ItemPrice> {
 
         const body = JSON.parse(JSON.stringify(data));
-
-        const shippingPrice = body.shippingPrice;
-        const cryCurAddress = body.cryptocurrencyAddress;
+        const shippingPrice = body.shippingPrice || {};
+        const cryCurAddress = body.cryptocurrencyAddress || {};
 
         delete body.shippingPrice;
         delete body.cryptocurrencyAddress;
