@@ -2,21 +2,16 @@ import { rpc, api } from './lib/api';
 import * as crypto from 'crypto-js';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
-import { EscrowType } from '../../src/api/enums/EscrowType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { Logger } from '../../src/core/Logger';
-import { MessagingInformationUpdateCommand } from '../../src/api/commands/messaginginformation/MessagingInformationUpdateCommand';
+import { Commands} from '../../src/api/commands/CommandEnumType';
 
 describe('MessagingInformationUpdateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const listingItemTemplateService = null;
-    const messagingInformationService = null;
-    const method =  new MessagingInformationUpdateCommand(listingItemTemplateService, messagingInformationService, Logger).name;
+    const method = Commands.MESSAGINGINFORMATION_ROOT.commandName;
+    const subCommand = Commands.MESSAGINGINFORMATION_UPDATE.commandName;
 
     const testDataListingItemTemplate = {
         profile_id: 0,
@@ -27,7 +22,7 @@ describe('MessagingInformationUpdateCommand', () => {
             longDescription: 'Item long description with Templates',
             listingItemId: null,
             itemCategory: {
-                key: 'cat_high_luxyry_items'
+                id: null
             },
             itemLocation: {
                 region: 'China',
@@ -55,6 +50,12 @@ describe('MessagingInformationUpdateCommand', () => {
         // set hash
         testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
+        // get categories
+        const categories = await rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_LIST.commandName]);
+        const categoryList: any = categories.getBody()['result'];
+
+        // set category id
+        testDataListingItemTemplate.itemInformation.itemCategory.id = categoryList.id;
         // create listing-item-template
         const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
         const result: any = addListingItemTempRes.getBody()['result'];
@@ -70,8 +71,20 @@ describe('MessagingInformationUpdateCommand', () => {
         publicKey: 'publickey2'
     };
 
+    test('Should fail to update message-information because empty body', async () => {
+        const res = await rpc(method, [subCommand, createdTemplateId]);
+        res.expectJson();
+        res.expectStatusCode(400);
+    });
+
+    test('Should fail to update message-information because invalid protocol body', async () => {
+        const res = await rpc(method, [subCommand, createdTemplateId, 'test', messageInfoData.publicKey]);
+        res.expectJson();
+        res.expectStatusCode(400);
+    });
+
     test('Should update the message-information', async () => {
-        const res = await rpc(method, [createdTemplateId, messageInfoData.protocol, messageInfoData.publicKey]);
+        const res = await rpc(method, [subCommand, createdTemplateId, messageInfoData.protocol, messageInfoData.publicKey]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -94,7 +107,7 @@ describe('MessagingInformationUpdateCommand', () => {
         const listingItemTemplate = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
 
         const listingItemTemplateId = listingItemTemplate.getBody()['result'].id;
-        const res = await rpc(method, [listingItemTemplateId, messageInfoData.protocol, messageInfoData.publicKey]);
+        const res = await rpc(method, [subCommand, listingItemTemplateId, messageInfoData.protocol, messageInfoData.publicKey]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);

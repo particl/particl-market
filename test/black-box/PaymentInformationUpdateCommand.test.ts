@@ -4,14 +4,14 @@ import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
-import { Logger } from '../../src/core/Logger';
-import { PaymentInformationUpdateCommand } from '../../src/api/commands/paymentinformation/PaymentInformationUpdateCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/PaymentInformationUpdateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const paymentInformationService = null;
-    const method =  new PaymentInformationUpdateCommand(paymentInformationService, Logger).name;
+    const method =  Commands.PAYMENTINFORMATION_ROOT.commandName;
+    const subCommand =  Commands.PAYMENTINFORMATION_UPDATE.commandName;
 
     let profileId;
     const testDataListingItemTemplate = {
@@ -80,7 +80,7 @@ describe('/PaymentInformationUpdateCommand', () => {
         const addListingItemTempResult = addListingItemTempRes.getBody()['result'];
         const createdTemplateId = addListingItemTempResult.id;
         const paymentInformationId = addListingItemTempResult.PaymentInformation.id;
-        const updateDataRes: any = await rpc(method, [createdTemplateId, testData.type,
+        const updateDataRes: any = await rpc(method, [subCommand, createdTemplateId, testData.type,
             testData.itemPrice.currency, testData.itemPrice.basePrice,
             testData.itemPrice.shippingPrice.domestic, testData.itemPrice.shippingPrice.international,
             testData.itemPrice.cryptocurrencyAddress.address]);
@@ -99,7 +99,7 @@ describe('/PaymentInformationUpdateCommand', () => {
     });
 
     test('Should fail update Payment Information, payment-information is not related with item-template', async () => {
-        const updateDataRes: any = await rpc(method, [0, testData.type,
+        const updateDataRes: any = await rpc(method, [subCommand, 0, testData.type,
             testData.itemPrice.currency, testData.itemPrice.basePrice,
             testData.itemPrice.shippingPrice.domestic, testData.itemPrice.shippingPrice.international,
             testData.itemPrice.cryptocurrencyAddress.address]);

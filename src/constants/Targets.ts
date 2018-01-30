@@ -180,10 +180,12 @@ export const Targets = {
             MarketRootCommand: 'MarketRootCommand'
         },
         messaginginformation: {
-            MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
+            MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand',
+            MessagingInformationRootCommand: 'MessagingInformationRootCommand'
         },
         paymentinformation: {
-            PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'
+            PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand',
+            PaymentInformationRootCommand: 'PaymentInformationRootCommand'
         },
         profile: {
             ProfileCreateCommand: 'ProfileCreateCommand',
