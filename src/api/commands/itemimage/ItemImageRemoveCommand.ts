@@ -22,9 +22,6 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
     }
 
     /**
-     * TODO: Check this works.
-     *
-     *
      * data.params[]:
      *  [0]: ItemImage.Id
      */
