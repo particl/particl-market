@@ -32,13 +32,13 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     /**
-     * TODO: Update command to match help().
      *
      * data.params[]:
-     *  [0]: item_id or hash
-     *  [1]: profile_id or null
+     *  [0]: profile_id or null
+     *  [1]: item_id or hash
      *
-     * when data.params[0] is number then findById, else findOneByHash
+     * when data.params[0] is null then use default profile
+     * when data.params[1] is number then findById, else findOneByHash
      *
      * @param data
      * @returns {Promise<FavoriteItem>}
@@ -47,13 +47,13 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
     public async execute( @request(RpcRequest) data: any): Promise<FavoriteItem> {
         const favoriteParams = await this.getSearchParams(data);
         // Check if favorite Item already exist
-        let favoriteItem = await this.favoriteItemService.search({ itemId: favoriteParams[0], profileId: favoriteParams[1] } as FavoriteSearchParams);
+        let favoriteItem = await this.favoriteItemService.search({profileId: favoriteParams[0], itemId: favoriteParams[1] } as FavoriteSearchParams);
 
         // favorite item not already exist then create
         if (favoriteItem === null) {
             favoriteItem = await this.favoriteItemService.create({
-                listing_item_id: favoriteParams[0],
-                profile_id: favoriteParams[1]
+                profile_id: favoriteParams[0],
+                listing_item_id: favoriteParams[1]
             } as FavoriteItemCreateRequest);
         }
         return favoriteItem;
@@ -83,17 +83,16 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
      *
      */
     private async getSearchParams(data: any): Promise<any> {
-        let itemId = data.params[0] || 0;
-        let profileId = data.params[1];
+        let profileId = data.params[0];
+        let itemId = data.params[1] || 0;
 
         // if item hash is in the params
         if (itemId && typeof itemId === 'string') {
-            const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
+            const listingItem = await this.listingItemService.findOneByHash(data.params[1]);
             itemId = listingItem.id;
         }
         // find listing item by id
         const item = await this.listingItemService.findOne(itemId);
-
 
         // if profile id not found in the params then find default profile
         if (!profileId || typeof profileId !== 'number') {
@@ -104,6 +103,6 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
             this.log.warn(`ListingItem with the id=${itemId} was not found!`);
             throw new NotFoundException(itemId);
         }
-        return [item.id, profileId];
+        return [profileId, item.id];
     }
 }

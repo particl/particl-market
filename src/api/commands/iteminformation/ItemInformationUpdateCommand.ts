@@ -28,7 +28,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
      *  [1]: title
      *  [2]: short-description
      *  [3]: long-description
-     *  [4]: category
+     *  [4]: categoryId
      *
      * @param data
      * @returns {Promise<ItemInformation>}
@@ -41,13 +41,13 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
             shortDescription: data.params[2],
             longDescription: data.params[3],
             itemCategory: {
-                key: data.params[4]
+                id: data.params[4]
             }
         } as ItemInformationUpdateRequest);
     }
 
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId> <title> <shortDescription> <longDescription> <category>\n'
+        return this.getName() + ' <listingItemTemplateId> <title> <shortDescription> <longDescription> <categoryId>\n'
             + '    <listingItemTemplateId>         - Numeric - The ID of the listing item template\n'
             + '                                       whose associated item information we want to\n'
             + '                                       update.\n'
@@ -57,7 +57,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
             + '                                       information we\'re updating.\n'
             + '    <longDescription>               - String - The new long description of the item\n'
             + '                                       information we\'re updating.\n'
-            + '    <categoryKey>                   - String - The key that identifies the new\n'
+            + '    <categoryId>                   - String - The ID that identifies the new\n'
             + '                                       category we want to assign to the item\n'
             + '                                       information we\'re updating.';
     }

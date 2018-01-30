@@ -49,6 +49,15 @@ export class ItemInformationService {
         return itemInformation;
     }
 
+    public async findByItemTemplateId(listingItemTemplateId: number, withRelated: boolean = true): Promise<ItemInformation> {
+        const itemInformation = await this.itemInformationRepo.findByItemTemplateId(listingItemTemplateId, withRelated);
+        if (itemInformation === null) {
+            this.log.warn(`ItemInformation with the listingItemTemplateId=${listingItemTemplateId} was not found!`);
+            throw new NotFoundException(listingItemTemplateId);
+        }
+        return itemInformation;
+    }
+
     @validate()
     public async create( @request(ItemInformationCreateRequest) data: ItemInformationCreateRequest): Promise<ItemInformation> {
 

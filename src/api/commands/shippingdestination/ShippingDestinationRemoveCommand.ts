@@ -30,6 +30,8 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
 
     /**
      * data.params[]:
+     *  [0]: shippingDestinationId
+     * or
      *  [0]: listing_item_template_id
      *  [1]: country/countryCode
      *  [2]: shipping availability (ShippingAvailability enum)
@@ -39,46 +41,64 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<void> {
-        const listingItemTemplateId: number = data.params[0];
-        let countryCode: string = data.params[1];
-        const shippingAvailStr: string = data.params[2];
+        if ( data.params.length === 1 ) {
+            // <shippingDestinationId>
+            const shippingDestinationId: number = data.params[0];
 
-        // If countryCode is country, convert to countryCode.
-        // If countryCode is country code, validate, and possibly throw error.
-        countryCode = ShippingCountries.validate(this.log, countryCode);
+            return this.shippingDestinationService.destroy(shippingDestinationId);
+        } else if ( data.params.length === 3 ) {
+            // <listing_item_template_id> (<country>|<countryCode>) <shipping availability>
 
-        const shippingAvail: ShippingAvailability = ShippingAvailability[shippingAvailStr];
-        if ( ShippingAvailability[shippingAvail] === undefined ) {
-            this.log.warn(`Shipping Availability <${shippingAvailStr}> was not valid!`);
-            throw new MessageException(`Shipping Availability <${shippingAvailStr}> was not valid!`);
+            const listingItemTemplateId: number = data.params[0];
+            let countryCode: string = data.params[1];
+            const shippingAvailStr: string = data.params[2];
+
+            // If countryCode is country, convert to countryCode.
+            // If countryCode is country code, validate, and possibly throw error.
+            countryCode = ShippingCountries.validate(this.log, countryCode);
+
+            // Validate shipping availability.
+            const shippingAvail: ShippingAvailability = ShippingAvailability[shippingAvailStr];
+            if ( ShippingAvailability[shippingAvail] === undefined ) {
+                this.log.warn(`Shipping Availability <${shippingAvailStr}> was not valid!`);
+                throw new MessageException(`Shipping Availability <${shippingAvailStr}> was not valid!`);
+            }
+
+            const searchRes = await this.searchShippingDestination(listingItemTemplateId, countryCode, shippingAvail);
+            const shippingDestination = searchRes[0];
+            const itemInformation = searchRes[1];
+
+            if (itemInformation.listingItemId) {
+                this.log.warn(`Can't delete shipping destination because the item has allready been posted!`);
+                throw new MessageException(`Can't delete shipping destination because the item has allready been posted!`);
+            }
+
+            if (shippingDestination === null) {
+                this.log.warn(`ShippingDestination <${shippingAvailStr}> was not found!`);
+                throw new NotFoundException(listingItemTemplateId);
+            }
+
+            return this.shippingDestinationService.destroy(shippingDestination.toJSON().id);
+        } else {
+            throw new MessageException('Expecting 1 or 3 args, received <' + data.params.length + '>.');
         }
-
-        const searchRes = await this.searchShippingDestination(listingItemTemplateId, countryCode, shippingAvail);
-        const shippingDestination = searchRes[0];
-        const itemInformation = searchRes[1];
-
-        if (itemInformation.listingItemId) {
-            this.log.warn(`Can't delete shipping destination because the item has allready been posted!`);
-            throw new MessageException(`Can't delete shipping destination because the item has allready been posted!`);
-        }
-
-        if (shippingDestination === null) {
-            this.log.warn(`ShippingDestination <${shippingAvailStr}> was not found!`);
-            throw new NotFoundException(listingItemTemplateId);
-        }
-
-        return this.shippingDestinationService.destroy(shippingDestination.toJSON().id);
     }
 
     public help(): string {
-        return this.getName() + ' <listingTemplateId> (<country> | <countryCode>) <shippingAvailability>\n'
-            + '    <itemInformationId>        - Numeric - ID of the item information object we want\n'
-            + '                                  to link this shipping destination to.\n'
-            + '    <country>                  - String - The country name.\n'
-            + '    <countryCode>              - String - Two letter country code.\n'
-            + '                                  associated with this shipping destination.\n'
+        return this.getName() + ' (<shippingDestinationId>|<listing_item_template_id> (<country>|<countryCode>) <shipping availability>)\n'
+            + '    <shippingDestinationId>    - Numeric - ID of the shipping destination object we want\n'
+            + '                                  to remove.\n'
+            + '    <listingItemTemplateId>    - Numeric - ID of the item template object whose destination we want\n'
+            + '                                  to remove.\n'
+            + '    <country>                  - String - The country name of the shipping destination we want to remove.\n'
+            + '    <countryCode>              - String - Two letter country code of the destination we want to remove.\n'
             + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
-            + '                                  availability of shipping to the specified area.';
+            + '                                  availability of shipping destination we want to remove.';
+    }
+
+    public description(): string {
+        return 'Destroy a shipping destination object specified by the ID of the item information object its linked to,'
+             + ' the country associated with it, and the shipping availability associated with it.';
     }
 
     /**
