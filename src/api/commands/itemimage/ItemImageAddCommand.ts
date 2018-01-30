@@ -48,7 +48,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         return await this.itemImageService.create({
             item_information_id: itemInformation.id,
             // we will replace this generate hash later
-            hash: crypto.SHA256(new Date().getTime().toString()).toString(),//TODO: NOTE: Should this be changed to the helper hasher?
+            hash: crypto.SHA256(new Date().getTime().toString()).toString(), // TODO: NOTE: Should this be changed to the helper hasher?
             data: {
                 dataId: data.params[1] || '',
                 protocol: data.params[2] || '',
