@@ -17,6 +17,7 @@ import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
 import { RejectBidCommand } from '../commands/bid/RejectBidCommand';
 import { SendBidCommand } from '../commands/bid/SendBidCommand';
 
+import { EscrowRootCommand } from '../commands/escrow/EscrowRootCommand';
 import { EscrowCreateCommand } from '../commands/escrow/EscrowCreateCommand';
 import { EscrowDestroyCommand } from '../commands/escrow/EscrowDestroyCommand';
 import { EscrowUpdateCommand } from '../commands/escrow/EscrowUpdateCommand';
@@ -96,6 +97,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.bid.CancelBidCommand) private bidCancelCommand: CancelBidCommand,
         @inject(Types.Command) @named(Targets.Command.bid.RejectBidCommand) private bidRejectCommand: RejectBidCommand,
         @inject(Types.Command) @named(Targets.Command.bid.SendBidCommand) private bidSendCommand: SendBidCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowRootCommand) private escrowRootCommand: EscrowRootCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowCreateCommand) private escrowCreateCommand: EscrowCreateCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowDestroyCommand) private escrowDestroyCommand: EscrowDestroyCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowUpdateCommand) private escrowUpdateCommand: EscrowUpdateCommand,
@@ -169,6 +171,7 @@ export class RpcCommandFactory {
         this.commands.push(bidCancelCommand);
         this.commands.push(bidRejectCommand);
         this.commands.push(bidSendCommand);
+        this.commands.push(escrowRootCommand);
         this.commands.push(escrowCreateCommand);
         this.commands.push(escrowDestroyCommand);
         this.commands.push(escrowUpdateCommand);
