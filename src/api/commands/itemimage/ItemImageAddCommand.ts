@@ -26,8 +26,6 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
     }
 
     /**
-     * TODO: check this works
-     *
      * data.params[]:
      *  [0]: listing_item_template_id
      *  [1]: dataId
@@ -50,7 +48,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         return await this.itemImageService.create({
             item_information_id: itemInformation.id,
             // we will replace this generate hash later
-            hash: crypto.SHA256(new Date().getTime().toString()).toString(),
+            hash: crypto.SHA256(new Date().getTime().toString()).toString(),//TODO: NOTE: Should this be changed to the helper hasher?
             data: {
                 dataId: data.params[1] || '',
                 protocol: data.params[2] || '',
@@ -62,13 +60,13 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
 
     public help(): string {
         return this.getName()
-            + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]'
+            + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]\n'
             + '    <listingItemTemplateId>          - Numeric - The ID of the listing item template\n'
             + '                                        we want to associate this item image with.\n'
-            + '    <dataId>                         - [optional] Numeric - [TODO]\n'
-            + '    <protocol>                       - [optional] Enum? - [TODO]\n'
-            + '    <encoding>                       - [optional] Enum? - [TODO]\n'
-            + '    <data>                           - [optional] String - [TODO]';
+            + '    <dataId>                         - [optional] String - [TODO]\n'
+            + '    <protocol>                       - [optional] Enum{LOCAL, IPFS, HTTPS, ONION, SMSG} - The protocol we want to use to load the image.\n'
+            + '    <encoding>                       - [optional] Enum{BASE64} - The format the image is encoded in.\n'
+            + '    <data>                           - [optional] String - The image\'s data.';
     }
 
     public description(): string {
