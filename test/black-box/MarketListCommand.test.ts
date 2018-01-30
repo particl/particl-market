@@ -1,7 +1,5 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-import { MarketListCommand } from '../../src/api/commands/market/MarketListCommand';
 import { Commands} from '../../src/api/commands/CommandEnumType';
 
 describe('MarketListCommand', () => {

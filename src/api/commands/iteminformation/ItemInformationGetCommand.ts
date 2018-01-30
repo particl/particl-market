@@ -23,21 +23,19 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
 
     /**
      * data.params[]:
-     *  [0]: id
-     *
-     * when data.params[0] is number then findById, else findOneByKey
+     *  [0]: listingItemTemplateId
      *
      * @param data
      * @returns {Promise<ItemInformation>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<ItemInformation> {
-        return this.itemInformationService.findOne(data.params[0]);
+        return this.itemInformationService.findByItemTemplateId(data.params[0]);
     }
 
     public help(): string {
-        return this.getName() + ' <itemInformationId>\n'
-            + '    <itemInformationId>             - Numeric - The ID of the item information we want\n'
+        return this.getName() + ' <listingItemTemplateId>\n'
+            + '    <listingItemTemplateId>             - Numeric - The listingItemTemplateId of the item information we want\n'
             + '                                       to retrieve.';
     }
 

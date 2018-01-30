@@ -138,12 +138,13 @@ export const Targets = {
         HelpCommand: 'HelpCommand',
         itemcategory: {
             ItemCategoryListCommand: 'ItemCategoryListCommand',
-            ItemCategoryCreateCommand: 'ItemCategoryCreateCommand',
+            ItemCategoryAddCommand: 'ItemCategoryAddCommand',
             ItemCategoryFindCommand: 'ItemCategoryFindCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
+            ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
-            ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand',
-            ItemCategoryRootCommand: 'ItemCategoryRootCommand'
+            ItemCategoryRootCommand: 'ItemCategoryRootCommand',
+            ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
         },
         itemimage: {
             ItemImageAddCommand: 'ItemImageAddCommand',
@@ -153,7 +154,8 @@ export const Targets = {
         iteminformation: {
             ItemInformationCreateCommand: 'ItemInformationCreateCommand',
             ItemInformationGetCommand: 'ItemInformationGetCommand',
-            ItemInformationUpdateCommand: 'ItemInformationUpdateCommand'
+            ItemInformationUpdateCommand: 'ItemInformationUpdateCommand',
+            ItemInformationRootCommand: 'ItemInformationRootCommand'
         },
         itemlocation: {
             ItemLocationCreateCommand: 'ItemLocationCreateCommand',
@@ -162,40 +164,44 @@ export const Targets = {
         },
         listingitem: {
             ListingItemGetCommand: 'ListingItemGetCommand',
+            ListingItemRootCommand: 'ListingItemRootCommand',
             ListingItemSearchCommand: 'ListingItemSearchCommand',
-            ListingItemUpdateCommand : 'ListingItemUpdateCommand',
-            ListingItemRootCommand: 'ListingItemRootCommand'
+            ListingItemUpdateCommand: 'ListingItemUpdateCommand'
         },
         listingitemtemplate: {
             ListingItemTemplateCreateCommand: 'ListingItemTemplateCreateCommand',
             ListingItemTemplateDestroyCommand: 'ListingItemTemplateDestroyCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
-            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
-            ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand'
+            ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
+            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
         },
         market: {
             MarketCreateCommand: 'MarketCreateCommand',
-            MarketRootCommand: 'MarketRootCommand',
-            MarketListCommand: 'MarketListCommand'
+            MarketListCommand: 'MarketListCommand',
+            MarketRootCommand: 'MarketRootCommand'
         },
         messaginginformation: {
-            MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
+            MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand',
+            MessagingInformationRootCommand: 'MessagingInformationRootCommand'
         },
         paymentinformation: {
-            PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'
+            PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand',
+            PaymentInformationRootCommand: 'PaymentInformationRootCommand'
         },
         profile: {
             ProfileCreateCommand: 'ProfileCreateCommand',
             ProfileDestroyCommand: 'ProfileDestroyCommand',
             ProfileGetCommand: 'ProfileGetCommand',
-            ProfileUpdateCommand: 'ProfileUpdateCommand',
+            ProfileListCommand: 'ProfileListCommand',
             ProfileRootCommand: 'ProfileRootCommand',
-            ProfileListCommand: 'ProfileListCommand'
+            ProfileUpdateCommand: 'ProfileUpdateCommand'
         },
         RpcCommandInterface: 'RpcCommandInterface',
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
-            ShippingDestinationRemoveCommand: 'ShippingDestinationRemoveCommand'
+            ShippingDestinationListCommand: 'ShippingDestinationListCommand',
+            ShippingDestinationRemoveCommand: 'ShippingDestinationRemoveCommand',
+            ShippingDestinationRootCommand: 'ShippingDestinationRootCommand'
         }
     },
     Factory:     {
@@ -211,11 +217,11 @@ export const Targets = {
         BidMessageProcessor: 'BidMessageProcessor',
         CancelBidMessageProcessor: 'CancelBidMessageProcessor',
         ListingItemMessageProcessor: 'ListingItemMessageProcessor',
-        UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface',
         RejectBidMessageProcessor: 'RejectBidMessageProcessor',
-        TestMessageProcessor: 'TestMessageProcessor'
+        TestMessageProcessor: 'TestMessageProcessor',
+        UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',

@@ -28,9 +28,8 @@ import { FavoriteRootCommand } from '../commands/favorite/FavoriteRootCommand';
 import { FavoriteListCommand } from '../commands/favorite/FavoriteListCommand';
 import { FavoriteAddCommand } from '../commands/favorite/FavoriteAddCommand';
 import { FavoriteRemoveCommand } from '../commands/favorite/FavoriteRemoveCommand';
-
 import { ItemCategoryListCommand } from '../commands/itemcategory/ItemCategoryListCommand';
-import { ItemCategoryCreateCommand } from '../commands/itemcategory/ItemCategoryCreateCommand';
+import { ItemCategoryAddCommand } from '../commands/itemcategory/ItemCategoryAddCommand';
 import { ItemCategoryFindCommand } from '../commands/itemcategory/ItemCategoryFindCommand';
 import { ItemCategoryGetCommand } from '../commands/itemcategory/ItemCategoryGetCommand';
 import { ItemCategoryRemoveCommand } from '../commands/itemcategory/ItemCategoryRemoveCommand';
@@ -44,6 +43,7 @@ import { ItemImageRemoveCommand } from '../commands/itemimage/ItemImageRemoveCom
 import { ItemInformationCreateCommand } from '../commands/iteminformation/ItemInformationCreateCommand';
 import { ItemInformationGetCommand } from '../commands/iteminformation/ItemInformationGetCommand';
 import { ItemInformationUpdateCommand } from '../commands/iteminformation/ItemInformationUpdateCommand';
+import { ItemInformationRootCommand } from '../commands/iteminformation/ItemInformationRootCommand';
 
 import { ItemLocationRemoveCommand } from '../commands/itemlocation/ItemLocationRemoveCommand';
 import { ItemLocationCreateCommand } from '../commands/itemlocation/ItemLocationCreateCommand';
@@ -59,12 +59,14 @@ import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplat
 import { ListingItemTemplatePostCommand } from '../commands/listingitemtemplate/ListingItemTemplatePostCommand';
 
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
+import { MessagingInformationRootCommand } from '../commands/messaginginformation/MessagingInformationRootCommand';
 
 import { MarketCreateCommand } from '../commands/market/MarketCreateCommand';
 import { MarketRootCommand } from '../commands/market/MarketRootCommand';
 import { MarketListCommand } from '../commands/market/MarketListCommand';
 
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
+import { PaymentInformationRootCommand } from '../commands/paymentinformation/PaymentInformationRootCommand';
 
 import { AddressRootCommand } from '../commands/address/AddressRootCommand';
 import { AddressListCommand } from '../commands/address/AddressListCommand';
@@ -79,6 +81,8 @@ import { ProfileGetCommand } from '../commands/profile/ProfileGetCommand';
 import { ProfileListCommand } from '../commands/profile/ProfileListCommand';
 import { ProfileRootCommand } from '../commands/profile/ProfileRootCommand';
 
+import { ShippingDestinationRootCommand } from '../commands/shippingdestination/ShippingDestinationRootCommand';
+import { ShippingDestinationListCommand } from '../commands/shippingdestination/ShippingDestinationListCommand';
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
 
@@ -109,7 +113,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteAddCommand) private favoriteAddCommand: FavoriteAddCommand,
         @inject(Types.Command) @named(Targets.Command.favorite.FavoriteRemoveCommand) private favoriteRemoveCommand: FavoriteRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryListCommand) private itemCategoryListCommand: ItemCategoryListCommand,
-        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryCreateCommand) private itemCategoryCreateCommand: ItemCategoryCreateCommand,
+        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryAddCommand) private itemCategoryAddCommand: ItemCategoryAddCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryFindCommand) private itemCategoryFindCommand: ItemCategoryFindCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryGetCommand) private itemCategoryGetCommand: ItemCategoryGetCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryRemoveCommand) private itemCategoryRemoveCommand: ItemCategoryRemoveCommand,
@@ -121,6 +125,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationCreateCommand) private itemInformationCreateCommand: ItemInformationCreateCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationGetCommand) private itemInformationGetCommand: ItemInformationGetCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationUpdateCommand) private itemInformationUpdateCommand: ItemInformationUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationRootCommand) private itemInformationRootCommand: ItemInformationRootCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationCreateCommand) private itemLocationCreateCommand: ItemLocationCreateCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationRemoveCommand) private itemLocationDestroyCommand: ItemLocationRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationUpdateCommand) private itemLocationUpdateCommand: ItemLocationUpdateCommand,
@@ -136,7 +141,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.market.MarketRootCommand) private marketRootCommand: MarketRootCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketListCommand) private marketListCommand: MarketListCommand,
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationUpdateCommand) private messagingInformationUpdateCommand: MessagingInformationUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationRootCommand) private messagingInformationRootCommand: MessagingInformationRootCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationRootCommand) private paymentInformationRootCommand: PaymentInformationRootCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressRootCommand) private addressRootCommand: AddressRootCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressListCommand) private addressListCommand: AddressListCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressCreateCommand) private addressCreateCommand: AddressCreateCommand,
@@ -148,6 +155,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.profile.ProfileUpdateCommand) private profileUpdateCommand: ProfileUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileListCommand) private profileListCommand: ProfileListCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileRootCommand) private profileRootCommand: ProfileRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationRootCommand) private shippingDestinationRootCommand: ShippingDestinationRootCommand,
+        @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationListCommand) private shippingDestinationListCommand: ShippingDestinationListCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationAddCommand) private shippingDestinationAddCommand: ShippingDestinationAddCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationRemoveCommand) private shippingDestinationRemoveCommand: ShippingDestinationRemoveCommand,
 
@@ -183,7 +193,7 @@ export class RpcCommandFactory {
         this.commands.push(favoriteAddCommand);
         this.commands.push(favoriteRemoveCommand);
         this.commands.push(itemCategoryListCommand);
-        this.commands.push(itemCategoryCreateCommand);
+        this.commands.push(itemCategoryAddCommand);
         this.commands.push(itemCategoryFindCommand);
         this.commands.push(itemCategoryGetCommand);
         this.commands.push(itemCategoryRemoveCommand);
@@ -195,6 +205,7 @@ export class RpcCommandFactory {
         this.commands.push(itemInformationCreateCommand);
         this.commands.push(itemInformationGetCommand);
         this.commands.push(itemInformationUpdateCommand);
+        this.commands.push(itemInformationRootCommand);
         this.commands.push(itemLocationCreateCommand);
         this.commands.push(itemLocationDestroyCommand);
         this.commands.push(itemLocationUpdateCommand);
@@ -210,7 +221,9 @@ export class RpcCommandFactory {
         this.commands.push(marketRootCommand);
         this.commands.push(marketListCommand);
         this.commands.push(messagingInformationUpdateCommand);
+        this.commands.push(messagingInformationRootCommand);
         this.commands.push(paymentInformationUpdateCommand);
+        this.commands.push(paymentInformationRootCommand);
         this.commands.push(addressRootCommand);
         this.commands.push(addressListCommand);
         this.commands.push(addressCreateCommand);
@@ -222,6 +235,9 @@ export class RpcCommandFactory {
         this.commands.push(profileUpdateCommand);
         this.commands.push(profileListCommand);
         this.commands.push(profileRootCommand);
+
+        this.commands.push(shippingDestinationRootCommand);
+        this.commands.push(shippingDestinationListCommand);
         this.commands.push(shippingDestinationAddCommand);
         this.commands.push(shippingDestinationRemoveCommand);
 
