@@ -11,7 +11,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class ItemImageGetsCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ItemImage>> {
+export class ItemImageListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ItemImage>> {
 
     public log: LoggerType;
 
@@ -24,6 +24,8 @@ export class ItemImageGetsCommand extends BaseCommand implements RpcCommandInter
     }
 
     /**
+     * TODO: refactor this to match help().
+     *
      * data.params[]:
      *  [0]: ListingItem.Id
      */
@@ -36,8 +38,13 @@ export class ItemImageGetsCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return this.getName() + ' <listingItemId>\n'
-            + '<listingItemId>           - Numeric - The ID of the listing item template whose associated images we want to find.';
+        return this.getName()
+            + ' (template <listingItemTemplateId> | item <listingItemId>)'
+            + '    <listingItemTemplateId>          - Numeric - [TODO].\n'
+            + '    <listingItemId>                  - Numeric - [TODO]';
     }
 
+    public description(): string {
+        return 'Return all images for listing item..';
+    }
 }

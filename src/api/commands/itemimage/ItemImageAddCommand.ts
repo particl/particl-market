@@ -26,6 +26,8 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
     }
 
     /**
+     * TODO: check this works
+     *
      * data.params[]:
      *  [0]: listing_item_template_id
      *  [1]: dataId
@@ -59,15 +61,17 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]\n'
+        return this.getName()
+            + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]'
             + '    <listingItemTemplateId>          - Numeric - The ID of the listing item template\n'
             + '                                        we want to associate this item image with.\n'
-            + '    <dataId>                         - [optional] Numeric - [TODO]\n'
-            + '        <protocol>                   - [optional] String - [TODO]\n'
-            + '            <encoding>               - [optional] String - [TODO]\n'
-            + '                <data>               - [optional] String - Base64 representation\n'
-            + '                                        (as produced by `base64` *NIX command) of the\n'
-            + '                                        image we want to add. Supports JPEG, PNG, GIF.';
+            + '    <dataId>                         - [optional] Numeric - [TODO]\n';
+            + '    <protocol>                       - [optional] Enum? - [TODO]\n';
+            + '    <encoding>                       - [optional] Enum? - [TODO]\n';
+            + '    <data>                           - [optional] String - [TODO]';
     }
 
+    public description(): string {
+        return 'Add an item image to a listing item template, identified by its ID.';
+    }
 }
