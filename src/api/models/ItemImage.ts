@@ -1,8 +1,7 @@
 import { Bookshelf } from '../../config/Database';
-// import { Collection } from 'bookshelf';
+import { Collection } from 'bookshelf';
 import { ItemImageData } from './ItemImageData';
 import { ItemInformation } from './ItemInformation';
-import {Collection} from "bookshelf";
 
 export class ItemImage extends Bookshelf.Model<ItemImage> {
 
