@@ -10,7 +10,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class ItemCategoryCreateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
+export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
     public log: LoggerType;
 
