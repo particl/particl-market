@@ -36,8 +36,9 @@ import { ItemCategoryRemoveCommand } from '../commands/itemcategory/ItemCategory
 import { ItemCategoryUpdateCommand } from '../commands/itemcategory/ItemCategoryUpdateCommand';
 import { ItemCategoryRootCommand } from '../commands/itemcategory/ItemCategoryRootCommand';
 
+import { ItemImageRootCommand } from '../commands/itemimage/ItemImageRootCommand';
+import { ItemImageListCommand } from '../commands/itemimage/ItemImageListCommand';
 import { ItemImageAddCommand } from '../commands/itemimage/ItemImageAddCommand';
-import { ItemImageGetsCommand } from '../commands/itemimage/ItemImageGetsCommand';
 import { ItemImageRemoveCommand } from '../commands/itemimage/ItemImageRemoveCommand';
 
 import { ItemInformationCreateCommand } from '../commands/iteminformation/ItemInformationCreateCommand';
@@ -126,8 +127,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryUpdateCommand) private itemCategoryUpdateCommand: ItemCategoryUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryRootCommand) private itemCategoryRootCommand: ItemCategoryRootCommand,
 
+        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRootCommand) private itemImageRootCommand: ItemImageRootCommand,
+        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageListCommand) private itemImageListCommand: ItemImageListCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageAddCommand) private itemImageAddCommand: ItemImageAddCommand,
-        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageGetsCommand) private itemImageGetsCommand: ItemImageGetsCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRemoveCommand) private itemImageRemoveCommand: ItemImageRemoveCommand,
 
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationCreateCommand) private itemInformationCreateCommand: ItemInformationCreateCommand,
@@ -221,8 +223,9 @@ export class RpcCommandFactory {
         this.commands.push(itemCategoryUpdateCommand);
         this.commands.push(itemCategoryRootCommand);
 
+        this.commands.push(itemImageRootCommand);
+        this.commands.push(itemImageListCommand);
         this.commands.push(itemImageAddCommand);
-        this.commands.push(itemImageGetsCommand);
         this.commands.push(itemImageRemoveCommand);
 
         this.commands.push(itemInformationCreateCommand);

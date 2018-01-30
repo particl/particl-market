@@ -22,6 +22,8 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
     }
 
     /**
+     * TODO: Check this works.
+     *
      *
      * data.params[]:
      *  [0]: ItemImage.Id
@@ -46,4 +48,7 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
             + '    <itemImageId>                   - Numeric - The ID of the image we want to remove.';
     }
 
+    public description(): string {
+        return 'Remove an item\'s image, identified by its ID.';
+    }
 }
