@@ -48,6 +48,7 @@ export class ShippingDestinationAddCommand extends BaseCommand implements RpcCom
         // If countryCode is country code, validate, and possibly throw error.
         countryCode = ShippingCountries.validate(this.log, countryCode);
 
+        // Validate shipping availability.
         const shippingAvail: ShippingAvailability = ShippingAvailability[shippingAvailStr];
         if ( ShippingAvailability[shippingAvail] === undefined ) {
             this.log.warn(`Shipping Availability <${shippingAvailStr}> was not valid!`);
@@ -70,14 +71,19 @@ export class ShippingDestinationAddCommand extends BaseCommand implements RpcCom
     }
 
     public help(): string {
-        return this.getName() + ' <itemInformationId> (<country> | <countryCode>) <shippingAvailability>\n'
-            + '    <itemInformationId>        - Numeric - ID of the item information object we want\n'
+        return this.getName()
+            + ' <listingItemTemplateId> (<country>|<countryCode>) <shippingAvailability>\n'
+            + '    <listingItemTemplateId>    - Numeric - ID of the item template object we want\n'
             + '                                  to link this shipping destination to.\n'
             + '    <country>                  - String - The country name.\n'
             + '    <countryCode>              - String - Two letter country code.\n'
             + '                                  associated with this shipping destination.\n'
             + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
             + '                                  availability of shipping to the specified area.';
+    }
+
+    public description(): string {
+        return 'Create a new shipping destination and associate it with an item information object.';
     }
 
     /**
