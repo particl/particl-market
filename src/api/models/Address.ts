@@ -35,6 +35,9 @@ export class Address extends Bookshelf.Model<Address> {
     public get City(): string { return this.get('city'); }
     public set City(value: string) { this.set('city', value); }
 
+    public get State(): string { return this.get('state'); }
+    public set State(value: string) { this.set('state', value); }
+
     public get Country(): string { return this.get('country'); }
     public set Country(value: string) { this.set('country', value); }
 

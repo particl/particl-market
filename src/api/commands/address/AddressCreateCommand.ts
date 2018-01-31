@@ -32,8 +32,9 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
      *  [2]: addressLine1
      *  [3]: addressLine2
      *  [4]: city
-     *  [5]: country/countryCode
-     *  [6]: zipCode
+     *  [5]: state
+     *  [6]: country/countryCode
+     *  [7]: zipCode
      *
      * @param data
      * @param rpcCommandFactory
@@ -45,11 +46,11 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
 
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
-        let countryCode: string = data.params[5];
+        let countryCode: string = data.params[6];
         countryCode = ShippingCountries.validate(this.log, countryCode);
 
         // Validate ZIP code
-        const zipCodeStr = data.params[6];
+        const zipCodeStr = data.params[7];
         if (!ShippingZips.validate(countryCode, zipCodeStr)) {
             throw new NotFoundException('ZIP/postal-code, country code, combination not valid.');
         }
@@ -60,19 +61,21 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
             addressLine1 : data.params[2],
             addressLine2 : data.params[3],
             city : data.params[4],
+            state : data.params[5],
             country : countryCode,
             zipCode : zipCodeStr
         } as AddressCreateRequest);
     }
 
     public help(): string {
-        return this.getName() + ' <profileId> <title> <addressLine1> <addressLine2> <city> (<countryName>|<countryCode>) [<zip>]'
+        return this.getName() + ' <profileId> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>]'
             + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
             + '                              this address with.\n'
             + '    <title>                - String - A short identifier for the address.\n'
             + '    <addressLine1>         - String - The first line of the address.\n'
             + '    <addressLine2>         - String - The second line of the address.\n'
             + '    <city>                 - String - The city of the address.\n'
+            + '    <state>                 - String - The state of the address.\n'
             + '    <country>              - String - The country name of the address.\n'
             + '    <countryCode>          - String - Two letter country code of the address.\n'
             + '    <zip>                  - String - The ZIP code of your address.';

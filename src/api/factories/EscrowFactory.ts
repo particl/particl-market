@@ -199,6 +199,9 @@ export class EscrowFactory {
             if (address.city) {
                 addressArray.push(address.city);
             }
+            if (address.state) {
+                addressArray.push(address.state);
+            }
             if (address.country) {
                 addressArray.push(address.country);
             }
