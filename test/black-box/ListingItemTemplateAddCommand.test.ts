@@ -42,7 +42,6 @@ describe('ListingItemTemplateAddCommand', () => {
         categoryResult.expectJson();
         categoryResult.expectStatusCode(200);
         categoryResult = categoryResult.getBody()['result'];
-        // expect(categoryResult).toBe(0);
 
         const testData = [
             subCommand,
