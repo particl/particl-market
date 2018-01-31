@@ -41,10 +41,6 @@ export const api = async <T> (method: string, path: string, options: ApiOptions<
         body: options.body
     };
 
-    log.error('res:', o);
-
-    console.log('o: ', o);
-
     let res;
     let error = null;
     try {
