@@ -33,6 +33,7 @@ describe('Address', () => {
         addressLine1: 'Add',
         addressLine2: 'ADD 22',
         city: 'city',
+        state: 'test state',
         country: 'Finland',
         zipCode: '85001',
         profile_id: 0
@@ -43,6 +44,7 @@ describe('Address', () => {
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
+        state: 'test state',
         country: 'Sweden',
         zipCode: '85001'
     } as AddressUpdateRequest;
@@ -68,6 +70,7 @@ describe('Address', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
+            state: 'test state',
             country: 'Finland',
             zipCode: '85001'
         } as AddressCreateRequest).catch(e => {
@@ -85,6 +88,7 @@ describe('Address', () => {
         expect(result.addressLine1).toBe(testData.addressLine1);
         expect(result.addressLine2).toBe(testData.addressLine2);
         expect(result.city).toBe(testData.city);
+        expect(result.state).toBe(testData.state);
         expect(result.country).toBe(testData.country);
         expect(result.zipCode).toBe(testData.zipCode);
     });
@@ -106,6 +110,7 @@ describe('Address', () => {
         expect(result.addressLine1).toBe(testData.addressLine1);
         expect(result.addressLine2).toBe(testData.addressLine2);
         expect(result.city).toBe(testData.city);
+        expect(result.state).toBe(testData.state);
         expect(result.country).toBe(testData.country);
         expect(result.zipCode).toBe(testData.zipCode);
 
@@ -119,6 +124,7 @@ describe('Address', () => {
         expect(result.addressLine1).toBe(testData.addressLine1);
         expect(result.addressLine2).toBe(testData.addressLine2);
         expect(result.city).toBe(testData.city);
+        expect(result.state).toBe(testData.state);
         expect(result.country).toBe(testData.country);
         expect(result.zipCode).toBe(testData.zipCode);
 
@@ -132,6 +138,7 @@ describe('Address', () => {
         expect(result.addressLine1).toBe(testDataUpdated.addressLine1);
         expect(result.addressLine2).toBe(testDataUpdated.addressLine2);
         expect(result.city).toBe(testDataUpdated.city);
+        expect(result.state).toBe(testDataUpdated.state);
         expect(result.country).toBe(testDataUpdated.country);
         expect(result.zipCode).toBe(testDataUpdated.zipCode);
     });

@@ -310,6 +310,7 @@ export class TestDataService {
                 addressLine2: Faker.address.secondaryAddress(),
                 zipCode: Faker.address.zipCode(),
                 city: Faker.address.city(),
+                state: Faker.address.state(),
                 country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryList))
             });
         }

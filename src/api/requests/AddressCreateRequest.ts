@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsDefined, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 
 // tslint:disable:variable-name
@@ -16,6 +16,9 @@ export class AddressCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public city: string;
+
+    @IsDefined()
+    public state: string;
 
     @IsNotEmpty()
     public country: string;
