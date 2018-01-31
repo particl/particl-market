@@ -1,20 +1,16 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { EscrowType } from '../../src/api/enums/EscrowType';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { Logger } from '../../src/core/Logger';
-import { EscrowCreateCommand } from '../../src/api/commands/escrow/EscrowCreateCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/EscrowCreateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const escrowService = null;
-    const method =  new EscrowCreateCommand(escrowService, Logger).name;
-
+    const method = Commands.ESCROW_ROOT.commandName;
+    const subCommand = Commands.ESCROW_ADD.commandName;
     let profileId;
 
     const testDataListingItemTemplate = {
@@ -53,7 +49,7 @@ describe('/EscrowCreateCommand', () => {
         const addListingItemTempResult = addListingItemTempRes.getBody()['result'];
         const createdTemplateId = addListingItemTempResult.id;
         const paymentInformationId = addListingItemTempResult.PaymentInformation.id;
-        const addDataRes: any = await rpc(method, [createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
+        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
 
@@ -75,7 +71,7 @@ describe('/EscrowCreateCommand', () => {
         const createdTemplateId = addListingItemTempRes.getBody()['result'].id;
 
         // create escrow
-        const addDataRes: any = await rpc(method, [createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
+        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
     });
