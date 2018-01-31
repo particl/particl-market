@@ -73,7 +73,7 @@ steps:
 #    on_fail:
 #      metadata:
 #        set:
-#          - '${{build_docker_image_step.imageId}}':
+#          - '${{build_docker_image_step.imageId}}': 
 #              - CF_QUALITY: false
 
 #  push_image_notify_step:
