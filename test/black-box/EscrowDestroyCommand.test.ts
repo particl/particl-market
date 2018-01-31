@@ -4,16 +4,16 @@ import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
-import { Logger } from '../../src/core/Logger';
-import { EscrowDestroyCommand } from '../../src/api/commands/escrow/EscrowDestroyCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/EscrowDestroyCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const escrowService = null;
-    const method =  new EscrowDestroyCommand(escrowService, Logger).name;
+    const method = Commands.ESCROW_ROOT.commandName;
+    const subCommand = Commands.ESCROW_REMOVE.commandName;
 
     let profileId;
+    let createdTemplateId;
     const testDataListingItemTemplate = {
         profile_id: 0,
         itemInformation: {
@@ -62,10 +62,16 @@ describe('/EscrowDestroyCommand', () => {
         addListingItemTempRes.expectJson();
         addListingItemTempRes.expectStatusCode(200);
         const addListingItemTempResult = addListingItemTempRes.getBody()['result'];
-        const createdTemplateId = addListingItemTempResult.id;
+        createdTemplateId = addListingItemTempResult.id;
 
-        const destroyDataRes: any = await rpc(method, [createdTemplateId]);
+        const destroyDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
         destroyDataRes.expectJson();
         destroyDataRes.expectStatusCode(200);
+    });
+
+    test('Should fail destroy Escrow because already been destroyed', async () => {
+        const destroyDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
+        destroyDataRes.expectJson();
+        destroyDataRes.expectStatusCode(404);
     });
 });

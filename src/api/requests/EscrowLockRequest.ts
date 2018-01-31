@@ -15,9 +15,6 @@ export class EscrowLockRequest extends RequestBody {
     public addressId: number;
 
     @IsNotEmpty()
-    public escrowId: number;
-
-    @IsNotEmpty()
     public memo: string;
 
     @IsEnum(EscrowMessageType)

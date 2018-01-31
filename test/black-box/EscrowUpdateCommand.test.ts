@@ -4,13 +4,12 @@ import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
-import { Logger } from '../../src/core/Logger';
-import { EscrowUpdateCommand } from '../../src/api/commands/escrow/EscrowUpdateCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/EscrowUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const escrowService = null;
-    const method =  new EscrowUpdateCommand(escrowService, Logger).name;
+    const method = Commands.ESCROW_ROOT.commandName;
+    const subCommand = Commands.ESCROW_UPDATE.commandName;
 
     let profileId;
     const testDataListingItemTemplate = {
@@ -73,7 +72,7 @@ describe('/EscrowUpdateCommand', () => {
         const createdTemplateId = addListingItemTempResult.id;
         const paymentInformationId = addListingItemTempResult.PaymentInformation.id;
 
-        const updateDataRes: any = await rpc(method, [createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
+        const updateDataRes: any = await rpc(method, [subCommand, createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
         updateDataRes.expectJson();
         updateDataRes.expectStatusCode(200);
         const result: any = updateDataRes.getBody()['result'];
