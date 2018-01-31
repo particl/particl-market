@@ -159,9 +159,10 @@ export const Targets = {
             ItemInformationRootCommand: 'ItemInformationRootCommand'
         },
         itemlocation: {
-            ItemLocationCreateCommand: 'ItemLocationCreateCommand',
+            ItemLocationAddCommand: 'ItemLocationAddCommand',
             ItemLocationRemoveCommand: 'ItemLocationRemoveCommand',
-            ItemLocationUpdateCommand: 'ItemLocationUpdateCommand'
+            ItemLocationUpdateCommand: 'ItemLocationUpdateCommand',
+            ItemLocationRootCommand: 'ItemLocationRootCommand'
         },
         listingitem: {
             ListingItemGetCommand: 'ListingItemGetCommand',
