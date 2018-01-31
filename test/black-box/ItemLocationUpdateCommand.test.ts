@@ -1,18 +1,16 @@
 import { rpc, api } from './lib/api';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { Logger } from '../../src/core/Logger';
-import { ItemLocationUpdateCommand } from '../../src/api/commands/itemlocation/ItemLocationUpdateCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/ItemLocationUpdateCommand', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
     const testUtil = new BlackBoxTestUtil();
-    const itemLocationService = null;
-    const listingItemTemplateService = null;
-    const method =  new ItemLocationUpdateCommand(itemLocationService, listingItemTemplateService, Logger).name;
+
+    const method = Commands.ITEMLOCATION_ROOT.commandName;
+    const subCommand = Commands.ITEMLOCATION_UPDATE.commandName;
 
     const testDataListingItemTemplate = {
         profile_id: 0,
@@ -26,7 +24,7 @@ describe('/ItemLocationUpdateCommand', () => {
                 key: 'cat_high_luxyry_items'
             },
             itemLocation: {
-                region: 'China',
+                region: 'CN',
                 address: 'USA'
             }
         },
@@ -35,7 +33,7 @@ describe('/ItemLocationUpdateCommand', () => {
         }
     } as ListingItemTemplateCreateRequest;
 
-    const testDataUpdated = ['China', 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
+    const testDataUpdated = ['CN', 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
 
     let createdTemplateId;
     let createdItemInformationId;
@@ -60,7 +58,7 @@ describe('/ItemLocationUpdateCommand', () => {
 
     test('Should update item location and set null location marker fields', async () => {
         // update item location
-        const addDataRes: any = await rpc(method, [createdTemplateId, testDataUpdated[1], testDataUpdated[2]]);
+        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, testDataUpdated[1], testDataUpdated[2]]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         const result: any = addDataRes.getBody()['result'];
@@ -72,31 +70,35 @@ describe('/ItemLocationUpdateCommand', () => {
 
     test('Should update item location', async () => {
         // update item location
-        const addDataRes: any = await rpc(method, testDataUpdated);
+        const testDataUpdated2 = testDataUpdated;
+        testDataUpdated2.unshift(subCommand);
+        const addDataRes: any = await rpc(method, testDataUpdated2);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         const result: any = addDataRes.getBody()['result'];
-        expect(result.region).toBe(testDataUpdated[1]);
-        expect(result.address).toBe(testDataUpdated[2]);
+        expect(result.region).toBe(testDataUpdated2[2]);
+        expect(result.address).toBe(testDataUpdated2[3]);
         expect(result.itemInformationId).toBe(createdItemInformationId);
-        expect(result.LocationMarker.markerTitle).toBe(testDataUpdated[3]);
-        expect(result.LocationMarker.markerText).toBe(testDataUpdated[4]);
-        expect(result.LocationMarker.lat).toBe(testDataUpdated[5]);
-        expect(result.LocationMarker.lng).toBe(testDataUpdated[6]);
+        expect(result.LocationMarker.markerTitle).toBe(testDataUpdated2[4]);
+        expect(result.LocationMarker.markerText).toBe(testDataUpdated2[5]);
+        expect(result.LocationMarker.lat).toBe(testDataUpdated2[6]);
+        expect(result.LocationMarker.lng).toBe(testDataUpdated2[7]);
     });
 
     test('Should fail because we want to update without reason', async () => {
-        const addDataRes: any = await rpc(method, [createdTemplateId]);
+        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
         addDataRes.expectJson();
-        addDataRes.expectStatusCode(400);
-        expect(addDataRes.error.error.message).toBe('Request body is not valid');
+        addDataRes.expectStatusCode(404);
+        expect(addDataRes.error.error.success).toBe(false);
+        expect(addDataRes.error.error.message).toBe('Country code can\'t be blank.');
     });
 
-    test('Should fail because we want to update without address', async () => {
-        const addDataRes: any = await rpc(method, [createdTemplateId, 'USA']);
+    test('Should fail because we want to update without address not valid', async () => {
+        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, 'USA']);
         addDataRes.expectJson();
-        addDataRes.expectStatusCode(400);
-        expect(addDataRes.error.error.message).toBe('Request body is not valid');
+        addDataRes.expectStatusCode(404);
+        expect(addDataRes.error.error.success).toBe(false);
+        expect(addDataRes.error.error.message).toBe('Entity with identifier Country code <USA> was not valid! does not exist');
     });
 
     // ItemLocation cannot be updated if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
@@ -116,7 +118,7 @@ describe('/ItemLocationUpdateCommand', () => {
         const newTemplateId = newListingItemTemplate.getBody()['result'].id;
 
         // update item location
-        const addDataRes: any = await rpc(method, [newTemplateId, 'China', 'TEST ADDRESS', 'TEST TITLE', 'TEST DESC', 55.6, 60.8]);
+        const addDataRes: any = await rpc(method, [subCommand, newTemplateId, 'China', 'TEST ADDRESS', 'TEST TITLE', 'TEST DESC', 55.6, 60.8]);
 
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
@@ -125,5 +127,3 @@ describe('/ItemLocationUpdateCommand', () => {
     });
 
 });
-
-

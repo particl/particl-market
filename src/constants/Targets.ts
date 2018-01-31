@@ -140,7 +140,6 @@ export const Targets = {
             ItemCategoryAddCommand: 'ItemCategoryAddCommand',
             ItemCategoryFindCommand: 'ItemCategoryFindCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
-            ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
             ItemCategoryRootCommand: 'ItemCategoryRootCommand',
             ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
@@ -159,7 +158,8 @@ export const Targets = {
         itemlocation: {
             ItemLocationCreateCommand: 'ItemLocationCreateCommand',
             ItemLocationRemoveCommand: 'ItemLocationRemoveCommand',
-            ItemLocationUpdateCommand: 'ItemLocationUpdateCommand'
+            ItemLocationUpdateCommand: 'ItemLocationUpdateCommand',
+            ItemLocationRootCommand: 'ItemLocationRootCommand'
         },
         listingitem: {
             ListingItemGetCommand: 'ListingItemGetCommand',

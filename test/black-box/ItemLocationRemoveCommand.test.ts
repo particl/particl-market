@@ -4,14 +4,13 @@ import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAdd
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-import { ItemLocationRemoveCommand } from '../../src/api/commands/itemlocation/ItemLocationRemoveCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/ItemLocationRemoveCommand', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
     const testUtil = new BlackBoxTestUtil();
-    const itemLocationService = null;
-    const listingItemTemplateService = null;
-    const method =  new ItemLocationRemoveCommand(itemLocationService, listingItemTemplateService, Logger).name;
+    const method = Commands.ITEMLOCATION_ROOT.commandName;
+    const subCommand = Commands.ITEMLOCATION_REMOVE.commandName;
 
     const testDataListingItemTemplate = {
         profile_id: 0,
@@ -76,7 +75,7 @@ describe('/ItemLocationRemoveCommand', () => {
         const newTemplateId = newListingItemTemplate.getBody()['result'].id;
 
         // remove item location
-        const addDataRes: any = await rpc(method, [newTemplateId]);
+        const addDataRes: any = await rpc(method, [subCommand, newTemplateId]);
 
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
@@ -89,7 +88,7 @@ describe('/ItemLocationRemoveCommand', () => {
         const listingitemtemplate = await testUtil.generateData('listingitemtemplate', 1);
         const createdTemplateId2 = listingitemtemplate[0]['id'];
         // remove item location
-        const addDataRes: any = await rpc(method, [createdTemplateId2]);
+        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId2]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         const result: any = addDataRes.getBody();
@@ -97,10 +96,8 @@ describe('/ItemLocationRemoveCommand', () => {
 
     test('Should fail remove item location because item location already removed', async () => {
         // remove item location
-        const addDataRes: any = await rpc(method, [createdTemplateId]);
+        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
     });
 });
-
-

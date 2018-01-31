@@ -11,7 +11,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as _ from 'lodash';
 import { MessageException } from '../../exceptions/MessageException';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
 export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
@@ -45,29 +45,33 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
         const listingItemTemplateId = data.params[0];
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
-        let countryCode: string = data.params[1];
-        countryCode = ShippingCountries.validate(this.log, countryCode);
+        if (data.params[1]) {
+            let countryCode: string = data.params[1];
+            countryCode = ShippingCountries.validate(this.log, countryCode);
 
-        const itemInformation = await this.getItemInformation(listingItemTemplateId);
+            const itemInformation = await this.getItemInformation(listingItemTemplateId);
 
-        // ItemLocation cannot be updated if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
-        if (itemInformation.listingItemId) {
-            throw new MessageException('ItemLocation cannot be updated because the item has allready been posted!');
+            // ItemLocation cannot be updated if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
+            if (itemInformation.listingItemId) {
+                throw new MessageException('ItemLocation cannot be updated because the item has allready been posted!');
+            } else {
+                // set body to update
+                const body = {
+                    item_information_id: itemInformation.id,
+                    region: countryCode,
+                    address: data.params[2],
+                    locationMarker: {
+                        markerTitle: data.params[3],
+                        markerText: data.params[4],
+                        lat: data.params[5],
+                        lng: data.params[6]
+                    }
+                };
+                // update item location
+                return this.itemLocationService.update(itemInformation.ItemLocation.id, body as ItemLocationUpdateRequest);
+            }
         } else {
-            // set body to update
-            const body = {
-                item_information_id: itemInformation.id,
-                region: countryCode,
-                address: data.params[2],
-                locationMarker: {
-                    markerTitle: data.params[3],
-                    markerText: data.params[4],
-                    lat: data.params[5],
-                    lng: data.params[6]
-                }
-            };
-            // update item location
-            return this.itemLocationService.update(itemInformation.ItemLocation.id, body as ItemLocationUpdateRequest);
+            throw new MessageException('Country code can\'t be blank.');
         }
     }
 
