@@ -15,7 +15,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        // add profile for testing
+        // get profile
         profile = await testUtil.getDefaultProfile();
     });
 

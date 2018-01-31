@@ -6,7 +6,6 @@ import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/ItemLocationUpdateCommand', () => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
     const testUtil = new BlackBoxTestUtil();
 
     const method = Commands.ITEMLOCATION_ROOT.commandName;
@@ -113,7 +112,7 @@ describe('/ItemLocationUpdateCommand', () => {
         // set hash
         testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
-        // create new  item template
+        // create new item template
         const newListingItemTemplate = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
         const newTemplateId = newListingItemTemplate.getBody()['result'].id;
 

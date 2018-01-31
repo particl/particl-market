@@ -80,11 +80,11 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
             + '    <listingItemTemplateId>    - Numeric - The ID of the listing item template we want\n'
             + '                                  to associate with this item location.\n'
             + '    <region>                   - String - Region, i.e. country or country code.\n'
-            + '    <address>                  - String - [TODO]\n'
-            + '    <gpsMarkerTitle>           - String - [TODO]\n'
-            + '    <gpsMarkerDescription>     - String - [TODO]\n'
-            + '    <gpsMarkerLatitude>        - Numeric - [TODO]\n'
-            + '    <gpsMarkerLongitude>       - Numeric - [TODO]';
+            + '    <address>                  - String - Address\n'
+            + '    <gpsMarkerTitle>           - String - Gps marker title\n'
+            + '    <gpsMarkerDescription>     - String - Gps marker text\n'
+            + '    <gpsMarkerLatitude>        - Numeric - Marker latitude position\n'
+            + '    <gpsMarkerLongitude>       - Numeric - Marker longitude position';
     }
 
     /*

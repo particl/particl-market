@@ -78,13 +78,13 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
     public help(): string {
         return this.getName() + ' <listingItemTemplateId> <region> <address> <gpsMarkerTitle>'
             + ' <gpsMarkerDescription> <gpsMarkerLatitude> <gpsMarkerLongitude>\n'
-            + '    <listingItemTemplateId>    - Numeric - [TODO]\n'
+            + '    <listingItemTemplateId>    - Numeric - The ID of the listing item template we want\n'
             + '    <region>                   - String - Region, i.e. country or country code.\n'
-            + '    <address>                  - [TODO] - [TODO]\n'
-            + '    <gpsMarkerTitle>           - String - [TODO]\n'
-            + '    <gpsMarkerDescription>     - Numeric - [TODO]\n'
-            + '    <gpsMarkerLatitude>        - Numeric - [TODO]\n'
-            + '    <gpsMarkerLongitude>       - Numeric - [TODO]';
+            + '    <address>                  - String - Address\n'
+            + '    <gpsMarkerTitle>           - String - Gps marker title\n'
+            + '    <gpsMarkerDescription>     - String - Gps marker text\n'
+            + '    <gpsMarkerLatitude>        - Numeric - Marker latitude position\n'
+            + '    <gpsMarkerLongitude>       - Numeric - Marker longitude position';
     }
 
     /*
