@@ -139,17 +139,18 @@ export const Targets = {
         itemcategory: {
             ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryAddCommand: 'ItemCategoryAddCommand',
+            ItemCategoryCreateCommand: 'ItemCategoryCreateCommand',
             ItemCategoryFindCommand: 'ItemCategoryFindCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
-            ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
             ItemCategoryRootCommand: 'ItemCategoryRootCommand',
             ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
         },
         itemimage: {
             ItemImageAddCommand: 'ItemImageAddCommand',
-            ItemImageGetsCommand: 'ItemImageGetsCommand',
-            ItemImageRemoveCommand: 'ItemImageRemoveCommand'
+            ItemImageListCommand: 'ItemImageListCommand',
+            ItemImageRemoveCommand: 'ItemImageRemoveCommand',
+            ItemImageRootCommand: 'ItemImageRootCommand'
         },
         iteminformation: {
             ItemInformationCreateCommand: 'ItemInformationCreateCommand',
@@ -173,8 +174,8 @@ export const Targets = {
             ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
-            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
-            ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand'
+            ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
+            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
         },
         market: {
             MarketCreateCommand: 'MarketCreateCommand',
