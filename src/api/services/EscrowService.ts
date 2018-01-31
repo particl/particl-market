@@ -186,45 +186,49 @@ export class EscrowService {
     }
 
     @validate()
-    public async lock(@request(EscrowLockRequest) escrowRequest: EscrowLockRequest): Promise<void> {
+    public async lock(@request(EscrowLockRequest) escrowRequest: EscrowLockRequest, escrow: Escrow): Promise<void> {
 
-        // fetch the escrow
-        const escrowModel = await this.findOne(escrowRequest.escrowId, false);
-        const escrow = escrowModel.toJSON();
+        // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
+        // resources.Escrow module not able to include here.
+
+        const escrowModel: any = escrow;
 
         // fetch the address
         const addressModel = await this.addressService.findOne(escrowRequest.addressId, false);
         const address = addressModel.toJSON();
 
-        if (_.isEmpty(escrow) || _.isEmpty(address)) {
+        if (_.isEmpty(escrowModel) || _.isEmpty(address)) {
             throw new MessageException('Escrow or Address not found!');
         }
 
         // use escrowfactory to generate the lock message
-        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrow, address);
+        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel, address);
         return await this.messageBroadcastService.broadcast(escrowActionMessage);
     }
 
     @validate()
-    public async refund(@request(EscrowRefundRequest) escrowRequest: EscrowRefundRequest): Promise<void> {
+    public async refund(@request(EscrowRefundRequest) escrowRequest: EscrowRefundRequest, escrow: Escrow): Promise<void> {
 
-        // fetch the escrow
-        const escrowModel = await this.findOne(escrowRequest.escrowId, false);
-        const escrow = escrowModel.toJSON();
+        // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
+        // resources.Escrow module not able to include here.
+
+        const escrowModel: any = escrow;
 
         // use escrowfactory to generate the refund message
-        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrow);
+        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
         return await this.messageBroadcastService.broadcast(escrowActionMessage);
     }
 
     @validate()
-    public async release(@request(EscrowReleaseRequest) escrowRequest: EscrowReleaseRequest): Promise<void> {
-        // fetch the escrow
-        const escrowModel = await this.findOne(escrowRequest.escrowId, false);
-        const escrow = escrowModel.toJSON();
+    public async release(@request(EscrowReleaseRequest) escrowRequest: EscrowReleaseRequest, escrow: Escrow): Promise<void> {
+
+        // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
+        // resources.Escrow module not able to include here.
+
+        const escrowModel: any = escrow;
 
         // use escrowfactory to generate the release message
-        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrow);
+        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
         return await this.messageBroadcastService.broadcast(escrowActionMessage);
     }
 

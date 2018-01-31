@@ -126,7 +126,8 @@ export const Targets = {
             EscrowLockCommand: 'EscrowLockCommand',
             EscrowRefundCommand: 'EscrowRefundCommand',
             EscrowReleaseCommand: 'EscrowReleaseCommand',
-            EscrowUpdateCommand: 'EscrowUpdateCommand'
+            EscrowUpdateCommand: 'EscrowUpdateCommand',
+            EscrowRootCommand: 'EscrowRootCommand'
         },
         favorite: {
             FavoriteAddCommand: 'FavoriteAddCommand',

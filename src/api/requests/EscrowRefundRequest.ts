@@ -14,9 +14,6 @@ export class EscrowRefundRequest extends RequestBody {
     @IsNotEmpty()
     public memo: string;
 
-    @IsNotEmpty()
-    public escrowId: any;
-
     @IsEnum(EscrowMessageType)
     @IsNotEmpty()
     public action: EscrowMessageType;
