@@ -5,7 +5,7 @@ import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 
-import { ItemLocationCreateCommand } from './ItemLocationCreateCommand';
+import { ItemLocationAddCommand } from './ItemLocationAddCommand';
 import { ItemLocationRemoveCommand } from './ItemLocationRemoveCommand';
 import { ItemLocationUpdateCommand } from './ItemLocationUpdateCommand';
 
@@ -18,7 +18,7 @@ export class ItemLocationRootCommand extends BaseCommand implements RpcCommandIn
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationCreateCommand) private itemLocationCreateCommand: ItemLocationCreateCommand,
+        @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationAddCommand) private itemLocationAddCommand: ItemLocationAddCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationRemoveCommand) private itemLocationRemoveCommand: ItemLocationRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationUpdateCommand) private itemLocationUpdateCommand: ItemLocationUpdateCommand,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType

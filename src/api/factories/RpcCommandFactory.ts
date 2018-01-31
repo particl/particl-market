@@ -45,7 +45,7 @@ import { ItemInformationUpdateCommand } from '../commands/iteminformation/ItemIn
 import { ItemInformationRootCommand } from '../commands/iteminformation/ItemInformationRootCommand';
 
 import { ItemLocationRemoveCommand } from '../commands/itemlocation/ItemLocationRemoveCommand';
-import { ItemLocationCreateCommand } from '../commands/itemlocation/ItemLocationCreateCommand';
+import { ItemLocationAddCommand } from '../commands/itemlocation/ItemLocationAddCommand';
 import { ItemLocationUpdateCommand } from '../commands/itemlocation/ItemLocationUpdateCommand';
 import { ItemLocationRootCommand } from '../commands/itemlocation/ItemLocationRootCommand';
 
@@ -133,7 +133,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationUpdateCommand) private itemInformationUpdateCommand: ItemInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationRootCommand) private itemInformationRootCommand: ItemInformationRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationCreateCommand) private itemLocationCreateCommand: ItemLocationCreateCommand,
+        @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationAddCommand) private itemLocationAddCommand: ItemLocationAddCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationRemoveCommand) private itemLocationDestroyCommand: ItemLocationRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationUpdateCommand) private itemLocationUpdateCommand: ItemLocationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationRootCommand) private itemLocationRootCommand: ItemLocationRootCommand,
@@ -227,7 +227,7 @@ export class RpcCommandFactory {
         this.commands.push(itemInformationUpdateCommand);
         this.commands.push(itemInformationRootCommand);
 
-        this.commands.push(itemLocationCreateCommand);
+        this.commands.push(itemLocationAddCommand);
         this.commands.push(itemLocationDestroyCommand);
         this.commands.push(itemLocationUpdateCommand);
         this.commands.push(itemLocationRootCommand);
