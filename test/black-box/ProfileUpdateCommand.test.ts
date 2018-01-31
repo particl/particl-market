@@ -18,6 +18,7 @@ describe('ProfileUpdateCommand', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
+            state: 'test state',
             country: 'Sweden',
             zipCode: '85001'
         }, {
@@ -25,6 +26,7 @@ describe('ProfileUpdateCommand', () => {
             addressLine1: 'Ad',
             addressLine2: 'ADD 222',
             city: 'city',
+            state: 'test state',
             country: 'Finland',
             zipCode: '85001'
         }]

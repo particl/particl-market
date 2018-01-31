@@ -10,6 +10,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('address_line_1').notNullable();
             table.string('address_line_2').nullable();
             table.string('city').notNullable();
+            table.string('state').notNullable();
             table.string('country').notNullable();
             table.string('zip_code').notNullable();
             table.integer('profile_id').unsigned().notNullable();

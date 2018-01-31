@@ -34,6 +34,7 @@ describe('EscrowFactory', () => {
             addressLine1: '20 seventeen street',
             addressLine2: 'march city, 2017',
             city: 'city',
+            state: 'test state',
             country: 'Finland',
             zipCode: '85001'
         };
@@ -45,7 +46,8 @@ describe('EscrowFactory', () => {
         expect(escrowMessage.nonce).toBe(request.nonce);
         // todo: fix when zip is added
         expect(escrowMessage.info.address).toBe(address.addressLine1 + ', ' + address.addressLine2 + ', ' + address.zipCode + ', ' +
-            address.city + ', ' + address.country);
+            address.city + ', ' +
+            address.state + ', ' + address.country);
         expect(escrowMessage.info.memo).toBe(request.memo);
         expect(escrowMessage.escrow.rawtx).not.toBeNull();
 
