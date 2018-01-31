@@ -47,7 +47,7 @@ describe('EscrowFactory', () => {
         // todo: fix when zip is added
         expect(escrowMessage.info.address).toBe(address.addressLine1 + ', ' + address.addressLine2 + ', ' + address.zipCode + ', ' +
             address.city + ', ' +
-            address.state + ', '+ address.country);
+            address.state + ', ' + address.country);
         expect(escrowMessage.info.memo).toBe(request.memo);
         expect(escrowMessage.escrow.rawtx).not.toBeNull();
 
