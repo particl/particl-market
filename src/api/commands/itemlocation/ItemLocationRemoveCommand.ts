@@ -27,7 +27,7 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
     /**
      *
      * data.params[]:
-     * [0]: id
+     * [0]: listingItemTemplateId
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<void> {
@@ -42,8 +42,8 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
     }
 
     public help(): string {
-        return this.getName() + ' <itemLocationId>\n'
-            + '    <itemLocationId>           - Numeric - [TODO]';
+        return this.getName() + ' <listingItemTemplateId>\n'
+            + '    <listingItemTemplateId>           - Numeric - The ID of the listing item template';
     }
 
     /*

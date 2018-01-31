@@ -11,10 +11,10 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import * as _ from 'lodash';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class ItemLocationCreateCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
+export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInterface<ItemLocation> {
 
     public log: LoggerType;
 
@@ -43,30 +43,34 @@ export class ItemLocationCreateCommand extends BaseCommand implements RpcCommand
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<ItemLocation> {
         const listingItemTemplateId = data.params[0];
-        // If countryCode is country, convert to countryCode.
-        // If countryCode is country code, validate, and possibly throw error.
-        let countryCode: string = data.params[1];
-        countryCode = ShippingCountries.validate(this.log, countryCode);
+        if (data.params[1]) {
+            // If countryCode is country, convert to countryCode.
+            // If countryCode is country code, validate, and possibly throw error.
+            let countryCode: string = data.params[1];
+            countryCode = ShippingCountries.validate(this.log, countryCode);
 
-        const itemInformation = await this.getItemInformation(listingItemTemplateId);
+            const itemInformation = await this.getItemInformation(listingItemTemplateId);
 
-        // ItemLocation cannot be created if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
-        if (itemInformation.listingItemId) {
-            throw new MessageException('ItemLocation cannot be updated because the item has allready been posted!');
+            // ItemLocation cannot be created if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
+            if (itemInformation.listingItemId) {
+                throw new MessageException('ItemLocation cannot be updated because the item has allready been posted!');
+            } else {
+
+                // todo: should check whether itemlocation allready exists
+                return this.itemLocationService.create({
+                    item_information_id: itemInformation.id,
+                    region: countryCode,
+                    address: data.params[2],
+                    locationMarker: {
+                        markerTitle: data.params[3],
+                        markerText: data.params[4],
+                        lat: data.params[5],
+                        lng: data.params[6]
+                    }
+                } as ItemLocationCreateRequest);
+            }
         } else {
-
-            // todo: should check whether itemlocation allready exists
-            return this.itemLocationService.create({
-                item_information_id: itemInformation.id,
-                region: countryCode,
-                address: data.params[2],
-                locationMarker: {
-                    markerTitle: data.params[3],
-                    markerText: data.params[4],
-                    lat: data.params[5],
-                    lng: data.params[6]
-                }
-            } as ItemLocationCreateRequest);
+            throw new MessageException('Country code can\'t be blank.');
         }
     }
 
@@ -76,11 +80,11 @@ export class ItemLocationCreateCommand extends BaseCommand implements RpcCommand
             + '    <listingItemTemplateId>    - Numeric - The ID of the listing item template we want\n'
             + '                                  to associate with this item location.\n'
             + '    <region>                   - String - Region, i.e. country or country code.\n'
-            + '    <address>                  - [TODO] - [TODO]\n'
-            + '    <gpsMarkerTitle>           - String - [TODO]\n'
-            + '    <gpsMarkerDescription>     - Numeric - [TODO]\n'
-            + '    <gpsMarkerLatitude>        - Numeric - [TODO]\n'
-            + '    <gpsMarkerLongitude>       - Numeric - [TODO]';
+            + '    <address>                  - String - Address\n'
+            + '    <gpsMarkerTitle>           - String - Gps marker title\n'
+            + '    <gpsMarkerDescription>     - String - Gps marker text\n'
+            + '    <gpsMarkerLatitude>        - Numeric - Marker latitude position\n'
+            + '    <gpsMarkerLongitude>       - Numeric - Marker longitude position';
     }
 
     /*
@@ -94,9 +98,13 @@ export class ItemLocationCreateCommand extends BaseCommand implements RpcCommand
         const ItemInformation = listingItemTemplate.related('ItemInformation').toJSON();
 
         // Through exception if ItemInformation or ItemLocation does not exist
-        if (_.size(ItemInformation) === 0 || _.size(ItemInformation.ItemLocation) === 0) {
-            this.log.warn(`Item Information or Item Location with the listing template id=${listingItemTemplateId} was not found!`);
-            throw new MessageException(`Item Information or Item Location with the listing template id=${listingItemTemplateId} was not found!`);
+        if (_.size(ItemInformation) === 0) {
+            this.log.warn(`Item Information with the listing template id=${listingItemTemplateId} was not found!`);
+            throw new MessageException(`Item Information with the listing template id=${listingItemTemplateId} was not found!`);
+        }
+        if (_.size(ItemInformation.ItemLocation) > 0) {
+            this.log.warn(`ItemLocation with the listing template id=${listingItemTemplateId} is already exist`);
+            throw new MessageException(`ItemLocation with the listing template id=${listingItemTemplateId} is already exist`);
         }
 
         return ItemInformation;
