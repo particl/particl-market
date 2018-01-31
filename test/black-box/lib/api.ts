@@ -1,31 +1,41 @@
 import * as dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({path: './test/.env.test'});
 import * as request from 'request-promise';
 import { Options } from 'request-promise';
 import { ApiResponseTest } from './ApiResponseTest';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 
 export interface ApiOptions<T> {
-    token?: string;
     body?: T;
     headers?: any;
+    host?: string;
+    port?: number;
 }
 
 
 export const api = async <T> (method: string, path: string, options: ApiOptions<T> = {}) => {
+
+    const log: LoggerType = new LoggerType(__filename);
+    const HOST = options.host ? options.host : process.env.APP_HOST;
+    const PORT = options.port ? options.port : process.env.APP_PORT;
+    const uri = `http://${HOST}:${PORT}${path}`;
+
+    options.headers['Accept'] = 'application/json';
+    options.headers['Content-Type'] = 'application/json';
+
     const o: Options = {
         method,
-        uri: `${process.env.APP_HOST}:${process.env.APP_PORT}${path}`,
+        uri,
         resolveWithFullResponse: true,
         headers: options.headers,
         json: true,
         body: options.body
     };
 
-    if (options.token) {
-        o.headers = {};
-        o.headers['authorization'] = `Bearer ${options.token}`;
-    }
+    log.error('res:', o);
+
+    console.log('o: ', o);
 
     let res;
     let error = null;
