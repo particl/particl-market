@@ -10,7 +10,7 @@ describe('getnetworkinfo', () => {
         };
         const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const res: any = await api('POST', '/', {
-            host: process.env.RPCHOSTNAME,
+            host: 'http://' + process.env.RPCHOSTNAME,
             port: process.env.TESTNET_PORT,
             headers: {
                 Authorization: auth

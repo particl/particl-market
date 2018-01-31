@@ -1,5 +1,6 @@
 import * as dotenv from 'dotenv';
 dotenv.config({path: './test/.env.test'});
+import * as _ from 'lodash';
 import * as request from 'request-promise';
 import { Options } from 'request-promise';
 import { ApiResponseTest } from './ApiResponseTest';
@@ -19,10 +20,17 @@ export const api = async <T> (method: string, path: string, options: ApiOptions<
     const log: LoggerType = new LoggerType(__filename);
     const HOST = options.host ? options.host : process.env.APP_HOST;
     const PORT = options.port ? options.port : process.env.APP_PORT;
-    const uri = `http://${HOST}:${PORT}${path}`;
+    const uri = `${HOST}:${PORT}${path}`;
 
-    options.headers['Accept'] = 'application/json';
-    options.headers['Content-Type'] = 'application/json';
+    if (!_.has(options, 'headers')) {
+        options.headers = {};
+        if (!_.has(options, 'Accept')) {
+            options.headers['Accept'] = 'application/json';
+        }
+        if (!_.has(options, 'Content-Type')) {
+            options.headers['Content-Type'] = 'application/json';
+        }
+    }
 
     const o: Options = {
         method,
