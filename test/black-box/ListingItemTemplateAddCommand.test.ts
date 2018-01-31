@@ -15,7 +15,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        // add profile for testing
+        // get profile
         profile = await testUtil.getDefaultProfile();
     });
 
@@ -42,7 +42,6 @@ describe('ListingItemTemplateAddCommand', () => {
         categoryResult.expectJson();
         categoryResult.expectStatusCode(200);
         categoryResult = categoryResult.getBody()['result'];
-        // expect(categoryResult).toBe(0);
 
         const testData = [
             subCommand,
