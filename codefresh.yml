@@ -11,7 +11,7 @@ steps:
   build_docker_image_step:
     title: building docker image
     type: build
-    image_name: ludx/dapp-shell
+    image_name: ludx/dapp-shell-ci
     working_directory: ./
     dockerfile: Dockerfile.ci
     tag: '${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}'

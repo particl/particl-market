@@ -62,3 +62,27 @@ services:
     affinity:
       - node==kontena-agent1
 #      - label==devenv=1
+
+  dapp-shell-ci:
+    image: ludx/dapp-shell-ci:latest
+    depends_on:
+      - particld3
+    volumes:
+      - /root/data/dapp-shell-ci:/app/data
+    environment:
+      - NODE_ENV=development
+      - APP_PORT=3333
+      - RPCUSER=test
+      - RPCPASSWORD=test
+      - RPCHOSTNAME=particld3
+      - MAINNET_PORT=51738
+      - TESTNET_PORT=51935
+      - KONTENA_LB_MODE=http
+      - KONTENA_LB_BALANCE=roundrobin
+      - KONTENA_LB_INTERNAL_PORT=3333
+      - KONTENA_LB_VIRTUAL_HOSTS=dev.particl.xyz
+    ports:
+      - 3333:3333
+    affinity:
+      - node==kontena-agent1
+#      - label==devenv=1
