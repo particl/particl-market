@@ -4,6 +4,8 @@ import * as _ from 'lodash';
 import * as request from 'request-promise';
 import { Options } from 'request-promise';
 import { ApiResponseTest } from './ApiResponseTest';
+import { HttpException } from '../../../src/api/exceptions/HttpException';
+import { RequestError, StatusCodeError, TransformError } from 'request-promise/errors';
 
 export interface ApiOptions<T> {
     body?: T;
@@ -45,6 +47,9 @@ export const api = async <T> (method: string, path: string, options: ApiOptions<
     } catch (e) {
         error = e;
         console.log('error: ', error.error.message);
+        if (error.error.code) {
+            throw new HttpException(500, error.error.message);
+        }
     }
     return new ApiResponseTest(error, res);
 
@@ -54,9 +59,18 @@ export const api = async <T> (method: string, path: string, options: ApiOptions<
             console.log('res:', res.body);
             return new ApiResponseTest(null, res);
         })
-        .catch( error => {
-            console.log('error:', error.error.message);
-            return new ApiResponseTest(error, null);
+        .catch(StatusCodeError, reason => {
+            console.log('error:', reason.error.statusCode + ': ' + reason.error.message);
+            return new ApiResponseTest(reason.error, null);
+        })
+        .catch(TransformError, reason => {
+            console.log(reason.cause.message); // => Transform failed!
+            return new ApiResponseTest(reason.error, null);
+        })
+        .catch(RequestError, reason => {
+            // The request failed due to technical reasons.
+            // reason.cause is the Error object Request would pass into a callback.
+            throw new HttpException(500, reason.error.message);
         });
 */
 
