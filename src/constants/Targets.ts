@@ -219,6 +219,7 @@ export const Targets = {
             ListingItemObjectSearchCommand: 'ListingItemObjectSearchCommand'
         },
         shoppingcart: {
+            ShoppingCartAddCommand: 'ShoppingCartAddCommand',
             ShoppingCartRootCommand: 'ShoppingCartRootCommand'
         }
     },
