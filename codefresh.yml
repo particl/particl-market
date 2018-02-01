@@ -11,7 +11,7 @@ steps:
   build_docker_image_step:
     title: building docker image
     type: build
-    image_name: ludx/dapp-shell-ci
+    image_name: dapp-shell-ci
     working_directory: ./
     dockerfile: Dockerfile.ci
     tag: '${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}'
@@ -86,6 +86,7 @@ steps:
 #  push_image_step:
 #    type: push
 #    candidate: ${{build_docker_image_step}}
+#    image_name: ludx/dapp-shell-ci
 #    tag: '${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}'
 #    registry: dockerhub
 #    credentials:
@@ -96,6 +97,7 @@ steps:
   push_image_step:
     type: push
     candidate: ${{build_docker_image_step}}
+    image_name: dapp-shell-ci
     tag: 'latest'
     registry: cfcr
 
