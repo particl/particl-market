@@ -33,6 +33,8 @@ export const Targets = {
         Profile: 'Profile',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
+        ShoppingCartItems: 'ShoppingCartItems',
+        ShoppingCarts: 'ShoppingCarts',
         User: 'User'
     },
     Repository:     {
@@ -59,6 +61,8 @@ export const Targets = {
         ProfileRepository: 'ProfileRepository',
         ShippingDestinationRepository: 'ShippingDestinationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
+        ShoppingCartItemsRepository: 'ShoppingCartItemsRepository',
+        ShoppingCartsRepository: 'ShoppingCartsRepository',
         UserRepository: 'UserRepository'
     },
     Service:     {
@@ -90,6 +94,8 @@ export const Targets = {
         ProfileService: 'ProfileService',
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
+        ShoppingCartItemsService: 'ShoppingCartItemsService',
+        ShoppingCartsService: 'ShoppingCartsService',
         TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
@@ -127,8 +133,8 @@ export const Targets = {
             EscrowLockCommand: 'EscrowLockCommand',
             EscrowRefundCommand: 'EscrowRefundCommand',
             EscrowReleaseCommand: 'EscrowReleaseCommand',
-            EscrowUpdateCommand: 'EscrowUpdateCommand',
-            EscrowRootCommand: 'EscrowRootCommand'
+            EscrowRootCommand: 'EscrowRootCommand',
+            EscrowUpdateCommand: 'EscrowUpdateCommand'
         },
         favorite: {
             FavoriteAddCommand: 'FavoriteAddCommand',
@@ -138,11 +144,11 @@ export const Targets = {
         },
         HelpCommand: 'HelpCommand',
         itemcategory: {
-            ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryAddCommand: 'ItemCategoryAddCommand',
             ItemCategoryCreateCommand: 'ItemCategoryCreateCommand',
             ItemCategoryFindCommand: 'ItemCategoryFindCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
+            ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
             ItemCategoryRootCommand: 'ItemCategoryRootCommand',
             ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
@@ -156,14 +162,14 @@ export const Targets = {
         iteminformation: {
             ItemInformationCreateCommand: 'ItemInformationCreateCommand',
             ItemInformationGetCommand: 'ItemInformationGetCommand',
-            ItemInformationUpdateCommand: 'ItemInformationUpdateCommand',
-            ItemInformationRootCommand: 'ItemInformationRootCommand'
+            ItemInformationRootCommand: 'ItemInformationRootCommand',
+            ItemInformationUpdateCommand: 'ItemInformationUpdateCommand'
         },
         itemlocation: {
             ItemLocationAddCommand: 'ItemLocationAddCommand',
             ItemLocationRemoveCommand: 'ItemLocationRemoveCommand',
-            ItemLocationUpdateCommand: 'ItemLocationUpdateCommand',
-            ItemLocationRootCommand: 'ItemLocationRootCommand'
+            ItemLocationRootCommand: 'ItemLocationRootCommand',
+            ItemLocationUpdateCommand: 'ItemLocationUpdateCommand'
         },
         listingitem: {
             ListingItemGetCommand: 'ListingItemGetCommand',
@@ -174,9 +180,9 @@ export const Targets = {
         },
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
-            ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
+            ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
         },
@@ -186,12 +192,12 @@ export const Targets = {
             MarketRootCommand: 'MarketRootCommand'
         },
         messaginginformation: {
-            MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand',
-            MessagingInformationRootCommand: 'MessagingInformationRootCommand'
+            MessagingInformationRootCommand: 'MessagingInformationRootCommand',
+            MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
         },
         paymentinformation: {
-            PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand',
-            PaymentInformationRootCommand: 'PaymentInformationRootCommand'
+            PaymentInformationRootCommand: 'PaymentInformationRootCommand',
+            PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'
         },
         profile: {
             ProfileCreateCommand: 'ProfileCreateCommand',
@@ -270,6 +276,8 @@ export const Targets = {
         RpcController: 'RpcController',
         ShippingDestinationController: 'ShippingDestinationController',
         ShippingPriceController: 'ShippingPriceController',
+        ShoppingCartItemsController: 'ShoppingCartItemsController',
+        ShoppingCartsController: 'ShoppingCartsController',
         UserController: 'UserController'
     }
 };
