@@ -16,7 +16,7 @@ COPY . /app
 COPY ./.env.example /app/.env
 RUN bin/ci-create-dbs.sh
 
-VOLUME /app/data
+#VOLUME /app/data
 
 CMD [ "yarn", "serve" ]
 EXPOSE 3000 3100 3200
