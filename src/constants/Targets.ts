@@ -211,6 +211,7 @@ export const Targets = {
             ShippingDestinationRootCommand: 'ShippingDestinationRootCommand'
         },
         shoppingcart: {
+            ShoppingCartAddCommand: 'ShoppingCartAddCommand',
             ShoppingCartRootCommand: 'ShoppingCartRootCommand'
         }
     },
