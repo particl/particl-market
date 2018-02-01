@@ -18,6 +18,7 @@ describe('/RpcUpdateAddress', () => {
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
             city: 'city',
+            state: 'test state',
             country: 'SW',
             zipCode: '85001'
         }]
@@ -28,6 +29,7 @@ describe('/RpcUpdateAddress', () => {
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
+        state: 'test state updated',
         country: 'FI',
         zipCode: '85001'
     };
@@ -52,6 +54,7 @@ describe('/RpcUpdateAddress', () => {
             testDataUpdated.addressLine1,
             testDataUpdated.addressLine2,
             testDataUpdated.city,
+            testDataUpdated.state,
             testDataUpdated.country,
             testDataUpdated.zipCode,
             profileId
@@ -63,29 +66,75 @@ describe('/RpcUpdateAddress', () => {
         expect(result.addressLine1).toBe(testDataUpdated.addressLine1);
         expect(result.addressLine2).toBe(testDataUpdated.addressLine2);
         expect(result.city).toBe(testDataUpdated.city);
+        expect(result.state).toBe(testDataUpdated.state);
         expect(result.country).toBe(testDataUpdated.country);
         expect(result.zipCode).toBe(testDataUpdated.zipCode);
 
     });
 
-    // Profile id no longer required
-    /*test('Should fail because we want to update without profile id', async () => {
+    test('Should fail because we want to update without required fields', async () => {
+        const getDataRes = await rpc(method, [subCommand,
+            testDataUpdated.title, testDataUpdated.addressLine1, testDataUpdated.addressLine2,
+            testDataUpdated.city, testDataUpdated.state, testDataUpdated.country, 'test']);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(404);
+    });
+
+    test('Should fail because we want to update with null state field', async () => {
+        const getDataRes = await rpc(method, [ subCommand,
+            addressId,
+            testDataUpdated.title,
+            testDataUpdated.addressLine1,
+            testDataUpdated.addressLine2,
+            testDataUpdated.city,
+            null,
+            testDataUpdated.country,
+            testDataUpdated.zipCode,
+            profileId
+        ]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(400);
+    });
+
+    test('Should fail because we want to update with undefined state field', async () => {
+        const getDataRes = await rpc(method, [ subCommand,
+            addressId,
+            testDataUpdated.title,
+            testDataUpdated.addressLine1,
+            testDataUpdated.addressLine2,
+            testDataUpdated.city,
+            undefined,
+            testDataUpdated.country,
+            testDataUpdated.zipCode,
+            profileId
+        ]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(400);
+    });
+
+    test('Should update the address with blank state field', async () => {
+        // update address
         const res = await rpc(method, [ subCommand,
             addressId,
             testDataUpdated.title,
             testDataUpdated.addressLine1,
             testDataUpdated.addressLine2,
-            testDataUpdated.zipCode,
             testDataUpdated.city,
-            testDataUpdated.country
+            '',
+            testDataUpdated.country,
+            testDataUpdated.zipCode,
+            profileId
         ]);
         res.expectJson();
-        res.expectStatusCode(400);
-    });*/
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        expect(result.title).toBe(testDataUpdated.title);
+        expect(result.addressLine1).toBe(testDataUpdated.addressLine1);
+        expect(result.addressLine2).toBe(testDataUpdated.addressLine2);
+        expect(result.city).toBe(testDataUpdated.city);
+        expect(result.state).toBe('');
+        expect(result.country).toBe(testDataUpdated.country);
+        expect(result.zipCode).toBe(testDataUpdated.zipCode);
 
-    test('Should fail because we want to update with an empty address', async () => {
-        const getDataRes: any = await rpc(method, [subCommand]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(400);
     });
 });

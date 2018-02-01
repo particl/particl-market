@@ -1,12 +1,12 @@
 version: '1.0'
 steps:
 
-  build_docker_image_notify_step:
-    image: tutum/curl
-    commands:
-      - >-
-        curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\ngithub: ${{CF_COMMIT_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-    fail_fast: false
+#  build_docker_image_notify_step:
+#    image: tutum/curl
+#    commands:
+#      - >-
+#        curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n ${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\n ${{CF_BUILD_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+#    fail_fast: false
 
   build_docker_image_step:
     title: building docker image
@@ -51,7 +51,7 @@ steps:
 #      - >-
 #        curl -d "{\"content\": \"running integration tests...\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
 #    fail-fast: false
-
+#
 #  integration_test_step:
 #    title: running integration tests
 #    image: ${{build_docker_image_step}}
@@ -92,6 +92,69 @@ steps:
 #      username: ${{DOCKERHUB_USERNAME}}
 #      password: ${{DOCKERHUB_PASSWORD}}
 #    fail-fast: false
+
+
+
+  integration_test_step:
+    type: composition
+    title: running integration tests
+    working_directory: ${{main_clone}}
+    composition:
+      version: '2'
+      services:
+        dappshell:
+          image: ${{build_docker_image_step}}
+    composition_candidates:
+      test_service:
+        image: ${{build_docker_image_step}}
+#        command: npm run test:black-box:pretty
+        command: wait-port dappshell:${{APP_PORT}} && npm run test:black-box:pretty
+        working_dir: /app
+        environment:
+          - PORT=3100
+          - APP_PORT=3100
+          - NODE_ENV=test
+          - RPCUSER=test
+          - RPCPASSWORD=test
+          - RPCHOSTNAME=dev.particl.xyz
+          - MAINNET_PORT=52738
+          - TESTNET_PORT=52935
+          - APP_NAME=dapp-shell
+          - APP_ENV=test
+          - APP_HOST=http://dappshell
+          - APP_URL_PREFIX=/api
+          - LOG_LEVEL=debug
+          - LOG_ADAPTER=winston
+          - API_INFO_ENABLED=true
+          - API_INFO_ROUTE=/info
+          - CLI_ENABLED=true
+          - CLI_ROUTE=/cli
+          - SWAGGER_ENABLED=true
+          - SWAGGER_ROUTE=/docs
+          - SWAGGER_FILE=/src/api/swagger.json
+          - MONITOR_ENABLED=true
+          - MONITOR_ROUTE=/status
+          - DB_CLIENT=sqlite3
+          - DB_CONNECTION=./data/marketplace.db
+          - DB_POOL_MIN=2
+          - DB_POOL_MAX=20
+          - DB_MIGRATION_DIR=./src/database/migrations
+          - DB_MIGRATION_TABLE=version
+          - DB_SEEDS_DIR=./src/database/seeds
+          - DISCORD_URL=https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
+#    composition_variables:
+#      - key=value
+#    fail_fast: false
+#    when:
+#      condition:
+#        all:
+#          notFeatureBranch: 'match("${{CF_BRANCH}}", "/FB-/", true) == false'
+#    on_success:
+#      ...
+#    on_fail:
+#      ...
+#    on_finish:
+#      ...
 
 #  integration_step:
 #    type: composition

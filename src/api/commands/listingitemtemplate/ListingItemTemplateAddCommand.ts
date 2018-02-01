@@ -8,10 +8,10 @@ import { ListingItemTemplateCreateRequest } from '../../requests/ListingItemTemp
 import { ListingItemTemplate } from '../../models/ListingItemTemplate';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class ListingItemTemplateCreateCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
+export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
     public log: LoggerType;
 
@@ -31,7 +31,7 @@ export class ListingItemTemplateCreateCommand extends BaseCommand implements Rpc
      *  [1]: title
      *  [2]: short description
      *  [3]: long description
-     *  [4]: category
+     *  [4]: category id
      *
      *  paymentInformation
      *  [5]: payment type
@@ -39,7 +39,7 @@ export class ListingItemTemplateCreateCommand extends BaseCommand implements Rpc
      *  [7]: base price
      *  [8]: domestic shipping price
      *  [9]: international shipping price
-     *  [10]: payment address
+     *  [10]: payment address (optional)
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -48,6 +48,13 @@ export class ListingItemTemplateCreateCommand extends BaseCommand implements Rpc
     public async execute( @request(RpcRequest) data: any): Promise<ListingItemTemplate> {
         let body;
         if (data.params[1] && data.params[2] && data.params[3] && data.params[4]) {
+            let cryptocurrencyAddress = {};
+            if (data.params[10]) {
+                cryptocurrencyAddress = {
+                    type: CryptocurrencyAddressType.NORMAL,
+                    address: data.params[10]
+                };
+            }
             body = {
                 profile_id: data.params[0],
                 itemInformation: {
@@ -55,7 +62,7 @@ export class ListingItemTemplateCreateCommand extends BaseCommand implements Rpc
                     shortDescription: data.params[2],
                     longDescription: data.params[3],
                     itemCategory: {
-                        key: data.params[4]
+                        id: data.params[4]
                     }
                 },
                 paymentInformation: {
@@ -67,10 +74,7 @@ export class ListingItemTemplateCreateCommand extends BaseCommand implements Rpc
                             domestic: data.params[8],
                             international: data.params[9]
                         },
-                        cryptocurrencyAddress: {
-                            type: CryptocurrencyAddressType.NORMAL,
-                            address: data.params[10]
-                        }
+                        cryptocurrencyAddress
                     }
                 }
             };
@@ -84,7 +88,7 @@ export class ListingItemTemplateCreateCommand extends BaseCommand implements Rpc
 
     public help(): string {
         return this.getName() + 'createlistingitemtemplate <profileId> <title> <shortDescription> <longDescription> <categoryName>'
-            + ' <paymentType> <currency> <basePrice> <domesticShippingPrice> <internationalShippingPrice> <paymentAddress>\n'
+            + ' <paymentType> <currency> <basePrice> <domesticShippingPrice> <internationalShippingPrice>   [<paymentAddress>]\n'
             + '    <profileId>                    - Numeric - The ID of the profile to associate this\n'
             + '                                      item listing template with.\n'
             + '    <title>                        - String - The default title to associate with\n'
@@ -107,7 +111,7 @@ export class ListingItemTemplateCreateCommand extends BaseCommand implements Rpc
             + '    <internationalShippingPrice>   - Numeric - The default international shipping\n'
             + '                                      price for the item listing template we\'re\n'
             + '                                      creating.\n'
-            + '    <paymentAddress>               - String - The default cryptocurrency address for\n'
+            + '    <paymentAddress>               - [optional]String - The default cryptocurrency address for\n'
             + '                                      recieving funds to associate with the listing\n'
             + '                                      item template we\'re creating.';
     }

@@ -27,7 +27,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                     'PaymentInformation.ItemPrice',
                     'PaymentInformation.ItemPrice.ShippingPrice',
                     'PaymentInformation.ItemPrice.CryptocurrencyAddress',
-                    'MessagingInformation',
+                    'MessagingInformation', // TODO: should be MessagingInformations
                     'ListingItemObjects',
                     'ListingItem',
                     'Profile'

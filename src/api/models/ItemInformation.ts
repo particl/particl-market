@@ -4,23 +4,36 @@ import { ItemLocation } from './ItemLocation';
 import { ItemImage } from './ItemImage';
 import { ShippingDestination } from './ShippingDestination';
 import { ItemCategory } from './ItemCategory';
+import { ListingItemTemplate } from './ListingItemTemplate';
 
 export class ItemInformation extends Bookshelf.Model<ItemInformation> {
+
+    public static RELATIONS = [
+        'ItemCategory',
+        'ItemLocation',
+        'ItemLocation.LocationMarker',
+        'ItemImages',
+        'ItemImages.ItemImageData',
+        'ShippingDestinations'
+    ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemInformation> {
         if (withRelated) {
             return await ItemInformation.where<ItemInformation>({ id: value }).fetch({
-                withRelated: [
-                    'ItemCategory',
-                    'ItemLocation',
-                    'ItemLocation.LocationMarker',
-                    'ItemImages',
-                    'ItemImages.ItemImageData',
-                    'ShippingDestinations'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await ItemInformation.where<ItemInformation>({ id: value }).fetch();
+        }
+    }
+
+    public static async findByItemTemplateId(value: number, withRelated: boolean = true): Promise<ItemInformation> {
+        if (withRelated) {
+            return await ItemInformation.where<ItemInformation>({ listing_item_template_id: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ItemInformation.where<ItemInformation>({ listing_item_template_id: value }).fetch();
         }
     }
 
@@ -45,8 +58,15 @@ export class ItemInformation extends Bookshelf.Model<ItemInformation> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
+    public get ListingItemTemplateId(): string { return this.get('listing_item_template_id'); }
+    public set ListingItemTemplateId(value: string) { this.set('listing_item_template_id', value); }
+
     public ItemCategory(): ItemCategory {
         return this.belongsTo(ItemCategory, 'item_category_id', 'id');
+    }
+
+    public ListingItemTemplate(): ListingItemTemplate {
+        return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
     }
 
     public ItemLocation(): ItemLocation {

@@ -53,6 +53,10 @@ import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateR
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
 import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
+import { CreatableModel } from '../enums/CreatableModel';
+import { GenerateListingItemTemplateParams } from '../requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemParams } from '../requests/params/GenerateListingItemParams';
+import { GenerateProfileParams } from '../requests/params/GenerateProfileParams';
 
 export class TestDataService {
 
@@ -86,9 +90,9 @@ export class TestDataService {
      * @param seed
      * @returns {Promise<void>}
      */
-    public async clean(ignoreTables: string[], seed: boolean = true): Promise<void> {
+    public async clean(seed: boolean = true): Promise<void> {
 
-        await this.cleanDb(ignoreTables);
+        await this.cleanDb();
         if (seed) {
             this.log.debug('seeding default data after cleaning');
             await this.defaultItemCategoryService.seedDefaultCategories();
@@ -109,31 +113,31 @@ export class TestDataService {
     @validate()
     public async create<T>( @request(TestDataCreateRequest) body: TestDataCreateRequest): Promise<Bookshelf.Model<any>> {
         switch (body.model) {
-            case 'listingitemtemplate': {
+            case CreatableModel.LISTINGITEMTEMPLATE: {
                 return await this.listingItemTemplateService.create(body.data as ListingItemTemplateCreateRequest) as Bookshelf.Model<ListingItemTemplate>;
             }
-            case 'listingitem': {
+            case CreatableModel.LISTINGITEM: {
                 return await this.listingItemService.create(body.data as ListingItemCreateRequest) as Bookshelf.Model<ListingItem>;
             }
-            case 'profile': {
+            case CreatableModel.PROFILE: {
                 return await this.profileService.create(body.data as ProfileCreateRequest) as Bookshelf.Model<Profile>;
             }
-            case 'itemcategory': {
+            case CreatableModel.ITEMCATEGORY: {
                 return await this.itemCategoryService.create(body.data as ItemCategoryCreateRequest) as Bookshelf.Model<ItemCategory>;
             }
-            case 'favoriteitem': {
+            case CreatableModel.FAVORITEITEM: {
                 return await this.favoriteItemService.create(body.data as FavoriteItemCreateRequest) as Bookshelf.Model<FavoriteItem>;
             }
-            case 'iteminformation': {
+            case CreatableModel.ITEMINFORMATION: {
                 return await this.itemInformationService.create(body.data as ItemInformationCreateRequest) as Bookshelf.Model<ItemInformation>;
             }
-            case 'bid': {
+            case CreatableModel.BID: {
                 return await this.bidService.create(body.data as BidCreateRequest) as Bookshelf.Model<Bid>;
             }
-            case 'paymentinfo': {
+            case CreatableModel.PAYMENTINFORMATION: {
                 return await this.paymentInformationService.create(body.data as PaymentInformationCreateRequest) as Bookshelf.Model<PaymentInformation>;
             }
-            case 'itemimage': {
+            case CreatableModel.ITEMIMAGE: {
                 return await this.itemImageService.create(body.data as ItemImageCreateRequest) as Bookshelf.Model<ItemImage>;
             }
             default: {
@@ -155,14 +159,17 @@ export class TestDataService {
     @validate()
     public async generate<T>( @request(TestDataGenerateRequest) body: TestDataGenerateRequest): Promise<Bookshelf.Collection<any>> {
         switch (body.model) {
-            case 'listingitemtemplate': {
-                return await this.generateListingItemTemplates(body.amount, body.withRelated);
+            case CreatableModel.LISTINGITEMTEMPLATE: {
+                const generateParams = new GenerateListingItemTemplateParams(body.generateParams);
+                return await this.generateListingItemTemplates(body.amount, body.withRelated, generateParams);
             }
-            case 'listingitem': {
-                return await this.generateListingItems(body.amount, body.withRelated);
+            case CreatableModel.LISTINGITEM: {
+                const generateParams = new GenerateListingItemParams(body.generateParams);
+                return await this.generateListingItems(body.amount, body.withRelated, generateParams);
             }
-            case 'profile': {
-                return await this.generateProfiles(body.amount, body.withRelated);
+            case CreatableModel.PROFILE: {
+                const generateParams = new GenerateProfileParams(body.generateParams);
+                return await this.generateProfiles(body.amount, body.withRelated, generateParams);
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -172,21 +179,14 @@ export class TestDataService {
 
     /**
      * clean up the db
-     * todo: ignoreTables not used
      *
-     * @param ignoreTables
      * @returns {Promise<void>}
      */
-    private async cleanDb(ignoreTables: string[]): Promise<void> {
+    private async cleanDb(): Promise<void> {
 
         // by default ignore these
-        ignoreTables = this.ignoreTables.concat(ignoreTables);
         this.log.info('cleaning up the db, ignoring tables: ', this.ignoreTables);
-        const options = {
-            mode: 'delete',
-            ignoreTables
-        };
-        this.log.debug('ignoreTables: ', ignoreTables);
+        this.log.debug('ignoreTables: ', this.ignoreTables);
 
         const tablesToClean = [
             'bid_datas',
@@ -215,19 +215,6 @@ export class TestDataService {
             'users'     // todo: not needed
         ];
 
-        /*
-        const existingTables = await this.getTableNames(Database.knex);
-        this.log.debug('existingTables: ', existingTables);
-
-        const tablesToClean = existingTables
-            .map( (table) => {
-                return table.name; // [Object.keys(table)[0]];
-            })
-            .filter( (tableName) => {
-                return !_.includes(ignoreTables, tableName);
-            });
-        */
-        // this.log.debug('tablesToClean: ', tablesToClean);
         for (const table of tablesToClean) {
             this.log.debug('cleaning table: ', table);
             await Database.knex.select().from(table).del();
@@ -242,11 +229,10 @@ export class TestDataService {
     // -------------------
     // listingitemtemplates
 
-    private async generateListingItemTemplates(amount: number, withRelated: boolean = true): Promise<any> {
+    private async generateListingItemTemplates(amount: number, withRelated: boolean = true, generateParams: GenerateListingItemTemplateParams): Promise<any> {
         const items: any[] = [];
         for (let i = amount; i !== 0; i--) {
-            const listingItemTemplate = await this.generateListingItemTemplateData();
-            // this.log.debug('B1', JSON.stringify(listingItemTemplate, null, 2));
+            const listingItemTemplate = await this.generateListingItemTemplateData(generateParams);
             const savedListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplate);
             items.push(savedListingItemTemplate);
         }
@@ -256,10 +242,10 @@ export class TestDataService {
     // -------------------
     // listingitems
 
-    private async generateListingItems(amount: number, withRelated: boolean = true): Promise<any> {
+    private async generateListingItems(amount: number, withRelated: boolean = true, generateParams: GenerateListingItemParams): Promise<any> {
         const items: any[] = [];
         for (let i = amount; i !== 0; i--) {
-            const listingItem = await this.generateListingItemData();
+            const listingItem = await this.generateListingItemData(generateParams);
             const savedListingItem = await this.listingItemService.create(listingItem);
             items.push(savedListingItem);
         }
@@ -269,10 +255,10 @@ export class TestDataService {
     // -------------------
     // profiles
 
-    private async generateProfiles(amount: number, withRelated: boolean = true): Promise<any> {
+    private async generateProfiles(amount: number, withRelated: boolean = true, generateParams: GenerateProfileParams): Promise<any> {
         const items: any[] = [];
         for (let i = amount; i !== 0; i--) {
-            const profile = this.generateProfileData();
+            const profile = this.generateProfileData(generateParams);
             const savedProfile = await this.profileService.create(profile);
             items.push(savedProfile);
         }
@@ -287,11 +273,12 @@ export class TestDataService {
         }
     }
 
-    private generateProfileData(): ProfileCreateRequest {
+    private generateProfileData(generateParams: GenerateProfileParams): ProfileCreateRequest {
         const name = 'TEST-' + Faker.name.firstName();
         const address = Faker.finance.bitcoinAddress();
-        const shippingAddresses = this.generateAddressesData(_.random(1, 5));
-        const cryptocurrencyAddresses = this.generateCryptocurrencyAddressesData(_.random(1, 5));
+
+        const shippingAddresses = generateParams.generateShippingAddresses ? this.generateAddressesData(_.random(1, 5)) : {};
+        const cryptocurrencyAddresses = generateParams.generateShippingAddresses ? this.generateCryptocurrencyAddressesData(_.random(1, 5)) : {};
 
         return {
             name,
@@ -310,6 +297,7 @@ export class TestDataService {
                 addressLine2: Faker.address.secondaryAddress(),
                 zipCode: Faker.address.zipCode(),
                 city: Faker.address.city(),
+                state: Faker.address.state(),
                 country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryList))
             });
         }
@@ -327,20 +315,23 @@ export class TestDataService {
         return cryptoAddresses;
     }
 
-    private async generateListingItemData(): Promise<any> {
+    private async generateListingItemData(generateParams: GenerateListingItemParams): Promise<ListingItemCreateRequest> {
         const defaultMarket = await this.marketService.getDefault();
-        const itemInformation = this.generateItemInformationData();
-        const paymentInformation = this.generatePaymentInformationData();
-        const messagingInformation = this.generateMessagingInformationData();
+
+        const itemInformation = generateParams.generateItemInformation ? this.generateItemInformationData(generateParams) : {};
+        const paymentInformation = generateParams.generatePaymentInformation ? this.generatePaymentInformationData(generateParams) : {};
+        const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
+        // TODO: generate listingitemobjects
+        const listingItemObjects = generateParams.generateListingItemObjects ? [] : [];
 
         const listingItem = {
             hash: Faker.random.uuid(),
             itemInformation,
             paymentInformation,
             messagingInformation,
-            market_id: defaultMarket.id
-            // TODO: ignoring listingitemobjects for now
-        };
+            listingItemObjects,
+            market_id: defaultMarket.Id
+        } as ListingItemCreateRequest;
 
         return listingItem;
     }
@@ -373,9 +364,16 @@ export class TestDataService {
         return items;
     }
 
-    private generateItemInformationData(): any {
-        const shippingDestinations = this.generateShippingDestinationsData(_.random(1, 5));
-        const itemImages = this.generateItemImagesData(_.random(1, 5));
+    private generateItemInformationData(generateParams: GenerateListingItemTemplateParams): ItemInformationCreateRequest {
+
+        const shippingDestinations = generateParams.generateShippingDestinations
+            ? this.generateShippingDestinationsData(_.random(1, 5))
+            : [];
+
+        const itemImages = generateParams.generateItemImages
+            ? this.generateItemImagesData(_.random(1, 5))
+            : [];
+
         const itemInformation = {
             title: Faker.commerce.productName(),
             shortDescription: Faker.commerce.productAdjective() + ' ' + Faker.commerce.product(),
@@ -395,21 +393,24 @@ export class TestDataService {
             },
             shippingDestinations,
             itemImages
-        };
+        } as ItemInformationCreateRequest;
         return itemInformation;
     }
 
-    private generatePaymentInformationData(): any {
-        const paymentInformation = {
-            type: Faker.random.arrayElement(Object.getOwnPropertyNames(PaymentType)),
-            escrow: {
+    private generatePaymentInformationData(generateParams: GenerateListingItemTemplateParams): PaymentInformationCreateRequest {
+
+        const escrow = generateParams.generateEscrow
+            ? {
                 type: Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
                 ratio: {
                     buyer: _.random(1, 100),
                     seller: _.random(1, 100)
                 }
-            },
-            itemPrice: {
+            }
+            : {};
+
+        const itemPrice = generateParams.generateItemPrice
+            ? {
                 currency: Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
                 basePrice: _.random(123.45, 5.43),
                 shippingPrice: {
@@ -421,7 +422,13 @@ export class TestDataService {
                     address: Faker.finance.bitcoinAddress()
                 }
             }
-        };
+            : {};
+
+        const paymentInformation = {
+            type: Faker.random.arrayElement(Object.getOwnPropertyNames(PaymentType)),
+            escrow,
+            itemPrice
+        } as PaymentInformationCreateRequest;
         return paymentInformation;
     }
 
@@ -433,10 +440,13 @@ export class TestDataService {
         return messagingInformation;
     }
 
-    private async generateListingItemTemplateData(): Promise<any> {
-        const itemInformation = this.generateItemInformationData();
-        const paymentInformation = this.generatePaymentInformationData();
-        const messagingInformation = this.generateMessagingInformationData();
+    private async generateListingItemTemplateData(generateParams: GenerateListingItemTemplateParams): Promise<ListingItemTemplateCreateRequest> {
+        const itemInformation = generateParams.generateItemInformation ? this.generateItemInformationData(generateParams) : {};
+        const paymentInformation = generateParams.generatePaymentInformation ? this.generatePaymentInformationData(generateParams) : {};
+        const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
+        // TODO: generate listingitemobjects
+        const listingItemObjects = generateParams.generateListingItemObjects ? [] : [];
+
         const defaultProfile = await this.profileService.getDefault();
 
         const listingItemTemplate = {
@@ -444,9 +454,9 @@ export class TestDataService {
             itemInformation,
             paymentInformation,
             messagingInformation,
-            // TODO: ignoring listingitemobjects for now
+            listingItemObjects,
             profile_id: defaultProfile.Id
-        };
+        } as ListingItemTemplateCreateRequest;
         return listingItemTemplate;
     }
 

@@ -30,19 +30,18 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
     }
 
     /**
-     * TODO: Update command to match help().
      *
      *  data.params[]:
-     *  [0]: item_id or hash
-     *  [1]: profile_id or null if null then use the default profile
+     *  [0]: profile_id or null if null then use the default profile
+     *  [1]: item_id or hash
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<void> {
         const favoriteParams = await this.getSearchParams(data);
-        const favoriteItem = await this.favoriteItemService.search({ itemId: favoriteParams[0], profileId: favoriteParams[1] } as FavoriteSearchParams);
+        const favoriteItem = await this.favoriteItemService.search({profileId: favoriteParams[0], itemId: favoriteParams[1] } as FavoriteSearchParams);
         if (favoriteItem === null) {
-            this.log.warn(`FavoriteItem with the item id=${favoriteParams.itemId} was not found!`);
-            throw new NotFoundException(favoriteParams.itemId);
+            this.log.warn(`FavoriteItem with the item id=${favoriteParams[1]} was not found!`);
+            throw new NotFoundException(favoriteParams[1]);
         }
         return this.favoriteItemService.destroy(favoriteItem.Id);
     }
@@ -71,17 +70,16 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
      *
      */
     private async getSearchParams(data: any): Promise<any> {
-        let itemId = data.params[0] || 0;
-        let profileId = data.params[1];
+        let profileId = data.params[0];
+        let itemId = data.params[1] || 0;
 
         // if item hash is in the params
         if (itemId && typeof itemId === 'string') {
-            const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
+            const listingItem = await this.listingItemService.findOneByHash(data.params[1]);
             itemId = listingItem.id;
         }
         // find listing item by id
         const item = await this.listingItemService.findOne(itemId);
-
 
         // if profile id not found in the params then find default profile
         if (!profileId || typeof profileId !== 'number') {
@@ -92,6 +90,6 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
             this.log.warn(`ListingItem with the id=${itemId} was not found!`);
             throw new NotFoundException(itemId);
         }
-        return [item.id, profileId];
+        return [profileId, item.id];
     }
 }
