@@ -6,7 +6,7 @@ steps:
 #    commands:
 #      - >-
 #        curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n ${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\n ${{CF_BUILD_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-#    fail_fast: false
+#    fail_fast: false 
 
   build_docker_image_step:
     title: building docker image
