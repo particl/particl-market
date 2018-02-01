@@ -148,7 +148,7 @@ steps:
       test_service:
         image: ${{build_docker_image_step}}
 #        command: npm run test:black-box:pretty
-        command: wait-port dappshell:${{APP_PORT}} && npm run test:black-box:pretty
+        command: bin/ci-blackbox-tests.sh
         working_dir: /app
         environment:
           - PORT=3100
