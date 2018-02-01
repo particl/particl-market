@@ -97,7 +97,7 @@ steps:
     type: push
     candidate: ${{build_docker_image_step}}
     tag: 'latest'
-    registry: dockerhub
+    registry: cfcr
 
 
   integration_test_step:
