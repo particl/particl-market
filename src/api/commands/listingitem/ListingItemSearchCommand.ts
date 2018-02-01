@@ -29,7 +29,11 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: category, number|string, if string, try to find using key, can be null
-     *  [4]: searchString, string, can be null
+     *  [4]: profileId, number
+     *  [5]: minPrice, number to search item basePrice between 2 range
+     *  [6]: maxPrice, number to search item basePrice between 2 range
+     *  [7]: searchString, string, can be null
+     *  [8]: withRelated, boolean
      *
      * @param data
      * @returns {Promise<ListingItem>}
@@ -38,31 +42,40 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
     public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ListingItem>> {
         return this.listingItemService.search({
             page: data.params[0] || 1,
-            pageLimit: data.params[1] || 5,
+            pageLimit: data.params[1] || 5, // default page limit 5
             order: data.params[2] || 'ASC',
             category: data.params[3],
             profileId: data.params[4],
-            searchString: data.params[5] || ''
-        } as ListingItemSearchParams, data.params[6]);
+            minPrice: data.params[5],
+            maxPrice: data.params[6],
+            searchString: data.params[7] || ''
+        } as ListingItemSearchParams, data.params[8]);
     }
 
     public help(): string {
-        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId> | <categoryName>)[(<profileId> | <ALL>) [<searchString>]]]]]\n'
+        return this.getName() + ' [<page> [<pageLimit> [<order> ' +
+            '[(<categoryId> | <categoryName>)[(<profileId> | <ALL>) [<minPrice> [ <maxPrice> [<searchString>]]]]]]]\n'
             + '    <page>                          - [optional] Numeric - The number page we want to\n'
             + '                                       view of search listing item results.\n'
             + '        <pageLimit>                 - [optional] Numeric - The number of results per\n'
             + '                                       page.\n'
             + '            <order>                 - ENUM{ASC} - The order of the returned results.\n'
-            + '                <categoryId>        - [optional] Numeric - The ID identifying the\n'
+            + '            <categoryId>            - [optional] Numeric - The ID identifying the\n'
             + '                                       category associated with the listing items\n'
             + '                                       we want to search for.\n'
-            + '                <categoryName>      - [optional] String - The key identifying the\n'
+            + '            <categoryName>          - [optional] String - The key identifying the\n'
             + '                                       category associated with the listing items\n'
             + '                                       we want to search for.\n'
-             + '                <profileId>        -  [optional] Numeric - The ID identifying the\n'
-            + '                                       profile associated with the listing items\n'
-            + '                                       we want to search for.\n'
-            + '                <ALL>                - [optional] any string or * or none \n'
+
+            + '            <profileId>             -  [optional] Numeric - The ID identifying the\n'
+
+            + '            <minPrice>                 -  [optional] Numeric - The minPrice of the listing item price \n'
+
+            + '                                       we want to search for between basePrice rance.\n'
+            + '            <maxPrice>                 -  [optional] Numeric - The maxPrice of the listing item price\n'
+
+            + '                                       we want to search for between basePrice rance.\n'
+            + '            <ALL>                   - [optional] any string or * or none \n'
             + '                                       means dont wnat to search with profile\n'
             + '                                       we want to search for.\n'
             + '               <searchString>        - [optional] String - A string that is used to\n'

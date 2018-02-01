@@ -85,6 +85,14 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     qb.where('listing_item_templates.profile_id', '=', options.profileId);
                 }
 
+                // search by item price
+                if (typeof options.minPrice === 'number' && typeof options.maxPrice === 'number') {
+                    qb.innerJoin('payment_informations', 'payment_informations.listing_item_id', 'listing_items.id');
+                    qb.innerJoin('item_prices', 'payment_informations.id', 'item_prices.payment_information_id');
+
+                    qb.whereBetween('item_prices.base_price', [options.minPrice, options.maxPrice]);
+                }
+
                 qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id');
                 qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 qb.groupBy('listing_items.id');

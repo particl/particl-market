@@ -19,6 +19,10 @@ export class ListingItemSearchParams extends RequestBody {
 
     public profileId: string | number;
 
+    public minPrice: number;
+
+    public maxPrice: number;
+
     public searchString: string;
 
 }
