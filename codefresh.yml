@@ -132,16 +132,16 @@ steps:
             - CLI_ROUTE=/cli
             - SWAGGER_ENABLED=true
             - SWAGGER_ROUTE=/docs
-            - SWAGGER_FILE=/app/src/api/swagger.json
+            - SWAGGER_FILE=/src/api/swagger.json
             - MONITOR_ENABLED=true
             - MONITOR_ROUTE=/status
             - DB_CLIENT=sqlite3
-            - DB_CONNECTION=/app/data/marketplace.db
+            - DB_CONNECTION=/data/marketplace.db
             - DB_POOL_MIN=2
             - DB_POOL_MAX=20
-            - DB_MIGRATION_DIR=/app/src/database/migrations
+            - DB_MIGRATION_DIR=/src/database/migrations
             - DB_MIGRATION_TABLE=version
-            - DB_SEEDS_DIR=/app/src/database/seeds
+            - DB_SEEDS_DIR=/src/database/seeds
             - DISCORD_URL=https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
 
     composition_candidates:
@@ -175,12 +175,12 @@ steps:
           - MONITOR_ENABLED=true
           - MONITOR_ROUTE=/status
           - DB_CLIENT=sqlite3
-          - DB_CONNECTION=/app/data/marketplace.db
+          - DB_CONNECTION=/data/marketplace.db
           - DB_POOL_MIN=2
           - DB_POOL_MAX=20
-          - DB_MIGRATION_DIR=/app/src/database/migrations
+          - DB_MIGRATION_DIR=/src/database/migrations
           - DB_MIGRATION_TABLE=version
-          - DB_SEEDS_DIR=/app/src/database/seeds
+          - DB_SEEDS_DIR=/src/database/seeds
           - DISCORD_URL=https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
 #    composition_variables:
 #      - key=value
