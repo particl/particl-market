@@ -13,5 +13,7 @@ export class TestDataGenerateRequest extends RequestBody {
     @IsNotEmpty()
     public withRelated: boolean;
 
+    public generateParams: boolean[];
+
 }
 // tslint:enable:variable-name

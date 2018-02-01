@@ -1,5 +1,6 @@
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
+import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { TestDataService } from '../../services/TestDataService';
@@ -31,11 +32,13 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
     public async execute( @request(RpcRequest) data: any): Promise<any> {
         this.log.info('data.params[0]: ', data.params[0]);
         this.log.info('data.params[1]: ', data.params[1]);
+        const generateParams = data.params.length > 3 ? _.slice(data.params, 3) : [];
 
         return await this.testDataService.generate({
             model: data.params[0],
             amount: data.params[1],
-            withRelated: data.params[2]
+            withRelated: data.params[2],
+            generateParams
         } as TestDataGenerateRequest);
     }
 
