@@ -107,6 +107,7 @@ steps:
           - '${{build_docker_image_step.imageId}}':
               - CF_QUALITY: false
 
+
   blackbox_test_step:
     type: composition
     title: running integration tests
