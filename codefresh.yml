@@ -15,7 +15,11 @@ steps:
     working_directory: ./
     dockerfile: Dockerfile.ci
     tag: '${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}'
-
+    when:
+      branch:
+        ignore:
+          - master
+          - develop
 #  unit_test_notify_step:
 #    image: tutum/curl
 #    commands:
