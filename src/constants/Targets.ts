@@ -209,6 +209,9 @@ export const Targets = {
             ShippingDestinationListCommand: 'ShippingDestinationListCommand',
             ShippingDestinationRemoveCommand: 'ShippingDestinationRemoveCommand',
             ShippingDestinationRootCommand: 'ShippingDestinationRootCommand'
+        },
+        shoppingcart: {
+            ShoppingCartRootCommand: 'ShoppingCartRootCommand'
         }
     },
     Factory:     {

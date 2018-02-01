@@ -89,6 +89,8 @@ import { ShippingDestinationListCommand } from '../commands/shippingdestination/
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
 
+import { ShoppingCartRootCommand } from '../commands/shoppingcart/ShoppingCartRootCommand';
+
 import { Command } from '../commands/Command';
 
 // tslint:disable:array-type
@@ -183,6 +185,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
         @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
         @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartRootCommand) private shoppingCartRootCommand: ShoppingCartRootCommand,
+
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
 
@@ -278,6 +283,9 @@ export class RpcCommandFactory {
         this.commands.push(dataCleanCommand);
         this.commands.push(dataGenerateCommand);
         this.commands.push(dataRootCommand);
+
+        this.commands.push(shoppingCartRootCommand);
+
         this.commands.push(helpCommand);
 
         this.log.debug(this.commands.length + ' commands initialized.');

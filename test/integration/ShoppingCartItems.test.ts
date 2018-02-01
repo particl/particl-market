@@ -12,7 +12,7 @@ import { ShoppingCartItems } from '../../src/api/models/ShoppingCartItems';
 import { ShoppingCartItemsService } from '../../src/api/services/ShoppingCartItemsService';
 
 describe('ShoppingCartItems', () => {
-
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
 
