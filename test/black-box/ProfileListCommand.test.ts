@@ -4,6 +4,7 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 // import { Country } from '../../src/api/enums/Country';
 import { Logger } from '../../src/core/Logger';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/ProfileListCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -24,7 +25,7 @@ describe('/ProfileListCommand', () => {
 
     test('Should return one profile', async () => {
         // generate single profile
-        const generateRes = await testUtil.generateData('profile', 1);
+        const generateRes = await testUtil.generateData(CreatableModel.PROFILE, 1);
         // get list of profile
         const res = await rpc(method, [subCommand]);
         res.expectJson();
@@ -35,7 +36,7 @@ describe('/ProfileListCommand', () => {
 
     test('Should return 4 profile', async () => {
         // generate three more profile
-        const generateRes = await testUtil.generateData('profile', 3);
+        const generateRes = await testUtil.generateData(CreatableModel.PROFILE, 3);
 
         // get list of profile
         const res = await rpc(method, [subCommand]);
