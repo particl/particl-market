@@ -3,17 +3,21 @@ import { Bookshelf } from '../../config/Database';
 import { Address } from './Address';
 import { FavoriteItem } from './FavoriteItem';
 import { CryptocurrencyAddress } from './CryptocurrencyAddress';
+import { ShoppingCarts } from './ShoppingCarts';
 
 export class Profile extends Bookshelf.Model<Profile> {
+
+    public static RELATIONS = [
+        'ShippingAddresses',
+        'CryptocurrencyAddresses',
+        'FavoriteItems',
+        'ShoppingCarts'
+    ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Profile> {
         if (withRelated) {
             return await Profile.where<Profile>({ id: value }).fetch({
-                withRelated: [
-                    'ShippingAddresses',
-                    'CryptocurrencyAddresses',
-                    'FavoriteItems'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await Profile.where<Profile>({ id: value }).fetch();
@@ -23,11 +27,7 @@ export class Profile extends Bookshelf.Model<Profile> {
     public static async fetchByName(value: string, withRelated: boolean = true): Promise<Profile> {
         if (withRelated) {
             return await Profile.where<Profile>({ name: value }).fetch({
-                withRelated: [
-                    'ShippingAddresses',
-                    'CryptocurrencyAddresses',
-                    'FavoriteItems'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await Profile.where<Profile>({ name: value }).fetch();
@@ -62,5 +62,9 @@ export class Profile extends Bookshelf.Model<Profile> {
 
     public FavoriteItems(): Collection<FavoriteItem> {
         return this.hasMany(FavoriteItem, 'profile_id', 'id');
+    }
+
+    public ShoppingCarts(): Collection<ShoppingCarts> {
+        return this.hasMany(ShoppingCarts, 'profile_id', 'id');
     }
 }
