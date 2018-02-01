@@ -20,6 +20,9 @@ describe('ProfileCreateCommand', () => {
         const result: any = res.getBody()['result'];
         expect(result.name).toBe(profileName);
         expect(result.address).toBe(profileAddress);
+        // check default shopping cart
+        expect(result.ShoppingCarts).toHaveLength(1);
+        expect(result.ShoppingCarts[0].name).toBe('DEFAULT');
     });
 
     test('Should fail because we want to create an empty profile', async () => {

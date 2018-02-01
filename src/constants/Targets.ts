@@ -217,6 +217,9 @@ export const Targets = {
         listingitemobject: {
             ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
             ListingItemObjectSearchCommand: 'ListingItemObjectSearchCommand'
+        },
+        shoppingcart: {
+            ShoppingCartRootCommand: 'ShoppingCartRootCommand'
         }
     },
     Factory:     {

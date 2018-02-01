@@ -94,6 +94,8 @@ import { ShippingDestinationRemoveCommand } from '../commands/shippingdestinatio
 import { ListingItemObjectRootCommand } from '../commands/listingitemobject/ListingItemObjectRootCommand';
 import { ListingItemObjectSearchCommand } from '../commands/listingitemobject/ListingItemObjectSearchCommand';
 
+import { ShoppingCartRootCommand } from '../commands/shoppingcart/ShoppingCartRootCommand';
+
 import { Command } from '../commands/Command';
 
 // tslint:disable:array-type
@@ -193,6 +195,8 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectRootCommand) private listingItemObjectRootCommand: ListingItemObjectRootCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectSearchCommand) private listingItemObjectSearchCommand: ListingItemObjectSearchCommand,
+
+        @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartRootCommand) private shoppingCartRootCommand: ShoppingCartRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
@@ -294,6 +298,7 @@ export class RpcCommandFactory {
 
         this.commands.push(listingItemObjectRootCommand);
         this.commands.push(listingItemObjectSearchCommand);
+        this.commands.push(shoppingCartRootCommand);
 
         this.commands.push(helpCommand);
 
