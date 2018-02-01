@@ -13,7 +13,7 @@ COPY yarn.lock /app
 
 RUN yarn install
 COPY . /app
-COPY data/marketplace.db /app/data/marketplace.db
+COPY ./data/marketplace.db /app/data/marketplace.db
 
 VOLUME /app/data
 
