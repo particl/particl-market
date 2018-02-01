@@ -16,6 +16,7 @@ describe('/EscrowLockCommand', () => {
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
+        state: 'Mel State',
         country: 'Finland',
         zipCode: '85001'
     };
@@ -37,7 +38,9 @@ describe('/EscrowLockCommand', () => {
             defaultProfile.id,
             addressTestData.title,
             addressTestData.addressLine1, addressTestData.addressLine2,
-            addressTestData.city, addressTestData.country, addressTestData.zipCode]);
+            addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
+
+
         addressRes.expectJson();
         addressRes.expectStatusCode(200);
         createdAddress = addressRes.getBody()['result'];

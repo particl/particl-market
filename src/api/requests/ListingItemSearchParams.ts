@@ -23,6 +23,10 @@ export class ListingItemSearchParams extends RequestBody {
 
     public maxPrice: number;
 
+    public country: string;
+
+    public shippingDestination: string;
+
     public searchString: string;
 
 }

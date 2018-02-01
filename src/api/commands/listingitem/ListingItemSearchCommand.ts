@@ -32,8 +32,10 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
      *  [4]: profileId, number
      *  [5]: minPrice, number to search item basePrice between 2 range
      *  [6]: maxPrice, number to search item basePrice between 2 range
-     *  [7]: searchString, string, can be null
-     *  [8]: withRelated, boolean
+     *  [7]: country, string, can be null
+     *  [8]: shippingDestination, string, can be null
+     *  [9]: searchString, string, can be null
+     *  [10]: withRelated, boolean
      *
      * @param data
      * @returns {Promise<ListingItem>}
@@ -48,8 +50,10 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             profileId: data.params[4],
             minPrice: data.params[5],
             maxPrice: data.params[6],
-            searchString: data.params[7] || ''
-        } as ListingItemSearchParams, data.params[8]);
+            country: data.params[7],
+            shippingDestination: data.params[8],
+            searchString: data.params[9] || ''
+        } as ListingItemSearchParams, data.params[10]);
     }
 
     public help(): string {
@@ -75,6 +79,12 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '            <maxPrice>                 -  [optional] Numeric - The maxPrice of the listing item price\n'
 
             + '                                       we want to search for between basePrice rance.\n'
+            + '            <country>                 -  [optional] String - The country of the listing item\n'
+
+            + '                                       we want to search for.\n'
+            + '           <shippingDestination>      -  [optional] String - The shipping destination of the listing item\n'
+
+            + '                                       we want to search for \n'
             + '            <ALL>                   - [optional] any string or * or none \n'
             + '                                       means dont wnat to search with profile\n'
             + '                                       we want to search for.\n'

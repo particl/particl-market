@@ -53,12 +53,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         const listingCollection = ListingItem.forge<Collection<ListingItem>>()
             .query(qb => {
                 qb.innerJoin('item_informations', 'listing_items.id', 'item_informations.listing_item_id');
-                // qb.groupBy('listing_items.id');
                 qb.where('item_informations.item_category_id', '=', categoryId);
                 qb.andWhere('item_informations.item_category_id', '>', 0);
             })
             .orderBy('item_informations.title', 'ASC');
-        // .where('item_informations.item_category_id', '=', categoryId);
 
         if (withRelated) {
             return await listingCollection.fetchAll({
@@ -89,11 +87,23 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 if (typeof options.minPrice === 'number' && typeof options.maxPrice === 'number') {
                     qb.innerJoin('payment_informations', 'payment_informations.listing_item_id', 'listing_items.id');
                     qb.innerJoin('item_prices', 'payment_informations.id', 'item_prices.payment_information_id');
-
                     qb.whereBetween('item_prices.base_price', [options.minPrice, options.maxPrice]);
                 }
 
                 qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id');
+
+                // search by item location (country)
+                if (options.country && typeof options.country === 'string' ) {
+                    qb.innerJoin('item_locations', 'item_informations.id', 'item_locations.item_information_id');
+                    qb.where('item_locations.region', options.country);
+                }
+
+                // search by shipping destination
+                if (options.shippingDestination && typeof options.shippingDestination === 'string' ) {
+                    qb.innerJoin('shipping_destinations', 'item_informations.id', 'shipping_destinations.item_information_id');
+                    qb.where('shipping_destinations.country', options.shippingDestination);
+                }
+
                 qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 qb.groupBy('listing_items.id');
 
@@ -101,7 +111,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             .orderBy('item_informations.title', options.order).query({
                 limit: options.pageLimit,
                 offset: (options.page - 1) * options.pageLimit
-
             });
 
         if (withRelated) {

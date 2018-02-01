@@ -166,6 +166,8 @@ describe('/ListingItemSearchCommand', () => {
     let profileId = '';
     let minPrice = null;
     let maxPrice = null;
+    let country = '';
+    let shippingDestination = '';
     let searchString = '';
     let withRelated = true;
 
@@ -198,7 +200,7 @@ describe('/ListingItemSearchCommand', () => {
     test('Should get all listing items', async () => {
         // get all listing items
         const getDataRes: any = await rpc(method, [subCommand, pageNumber,
-            pageLimit, order, category, profileId, minPrice, maxPrice, searchString, withRelated]);
+            pageLimit, order, category, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -245,7 +247,7 @@ describe('/ListingItemSearchCommand', () => {
         category = 'cat_high_luxyry_items';
 
         const getDataRes: any = await rpc(method, [subCommand, pageNumber,
-            pageLimit, order, category, profileId, minPrice, maxPrice, searchString, withRelated]);
+            pageLimit, order, category, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -258,7 +260,7 @@ describe('/ListingItemSearchCommand', () => {
     test('Should search listing items by category id', async () => {
         category = categoryId;
         const getDataRes: any = await rpc(method, [subCommand, pageNumber,
-            pageLimit, order, category, profileId, minPrice, maxPrice, searchString, withRelated]);
+            pageLimit, order, category, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
 
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -272,7 +274,7 @@ describe('/ListingItemSearchCommand', () => {
         // set search term
         searchString = testData.itemInformation.title;
         const getDataRes: any = await rpc(method, [subCommand, pageNumber,
-            pageLimit, order, category, profileId, minPrice, maxPrice, searchString, withRelated]);
+            pageLimit, order, category, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
 
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -287,7 +289,7 @@ describe('/ListingItemSearchCommand', () => {
         category = '';
         searchString = '';
         const getDataRes: any = await rpc(method, [subCommand, pageNumber,
-            pageLimit, order, category, profileId, minPrice, maxPrice, searchString, withRelated]);
+            pageLimit, order, category, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
 
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -304,7 +306,7 @@ describe('/ListingItemSearchCommand', () => {
         minPrice = 0;
         maxPrice = 4;
         const getDataRes: any = await rpc(method, [subCommand, pageNumber,
-            pageLimit, order, category, profileId, minPrice, maxPrice, searchString, withRelated]);
+            pageLimit, order, category, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
 
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -321,7 +323,7 @@ describe('/ListingItemSearchCommand', () => {
         minPrice = 1;
         maxPrice = 4;
         const getDataRes: any = await rpc(method, [subCommand, pageNumber,
-            pageLimit, order, category, profileId, minPrice, maxPrice, searchString, withRelated]);
+            pageLimit, order, category, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
 
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -338,7 +340,7 @@ describe('/ListingItemSearchCommand', () => {
         minPrice = 4;
         maxPrice = 5;
         const getDataRes: any = await rpc(method, [subCommand, pageNumber,
-            pageLimit, order, category, profileId, minPrice, maxPrice, searchString, withRelated]);
+            pageLimit, order, category, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
 
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -353,9 +355,11 @@ describe('/ListingItemSearchCommand', () => {
         profileId = '';
         minPrice = 0;
         maxPrice = 5;
+        country = '';
+        shippingDestination = '';
         withRelated = false;
         const getDataRes: any = await rpc(method, [subCommand, pageNumber,
-            pageLimit, order, category, profileId, minPrice, maxPrice, searchString, withRelated]);
+            pageLimit, order, category, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
 
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -367,5 +371,47 @@ describe('/ListingItemSearchCommand', () => {
         expect(result.ListingItemObjects).toBeUndefined();
         expect(result.Bids).toBeUndefined();
         expect(result.Market).toBeUndefined();
+    });
+
+    test('Should search listing item by item location', async () => {
+        profileId = '';
+        category = '';
+        searchString = '';
+        profileId = '';
+        minPrice = 0;
+        maxPrice = 5;
+        country = 'South Africa';
+        shippingDestination = '';
+        withRelated = true;
+        const getDataRes: any = await rpc(method, [subCommand, pageNumber,
+            pageLimit, order, category, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
+
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].ItemInformation.ItemLocation.region).toBe(country);
+
+    });
+
+
+    test('Should search listing item by shipping Destination', async () => {
+        profileId = '';
+        category = '';
+        searchString = '';
+        profileId = '';
+        minPrice = 0;
+        maxPrice = 5;
+        country = '';
+        shippingDestination = 'United Kingdom';
+        withRelated = true;
+        const getDataRes: any = await rpc(method, [subCommand, pageNumber,
+            pageLimit, order, category, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
+
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(shippingDestination);
     });
 });
