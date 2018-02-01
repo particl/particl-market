@@ -120,7 +120,7 @@ steps:
           - TESTNET_PORT=52935
           - APP_NAME=dapp-shell
           - APP_ENV=test
-          - APP_HOST=http://localhost
+          - APP_HOST=http://dappshell
           - APP_URL_PREFIX=/api
           - LOG_LEVEL=debug
           - LOG_ADAPTER=winston
