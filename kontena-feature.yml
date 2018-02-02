@@ -44,7 +44,7 @@ services:
       - node==kontena-agent1
 
   dapp-shell-feature1:
-    image: r.cfcr.io/ludx/dapp-shell-ci:latest
+    image: ludx/dapp-shell-ci:latest
     instances: 1
     depends_on:
       - particld1
@@ -90,7 +90,7 @@ services:
       - node==kontena-agent1
 
   dapp-shell-feature2:
-    image: r.cfcr.io/ludx/dapp-shell-ci:latest
+    image: ludx/dapp-shell-ci:latest
     instances: 1
     depends_on:
       - particld2
