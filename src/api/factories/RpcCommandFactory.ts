@@ -101,6 +101,8 @@ import { ShoppingCartListCommand } from '../commands/shoppingcart/ShoppingCartLi
 import { ShoppingCartGetCommand } from '../commands/shoppingcart/ShoppingCartGetCommand';
 import { ShoppingCartRootCommand } from '../commands/shoppingcart/ShoppingCartRootCommand';
 
+import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitems/ShoppingCartItemRootCommand';
+
 import { Command } from '../commands/Command';
 
 // tslint:disable:array-type
@@ -207,6 +209,8 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartListCommand) private shoppingCartListCommand: ShoppingCartListCommand,
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartGetCommand) private shoppingCartGetCommand: ShoppingCartGetCommand,
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartRootCommand) private shoppingCartRootCommand: ShoppingCartRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemRootCommand) private shoppingCartItemRootCommand: ShoppingCartItemRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
@@ -315,6 +319,8 @@ export class RpcCommandFactory {
         this.commands.push(shoppingCartListCommand);
         this.commands.push(shoppingCartGetCommand);
         this.commands.push(shoppingCartRootCommand);
+
+        this.commands.push(shoppingCartItemRootCommand);
 
         this.commands.push(helpCommand);
 
