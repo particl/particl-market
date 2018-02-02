@@ -44,15 +44,15 @@ services:
       - node==kontena-agent1
 
   dapp-shell-master1:
-    image: ludx/dapp-shell-ci:master
+    image: r.cfcr.io/ludx/dapp-shell-ci:master
     instances: 1
     depends_on:
       - particld1
     links:
       - particld1
       - loadbalancerstack/internet_lb
-    volumes:
-      - /root/data/dapp-shell-master1:/app/data
+#    volumes:
+#      - /root/data/dapp-shell-master1:/app/data
     environment:
       - NODE_ENV=prod
       - APP_NAME=dapp-shell
@@ -90,15 +90,15 @@ services:
       - node==kontena-agent1
 
   dapp-shell-master2:
-    image: ludx/dapp-shell-ci:master
+    image: r.cfcr.io/ludx/dapp-shell-ci:master
     instances: 1
     depends_on:
       - particld2
     links:
       - particld2
       - loadbalancerstack/internet_lb
-    volumes:
-      - /root/data/dapp-shell-master2:/app/data
+#    volumes:
+#      - /root/data/dapp-shell-master2:/app/data
     environment:
       - NODE_ENV=prod
       - APP_NAME=dapp-shell
