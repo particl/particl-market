@@ -5,6 +5,8 @@ import { ListingItemTemplateCreateRequest } from '../../src/api/requests/Listing
 import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { Logger } from '../../src/core/Logger';
 import { AcceptBidCommand } from '../../src/api/commands/bid/AcceptBidCommand';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('AcceptBidCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -12,7 +14,8 @@ describe('AcceptBidCommand', () => {
     const listingItemService = null;
     const messageBroadcastService = null;
 
-    const method =  new AcceptBidCommand(bidFactory, listingItemService, messageBroadcastService, Logger).name;
+    const method =  Commands.BID_ROOT.commandName;
+    const subMethod = Commands.BID_ACCEPT.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -20,14 +23,14 @@ describe('AcceptBidCommand', () => {
 
     test('Should accept a bid by RPC', async () => {
         // create listing item
-        const listingItem = await testUtil.generateData('listingitem', 1);
+        const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
 
         // create bid
-        const bid = await testUtil.addData('bid', {
+        const bid = await testUtil.addData(CreatableModel.BID, {
             action: BidMessageType.MPA_BID,
             listing_item_id: listingItem[0].id
         } as BidCreateRequest);
-        const res: any = await rpc(method, [listingItem[0].hash]);
+        const res: any = await rpc(method, [subMethod, listingItem[0].hash]);
         res.expectJson();
 
         // TODO: Need to implements after broadcast functionality get done

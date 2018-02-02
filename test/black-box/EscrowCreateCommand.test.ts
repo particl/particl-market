@@ -5,6 +5,7 @@ import { ListingItemTemplateCreateRequest } from '../../src/api/requests/Listing
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/EscrowCreateCommand', () => {
 
@@ -42,11 +43,9 @@ describe('/EscrowCreateCommand', () => {
         // set hash
         testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
 
-        addListingItemTempRes.expectJson();
-        addListingItemTempRes.expectStatusCode(200);
-        const addListingItemTempResult = addListingItemTempRes.getBody()['result'];
+        const addListingItemTempResult = addListingItemTempRes;
         const createdTemplateId = addListingItemTempResult.id;
         const paymentInformationId = addListingItemTempResult.PaymentInformation.id;
         const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
@@ -67,8 +66,8 @@ describe('/EscrowCreateCommand', () => {
 
         testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        const createdTemplateId = addListingItemTempRes.getBody()['result'].id;
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        const createdTemplateId = addListingItemTempRes.id;
 
         // create escrow
         const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);

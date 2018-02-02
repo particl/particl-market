@@ -11,6 +11,7 @@ import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
 import { DataRootCommand } from '../commands/data/DataRootCommand';
 import { HelpCommand } from '../commands/HelpCommand';
 
+import { BidRootCommand } from '../commands/bid/BidRootCommand';
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
 import { AcceptBidCommand } from '../commands/bid/AcceptBidCommand';
 import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
@@ -90,6 +91,9 @@ import { ShippingDestinationListCommand } from '../commands/shippingdestination/
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
 
+import { ListingItemObjectRootCommand } from '../commands/listingitemobject/ListingItemObjectRootCommand';
+import { ListingItemObjectSearchCommand } from '../commands/listingitemobject/ListingItemObjectSearchCommand';
+
 import { Command } from '../commands/Command';
 
 // tslint:disable:array-type
@@ -100,6 +104,7 @@ export class RpcCommandFactory {
     public commands: Array<RpcCommandInterface<any>> = [];
 
     constructor(
+        @inject(Types.Command) @named(Targets.Command.bid.BidRootCommand) private bidRootCommand: BidRootCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidSearchCommand) private bidSearchCommand: BidSearchCommand,
         @inject(Types.Command) @named(Targets.Command.bid.AcceptBidCommand) private bidAcceptCommand: AcceptBidCommand,
         @inject(Types.Command) @named(Targets.Command.bid.CancelBidCommand) private bidCancelCommand: CancelBidCommand,
@@ -185,6 +190,10 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
         @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
         @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectRootCommand) private listingItemObjectRootCommand: ListingItemObjectRootCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectSearchCommand) private listingItemObjectSearchCommand: ListingItemObjectSearchCommand,
+
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
 
@@ -196,6 +205,7 @@ export class RpcCommandFactory {
     ) {
         this.log = new Logger(__filename);
 
+        this.commands.push(bidRootCommand);
         this.commands.push(bidSearchCommand);
         this.commands.push(bidAcceptCommand);
         this.commands.push(bidCancelCommand);
@@ -281,6 +291,10 @@ export class RpcCommandFactory {
         this.commands.push(dataCleanCommand);
         this.commands.push(dataGenerateCommand);
         this.commands.push(dataRootCommand);
+
+        this.commands.push(listingItemObjectRootCommand);
+        this.commands.push(listingItemObjectSearchCommand);
+
         this.commands.push(helpCommand);
 
         this.log.debug(this.commands.length + ' commands initialized.');

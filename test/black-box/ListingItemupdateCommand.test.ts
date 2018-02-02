@@ -8,8 +8,10 @@ import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
-
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('ListingItemUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -96,19 +98,37 @@ describe('ListingItemUpdateCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
+
         // create market
         const resMarket = await rpc(makretRootMethod, [addMakretMethod, 'Test Market', 'privateKey', 'Market Address']);
         const resultMarket: any = resMarket.getBody()['result'];
         testDataListingItem.market_id = resultMarket.id;
 
-        // create listing-item-template
-        const listingItemTemplateGenerateData = await testUtil.generateData('listingitemtemplate', 1);
+        // generate listing-item-template
+        const listingItemTemplateGenerateData = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as ListingItemTemplate[];
+
         listingItemTemplate = listingItemTemplateGenerateData[0];
 
         // create listing item
         testDataListingItem.listing_item_template_id = listingItemTemplate.id;
-        const addListingItem: any = await testUtil.addData('listingitem', testDataListingItem);
-        listingItem = addListingItem.getBody()['result'];
+        const addListingItem: any = await testUtil.addData(CreatableModel.LISTINGITEM, testDataListingItem);
+        listingItem = addListingItem;
         listingItemHash = listingItem.hash;
         listingItemId = listingItem.id;
     });

@@ -2,6 +2,8 @@ import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Logger } from '../../src/core/Logger';
 import { SendBidCommand } from '../../src/api/commands/bid/SendBidCommand';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('SendBidCommand', () => {
 
@@ -10,7 +12,8 @@ describe('SendBidCommand', () => {
     const messageBroadcastService = null;
     const bidFactory = null;
 
-    const method =  new SendBidCommand(listingItemService, listingItemService, messageBroadcastService, Logger).name;
+    const method =  Commands.BID_ROOT.commandName;
+    const subMethod =  Commands.BID_SEND.commandName;
 
     const testData = [
         'colour',
@@ -24,8 +27,9 @@ describe('SendBidCommand', () => {
     });
 
     test('Should send a bid by RPC', async () => {
-        const listingItem = await testUtil.generateData('listingitem', 1);
+        const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
         testData.unshift(listingItem[0].hash);
+        testData.unshift(subMethod);
         const res: any = await rpc(method, testData);
         res.expectJson();
         res.expectStatusCode(200);

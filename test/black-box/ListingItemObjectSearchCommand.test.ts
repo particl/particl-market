@@ -7,22 +7,23 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
-import { Logger } from '../../src/core/Logger';
-import { ListingItemSearchCommand } from '../../src/api/commands/listingitem/ListingItemSearchCommand';
-import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 
-describe('/ListingItemSearchCommand', () => {
+describe('/ListingItemObjectSearchCommand', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ITEM_ROOT.commandName;
+    const method = Commands.ITEMOBJECT_ROOT.commandName;
     const addMakretMethod = Commands.MARKET_ADD.commandName;
-    const subCommand = Commands.ITEM_SEARCH.commandName;
+    const subCommand = Commands.ITEMOBJECT_SEARCH.commandName;
     const marketRootMethod = Commands.MARKET_ROOT.commandName;
 
     const testData = {
         market_id: 0,
-        hash: 'hash1',
+        hash: '',
         itemInformation: {
             title: 'item title1',
             shortDescription: 'item short desc1',
@@ -85,12 +86,26 @@ describe('/ListingItemSearchCommand', () => {
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1'
+        }],
+        listingItemObjects: [{
+            type: ListingItemObjectType.CHECKBOX,
+            description: 'Test description checkbox',
+            order: 1,
+            searchable: true
+        }, {
+            type: ListingItemObjectType.TABLE,
+            description: 'Test description table',
+            order: 2
+        }, {
+            type: ListingItemObjectType.DROPDOWN,
+            description: 'Test description dropdown',
+            order: 7
         }]
     };
 
     const testDataTwo = {
         market_id: 0,
-        hash: 'hash2',
+        hash: '',
         itemInformation: {
             title: 'title UPDATED',
             shortDescription: 'item UPDATED',
@@ -147,100 +162,93 @@ describe('/ListingItemSearchCommand', () => {
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey1 UPDATED'
+        }],
+
+        listingItemObjects: [{
+            type: ListingItemObjectType.CHECKBOX,
+            description: 'Test description checkbox 2 CHECKBOX',
+            order: 1
+        }, {
+            type: ListingItemObjectType.TABLE,
+            description: 'Test description table 2',
+            order: 2
+        }, {
+            type: ListingItemObjectType.DROPDOWN,
+            description: 'Test description dropdown 2',
+            order: 7
         }]
     };
 
-    let createdHashFirst;
-    let createdHashSecond;
-    let categoryId;
-
     beforeAll(async () => {
         await testUtil.cleanDb();
+        // set hash
+        testData.hash = ObjectHash.getHash(testData);
+        testDataTwo.hash = ObjectHash.getHash(testDataTwo);
+
         // add market
         const res = await rpc(marketRootMethod, [addMakretMethod, 'Test Market', 'privateKey', 'Market Address']);
         const result: any = res.getBody()['result'];
         testData.market_id = result.id;
+        testDataTwo.market_id = result.id;
 
         // create listing item
-        const addListingItem1: any = await testUtil.addData(CreatableModel.LISTINGITEM, testData);
-        const addListingItem1Result = addListingItem1;
-        createdHashFirst = addListingItem1Result.hash;
-        categoryId = addListingItem1Result.ItemInformation.ItemCategory.id;
-        testDataTwo.market_id = result.id;
-        const addListingItem2: any = await testUtil.addData(CreatableModel.LISTINGITEM, testDataTwo);
-        createdHashSecond = addListingItem2.hash;
+        await testUtil.addData(CreatableModel.LISTINGITEM, testData);
+        await testUtil.addData(CreatableModel.LISTINGITEM, testDataTwo);
     });
 
-
-    test('Should get all listing items', async () => {
-        // get all listing items
-        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', '', '', '', true]);
+    test('Should fail to search listing item object for the null searchString', async () => {
+        // search listing item objects
+        const getDataRes: any = await rpc(method, [subCommand]);
         getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(createdHashFirst);
-        expect(result[1].hash).toBe(createdHashSecond);
+        getDataRes.expectStatusCode(400);
     });
 
-    test('Should get only first listing item by pagination', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 1, 1, 'ASC']);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(createdHashFirst);
-    });
-
-    test('Should get second listing item by pagination', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 2, 1, 'ASC']);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(createdHashSecond);
-    });
-
-    // TODO: maybe we should rather return an error?
-    test('Should return empty listing items array if invalid pagination', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 2, 2, 'ASC']);
+    test('Should search empty listing item object for the invalid string search', async () => {
+        // search listing item objects
+        const getDataRes: any = await rpc(method, [subCommand, 'dapp']);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(0);
     });
 
-    test('Should search listing items by category key', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', 'cat_high_luxyry_items', '', '', true]);
+    test('Should return 2 listing item object searched by listing item object type', async () => {
+        // search listing item objects
+        const getDataRes: any = await rpc(method, [subCommand, ListingItemObjectType.CHECKBOX]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(2);
-
-        const category = result[0].ItemInformation.ItemCategory;
-        expect('cat_high_luxyry_items').toBe(category.key);
+        expect(result[0].type).toBe(ListingItemObjectType.CHECKBOX);
+        expect(result[1].type).toBe(ListingItemObjectType.CHECKBOX);
     });
 
-    test('Should search listing items by category id', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', categoryId, '', '', true]);
+    test('Should return all listing item object searched by Test text with type or description', async () => {
+        // search listing item objects
+        const getDataRes: any = await rpc(method, [subCommand, 'Test']);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(6);
+        expect(result[0].description).toMatch('Test');
+        expect(result[0].searchable).toBe(1);
+        expect(result[1].searchable).toBe(0);
+    });
+
+    test('Should return all listing item object matching with given search string in listing item object type or description', async () => {
+        // search listing item objects
+        const getDataRes: any = await rpc(method, [subCommand, 'CHECKBOX']);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(2);
-        const category = result[0].ItemInformation.ItemCategory;
-        expect(categoryId).toBe(category.id);
+        expect(result[0].type).toMatch('CHECKBOX');
+        expect(result[0].description).toContain('checkbox');
+        expect(result[1].type).toMatch('CHECKBOX');
+        expect(result[1].description).toContain('checkbox');
+        expect(result[0].searchable).toBe(1);
+        expect(result[1].searchable).toBe(0);
     });
 
-    test('Should search listing items by ItemInformation title', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', '', '', testData.itemInformation.title, true]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(1);
-        expect(testData.itemInformation.title).toBe(result[0].ItemInformation.title);
-    });
-
-
-    // TODO: NOTE: Need to add more test cases for the search by profile. we will write those once itemTemplate rootCommand will be done
 });
 
