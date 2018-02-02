@@ -18,7 +18,9 @@ COPY ./test/.env.test.example /app/test/.env.test
 COPY ./test/.env.blackbox.example /app/test/.env.blackbox
 RUN bin/ci-create-dbs.sh
 
-#VOLUME /app/data
+ARG BUILD_VERSION
+RUN echo BUILD_VERSION: $BUILD_VERSION
+RUN echo "$BUILD_VERSION" > public/cli/build
 
 CMD [ "yarn", "serve" ]
 EXPOSE 3000 3100 3200
