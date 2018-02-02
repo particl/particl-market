@@ -44,7 +44,7 @@ services:
       - node==kontena-agent1
 
   dapp-shell-master1:
-    image: r.cfcr.io/ludx/dapp-shell-ci:master
+    image: ludx/dapp-shell-ci:master
     depends_on:
       - particld1
     links:
@@ -89,7 +89,7 @@ services:
       - node==kontena-agent1
 
   dapp-shell-master2:
-    image: r.cfcr.io/ludx/dapp-shell-ci:master
+    image: ludx/dapp-shell-ci:master
     depends_on:
       - particld2
     links:
