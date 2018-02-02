@@ -43,7 +43,7 @@ services:
     affinity:
       - node==kontena-agent1
 
-  dapp-shell-feature1:
+  app1:
     image: ludx/dapp-shell-ci:latest
     instances: 1
     depends_on:
@@ -89,7 +89,7 @@ services:
     affinity:
       - node==kontena-agent1
 
-  dapp-shell-feature2:
+  app2:
     image: ludx/dapp-shell-ci:latest
     instances: 1
     depends_on:
