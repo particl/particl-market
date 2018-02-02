@@ -1,4 +1,9 @@
 node_modules
 npm-debug.log
-data
 .semaphore-cache
+#data/marketplace.db
+data/marketplace-test.db
+data/particl1
+data/particl2
+data/app1
+data/app2
