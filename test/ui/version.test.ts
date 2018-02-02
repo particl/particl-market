@@ -1,7 +1,7 @@
 import { api } from './lib/api';
 import * as build from '../../public/cli/build.json';
 
-describe('Check deployed version', () => {
+describe('UI version', () => {
 
     // TODO: check for correct build version
     test('Should have a build version', async () => {
