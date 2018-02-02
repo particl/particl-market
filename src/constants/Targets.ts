@@ -168,7 +168,6 @@ export const Targets = {
             ListingItemRootCommand: 'ListingItemRootCommand',
             ListingItemSearchCommand: 'ListingItemSearchCommand',
             ListingItemUpdateCommand : 'ListingItemUpdateCommand',
-            ListingItemRootCommand: 'ListingItemRootCommand',
             OwnListingItemSearchCommand: 'OwnListingItemSearchCommand'
         },
         listingitemtemplate: {
@@ -176,7 +175,7 @@ export const Targets = {
             ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
-            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
+            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand'
         },
         market: {
