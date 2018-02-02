@@ -103,9 +103,11 @@ export class ItemImageDataService {
         itemImageData.DataId = newBody.dataId;
         itemImageData.Protocol = newBody.protocol;
         itemImageData.Encoding = newBody.encoding;
-        itemImageData.DataBig = newBody.dataBig;
-        itemImageData.DataMedium = newBody.dataMedium;
-        itemImageData.DataThumbnail = newBody.dataThumbnail;
+
+        // TODO: this needs to be fixed
+        // itemImageData.DataBig = newBody.dataBig;
+        // itemImageData.DataMedium = newBody.dataMedium;
+        // itemImageData.DataThumbnail = newBody.dataThumbnail;
 
         // update itemImageData record
         const updatedItemImageData = await this.itemImageDataRepo.update(id, itemImageData.toJSON());
