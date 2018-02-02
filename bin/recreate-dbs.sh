@@ -9,5 +9,3 @@ cp data/marketplace.db data/app1/marketplace-test.db
 cp data/marketplace.db data/app2/marketplace.db
 cp data/marketplace.db data/app2/marketplace-test.db
 #scp data/marketplace.db root@dev.particl.xyz:data/dapp-shell-ci/marketplace.db
-
-
