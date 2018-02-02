@@ -41,7 +41,7 @@ export class BidService {
         return bid;
     }
 
-    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Bid> {
+    public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
         const params = {
             listingItemHash: hash
         } as BidSearchParams;
