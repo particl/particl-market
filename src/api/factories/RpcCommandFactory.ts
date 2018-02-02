@@ -2,7 +2,7 @@ import * as Bookshelf from 'bookshelf';
 import { inject, named, multiInject } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { RpcCommandInterface} from '../commands/RpcCommandInterface';
+import { RpcCommandInterface } from '../commands/RpcCommandInterface';
 import { NotFoundException } from '../exceptions/NotFoundException';
 
 import { DataAddCommand } from '../commands/data/DataAddCommand';
@@ -93,6 +93,13 @@ import { ShippingDestinationRemoveCommand } from '../commands/shippingdestinatio
 
 import { ListingItemObjectRootCommand } from '../commands/listingitemobject/ListingItemObjectRootCommand';
 import { ListingItemObjectSearchCommand } from '../commands/listingitemobject/ListingItemObjectSearchCommand';
+
+import { ShoppingCartAddCommand } from '../commands/shoppingcart/ShoppingCartAddCommand';
+import { ShoppingCartUpdateCommand } from '../commands/shoppingcart/ShoppingCartUpdateCommand';
+import { ShoppingCartRemoveCommand } from '../commands/shoppingcart/ShoppingCartRemoveCommand';
+import { ShoppingCartListCommand } from '../commands/shoppingcart/ShoppingCartListCommand';
+import { ShoppingCartGetCommand } from '../commands/shoppingcart/ShoppingCartGetCommand';
+import { ShoppingCartRootCommand } from '../commands/shoppingcart/ShoppingCartRootCommand';
 
 import { Command } from '../commands/Command';
 
@@ -194,6 +201,13 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectRootCommand) private listingItemObjectRootCommand: ListingItemObjectRootCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectSearchCommand) private listingItemObjectSearchCommand: ListingItemObjectSearchCommand,
 
+        @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartAddCommand) private shoppingCartAddCommand: ShoppingCartAddCommand,
+        @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartUpdateCommand) private shoppingCartUpdateCommand: ShoppingCartUpdateCommand,
+        @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartRemoveCommand) private shoppingCartRemoveCommand: ShoppingCartRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartListCommand) private shoppingCartListCommand: ShoppingCartListCommand,
+        @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartGetCommand) private shoppingCartGetCommand: ShoppingCartGetCommand,
+        @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartRootCommand) private shoppingCartRootCommand: ShoppingCartRootCommand,
+
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
 
@@ -294,6 +308,13 @@ export class RpcCommandFactory {
 
         this.commands.push(listingItemObjectRootCommand);
         this.commands.push(listingItemObjectSearchCommand);
+
+        this.commands.push(shoppingCartAddCommand);
+        this.commands.push(shoppingCartUpdateCommand);
+        this.commands.push(shoppingCartRemoveCommand);
+        this.commands.push(shoppingCartListCommand);
+        this.commands.push(shoppingCartGetCommand);
+        this.commands.push(shoppingCartRootCommand);
 
         this.commands.push(helpCommand);
 

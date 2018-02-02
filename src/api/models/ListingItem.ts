@@ -9,6 +9,7 @@ import { FavoriteItem } from './FavoriteItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
 import { Bid } from './Bid';
 import { Market } from './Market';
+import { ShoppingCartItems } from './ShoppingCartItems';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -168,6 +169,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public Market(): Market {
         return this.belongsTo(Market, 'market_id', 'id');
+    }
+
+    public ShoppingCartItems(): Collection<ShoppingCartItems> {
+        return this.hasMany(ShoppingCartItems, 'listing_item_id', 'id');
     }
 
 }
