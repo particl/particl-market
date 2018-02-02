@@ -6,11 +6,9 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
-import { ShoppingCartsUpdateRequest } from '../../requests/ShoppingCartsUpdateRequest';
-import { ShoppingCarts } from '../../models/ShoppingCarts';
 import { ShoppingCartsService } from '../../services/ShoppingCartsService';
 
-export class ShoppingCartUpdateCommand extends BaseCommand implements RpcCommandInterface<ShoppingCarts> {
+export class ShoppingCartListCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
 
@@ -18,28 +16,24 @@ export class ShoppingCartUpdateCommand extends BaseCommand implements RpcCommand
         @inject(Types.Service) @named(Targets.Service.ShoppingCartsService) private shoppingCartsService: ShoppingCartsService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(Commands.SHOPPINGCART_UPDATE);
+        super(Commands.SHOPPINGCART_LIST);
         this.log = new Logger(__filename);
     }
 
     /**
      * data.params[]:
-     *  [0]: cartId
-     *  [1]: newCartName
+     *  [0]: profileId || profileName
      *
      * @param data
-     * @returns {Promise<ShoppingCarts>}
+     * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ShoppingCarts> {
-        return this.shoppingCartsService.update(data.params[0], {
-            name: data.params[1]
-        } as ShoppingCartsUpdateRequest);
+    public async execute( @request(RpcRequest) data: any): Promise<any> {
+        return this.shoppingCartsService.findAllByProfile(data.params[0]);
     }
 
     public help(): string {
-        return this.getName() + ' <cartId> <newCartName>\n'
-            + '    <cartId>            - Id of the shopping cart we want to update.\n'
-            + '    <newCartName>       - new name of shopping cart';
+        return this.getName() + ' [<profileId> | <profileName>]\n'
+            + '    [<profileId> | <profileName>]          - The Id/Name of the profile associated with the shopping cart we want to search for\n';
     }
 }
