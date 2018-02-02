@@ -308,6 +308,7 @@ export class RpcCommandFactory {
 
         this.commands.push(listingItemObjectRootCommand);
         this.commands.push(listingItemObjectSearchCommand);
+
         this.commands.push(shoppingCartAddCommand);
         this.commands.push(shoppingCartUpdateCommand);
         this.commands.push(shoppingCartRemoveCommand);
