@@ -53,7 +53,7 @@ steps:
 #    fail-fast: false
 
 
-#  integration_test_step:
+  integration_test_step:
     title: running integration tests
     image: ${{build_docker_image_step}}
     environment:
