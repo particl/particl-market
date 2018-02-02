@@ -11,6 +11,7 @@ import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
 import { DataRootCommand } from '../commands/data/DataRootCommand';
 import { HelpCommand } from '../commands/HelpCommand';
 
+import { BidRootCommand } from '../commands/bid/BidRootCommand';
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
 import { AcceptBidCommand } from '../commands/bid/AcceptBidCommand';
 import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
@@ -103,6 +104,7 @@ export class RpcCommandFactory {
     public commands: Array<RpcCommandInterface<any>> = [];
 
     constructor(
+        @inject(Types.Command) @named(Targets.Command.bid.BidRootCommand) private bidRootCommand: BidRootCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidSearchCommand) private bidSearchCommand: BidSearchCommand,
         @inject(Types.Command) @named(Targets.Command.bid.AcceptBidCommand) private bidAcceptCommand: AcceptBidCommand,
         @inject(Types.Command) @named(Targets.Command.bid.CancelBidCommand) private bidCancelCommand: CancelBidCommand,
@@ -202,6 +204,7 @@ export class RpcCommandFactory {
     ) {
         this.log = new Logger(__filename);
 
+        this.commands.push(bidRootCommand);
         this.commands.push(bidSearchCommand);
         this.commands.push(bidAcceptCommand);
         this.commands.push(bidCancelCommand);

@@ -32,8 +32,7 @@ export class AcceptBidCommand extends BaseCommand implements RpcCommandInterface
 
     /**
      * data.params[]:
-     * [0]: item, string
-     * [0]: action, string
+     * [0]: itemhash, string
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
      */
@@ -57,7 +56,6 @@ export class AcceptBidCommand extends BaseCommand implements RpcCommandInterface
                 throw new MessageException(`Bid not found for the listing item hash ${data.params[0]}`);
 
             } else if (bid.action === BidMessageType.MPA_BID) {
-
                 // broadcast the accepted bid message
                 await this.messageBroadcastService.broadcast({
                     listing: data.params[0],
@@ -68,14 +66,18 @@ export class AcceptBidCommand extends BaseCommand implements RpcCommandInterface
                 return bid;
 
             } else {
+                this.log.warn(`Bid can not be accepted because it was already been ${bid.action}`);
                 throw new MessageException(`Bid can not be accepted because it was already been ${bid.action}`);
             }
         }
     }
 
     public help(): string {
-        return this.getName() + ' <TODO>';
+        return this.getName() + ' <itemhash>\n'
+            + '    <itemhash>  - string - The hash of the item we want to accept.';
     }
 
-
+    public description(): string {
+        return 'Accept bid.';
+    }
 }

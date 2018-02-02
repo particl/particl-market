@@ -6,6 +6,7 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 export class BlackBoxTestUtil {
 
     constructor() {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
         //
     }
 
