@@ -205,6 +205,10 @@ export const Targets = {
             ShippingDestinationListCommand: 'ShippingDestinationListCommand',
             ShippingDestinationRemoveCommand: 'ShippingDestinationRemoveCommand',
             ShippingDestinationRootCommand: 'ShippingDestinationRootCommand'
+        },
+        listingitemobject: {
+            ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
+            ListingItemObjectSearchCommand: 'ListingItemObjectSearchCommand'
         }
     },
     Factory:     {
