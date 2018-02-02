@@ -60,6 +60,7 @@ export class ShoppingCartsService {
         const shoppingCarts = await this.findOne(id, false);
 
         // set new values
+        shoppingCarts.Name = body.name;
 
         // update shoppingCarts record
         const updatedShoppingCarts = await this.shoppingCartsRepo.update(id, shoppingCarts.toJSON());

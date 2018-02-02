@@ -25,6 +25,9 @@ export class ShoppingCarts extends Bookshelf.Model<ShoppingCarts> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
+    public get Name(): string { return this.get('name'); }
+    public set Name(value: string) { this.set('name', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
