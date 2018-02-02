@@ -216,12 +216,21 @@ steps:
 #      password: ${{DOCKERHUB_PASSWORD}}
 #    fail-fast: false
 
-  push_image_step:
+  push_image_step_dockerhub:
+    type: push
+    candidate: ${{build_docker_image_step}}
+    image_name: ludx/dapp-shell-ci
+    tag: latest
+    registry: dockerhub
+    fail-fast: false
+
+  push_image_step_codefresh:
     type: push
     candidate: ${{build_docker_image_step}}
     image_name: dapp-shell-ci
     tag: latest
     registry: cfcr
+    fail-fast: false
 
   deploy_step:
     title: deploying image to kontena

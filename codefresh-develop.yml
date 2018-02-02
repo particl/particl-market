@@ -204,24 +204,21 @@ steps:
 #        curl -d "{\"content\": \"pushing image to docker.io/ludx/dapp-shell:${{CF_SHORT_REVISION}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
 #    fail-fast: false
 
-#  push_image_step:
-#    type: push
-#    candidate: ${{build_docker_image_step}}
-#    image_name: ludx/dapp-shell-ci
-#    tag: '${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}'
-#    registry: dockerhub
-#    credentials:
-#      username: ${{DOCKERHUB_USERNAME}}
-#      password: ${{DOCKERHUB_PASSWORD}}
-#    fail-fast: false
+  push_image_step_dockerhub:
+    type: push
+    candidate: ${{build_docker_image_step}}
+    image_name: ludx/dapp-shell-ci
+    tag: develop
+    registry: dockerhub
+    fail-fast: false
 
-  push_image_step:
+  push_image_step_codefresh:
     type: push
     candidate: ${{build_docker_image_step}}
     image_name: dapp-shell-ci
     tag: develop
     registry: cfcr
-
+    fail-fast: false
 
   deploy_step:
     title: deploying image to kontena
