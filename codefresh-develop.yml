@@ -240,7 +240,7 @@ steps:
 #      - BRANCH_NAME=xxx
 #      - CONFIG_FILE=xxx
 
-  push_image_notify_step:
+  build_and_deploy_finished_notify_step:
     image: tutum/curl
     commands:
       - >-
