@@ -27,8 +27,8 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
      * TODO: Update to match help().
      *
      * data.params[]:
-     * [0]: itemhash, string?
-     * [1]: status, string?
+     * [0]: itemhash, string
+     * [1]: status, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<Bid>>}
@@ -41,19 +41,10 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
         } as BidSearchParams);
     }
 
-    /*@validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Bid>> {
-        return this.bidService.search({
-            action: data.params[0],
-            listingItemId: data.params[1],
-            profileId: data.params[2]
-        } as BidSearchParams);
-    }*/
-
     public help(): string {
         return this.getName() + ' <itemhash> [<status>]\n'
-            + '    <itemhash>  - [TODO] - [TODO]\n'
-            + '    <status>    - [optional] [TODO] - [TODO]';
+            + '    <itemhash>  - string - The hash of the item we want to search bids for.\n'
+            + '    <status>    - [optional] ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL} - The status of the bids we want to search for.';
     }
 
     public description(): string {

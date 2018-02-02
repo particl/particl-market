@@ -31,11 +31,8 @@ export class AcceptBidCommand extends BaseCommand implements RpcCommandInterface
     }
 
     /**
-     * TODO: Update to match help().
-     *
      * data.params[]:
-     * [0]: item, string
-     * [0]: action, string
+     * [0]: itemhash, string
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
      */
@@ -77,7 +74,7 @@ export class AcceptBidCommand extends BaseCommand implements RpcCommandInterface
 
     public help(): string {
         return this.getName() + ' <itemhash>\n'
-            + '    <itemhash>  - [TODO] - [TODO]';
+            + '    <itemhash>  - string - The hash of the item we want to accept.';
     }
 
     public description(): string {
