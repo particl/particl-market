@@ -1,6 +1,9 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('ListingItemGetCommand', () => {
 
@@ -9,6 +12,18 @@ describe('ListingItemGetCommand', () => {
     const method = Commands.ITEM_ROOT.commandName;
     const subCommand = Commands.ITEM_GET.commandName;
 
+    const generateListingItemParams = new GenerateListingItemParams([
+        false,   // generateItemInformation
+        false,   // generateShippingDestinations
+        false,   // generateItemImages
+        false,   // generatePaymentInformation
+        false,   // generateEscrow
+        false,   // generateItemPrice
+        false,   // generateMessagingInformation
+        false    // generateListingItemObjects
+    ]).toParamsArray();
+
+
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
@@ -16,9 +31,14 @@ describe('ListingItemGetCommand', () => {
     test('Should get the listing item by hash', async () => {
 
         // create listing item
-        const listingItems = await testUtil.generateData('listingitem', 1);
+        const listingItems = await testUtil.generateData(
+            CreatableModel.LISTINGITEM, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemParams   // what kind of data to generate
+        ) as ListingItem[];
         const testData = listingItems[0];
-        const createdHash = testData['hash'];
+        const createdHash = listingItems[0].hash;
 
         // find listing item using hash
         const res = await rpc(method, [subCommand, createdHash]);
@@ -65,11 +85,16 @@ describe('ListingItemGetCommand', () => {
 
     test('Should get the listing item by id', async () => {
 
-        // create listing item
-        const listingItems = await testUtil.generateData('listingitem', 1);
+        // generate listing item
+        const listingItems = await testUtil.generateData(
+            CreatableModel.LISTINGITEM, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemParams   // what kind of data to generate
+        ) as ListingItem[];
+
         const testData = listingItems[0];
         const createdId = testData['id'];
-
         // find listing item using id
         const res = await rpc(method, [subCommand, createdId]);
         res.expectJson();

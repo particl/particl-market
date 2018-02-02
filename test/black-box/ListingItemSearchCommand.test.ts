@@ -11,6 +11,7 @@ import { Logger } from '../../src/core/Logger';
 import { ListingItemSearchCommand } from '../../src/api/commands/listingitem/ListingItemSearchCommand';
 import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/ListingItemSearchCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -161,13 +162,13 @@ describe('/ListingItemSearchCommand', () => {
         testData.market_id = result.id;
 
         // create listing item
-        const addListingItem1: any = await testUtil.addData('listingitem', testData);
-        const addListingItem1Result = addListingItem1.getBody()['result'];
+        const addListingItem1: any = await testUtil.addData(CreatableModel.LISTINGITEM, testData);
+        const addListingItem1Result = addListingItem1;
         createdHashFirst = addListingItem1Result.hash;
         categoryId = addListingItem1Result.ItemInformation.ItemCategory.id;
         testDataTwo.market_id = result.id;
-        const addListingItem2: any = await testUtil.addData('listingitem', testDataTwo);
-        createdHashSecond = addListingItem2.getBody()['result'].hash;
+        const addListingItem2: any = await testUtil.addData(CreatableModel.LISTINGITEM, testDataTwo);
+        createdHashSecond = addListingItem2.hash;
     });
 
 

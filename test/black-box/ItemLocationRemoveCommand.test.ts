@@ -1,6 +1,9 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('/ItemLocationRemoveCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -35,16 +38,34 @@ describe('/ItemLocationRemoveCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        const generateListingItemParams = new GenerateListingItemParams([
+            false,   // generateItemInformation
+            false,   // generateShippingDestinations
+            false,   // generateItemImages
+            false,   // generatePaymentInformation
+            false,   // generateEscrow
+            false,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
+
         // get profile
         const defaultProfile = await testUtil.getDefaultProfile();
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // create item template
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        createdTemplateId = addListingItemTempRes.getBody()['result'].id;
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        createdTemplateId = addListingItemTempRes.id;
+
         // create listing item
-        const listingItems = await testUtil.generateData('listingitem', 1);
-        createdlistingitemId = listingItems[0]['id'];
+        const listingItems = await testUtil.generateData(
+            CreatableModel.LISTINGITEM, // what to generate
+            1,                                  // how many to generate
+            true,                               // return model
+            generateListingItemParams   // what kind of data to generate
+        ) as ListingItemTemplate[];
+        createdlistingitemId = listingItems[0].id;
     });
 
     test('Should remove item location', async () => {
@@ -65,8 +86,8 @@ describe('/ItemLocationRemoveCommand', () => {
         // set listing item id in item information
         testDataListingItemTemplate.itemInformation.listingItemId = createdlistingitemId;
         // create new item template
-        const newListingItemTemplate = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        const newTemplateId = newListingItemTemplate.getBody()['result'].id;
+        const newListingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        const newTemplateId = newListingItemTemplate.id;
         // remove item location
         const addDataRes: any = await rpc(method, [subCommand, newTemplateId]);
         addDataRes.expectJson();
@@ -78,8 +99,8 @@ describe('/ItemLocationRemoveCommand', () => {
     test('Should fail to remove item location if Item-information not exist', async () => {
         // create new item template
         delete testDataListingItemTemplate.itemInformation;
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        const templateId = addListingItemTempRes.getBody()['result'].id;
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        const templateId = addListingItemTempRes.id;
         // remove item location
         const addDataRes: any = await rpc(method, [subCommand, templateId]);
         addDataRes.expectJson();

@@ -1,6 +1,7 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/ItemInformationCreateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -32,8 +33,8 @@ describe('/ItemInformationCreateCommand', () => {
 
         // create listing item
         testDataListingItemTemplate.profile_id = profileId;
-        const addListingItemTemplate: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        const addListingItemTemplateResult = addListingItemTemplate.getBody()['result'];
+        const addListingItemTemplate: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        const addListingItemTemplateResult = addListingItemTemplate;
         createdListingItemTemplateId = addListingItemTemplateResult.id;
     });
 
