@@ -32,7 +32,7 @@ export class CancelBidCommand extends BaseCommand implements RpcCommandInterface
 
     /**
      * data.params[]:
-     * [0]: item, string
+     * [0]: itemhash, string
      *
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
@@ -74,7 +74,11 @@ export class CancelBidCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public help(): string {
-        return this.getName() + ' <TODO>';
+        return this.getName() + ' <itemhash>\n'
+            + '    <itemhash>  - string - The hash of the item whose bid we want to cancel.';
     }
 
+    public description(): string {
+        return 'Cancel bid.';
+    }
 }

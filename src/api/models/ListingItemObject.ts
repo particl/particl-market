@@ -1,6 +1,8 @@
+import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { ListingItem } from './ListingItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
+import { ListingItemObjectSearchParams } from '../requests/ListingItemObjectSearchParams';
 
 export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
 
@@ -15,6 +17,17 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
         } else {
             return await ListingItemObject.where<ListingItemObject>({ id: value }).fetch();
         }
+    }
+
+    public static async searchBy(options: ListingItemObjectSearchParams): Promise<Collection<ListingItemObject>> {
+        const listingCollection = ListingItemObject.forge<Collection<ListingItemObject>>()
+            .query(qb => {
+                qb.where('listing_item_objects.type', 'LIKE', '%' + options.searchString + '%');
+                qb.orWhere('listing_item_objects.description', 'LIKE', '%' + options.searchString + '%');
+            })
+            .orderBy('listing_item_objects.id', 'ASC');
+
+        return await listingCollection.fetchAll();
     }
 
     public get tableName(): string { return 'listing_item_objects'; }

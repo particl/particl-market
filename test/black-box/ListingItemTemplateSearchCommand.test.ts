@@ -4,8 +4,8 @@ import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/ListingItemTemplateSearchCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -63,11 +63,11 @@ describe('/ListingItemTemplateSearchCommand', () => {
         profileId = defaultProfile.id;
         // create listing item
         testDataListingItemTemplate1.profile_id = profileId;
-        const addListingItemTemplate1: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate1);
-        const addListingItemTemplate1Result = addListingItemTemplate1.getBody()['result'];
+        const addListingItemTemplate1: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate1);
+        const addListingItemTemplate1Result = addListingItemTemplate1;
         categoryId = addListingItemTemplate1Result.ItemInformation.ItemCategory.id;
         testDataListingItemTemplate2.profile_id = profileId;
-        const addListingItemTemplate2: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate2);
+        const addListingItemTemplate2: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate2);
     });
 
     test('Should get all Item Templates', async () => {

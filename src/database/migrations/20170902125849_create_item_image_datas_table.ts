@@ -6,12 +6,12 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('item_image_datas', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('data_id'); // .notNullable();
             table.string('protocol'); // .notNullable();
             table.string('encoding'); // .notNullable();
-            table.text('data_big'); // .notNullable();
-            table.text('data_medium'); // .notNullable();
-            table.text('data_thumbnail'); // .notNullable();
+
+            table.string('image_version'); // .notNullable();
+            table.string('data_id'); // .notNullable();
+            table.text('data'); // .notNullable();
 
             table.integer('item_image_id').unsigned();
             table.foreign('item_image_id').references('id')

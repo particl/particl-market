@@ -9,6 +9,7 @@ import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/FavoriteRemoveCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -97,22 +98,22 @@ describe('/FavoriteRemoveCommand', () => {
         defaultProfileId = defaultProfile.id;
         const profileModel = 'profile';
         const listingModel = 'listingitem';
-        const addProfileRes: any = await testUtil.addData(profileModel, { name: 'TESTING-PROFILE-NAME', address: 'TESTING-PROFILE-ADDRESS' });
-        profileId = addProfileRes.getBody()['result'].id;
+        const addProfileRes: any = await testUtil.addData(CreatableModel.PROFILE, { name: 'TESTING-PROFILE-NAME', address: 'TESTING-PROFILE-ADDRESS' });
+        profileId = addProfileRes.id;
         // create market
         const resMarket = await rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_ADD.commandName, 'Test Market', 'privateKey', 'Market Address']);
         const resultMarket: any = resMarket.getBody()['result'];
         testData.market_id = resultMarket.id;
         // create listing item
-        const addListingItem: any = await testUtil.addData(listingModel, testData);
-        const addListingItemResult = addListingItem.getBody()['result'];
+        const addListingItem: any = await testUtil.addData(CreatableModel.LISTINGITEM, testData);
+        const addListingItemResult = addListingItem;
         listingItemHash = addListingItemResult.hash;
         listingItemId = addListingItemResult.id;
     });
 
     test('Should remove favorite item by listing id and profile id', async () => {
         // add favorite item
-        const addFavItem: any = await testUtil.addData(favoriteModel, { listing_item_id: listingItemId, profile_id: profileId });
+        const addFavItem: any = await testUtil.addData(CreatableModel.FAVORITEITEM, { listing_item_id: listingItemId, profile_id: profileId });
         // remove favorite item by item id and profile
         const getDataRes: any = await rpc(method, [subCommand, profileId, listingItemId]);
         getDataRes.expectJson();
@@ -121,7 +122,7 @@ describe('/FavoriteRemoveCommand', () => {
 
     test('Should remove favorite item by listing id and with default profile', async () => {
         // add favorite item
-        const addFavItem: any = await testUtil.addData(favoriteModel, { listing_item_id: listingItemId, profile_id: defaultProfileId });
+        const addFavItem: any = await testUtil.addData(CreatableModel.FAVORITEITEM, { listing_item_id: listingItemId, profile_id: defaultProfileId });
         // remove favorite item by item id without passing profile
         const getDataRes: any = await rpc(method, [subCommand, null, listingItemId]);
         getDataRes.expectJson();
