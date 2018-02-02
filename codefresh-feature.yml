@@ -79,7 +79,7 @@ steps:
     type: push
     candidate: ${{build_docker_image_step}}
     image_name: dapp-shell-ci
-    tag: 'latest'
+    tag: latest
     registry: cfcr
 
   deploy_step:

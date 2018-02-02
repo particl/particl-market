@@ -219,7 +219,7 @@ steps:
     type: push
     candidate: ${{build_docker_image_step}}
     image_name: dapp-shell-ci
-    tag: 'develop'
+    tag: develop
     registry: cfcr
 
 
