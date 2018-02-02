@@ -1,0 +1,136 @@
+---
+stack: ludx/dappshellfeature-stack
+version: 0.1.0
+services:
+
+  particld1:
+    image: ludx/particl:latest
+    instances: 1
+    volumes:
+      - /root/data/particld-feature1:/root/.particl
+    environment:
+      - CONF_TESTNET=1                  # Use the test chain
+      - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set
+      - CONF_RPCPASSWORD=test           # Password for JSON-RPC connections, generated unless set
+      - CONF_PRINTTOCONSOLE=0           # Send trace/debug info to console instead of debug.log file
+      - CONF_SERVER=1                   # Accept command line and JSON-RPC commands
+      - CONF_RPCALLOWIP=0.0.0.0/0       # Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24).
+      - CONF_LISTEN=1                   # Accept connections from outside (default: 1 if no -proxy or -connect)
+      - CREATEDEFAULTMASTERKEY=true
+    ports:
+      - 52738:51738
+      - 52935:51935
+    affinity:
+      - node==kontena-agent1
+
+  particld2:
+    image: ludx/particl:latest
+    instances: 1
+    volumes:
+      - /root/data/particld-feature2:/root/.particl
+    environment:
+      - CONF_TESTNET=1                  # Use the test chain
+      - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set
+      - CONF_RPCPASSWORD=test           # Password for JSON-RPC connections, generated unless set
+      - CONF_PRINTTOCONSOLE=0           # Send trace/debug info to console instead of debug.log file
+      - CONF_SERVER=1                   # Accept command line and JSON-RPC commands
+      - CONF_RPCALLOWIP=0.0.0.0/0       # Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24).
+      - CONF_LISTEN=1                   # Accept connections from outside (default: 1 if no -proxy or -connect)
+      - CREATEDEFAULTMASTERKEY=true
+    ports:
+      - 53738:51738
+      - 53935:51935
+    affinity:
+      - node==kontena-agent1
+
+  dapp-shell-feature1:
+    image: ludx/dapp-shell-ci:latest
+    instances: 1
+    depends_on:
+      - particld1
+    links:
+      - particld1
+      - loadbalancerstack/internet_lb
+#    volumes:
+#      - /root/data/dapp-shell-feature1:/app/data
+    environment:
+      - NODE_ENV=development
+      - APP_NAME=dapp-shell
+      - APP_HOST=http://feature1.particl.xyz
+      - APP_URL_PREFIX=/api
+      - APP_PORT=3333
+      - RPCUSER=test
+      - RPCPASSWORD=test
+      - RPCHOSTNAME=particld1
+      - MAINNET_PORT=51738
+      - TESTNET_PORT=51935
+      - LOG_LEVEL=debug
+      - LOG_ADAPTER=winston
+      - API_INFO_ENABLED=true
+      - API_INFO_ROUTE=/info
+      - CLI_ENABLED=true
+      - CLI_ROUTE=/cli
+      - SWAGGER_ENABLED=true
+      - SWAGGER_ROUTE=/docs
+      - SWAGGER_FILE=/app/src/api/swagger.json
+      - MONITOR_ENABLED=true
+      - MONITOR_ROUTE=/status
+      - DB_CLIENT=sqlite3
+      - DB_CONNECTION=/app/data/marketplace.db
+      - DB_POOL_MIN=2
+      - DB_POOL_MAX=10
+      - DB_MIGRATION_DIR=/app/src/database/migrations
+      - DB_MIGRATION_TABLE=version
+      - DB_SEEDS_DIR=/app/src/database/seeds
+      - KONTENA_LB_MODE=http
+      - KONTENA_LB_BALANCE=roundrobin
+      - KONTENA_LB_INTERNAL_PORT=3333
+      - KONTENA_LB_VIRTUAL_HOSTS=feature1.particl.xyz
+    affinity:
+      - node==kontena-agent1
+
+  dapp-shell-feature2:
+    image: ludx/dapp-shell-ci:latest
+    instances: 1
+    depends_on:
+      - particld2
+    links:
+      - particld2
+      - loadbalancerstack/internet_lb
+#    volumes:
+#      - /root/data/dapp-shell-feature2:/app/data
+    environment:
+      - NODE_ENV=development
+      - APP_NAME=dapp-shell
+      - APP_HOST=http://feature2.particl.xyz
+      - APP_URL_PREFIX=/api
+      - APP_PORT=3333
+      - RPCUSER=test
+      - RPCPASSWORD=test
+      - RPCHOSTNAME=particld2
+      - MAINNET_PORT=51738
+      - TESTNET_PORT=51935
+      - LOG_LEVEL=debug
+      - LOG_ADAPTER=winston
+      - API_INFO_ENABLED=true
+      - API_INFO_ROUTE=/info
+      - CLI_ENABLED=true
+      - CLI_ROUTE=/cli
+      - SWAGGER_ENABLED=true
+      - SWAGGER_ROUTE=/docs
+      - SWAGGER_FILE=/app/src/api/swagger.json
+      - MONITOR_ENABLED=true
+      - MONITOR_ROUTE=/status
+      - DB_CLIENT=sqlite3
+      - DB_CONNECTION=/app/data/marketplace.db
+      - DB_POOL_MIN=2
+      - DB_POOL_MAX=10
+      - DB_MIGRATION_DIR=/app/src/database/migrations
+      - DB_MIGRATION_TABLE=version
+      - DB_SEEDS_DIR=/app/src/database/seeds
+      - KONTENA_LB_MODE=http
+      - KONTENA_LB_BALANCE=roundrobin
+      - KONTENA_LB_INTERNAL_PORT=3333
+      - KONTENA_LB_VIRTUAL_HOSTS=feature2.particl.xyz
+    affinity:
+      - node==kontena-agent1

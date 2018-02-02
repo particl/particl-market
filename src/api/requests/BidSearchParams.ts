@@ -9,7 +9,7 @@ export class BidSearchParams extends RequestBody {
     @IsEnum(BidMessageType)
     public action: BidMessageType;
 
-    public listingItemId: number;
+    public listingItemHash: string;
 
     public profileId: number;
 

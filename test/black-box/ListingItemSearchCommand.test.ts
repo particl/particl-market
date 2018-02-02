@@ -11,6 +11,9 @@ import { Logger } from '../../src/core/Logger';
 import { ListingItemSearchCommand } from '../../src/api/commands/listingitem/ListingItemSearchCommand';
 import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('/ListingItemSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -173,6 +176,19 @@ describe('/ListingItemSearchCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            false,   // generateItemInformation
+            false,   // generateShippingDestinations
+            false,   // generateItemImages
+            false,   // generatePaymentInformation
+            false,   // generateEscrow
+            false,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
+
+
         // get default profile
         defaultProfile = await testUtil.getDefaultProfile();
 
@@ -182,18 +198,25 @@ describe('/ListingItemSearchCommand', () => {
         testData.market_id = result.id;
 
         // create listing item
-        const addListingItem1: any = await testUtil.addData('listingitem', testData);
-        const addListingItem1Result = addListingItem1.getBody()['result'];
+        const addListingItem1: any = await testUtil.addData(CreatableModel.LISTINGITEM, testData);
+        const addListingItem1Result = addListingItem1;
         createdHashFirst = addListingItem1Result.hash;
         categoryId = addListingItem1Result.ItemInformation.ItemCategory.id;
         testDataTwo.market_id = result.id;
 
-        // generate item template
-        listingItemTemplate = await testUtil.generateData('listingitemtemplate', 1);
+
+        // generate listingItemTemplate
+        listingItemTemplate = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as ListingItemTemplate[];
+
         listingItemTemplate = listingItemTemplate[0];
         testDataTwo.listing_item_template_id = listingItemTemplate.id;
-        const addListingItem2: any = await testUtil.addData('listingitem', testDataTwo);
-        createdHashSecond = addListingItem2.getBody()['result'].hash;
+        const addListingItem2: any = await testUtil.addData(CreatableModel.LISTINGITEM, testDataTwo);
+        createdHashSecond = addListingItem2.hash;
     });
 
 

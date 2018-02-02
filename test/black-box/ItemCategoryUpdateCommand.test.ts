@@ -1,8 +1,9 @@
 import { rpc, api } from './lib/api';
 import * as crypto from 'crypto-js';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 
 describe('ItemCategoryUpdateCommand', () => {
 
@@ -31,12 +32,12 @@ describe('ItemCategoryUpdateCommand', () => {
         const res = await rpc(categoryMethod, [subCommandCategory, parentCategory.key]);
         const categoryResult: any = res.getBody()['result'];
         parentCategory.id = categoryResult.id;
-        const addCategoryRes: any = await testUtil.addData('itemcategory', {
+        const addCategoryRes: any = await testUtil.addData(CreatableModel.ITEMCATEGORY, {
             name: 'sample category',
             description: 'sample category description',
             parent_item_category_id: parentCategory.id
         });
-        newCategory = addCategoryRes.getBody()['result'];
+        newCategory = addCategoryRes;
         // market
         const resMarket = await rpc(makretMethod, [subCommandMarket, 'Test Market', 'privateKey', 'Market Address']);
         const resultMarket: any = resMarket.getBody()['result'];
@@ -96,10 +97,9 @@ describe('ItemCategoryUpdateCommand', () => {
     });
 
     test('Should not update the category if listing-item related with category', async () => {
-        const hash = crypto.SHA256(new Date().getTime().toString()).toString();
         const listingitemData = {
             market_id: marketId,
-            hash,
+            hash: '',
             itemInformation: {
                 title: 'item title1',
                 shortDescription: 'item short desc1',
@@ -109,7 +109,9 @@ describe('ItemCategoryUpdateCommand', () => {
                 }
             }
         };
-        const listingItems = await testUtil.addData('listingitem', listingitemData);
+        const hash = ObjectHash.getHash(listingitemData);
+        listingitemData.hash = hash;
+        const listingItems = await testUtil.addData(CreatableModel.LISTINGITEM, listingitemData);
         const res = await rpc(method, [subCommand, categoryData.id, categoryData.name, categoryData.description, parentCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);

@@ -1,6 +1,9 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('/EscrowReleaseCommand', () => {
 
@@ -17,8 +20,24 @@ describe('/EscrowReleaseCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
+        const generateListingItemParams = new GenerateListingItemParams([
+            false,   // generateItemInformation
+            false,   // generateShippingDestinations
+            false,   // generateItemImages
+            false,   // generatePaymentInformation
+            false,   // generateEscrow
+            false,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
+
         // generate listing item
-        const listingItem = await testUtil.generateData('listingitem', 1);
+        const listingItem = await testUtil.generateData(
+            CreatableModel.LISTINGITEM, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemParams   // what kind of data to generate
+        ) as ListingItem[];
         createdListingItem = listingItem[0];
     });
 

@@ -9,6 +9,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('type').notNullable();
             table.text('description').notNullable();
             table.integer('order').notNullable();
+            table.boolean('searchable').defaultTo(false);
 
             table.integer('listing_item_id').unsigned().nullable();
             table.foreign('listing_item_id').references('id')

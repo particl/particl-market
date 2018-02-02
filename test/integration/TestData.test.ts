@@ -51,7 +51,7 @@ describe('TestDataService', () => {
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
 
         // clean up the db
-        await testDataService.clean([]);
+        await testDataService.clean();
     });
 
     afterAll(async () => {
@@ -73,7 +73,7 @@ describe('TestDataService', () => {
 
     test('Should not create default modals if seed=false', async () => {
         // clean removes all
-        await testDataService.clean([], false);
+        await testDataService.clean(false);
         const categories = await itemCategoryService.findAll();
         expect(categories).toHaveLength(0);
 
@@ -94,7 +94,7 @@ describe('TestDataService', () => {
 
 
     test('Should create test data as par model', async () => {
-        await testDataService.clean([]);
+        await testDataService.clean();
         const model = 'listingitemtemplate';
         const defaultProfile = await profileService.getDefault();
         const listingItemTemplateData = {
@@ -243,7 +243,7 @@ describe('TestDataService', () => {
     });
 
     test('Should generate single test data as par model', async () => {
-        await testDataService.clean([], false);
+        await testDataService.clean(false);
         const model = 'profile';
         const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
             model,
@@ -276,7 +276,7 @@ describe('TestDataService', () => {
     });
 
     test('Should generate single test data as par model with withRelated: false', async () => {
-        await testDataService.clean([], false);
+        await testDataService.clean(false);
         const model = 'profile';
         const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
             model,
@@ -295,7 +295,7 @@ describe('TestDataService', () => {
     });
 
     test('Should generate three test data as par model', async () => {
-        await testDataService.clean([], false);
+        await testDataService.clean(false);
         const model = 'profile';
         const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
             model,

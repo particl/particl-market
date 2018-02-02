@@ -2,8 +2,9 @@ version: '3'
 
 services:
   app1:
-    build:
-      context: ./
+#    build:
+#      context: ./
+    image: ludx/dapp-shell-ci:latest
     volumes:
       - ./data/app1:/app/data
     ports:
@@ -26,8 +27,9 @@ services:
       - TESTNET_PORT=51935
 
   app2:
-    build:
-      context: ./
+#    build:
+#      context: ./
+    image: ludx/dapp-shell-ci:latest
     volumes:
       - ./data/app2:/app/data
     ports:
