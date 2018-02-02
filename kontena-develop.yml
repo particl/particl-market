@@ -43,7 +43,7 @@ services:
     affinity:
       - node==kontena-agent1
 
-  dapp-shell-dev1:
+  app1:
     image: docker.io/ludx/dapp-shell-ci:develop
     instances: 1
     depends_on:
@@ -89,7 +89,7 @@ services:
     affinity:
       - node==kontena-agent1
 
-  dapp-shell-dev2:
+  app2:
     image: docker.io/ludx/dapp-shell-ci:develop
     instances: 1
     depends_on:
