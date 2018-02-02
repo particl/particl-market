@@ -89,6 +89,9 @@ import { ShippingDestinationListCommand } from '../commands/shippingdestination/
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
 
+import { ListingItemObjectRootCommand } from '../commands/listingitemobject/ListingItemObjectRootCommand';
+import { ListingItemObjectSearchCommand } from '../commands/listingitemobject/ListingItemObjectSearchCommand';
+
 import { Command } from '../commands/Command';
 
 // tslint:disable:array-type
@@ -183,6 +186,10 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
         @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
         @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectRootCommand) private listingItemObjectRootCommand: ListingItemObjectRootCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectSearchCommand) private listingItemObjectSearchCommand: ListingItemObjectSearchCommand,
+
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
 
@@ -278,6 +285,10 @@ export class RpcCommandFactory {
         this.commands.push(dataCleanCommand);
         this.commands.push(dataGenerateCommand);
         this.commands.push(dataRootCommand);
+
+        this.commands.push(listingItemObjectRootCommand);
+        this.commands.push(listingItemObjectSearchCommand);
+
         this.commands.push(helpCommand);
 
         this.log.debug(this.commands.length + ' commands initialized.');

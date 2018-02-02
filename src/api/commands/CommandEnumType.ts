@@ -139,6 +139,10 @@ export class CommandEnumType extends Enum<Command> {
     public SHOPPINGCARTITEM_ROOT: Command   = new Command('cartitem', 'cartitem', true,
         [this.SHOPPINGCARTITEM_LIST, this.SHOPPINGCARTITEM_ADD, this.SHOPPINGCARTITEM_REMOVE]);
 
+    public ITEMOBJECT_SEARCH: Command         = new Command('itemobjectsearch', 'search', false);
+    public ITEMOBJECT_ROOT: Command           = new Command('itemobject', 'itemobject', true,
+        [this.ITEMOBJECT_SEARCH]);
+
     constructor() {
         super();
         this.initEnum('Command');

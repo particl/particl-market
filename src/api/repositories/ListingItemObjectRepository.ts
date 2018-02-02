@@ -5,6 +5,7 @@ import { ListingItemObject } from '../models/ListingItemObject';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { ListingItemObjectSearchParams } from '../requests/ListingItemObjectSearchParams';
 
 export class ListingItemObjectRepository {
 
@@ -24,6 +25,15 @@ export class ListingItemObjectRepository {
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ListingItemObject> {
         return this.ListingItemObjectModel.fetchById(id, withRelated);
+    }
+
+    /**
+     *
+     * @param options, ListingItemObjectSearchParams
+     * @returns {Promise<Bookshelf.Collection<ListingItemObject>>}
+     */
+    public async search(options: ListingItemObjectSearchParams): Promise<Bookshelf.Collection<ListingItemObject>> {
+        return this.ListingItemObjectModel.searchBy(options);
     }
 
     public async create(data: any): Promise<ListingItemObject> {
