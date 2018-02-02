@@ -45,6 +45,7 @@ services:
 
   dapp-shell-dev1:
     image: ludx/dapp-shell-ci:develop
+    instances: 1
     depends_on:
       - particld1
     links:
@@ -90,6 +91,7 @@ services:
 
   dapp-shell-dev2:
     image: ludx/dapp-shell-ci:develop
+    instances: 1
     depends_on:
       - particld2
     links:

@@ -45,6 +45,7 @@ services:
 
   dapp-shell-master1:
     image: ludx/dapp-shell-ci:master
+    instances: 1
     depends_on:
       - particld1
     links:
@@ -90,6 +91,7 @@ services:
 
   dapp-shell-master2:
     image: ludx/dapp-shell-ci:master
+    instances: 1
     depends_on:
       - particld2
     links:

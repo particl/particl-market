@@ -45,6 +45,7 @@ services:
 
   dapp-shell-feature1:
     image: ludx/dapp-shell-ci:latest
+    instances: 1
     depends_on:
       - particld1
     links:
@@ -90,6 +91,7 @@ services:
 
   dapp-shell-feature2:
     image: ludx/dapp-shell-ci:latest
+    instances: 1
     depends_on:
       - particld2
     links:
