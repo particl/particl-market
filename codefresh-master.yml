@@ -1,12 +1,12 @@
 version: '1.0'
 steps:
 
-#  build_docker_image_notify_step:
-#    image: tutum/curl
-#    commands:
-#      - >-
-#        curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n ${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\n ${{CF_BUILD_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-#    fail_fast: false
+  build_docker_image_notify_step:
+    image: tutum/curl
+    commands:
+      - >-
+        curl -d "{\"content\": \"building ${{CF_REPO_NAME}} ${{CF_BRANCH}}\n ${{CF_COMMIT_AUTHOR}}: ${{CF_COMMIT_MESSAGE}}\n ${{CF_BUILD_URL}}\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+    fail_fast: false
 
   build_docker_image_step:
     title: building docker image
@@ -250,3 +250,10 @@ steps:
 #      - GIT_REPOSITORY=xxx
 #      - BRANCH_NAME=xxx
 #      - CONFIG_FILE=xxx
+
+  push_image_notify_step:
+    image: tutum/curl
+    commands:
+      - >-
+        curl -d "{\"content\": \"Build finished and image deployed. http://master1.particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+    fail-fast: false
