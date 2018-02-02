@@ -19,7 +19,7 @@ describe('/EscrowLockCommand', () => {
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
-        state: 'Melbourne state',
+        state: 'Mel State',
         country: 'Finland',
         zipCode: '85001'
     };
