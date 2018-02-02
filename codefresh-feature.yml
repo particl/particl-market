@@ -61,7 +61,7 @@ steps:
       - NODE_ENV=test
       - RPCUSER=test
       - RPCPASSWORD=test
-      - RPCHOSTNAME=dev.particl.xyz
+      - RPCHOSTNAME=feature1.particl.xyz
       - MAINNET_PORT=52738
       - TESTNET_PORT=52935
       - APP_NAME=dapp-shell
@@ -123,7 +123,7 @@ steps:
             - NODE_ENV=test
             - RPCUSER=test
             - RPCPASSWORD=test
-            - RPCHOSTNAME=dev.particl.xyz
+            - RPCHOSTNAME=feature1.particl.xyz
             - MAINNET_PORT=52738
             - TESTNET_PORT=52935
             - APP_NAME=dapp-shell
@@ -160,7 +160,7 @@ steps:
           - NODE_ENV=test
           - RPCUSER=test
           - RPCPASSWORD=test
-          - RPCHOSTNAME=dev.particl.xyz
+          - RPCHOSTNAME=feature1.particl.xyz
           - MAINNET_PORT=52738
           - TESTNET_PORT=52935
           - APP_NAME=dapp-shell
@@ -221,3 +221,23 @@ steps:
     image_name: dapp-shell-ci
     tag: 'latest'
     registry: cfcr
+
+  deploy_step:
+    title: deploying image to kontena
+    image: r.cfcr.io/ludx/codefresh-custom-runner:latest
+    working_directory: IMAGE_WORK_DIR
+    entry_point:
+      - /bin/sh
+      - /codefresh/volume/cf-generated/unit_test_script
+    create_file:
+      path: /codefresh/volume/cf-generated
+      name: integration_test_script
+      content: >-
+        ./kontena-stack-upgrade.sh ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git ${{CF_BRANCH}} kontena-feature.yml
+#    environment:
+#      - MASTER_NAME=xxx
+#      - GRID_NAME=xxx
+#      - STACK_NAME=xxx
+#      - GIT_REPOSITORY=xxx
+#      - BRANCH_NAME=xxx
+#      - CONFIG_FILE=xxx

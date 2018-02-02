@@ -65,9 +65,9 @@ steps:
       - NODE_ENV=test
       - RPCUSER=test
       - RPCPASSWORD=test
-      - RPCHOSTNAME=dev.particl.xyz
-      - MAINNET_PORT=52738
-      - TESTNET_PORT=52935
+      - RPCHOSTNAME=dev1.particl.xyz
+      - MAINNET_PORT=54738
+      - TESTNET_PORT=54935
       - APP_NAME=dapp-shell
       - APP_ENV=test
       - APP_HOST=http://dappshell
@@ -127,9 +127,9 @@ steps:
             - NODE_ENV=test
             - RPCUSER=test
             - RPCPASSWORD=test
-            - RPCHOSTNAME=dev.particl.xyz
-            - MAINNET_PORT=52738
-            - TESTNET_PORT=52935
+            - RPCHOSTNAME=dev1.particl.xyz
+            - MAINNET_PORT=54738
+            - TESTNET_PORT=54935
             - APP_NAME=dapp-shell
             - APP_ENV=test
             - APP_HOST=http://dappshell
@@ -164,9 +164,9 @@ steps:
           - NODE_ENV=test
           - RPCUSER=test
           - RPCPASSWORD=test
-          - RPCHOSTNAME=dev.particl.xyz
-          - MAINNET_PORT=52738
-          - TESTNET_PORT=52935
+          - RPCHOSTNAME=dev1.particl.xyz
+          - MAINNET_PORT=54738
+          - TESTNET_PORT=54935
           - APP_NAME=dapp-shell
           - APP_ENV=test
           - APP_HOST=http://dappshell
@@ -223,7 +223,7 @@ steps:
     type: push
     candidate: ${{build_docker_image_step}}
     image_name: dapp-shell-ci
-    tag: 'latest'
+    tag: 'develop'
     registry: cfcr
 
 
