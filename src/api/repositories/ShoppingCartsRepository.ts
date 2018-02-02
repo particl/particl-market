@@ -22,6 +22,11 @@ export class ShoppingCartsRepository {
         return list as Bookshelf.Collection<ShoppingCarts>;
     }
 
+    public async findAllByProfile(searchParam: number | string): Promise<Bookshelf.Collection<ShoppingCarts>> {
+        const list = await this.ShoppingCartsModel.fetchAllByProfile(searchParam);
+        return list as Bookshelf.Collection<ShoppingCarts>;
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<ShoppingCarts> {
         return this.ShoppingCartsModel.fetchById(id, withRelated);
     }

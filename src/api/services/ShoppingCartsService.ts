@@ -25,6 +25,10 @@ export class ShoppingCartsService {
         return this.shoppingCartsRepo.findAll();
     }
 
+    public async findAllByProfile(searchParam: number | string): Promise<Bookshelf.Collection<ShoppingCarts>> {
+        return this.shoppingCartsRepo.findAllByProfile(searchParam);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<ShoppingCarts> {
         const shoppingCarts = await this.shoppingCartsRepo.findOne(id, withRelated);
         if (shoppingCarts === null) {

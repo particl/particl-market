@@ -9,14 +9,39 @@ export class ShoppingCarts extends Bookshelf.Model<ShoppingCarts> {
         if (withRelated) {
             return await ShoppingCarts.where<ShoppingCarts>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'ShoppingCartsRelated',
-                    // 'ShoppingCartsRelated.Related'
+                    'Profile',
+                    'ShoppingCartItems'
                 ]
             });
         } else {
             return await ShoppingCarts.where<ShoppingCarts>({ id: value }).fetch();
         }
+    }
+
+    public static async fetchAllByProfile(value: number | string, withRelated: boolean = true): Promise<Collection<ShoppingCarts>> {
+        const shoppingCarts = ShoppingCarts.forge<Collection<ShoppingCarts>>()
+            .query(qb => {
+                if (typeof value === 'number') {
+                    // for profileID
+                    qb.where('profile_id', '=', value);
+                } else {
+                    // for profileName
+                    qb.where('profiles.name', '=', value);
+                    qb.innerJoin('profiles', 'profiles.id', 'shopping_carts.profile_id');
+                }
+            }).orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await shoppingCarts.fetchAll({
+                withRelated: [
+                    'Profile',
+                    'ShoppingCartItems'
+                ]
+            });
+        } else {
+            return await shoppingCarts.fetchAll();
+        }
+
     }
 
     public get tableName(): string { return 'shopping_carts'; }

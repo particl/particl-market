@@ -9,7 +9,7 @@
  */
 
 export const Targets = {
-    Model:     {
+    Model: {
         Address: 'Address',
         Bid: 'Bid',
         BidData: 'BidData',
@@ -37,7 +37,7 @@ export const Targets = {
         ShoppingCarts: 'ShoppingCarts',
         User: 'User'
     },
-    Repository:     {
+    Repository: {
         AddressRepository: 'AddressRepository',
         BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
@@ -65,7 +65,7 @@ export const Targets = {
         ShoppingCartsRepository: 'ShoppingCartsRepository',
         UserRepository: 'UserRepository'
     },
-    Service:     {
+    Service: {
         AddressService: 'AddressService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
@@ -99,7 +99,7 @@ export const Targets = {
         TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
-    Command:     {
+    Command: {
         address: {
             AddressCreateCommand: 'AddressCreateCommand',
             AddressListCommand: 'AddressListCommand',
@@ -214,10 +214,11 @@ export const Targets = {
             ShoppingCartAddCommand: 'ShoppingCartAddCommand',
             ShoppingCartUpdateCommand: 'ShoppingCartUpdateCommand',
             ShoppingCartRemoveCommand: 'ShoppingCartRemoveCommand',
+            ShoppingCartListCommand: 'ShoppingCartListCommand',
             ShoppingCartRootCommand: 'ShoppingCartRootCommand'
         }
     },
-    Factory:     {
+    Factory: {
         BidFactory: 'BidFactory',
         EscrowFactory: 'EscrowFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
@@ -225,7 +226,7 @@ export const Targets = {
         MessagingInformationFactory: 'MessagingInformationFactory',
         RpcCommandFactory: 'RpcCommandFactory'
     },
-    MessageProcessor:     {
+    MessageProcessor: {
         AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
         BidMessageProcessor: 'BidMessageProcessor',
         CancelBidMessageProcessor: 'CancelBidMessageProcessor',
@@ -236,20 +237,20 @@ export const Targets = {
         TestMessageProcessor: 'TestMessageProcessor',
         UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
     },
-    Middleware:     {
+    Middleware: {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
         PopulateUserMiddleware: 'PopulateUserMiddleware',
         RestApiMiddleware: 'RestApiMiddleware',
         RpcMiddleware: 'RpcMiddleware'
     },
-    Listener:     {
+    Listener: {
         ServerStartedListener: 'ServerStartedListener',
         user: {
             UserAuthenticatedListener: 'UserAuthenticatedListener',
             UserCreatedListener: 'UserCreatedListener'
         }
     },
-    Controller:     {
+    Controller: {
         AddressController: 'AddressController',
         BidController: 'BidController',
         BidDataController: 'BidDataController',

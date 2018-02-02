@@ -5,7 +5,6 @@ import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
 import { ShoppingCarts } from '../../models/ShoppingCarts';
 import { ShoppingCartsService } from '../../services/ShoppingCartsService';
