@@ -217,6 +217,9 @@ export const Targets = {
             ShoppingCartListCommand: 'ShoppingCartListCommand',
             ShoppingCartGetCommand: 'ShoppingCartGetCommand',
             ShoppingCartRootCommand: 'ShoppingCartRootCommand'
+        },
+        shoppingcartitems: {
+            ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         }
     },
     Factory: {
