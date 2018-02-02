@@ -9,7 +9,6 @@ describe('ShoppingCartListCommand', () => {
     const subCommand = Commands.SHOPPINGCART_LIST.commandName;
 
     let defaultProfile;
-    const shoppingCartName = 'Test Shopping Cart';
 
     beforeAll(async () => {
         await testUtil.cleanDb([]);
