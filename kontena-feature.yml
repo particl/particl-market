@@ -122,12 +122,12 @@ services:
       - MONITOR_ENABLED=true
       - MONITOR_ROUTE=/status
       - DB_CLIENT=sqlite3
-      - DB_CONNECTION=/data/marketplace.db
+      - DB_CONNECTION=/app/data/marketplace.db
       - DB_POOL_MIN=2
       - DB_POOL_MAX=10
-      - DB_MIGRATION_DIR=/src/database/migrations
+      - DB_MIGRATION_DIR=/app/src/database/migrations
       - DB_MIGRATION_TABLE=version
-      - DB_SEEDS_DIR=/src/database/seeds
+      - DB_SEEDS_DIR=/app/src/database/seeds
       - KONTENA_LB_MODE=http
       - KONTENA_LB_BALANCE=roundrobin
       - KONTENA_LB_INTERNAL_PORT=3333
