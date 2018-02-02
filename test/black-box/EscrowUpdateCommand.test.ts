@@ -5,6 +5,7 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/EscrowUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -64,11 +65,9 @@ describe('/EscrowUpdateCommand', () => {
         // set profile id
         testDataListingItemTemplate.profile_id = profileId;
 
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
 
-        addListingItemTempRes.expectJson();
-        addListingItemTempRes.expectStatusCode(200);
-        const addListingItemTempResult = addListingItemTempRes.getBody()['result'];
+        const addListingItemTempResult = addListingItemTempRes;
         const createdTemplateId = addListingItemTempResult.id;
         const paymentInformationId = addListingItemTempResult.PaymentInformation.id;
 

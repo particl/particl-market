@@ -2,6 +2,7 @@ import { rpc, api } from './lib/api';
 import * as crypto from 'crypto-js';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('ItemCategoryRemoveCommand', () => {
 
@@ -29,12 +30,12 @@ describe('ItemCategoryRemoveCommand', () => {
         const categoryResult: any = res.getBody()['result'];
         rootItemCategory = categoryResult.ParentItemCategory;
         parentCategory.id = categoryResult.id;
-        const addCategoryRes: any = await testUtil.addData('itemcategory', {
+        const addCategoryRes: any = await testUtil.addData(CreatableModel.ITEMCATEGORY, {
             name: 'sample category',
             description: 'sample category description',
             parent_item_category_id: parentCategory.id
         });
-        newCategory = addCategoryRes.getBody()['result'];
+        newCategory = addCategoryRes;
         // profile
         const defaultProfile = await testUtil.getDefaultProfile();
         profileId = defaultProfile.id;
@@ -59,12 +60,12 @@ describe('ItemCategoryRemoveCommand', () => {
 
     test('Should not delete the category if listing-item related with category', async () => {
         // create category
-        const addCategoryRes: any = await testUtil.addData('itemcategory', {
+        const addCategoryRes: any = await testUtil.addData(CreatableModel.ITEMCATEGORY, {
             name: 'sample category 2',
             description: 'sample category description 2',
             parent_item_category_id: parentCategory.id
         });
-        newCategory = addCategoryRes.getBody()['result'];
+        newCategory = addCategoryRes;
 
         const hash = crypto.SHA256(new Date().getTime().toString()).toString();
         const listingitemData = {
@@ -79,7 +80,7 @@ describe('ItemCategoryRemoveCommand', () => {
                 }
             }
         };
-        const listingItems = await testUtil.addData('listingitem', listingitemData);
+        const listingItems = await testUtil.addData(CreatableModel.LISTINGITEM, listingitemData);
         const res = await rpc(method, [subCommand, newCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -87,12 +88,12 @@ describe('ItemCategoryRemoveCommand', () => {
 
     test('Should not delete the category if listing-item-template related with category', async () => {
         // create category
-        const addCategoryRes: any = await testUtil.addData('itemcategory', {
+        const addCategoryRes: any = await testUtil.addData(CreatableModel.ITEMCATEGORY, {
             name: 'sample category 3',
             description: 'sample category description 3',
             parent_item_category_id: parentCategory.id
         });
-        newCategory = addCategoryRes.getBody()['result'];
+        newCategory = addCategoryRes;
         // create listing-item-template with category
         const listingItemTemplate = {
             profile_id: profileId,
@@ -105,7 +106,7 @@ describe('ItemCategoryRemoveCommand', () => {
                 }
             }
         };
-        const listingItems = await testUtil.addData('listingitemtemplate', listingItemTemplate);
+        const listingItems = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, listingItemTemplate);
         const res = await rpc(method, [subCommand, newCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);

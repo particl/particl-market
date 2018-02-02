@@ -44,7 +44,7 @@ export class AppConfig implements Configurable {
                 extended: true
             }))
 
-            // Serve static filles like images from the public folder
+            // Serve static files like images from the public folder
             .use(express.static(path.join(__dirname, '..', 'public'), { maxAge: 31557600000 }))
 
             // A favicon is a visual cue that client software, like browsers, use to identify a site

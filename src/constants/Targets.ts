@@ -140,6 +140,7 @@ export const Targets = {
         itemcategory: {
             ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryAddCommand: 'ItemCategoryAddCommand',
+            ItemCategoryCreateCommand: 'ItemCategoryCreateCommand',
             ItemCategoryFindCommand: 'ItemCategoryFindCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
             ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
@@ -148,8 +149,9 @@ export const Targets = {
         },
         itemimage: {
             ItemImageAddCommand: 'ItemImageAddCommand',
-            ItemImageGetsCommand: 'ItemImageGetsCommand',
-            ItemImageRemoveCommand: 'ItemImageRemoveCommand'
+            ItemImageListCommand: 'ItemImageListCommand',
+            ItemImageRemoveCommand: 'ItemImageRemoveCommand',
+            ItemImageRootCommand: 'ItemImageRootCommand'
         },
         iteminformation: {
             ItemInformationCreateCommand: 'ItemInformationCreateCommand',
@@ -175,8 +177,8 @@ export const Targets = {
             ListingItemTemplateRemoveCommand: 'ListingItemTemplateRemoveCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
             ListingItemTemplatePostCommand: 'ListingItemTemplatePostCommand',
-            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand',
-            ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand'
+            ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
+            ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
         },
         market: {
             MarketCreateCommand: 'MarketCreateCommand',
@@ -205,6 +207,10 @@ export const Targets = {
             ShippingDestinationListCommand: 'ShippingDestinationListCommand',
             ShippingDestinationRemoveCommand: 'ShippingDestinationRemoveCommand',
             ShippingDestinationRootCommand: 'ShippingDestinationRootCommand'
+        },
+        listingitemobject: {
+            ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
+            ListingItemObjectSearchCommand: 'ListingItemObjectSearchCommand'
         }
     },
     Factory:     {
