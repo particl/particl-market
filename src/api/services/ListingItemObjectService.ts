@@ -10,7 +10,7 @@ import { ListingItemObject } from '../models/ListingItemObject';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
-
+import { ListingItemObjectSearchParams } from '../requests/ListingItemObjectSearchParams';
 
 export class ListingItemObjectService {
 
@@ -36,6 +36,19 @@ export class ListingItemObjectService {
         return listingItemObject;
     }
 
+    /**
+     * search ListingItemObject using given ListingItemObjectSearchParams
+     *
+     * @param options
+     * @returns {Promise<Bookshelf.Collection<ListingItemObject>>}
+     */
+    @validate()
+    public async search(
+        @request(ListingItemObjectSearchParams) options: ListingItemObjectSearchParams
+        ): Promise<Bookshelf.Collection<ListingItemObject>> {
+        return this.listingItemObjectRepo.search(options);
+    }
+
     @validate()
     public async create( @request(ListingItemObjectCreateRequest) body: any): Promise<ListingItemObject> {
 
@@ -44,16 +57,8 @@ export class ListingItemObjectService {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
 
-        // TODO: extract and remove related models from request
-        // const listingItemObjectRelated = body.related;
-        // delete body.related;
-
         // If the request body was valid we will create the listingItemObject
         const listingItemObject = await this.listingItemObjectRepo.create(body);
-
-        // TODO: create related models
-        // listingItemObjectRelated._id = listingItemObject.Id;
-        // await this.listingItemObjectRelatedService.create(listingItemObjectRelated);
 
         // finally find and return the created listingItemObject
         const newListingItemObject = await this.findOne(listingItemObject.id);
