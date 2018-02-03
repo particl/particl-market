@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { MessageException } from '../exceptions/MessageException';
 import { ShoppingCartItemsRepository } from '../repositories/ShoppingCartItemsRepository';
 import { ShoppingCartItems } from '../models/ShoppingCartItems';
 import { ShoppingCartItemsCreateRequest } from '../requests/ShoppingCartItemsCreateRequest';
@@ -34,9 +35,20 @@ export class ShoppingCartItemsService {
         return shoppingCartItems;
     }
 
+    public async findOneByListingItemOnCart(cartId: number, listingItemId: number): Promise<ShoppingCartItems> {
+        return await this.shoppingCartItemsRepo.findOneByListingItemOnCart(cartId, listingItemId);
+    }
+
     @validate()
     public async create( @request(ShoppingCartItemsCreateRequest) body: any): Promise<ShoppingCartItems> {
 
+        // check that listingItems already added or not
+        const isItemExistOnCart = await this.findOneByListingItemOnCart(body.shopping_cart_id, body.listing_item_id);
+
+        if (isItemExistOnCart !== null) {
+            this.log.warn(`listing item already exist on shopping cart`);
+            throw new MessageException(`listing item already exist on shopping cart`);
+        }
         // TODO: extract and remove related models from request
         // const shoppingCartItemsRelated = body.related;
         // delete body.related;
