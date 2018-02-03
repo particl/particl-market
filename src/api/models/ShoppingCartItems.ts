@@ -47,6 +47,15 @@ export class ShoppingCartItems extends Bookshelf.Model<ShoppingCartItems> {
         }
     }
 
+    public static async clearCart(cartId: number): Promise<void> {
+        const ShoppingCartItemsCollection = ShoppingCartItems.forge<ShoppingCartItems>()
+            .query(qb => {
+                qb.where('shopping_cart_id', '=', cartId);
+            });
+        await ShoppingCartItemsCollection.destroy();
+        return;
+    }
+
     public get tableName(): string { return 'shopping_cart_items'; }
     public get hasTimestamps(): boolean { return true; }
 
