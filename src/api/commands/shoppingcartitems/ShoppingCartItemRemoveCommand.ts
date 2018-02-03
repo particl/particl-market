@@ -6,7 +6,6 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
-import { ShoppingCartItems } from '../../models/ShoppingCartItems';
 import { ShoppingCartItemsService } from '../../services/ShoppingCartItemsService';
 import { ListingItemService } from '../../services/ListingItemService';
 import { MessageException } from '../../exceptions/MessageException';
