@@ -1,15 +1,12 @@
 import { rpc, api } from './lib/api';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
-import { EscrowType } from '../../src/api/enums/EscrowType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { ListingItem, ListingItemTemplate } from 'resources';
+import { ListingItemTemplate } from 'resources';
 
 describe('/ItemImageRemoveCommand', () => {
     const testUtil = new BlackBoxTestUtil();
