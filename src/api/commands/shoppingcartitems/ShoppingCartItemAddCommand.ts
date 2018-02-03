@@ -56,4 +56,8 @@ export class ShoppingCartItemAddCommand extends BaseCommand implements RpcComman
             + '    <cartId>          - The Id of the shopping cart we want to use.\n'
             + '    <itemId | hash>       -  ListingItem id/hash we want to add on cart';
     }
+
+    public description(): string {
+        return 'Add a new item into shopping cart as per given listingItem and cart.';
+    }
 }
