@@ -1,5 +1,5 @@
 import { Bookshelf } from '../../config/Database';
-
+import { ItemImage } from './ItemImage';
 
 export class ItemImageData extends Bookshelf.Model<ItemImageData> {
 
@@ -48,4 +48,8 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
     // public ItemImageDataRelated(): ItemImageDataRelated {
     //    return this.hasOne(ItemImageDataRelated);
     // }
+
+    public ItemImage(): ItemImage {
+        return this.belongsTo(ItemImage, 'item_image_id', 'id');
+    }
 }

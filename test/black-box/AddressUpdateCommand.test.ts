@@ -1,7 +1,5 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger as LoggerType } from '../../src/core/Logger';
-import { AddressUpdateCommand } from '../../src/api/commands/address/AddressUpdateCommand';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 

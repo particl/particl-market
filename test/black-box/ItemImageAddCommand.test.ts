@@ -6,15 +6,16 @@ import { ListingItemTemplateCreateRequest } from '../../src/api/requests/Listing
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { ItemImageAddCommand } from '../../src/api/commands/itemimage/ItemImageAddCommand';
-import { Logger } from '../../src/core/Logger';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/ItemImageAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const itemImageService = null;
     const listingItemTemplateService = null;
 
-    const method =  new ItemImageAddCommand(itemImageService, listingItemTemplateService, Logger).name;
+    const method = Commands.ITEMIMAGE_ROOT.commandName;
+    const subCommand = Commands.ITEMIMAGE_ADD.commandName;
 
     const keys = [
         'id', 'hash', 'updatedAt', 'createdAt'
@@ -50,15 +51,15 @@ describe('/ItemImageAddCommand', () => {
         testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
         // create item template
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        const result: any = addListingItemTempRes.getBody()['result'];
-        createdTemplateId = result.id;
-        createdItemInfoId = result.ItemInformation.id;
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+
+        createdTemplateId = addListingItemTempRes.id;
+        createdItemInfoId = addListingItemTempRes.ItemInformation.id;
     });
 
     test('Should add item image for Item information with blank ItemImageData', async () => {
         // add item image
-        const addDataRes: any = await rpc(method, [createdTemplateId]);
+        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         addDataRes.expectDataRpc(keys);
@@ -73,14 +74,14 @@ describe('/ItemImageAddCommand', () => {
 
     test('Should failed to add item image because invalid ItemImageData protocol', async () => {
         // add item image
-        const addDataRes: any = await rpc(method, [createdTemplateId, 'TEST-DATA-ID', 'TEST-DATA-PROTOCOL', 'TEST-ENCODING', 'TEST-DATA']);
+        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, 'TEST-DATA-ID', 'TEST-DATA-PROTOCOL', 'TEST-ENCODING', 'TEST-DATA']);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(400);
     });
 
     test('Should add item image with ItemImageData', async () => {
         // add item image
-        const addDataRes: any = await rpc(method, [createdTemplateId, 'TEST-DATA-ID', ImageDataProtocolType.LOCAL, 'TEST-ENCODING', 'TEST-DATA']);
+        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, 'TEST-DATA-ID', ImageDataProtocolType.LOCAL, 'TEST-ENCODING', 'TEST-DATA']);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         addDataRes.expectDataRpc(keys);
