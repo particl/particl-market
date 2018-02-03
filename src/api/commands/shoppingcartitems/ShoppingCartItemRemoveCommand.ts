@@ -6,6 +6,10 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
+<<<<<<< bec227a2840cf306b39de98c828a01d1122c3f61
+=======
+import { ShoppingCartItems } from '../../models/ShoppingCartItems';
+>>>>>>> ShoppingCartItems : Part-221
 import { ShoppingCartItemsService } from '../../services/ShoppingCartItemsService';
 import { ListingItemService } from '../../services/ListingItemService';
 import { MessageException } from '../../exceptions/MessageException';
