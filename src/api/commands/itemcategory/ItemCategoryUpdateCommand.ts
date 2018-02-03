@@ -69,6 +69,11 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
             + '                                        update; default is the root category.';
     }
 
+    public description(): string {
+        return 'Update the details of an item category given by categoryId.';
+    }
+
+
     /**
      * function to check category is default, check category is not associated with listing-item
      * TODO: NOTE: This function may be duplicated between commands.
