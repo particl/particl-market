@@ -103,15 +103,8 @@ import { ShoppingCartClearCommand } from '../commands/shoppingcart/ShoppingCartC
 import { ShoppingCartRootCommand } from '../commands/shoppingcart/ShoppingCartRootCommand';
 
 import { ShoppingCartItemAddCommand } from '../commands/shoppingcartitems/ShoppingCartItemAddCommand';
-<<<<<<< bec227a2840cf306b39de98c828a01d1122c3f61
-<<<<<<< 0bfd39857c41e10abb0c6f93193d756d5eef04b7
 import { ShoppingCartItemRemoveCommand } from '../commands/shoppingcartitems/ShoppingCartItemRemoveCommand';
 import { ShoppingCartItemListCommand } from '../commands/shoppingcartitems/ShoppingCartItemListCommand';
-=======
->>>>>>> ShoppingCartItems : Part-220
-=======
-import { ShoppingCartItemRemoveCommand } from '../commands/shoppingcartitems/ShoppingCartItemRemoveCommand';
->>>>>>> ShoppingCartItems : Part-221
 import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitems/ShoppingCartItemRootCommand';
 
 import { Command } from '../commands/Command';
@@ -339,10 +332,6 @@ export class RpcCommandFactory {
         this.commands.push(shoppingCartItemAddCommand);
         this.commands.push(shoppingCartItemRemoveCommand);
         this.commands.push(shoppingCartItemListCommand);
-        this.commands.push(shoppingCartItemRootCommand);
-
-        this.commands.push(shoppingCartItemAddCommand);
-        this.commands.push(shoppingCartItemRemoveCommand);
         this.commands.push(shoppingCartItemRootCommand);
 
         this.commands.push(helpCommand);
