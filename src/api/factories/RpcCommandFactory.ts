@@ -102,6 +102,7 @@ import { ShoppingCartGetCommand } from '../commands/shoppingcart/ShoppingCartGet
 import { ShoppingCartRootCommand } from '../commands/shoppingcart/ShoppingCartRootCommand';
 
 import { ShoppingCartItemAddCommand } from '../commands/shoppingcartitems/ShoppingCartItemAddCommand';
+import { ShoppingCartItemRemoveCommand } from '../commands/shoppingcartitems/ShoppingCartItemRemoveCommand';
 import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitems/ShoppingCartItemRootCommand';
 
 import { Command } from '../commands/Command';
@@ -212,6 +213,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartRootCommand) private shoppingCartRootCommand: ShoppingCartRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemAddCommand) private shoppingCartItemAddCommand: ShoppingCartItemAddCommand,
+        @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemRemoveCommand) private shoppingCartItemRemoveCommand: ShoppingCartItemRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemRootCommand) private shoppingCartItemRootCommand: ShoppingCartItemRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
@@ -322,8 +324,9 @@ export class RpcCommandFactory {
         this.commands.push(shoppingCartGetCommand);
         this.commands.push(shoppingCartRootCommand);
 
-        this.commands.push(shoppingCartItemRootCommand);
         this.commands.push(shoppingCartItemAddCommand);
+        this.commands.push(shoppingCartItemRemoveCommand);
+        this.commands.push(shoppingCartItemRootCommand);
 
         this.commands.push(helpCommand);
 

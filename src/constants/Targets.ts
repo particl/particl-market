@@ -228,6 +228,7 @@ export const Targets = {
         },
         shoppingcartitems: {
             ShoppingCartItemAddCommand: 'ShoppingCartItemAddCommand',
+            ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         }
     },
