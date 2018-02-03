@@ -36,4 +36,8 @@ export class ShoppingCartClearCommand extends BaseCommand implements RpcCommandI
         return this.getName() + ' <cartId>\n'
             + '    <cartId>          - The Id of the shopping cart we want to clear\n';
     }
+
+    public description(): string {
+        return 'Clear shopping cart items, associated with given shopping cart id.';
+    }
 }
