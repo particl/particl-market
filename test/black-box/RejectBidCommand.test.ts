@@ -1,7 +1,5 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-import { RejectBidCommand } from '../../src/api/commands/bid/RejectBidCommand';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 
@@ -10,7 +8,7 @@ describe('RejectBidCommand', () => {
     const bidFactory = null;
     const listingItemService = null;
     const messageBroadcastService = null;
-    
+
     const method =  Commands.BID_ROOT.commandName;
     const subMethod =  Commands.BID_REJECT.commandName;
 
