@@ -39,6 +39,10 @@ export class ShoppingCartItemsService {
         return await this.shoppingCartItemsRepo.findOneByListingItemOnCart(cartId, listingItemId);
     }
 
+    public async findListItemsByCartId(cartId: number): Promise<Bookshelf.Collection<ShoppingCartItems>> {
+        return await this.shoppingCartItemsRepo.findListItemsByCartId(cartId);
+    }
+
     @validate()
     public async create( @request(ShoppingCartItemsCreateRequest) body: any): Promise<ShoppingCartItems> {
 
