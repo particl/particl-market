@@ -43,4 +43,8 @@ export class ShoppingCartAddCommand extends BaseCommand implements RpcCommandInt
             + '    <name>          - The name of the shopping cart we want to create.\n'
             + '    <profileId>       -  profile id for which cart will be created';
     }
+
+    public description(): string {
+        return 'Add a new shopping cart associate it with an profileId.';
+    }
 }

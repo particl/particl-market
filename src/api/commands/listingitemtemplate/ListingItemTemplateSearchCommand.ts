@@ -62,4 +62,9 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
             + '                             listing item templats via title.';
     }
 
+    public description(): string {
+        return 'Search listing items with pagination by category id or \n'
+        + ' category name or by profileId, or by perticular searchString matched with itemInformation title';
+    }
+
 }

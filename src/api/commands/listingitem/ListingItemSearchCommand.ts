@@ -58,7 +58,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
 
     public help(): string {
         return this.getName() + ' [<page> [<pageLimit> [<order> ' +
-            '[(<categoryId> | <categoryName>)[(<profileId> | <ALL>) [<minPrice> [ <maxPrice> [<searchString>]]]]]]]\n'
+            '[(<categoryId> | <categoryName>)[(<profileId> | <ALL>) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]]\n'
             + '    <page>                          - [optional] Numeric - The number page we want to\n'
             + '                                       view of search listing item results.\n'
             + '        <pageLimit>                 - [optional] Numeric - The number of results per\n'
@@ -90,6 +90,12 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '                                       we want to search for.\n'
             + '               <searchString>        - [optional] String - A string that is used to\n'
             + '                                       find listing items by their titles.';
+    }
+
+    public description(): string {
+        return 'Search listing items with pagination by category id or \n'
+        + ' category name or by profileId, or by listing item price \n'
+        + ' min and max price range, or by country or shipping destination';
     }
 
 }

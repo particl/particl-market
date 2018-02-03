@@ -40,4 +40,8 @@ export class ItemCategoryFindCommand extends BaseCommand implements RpcCommandIn
             + '                                       categories by name.';
     }
 
+    public description(): string {
+        return 'Command for getting an item categories search by particular search string';
+    }
+
 }
