@@ -93,4 +93,8 @@ export class ShoppingCartItemsService {
         await this.shoppingCartItemsRepo.destroy(id);
     }
 
+    public async clearCart(cartId: number): Promise<void> {
+        await this.shoppingCartItemsRepo.clearCart(cartId);
+    }
+
 }
