@@ -1,7 +1,7 @@
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
-import { ItemImage } from '../models/ItemImage';
+import { ItemImage, ItemImage as ItemImageModel } from '../models/ItemImage';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';

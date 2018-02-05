@@ -66,6 +66,8 @@ export class ItemImageService {
             await this.itemImageDataService.create(newBody);
             newBody.data = dataProcessed.thumbnail;
             await this.itemImageDataService.create(newBody);
+        } else if (body.encoding !== 'BASE64') {
+            this.log.warn('Unsupported image encoding. Only supports BASE64.');
         }
 
         // Save the original.
@@ -94,10 +96,26 @@ export class ItemImageService {
         let itemImageData = updatedItemImage.related('ItemImageData').toJSON();
         await this.itemImageDataService.destroy(itemImageData.id);
 
-        // recreate related data
-        itemImageData = body.data;
+        // Save the original.
         itemImageData.item_image_id = id;
+        itemImageData = body.data;
         await this.itemImageDataService.create(itemImageData);
+
+        // Convert, scale, and remove metadata from item image then save each resized.
+        const newBody: any = itemImageData;
+        if (body.encoding === 'BASE64' && newBody.data) {
+            const dataProcessed: ImageTriplet = await ImageProcessing.prepareImageForSaving(newBody.data);
+
+            // Save 3 resized images
+            newBody.data = dataProcessed.big;
+            await this.itemImageDataService.create(newBody);
+            newBody.data = dataProcessed.medium;
+            await this.itemImageDataService.create(newBody);
+            newBody.data = dataProcessed.thumbnail;
+            await this.itemImageDataService.create(newBody);
+        } else if (body.encoding !== 'BASE64') {
+            this.log.warn('Unsupported image encoding. Only supports BASE64.');
+        }
 
         // finally find and return the updated itemImage
         const newItemImage = await this.findOne(id);
