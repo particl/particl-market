@@ -1,11 +1,12 @@
 import { api, rpc, ApiOptions } from './api';
 import * as Faker from 'faker';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
 export class BlackBoxTestUtil {
 
-
     constructor() {
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
         //
     }
 
@@ -14,11 +15,12 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<void>}
      */
-    public async cleanDb(ignoreTables: string[] = []): Promise<any> {
-        const res = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName, ignoreTables]);
-
+    public async cleanDb(): Promise<any> {
+        const res = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName]);
         res.expectJson();
         res.expectStatusCode(200);
+        return { result: 'success' };
+
     }
 
     /**
@@ -28,23 +30,26 @@ export class BlackBoxTestUtil {
      * @param data
      * @returns {Promise<any>}
      */
-    public async addData(model: string, data: any): Promise<any> {
-        const res = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_ADD.commandName, model, JSON.stringify(data)]);
+    public async addData(model: CreatableModel, data: any): Promise<any> {
+        const res = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_ADD.commandName, model.toString(), JSON.stringify(data)]);
         res.expectJson();
         res.expectStatusCode(200);
-        return res;
+        return res.getBody()['result'];
     }
 
     /**
-     * generate "real" looking test data
+     * generate real looking test data
      *
-     * @param model - listingitemtemplate, listingitem or profile
+     * @param model - CreatableModel
      * @param amount - amount of models to create
      * @param withRelated - return full related model data or just id's, defaults to true
+     * @param generateParams
      * @returns {Promise<any>}
      */
-    public async generateData(model: string, amount: number = 1, withRelated: boolean = true): Promise<any> {
-        const res: any = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_GENERATE.commandName, model, amount, withRelated]);
+    public async generateData(model: CreatableModel, amount: number = 1, withRelated: boolean = true, generateParams: boolean[] = []): Promise<any> {
+        const params = [Commands.DATA_GENERATE.commandName, model.toString(), amount, withRelated]
+            .concat(generateParams);
+        const res: any = await rpc(Commands.DATA_ROOT.commandName, params);
         res.expectJson();
         res.expectStatusCode(200);
         return res.getBody()['result'];

@@ -1,6 +1,9 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('/EscrowLockCommand', () => {
 
@@ -16,6 +19,7 @@ describe('/EscrowLockCommand', () => {
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
+        state: 'Mel State',
         country: 'Finland',
         zipCode: '85001'
     };
@@ -29,6 +33,18 @@ describe('/EscrowLockCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        const generateListingItemParams = new GenerateListingItemParams([
+            false,   // generateItemInformation
+            false,   // generateShippingDestinations
+            false,   // generateItemImages
+            false,   // generatePaymentInformation
+            false,   // generateEscrow
+            false,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
+
         // get default profile
         defaultProfile = await testUtil.getDefaultProfile();
 
@@ -37,12 +53,17 @@ describe('/EscrowLockCommand', () => {
             defaultProfile.id,
             addressTestData.title,
             addressTestData.addressLine1, addressTestData.addressLine2,
-            addressTestData.city, addressTestData.country, addressTestData.zipCode]);
+            addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
         addressRes.expectJson();
         addressRes.expectStatusCode(200);
         createdAddress = addressRes.getBody()['result'];
 
-        const listingItem = await testUtil.generateData('listingitem', 1);
+        const listingItem = await testUtil.generateData(
+            CreatableModel.LISTINGITEM, // what to generate
+            1,                                  // how many to generate
+            true,                               // return model
+            generateListingItemParams   // what kind of data to generate
+        ) as ListingItem[];
         createdListingItem = listingItem[0];
     });
 

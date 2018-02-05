@@ -62,4 +62,8 @@ export class ItemInformationCreateCommand extends BaseCommand implements RpcComm
             + '                                       item information with.';
     }
 
+    public description(): string {
+        return 'Create an iteminformation and associate it with a listingTemplateId.';
+    }
+
 }

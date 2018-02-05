@@ -49,4 +49,8 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
             + '    <hash>             - [optional] String - The hash of the listing item we want to retrieve. \n';
     }
 
+    public description(): string {
+        return 'Get a listing item via listingItemId or hash.';
+    }
+
 }

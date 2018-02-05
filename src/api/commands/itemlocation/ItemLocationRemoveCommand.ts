@@ -46,6 +46,10 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
             + '    <listingItemTemplateId>           - Numeric - The ID of the listing item template';
     }
 
+    public description(): string {
+        return 'Remove and destroy an item location associated with  listingItemTemplateId.';
+    }
+
     /*
      * TODO: NOTE: This function may be duplicated between commands.
      */

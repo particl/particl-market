@@ -1,8 +1,7 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger as LoggerType } from '../../src/core/Logger';
-import { AddressUpdateCommand } from '../../src/api/commands/address/AddressUpdateCommand';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/RpcUpdateAddress', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -43,9 +42,9 @@ describe('/RpcUpdateAddress', () => {
 
     test('Should update the address', async () => {
         // set up the test data, create profile + addresses
-        const addDataRes: any = await testUtil.addData('profile', testData);
-        profileId = addDataRes.getBody()['result'].id;
-        addressId = addDataRes.getBody()['result'].ShippingAddresses[0].id;
+        const addDataRes: any = await testUtil.addData(CreatableModel.PROFILE, testData);
+        profileId = addDataRes.id;
+        addressId = addDataRes.ShippingAddresses[0].id;
 
         // update address
         const res = await rpc(method, [ subCommand,

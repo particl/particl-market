@@ -43,6 +43,6 @@ export class ItemCategoryRootCommand extends BaseCommand implements RpcCommandIn
     }
 
     public description(): string {
-        return 'Commands for managing itemcategory.';
+        return 'Commands for managing item categories.';
     }
 }

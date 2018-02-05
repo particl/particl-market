@@ -48,4 +48,8 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
             + '    <profileId>                     - Numeric - The ID of the profile we\n'
             + '                                       want to associate this favorite with.';
     }
+
+    public description(): string {
+        return 'List the favorites associated with a profileId.';
+    }
 }

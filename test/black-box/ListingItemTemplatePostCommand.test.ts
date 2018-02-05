@@ -3,6 +3,9 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('ListingItemPostCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -16,6 +19,18 @@ describe('ListingItemPostCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
+
         const testDataListingItemTemplate = {
             profile_id: 0,
             hash: '',
@@ -27,7 +42,13 @@ describe('ListingItemPostCommand', () => {
         const defaultProfile = await testUtil.getDefaultProfile();
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
-        listingItemTemplace = await testUtil.generateData('listingitemtemplate', 1);
+        listingItemTemplace = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as ListingItemTemplate[];
+
     });
 
     test('Should post a item in to the market place without market id', async () => {

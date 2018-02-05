@@ -66,4 +66,8 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
             + '    <memo>           - String - The memo of the Escrow';
     }
 
+    public description(): string {
+        return 'Refund an escrow.';
+    }
+
 }
