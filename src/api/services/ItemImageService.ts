@@ -125,47 +125,4 @@ export class ItemImageService {
     public async destroy(id: number): Promise<void> {
         await this.itemImageRepo.destroy(id);
     }
-
-    // TODO: remove
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemImage>> {
-        return this.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ItemImage> {
-        return this.findOne(data.params[0]);
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemImage> {
-        return this.create({
-            hash: data.params[0],
-            data: {
-                dataId: data.params[1] || '',
-                protocol: data.params[2] || '',
-                encoding: data.params[3] || '',
-                data: data.params[4] || ''
-            }
-        } as ItemImageCreateRequest);
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemImage> {
-        return this.update(data.params[0], {
-            hash: data.params[1],
-            data: {
-                dataId: data.params[2] || '',
-                protocol: data.params[3] || '',
-                encoding: data.params[4] || '',
-                data: data.params[5] || ''
-            }
-        } as ItemImageUpdateRequest);
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
-    }
-
 }
