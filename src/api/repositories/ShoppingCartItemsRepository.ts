@@ -26,6 +26,14 @@ export class ShoppingCartItemsRepository {
         return this.ShoppingCartItemsModel.fetchById(id, withRelated);
     }
 
+    public async findOneByListingItemOnCart(cartId: number, listingItemId: number): Promise<ShoppingCartItems> {
+        return this.ShoppingCartItemsModel.findOneByListingItemOnCart(cartId, listingItemId);
+    }
+
+    public async findListItemsByCartId(cartId: number): Promise<Bookshelf.Collection<ShoppingCartItems>> {
+        return this.ShoppingCartItemsModel.findListItemsByCartId(cartId);
+    }
+
     public async create(data: any): Promise<ShoppingCartItems> {
         const shoppingCartItems = this.ShoppingCartItemsModel.forge<ShoppingCartItems>(data);
         try {

@@ -225,6 +225,12 @@ export const Targets = {
             ShoppingCartListCommand: 'ShoppingCartListCommand',
             ShoppingCartGetCommand: 'ShoppingCartGetCommand',
             ShoppingCartRootCommand: 'ShoppingCartRootCommand'
+        },
+        shoppingcartitems: {
+            ShoppingCartItemAddCommand: 'ShoppingCartItemAddCommand',
+            ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
+            ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
+            ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         }
     },
     Factory: {
