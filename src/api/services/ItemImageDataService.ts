@@ -45,10 +45,6 @@ export class ItemImageDataService {
             throw new ValidationException('Request body is not valid', ['dataId, protocol, encoding and data cannot all be null']);
         }
 
-        if (body.encoding !== 'BASE64') {
-            this.log.warn('Unsupported image encoding. Only supports BASE64.');
-        }
-
         // Save original
         const itemImageData = await this.itemImageDataRepo.create(body);
         
