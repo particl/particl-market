@@ -76,7 +76,7 @@ describe('ItemImage', () => {
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
 
         // create market
         let defaultMarket = await marketService.getDefault();
@@ -171,7 +171,7 @@ describe('ItemImage', () => {
     test('Should update the item image', async () => {
         testDataUpdated.item_information_id = itemInformation.id;
 
-        let tmp = await listingItemService.findOne(itemInformation.id).catch(e => {
+        const tmp = await listingItemService.findOne(itemInformation.id).catch(e => {
             log.error('update(): 100: ' + e);
         });
         if ( !tmp ) {
