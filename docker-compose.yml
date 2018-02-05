@@ -5,7 +5,8 @@ services:
     build:
       context: ./
     volumes:
-      - ./data/app1:/app/data
+#      - ./data/app1:/app/data
+      - ./:/app/
     ports:
       - 3100:3100
     command: npm run serve
@@ -29,7 +30,8 @@ services:
     build:
       context: ./
     volumes:
-      - ./data/app2:/app/data
+#      - ./data/app2:/app/data
+      - ./:/app/
     ports:
       - 3200:3200
     command: npm run serve

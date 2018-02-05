@@ -12,10 +12,10 @@ COPY yarn.lock /app
 
 RUN yarn install
 COPY . /app
-
-VOLUME /app/data
-
 RUN rm -rf /app/data/marketplace*db; npm run db:migrate; cp /app/data/marketplace.db /app/data/marketplace-test.db
+
+#VOLUME /app/data
+VOLUME /app/
 
 # CMD npm run serve
 CMD [ "yarn", "serve" ]

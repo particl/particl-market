@@ -52,7 +52,7 @@ before_install:
   - sudo mv docker-compose /usr/local/bin
   - docker-compose --version
   # login to registry
-  - docker login r.cfcr.io -u $REGISTRY_USER -p $REGISTRY_PASS
+  - docker login r.cfcr.io -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
   # install other misc stuff
   - npm install -g wait-port
   - npm install -g -s --no-progress yarn
