@@ -1,0 +1,142 @@
+sudo: required
+language: node_js
+node_js:
+  - "node"
+services:
+  - docker
+cache:
+  yarn: true
+  directories:
+    - "node_modules"
+env:
+  - DOCKER_COMPOSE_VERSION=1.18.0
+  # REGISTRY_USER=ludx, travis encrypt 'REGISTRY_USER=ludx' --repo particl/dapp-shell
+  - secure: "1VhOfobffo0J9SmlFuzRLL9lKutWK0i03Y13aSC4FPBgEcUHNX8JlM2t4IJJfDd+OO1RhawErfSLFIcSUqxsp9CbFZzzZDv9dwvJ6WvxSdOzAVe9CK63bysu0ZzXYGeo5b/maHm8C23rHHfcblHhgTQFqK5/AajhBL8I5ZmY9zUOvajNYOSendC/U1T7NLRDTZkPTcIIj2hVJbof1TAK0SI4v0De8fA1R+6oAFUtsahrNKiOYlsVp081FpXNLBBAbCp9Gx7IWVGkAA91EBgbep6xtVyPF2MF3v9qcSvfzwXZBjIT1VrOcFxLZYhoIFdT9pfhAINwCY86sUawNFVcvLLk4TdnCv5hQR/vLkE4HM/OjVSbjFAwJJMIU6zRAQYry5hS9lySGqXALaNr7PFaZOZicLWFxbe9kIIzOpN9YGWiDkaXHxfjgRvONg0spp9xxSH4RcuJmy6p7WVNjKhgfZt4G5FKsmm2j3+bTM+BCN7mQ3UjtgUbcrRNr5PuV4bRsQk5bQ5bNcDTBBtCTgnw/XcdbzXWpcamyoLp+8n8oPCsZcEALdFCRqsroRBaYXjPLCgrbEaGkiugy/9zrbyzSwwwdPXwnbSCBC9pGduQrVywUeQzDha69Ab80YnWvWv1tI0F7DRzjf+1YCvjbioy7m1513c1BtAzN5q0sk+3E2M="
+  # REGISTRY_PASS=...
+  - secure: "TgnpGCPkNGaQE1SZ2qAkOL66zIbH2sA+7op+C0bIrkbWEeBrmDF+aKsOmBpGyGHwLcIzyOngW2zMWQsb26XGOKzzuAIIW1I38x8pSHQhP1GhTGAbb7kXtmGgNaGd/y6Lby+sqRsHf9PiUCw+/etXaLOEvhWtnF0JP+WOzFGEbCREcXY3NKqT0/z0OfiskglzGsJy+lzhBEChQXTsQ7pfafeps/4XRMfHzCqyEv0/ZKg3l1Fq0lSuONOSQhkYSG6zOmDMa/v7rUcQSaPeheM4ySLg4imzzYVMEY3g7bWeoh5UpMB4+a+djftbrUCUrsygAn0kMyiZuURZ7XzA7t4jZ/FLIH9uA6MKFiWIBjpkauBuP3ZSL9EnjqPar3IE2/Y+cpsx8E7gQNo17N/6r/b/YvPp98EmQ+w1X1IDRrtZG3Ln6a5pB63E5ghp7SeOf6omImfhTr9mB1tErA2MV2FKcOBnWuukKLtTZfQ8Xx1Mns13VHiQj8Uij3bmzNqsES78ld2Hlxciu5FrTkxZSEc2nJa6m202Kn+N4xSKf6AMogtrhIFj+/nifHiOmgAJuk+qTI1cH24yGhpjqz7R+q1va1u9yvkAlvl8Zr5Cc86VlWUZ9oQVK9tNz9Relw737gQT0DGofeILdxZ9cu1L+1rGVcVzBQgio7sejTWMjWK8JRM="
+  - COMMIT=${TRAVIS_COMMIT::8}
+  - REGISTRY=r.cfcr.io
+  - IMAGE=ludx/dapp-shell-ci
+  - IMAGE_NAME=$REGISTRY/$IMAGE
+  - IMAGE_TAG=$TRAVIS_BRANCH-$TRAVIS_COMMIT
+
+# TRAVIS_BRANCH:
+#  for push builds, or builds not triggered by a pull request, this is the name of the branch.
+#  for builds triggered by a pull request this is the name of the branch targeted by the pull request.
+#  for builds triggered by a tag, this is the same as the name of the tag (TRAVIS_TAG)
+# TRAVIS_COMMIT:
+#  The commit that the current build is testing.
+# TRAVIS_EVENT_TYPE:
+#  Indicates how the build was triggered. One of push, pull_request, api, cron
+# TRAVIS_PULL_REQUEST_BRANCH:
+#  if the current job is a pull request, the name of the branch from which the PR originated.
+#  if the current job is a push build, this variable is empty (
+# TRAVIS_TEST_RESULT:
+#  is set to 0 if the build is successful and 1 if the build is broken.
+# TRAVIS_TAG:
+#  If the current build is for a git tag, this variable is set to the tag’s name.
+
+
+before_install:
+  # update docker
+  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+  - sudo apt-get update
+  - sudo apt-get -y install docker-ce
+  # update docker-compose
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+  - docker-compose --version
+  # login to registry
+  - docker login r.cfcr.io -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  # install other misc stuff
+  - npm install -g wait-port
+  - npm install -g -s --no-progress yarn
+  #- docker pull $IMAGE_NAME:develop || true
+
+
+install:
+  # install deps and set up the app
+  - yarn install
+  - bin/ci-create-dbs.sh
+  - bin/ci-create-build-version.sh
+  # build and run the stack
+  - docker-compose up --build -d
+  - docker ps
+  #- docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci .
+
+#  - docker push $DOCKER_IMAGE:$TRAVIS_COMMIT
+#  - docker run -d $DOCKER_IMAGE:$TRAVIS_COMMIT
+#  - docker build -t ludx/dapp-shell-ci -f Dockerfile.ci .
+#  - docker build --pull --cache-from "$IMAGE_NAME" -t r.cfcr.io/ludx/dapp-shell-ci:latest -t r.cfcr.io/ludx/dapp-shell-ci:develop -t r.cfcr.io/ludx/dapp-shell-ci:master -f Dockerfile.ci .
+
+# [[ $TRAVIS_PULL_REQUEST == “false” ]] && [[ $TRAVIS_BRANCH == “master” ]]
+#  - if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
+#      ./.travis/success_message.sh;
+#    fi
+
+# script: run the build script
+#before_script:
+#  - docker pull myorg/myimage || true
+
+script:
+  # run unit tests
+  - npm test
+  - npm run test:integration:pretty
+  - bin/ci-blackbox-tests.sh
+  - docker-compose down
+
+# building documentation, or deploying to a custom server
+# you can access the build result using the $TRAVIS_TEST_RESULT environment variable.
+after_success:
+  - curl -k -L https://files.sloppy.io/sloppy-`uname -s`-`uname -m` > sloppy
+  - chmod +x sloppy
+  - ./sloppy change -v docker_image:"$DOCKER_IMAGE:$TRAVIS_COMMIT" -v domain:"$DOMAIN" $SLOPPY_FILE
+after_success:
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+    docker push USER/REPO;
+    fi
+  - if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
+      ./.travis/success_message.sh;
+    fi
+
+  - if [ "$TRAVIS_BRANCH" == "develop" ]; then
+    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+    docker push USER/REPO;
+    fi
+  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+    docker push USER/REPO;
+    fi
+
+after_failure:
+
+before_deploy:
+  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:latest"
+  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${version}"
+  - git_sha="$(git rev-parse --short HEAD)"
+  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:develop"
+  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${git_sha}-develop"
+
+deploy:
+  provider: script
+  script: docker push "${IMAGE_NAME}:latest" && docker push "${IMAGE_NAME}:${version}"
+  script: docker push "${IMAGE_NAME}:develop" && docker push "${IMAGE_NAME}:${git_sha}-develop"
+  on:
+    branch: master
+
+after_deploy:
+
+after_script:
+  - docker images
+
+notifications:
+  email:
+    recipients:
+      - $EMAIL
+    on_success: never
+    on_failure: always
