@@ -57,6 +57,10 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
             + '                                       category of the category we\'re creating.';
     }
 
+    public description(): string {
+        return 'Command for adding an item category.';
+    }
+
     /**
      * function to return category id
      * TODO: NOTE: This function may be duplicated between commands.

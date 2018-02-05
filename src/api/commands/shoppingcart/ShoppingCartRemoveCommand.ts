@@ -37,4 +37,9 @@ export class ShoppingCartRemoveCommand extends BaseCommand implements RpcCommand
         return this.getName() + ' <cartId>\n'
             + '    <cartId>          - The Id of the shopping cart we want to remove';
     }
+
+    public description(): string {
+        return 'Destroy a shopping cart associated with given cartId.';
+    }
+
 }

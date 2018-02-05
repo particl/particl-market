@@ -54,5 +54,9 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
             + '    <sellerRatio>                   - Numeric - [TODO]';
     }
 
+    public description(): string {
+        return 'Update the details of an escrow given by listingItemTemplateId.';
+    }
+
 
 }

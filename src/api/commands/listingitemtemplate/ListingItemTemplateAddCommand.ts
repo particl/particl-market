@@ -116,4 +116,8 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             + '                                      item template we\'re creating.';
     }
 
+    public description(): string {
+        return 'Add a new listing item template associate it with a profile.';
+    }
+
 }

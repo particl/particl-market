@@ -52,4 +52,8 @@ export class EscrowCreateCommand extends BaseCommand implements RpcCommandInterf
             + '    <sellerRatio>             - Numeric - [TODO]';
     }
 
+    public description(): string {
+        return 'Create an escrow and associate it with a listingItemTemplate.';
+    }
+
 }

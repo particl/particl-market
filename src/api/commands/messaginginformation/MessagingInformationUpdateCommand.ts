@@ -58,6 +58,10 @@ export class MessagingInformationUpdateCommand extends BaseCommand implements Rp
             + '    <publicKey>              - String - [TODO]';
     }
 
+    public description(): string {
+        return 'Update the details of messaging information associated with listingTemplateId.';
+    }
+
     /**
      * TODO: NOTE: This function may be duplicated between commands.
      * function to get item-information and message-information
@@ -81,4 +85,6 @@ export class MessagingInformationUpdateCommand extends BaseCommand implements Rp
         }
         return [ItemInformation, MessageInformation[0]];
     }
+
+
 }

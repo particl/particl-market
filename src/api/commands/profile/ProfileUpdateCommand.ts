@@ -42,4 +42,8 @@ export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInter
             + '    <newProfileName>     - String - The new name we want to apply to the profile.';
     }
 
+    public description(): string {
+        return 'Update the details of a profile given by profileId.';
+    }
+
 }
