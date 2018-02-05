@@ -70,4 +70,8 @@ export class ShoppingCartItemsRepository {
         }
     }
 
+    public async clearCart(cartId: number): Promise<void> {
+        return this.ShoppingCartItemsModel.clearCart(cartId);
+    }
+
 }

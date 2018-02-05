@@ -224,6 +224,7 @@ export const Targets = {
             ShoppingCartRemoveCommand: 'ShoppingCartRemoveCommand',
             ShoppingCartListCommand: 'ShoppingCartListCommand',
             ShoppingCartGetCommand: 'ShoppingCartGetCommand',
+            ShoppingCartClearCommand: 'ShoppingCartClearCommand',
             ShoppingCartRootCommand: 'ShoppingCartRootCommand'
         },
         shoppingcartitems: {
