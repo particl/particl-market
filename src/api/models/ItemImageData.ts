@@ -1,5 +1,5 @@
 import { Bookshelf } from '../../config/Database';
-
+import { ItemImage } from './ItemImage';
 
 export class ItemImageData extends Bookshelf.Model<ItemImageData> {
 
@@ -23,23 +23,20 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get DataId(): string { return this.get('dataId'); }
-    public set DataId(value: string) { this.set('dataId', value); }
-
     public get Protocol(): string { return this.get('protocol'); }
     public set Protocol(value: string) { this.set('protocol', value); }
 
     public get Encoding(): string { return this.get('encoding'); }
     public set Encoding(value: string) { this.set('encoding', value); }
 
-    public get DataBig(): string { return this.get('dataBig'); }
-    public set DataBig(value: string) { this.set('dataBig', value); }
+    public get ImageVersion(): string { return this.get('imageVersion'); }
+    public set ImageVersion(value: string) { this.set('imageVersion', value); }
 
-    public get DataMedium(): string { return this.get('dataMedium'); }
-    public set DataMedium(value: string) { this.set('dataMedium', value); }
+    public get DataId(): string { return this.get('dataId'); }
+    public set DataId(value: string) { this.set('dataId', value); }
 
-    public get DataThumbnail(): string { return this.get('dataThumbnail'); }
-    public set DataThumbnail(value: string) { this.set('dataThumbnail', value); }
+    public get Data(): string { return this.get('data'); }
+    public set Data(value: string) { this.set('data', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
@@ -51,4 +48,8 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
     // public ItemImageDataRelated(): ItemImageDataRelated {
     //    return this.hasOne(ItemImageDataRelated);
     // }
+
+    public ItemImage(): ItemImage {
+        return this.belongsTo(ItemImage, 'item_image_id', 'id');
+    }
 }

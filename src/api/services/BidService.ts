@@ -41,6 +41,13 @@ export class BidService {
         return bid;
     }
 
+    public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+        const params = {
+            listingItemHash: hash
+        } as BidSearchParams;
+        return this.search(params);
+    }
+
     /**
      * search Bid using given BidSearchParams
      *
@@ -107,5 +114,4 @@ export class BidService {
     public async destroy(id: number): Promise<void> {
         await this.bidRepo.destroy(id);
     }
-
 }

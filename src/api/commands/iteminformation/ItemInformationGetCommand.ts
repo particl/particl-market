@@ -39,4 +39,8 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
             + '                                       to retrieve.';
     }
 
+    public description(): string {
+        return 'Get an iteminformations and associated with it with a listingItemTemplateId.';
+    }
+
 }

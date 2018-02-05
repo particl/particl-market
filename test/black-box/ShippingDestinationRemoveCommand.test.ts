@@ -1,133 +1,238 @@
 import { rpc, api } from './lib/api';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { Currency } from '../../src/api/enums/Currency';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { Logger } from '../../src/core/Logger';
-import { ShippingDestinationRemoveCommand } from '../../src/api/commands/shippingdestination/ShippingDestinationRemoveCommand';
-import { ShippingDestinationAddCommand } from '../../src/api/commands/shippingdestination/ShippingDestinationAddCommand';
+import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { ShippingCountries } from '../../src/core/helpers/ShippingCountries';
+import * as countryList from 'iso3166-2-db/countryList/en.json';
+import { JsonRpc2Response} from '../../src/core/api/jsonrpc';
+import { ListingItem, ListingItemTemplate } from 'resources';
+import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
+import { EscrowType } from '../../src/api/enums/EscrowType';
+import { Currency } from '../../src/api/enums/Currency';
+import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
+import { PaymentType } from '../../src/api/enums/PaymentType';
+import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
+/**
+ * shipping destination can be removed using following params:
+ * [0]: shippingDestinationId
+ * or
+ * [0]: listing_item_template_id
+ * [1]: country/countryCode
+ * [2]: shipping availability (ShippingAvailability enum)
+ *
+ * TODO: why do we have shipping availability there? if user wants to remove the shipping destinations availability,
+ * then shouldn't templateid + country code be enough information to remove that? there's always only one availability
+ * for one country, you can't ship and not_ship at the same time.
+ *
+ */
+describe('ShippingDestinationRemoveCommand', () => {
 
-describe('/ShippingDestinationRemoveCommand', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
     const testUtil = new BlackBoxTestUtil();
-    const shippingDestinationService = null;
-    const listingItemTemplateService = null;
+    const method = Commands.TEMPLATE_ROOT.commandName;
+    const subCommands = [Commands.SHIPPINGDESTINATION_ROOT.commandName, Commands.SHIPPINGDESTINATION_REMOVE.commandName] as any[];
 
-    const method =  new ShippingDestinationRemoveCommand(shippingDestinationService, listingItemTemplateService, Logger).name;
-    const addShippingMethod =  new ShippingDestinationAddCommand(shippingDestinationService, listingItemTemplateService, Logger).name;
+    let createdListingItemTemplateId;
+    let createdShippingDestinationId;
+    let shippingDestinationId;
+    // let createdListingItemId;
+    let createdListingItemsShippingDestinationId;
+    let listingItemId;
 
-    const testDataListingItemTemplate = {
+    const testData = {
         profile_id: 0,
-        hash: '',
-        paymentInformation: {
-            type: PaymentType.SALE
-        },
+        hash: 'hash1',
         itemInformation: {
-            listingItemId: null,
-            title: 'Item Information with Templates',
-            shortDescription: 'Item short description with Templates',
-            longDescription: 'Item long description with Templates',
+            listing_item_id: null,
+            title: 'item title1',
+            shortDescription: 'item short desc1',
+            longDescription: 'item long desc1',
             itemCategory: {
                 key: 'cat_high_luxyry_items'
+            },
+            itemLocation: {
+                region: 'South Africa',
+                address: 'asdf, asdf, asdf',
+                locationMarker: {
+                    markerTitle: 'Helsinki',
+                    markerText: 'Helsinki',
+                    lat: 12.1234,
+                    lng: 23.2314
+                }
+            },
+            shippingDestinations: [{
+                country: 'China',
+                shippingAvailability: ShippingAvailability.SHIPS
+            }, {
+                country: 'South Africa',
+                shippingAvailability: ShippingAvailability.ASK
+            }],
+            itemImages: [{
+                hash: 'imagehash1',
+                data: {
+                    dataId: 'dataid1',
+                    protocol: ImageDataProtocolType.IPFS,
+                    encoding: null,
+                    data: null
+                }
+            }]
+        },
+        paymentInformation: {
+            type: PaymentType.SALE,
+            escrow: {
+                type: EscrowType.MAD,
+                ratio: {
+                    buyer: 100,
+                    seller: 100
+                }
+            },
+            itemPrice: {
+                currency: Currency.BITCOIN,
+                basePrice: 0.0001,
+                shippingPrice: {
+                    domestic: 0.123,
+                    international: 1.234
+                },
+                cryptocurrencyAddress: {
+                    type: CryptocurrencyAddressType.NORMAL,
+                    address: '1234'
+                }
             }
-        }
-    } as ListingItemTemplateCreateRequest;
-
-    let createdTemplateId;
-    let createdlistingItemsId;
-    let createdItemInformationId;
-    let createdShippingDestinationId;
+        },
+        messagingInformation: [{
+            protocol: MessagingProtocolType.SMSG,
+            publicKey: 'publickey1'
+        }]
+    };
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        // create profile
+
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            false,  // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        // create template without shipping destinations and store its id for testing
+        const listingItems = await testUtil.generateData(
+            CreatableModel.LISTINGITEM, // what to generate
+            1,                                  // how many to generate
+            true,                               // return model
+            generateListingItemParams   // what kind of data to generate
+        ) as ListingItemTemplate[];
+        // createdListingItemTemplateId = listingItems[0].id;
+        listingItemId = listingItems[0].id;
+
+        // we are shipping to south africa
+        // get default profile
         const defaultProfile = await testUtil.getDefaultProfile();
-        // set profile
-        testDataListingItemTemplate.profile_id = defaultProfile.id;
+        testData.profile_id = defaultProfile.id;
+        // testData.itemInformation.listing_item_id = itemId;
+        // set listingItem id
 
-        // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+        const listingItemTem: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testData);
 
-        // create item template
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        const result: any = addListingItemTempRes.getBody()['result'];
-        createdTemplateId = result.id;
-        createdItemInformationId = result.ItemInformation.id;
+        createdListingItemTemplateId = listingItemTem.id;
+        createdListingItemsShippingDestinationId = listingItems[0].ItemInformation.ShippingDestinations[0].id;
 
-        // create shipping destination
-        const addDataRes: any = await rpc(addShippingMethod, [createdTemplateId, 'South Africa', ShippingAvailability.SHIPS]);
-
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(200);
-        createdShippingDestinationId = addDataRes.getBody()['result'].id;
-
-        // create listing item
-        const listingItems = await testUtil.generateData('listingitem', 1);
-        createdlistingItemsId = listingItems[0]['id'];
+        const addShippingSubCommands = [Commands.SHIPPINGDESTINATION_ROOT.commandName, Commands.SHIPPINGDESTINATION_ADD.commandName] as any[];
+        const addShippingResult = await rpc(method, addShippingSubCommands.concat(
+            [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]));
+        createdShippingDestinationId = addShippingResult.getBody<JsonRpc2Response>().result.id;
     });
 
-    test('Should fail to remove shipping destination for invalid country', async () => {
-        // remove shipping destination
-        const addDataRes: any = await rpc(method, [createdTemplateId, 'IND', ShippingAvailability.SHIPS]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('Country or shipping availability was not valid!');
+    // TODO: missing tests that delete using shipping destination id
+
+    test('Should fail to remove shipping destination using invalid country', async () => {
+
+        const removeShippingResult: any = await rpc(method, subCommands.concat(
+            [createdListingItemTemplateId, 'invalid-country-code', ShippingAvailability.SHIPS]
+        ));
+
+        removeShippingResult.expectJson();
+        removeShippingResult.expectStatusCode(404);
+        expect(removeShippingResult.error.error.success).toBe(false);
+        // expect(removeShippingResult.error.error.message).toBe('Country or shipping availability was not valid!');
+        expect(removeShippingResult.error.error.message).toBe('Entity with identifier Country code <INVALID-COUNTRY-CODE> was not valid! does not exist');
     });
 
-    test('Should fail to remove shipping destination for invalid ShippingAvailability', async () => {
-        // remove shipping destination
-        const addDataRes: any = await rpc(method, [createdTemplateId, 'South Africa', 'TEST']);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('Country or shipping availability was not valid!');
+    test('Should fail to remove shipping destination using invalid ShippingAvailability', async () => {
+        const removeShippingResult: any = await rpc(method, subCommands.concat(
+            [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.DOES_NOT_SHIP]
+        ));
+
+        removeShippingResult.expectJson();
+        removeShippingResult.expectStatusCode(404);
+        expect(removeShippingResult.error.error.success).toBe(false);
+        // expect(removeShippingResult.error.error.message).toBe('Country or shipping availability was not valid!');
+        expect(removeShippingResult.error.error.message).toBe('Entity with identifier ' + createdListingItemTemplateId + ' does not exist');
     });
 
-    test('Should fail to remove shipping destination for invalid item template id', async () => {
-        // remove shipping destination
-        const addDataRes: any = await rpc(method, [0, 'South Africa', ShippingAvailability.SHIPS]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('Entity with identifier 0 does not exist');
+    test('Should fail to remove shipping destination for invalid itemtemplate id', async () => {
+        const removeShippingResult: any = await rpc(method, subCommands.concat(
+            [createdListingItemTemplateId + 100, countryList.ZA.iso, ShippingAvailability.SHIPS]
+        ));
+
+        removeShippingResult.expectJson();
+        removeShippingResult.expectStatusCode(404);
+        expect(removeShippingResult.error.error.success).toBe(false);
+        expect(removeShippingResult.error.error.message).toBe('Entity with identifier ' + (createdListingItemTemplateId + 100) + ' does not exist');
     });
 
     test('Should remove shipping destination', async () => {
-        // remove shipping destination
-        const addDataRes: any = await rpc(method, [createdTemplateId, 'South Africa', ShippingAvailability.SHIPS]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(200);
+        const removeShippingResult: any = await rpc(method, subCommands.concat(
+            [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]
+        ));
 
+        removeShippingResult.expectJson();
+        removeShippingResult.expectStatusCode(200);
     });
 
     test('Should fail remove shipping destination because it already removed', async () => {
-        // remove shipping destination
-        const addDataRes: any = await rpc(method, [createdTemplateId, 'South Africa', ShippingAvailability.SHIPS]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
+        const removeShippingResult: any = await rpc(method, subCommands.concat(
+            [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]
+        ));
+
+        removeShippingResult.expectJson();
+        removeShippingResult.expectStatusCode(404);
     });
 
-    test('Should fail to remove if there is a ListingItem related to ItemInformation. (the item has allready been posted)', async () => {
+    test('Should fail to remove shipping destination from listing item (listing items have allready been posted)', async () => {
 
-        // set listing item id
-        testDataListingItemTemplate.itemInformation.listingItemId = createdlistingItemsId;
+        testData.itemInformation.listing_item_id = listingItemId;
+        // set listingItem id
+        testData.hash = ObjectHash.getHash(testData);
+        const listingItemTem: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testData);
 
-        // set hash in listingItemTemplate
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+        createdListingItemTemplateId = listingItemTem.id;
 
-        // create item template information with listing item id
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate as ListingItemTemplateCreateRequest);
-        const newTemplateId = addListingItemTempRes.getBody()['result'].id;
+        const removeShippingResult: any = await rpc(method, subCommands.concat(
+            [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]
+        ));
+        shippingDestinationId = listingItemTem.ItemInformation.ShippingDestinations[0].id;
 
-        // remove shipping destination
-        const addDataRes: any = await rpc(method, [newTemplateId, 'South Africa', ShippingAvailability.SHIPS]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('Can\'t delete shipping destination because the item has allready been posted!');
+        removeShippingResult.expectJson();
+        removeShippingResult.expectStatusCode(404);
+        expect(removeShippingResult.error.error.success).toBe(false);
+        expect(removeShippingResult.error.error.message).toBe('Can\'t delete shipping destination because the item has allready been posted!');
+    });
+
+    test('Should remove shipping destination by id', async () => {
+        const removeShippingResult: any = await rpc(method, subCommands.concat(
+            [shippingDestinationId]
+        ));
+        removeShippingResult.expectJson();
+        removeShippingResult.expectStatusCode(200);
     });
 
 });

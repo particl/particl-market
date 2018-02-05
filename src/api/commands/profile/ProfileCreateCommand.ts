@@ -47,4 +47,8 @@ export class ProfileCreateCommand extends BaseCommand implements RpcCommandInter
             + '                              if omitted.';
     }
 
+    public description(): string {
+        return 'Create a new profile.';
+    }
+
 }

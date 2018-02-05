@@ -1,22 +1,24 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Logger } from '../../src/core/Logger';
-import { RejectBidCommand } from '../../src/api/commands/bid/RejectBidCommand';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('RejectBidCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const bidFactory = null;
     const listingItemService = null;
     const messageBroadcastService = null;
-    const method =  new RejectBidCommand(bidFactory, listingItemService, messageBroadcastService, Logger).name;
+
+    const method =  Commands.BID_ROOT.commandName;
+    const subMethod =  Commands.BID_REJECT.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
 
     test('Should reject a bid by RPC', async () => {
-        const listingItem = await testUtil.generateData('listingitem', 1);
-        const res: any = await rpc(method, [listingItem[0].hash]);
+        const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
+        const res: any = await rpc(method, [subMethod, listingItem[0].hash]);
         res.expectJson();
 
         // TODO: Need to implements after broadcast functionality get done

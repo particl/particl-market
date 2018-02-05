@@ -16,6 +16,12 @@ export class ShippingCountries {
         }
     }
 
+    /**
+     * TODO: desc
+     *
+     * @param countryCode
+     * @returns {boolean}
+     */
     public static getCountry( countryCode: string ): string {
         countryCode = countryCode.toString().toUpperCase();
         if ( this.countryCodeList[countryCode] ) {
@@ -24,6 +30,12 @@ export class ShippingCountries {
         throw new NotFoundException(`Could not find country code <${countryCode}>`);
     }
 
+    /**
+     * TODO: desc
+     *
+     * @param country
+     * @returns {any}
+     */
     public static getCountryCode( country: string ): string {
         country = country.toString().toUpperCase();
         if ( this.countryList[country] ) {
@@ -32,6 +44,12 @@ export class ShippingCountries {
         throw new NotFoundException(`Could not find country <${country}>`);
     }
 
+    /**
+     * TODO: desc
+     *
+     * @param country
+     * @returns {boolean}
+     */
     public static isValidCountry( country: string ): boolean {
         country = country.toString().toUpperCase();
         if ( this.countryList[country] ) {
@@ -41,6 +59,12 @@ export class ShippingCountries {
         }
     }
 
+    /**
+     * TODO: desc
+     *
+     * @param countryCode
+     * @returns {boolean}
+     */
     public static isValidCountryCode( countryCode: string ): boolean {
         countryCode = countryCode.toString().toUpperCase();
         if ( this.countryCodeList[countryCode] ) {
@@ -50,9 +74,14 @@ export class ShippingCountries {
         }
     }
 
-    /*
+    /**
      * Convert country to country code, if valid country.
      * If country code and invalid, throw exception and print to log.
+     * TODO: remove log
+     *
+     * @param log
+     * @param countryCode
+     * @returns {string}
      */
     public static validate( log: LoggerType, countryCode: string ): string {
         countryCode = countryCode.toString().toUpperCase();

@@ -36,4 +36,8 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
         return this.getName() + ' [<profileId> | <profileName>]\n'
             + '    [<profileId> | <profileName>]          - The Id/Name of the profile associated with the shopping cart we want to search for\n';
     }
+
+    public description(): string {
+        return 'List the all shopping cart associated with given profile id or profile name.';
+    }
 }

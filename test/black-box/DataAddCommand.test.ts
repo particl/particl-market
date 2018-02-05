@@ -5,7 +5,6 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 describe('DataAddCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const marketService = null;
     const method = Commands.DATA_ROOT.commandName;
     const subCommand =  Commands.DATA_ADD.commandName;
 
@@ -19,7 +18,7 @@ describe('DataAddCommand', () => {
         address: 'test-address'
     };
 
-    test('Should create a test data for profile', async () => {
+    test('Should create test data for profile', async () => {
         const res = await rpc(method, [subCommand, modelName, JSON.stringify(testProfileData)]);
         res.expectJson();
         res.expectStatusCode(200);

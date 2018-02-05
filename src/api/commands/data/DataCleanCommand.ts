@@ -22,7 +22,7 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
 
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<void> {
-        return await this.testDataService.clean(data.params);
+        return await this.testDataService.clean();
     }
 
     public help(): string {

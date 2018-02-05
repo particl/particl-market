@@ -7,6 +7,8 @@ declare module 'resources' {
         longDescription: string;
         createdAt: Date;
         updatedAt: Date;
+        ShippingDestinations: ShippingDestination[];
+        ItemCategory: ItemCategory;
     }
 
 }
