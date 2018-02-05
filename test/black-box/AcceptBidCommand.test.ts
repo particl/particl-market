@@ -1,10 +1,7 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
-import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
-import { Logger } from '../../src/core/Logger';
-import { AcceptBidCommand } from '../../src/api/commands/bid/AcceptBidCommand';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 

@@ -87,6 +87,10 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             + '    <gpsMarkerLongitude>       - Numeric - Marker longitude position';
     }
 
+    public description(): string {
+        return 'Update the details of an item location given by listingItemTemplateId.';
+    }
+
     /*
      * TODO: NOTE: This function may be duplicated between commands.
      */

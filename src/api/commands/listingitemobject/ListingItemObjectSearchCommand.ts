@@ -43,4 +43,8 @@ export class ListingItemObjectSearchCommand extends BaseCommand implements RpcCo
             + '                                       find listing items object by matching their type or description.';
     }
 
+    public description(): string {
+        return 'Search listing items objects by given string match with listing item object type or description';
+    }
+
 }
