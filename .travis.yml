@@ -130,6 +130,7 @@ after_success:
 #  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:develop"
 #  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${git_sha}-develop"
 
+
 #deploy:
 #  provider: script
 #  script: docker push "${IMAGE_NAME}:latest" && docker push "${IMAGE_NAME}:${version}"
