@@ -65,78 +65,63 @@ install:
   # build and run the stack
   - docker-compose up --build -d
   - docker ps
-  #- docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci .
 
+#  - docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci .
 #  - docker push $DOCKER_IMAGE:$TRAVIS_COMMIT
 #  - docker run -d $DOCKER_IMAGE:$TRAVIS_COMMIT
 #  - docker build -t ludx/dapp-shell-ci -f Dockerfile.ci .
 #  - docker build --pull --cache-from "$IMAGE_NAME" -t r.cfcr.io/ludx/dapp-shell-ci:latest -t r.cfcr.io/ludx/dapp-shell-ci:develop -t r.cfcr.io/ludx/dapp-shell-ci:master -f Dockerfile.ci .
 
-# [[ $TRAVIS_PULL_REQUEST == “false” ]] && [[ $TRAVIS_BRANCH == “master” ]]
-#  - if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
-#      ./.travis/success_message.sh;
-#    fi
-
-# script: run the build script
 #before_script:
 #  - docker pull myorg/myimage || true
 
 script:
-  # run unit tests
   - npm test
   - npm run test:integration:pretty
   - bin/ci-blackbox-tests.sh
   - docker-compose down
 
-# building documentation, or deploying to a custom server
-# you can access the build result using the $TRAVIS_TEST_RESULT environment variable.
-after_success:
-  - curl -k -L https://files.sloppy.io/sloppy-`uname -s`-`uname -m` > sloppy
-  - chmod +x sloppy
-  - ./sloppy change -v docker_image:"$DOCKER_IMAGE:$TRAVIS_COMMIT" -v domain:"$DOMAIN" $SLOPPY_FILE
-after_success:
-  - if [ "$TRAVIS_BRANCH" == "master" ]; then
-    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
-    docker push USER/REPO;
-    fi
-  - if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
-      ./.travis/success_message.sh;
-    fi
+#after_success:
+#  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+#      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+#      docker push USER/REPO;
+#    fi
+#  - if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
+#      ./.travis/success_message.sh;
+#    fi
+#  - if [ "$TRAVIS_BRANCH" == "develop" ]; then
+#      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+#      docker push USER/REPO;
+#    fi
+#  - if [ "$TRAVIS_BRANCH" == "master" ]; then
+#      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
+#      docker push USER/REPO;
+#    fi
+#after_failure:
 
-  - if [ "$TRAVIS_BRANCH" == "develop" ]; then
-    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
-    docker push USER/REPO;
-    fi
-  - if [ "$TRAVIS_BRANCH" == "master" ]; then
-    docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
-    docker push USER/REPO;
-    fi
+#before_deploy:
+#  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+#  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:latest"
+#  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${version}"
+#  - git_sha="$(git rev-parse --short HEAD)"
+#  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:develop"
+#  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${git_sha}-develop"
 
-after_failure:
+#deploy:
+#  provider: script
+#  script: docker push "${IMAGE_NAME}:latest" && docker push "${IMAGE_NAME}:${version}"
+#  script: docker push "${IMAGE_NAME}:develop" && docker push "${IMAGE_NAME}:${git_sha}-develop"
+#  on:
+#    branch: master
 
-before_deploy:
-  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
-  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:latest"
-  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${version}"
-  - git_sha="$(git rev-parse --short HEAD)"
-  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:develop"
-  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${git_sha}-develop"
-
-deploy:
-  provider: script
-  script: docker push "${IMAGE_NAME}:latest" && docker push "${IMAGE_NAME}:${version}"
-  script: docker push "${IMAGE_NAME}:develop" && docker push "${IMAGE_NAME}:${git_sha}-develop"
-  on:
-    branch: master
-
-after_deploy:
+#after_deploy:
 
 after_script:
   - docker images
 
-notifications:
-  email:
-    recipients:
-      - $EMAIL
-    on_success: never
-    on_failure: always
+#notifications:
+#  email:
+#    recipients:
+#      - $EMAIL
+#    on_success: never
+#    on_failure: always
