@@ -15,10 +15,10 @@ env:
     - secure: "eS5/H/m860xqfEuWF/lExmdjkMIY3AdaBwEFhelciYGe+8RjzkDNSUmU4BvGvI0/jrk+UmXe18td7kQTrU4e8mN+gKhNTy+UpdE4/nbpV9VRemjtUAqzDfgcNqMK0Hjh/I6qxQxL4hr7lec2z5cimMrytc8eFm74uuYWOstU+N6p6q+0hcMqeUy5MGkk+uGoioMkwyL3mv5pmEg7o5PR7XwKYHKO+odpoWUy90l0CgHKsBU81z8tEyAsjhgN5W4nAIbNn0jd1Zp63e6nMK5FUc1sAkAEuqNF/ixsM3yr9UICFR4qpQyP/n9ecAFbysrcDQ3aGC6ikjbDy1j4z7uYp9wZSJieGzf4cqGgPrCTR2TUdENnE0/VnZZy/DcnF3haxDhmex0azHqjD96QnnvNSB5fUO4uIt1cOZIgp/HfPNT8w6fSnaF7vh7VL5czQX2Hb+xuRCdj25T+Kp7gaGp23E7UWKUpbh9JMTtfp5nWBD353FgST3NCT506Z0/WXjpufCuq7spiOnbBNUGCzJZdYHFA9MkElsnMhMxDa8cKbJ+1B1Wtp7wO5/Ca3ZyOCjoI6WovtU+YyTYYDvCdH+jkDuegBgalHn5ZyJdoTFHNVti8MAybsPkKvAeilPh5Phgj9y15DygD62x4hQqfGiLS/tiXmxkDgk5EWS6Urjod+YY="  # REGISTRY_PASS
     - DOCKER_COMPOSE_VERSION=1.18.0
     - COMMIT=${TRAVIS_COMMIT::8}
-    - REGISTRY=r.cfcr.io
-    - IMAGE=ludx/dapp-shell-ci
-    - IMAGE_NAME=$REGISTRY/$IMAGE
-    - IMAGE_TAG=$TRAVIS_BRANCH-$TRAVIS_COMMIT
+    - REGISTRY="r.cfcr.io"
+    - IMAGE="ludx/dapp-shell-ci"
+    - IMAGE_NAME="$REGISTRY/$IMAGE"
+    - IMAGE_TAG="$TRAVIS_BRANCH-$TRAVIS_COMMIT"
 
 # TRAVIS_BRANCH:
 #  for push builds, or builds not triggered by a pull request, this is the name of the branch.
@@ -58,6 +58,7 @@ before_install:
 install:
   # install deps and set up the app
   - yarn install
+  - bin/copy-env.sh
   - bin/ci-create-dbs.sh
   - bin/ci-create-build-version.sh
   # build and run the stack
