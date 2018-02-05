@@ -11,6 +11,8 @@ import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
 import { ItemImageUpdateRequest } from '../requests/ItemImageUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
 import { ItemImageDataService } from './ItemImageDataService';
+import { ImageProcessing } from '../../core/helpers/ImageProcessing';
+import { ImageTriplet } from '../../core/helpers/ImageTriplet';
 
 export class ItemImageService {
 
@@ -51,6 +53,22 @@ export class ItemImageService {
 
         // create related models
         itemImageData.item_image_id = itemImage.Id;
+
+        // Convert, scale, and remove metadata from item image then save each resized.
+        const newBody: any = itemImageData;
+        if (body.encoding === 'BASE64' && newBody.data) {
+            const dataProcessed: ImageTriplet = await ImageProcessing.prepareImageForSaving(newBody.data);
+
+            // Save 3 resized images
+            newBody.data = dataProcessed.big;
+            await this.itemImageDataService.create(newBody);
+            newBody.data = dataProcessed.medium;
+            await this.itemImageDataService.create(newBody);
+            newBody.data = dataProcessed.thumbnail;
+            await this.itemImageDataService.create(newBody);
+        }
+
+        // Save the original.
         await this.itemImageDataService.create(itemImageData);
 
         // finally find and return the created itemImage
