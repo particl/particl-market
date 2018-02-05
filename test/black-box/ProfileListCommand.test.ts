@@ -1,8 +1,6 @@
 import * as _ from 'lodash';
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-// import { Country } from '../../src/api/enums/Country';
-import { Logger } from '../../src/core/Logger';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
