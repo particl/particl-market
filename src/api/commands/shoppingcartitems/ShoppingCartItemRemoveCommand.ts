@@ -58,4 +58,8 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
             + '    <cartId>          - The Id of the shopping cart we want to use.\n'
             + '    <itemId | hash>       -  ListingItem id/hash we want to add on cart';
     }
+
+    public description(): string {
+        return 'Remove lisging-item from shopping cart as per given listingitem Id and cart Id.';
+    }
 }
