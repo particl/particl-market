@@ -10,7 +10,7 @@ describe('RejectBidCommand', () => {
     const bidFactory = null;
     const listingItemService = null;
     const messageBroadcastService = null;
-    
+
     const method =  Commands.BID_ROOT.commandName;
     const subMethod =  Commands.BID_REJECT.commandName;
 
