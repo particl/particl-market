@@ -11,6 +11,7 @@ import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
 import { DataRootCommand } from '../commands/data/DataRootCommand';
 import { HelpCommand } from '../commands/HelpCommand';
 
+import { BidRootCommand } from '../commands/bid/BidRootCommand';
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
 import { AcceptBidCommand } from '../commands/bid/AcceptBidCommand';
 import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
@@ -36,8 +37,9 @@ import { ItemCategoryRemoveCommand } from '../commands/itemcategory/ItemCategory
 import { ItemCategoryUpdateCommand } from '../commands/itemcategory/ItemCategoryUpdateCommand';
 import { ItemCategoryRootCommand } from '../commands/itemcategory/ItemCategoryRootCommand';
 
+import { ItemImageRootCommand } from '../commands/itemimage/ItemImageRootCommand';
+import { ItemImageListCommand } from '../commands/itemimage/ItemImageListCommand';
 import { ItemImageAddCommand } from '../commands/itemimage/ItemImageAddCommand';
-import { ItemImageGetsCommand } from '../commands/itemimage/ItemImageGetsCommand';
 import { ItemImageRemoveCommand } from '../commands/itemimage/ItemImageRemoveCommand';
 
 import { ItemInformationCreateCommand } from '../commands/iteminformation/ItemInformationCreateCommand';
@@ -89,6 +91,9 @@ import { ShippingDestinationListCommand } from '../commands/shippingdestination/
 import { ShippingDestinationAddCommand } from '../commands/shippingdestination/ShippingDestinationAddCommand';
 import { ShippingDestinationRemoveCommand } from '../commands/shippingdestination/ShippingDestinationRemoveCommand';
 
+import { ListingItemObjectRootCommand } from '../commands/listingitemobject/ListingItemObjectRootCommand';
+import { ListingItemObjectSearchCommand } from '../commands/listingitemobject/ListingItemObjectSearchCommand';
+
 import { ShoppingCartAddCommand } from '../commands/shoppingcart/ShoppingCartAddCommand';
 import { ShoppingCartUpdateCommand } from '../commands/shoppingcart/ShoppingCartUpdateCommand';
 import { ShoppingCartRemoveCommand } from '../commands/shoppingcart/ShoppingCartRemoveCommand';
@@ -111,6 +116,7 @@ export class RpcCommandFactory {
     public commands: Array<RpcCommandInterface<any>> = [];
 
     constructor(
+        @inject(Types.Command) @named(Targets.Command.bid.BidRootCommand) private bidRootCommand: BidRootCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidSearchCommand) private bidSearchCommand: BidSearchCommand,
         @inject(Types.Command) @named(Targets.Command.bid.AcceptBidCommand) private bidAcceptCommand: AcceptBidCommand,
         @inject(Types.Command) @named(Targets.Command.bid.CancelBidCommand) private bidCancelCommand: CancelBidCommand,
@@ -138,8 +144,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryUpdateCommand) private itemCategoryUpdateCommand: ItemCategoryUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryRootCommand) private itemCategoryRootCommand: ItemCategoryRootCommand,
 
+        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRootCommand) private itemImageRootCommand: ItemImageRootCommand,
+        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageListCommand) private itemImageListCommand: ItemImageListCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageAddCommand) private itemImageAddCommand: ItemImageAddCommand,
-        @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageGetsCommand) private itemImageGetsCommand: ItemImageGetsCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRemoveCommand) private itemImageRemoveCommand: ItemImageRemoveCommand,
 
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationCreateCommand) private itemInformationCreateCommand: ItemInformationCreateCommand,
@@ -196,6 +203,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
         @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
 
+        @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectRootCommand) private listingItemObjectRootCommand: ListingItemObjectRootCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectSearchCommand) private listingItemObjectSearchCommand: ListingItemObjectSearchCommand,
+
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartAddCommand) private shoppingCartAddCommand: ShoppingCartAddCommand,
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartUpdateCommand) private shoppingCartUpdateCommand: ShoppingCartUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartRemoveCommand) private shoppingCartRemoveCommand: ShoppingCartRemoveCommand,
@@ -219,6 +229,7 @@ export class RpcCommandFactory {
     ) {
         this.log = new Logger(__filename);
 
+        this.commands.push(bidRootCommand);
         this.commands.push(bidSearchCommand);
         this.commands.push(bidAcceptCommand);
         this.commands.push(bidCancelCommand);
@@ -246,8 +257,9 @@ export class RpcCommandFactory {
         this.commands.push(itemCategoryUpdateCommand);
         this.commands.push(itemCategoryRootCommand);
 
+        this.commands.push(itemImageRootCommand);
+        this.commands.push(itemImageListCommand);
         this.commands.push(itemImageAddCommand);
-        this.commands.push(itemImageGetsCommand);
         this.commands.push(itemImageRemoveCommand);
 
         this.commands.push(itemInformationCreateCommand);
@@ -303,6 +315,9 @@ export class RpcCommandFactory {
         this.commands.push(dataCleanCommand);
         this.commands.push(dataGenerateCommand);
         this.commands.push(dataRootCommand);
+
+        this.commands.push(listingItemObjectRootCommand);
+        this.commands.push(listingItemObjectSearchCommand);
 
         this.commands.push(shoppingCartAddCommand);
         this.commands.push(shoppingCartUpdateCommand);

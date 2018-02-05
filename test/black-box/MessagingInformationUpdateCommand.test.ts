@@ -6,6 +6,9 @@ import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { Commands} from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('MessagingInformationUpdateCommand', () => {
 
@@ -44,6 +47,19 @@ describe('MessagingInformationUpdateCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
+
+
         const defaultProfile = await testUtil.getDefaultProfile();
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
@@ -57,12 +73,18 @@ describe('MessagingInformationUpdateCommand', () => {
         // set category id
         testDataListingItemTemplate.itemInformation.itemCategory.id = categoryList.id;
         // create listing-item-template
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        const result: any = addListingItemTempRes.getBody()['result'];
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        const result: any = addListingItemTempRes;
         createdTemplateId = result.id;
 
         // listing-item
-        const listingItems = await testUtil.generateData('listingitem', 1);
+        const listingItems = await testUtil.generateData(
+            CreatableModel.LISTINGITEM, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemParams   // what kind of data to generate
+        ) as ListingItem[];
+
         listingItemId = listingItems[0]['id'];
     });
 
@@ -104,9 +126,9 @@ describe('MessagingInformationUpdateCommand', () => {
         testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
         // create new item template
-        const listingItemTemplate = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
+        const listingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
 
-        const listingItemTemplateId = listingItemTemplate.getBody()['result'].id;
+        const listingItemTemplateId = listingItemTemplate.id;
         const res = await rpc(method, [subCommand, listingItemTemplateId, messageInfoData.protocol, messageInfoData.publicKey]);
         res.expectJson();
         res.expectStatusCode(404);

@@ -1,6 +1,9 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('ListingItemTemplateRemoveCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -10,6 +13,17 @@ describe('ListingItemTemplateRemoveCommand', () => {
     let profile;
     let createdTemplateId;
 
+    const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+        true,   // generateItemInformation
+        true,   // generateShippingDestinations
+        true,   // generateItemImages
+        true,   // generatePaymentInformation
+        true,   // generateEscrow
+        true,   // generateItemPrice
+        true,   // generateMessagingInformation
+        false    // generateListingItemObjects
+    ]).toParamsArray();
+
     beforeAll(async () => {
         await testUtil.cleanDb();
         // add profile for testing
@@ -18,7 +32,13 @@ describe('ListingItemTemplateRemoveCommand', () => {
 
     test('Should remove Listing Item Template', async () => {
 
-        const listingitemtemplate = await testUtil.generateData('listingitemtemplate', 1);
+        const listingitemtemplate = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as ListingItemTemplate[];
+
         createdTemplateId = listingitemtemplate[0]['id'];
         // remove Listing Item Template
         const result: any = await rpc(method, [subCommand, createdTemplateId]);

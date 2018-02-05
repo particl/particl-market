@@ -5,6 +5,7 @@ import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/ItemLocationRemoveCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -35,9 +36,9 @@ describe('/ItemLocationRemoveCommand', () => {
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // create item template
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
 
-        createdTemplateId = addListingItemTempRes.getBody()['result'].id;
+        createdTemplateId = addListingItemTempRes.id;
     });
 
     test('Should not create ItemLocation without conuntry', async () => {
@@ -77,9 +78,9 @@ describe('/ItemLocationRemoveCommand', () => {
 
     test('Should create ItemLocation if Item-information not exist', async () => {
         delete testDataListingItemTemplate.itemInformation;
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
 
-        createdTemplateId = addListingItemTempRes.getBody()['result'].id;
+        createdTemplateId = addListingItemTempRes.id;
         testData[1] = createdTemplateId;
         // Add Item Location
         const addDataRes: any = await rpc(method, testData);

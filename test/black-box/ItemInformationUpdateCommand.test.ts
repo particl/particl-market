@@ -1,6 +1,7 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/ItemInformationUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -43,14 +44,14 @@ describe('/ItemInformationUpdateCommand', () => {
 
         // create listing item
         testDataListingItemTemplate.profile_id = profileId;
-        const addListingItemTemplate: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        const addListingItemTemplateResult = addListingItemTemplate.getBody()['result'];
+        const addListingItemTemplate: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        const addListingItemTemplateResult = addListingItemTemplate;
         createdListingItemTemplateId = addListingItemTemplateResult.id;
 
         const testDataListingItemTemplate2 = testDataListingItemTemplate;
         delete testDataListingItemTemplate2.itemInformation;
-        const addListingItemTemplate2: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate2);
-        const addListingItemTemplateResult2 = addListingItemTemplate2.getBody()['result'];
+        const addListingItemTemplate2: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate2);
+        const addListingItemTemplateResult2 = addListingItemTemplate2;
         createdListingItemTemplateId2 = addListingItemTemplateResult2.id;
     });
 

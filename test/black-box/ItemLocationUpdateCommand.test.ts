@@ -4,6 +4,9 @@ import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('/ItemLocationUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -37,8 +40,20 @@ describe('/ItemLocationUpdateCommand', () => {
     let createdTemplateId;
     let createdItemInformationId;
 
+    const generateListingItemParams = new GenerateListingItemParams([
+        false,   // generateItemInformation
+        false,   // generateShippingDestinations
+        false,   // generateItemImages
+        false,   // generatePaymentInformation
+        false,   // generateEscrow
+        false,   // generateItemPrice
+        false,   // generateMessagingInformation
+        false    // generateListingItemObjects
+    ]).toParamsArray();
+
     beforeAll(async () => {
         await testUtil.cleanDb();
+
         // profile
         const defaultProfile = await testUtil.getDefaultProfile();
         testDataListingItemTemplate.profile_id = defaultProfile.id;
@@ -47,8 +62,8 @@ describe('/ItemLocationUpdateCommand', () => {
         testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
         // create item template
-        const addListingItemTempRes: any = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        const result: any = addListingItemTempRes.getBody()['result'];
+        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        const result: any = addListingItemTempRes;
         createdTemplateId = result.id;
         createdItemInformationId = result.ItemInformation.id;
         testDataUpdated.unshift(createdTemplateId);
@@ -102,10 +117,15 @@ describe('/ItemLocationUpdateCommand', () => {
 
     // ItemLocation cannot be updated if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
     test('Should not update item location because item information is related with listing item', async () => {
-        // create listing item
-        const listingItems = await testUtil.generateData('listingitem', 1);
-        const testData = listingItems[0];
-        const listingItemId = testData['id'];
+        // generate listing item
+        const listingItems = await testUtil.generateData(
+            CreatableModel.LISTINGITEM, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemParams   // what kind of data to generate
+        ) as ListingItem[];
+
+        const listingItemId = listingItems[0]['id'];
         // set listing item id in item information
         testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
 
@@ -113,8 +133,8 @@ describe('/ItemLocationUpdateCommand', () => {
         testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
         // create new item template
-        const newListingItemTemplate = await testUtil.addData('listingitemtemplate', testDataListingItemTemplate);
-        const newTemplateId = newListingItemTemplate.getBody()['result'].id;
+        const newListingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        const newTemplateId = newListingItemTemplate.id;
 
         // update item location
         const addDataRes: any = await rpc(method, [subCommand, newTemplateId, 'China', 'TEST ADDRESS', 'TEST TITLE', 'TEST DESC', 55.6, 60.8]);

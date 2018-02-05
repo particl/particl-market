@@ -1,6 +1,9 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('/FavoriteListCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -14,16 +17,41 @@ describe('/FavoriteListCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+        const generateListingItemParams = new GenerateListingItemParams([
+            false,   // generateItemInformation
+            false,   // generateShippingDestinations
+            false,   // generateItemImages
+            false,   // generatePaymentInformation
+            false,   // generateEscrow
+            false,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
+
+
         const defaultProfile = await testUtil.getDefaultProfile();
         defaultProfileId = defaultProfile.id;
 
         // generate listing item
-        const addListingItem = await testUtil.generateData('listingitem', 1);
+        const addListingItem = await testUtil.generateData(
+            CreatableModel.LISTINGITEM, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemParams   // what kind of data to generate
+        ) as ListingItem[];
         listingItemId = addListingItem[0].id;
 
         // generate listing item
-        const addListingItemTwo = await testUtil.generateData('listingitem', 1);
+
+        // generate listing item
+        const addListingItemTwo = await testUtil.generateData(
+            CreatableModel.LISTINGITEM, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemParams   // what kind of data to generate
+        ) as ListingItem[];
         addListingItemSecondId = addListingItemTwo[0].id;
+
     });
 
     test('Should return empty favorite list', async () => {

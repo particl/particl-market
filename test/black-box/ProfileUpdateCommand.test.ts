@@ -3,6 +3,7 @@ import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Logger } from '../../src/core/Logger';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('ProfileUpdateCommand', () => {
 
@@ -38,8 +39,8 @@ describe('ProfileUpdateCommand', () => {
 
     test('Should update the profile by RPC', async () => {
         // set up the test data
-        const addDataRes: any = await testUtil.addData('profile', testData);
-        const createdId = addDataRes.getBody()['result'].id;
+        const addDataRes: any = await testUtil.addData(CreatableModel.PROFILE, testData);
+        const createdId = addDataRes.id;
 
         // update profile
         const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';

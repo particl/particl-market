@@ -28,7 +28,6 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
     }
 
     /**
-     * TODO: Update command to match help().
      *
      * data.params[]:
      *  [0]: address id

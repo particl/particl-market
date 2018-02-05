@@ -76,6 +76,7 @@ Integration tests start the application container and do not require the applica
 * Run the unit tests using `npm test` (There is also a vscode task for this called `test`).
 * Run the integration tests using `npm run test:integration:pretty` and don't forget to start your application.
 * Run the black-box tests using `npm run test:black-box:pretty` and don't forget to start your application.
+* Run the ui tests using `npm run test:ui:pretty` and don't forget to start your application.
 * To run just some certain test(s) try `TEST=Market* npm run test:integration:single`
 
 ### Running in dev mode
