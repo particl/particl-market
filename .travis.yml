@@ -9,18 +9,16 @@ cache:
   directories:
     - "node_modules"
 env:
-  - DOCKER_COMPOSE_VERSION=1.18.0
-  # REGISTRY_EMAIL
-  - secure: "AxnPUQwdgv4uVH8YuvcpY5i3CnfjzdL/SkQUUGvk08GPPJHDr9x1RZMcm1vEe64QN3hpRow7eUo04ptBa/uLB0FofDAIy/HxJBSTayN4xe0ODuKgYkAmtplUkILPtsUgTcC9521geTmNG9vIAebPKAZCjhyfhmd5yFn3+mACKb4Kq2Zk14Pi0X88jXL76jpNYDk/CpyBuIgtXmkUQc/HNlvfFsD2q7gRP7v89FWOvvuVyRu/gOWknBEkRH5gI1tvOqnO3ynHIxy/rkjm/B/K5FANpdazAmDPDkjUj8qtg29VyvXUcZf6+Lo53TOORpv7GE0Zi0zqYUpRpvva92LNWFLmt45zz10Bg6jujQxeDXkAxrtsdH4pNQx2VPyISa3f35MKKDWsXWUAX5e4l6T/0VVcq9A0+07CQ0ixSzev96S5+Yl5PufUUWOJDe35w+K+9ClEziBM3gX966K8fQG9KSfDtJCN7pRx4mMYwTtYZ3Ep6oaz7hmlyVSnCL+5JHFEFae85tFqGMcOQCLE12pEU7VD0LMpS8WZvBwI4KjpCxNAbVwhns3BFKhQUcBKZU5UarnrstDMvO+m+yqGi/b3765xJVv4RBw+IF2YgnSC3W/Yb+nAPZNF5Ze62qyi+8sIM/fsq4gGURJ2E2iRKA4vyy/y35FJdS6TgZWMGo1NoHo="
-  # REGISTRY_USER
-  - secure: "BAD37nPMH+uyPzxrcU+CCwLBZEzLQscAEcGhhGmjpgqNwTnhUUTpVS3QYwsem2+h/DAIp3i+++amBNc54zkjFouzo7uy7M1CXKAp5qS+LZaDnjsr9NMB4q/4LqE6+Tkd8Ixlb6aqyDpP6pYmS0kTAO+pa1ADhtgUQ+zJfohuoSTKpIpZDWUTzrR4RDOievJlEeZ2XFCjB2hW4sGkJrsLs/ZaqGFH7gq2hBm7ndrRUBjLUjrmxf2xz4kViDPUBQq0RrSZKVqdoR/Z22JipBjdB31hpk5mQ6i/bTErGsRGJuN0tM7Vk3KAuEJlieuVqSfaKckAp6a5SkOOxCJkYQvSr7UB2L8jiz/Z1FZBk/RJfPjcY3ZbFNc1fdK7utORf/N+kkuczqsd9AHFyLXVvciBtjXuBdge/DeVFnlXydAqFdK/JWnk8G02W9/H1yZeMmbPY32R1c/g8uNvwRJxd0AW9jOHAAY6AfSvdiJfN4+2giLxSEixhUBEZLKITj00qLosr9JKCpt+sJvlxSSz2C9rG1Yptv363utD/wqkjRfNR9rpQ1CQ0iWoQM7YR/7z48hFTqM7bxqTc0P800ulpCZrAJhLWAmctILTCDTX+ynEH3iXL3Gj6ajkHzZw+L3fYJeOUBG1hUZ0h9wsmEusS9PI64r/LkZGvOeOdmIQmLsOusg="
-  # REGISTRY_PASS
-  - secure: "HHAd6NT1lTNKDTUcepcq0S1J0bf4lk7fRpWFGthpWJaG38GymR8U/bquV+xX3ob2rKeD6XaKdptEbz9RgFjpgVha/ZFO37yEcE93chJBxDmYcuGvWcGUf2qAClAj7xeMTYx4rgVuLmGKrRjY3H8etPqxq1nTnQqS+TqMGSGZWfxTiTVmz2/YVLWns5xnGUBAUw/NcAmbcGGkkdk1Vf5KZQoY342ECCFe4b/5cW9EVzh5NRnbcBmAyupZ3BqaxNktRWeh5m+2GeI6z89x1u6px6TR8aTz79x/c4F4JNI4EKR+KTjsmuvdq/aOtmPdl7Fov1pmX1qnmLXxHbo7Zvb4XzN+Y3grtbiuyiXSB+yCFYKrBry5aQIq7h3Vf4duqIpqtYg1irAc0xwHscKC4J5/r86A5fRgfanIFvtTGfWe4nsmlqukQ1xG3NX70yCXEOdAKdzuBICKJImIcgtt97dZDQ4hT67WP4GYw6KALXY89HCHRzIgaN+lcvVDr9AV4Fiqeic2GXEn7/Oy2dNzZzD7HauzWFTseQAjxmXWJFrJp/PNxr1Qicd5PGbmKosa/tY/+f7WVt4gUggeiUi8dyx9QP3N2vbRYDQZqE3x9eUf2hJ1FYOQKnvU99j9TxZnVpvlpubZmovZKcSkhaAf3lenZXiwMNmsYQeArGq4kUPlfnQ="
-  - COMMIT=${TRAVIS_COMMIT::8}
-  - REGISTRY=r.cfcr.io
-  - IMAGE=ludx/dapp-shell-ci
-  - IMAGE_NAME=$REGISTRY/$IMAGE
-  - IMAGE_TAG=$TRAVIS_BRANCH-$TRAVIS_COMMIT
+  global:
+    - secure: "AxnPUQwdgv4uVH8YuvcpY5i3CnfjzdL/SkQUUGvk08GPPJHDr9x1RZMcm1vEe64QN3hpRow7eUo04ptBa/uLB0FofDAIy/HxJBSTayN4xe0ODuKgYkAmtplUkILPtsUgTcC9521geTmNG9vIAebPKAZCjhyfhmd5yFn3+mACKb4Kq2Zk14Pi0X88jXL76jpNYDk/CpyBuIgtXmkUQc/HNlvfFsD2q7gRP7v89FWOvvuVyRu/gOWknBEkRH5gI1tvOqnO3ynHIxy/rkjm/B/K5FANpdazAmDPDkjUj8qtg29VyvXUcZf6+Lo53TOORpv7GE0Zi0zqYUpRpvva92LNWFLmt45zz10Bg6jujQxeDXkAxrtsdH4pNQx2VPyISa3f35MKKDWsXWUAX5e4l6T/0VVcq9A0+07CQ0ixSzev96S5+Yl5PufUUWOJDe35w+K+9ClEziBM3gX966K8fQG9KSfDtJCN7pRx4mMYwTtYZ3Ep6oaz7hmlyVSnCL+5JHFEFae85tFqGMcOQCLE12pEU7VD0LMpS8WZvBwI4KjpCxNAbVwhns3BFKhQUcBKZU5UarnrstDMvO+m+yqGi/b3765xJVv4RBw+IF2YgnSC3W/Yb+nAPZNF5Ze62qyi+8sIM/fsq4gGURJ2E2iRKA4vyy/y35FJdS6TgZWMGo1NoHo="  # REGISTRY_EMAIL
+    - secure: "BAD37nPMH+uyPzxrcU+CCwLBZEzLQscAEcGhhGmjpgqNwTnhUUTpVS3QYwsem2+h/DAIp3i+++amBNc54zkjFouzo7uy7M1CXKAp5qS+LZaDnjsr9NMB4q/4LqE6+Tkd8Ixlb6aqyDpP6pYmS0kTAO+pa1ADhtgUQ+zJfohuoSTKpIpZDWUTzrR4RDOievJlEeZ2XFCjB2hW4sGkJrsLs/ZaqGFH7gq2hBm7ndrRUBjLUjrmxf2xz4kViDPUBQq0RrSZKVqdoR/Z22JipBjdB31hpk5mQ6i/bTErGsRGJuN0tM7Vk3KAuEJlieuVqSfaKckAp6a5SkOOxCJkYQvSr7UB2L8jiz/Z1FZBk/RJfPjcY3ZbFNc1fdK7utORf/N+kkuczqsd9AHFyLXVvciBtjXuBdge/DeVFnlXydAqFdK/JWnk8G02W9/H1yZeMmbPY32R1c/g8uNvwRJxd0AW9jOHAAY6AfSvdiJfN4+2giLxSEixhUBEZLKITj00qLosr9JKCpt+sJvlxSSz2C9rG1Yptv363utD/wqkjRfNR9rpQ1CQ0iWoQM7YR/7z48hFTqM7bxqTc0P800ulpCZrAJhLWAmctILTCDTX+ynEH3iXL3Gj6ajkHzZw+L3fYJeOUBG1hUZ0h9wsmEusS9PI64r/LkZGvOeOdmIQmLsOusg="  # REGISTRY_USER
+    - secure: "HHAd6NT1lTNKDTUcepcq0S1J0bf4lk7fRpWFGthpWJaG38GymR8U/bquV+xX3ob2rKeD6XaKdptEbz9RgFjpgVha/ZFO37yEcE93chJBxDmYcuGvWcGUf2qAClAj7xeMTYx4rgVuLmGKrRjY3H8etPqxq1nTnQqS+TqMGSGZWfxTiTVmz2/YVLWns5xnGUBAUw/NcAmbcGGkkdk1Vf5KZQoY342ECCFe4b/5cW9EVzh5NRnbcBmAyupZ3BqaxNktRWeh5m+2GeI6z89x1u6px6TR8aTz79x/c4F4JNI4EKR+KTjsmuvdq/aOtmPdl7Fov1pmX1qnmLXxHbo7Zvb4XzN+Y3grtbiuyiXSB+yCFYKrBry5aQIq7h3Vf4duqIpqtYg1irAc0xwHscKC4J5/r86A5fRgfanIFvtTGfWe4nsmlqukQ1xG3NX70yCXEOdAKdzuBICKJImIcgtt97dZDQ4hT67WP4GYw6KALXY89HCHRzIgaN+lcvVDr9AV4Fiqeic2GXEn7/Oy2dNzZzD7HauzWFTseQAjxmXWJFrJp/PNxr1Qicd5PGbmKosa/tY/+f7WVt4gUggeiUi8dyx9QP3N2vbRYDQZqE3x9eUf2hJ1FYOQKnvU99j9TxZnVpvlpubZmovZKcSkhaAf3lenZXiwMNmsYQeArGq4kUPlfnQ="  # REGISTRY_PASS
+    - DOCKER_COMPOSE_VERSION=1.18.0
+    - COMMIT=${TRAVIS_COMMIT::8}
+    - REGISTRY=r.cfcr.io
+    - IMAGE=ludx/dapp-shell-ci
+    - IMAGE_NAME=$REGISTRY/$IMAGE
+    - IMAGE_TAG=$TRAVIS_BRANCH-$TRAVIS_COMMIT
 
 # TRAVIS_BRANCH:
 #  for push builds, or builds not triggered by a pull request, this is the name of the branch.
@@ -51,8 +49,6 @@ before_install:
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
   - docker-compose --version
-  # login to registry
-  - docker login r.cfcr.io -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
   # install other misc stuff
   - npm install -g wait-port
   - npm install -g -s --no-progress yarn
@@ -119,6 +115,8 @@ script:
 #after_deploy:
 
 after_script:
+  # login to registry
+  - docker login r.cfcr.io -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
   - docker images
 
 #notifications:
