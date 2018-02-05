@@ -9,6 +9,7 @@ import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/FavoriteAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -97,16 +98,15 @@ describe('/FavoriteAddCommand', () => {
         await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
         defaultProfileId = defaultProfile.id;
-        const profileModel = 'profile';
-        const addProfileRes: any = await testUtil.addData(profileModel, { name: 'TESTING-PROFILE-NAME', address: 'TESTING-PROFILE-ADDRESS' });
-        profileId = addProfileRes.getBody()['result'].id;
+        const addProfileRes: any = await testUtil.addData(CreatableModel.PROFILE { name: 'TESTING-PROFILE-NAME', address: 'TESTING-PROFILE-ADDRESS' });
+        profileId = addProfileRes.id;
         // create market
         const resMarket = await rpc(Commands.MARKET_ROOT.commandName, [addMakretMethod, 'Test Market', 'privateKey', 'Market Address']);
         const resultMarket: any = resMarket.getBody()['result'];
         testData.market_id = resultMarket.id;
         // create listing item
-        const addListingItem: any = await testUtil.addData('listingitem', testData);
-        const addListingItemResult = addListingItem.getBody()['result'];
+        const addListingItem: any = await testUtil.addData(CreatableModel.LISTINGITEM, testData);
+        const addListingItemResult = addListingItem;
         listingItemHash = addListingItemResult.hash;
         listingItemId = addListingItemResult.id;
     });

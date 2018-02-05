@@ -51,4 +51,8 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
             + '                             retrieve.';
     }
 
+    public description(): string {
+        return 'Get profile by profile id or profile name';
+    }
+
 }

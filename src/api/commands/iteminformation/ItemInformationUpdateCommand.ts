@@ -62,4 +62,8 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
             + '                                       information we\'re updating.';
     }
 
+    public description(): string {
+        return 'Update the item details of an item information given by listingItemTemplateId.';
+    }
+
 }

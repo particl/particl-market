@@ -49,4 +49,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
             + '    <marketId>   -    Numeric - The ID of the markte id.';
     }
 
+    public description(): string {
+        return 'Post listing item by listingTemplateId and marketId';
+    }
+
 }

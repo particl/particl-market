@@ -1,5 +1,5 @@
 import { Bookshelf } from '../../config/Database';
-// import { Collection } from 'bookshelf';
+import { Collection } from 'bookshelf';
 import { ItemImageData } from './ItemImageData';
 import { ItemInformation } from './ItemInformation';
 
@@ -9,7 +9,6 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
         if (withRelated) {
             return await ItemImage.where<ItemImage>({ id: value }).fetch({
                 withRelated: [
-//                    'ItemImageDatas'
                     'ItemImageData',
                     'ItemInformation'
                 ]
@@ -39,15 +38,7 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
     }
 
     public ItemInformation(): ItemInformation {
-      return this.belongsTo(ItemInformation, 'item_information_id', 'id');
+        return this.belongsTo(ItemInformation, 'item_information_id', 'id');
     }
 
-
-    // TODO: hasMany
-    /*
-    public ImageDatas(): Collection<ItemImageData> {
-        // model.hasMany(Target, [foreignKey], [foreignKeyTarget])
-        return this.hasMany(ItemImageData); // , 'image_data_id', 'id');
-    }
-    */
 }

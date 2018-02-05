@@ -46,4 +46,8 @@ export class ListingItemUpdateCommand extends BaseCommand implements RpcCommandI
             + '    <hash>     - String - The hash of the listing item we want to Update.\n'
             + '    <listingItemTemplateId>     - Number - The Id of the listing item template which listing-item we want to Update.';
     }
+
+    public description(): string {
+        return 'Update the details of listing item given by listingitemHash or by listingItemTemplateId.';
+    }
 }

@@ -1,14 +1,26 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('ListingItemTemplateGetCommand', () => {
     const testUtil = new BlackBoxTestUtil();
 
     const method = Commands.TEMPLATE_ROOT.commandName;
     const subCommand = Commands.TEMPLATE_GET.commandName;
-
     let profile;
+    const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+        true,   // generateItemInformation
+        true,   // generateShippingDestinations
+        true,   // generateItemImages
+        true,   // generatePaymentInformation
+        true,   // generateEscrow
+        true,   // generateItemPrice
+        true,   // generateMessagingInformation
+        false    // generateListingItemObjects
+    ]).toParamsArray();
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -17,7 +29,13 @@ describe('ListingItemTemplateGetCommand', () => {
     });
 
     test('Should return one ListingItemTemplate by Id', async () => {
-        const listingItemTemplates = await testUtil.generateData('listingitemtemplate', 1);
+
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as ListingItemTemplate[];
         const testData = listingItemTemplates[0];
 
         // fetch using id

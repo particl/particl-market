@@ -47,4 +47,8 @@ export class MarketCreateCommand extends BaseCommand implements RpcCommandInterf
             + '    <address>        - String - [TODO]';
     }
 
+    public description(): string {
+        return 'Create a new market.';
+    }
+
 }

@@ -38,4 +38,8 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
     public help(): string {
         return this.getName();
     }
+
+    public description(): string {
+        return 'List all the markets.';
+    }
 }

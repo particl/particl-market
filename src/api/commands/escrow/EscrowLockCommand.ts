@@ -74,4 +74,8 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
             + '    <memo>           - String - The memo of the Escrow';
     }
 
+    public description(): string {
+        return 'Lock an escrow.';
+    }
+
 }

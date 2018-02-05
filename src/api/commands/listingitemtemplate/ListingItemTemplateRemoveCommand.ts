@@ -37,4 +37,8 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
             + '                                 want to destroy.';
     }
 
+    public description(): string {
+        return 'Destroy a listing item template specified by the ID of the listing item template and it will destroy all its relations as well.';
+    }
+
 }

@@ -83,4 +83,8 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
             + '                                     receive payment in.';
     }
 
+    public description(): string {
+        return 'Update the details of payment information associated with listingItemTemplateId.';
+    }
+
 }

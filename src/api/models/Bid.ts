@@ -21,8 +21,8 @@ export class Bid extends Bookshelf.Model<Bid> {
     public static async search(options: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
         const bidCollection = Bid.forge<Collection<Bid>>()
             .query( qb => {
-                if (typeof options.listingItemId === 'number') {
-                    qb.where('bids.listing_item_id', '=', options.listingItemId);
+                if (typeof options.listingItemHash === 'string') {
+                    qb.where('bids.listing_item_id', '=', options.listingItemHash);
                 }
                 if (typeof options.profileId === 'number') {
                     qb.innerJoin('listing_items', 'listing_items.id', 'bids.listing_item_id');
