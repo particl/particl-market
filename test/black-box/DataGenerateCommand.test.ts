@@ -5,7 +5,6 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 describe('DataGenerateCommand', () => {
 
   const testUtil = new BlackBoxTestUtil();
-  const marketService = null;
   const method =  Commands.DATA_ROOT.commandName;
   const subCommand =  Commands.DATA_GENERATE.commandName;
 
