@@ -41,7 +41,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ListingItem>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItem>> {
         return this.listingItemService.search({
             page: data.params[0] || 1,
             pageLimit: data.params[1] || 5, // default page limit 5

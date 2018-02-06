@@ -27,7 +27,7 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
      * @returns {Promise<Escrow>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         return this.listingItemTemplateService.destroy(data.params[0]);
     }
 

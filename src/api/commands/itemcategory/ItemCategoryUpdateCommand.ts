@@ -41,7 +41,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
      * @returns {Promise<ItemCategory>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ItemCategory> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
         const isUpdateable = await this.isDoable(data.params[0]);
         if (isUpdateable) {
             const parentItemCategory = data.params[3] || 'cat_ROOT'; // if null then default_category will be parent

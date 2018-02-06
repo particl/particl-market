@@ -31,7 +31,7 @@ export class ShoppingCartAddCommand extends BaseCommand implements RpcCommandInt
      * @returns {Promise<ShoppingCarts>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ShoppingCarts> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCarts> {
         return this.shoppingCartsService.create({
             name : data.params[0],
             profile_id : data.params[1]
@@ -45,6 +45,6 @@ export class ShoppingCartAddCommand extends BaseCommand implements RpcCommandInt
     }
 
     public description(): string {
-        return 'Add a new shopping cart associate it with an profileId.';
+        return 'Add a new shopping cart associate it with profileId.';
     }
 }

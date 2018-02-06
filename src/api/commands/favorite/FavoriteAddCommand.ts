@@ -44,7 +44,7 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
      * @returns {Promise<FavoriteItem>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<FavoriteItem> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<FavoriteItem> {
         const favoriteParams = await this.getSearchParams(data);
         // Check if favorite Item already exist
         let favoriteItem = await this.favoriteItemService.search({profileId: favoriteParams[0], itemId: favoriteParams[1] } as FavoriteSearchParams);

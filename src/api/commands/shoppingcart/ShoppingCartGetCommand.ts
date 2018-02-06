@@ -28,7 +28,7 @@ export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInt
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
         return this.shoppingCartsService.findOne(data.params[0]);
     }
 
@@ -38,6 +38,6 @@ export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInt
     }
 
     public description(): string {
-        return 'Get shopping cart by given cart id';
+        return 'Get shopping cart via given cart id';
     }
 }

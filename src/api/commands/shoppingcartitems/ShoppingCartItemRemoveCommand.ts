@@ -32,7 +32,7 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
      * @returns {Promise<void>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         if (data.params[0] && data.params[1]) {
             // check if listingItem hash then get Id and pass as parameter
             let listingItemId = data.params[1];

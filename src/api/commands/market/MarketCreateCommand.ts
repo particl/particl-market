@@ -32,7 +32,7 @@ export class MarketCreateCommand extends BaseCommand implements RpcCommandInterf
      * @returns {Promise<Market>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Market> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Market> {
         return this.marketService.create({
             name : data.params[0],
             private_key : data.params[1],

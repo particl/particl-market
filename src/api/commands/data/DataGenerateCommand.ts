@@ -7,7 +7,7 @@ import { TestDataService } from '../../services/TestDataService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { TestDataGenerateRequest } from '../../requests/TestDataGenerateRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
 export class DataGenerateCommand extends BaseCommand implements RpcCommandInterface<any> {
@@ -29,7 +29,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
      * @returns {Promise<Bookshelf.Collection<any>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
         this.log.info('data.params[0]: ', data.params[0]);
         this.log.info('data.params[1]: ', data.params[1]);
         const generateParams = data.params.length > 3 ? _.slice(data.params, 3) : [];
@@ -49,4 +49,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
             + '    <withRelated>           - [optional] Boolean - [TODO]';
     }
 
+    public description(): string {
+        return 'Generates data to the database.';
+    }
 }

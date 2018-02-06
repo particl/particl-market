@@ -35,7 +35,7 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
      * @returns {Promise<void>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         const categoryId = data.params[0];
         const isDelete = await this.isDoable(categoryId);
         if (isDelete) {

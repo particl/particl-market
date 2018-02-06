@@ -29,7 +29,7 @@ describe('ItemCategoryUpdateCommand', () => {
         await testUtil.cleanDb();
 
         // create category
-        const res = await rpc(categoryMethod, [subCommandCategory, parentCategory.key]);
+        const res = await rpc(categoryMethod, [subCommandCategory, parentCategory.key, '', 'cat_ROOT']);
         const categoryResult: any = res.getBody()['result'];
         parentCategory.id = categoryResult.id;
         const addCategoryRes: any = await testUtil.addData(CreatableModel.ITEMCATEGORY, {

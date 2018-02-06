@@ -24,7 +24,6 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     }
 
     /**
-     * TODO: Update to match help().
      *
      * data.params[]:
      * [0]: itemhash, string
@@ -34,7 +33,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Bid>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Bid>> {
         return this.bidService.search({
             listingItemHash: data.params[0],
             action: data.params[1]

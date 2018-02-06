@@ -41,7 +41,7 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
      * @returns {Promise<Address>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
         this.log.debug('Attempting to create address');
 
         // If countryCode is country, convert to countryCode.

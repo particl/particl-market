@@ -6,7 +6,7 @@ import { TestDataService } from '../../services/TestDataService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { TestDataCreateRequest } from '../../requests/TestDataCreateRequest';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
 export class DataAddCommand extends BaseCommand implements RpcCommandInterface<any> {
@@ -27,7 +27,7 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
      * @returns {Promise<Bookshelf.Model<any>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
         const withRelated = data.params[2] ? data.params[2] : true;
         return await this.testDataService.create({
             model: data.params[0],
@@ -39,5 +39,10 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
     public help(): string {
         return this.getName() + '<model> <json> [<withRelated>]';
     }
+
+    public description(): string {
+        return 'Adds data to the database.';
+    }
+
 
 }

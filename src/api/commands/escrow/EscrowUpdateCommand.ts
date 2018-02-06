@@ -31,7 +31,7 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
      * @returns {Promise<Escrow>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Escrow> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Escrow> {
         return this.escrowService.updateCheckByListingItem({
             listingItemTemplateId: data.params[0],
             type: data.params[1],
