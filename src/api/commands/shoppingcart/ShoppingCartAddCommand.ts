@@ -45,6 +45,6 @@ export class ShoppingCartAddCommand extends BaseCommand implements RpcCommandInt
     }
 
     public description(): string {
-        return 'Add a new shopping cart associate it with an profileId.';
+        return 'Add a new shopping cart associate it with profileId.';
     }
 }

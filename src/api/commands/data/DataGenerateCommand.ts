@@ -7,7 +7,7 @@ import { TestDataService } from '../../services/TestDataService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { TestDataGenerateRequest } from '../../requests/TestDataGenerateRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
 export class DataGenerateCommand extends BaseCommand implements RpcCommandInterface<any> {
@@ -49,4 +49,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
             + '    <withRelated>           - [optional] Boolean - [TODO]';
     }
 
+    public description(): string {
+        return 'Generate model no of model data.';
+    }
 }

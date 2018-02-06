@@ -5,7 +5,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { TestDataService } from '../../services/TestDataService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
 export class DataCleanCommand extends BaseCommand implements RpcCommandInterface<void> {
@@ -27,6 +27,10 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
 
     public help(): string {
         return this.getName() + ' <TODO>';
+    }
+
+    public description(): string {
+        return 'Clean database.';
     }
 
 }
