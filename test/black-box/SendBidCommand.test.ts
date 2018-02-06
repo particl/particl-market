@@ -6,9 +6,6 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 describe('SendBidCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const listingItemService = null;
-    const messageBroadcastService = null;
-    const bidFactory = null;
 
     const method =  Commands.BID_ROOT.commandName;
     const subMethod =  Commands.BID_SEND.commandName;

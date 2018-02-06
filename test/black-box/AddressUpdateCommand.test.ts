@@ -5,7 +5,6 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/RpcUpdateAddress', () => {
     const testUtil = new BlackBoxTestUtil();
-    const addressService = null;
     const method = Commands.ADDRESS_ROOT.commandName;
     const subCommand = Commands.ADDRESS_UPDATE.commandName;
 

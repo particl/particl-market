@@ -5,7 +5,6 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/ItemInformationCreateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const itemInformationService = null;
     const method = Commands.ITEMINFORMATION_ROOT.commandName;
     const subCommand = Commands.ITEMINFORMATION_ADD.commandName;
 

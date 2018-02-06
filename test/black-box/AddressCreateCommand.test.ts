@@ -3,9 +3,8 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { ShippingCountries } from '../../src/core/helpers/ShippingCountries';
 
-describe('CreateAddress', () => {
+describe('AddressCreateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const addressService = null;
     const method = Commands.ADDRESS_ROOT.commandName;
     const subCommand = Commands.ADDRESS_ADD.commandName;
     let defaultProfileId;
@@ -23,7 +22,7 @@ describe('CreateAddress', () => {
     let defaultProfile;
 
     beforeAll(async () => {
-        await testUtil.cleanDb([]);
+        await testUtil.cleanDb();
         defaultProfile = await testUtil.getDefaultProfile();
         defaultProfileId = defaultProfile.id;
     });

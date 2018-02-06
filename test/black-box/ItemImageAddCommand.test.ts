@@ -11,8 +11,6 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 
 describe('/ItemImageAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const itemImageService = null;
-    const listingItemTemplateService = null;
 
     const method = Commands.ITEMIMAGE_ROOT.commandName;
     const subCommand = Commands.ITEMIMAGE_ADD.commandName;

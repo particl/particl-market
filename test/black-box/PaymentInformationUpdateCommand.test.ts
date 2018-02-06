@@ -10,7 +10,6 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 describe('/PaymentInformationUpdateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const paymentInformationService = null;
     const method =  Commands.PAYMENTINFORMATION_ROOT.commandName;
     const subCommand =  Commands.PAYMENTINFORMATION_UPDATE.commandName;
 
