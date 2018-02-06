@@ -36,7 +36,7 @@ export class MessagingInformationUpdateCommand extends BaseCommand implements Rp
      * @returns {Promise<MessagingInformation>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<MessagingInformation> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<MessagingInformation> {
         // messaging information cannot be updated if there's a ListingItem related to ListingItemTemplate. (the item has allready been posted)
         const result = await this.getItemMessagingInformation(data.params[0]);
         if (result[0].listingItemId) {

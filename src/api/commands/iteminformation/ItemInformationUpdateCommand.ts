@@ -34,7 +34,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
      * @returns {Promise<ItemInformation>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ItemInformation> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemInformation> {
         return this.itemInformationService.updateWithCheckListingTemplate({
             listing_item_template_id: data.params[0],
             title: data.params[1],

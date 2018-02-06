@@ -27,7 +27,7 @@ export class AdminCommand extends BaseCommand implements RpcCommandInterface<any
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
         return await this.executeNext(data, rpcCommandFactory);
     }
 

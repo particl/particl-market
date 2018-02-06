@@ -30,7 +30,7 @@ export class ItemCategoryFindCommand extends BaseCommand implements RpcCommandIn
      * @returns {Promise<ItemCategory>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemCategory>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ItemCategory>> {
         return await this.itemCategoryService.findByName(data.params[0]);
     }
 

@@ -28,7 +28,7 @@ export class ShoppingCartClearCommand extends BaseCommand implements RpcCommandI
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
         return this.shoppingCartItemsService.clearCart(data.params[0]);
     }
 

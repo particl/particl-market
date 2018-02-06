@@ -27,7 +27,7 @@ export class EscrowDestroyCommand extends BaseCommand implements RpcCommandInter
      * @returns {Promise<Escrow>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         return this.escrowService.destroyCheckByListingItem(data.params[0]);
     }
 

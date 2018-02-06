@@ -40,7 +40,7 @@ export class ShippingDestinationListCommand extends BaseCommand implements RpcCo
      * @returns {Promise<ShippingDestination>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ShippingDestination>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ShippingDestination>> {
         if ( data.params.length !== 2) {
             throw new MessageException('Expected 2 args, got <' + data.params.length + '>.');
         }

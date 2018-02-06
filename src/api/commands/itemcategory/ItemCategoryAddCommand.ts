@@ -35,7 +35,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
      * @returns {Promise<ItemCategory>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ItemCategory> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
         if (data.params[2]) {
             const parentItemCategory = data.params[2];
             const parentItemCategoryId = await this.getCategoryIdByKey(parentItemCategory);

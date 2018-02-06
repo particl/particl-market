@@ -21,7 +21,7 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
     }
 
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         return await this.testDataService.clean();
     }
 

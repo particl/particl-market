@@ -45,7 +45,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ListingItemTemplate> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
         let body;
         if (data.params[1] && data.params[2] && data.params[3] && data.params[4]) {
             let cryptocurrencyAddress = {};

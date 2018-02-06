@@ -27,7 +27,7 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
      * @returns {Promise<Bookshelf.Model<any>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
         const withRelated = data.params[2] ? data.params[2] : true;
         return await this.testDataService.create({
             model: data.params[0],

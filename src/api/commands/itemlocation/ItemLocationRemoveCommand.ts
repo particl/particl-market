@@ -30,7 +30,7 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
      * [0]: listingItemTemplateId
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         const itemInformation = await this.getItemInformation(data);
 
         // ItemLocation cannot be removed if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)

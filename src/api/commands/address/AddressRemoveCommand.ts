@@ -30,7 +30,7 @@ export class AddressRemoveCommand extends BaseCommand implements RpcCommandInter
      * @returns {Promise<void>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<void> {
         return await this.addressService.destroy(data.params[0]);
     }
 

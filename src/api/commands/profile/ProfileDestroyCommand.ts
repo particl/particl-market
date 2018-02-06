@@ -29,7 +29,7 @@ export class ProfileDestroyCommand extends BaseCommand implements RpcCommandInte
      * @returns {Promise<void>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         return this.profileService.destroy(data.params[0]);
     }
 

@@ -31,7 +31,7 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
      * @returns {Promise<ListingItem>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ListingItem> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItem> {
         let listingItem;
 
         if (typeof data.params[0] === 'number') {

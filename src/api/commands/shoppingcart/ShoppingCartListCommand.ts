@@ -28,7 +28,7 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
         return this.shoppingCartsService.findAllByProfile(data.params[0]);
     }
 

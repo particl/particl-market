@@ -31,7 +31,7 @@ export class EscrowCreateCommand extends BaseCommand implements RpcCommandInterf
      * @returns {Promise<Escrow>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Escrow> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Escrow> {
         return this.escrowService.createCheckByListingItem({
             listingItemTemplateId: data.params[0],
             type: data.params[1],

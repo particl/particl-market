@@ -31,7 +31,7 @@ export class ShoppingCartItemListCommand extends BaseCommand implements RpcComma
      * @returns {Promise<Bookshelf.Collection<ShoppingCartItems>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ShoppingCartItems>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ShoppingCartItems>> {
         return this.shoppingCartItemsService.findListItemsByCartId(data.params[0]);
     }
 
