@@ -12,6 +12,7 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ListingItem, ListingItemTemplate } from 'resources';
+import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 
 describe('ListingItemUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -92,8 +93,13 @@ describe('ListingItemUpdateCommand', () => {
         messagingInformation: [{
             protocol: MessagingProtocolType.SMSG,
             publicKey: 'publickey'
+        }],
+        listingItemObjects: [{
+            type: ListingItemObjectType.CHECKBOX,
+            description: 'Test description checkbox',
+            order: 1,
+            searchable: true
         }]
-        // TODO: ignoring listingitemobjects for now
     } as ListingItemCreateRequest;
 
     beforeAll(async () => {
