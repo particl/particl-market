@@ -16,7 +16,7 @@ import { Bid } from '../../models/Bid';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class AcceptBidCommand extends BaseCommand implements RpcCommandInterface<Bid> {
+export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
     public log: LoggerType;
 

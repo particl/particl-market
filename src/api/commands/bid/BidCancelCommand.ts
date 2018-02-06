@@ -16,7 +16,7 @@ import { Bid } from '../../models/Bid';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class RejectBidCommand extends BaseCommand implements RpcCommandInterface<Bid> {
+export class BidCancelCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
     public log: LoggerType;
 
@@ -26,13 +26,13 @@ export class RejectBidCommand extends BaseCommand implements RpcCommandInterface
         @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory
     ) {
-        super(Commands.BID_REJECT);
+        super(Commands.BID_CANCEL);
         this.log = new Logger(__filename);
     }
 
     /**
      * data.params[]:
-     * [0]: item, string
+     * [0]: itemhash, string
      *
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
@@ -58,27 +58,27 @@ export class RejectBidCommand extends BaseCommand implements RpcCommandInterface
                 throw new MessageException(`Bid not found for the listing item hash ${data.params[0]}`);
 
             } else if (bid.action === BidMessageType.MPA_BID) {
-                // broadcase the reject bid message
+                // broadcase the cancel bid message
                 await this.messageBroadcastService.broadcast({
                     listing: data.params[0],
-                    action: BidMessageType.MPA_REJECT
+                    action: BidMessageType.MPA_CANCEL
                 } as BidMessage);
 
                 // TODO: We will change the return data once broadcast functionality will be implemented
                 return bid;
 
             } else {
-                throw new MessageException(`Bid can not be rejected because it was already been ${bid.action}`);
+                throw new MessageException(`Bid can not be cancelled because it was already been ${bid.action}`);
             }
         }
     }
 
     public help(): string {
         return this.getName() + ' <itemhash>\n'
-        + '    <itemhash>  - string - The hash if the item whose bid we want to reject.';
+            + '    <itemhash>  - string - The hash of the item whose bid we want to cancel.';
     }
 
     public description(): string {
-        return 'Reject bid.';
+        return 'Cancel bid.';
     }
 }

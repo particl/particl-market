@@ -15,7 +15,7 @@ import { BidMessageType } from '../../enums/BidMessageType';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class SendBidCommand extends BaseCommand implements RpcCommandInterface<Bid> {
+export class BidSendCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
     public log: LoggerType;
 

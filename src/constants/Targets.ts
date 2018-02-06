@@ -112,12 +112,12 @@ export const Targets = {
         },
         BaseCommand: 'BaseCommand',
         bid: {
-            AcceptBidCommand: 'AcceptBidCommand',
+            BidAcceptCommand: 'BidAcceptCommand',
             BidRootCommand: 'BidRootCommand',
             BidSearchCommand: 'BidSearchCommand',
-            CancelBidCommand: 'CancelBidCommand',
-            RejectBidCommand: 'RejectBidCommand',
-            SendBidCommand: 'SendBidCommand'
+            BidCancelCommand: 'BidCancelCommand',
+            BidRejectCommand: 'BidRejectCommand',
+            BidSendCommand: 'BidSendCommand'
         },
         Command: 'Command',
         CommandEnumType: 'CommandEnumType',

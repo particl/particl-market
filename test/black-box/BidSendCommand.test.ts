@@ -3,29 +3,37 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 
-describe('CancelBidCommand', () => {
+describe('BidSendCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const bidFactory = null;
     const listingItemService = null;
     const messageBroadcastService = null;
+    const bidFactory = null;
 
     const method =  Commands.BID_ROOT.commandName;
-    const subMethod =  Commands.BID_CANCEL.commandName;
+    const subMethod =  Commands.BID_SEND.commandName;
+
+    const testData = [
+        'colour',
+        'black',
+        'colour',
+        'red'
+    ];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
 
-    test('Should cancel a bid by RPC', async () => {
+    test('Should send a bid by RPC', async () => {
         const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
-        const res: any = await rpc(method, [subMethod, listingItem[0].hash]);
+        testData.unshift(listingItem[0].hash);
+        testData.unshift(subMethod);
+        const res: any = await rpc(method, testData);
         res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
 
         // TODO: Need to implements after broadcast functionality get done
-
-        // res.expectStatusCode(200);
-        // const result: any = res.getBody()['result'];
     });
 
 });
