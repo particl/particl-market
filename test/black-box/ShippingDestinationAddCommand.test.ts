@@ -12,11 +12,8 @@ import { ShippingCountries } from '../../src/core/helpers/ShippingCountries';
 
 describe('/ShippingDestinationAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const shippingDestinationService = null;
-    const listingItemTemplateService = null;
     const method = Commands.SHIPPINGDESTINATION_ROOT.commandName;
     const subCommand = Commands.SHIPPINGDESTINATION_ADD.commandName;
-
 
     const testDataListingItemTemplate = {
         profile_id: 0,

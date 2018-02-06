@@ -30,13 +30,19 @@ export class ProfileDestroyCommand extends BaseCommand implements RpcCommandInte
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        return this.profileService.destroy(data.params[0]);
+        let profileId = data.params[0];
+        // if params is string then find profile by name to delete
+        if (typeof data.params[0] === 'string') {
+           const profile = await this.profileService.findOneByName(data.params[0]);
+           profileId = profile ? profile.id : data.params[0];
+        }
+        return this.profileService.destroy(profileId);
     }
 
     public help(): string {
         return this.getName() + ' (<profileId>|<profileName>)\n'
             + '    <profileID>            -  That profile ID of the profile we want to destroy.\n'
-            + '    <profileName>          -  [TODO implement] The name of the profile we\n'
+            + '    <profileName>          -  String - The name of the profile we\n'
             + '                               want to destroy.';
     }
 

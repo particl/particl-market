@@ -5,7 +5,6 @@ import { Commands} from '../../src/api/commands/CommandEnumType';
 describe('MarketCreateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const marketService = null;
     const method =  Commands.MARKET_ROOT.commandName;
     const subCommand =  Commands.MARKET_ADD.commandName;
 
