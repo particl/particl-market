@@ -41,7 +41,7 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
     }
 
     public description(): string {
-        return 'Create data as per given model and data.';
+        return 'Adds data to the database.';
     }
 
 

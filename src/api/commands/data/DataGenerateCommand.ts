@@ -50,6 +50,6 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public description(): string {
-        return 'Generate model no of model data.';
+        return 'Generates data to the database.';
     }
 }

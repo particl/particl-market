@@ -30,7 +30,7 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public description(): string {
-        return 'Clean database.';
+        return 'Cleans database, inserts default data.';
     }
 
 }
