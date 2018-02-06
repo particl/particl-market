@@ -7,8 +7,9 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategoryCreateRequest } from '../../requests/ItemCategoryCreateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -28,22 +29,24 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
      * data.params[]:
      *  [0]: category name
      *  [1]: description
-     *  [2]: parent_item_category_id id/key, default: cat_ROOT
-     *
-     *  todo: parent_item_category_id should not be null
+     *  [2]: parent_item_category_id id/key
      *
      * @param data
      * @returns {Promise<ItemCategory>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<ItemCategory> {
-        const parentItemCategory = data.params[2] || 'cat_ROOT'; // if null then default_category will be parent
-        const parentItemCategoryId = await this.getCategoryIdByKey(parentItemCategory);
-        return await this.itemCategoryService.create({
-            name: data.params[0],
-            description: data.params[1],
-            parent_item_category_id: parentItemCategoryId
-        } as ItemCategoryCreateRequest);
+        if (data.params[2]) {
+            const parentItemCategory = data.params[2];
+            const parentItemCategoryId = await this.getCategoryIdByKey(parentItemCategory);
+            return await this.itemCategoryService.create({
+                name: data.params[0],
+                description: data.params[1],
+                parent_item_category_id: parentItemCategoryId
+            } as ItemCategoryCreateRequest);
+        } else {
+            throw new MessageException(`Parent category can't be null or undefined!`);
+        }
     }
 
     public help(): string {

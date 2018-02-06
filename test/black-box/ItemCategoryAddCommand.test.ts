@@ -49,19 +49,14 @@ describe('ItemCategoryAddCommand', () => {
         expect(result.ParentItemCategory.key).toBe(parentCategory.key);
     });
 
-    test('Should create the category without passing category (by default root)', async () => {
-        //  test default category data
+    test('Should fail to create the category without passing category', async () => {
         const categoryData = {
             name: 'Sample Category 3',
             description: 'Sample Category Description 3'
         };
         const res = await rpc(method, [subCommand, categoryData.name, categoryData.description]);
         res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.name).toBe(categoryData.name);
-        expect(result.description).toBe(categoryData.description);
-        expect(result.ParentItemCategory.key).toBe('cat_ROOT');
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Parent category can't be null or undefined!`);
     });
-
 });
