@@ -45,4 +45,4 @@ data/app2
 *.paw
 
 codeship*.yml
-public/cli/build
+public/cli/build.json

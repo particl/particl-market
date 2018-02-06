@@ -13,10 +13,8 @@ services:
     command: bin/entrypoint.sh
     links:
       - particld1
-      - particld2
     depends_on:
       - particld1
-      - particld2
     environment:
       - NODE_ENV=development
       - APP_PORT=3100
@@ -36,12 +34,9 @@ services:
     ports:
       - 3200:3200
     links:
-      - particld1
       - particld2
     depends_on:
-      - particld1
       - particld2
-      - app1
     environment:
       - NODE_ENV=development
       - APP_PORT=3200
@@ -85,6 +80,8 @@ services:
     ports:
       - 53738:51738
       - 53935:51935
+    depends_on:
+      - app1
     environment:
       - CONF_TESTNET=1                 # Use the test chain
       - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set
