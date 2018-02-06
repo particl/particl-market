@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  app1:
+    build:
+      context: ./
+        dockerfile: Dockerfile-ci
+    ports:
+      - 3100:3100
+#    command: npm run serve
+    environment:
+      - NODE_ENV=development
+      - APP_PORT=3100
+      - RPCUSER=test
+      - RPCPASSWORD=test
+      - RPCHOSTNAME=dev1.particl.xyz
+      - MAINNET_PORT=54738
+      - TESTNET_PORT=54935
+
+  app2:
+    build:
+      context: ./
+        dockerfile: Dockerfile-ci
+    ports:
+      - 3200:3200
+#    command: npm run serve
+    environment:
+      - NODE_ENV=development
+      - APP_PORT=3200
+      - RPCUSER=test
+      - RPCPASSWORD=test
+      - RPCHOSTNAME=dev2.particl.xyz
+      - MAINNET_PORT=55738
+      - TESTNET_PORT=55935
+
