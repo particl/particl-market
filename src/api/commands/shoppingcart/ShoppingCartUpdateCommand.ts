@@ -31,7 +31,7 @@ export class ShoppingCartUpdateCommand extends BaseCommand implements RpcCommand
      * @returns {Promise<ShoppingCarts>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ShoppingCarts> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCarts> {
         return this.shoppingCartsService.update(data.params[0], {
             name: data.params[1]
         } as ShoppingCartsUpdateRequest);
@@ -42,4 +42,9 @@ export class ShoppingCartUpdateCommand extends BaseCommand implements RpcCommand
             + '    <cartId>            - Id of the shopping cart we want to update.\n'
             + '    <newCartName>       - new name of shopping cart';
     }
+
+    public description(): string {
+        return 'Update shopping cart name via cartId';
+    }
+
 }

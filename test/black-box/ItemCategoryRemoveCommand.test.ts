@@ -26,7 +26,7 @@ describe('ItemCategoryRemoveCommand', () => {
         await testUtil.cleanDb();
 
         // create category
-        const res = await rpc(method, [Commands.CATEGORY_ADD.commandName, parentCategory.key]);
+        const res = await rpc(method, [Commands.CATEGORY_ADD.commandName, parentCategory.key, '', 'cat_ROOT']);
         const categoryResult: any = res.getBody()['result'];
         rootItemCategory = categoryResult.ParentItemCategory;
         parentCategory.id = categoryResult.id;

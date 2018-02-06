@@ -37,7 +37,7 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
      * @returns {Promise<Bookshelf.Collection<Address>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Address>> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Address>> {
         const profileId = data.params[0];
         if ( !profileId ) {
             // Get all addresses.

@@ -3,7 +3,7 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 
-describe('RejectBidCommand', () => {
+describe('BidRejectCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const bidFactory = null;
     const listingItemService = null;

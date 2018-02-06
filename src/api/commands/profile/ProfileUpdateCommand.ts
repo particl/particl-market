@@ -30,7 +30,7 @@ export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInter
      * @returns {Promise<Profile>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Profile> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Profile> {
         return this.profileService.update(data.params[0], {
             name: data.params[1]
         });

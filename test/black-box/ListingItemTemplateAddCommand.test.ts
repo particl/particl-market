@@ -38,7 +38,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should create a new Listing Item Template by RPC with Profile + Item-information + Payment-information', async () => {
 
-        categoryResult = await rpc('category', ['add', 'templateCategory', 'category for Template']);
+        categoryResult = await rpc('category', ['add', 'templateCategory', 'category for Template', 'cat_ROOT']);
         categoryResult.expectJson();
         categoryResult.expectStatusCode(200);
         categoryResult = categoryResult.getBody()['result'];

@@ -5,7 +5,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { TestDataService } from '../../services/TestDataService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
 export class DataCleanCommand extends BaseCommand implements RpcCommandInterface<void> {
@@ -21,12 +21,16 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
     }
 
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         return await this.testDataService.clean();
     }
 
     public help(): string {
         return this.getName() + ' <TODO>';
+    }
+
+    public description(): string {
+        return 'Cleans database, inserts default data.';
     }
 
 }

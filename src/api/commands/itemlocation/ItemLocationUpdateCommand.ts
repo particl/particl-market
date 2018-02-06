@@ -41,7 +41,7 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
      * @returns {Promise<ItemLocation>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ItemLocation> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemLocation> {
         const listingItemTemplateId = data.params[0];
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.

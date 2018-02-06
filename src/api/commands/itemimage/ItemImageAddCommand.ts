@@ -37,7 +37,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
      * @returns {Promise<ItemImage>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ItemImage> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
         // find listing item template
         const listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
 

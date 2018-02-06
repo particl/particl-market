@@ -22,9 +22,15 @@ describe('ItemCategoryFindCommand', () => {
         // create category
         const categoryData = {
             name: 'Sample Category 1',
-            description: 'Sample Category Description 1'
+            description: 'Sample Category Description 1',
+            parent_item_category_id: 'cat_ROOT'
         };
-        await rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_ADD.commandName, categoryData.name, categoryData.description]);
+        await rpc(Commands.CATEGORY_ROOT.commandName, [
+            Commands.CATEGORY_ADD.commandName,
+            categoryData.name,
+            categoryData.description,
+            categoryData.parent_item_category_id
+        ]);
 
         //  find categories
         const res = await rpc(method, [subCommand, 'Sample Category 1']);
