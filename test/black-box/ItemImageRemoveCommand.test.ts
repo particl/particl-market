@@ -3,6 +3,9 @@ import { PaymentType } from '../../src/api/enums/PaymentType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { ItemImageRemoveCommand } from '../../src/api/commands/itemimage/ItemImageRemoveCommand';
+import { ItemImageAddCommand } from '../../src/api/commands/itemimage/ItemImageAddCommand';
+import { Logger } from '../../src/core/Logger';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
@@ -10,6 +13,8 @@ import { ListingItemTemplate } from 'resources';
 
 describe('/ItemImageRemoveCommand', () => {
     const testUtil = new BlackBoxTestUtil();
+    const itemImageService = null;
+    const listingItemTemplateService = null;
     const method = Commands.ITEMIMAGE_ROOT.commandName;
     const subCommand = Commands.ITEMIMAGE_REMOVE.commandName;
 
