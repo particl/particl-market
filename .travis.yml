@@ -1,6 +1,5 @@
 sudo: required
-language: generic
-#bash node_js
+language: node_js
 node_js:
   - "node"
 services:
@@ -118,8 +117,8 @@ after_success:
 #      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
 #      docker push USER/REPO;
 #    fi
-after_failure:
-   - curl -d "{\"content\": \"Build failed. $TRAVIS_BRANCH/$TRAVIS_COMMIT $TRAVIS_COMMIT_MESSAGE\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+#after_failure:
+#   - curl -d "{\"content\": \"Build failed. $TRAVIS_BRANCH/$TRAVIS_COMMIT $TRAVIS_COMMIT_MESSAGE\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
 
 #before_deploy:
 #  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
@@ -141,7 +140,7 @@ after_failure:
 after_script:
   # login to registry
   - docker images
-  - curl -d "{\"content\": \"Build finished and image deployed. http://[TODO].particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+#  - curl -d "{\"content\": \"Build finished and image deployed. http://[TODO].particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
 
 
 #notifications:
