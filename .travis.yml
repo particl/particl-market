@@ -22,8 +22,6 @@ env:
     - IMAGE_TAG="$TRAVIS_BRANCH-$TRAVIS_COMMIT"
     - DISCORD_URL="https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR"
 
-
-
 # TRAVIS_BRANCH:
 #  for push builds, or builds not triggered by a pull request, this is the name of the branch.
 #  for builds triggered by a pull request this is the name of the branch targeted by the pull request.
@@ -131,7 +129,6 @@ after_success:
 #  - git_sha="$(git rev-parse --short HEAD)"
 #  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:develop"
 #  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${git_sha}-develop"
-
 
 #deploy:
 #  provider: script
