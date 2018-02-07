@@ -1,5 +1,6 @@
 sudo: required
-language: bash node_js
+language: generic
+#bash node_js
 node_js:
   - "node"
 services:
