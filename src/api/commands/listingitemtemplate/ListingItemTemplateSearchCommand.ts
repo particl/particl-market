@@ -36,7 +36,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
      * @returns {Promise<Profile>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ListingItemTemplate>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItemTemplate>> {
         return this.listingItemTemplateService.search({
             page: data.params[0] || 1,
             pageLimit: data.params[1] || 5,

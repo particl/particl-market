@@ -29,7 +29,7 @@ export class ShoppingCartRemoveCommand extends BaseCommand implements RpcCommand
      * @returns {Promise<void>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         return this.shoppingCartsService.destroy(data.params[0]);
     }
 

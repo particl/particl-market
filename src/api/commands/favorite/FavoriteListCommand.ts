@@ -35,7 +35,7 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
      * @returns {Promise<Bookshelf.Collection<FavoriteItem>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<FavoriteItem>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<FavoriteItem>> {
         // find the profile by id
         const profile = await this.profileService.findOne(data.params[0]);
 

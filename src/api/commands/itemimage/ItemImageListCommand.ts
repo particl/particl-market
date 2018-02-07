@@ -33,7 +33,7 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
      *  [1]: listingItemTemplateId or listingItemId
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemImage>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ItemImage>> {
         if ( data.params.length !== 2 ) {
             throw new MessageException('Invalid number of args. Expected 2, got <' + data.params.length + '>.');
         }

@@ -13,10 +13,6 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('/FavoriteAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const favoriteItemService = null;
-    const listingItemService = null;
-    const profileService = null;
-    const marketService = null;
     const method =  Commands.FAVORITE_ROOT.commandName;
     const subCommand = Commands.FAVORITE_ADD.commandName;
     const addMakretMethod =  Commands.MARKET_ADD.commandName;

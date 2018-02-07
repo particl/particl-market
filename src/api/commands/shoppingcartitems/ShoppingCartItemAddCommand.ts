@@ -34,7 +34,7 @@ export class ShoppingCartItemAddCommand extends BaseCommand implements RpcComman
      * @returns {Promise<ShoppingCartItems>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ShoppingCartItems> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCartItems> {
         if (data.params[0] && data.params[1]) {
             // check if listingItem hash then get Id and pass as parameter
             let listingItemId = data.params[1];

@@ -39,7 +39,7 @@ export class ShippingDestinationAddCommand extends BaseCommand implements RpcCom
      * @returns {Promise<ShippingDestination>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ShippingDestination> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShippingDestination> {
         const listingItemTemplateId: number = data.params[0];
         let countryCode: string = data.params[1];
         const shippingAvailStr: string = data.params[2];

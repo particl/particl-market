@@ -27,7 +27,7 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
      * @returns {Promise<ItemCategory>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ItemCategory> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
         return await this.itemCategoryService.findRoot();
     }
 

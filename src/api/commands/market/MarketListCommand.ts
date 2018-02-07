@@ -31,7 +31,7 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
      * @returns {Promise<Bookshelf.Collection<Market>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Market>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Market>> {
         return this.marketService.findAll();
     }
 

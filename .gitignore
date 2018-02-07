@@ -40,8 +40,10 @@ data/particl1
 data/particl2
 data/app1
 data/app2
+data/app1_node_modules
+data/app2_node_modules
 
 *.paw
 
 codeship*.yml
-public/cli/build
+public/cli/build.json

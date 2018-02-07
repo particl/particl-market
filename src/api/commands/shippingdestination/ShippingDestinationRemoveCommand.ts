@@ -40,7 +40,7 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
      * @returns {Promise<ShippingDestination>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         if ( data.params.length === 1 ) {
             // <shippingDestinationId>
             const shippingDestinationId: number = data.params[0];

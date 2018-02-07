@@ -3,20 +3,18 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 
-describe('RejectBidCommand', () => {
+describe('BidCancelCommand', () => {
+
     const testUtil = new BlackBoxTestUtil();
-    const bidFactory = null;
-    const listingItemService = null;
-    const messageBroadcastService = null;
 
     const method =  Commands.BID_ROOT.commandName;
-    const subMethod =  Commands.BID_REJECT.commandName;
+    const subMethod =  Commands.BID_CANCEL.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
 
-    test('Should reject a bid by RPC', async () => {
+    test('Should cancel a bid by RPC', async () => {
         const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
         const res: any = await rpc(method, [subMethod, listingItem[0].hash]);
         res.expectJson();

@@ -31,7 +31,7 @@ export class ListingItemObjectSearchCommand extends BaseCommand implements RpcCo
      * @returns {Promise<ListingItemObject>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ListingItemObject>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItemObject>> {
         return this.listingItemObjectService.search({
             searchString: data.params[0]
         } as ListingItemObjectSearchParams);

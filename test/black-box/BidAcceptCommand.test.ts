@@ -5,11 +5,8 @@ import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 
-describe('AcceptBidCommand', () => {
+describe('BidAcceptCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const bidFactory = null;
-    const listingItemService = null;
-    const messageBroadcastService = null;
 
     const method =  Commands.BID_ROOT.commandName;
     const subMethod = Commands.BID_ACCEPT.commandName;

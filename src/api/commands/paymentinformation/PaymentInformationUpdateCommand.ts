@@ -37,17 +37,10 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
      * @returns {Promise<PaymentInformation>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<PaymentInformation> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<PaymentInformation> {
         return this.paymentInformationService.updateByListingId({
             listing_item_template_id : data.params[0],
             type: data.params[1],
-            // escrow: {
-            //     type: data.params[2],
-            //     ratio: {
-            //         buyer: data.params[3],
-            //         seller: data.params[4]
-            //     }
-            // },
             itemPrice: {
                 currency: data.params[2],
                 basePrice: data.params[3],

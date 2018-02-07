@@ -31,7 +31,7 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
      * @returns {Promise<ItemCategory>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ItemCategory> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
         if (typeof data.params[0] === 'number') {
             return await this.itemCategoryService.findOne(data.params[0]);
         } else {

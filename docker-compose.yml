@@ -5,21 +5,19 @@ services:
     build:
       context: ./
     volumes:
-#      - ./data/app1:/app/data
-      - ./:/app/
+      - .:/app/
+      - ./data/app1:/app/data
+      - ./data/app1_node_modules:/app/node_modules
     ports:
       - 3100:3100
-    command: npm run serve
+    command: bin/entrypoint.sh
     links:
       - particld1
-      - particld2
     depends_on:
       - particld1
-      - particld2
     environment:
       - NODE_ENV=development
       - APP_PORT=3100
-# RPC-CLIENT-CONFIG:
       - RPCUSER=test
       - RPCPASSWORD=test
       - RPCHOSTNAME=particld1
@@ -30,21 +28,19 @@ services:
     build:
       context: ./
     volumes:
-#      - ./data/app2:/app/data
-      - ./:/app/
+      - .:/app/
+      - ./data/app2:/app/data
+      - ./data/app2_node_modules:/app/node_modules
     ports:
       - 3200:3200
-    command: npm run serve
+    command: bin/entrypoint.sh
     links:
-      - particld1
       - particld2
     depends_on:
-      - particld1
       - particld2
     environment:
       - NODE_ENV=development
       - APP_PORT=3200
-# RPC-CLIENT-CONFIG:
       - RPCUSER=test
       - RPCPASSWORD=test
       - RPCHOSTNAME=particld2

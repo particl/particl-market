@@ -13,10 +13,10 @@ import { HelpCommand } from '../commands/HelpCommand';
 
 import { BidRootCommand } from '../commands/bid/BidRootCommand';
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
-import { AcceptBidCommand } from '../commands/bid/AcceptBidCommand';
-import { CancelBidCommand } from '../commands/bid/CancelBidCommand';
-import { RejectBidCommand } from '../commands/bid/RejectBidCommand';
-import { SendBidCommand } from '../commands/bid/SendBidCommand';
+import { BidAcceptCommand } from '../commands/bid/BidAcceptCommand';
+import { BidCancelCommand } from '../commands/bid/BidCancelCommand';
+import { BidRejectCommand } from '../commands/bid/BidRejectCommand';
+import { BidSendCommand } from '../commands/bid/BidSendCommand';
 
 import { EscrowRootCommand } from '../commands/escrow/EscrowRootCommand';
 import { EscrowCreateCommand } from '../commands/escrow/EscrowCreateCommand';
@@ -119,10 +119,10 @@ export class RpcCommandFactory {
     constructor(
         @inject(Types.Command) @named(Targets.Command.bid.BidRootCommand) private bidRootCommand: BidRootCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidSearchCommand) private bidSearchCommand: BidSearchCommand,
-        @inject(Types.Command) @named(Targets.Command.bid.AcceptBidCommand) private bidAcceptCommand: AcceptBidCommand,
-        @inject(Types.Command) @named(Targets.Command.bid.CancelBidCommand) private bidCancelCommand: CancelBidCommand,
-        @inject(Types.Command) @named(Targets.Command.bid.RejectBidCommand) private bidRejectCommand: RejectBidCommand,
-        @inject(Types.Command) @named(Targets.Command.bid.SendBidCommand) private bidSendCommand: SendBidCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.BidAcceptCommand) private bidAcceptCommand: BidAcceptCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.BidCancelCommand) private bidCancelCommand: BidCancelCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.BidRejectCommand) private bidRejectCommand: BidRejectCommand,
+        @inject(Types.Command) @named(Targets.Command.bid.BidSendCommand) private bidSendCommand: BidSendCommand,
 
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRootCommand) private escrowRootCommand: EscrowRootCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowCreateCommand) private escrowCreateCommand: EscrowCreateCommand,

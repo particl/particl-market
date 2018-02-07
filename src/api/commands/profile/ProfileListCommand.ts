@@ -32,7 +32,7 @@ export class ProfileListCommand extends BaseCommand implements RpcCommandInterfa
      * @returns {Promise<Bookshelf.Collection<Profile>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<Profile>> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Profile>> {
         return await this.profileService.findAll();
     }
 

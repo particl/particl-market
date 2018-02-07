@@ -41,7 +41,7 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
      * @returns {Promise<ItemLocation>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<ItemLocation> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemLocation> {
         const listingItemTemplateId = data.params[0];
         if (data.params[1]) {
             // If countryCode is country, convert to countryCode.
@@ -55,8 +55,6 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
             if (itemInformation.listingItemId) {
                 throw new MessageException('ItemLocation cannot be updated because the item has allready been posted!');
             } else {
-
-                // todo: should check whether itemlocation allready exists
                 return this.itemLocationService.create({
                     item_information_id: itemInformation.id,
                     region: countryCode,

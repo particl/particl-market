@@ -8,7 +8,6 @@ import { ListingItem, ListingItemTemplate } from 'resources';
 describe('ListingItemGetCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const ListingItemService = null;
     const method = Commands.ITEM_ROOT.commandName;
     const subCommand = Commands.ITEM_GET.commandName;
 

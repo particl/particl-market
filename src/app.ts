@@ -22,3 +22,4 @@ if (process.env.NODE_ENV !== 'test') {
     // Launch the server with all his awesome features.
     app.bootstrap();
 }
+

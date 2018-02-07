@@ -44,7 +44,7 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
      * @returns {Promise<Address>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
         this.log.debug('AddressUpdateCommand.update(): 100');
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.

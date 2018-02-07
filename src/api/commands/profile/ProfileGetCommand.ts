@@ -31,7 +31,7 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
      * @returns {Promise<Profile>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Profile> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Profile> {
         if (data.params.length === 0) {
             data.params[0] = 'DEFAULT';
         }
