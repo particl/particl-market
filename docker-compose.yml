@@ -6,8 +6,8 @@ services:
       context: ./
     volumes:
       - .:/app/
-      - ./node_modules_docker:/app/node_modules
       - ./data/app1:/app/data
+      - ./data/app1_node_modules:/app/node_modules
     ports:
       - 3100:3100
     command: bin/entrypoint.sh
@@ -29,10 +29,11 @@ services:
       context: ./
     volumes:
       - .:/app/
-      - ./node_modules_docker:/app/node_modules
       - ./data/app2:/app/data
+      - ./data/app2_node_modules:/app/node_modules
     ports:
       - 3200:3200
+    command: bin/entrypoint.sh
     links:
       - particld2
     depends_on:
@@ -80,8 +81,6 @@ services:
     ports:
       - 53738:51738
       - 53935:51935
-    depends_on:
-      - app1
     environment:
       - CONF_TESTNET=1                 # Use the test chain
       - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set

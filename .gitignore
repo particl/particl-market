@@ -5,7 +5,6 @@
 
 # Node files #
 node_modules/
-node_modules_docker/
 npm-debug.log
 yarn-error.log
 .env
@@ -41,6 +40,8 @@ data/particl1
 data/particl2
 data/app1
 data/app2
+data/app1_node_modules
+data/app2_node_modules
 
 *.paw
 
