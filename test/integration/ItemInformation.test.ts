@@ -65,28 +65,28 @@ describe('ItemInformation', () => {
             shippingAvailability: ShippingAvailability.ASK
         }],
         itemImages: [{
-            hash: 'imagehash1',
+            hash: 'imagehash4',
             data: {
-                dataId: 'dataid1',
-                protocol: ImageDataProtocolType.IPFS,
-                encoding: null,
-                data: null
-            }
-        }, {
-            hash: 'imagehash2',
-            data: {
-                dataId: 'dataid2',
+                dataId: null,
                 protocol: ImageDataProtocolType.LOCAL,
                 encoding: 'BASE64',
                 data: ImageProcessing.milkcat
             }
         }, {
-            hash: 'imagehash3',
+            hash: 'imagehash5',
             data: {
-                dataId: 'dataid3',
-                protocol: ImageDataProtocolType.SMSG,
-                encoding: null,
-                data: 'smsgdata'
+                dataId: null,
+                protocol: ImageDataProtocolType.LOCAL,
+                encoding: 'BASE64',
+                data: ImageProcessing.milkcatTall
+            }
+        }, {
+            hash: 'imagehash6',
+            data: {
+                dataId: null,
+                protocol: ImageDataProtocolType.LOCAL,
+                encoding: 'BASE64',
+                data: ImageProcessing.milkcatWide
             }
         }]
     } as ItemInformationCreateRequest;
@@ -123,26 +123,26 @@ describe('ItemInformation', () => {
         itemImages: [{
             hash: 'imagehash4',
             data: {
-                dataId: 'dataid4',
-                protocol: ImageDataProtocolType.IPFS,
-                encoding: null,
-                data: null
-            }
-        }, {
-            hash: 'imagehash5',
-            data: {
-                dataId: 'dataid5',
+                dataId: null,
                 protocol: ImageDataProtocolType.LOCAL,
                 encoding: 'BASE64',
                 data: ImageProcessing.milkcat
             }
         }, {
+            hash: 'imagehash5',
+            data: {
+                dataId: null,
+                protocol: ImageDataProtocolType.LOCAL,
+                encoding: 'BASE64',
+                data: ImageProcessing.milkcatTall
+            }
+        }, {
             hash: 'imagehash6',
             data: {
-                dataId: 'dataid6',
-                protocol: ImageDataProtocolType.SMSG,
-                encoding: null,
-                data: 'smsgdata'
+                dataId: null,
+                protocol: ImageDataProtocolType.LOCAL,
+                encoding: 'BASE64',
+                data: ImageProcessing.milkcatWide
             }
         }]
     } as ItemInformationUpdateRequest;
@@ -180,7 +180,8 @@ describe('ItemInformation', () => {
     });
 
     test('Should create a new item information', async () => {
-        testData['listing_item_template_id'] = createdListingItemTemplate.Id;
+
+        testData.listing_item_template_id = createdListingItemTemplate.Id;
         const itemInformationModel: ItemInformation = await itemInformationService.create(testData);
         createdId = itemInformationModel.Id;
 
