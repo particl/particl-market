@@ -84,6 +84,7 @@ script:
 
 after_success:
   - docker login r.cfcr.io -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+  - docker pull r.cfcr.io/ludx/codefresh-custom-runner:latest
   - if [[ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]]; then
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:master-f Dockerfile.ci .;
       docker push $IMAGE_NAME:master;
