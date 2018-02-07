@@ -19,7 +19,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'ItemInformation.ItemLocation',
         'ItemInformation.ItemLocation.LocationMarker',
         'ItemInformation.ItemImages',
-        'ItemInformation.ItemImages.ItemImageData',
+        'ItemInformation.ItemImages.ItemImageDatas',
         'ItemInformation.ShippingDestinations',
         'PaymentInformation',
         'PaymentInformation.Escrow',

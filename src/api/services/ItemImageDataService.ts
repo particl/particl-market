@@ -39,8 +39,6 @@ export class ItemImageDataService {
 
     @validate()
     public async create( @request(ItemImageDataCreateRequest) body: ItemImageDataCreateRequest): Promise<ItemImageData> {
-        // todo: could this be annotated in ItemImageDataCreateRequest?
-        // todo: improve validation
         if (body.dataId == null && body.protocol == null && body.encoding == null && body.data == null ) {
             throw new ValidationException('Request body is not valid', ['dataId, protocol, encoding and data cannot all be null']);
         }
@@ -56,8 +54,6 @@ export class ItemImageDataService {
     @validate()
     public async update(id: number, @request(ItemImageDataUpdateRequest) body: ItemImageDataCreateRequest): Promise<ItemImageData> {
 
-        // todo: could this be annotated in ItemImageDataUpdateRequest?
-        // todo: improve validation
         if (body.dataId == null && body.protocol == null && body.encoding == null && body.data == null ) {
             throw new ValidationException('Request body is not valid', ['dataId, protocol, encoding and data cannot all be null']);
         }

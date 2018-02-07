@@ -13,7 +13,7 @@ export class ItemInformation extends Bookshelf.Model<ItemInformation> {
         'ItemLocation',
         'ItemLocation.LocationMarker',
         'ItemImages',
-        'ItemImages.ItemImageData',
+        'ItemImages.ItemImageDatas',
         'ShippingDestinations'
     ];
 

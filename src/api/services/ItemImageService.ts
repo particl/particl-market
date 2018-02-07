@@ -4,15 +4,20 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
-import { ValidationException } from '../exceptions/ValidationException';
 import { ItemImageRepository } from '../repositories/ItemImageRepository';
 import { ItemImage } from '../models/ItemImage';
 import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
 import { ItemImageUpdateRequest } from '../requests/ItemImageUpdateRequest';
-import { RpcRequest } from '../requests/RpcRequest';
 import { ItemImageDataService } from './ItemImageDataService';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { ImageTriplet } from '../../core/helpers/ImageTriplet';
+import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
+import { ImageFactory } from '../factories/ImageFactory';
+import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
+import * as _ from 'lodash';
+import {MessageException} from '../exceptions/MessageException';
+import {CryptocurrencyAddressUpdateRequest} from '../requests/CryptocurrencyAddressUpdateRequest';
+import {CryptocurrencyAddressCreateRequest} from '../requests/CryptocurrencyAddressCreateRequest';
 
 export class ItemImageService {
 
@@ -21,6 +26,7 @@ export class ItemImageService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
         @inject(Types.Repository) @named(Targets.Repository.ItemImageRepository) public itemImageRepo: ItemImageRepository,
+        @inject(Types.Factory) @named(Targets.Factory.ImageFactory) public imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -45,33 +51,22 @@ export class ItemImageService {
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
-        const itemImageData = body.data;
+        const itemImageDataOriginal: ItemImageDataCreateRequest = body.data;
         delete body.data;
 
-        // If the request body was valid we will create the itemImage
+        // if the request body was valid we will create the itemImage
         const itemImage = await this.itemImageRepo.create(body);
 
-        // create related models
-        itemImageData.item_image_id = itemImage.Id;
+        // then create the imageDatas from the given original data
+        if (!_.isEmpty(itemImageDataOriginal)) {
+            const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
+            const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.Id, itemImageDataOriginal, toVersions);
 
-        // Convert, scale, and remove metadata from item image then save each resized.
-        const newBody: any = itemImageData;
-        if (body.encoding === 'BASE64' && newBody.data) {
-            const dataProcessed: ImageTriplet = await ImageProcessing.prepareImageForSaving(newBody.data);
-
-            // Save 3 resized images
-            newBody.data = dataProcessed.big;
-            await this.itemImageDataService.create(newBody);
-            newBody.data = dataProcessed.medium;
-            await this.itemImageDataService.create(newBody);
-            newBody.data = dataProcessed.thumbnail;
-            await this.itemImageDataService.create(newBody);
-        } else if (body.encoding !== 'BASE64') {
-            this.log.warn('Unsupported image encoding. Only supports BASE64.');
+            // save all image datas
+            for (const imageData of imageDatas) {
+                await this.itemImageDataService.create(imageData);
+            }
         }
-
-        // Save the original.
-        await this.itemImageDataService.create(itemImageData);
 
         // finally find and return the created itemImage
         const newItemImage = await this.findOne(itemImage.Id);
@@ -82,6 +77,7 @@ export class ItemImageService {
     public async update(id: number, @request(ItemImageUpdateRequest) data: ItemImageUpdateRequest): Promise<ItemImage> {
 
         const body = JSON.parse(JSON.stringify(data));
+        const itemImageDataOriginal: ItemImageDataCreateRequest = body.data;
 
         // find the existing one without related
         const itemImage = await this.findOne(id, false);
@@ -92,29 +88,21 @@ export class ItemImageService {
         // update itemImage record
         const updatedItemImage = await this.itemImageRepo.update(id, itemImage.toJSON());
 
-        // find related record and delete it
-        let itemImageData = updatedItemImage.related('ItemImageData').toJSON();
-        await this.itemImageDataService.destroy(itemImageData.id);
+        // find and remove old related ItemImageDatas
+        const oldImageDatas = updatedItemImage.related('ItemImageDatas').toJSON();
+        for (const imageData of oldImageDatas) {
+            await this.itemImageDataService.destroy(imageData.id);
+        }
 
-        // Save the original.
-        itemImageData.item_image_id = id;
-        itemImageData = body.data;
-        await this.itemImageDataService.create(itemImageData);
+        // then create new imageDatas from the given original data
+        if (!_.isEmpty(itemImageDataOriginal)) {
+            const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
+            const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.Id, itemImageDataOriginal, toVersions);
 
-        // Convert, scale, and remove metadata from item image then save each resized.
-        const newBody: any = itemImageData;
-        if (body.encoding === 'BASE64' && newBody.data) {
-            const dataProcessed: ImageTriplet = await ImageProcessing.prepareImageForSaving(newBody.data);
-
-            // Save 3 resized images
-            newBody.data = dataProcessed.big;
-            await this.itemImageDataService.create(newBody);
-            newBody.data = dataProcessed.medium;
-            await this.itemImageDataService.create(newBody);
-            newBody.data = dataProcessed.thumbnail;
-            await this.itemImageDataService.create(newBody);
-        } else if (body.encoding !== 'BASE64') {
-            this.log.warn('Unsupported image encoding. Only supports BASE64.');
+            // create new image datas
+            for (const imageData of imageDatas) {
+                await this.itemImageDataService.create(imageData);
+            }
         }
 
         // finally find and return the updated itemImage

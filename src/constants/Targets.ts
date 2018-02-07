@@ -9,7 +9,7 @@
  */
 
 export const Targets = {
-    Model: {
+    Model:     {
         Address: 'Address',
         Bid: 'Bid',
         BidData: 'BidData',
@@ -37,7 +37,7 @@ export const Targets = {
         ShoppingCarts: 'ShoppingCarts',
         User: 'User'
     },
-    Repository: {
+    Repository:     {
         AddressRepository: 'AddressRepository',
         BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
@@ -65,7 +65,7 @@ export const Targets = {
         ShoppingCartsRepository: 'ShoppingCartsRepository',
         UserRepository: 'UserRepository'
     },
-    Service: {
+    Service:     {
         AddressService: 'AddressService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
@@ -99,7 +99,7 @@ export const Targets = {
         TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
-    Command: {
+    Command:     {
         address: {
             AddressCreateCommand: 'AddressCreateCommand',
             AddressListCommand: 'AddressListCommand',
@@ -113,10 +113,10 @@ export const Targets = {
         BaseCommand: 'BaseCommand',
         bid: {
             BidAcceptCommand: 'BidAcceptCommand',
-            BidRootCommand: 'BidRootCommand',
-            BidSearchCommand: 'BidSearchCommand',
             BidCancelCommand: 'BidCancelCommand',
             BidRejectCommand: 'BidRejectCommand',
+            BidRootCommand: 'BidRootCommand',
+            BidSearchCommand: 'BidSearchCommand',
             BidSendCommand: 'BidSendCommand'
         },
         Command: 'Command',
@@ -145,7 +145,6 @@ export const Targets = {
         HelpCommand: 'HelpCommand',
         itemcategory: {
             ItemCategoryAddCommand: 'ItemCategoryAddCommand',
-            ItemCategoryCreateCommand: 'ItemCategoryCreateCommand',
             ItemCategoryFindCommand: 'ItemCategoryFindCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
             ItemCategoryListCommand: 'ItemCategoryListCommand',
@@ -175,8 +174,11 @@ export const Targets = {
             ListingItemGetCommand: 'ListingItemGetCommand',
             ListingItemRootCommand: 'ListingItemRootCommand',
             ListingItemSearchCommand: 'ListingItemSearchCommand',
-            ListingItemUpdateCommand : 'ListingItemUpdateCommand',
-            OwnListingItemSearchCommand: 'OwnListingItemSearchCommand'
+            ListingItemUpdateCommand: 'ListingItemUpdateCommand'
+        },
+        listingitemobject: {
+            ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
+            ListingItemObjectSearchCommand: 'ListingItemObjectSearchCommand'
         },
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
@@ -214,35 +216,32 @@ export const Targets = {
             ShippingDestinationRemoveCommand: 'ShippingDestinationRemoveCommand',
             ShippingDestinationRootCommand: 'ShippingDestinationRootCommand'
         },
-        listingitemobject: {
-            ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
-            ListingItemObjectSearchCommand: 'ListingItemObjectSearchCommand'
-        },
         shoppingcart: {
             ShoppingCartAddCommand: 'ShoppingCartAddCommand',
-            ShoppingCartUpdateCommand: 'ShoppingCartUpdateCommand',
-            ShoppingCartRemoveCommand: 'ShoppingCartRemoveCommand',
-            ShoppingCartListCommand: 'ShoppingCartListCommand',
-            ShoppingCartGetCommand: 'ShoppingCartGetCommand',
             ShoppingCartClearCommand: 'ShoppingCartClearCommand',
-            ShoppingCartRootCommand: 'ShoppingCartRootCommand'
+            ShoppingCartGetCommand: 'ShoppingCartGetCommand',
+            ShoppingCartListCommand: 'ShoppingCartListCommand',
+            ShoppingCartRemoveCommand: 'ShoppingCartRemoveCommand',
+            ShoppingCartRootCommand: 'ShoppingCartRootCommand',
+            ShoppingCartUpdateCommand: 'ShoppingCartUpdateCommand'
         },
         shoppingcartitems: {
             ShoppingCartItemAddCommand: 'ShoppingCartItemAddCommand',
-            ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
+            ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         }
     },
-    Factory: {
+    Factory:     {
         BidFactory: 'BidFactory',
         EscrowFactory: 'EscrowFactory',
+        ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
         ListingItemFactory: 'ListingItemFactory',
         MessagingInformationFactory: 'MessagingInformationFactory',
         RpcCommandFactory: 'RpcCommandFactory'
     },
-    MessageProcessor: {
+    MessageProcessor:     {
         AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
         BidMessageProcessor: 'BidMessageProcessor',
         CancelBidMessageProcessor: 'CancelBidMessageProcessor',
@@ -253,20 +252,20 @@ export const Targets = {
         TestMessageProcessor: 'TestMessageProcessor',
         UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
     },
-    Middleware: {
+    Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
         PopulateUserMiddleware: 'PopulateUserMiddleware',
         RestApiMiddleware: 'RestApiMiddleware',
         RpcMiddleware: 'RpcMiddleware'
     },
-    Listener: {
+    Listener:     {
         ServerStartedListener: 'ServerStartedListener',
         user: {
             UserAuthenticatedListener: 'UserAuthenticatedListener',
             UserCreatedListener: 'UserCreatedListener'
         }
     },
-    Controller: {
+    Controller:     {
         AddressController: 'AddressController',
         BidController: 'BidController',
         BidDataController: 'BidDataController',
