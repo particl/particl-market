@@ -62,7 +62,7 @@ install:
   - bin/ci-create-dbs.sh
   - bin/ci-create-build-version.sh
   # build and run the stack
-  - docker-compose up --build -d
+  - docker-compose --file docker-compose-ci.yml up --build -d
   - docker ps
 
 #  - docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci .
