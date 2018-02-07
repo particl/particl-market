@@ -83,11 +83,11 @@ script:
 
 after_success:
   - docker login r.cfcr.io -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
-  - if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
+  - if [[ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]]; then
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:master-f Dockerfile.ci .
       docker push $DOCKER_IMAGE:master
       docker run -d r.cfcr.io/ludx/codefresh-custom-runner ./kontena-stack-upgrade.sh ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git master kontena-master.yml
-    elif [ $TRAVIS_BRANCH == "develop" && $TRAVIS_PULL_REQUEST == "false" ]; then
+    elif [[ $TRAVIS_BRANCH == "develop" && $TRAVIS_PULL_REQUEST == "false" ]]; then
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:develop -f Dockerfile.ci .
       docker push $DOCKER_IMAGE:develop
       docker run -d r.cfcr.io/ludx/codefresh-custom-runner ./kontena-stack-upgrade.sh ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git develop kontena-develop.yml
