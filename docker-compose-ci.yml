@@ -4,7 +4,7 @@ services:
   app1:
     build:
       context: ./
-      dockerfile: Dockerfile-ci
+      dockerfile: Dockerfile.ci
     ports:
       - 3100:3100
     command: bin/entrypoint.sh
@@ -22,7 +22,7 @@ services:
   app2:
     build:
       context: ./
-      dockerfile: Dockerfile-ci
+      dockerfile: Dockerfile.ci
     ports:
       - 3200:3200
     command: bin/entrypoint.sh
