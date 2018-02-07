@@ -131,6 +131,7 @@ describe('ItemImage', () => {
         expect(result.ItemImageDatas[0].protocol).toBe(testData.data.protocol);
         expect(result.ItemImageDatas[0].encoding).toBe(testData.data.encoding);
 
+        // TODO: test that all sizes exists
         // TODO: When non-BASE64 resizing is implemented check image sizes.
     });
 
