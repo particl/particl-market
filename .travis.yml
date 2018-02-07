@@ -87,15 +87,15 @@ after_success:
   - if [[ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]]; then
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:master-f Dockerfile.ci .;
       docker push $DOCKER_IMAGE:master;
-      docker run -d r.cfcr.io/ludx/codefresh-custom-runner ./kontena-stack-upgrade.sh ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git master kontena-master.yml;
+      docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git master kontena-master.yml;
     elif [[ $TRAVIS_BRANCH == "develop" && $TRAVIS_PULL_REQUEST == "false" ]]; then
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:develop -f Dockerfile.ci .;
       docker push $DOCKER_IMAGE:develop;
-      docker run -d r.cfcr.io/ludx/codefresh-custom-runner ./kontena-stack-upgrade.sh ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git develop kontena-develop.yml;
+      docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git develop kontena-develop.yml;
     else
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci .;
       docker push $IMAGE_NAME:$IMAGE_TAG;
-      docker run -d r.cfcr.io/ludx/codefresh-custom-runner ./kontena-stack-upgrade.sh ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $TRAVIS_BRANCH kontena-feature.yml;
+      docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $TRAVIS_BRANCH kontena-feature.yml;
     fi
 
 
