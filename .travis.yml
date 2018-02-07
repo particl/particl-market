@@ -78,8 +78,8 @@ install:
 
 script:
   - npm test
-#  - npm run test:integration:pretty
-#  - bin/ci-blackbox-tests.sh
+  - npm run test:integration:pretty
+  - bin/ci-blackbox-tests.sh
   - docker-compose down
 
 after_success:
