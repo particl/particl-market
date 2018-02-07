@@ -19,6 +19,7 @@ env:
     - IMAGE="ludx/dapp-shell-ci"
     - IMAGE_NAME="$REGISTRY/$IMAGE"
     - IMAGE_TAG="$TRAVIS_BRANCH-$TRAVIS_COMMIT"
+    - DISCORD_URL="https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR"
 
 # TRAVIS_BRANCH:
 #  for push builds, or builds not triggered by a pull request, this is the name of the branch.
@@ -82,18 +83,22 @@ script:
 
 after_success:
   - docker login r.cfcr.io -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
-  - if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
+  - |
+    if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
       docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:master-f Dockerfile.ci .
       docker push $DOCKER_IMAGE:master
       docker run -d r.cfcr.io/ludx/codefresh-custom-runner ./kontena-stack-upgrade.sh ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git master kontena-master.yml
+      curl -d "{\"content\": \"Build finished and image deployed. http://master1.particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
     elif [ $TRAVIS_BRANCH == "develop" && $TRAVIS_PULL_REQUEST == "false" ]; then
       docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:develop -f Dockerfile.ci .
       docker push $DOCKER_IMAGE:develop
       docker run -d r.cfcr.io/ludx/codefresh-custom-runner ./kontena-stack-upgrade.sh ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git develop kontena-develop.yml
+      curl -d "{\"content\": \"Build finished and image deployed. http://dev1.particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
     else
       docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci .
       docker push $IMAGE_NAME:$IMAGE_TAG
       docker run -d r.cfcr.io/ludx/codefresh-custom-runner ./kontena-stack-upgrade.sh ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $TRAVIS_BRANCH kontena-feature.yml
+      curl -d "{\"content\": \"Build finished and image deployed. http://feature1.particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
     fi
 
 
@@ -113,7 +118,8 @@ after_success:
 #      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
 #      docker push USER/REPO;
 #    fi
-#after_failure:
+after_failure:
+   - curl -d "{\"content\": \"Build failed. $TRAVIS_BRANCH/$TRAVIS_COMMIT $TRAVIS_COMMIT_MESSAGE\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
 
 #before_deploy:
 #  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
@@ -135,6 +141,8 @@ after_success:
 after_script:
   # login to registry
   - docker images
+  - curl -d "{\"content\": \"Build finished and image deployed. http://[TODO].particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+
 
 #notifications:
 #  email:
