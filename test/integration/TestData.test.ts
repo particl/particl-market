@@ -321,8 +321,8 @@ describe('TestDataService', () => {
 
     test('Should cleanup all tables', async () => {
         expect.assertions(4);
-        // clean removes all and then seeds the default category and profile data
-        await testDataService.clean([]);
+        // clean up the db, first removes all data and then seeds the db with default data
+        await testDataService.clean();
 
         const categories = await itemCategoryService.findAll();
         expect(categories).toHaveLength(80);

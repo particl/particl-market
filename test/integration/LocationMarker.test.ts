@@ -51,7 +51,8 @@ describe('LocationMarker', () => {
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
+
         const defaultProfile = await profileService.getDefault();
         const createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
             model: 'listingitemtemplate',

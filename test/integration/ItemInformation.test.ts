@@ -19,6 +19,7 @@ import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequ
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
+import {CreatableModel} from '../../src/api/enums/CreatableModel';
 
 describe('ItemInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -154,11 +155,11 @@ describe('ItemInformation', () => {
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
 
         defaultProfile = await profileService.getDefault();
         createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
-            model: 'listingitemtemplate',
+            model: CreatableModel.LISTINGITEMTEMPLATE,
             data: {
                 profile_id: defaultProfile.Id,
                 hash: 'itemhash'

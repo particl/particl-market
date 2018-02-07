@@ -53,7 +53,8 @@ describe('ShoppingCartItems', () => {
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
+
         // listingItem
         let defaultMarket = await marketService.getDefault();
         defaultMarket = defaultMarket.toJSON();
