@@ -12,6 +12,7 @@ import { ItemInformationService } from '../../src/api/services/ItemInformationSe
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
+import { DatabaseException } from '../../src/api/exceptions/DatabaseException';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 
 import { ItemImageData } from '../../src/api/models/ItemImageData';
@@ -134,9 +135,9 @@ describe('ItemImageData', () => {
 
     test('Should throw ValidationException because there is no item_image_id', async () => {
         expect.assertions(1);
-        await itemImageDataService.create(testData as ItemImageDataCreateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
+        await itemImageDataService.create(testData as ItemImageDataCreateRequest).catch(e => {
+            expect(e).toEqual(new ValidationException('Request body is not valid', []));
+        });
     });
 
     test('Should create a new item image data', async () => {
@@ -147,40 +148,13 @@ describe('ItemImageData', () => {
         expect(result.dataId).toBe(testData.dataId);
         expect(result.protocol).toBe(testData.protocol);
         expect(result.encoding).toBe(testData.encoding);
-        if (!testDataUpdated.data && testDataUpdated.data != null) {
-            expect(result.dataBig).toBeUndefined();
-            expect(result.dataMedium).toBeUndefined();
-            expect(result.dataThumbnail).toBeUndefined();
-        } else {
-            // TODO: If image is in test data check size and validity of processed image
-            expect(result.dataBig).toBeDefined();
-            expect(result.dataMedium).toBeDefined();
-            if (result.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.dataMedium, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-
-                const newInfo = await imageBuffer.metadata();
-
-                expect(newInfo.height).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
-            }
-            expect(result.dataMedium).toBeDefined();
-            if (result.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.dataThumbnail, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-
-                const newInfo = await imageBuffer.metadata();
-
-                expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
-            }
-        }
     });
 
     test('Should throw ValidationException because we want to create a empty item image data', async () => {
         expect.assertions(1);
-        await itemImageDataService.create({} as ItemImageDataCreateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        await itemImageDataService.create({} as ItemImageDataCreateRequest).catch(e => {
+            expect(e).toEqual(new ValidationException('Request body is not valid', []));
+        }
         );
     });
 
@@ -194,34 +168,6 @@ describe('ItemImageData', () => {
         expect(result.dataId).toBe(testData.dataId);
         expect(result.protocol).toBe(testData.protocol);
         expect(result.encoding).toBe(testData.encoding);
-        if (!testDataUpdated.data && testDataUpdated.data != null) {
-            expect(result.dataBig).toBeUndefined();
-            expect(result.dataMedium).toBeUndefined();
-            expect(result.dataThumbnail).toBeUndefined();
-        } else {
-            // TODO: If image is in test data check size and validity of processed image
-            expect(result.dataBig).toBeDefined();
-            expect(result.dataMedium).toBeDefined();
-            if (result.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.dataMedium, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-
-                const newInfo = await imageBuffer.metadata();
-
-                expect(newInfo.height).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
-            }
-            expect(result.dataMedium).toBeDefined();
-            if (result.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.dataThumbnail, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-
-                const newInfo = await imageBuffer.metadata();
-
-                expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
-            }
-        }
     });
 
     test('Should return one item image data', async () => {
@@ -231,47 +177,21 @@ describe('ItemImageData', () => {
         expect(result.dataId).toBe(testData.dataId);
         expect(result.protocol).toBe(testData.protocol);
         expect(result.encoding).toBe(testData.encoding);
-        if (!testDataUpdated.data && testDataUpdated.data != null) {
-            expect(result.dataBig).toBeUndefined();
-            expect(result.dataMedium).toBeUndefined();
-            expect(result.dataThumbnail).toBeUndefined();
-        } else {
-            // TODO: If image is in test data check size and validity of processed image
-            expect(result.dataBig).toBeDefined();
-            expect(result.dataMedium).toBeDefined();
-            if (result.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.dataMedium, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-
-                const newInfo = await imageBuffer.metadata();
-
-                expect(newInfo.height).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
-            }
-            expect(result.dataMedium).toBeDefined();
-            if (result.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.dataThumbnail, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-
-                const newInfo = await imageBuffer.metadata();
-
-                expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
-            }
-        }
     });
 
     test('Should throw ValidationException because there is no item_image_id', async () => {
         expect.assertions(1);
-        await itemImageDataService.update(createdId, testDataUpdated as ItemImageDataUpdateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        await itemImageDataService.update(createdId, testDataUpdated as ItemImageDataUpdateRequest).catch(e => {
+            expect(e).toEqual(new ValidationException('Request body is not valid', []));
+        }
         );
     });
 
     test('Should throw ValidationException because we want to update a item image data with empty body', async () => {
         expect.assertions(1);
-        await itemImageDataService.update(createdId, {} as ItemImageDataUpdateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        await itemImageDataService.update(createdId, {} as ItemImageDataUpdateRequest).catch(e => {
+            expect(e).toEqual(new ValidationException('Request body is not valid', []));
+        }
         );
     });
 
@@ -283,46 +203,11 @@ describe('ItemImageData', () => {
         expect(result.dataId).toBe(testDataUpdated.dataId);
         expect(result.protocol).toBe(testDataUpdated.protocol);
         expect(result.encoding).toBe(testDataUpdated.encoding);
-        if (!testDataUpdated.data && testDataUpdated.data != null) {
-            expect(result.dataBig).toBeUndefined();
-            expect(result.dataMedium).toBeUndefined();
-            expect(result.dataThumbnail).toBeUndefined();
-        } else {
-            // TODO: If image is in test data check size and validity of processed image
-            expect(result.dataBig).toBeDefined();
-            expect(result.dataMedium).toBeDefined();
-            if (result.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.dataMedium, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-
-                const newInfo = await imageBuffer.metadata();
-
-                expect(newInfo.height).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
-            }
-            expect(result.dataMedium).toBeDefined();
-            if (result.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.dataThumbnail, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-
-                const newInfo = await imageBuffer.metadata();
-
-                expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
-            }
-        }
     });
 
     test('Should delete the item image data', async () => {
-        expect.assertions(3);
-        await listingItemService.destroy(createdListingItem.id);
-        await listingItemService.findOne(createdListingItem.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdListingItem.id))
-        );
-
-        await itemInformationService.findOne(itemInformation.id).catch(e =>
-            expect(e).toEqual(new NotFoundException(itemInformation.id))
-        );
+        expect.assertions(1);
+        await itemImageDataService.destroy(createdId);
 
         await itemImageDataService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
