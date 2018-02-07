@@ -80,7 +80,20 @@ script:
 #  - bin/ci-blackbox-tests.sh
   - docker-compose down
 
-#after_success:
+after_success:
+  - docker login r.cfcr.io -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
+  # master
+  - if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
+      docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:master-f Dockerfile.ci .
+      docker push $DOCKER_IMAGE:master
+    elif [ $TRAVIS_BRANCH == "develop" && $TRAVIS_PULL_REQUEST == "false" ]; then
+      docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:develop -f Dockerfile.ci .
+      docker push $DOCKER_IMAGE:develop
+    else
+      docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci .
+      docker push $IMAGE_NAME:$IMAGE_TAG
+    fi
+
 #  - if [ "$TRAVIS_BRANCH" == "master" ]; then
 #      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
 #      docker push USER/REPO;
@@ -117,7 +130,6 @@ script:
 
 after_script:
   # login to registry
-  - docker login r.cfcr.io -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
   - docker images
 
 #notifications:
