@@ -280,8 +280,10 @@ export class TestDataService {
         const name = 'TEST-' + Faker.name.firstName();
         const address = Faker.finance.bitcoinAddress();
 
-        const shippingAddresses = generateParams.generateShippingAddresses ? this.generateAddressesData(_.random(1, 5)) : {};
-        const cryptocurrencyAddresses = generateParams.generateShippingAddresses ? this.generateCryptocurrencyAddressesData(_.random(1, 5)) : {};
+        this.log.debug('generateParams.generateShippingAddresses: ', generateParams.generateShippingAddresses);
+        this.log.debug('generateParams.generateCryptocurrencyAddresses: ', generateParams.generateCryptocurrencyAddresses);
+        const shippingAddresses = generateParams.generateShippingAddresses ? this.generateAddressesData(_.random(1, 5)) : [];
+        const cryptocurrencyAddresses = generateParams.generateCryptocurrencyAddresses ? this.generateCryptocurrencyAddressesData(_.random(1, 5)) : [];
 
         return {
             name,

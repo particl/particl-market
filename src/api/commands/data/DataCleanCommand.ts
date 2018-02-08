@@ -26,7 +26,7 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public help(): string {
-        return this.getName() + ' <TODO>';
+        return this.getName() + '';
     }
 
     public description(): string {
