@@ -86,8 +86,9 @@ describe('PaymentInformation', () => {
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.EscrowService);
         itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.ItemPriceService);
+
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
 
         defaultProfile = await profileService.getDefault();
         createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({

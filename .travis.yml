@@ -11,7 +11,8 @@ cache:
 env:
   global:
     - secure: "HvydmXCEJhiwxFSB6Vwa4CC9eN9O7zQ6Ce2Ao5yjD0EkA1WNZVWn3ScsquiV98Geu+4Cm/c1pT2TmfWquZ0Rx1zQ8ydNGp8nNZTJ//6Kg1lBbgHUZC/ylz6lXod0rPLb/6vC8iOWzpY6CpATHRjmMdDqfKZBR4qSMN1gU/mjUuZCJx4DNnKYlbA5QBB2bugpt5HZm9c64J/dneWhlv0eocomccKHNhXB5x34ILG71djOq2oOS3L8Cl+LHgYpSs7gja8TeC+ElWThjS/bs8LAn1yhCn2ZyAQMoz0EacFcp0lUEJOVDtAxs9iUgwLnnu0qv0UgGnt/mOBquRcyIyQEgpvHz0K/XGAogbpuzm0zLPZjMd01rtfqrSSHLZaOo4L1HD7RrXKvmju3sXQKsDKW6qJY0sg8WzFAtR+UszXpNlMVMVPJHFIFuMs4vR5r93g1cQOBr67MnO6U2woazmkoB6XPsJVNVO7Id4L5E3colU7gUn0amf9nVYIXL+W08wnbaVOt5I47zwwjCUxKm7CXdK4AP8JmS3bKlDZhexN0j6Wa8a9lZ90riqvD3COu3GKpc9swyjE6IFcyqfJCa+F5yN4ct7Osjhlbjtxcb3s38+X4alDpTPc8SP/DGckF6nPk5RF+wI09KME3DPzA2iVQuBHvdwqB1dLhAVZxMa9dAuI="  # REGISTRY_EMAIL
-    - secure: "Q1ts33J7VpwQjo/cjxRjaVxF+W3p2kDHGy93/5uqjwuNu7TOKNxyPLng1XQphdk2jYyRLtaz494Jp4GBvrhZezlVB4WFl6Tpi5vZ/PPhCS3wHgdJ9iQ9cB9B9qMBSYlScq35PykRBpp6p/hgR/ok8xrJ31fMDSaDyTRfclA2V/pVX6T7KLW6TsioV2GSCfdWVAukmMVYRu6K/9h7UdyOqkyRk71BNdDNdLSX1azjmZQhPtbOy6AN23qM7VWA7LhSbPYNczrzI9UxXu6JuxL8+QLa78+DWOcS2CicxGMoQnsk2m7uhXDDU+z2hYLRjs21UVNUUDBkjyGaF/mMhO10EY+Eiyictn1XRcx3TWe/TUbLUeFrSRVHd92F3vr4dDbjeKJeG6LzrRHqkmktKOJOyVtaaMcHKwZ0bGupLr9u/AHJRSBnHEp/0QgtTT3mKDIAanfUhK1nFUKsAesAsoLITwsIMCqvZr3r5tVSCGbOYhDShFjIJQjSx0o1bKjiNEY/ual/8eFX7R2YHZZwvgbm3XFlsL9M3vWn0VgEQP83OtQgfmJcHtYdVa9zV2YxcBNbgblySD9JjSecdGUzUlZwHsKRM4RnMKF6XoZMJUiBji4AQ+A9IBflpzoF4WEyTbmS34M9AcLwLZ4a1stqsDX7yjfBjrvPozqvHQBiDxmbxtQ="  # REGISTRY_USER
+#    - secure: "Q1ts33J7VpwQjo/cjxRjaVxF+W3p2kDHGy93/5uqjwuNu7TOKNxyPLng1XQphdk2jYyRLtaz494Jp4GBvrhZezlVB4WFl6Tpi5vZ/PPhCS3wHgdJ9iQ9cB9B9qMBSYlScq35PykRBpp6p/hgR/ok8xrJ31fMDSaDyTRfclA2V/pVX6T7KLW6TsioV2GSCfdWVAukmMVYRu6K/9h7UdyOqkyRk71BNdDNdLSX1azjmZQhPtbOy6AN23qM7VWA7LhSbPYNczrzI9UxXu6JuxL8+QLa78+DWOcS2CicxGMoQnsk2m7uhXDDU+z2hYLRjs21UVNUUDBkjyGaF/mMhO10EY+Eiyictn1XRcx3TWe/TUbLUeFrSRVHd92F3vr4dDbjeKJeG6LzrRHqkmktKOJOyVtaaMcHKwZ0bGupLr9u/AHJRSBnHEp/0QgtTT3mKDIAanfUhK1nFUKsAesAsoLITwsIMCqvZr3r5tVSCGbOYhDShFjIJQjSx0o1bKjiNEY/ual/8eFX7R2YHZZwvgbm3XFlsL9M3vWn0VgEQP83OtQgfmJcHtYdVa9zV2YxcBNbgblySD9JjSecdGUzUlZwHsKRM4RnMKF6XoZMJUiBji4AQ+A9IBflpzoF4WEyTbmS34M9AcLwLZ4a1stqsDX7yjfBjrvPozqvHQBiDxmbxtQ="  # REGISTRY_USER
+    - REGISTRY_USER=ludx
     - secure: "eS5/H/m860xqfEuWF/lExmdjkMIY3AdaBwEFhelciYGe+8RjzkDNSUmU4BvGvI0/jrk+UmXe18td7kQTrU4e8mN+gKhNTy+UpdE4/nbpV9VRemjtUAqzDfgcNqMK0Hjh/I6qxQxL4hr7lec2z5cimMrytc8eFm74uuYWOstU+N6p6q+0hcMqeUy5MGkk+uGoioMkwyL3mv5pmEg7o5PR7XwKYHKO+odpoWUy90l0CgHKsBU81z8tEyAsjhgN5W4nAIbNn0jd1Zp63e6nMK5FUc1sAkAEuqNF/ixsM3yr9UICFR4qpQyP/n9ecAFbysrcDQ3aGC6ikjbDy1j4z7uYp9wZSJieGzf4cqGgPrCTR2TUdENnE0/VnZZy/DcnF3haxDhmex0azHqjD96QnnvNSB5fUO4uIt1cOZIgp/HfPNT8w6fSnaF7vh7VL5czQX2Hb+xuRCdj25T+Kp7gaGp23E7UWKUpbh9JMTtfp5nWBD353FgST3NCT506Z0/WXjpufCuq7spiOnbBNUGCzJZdYHFA9MkElsnMhMxDa8cKbJ+1B1Wtp7wO5/Ca3ZyOCjoI6WovtU+YyTYYDvCdH+jkDuegBgalHn5ZyJdoTFHNVti8MAybsPkKvAeilPh5Phgj9y15DygD62x4hQqfGiLS/tiXmxkDgk5EWS6Urjod+YY="  # REGISTRY_PASS
     - DOCKER_COMPOSE_VERSION=1.18.0
     - COMMIT=${TRAVIS_COMMIT::8}
@@ -19,6 +20,12 @@ env:
     - IMAGE="ludx/dapp-shell-ci"
     - IMAGE_NAME="$REGISTRY/$IMAGE"
     - IMAGE_TAG="$TRAVIS_BRANCH-$TRAVIS_COMMIT"
+    - DISCORD_URL="https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR"
+    - RPCUSER="test"
+    - RPCPASSWORD="test"
+    - RPCHOSTNAME="localhost"
+    - MAINNET_PORT=52738
+    - TESTNET_PORT=52935
 
 # TRAVIS_BRANCH:
 #  for push builds, or builds not triggered by a pull request, this is the name of the branch.
@@ -76,23 +83,31 @@ install:
 
 script:
   - npm test
-#  - npm run test:integration:pretty
-#  - bin/ci-blackbox-tests.sh
+  - npm run test:integration:pretty
+  - bin/ci-blackbox-tests.sh
   - docker-compose down
 
 after_success:
   - docker login r.cfcr.io -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
-  # master
-  - if [ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]; then
-      docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:master-f Dockerfile.ci .
-      docker push $DOCKER_IMAGE:master
-    elif [ $TRAVIS_BRANCH == "develop" && $TRAVIS_PULL_REQUEST == "false" ]; then
-      docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:develop -f Dockerfile.ci .
-      docker push $DOCKER_IMAGE:develop
+  - docker pull r.cfcr.io/ludx/codefresh-custom-runner:latest
+  - if [[ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]]; then
+      docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:master-f Dockerfile.ci .;
+      docker push $IMAGE_NAME:master;
+      docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git master kontena-master.yml;
+    elif [[ $TRAVIS_BRANCH == "develop" && $TRAVIS_PULL_REQUEST == "false" ]]; then
+      docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:develop -f Dockerfile.ci .;
+      docker push $IMAGE_NAME:develop;
+      docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git develop kontena-develop.yml;
     else
-      docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci .
-      docker push $IMAGE_NAME:$IMAGE_TAG
+      docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci .;
+      docker push $IMAGE_NAME:$IMAGE_TAG;
+      docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $TRAVIS_BRANCH kontena-feature.yml;
     fi
+
+
+      # curl -d "{\"content\": \"Build finished and image deployed. http://master1.particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+      # curl -d "{\"content\": \"Build finished and image deployed. http://dev1.particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+      # curl -d "{\"content\": \"Build finished and image deployed. http://feature1.particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
 
 #  - if [ "$TRAVIS_BRANCH" == "master" ]; then
 #      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
@@ -110,6 +125,7 @@ after_success:
 #      docker push USER/REPO;
 #    fi
 #after_failure:
+#   - curl -d "{\"content\": \"Build failed. $TRAVIS_BRANCH/$TRAVIS_COMMIT $TRAVIS_COMMIT_MESSAGE\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
 
 #before_deploy:
 #  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
@@ -131,6 +147,8 @@ after_success:
 after_script:
   # login to registry
   - docker images
+#  - curl -d "{\"content\": \"Build finished and image deployed. http://[TODO].particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
+
 
 #notifications:
 #  email:

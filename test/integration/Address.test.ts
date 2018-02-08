@@ -56,8 +56,9 @@ describe('Address', () => {
         addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
-        // clean up the db
-        await testDataService.clean([]);
+        // clean up the db, first removes all data and then seeds the db with default data
+        await testDataService.clean();
+
         const defaultProfile = await profileService.getDefault();
         defaultProfileId = defaultProfile.id;
     });

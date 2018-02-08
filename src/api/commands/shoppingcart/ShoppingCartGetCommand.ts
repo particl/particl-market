@@ -38,6 +38,6 @@ export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInt
     }
 
     public description(): string {
-        return 'Get shopping cart via given cart id';
+        return 'Get shopping cart by given cart id';
     }
 }

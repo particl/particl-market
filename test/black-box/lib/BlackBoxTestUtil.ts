@@ -1,7 +1,8 @@
 import { api, rpc, ApiOptions } from './api';
-import * as Faker from 'faker';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import * as _ from 'lodash';
+import { Market, Profile } from 'resources';
 
 export class BlackBoxTestUtil {
 
@@ -60,13 +61,26 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<any>}
      */
-    public async getDefaultProfile(): Promise<any> {
+    public async getDefaultProfile(): Promise<Profile> {
         const res: any = await rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT']);
         res.expectJson();
         res.expectStatusCode(200);
         return res.getBody()['result'];
     }
 
+    /**
+     * get default market
+     *
+     * @returns {Promise<any>}
+     */
+    public async getDefaultMarket(): Promise<Market> {
+        const res: any = await rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_LIST.commandName]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: Market[] = res.getBody()['result'];
+        // get the commandType for the method name
+        return _.find(result, o => o.name === 'DEFAULT');
+    }
 }
 
 

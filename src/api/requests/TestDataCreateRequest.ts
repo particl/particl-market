@@ -9,9 +9,8 @@ export class TestDataCreateRequest extends RequestBody {
     public model: CreatableModel;
 
     @IsNotEmpty()
-    public data: object;
+    public data: any;
 
-    @IsNotEmpty()
     public withRelated?: boolean;
 
 }

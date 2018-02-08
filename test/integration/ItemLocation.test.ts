@@ -73,7 +73,8 @@ describe('ItemLocation', () => {
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
+
 
         // create market
         let defaultMarket = await marketService.getDefault();

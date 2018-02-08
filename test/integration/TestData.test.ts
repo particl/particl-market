@@ -130,28 +130,28 @@ describe('TestDataService', () => {
                     shippingAvailability: ShippingAvailability.ASK
                 }],
                 itemImages: [{
-                    hash: 'imagehash1',
+                    hash: 'imagehash4',
                     data: {
-                        dataId: 'dataid1',
-                        protocol: ImageDataProtocolType.IPFS,
-                        encoding: null,
-                        data: null
-                    }
-                }, {
-                    hash: 'imagehash2',
-                    data: {
-                        dataId: 'dataid2',
+                        dataId: null,
                         protocol: ImageDataProtocolType.LOCAL,
                         encoding: 'BASE64',
                         data: ImageProcessing.milkcat
                     }
                 }, {
-                    hash: 'imagehash3',
+                    hash: 'imagehash5',
                     data: {
-                        dataId: 'dataid3',
-                        protocol: ImageDataProtocolType.SMSG,
-                        encoding: null,
-                        data: 'smsgdata'
+                        dataId: null,
+                        protocol: ImageDataProtocolType.LOCAL,
+                        encoding: 'BASE64',
+                        data: ImageProcessing.milkcatTall
+                    }
+                }, {
+                    hash: 'imagehash6',
+                    data: {
+                        dataId: null,
+                        protocol: ImageDataProtocolType.LOCAL,
+                        encoding: 'BASE64',
+                        data: ImageProcessing.milkcatWide
                     }
                 }]
             },
@@ -321,8 +321,8 @@ describe('TestDataService', () => {
 
     test('Should cleanup all tables', async () => {
         expect.assertions(4);
-        // clean removes all and then seeds the default category and profile data
-        await testDataService.clean([]);
+        // clean up the db, first removes all data and then seeds the db with default data
+        await testDataService.clean();
 
         const categories = await itemCategoryService.findAll();
         expect(categories).toHaveLength(80);

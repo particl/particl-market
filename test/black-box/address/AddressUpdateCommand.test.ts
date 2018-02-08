@@ -1,9 +1,9 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
-describe('/RpcUpdateAddress', () => {
+describe('AddressUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ADDRESS_ROOT.commandName;
     const subCommand = Commands.ADDRESS_UPDATE.commandName;

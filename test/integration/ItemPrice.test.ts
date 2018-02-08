@@ -85,7 +85,8 @@ describe('ItemPrice', () => {
         escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.EscrowService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
+
 
         const defaultProfile = await profileService.getDefault();
         createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({

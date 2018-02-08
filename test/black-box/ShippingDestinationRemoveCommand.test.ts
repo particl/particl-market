@@ -1,20 +1,18 @@
 import { rpc, api } from './lib/api';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
+import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { ShippingDestinationRemoveCommand } from '../../src/api/commands/shippingdestination/ShippingDestinationRemoveCommand';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ShippingCountries } from '../../src/core/helpers/ShippingCountries';
 import * as countryList from 'iso3166-2-db/countryList/en.json';
 import { JsonRpc2Response} from '../../src/core/api/jsonrpc';
 import { ListingItem, ListingItemTemplate } from 'resources';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { EscrowType } from '../../src/api/enums/EscrowType';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
+import { Logger } from '../../src/core/Logger';
+
 /**
  * shipping destination can be removed using following params:
  * [0]: shippingDestinationId
@@ -38,81 +36,14 @@ describe('ShippingDestinationRemoveCommand', () => {
 
     let createdListingItemTemplateId;
     let createdShippingDestinationId;
-    let shippingDestinationId;
-    // let createdListingItemId;
-    let createdListingItemsShippingDestinationId;
-    let listingItemId;
 
-    const testData = {
-        profile_id: 0,
-        hash: 'hash1',
-        itemInformation: {
-            listing_item_id: null,
-            title: 'item title1',
-            shortDescription: 'item short desc1',
-            longDescription: 'item long desc1',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            },
-            itemLocation: {
-                region: 'South Africa',
-                address: 'asdf, asdf, asdf',
-                locationMarker: {
-                    markerTitle: 'Helsinki',
-                    markerText: 'Helsinki',
-                    lat: 12.1234,
-                    lng: 23.2314
-                }
-            },
-            shippingDestinations: [{
-                country: 'China',
-                shippingAvailability: ShippingAvailability.SHIPS
-            }, {
-                country: 'South Africa',
-                shippingAvailability: ShippingAvailability.ASK
-            }],
-            itemImages: [{
-                hash: 'imagehash1',
-                data: {
-                    dataId: 'dataid1',
-                    protocol: ImageDataProtocolType.IPFS,
-                    encoding: null,
-                    data: null
-                }
-            }]
-        },
-        paymentInformation: {
-            type: PaymentType.SALE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 100,
-                    seller: 100
-                }
-            },
-            itemPrice: {
-                currency: Currency.BITCOIN,
-                basePrice: 0.0001,
-                shippingPrice: {
-                    domestic: 0.123,
-                    international: 1.234
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.NORMAL,
-                    address: '1234'
-                }
-            }
-        },
-        messagingInformation: [{
-            protocol: MessagingProtocolType.SMSG,
-            publicKey: 'publickey1'
-        }]
-    };
+    let createdListingItemId;
+    let createdListingItemsShippingDestinationId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        const generateListingItemParams = new GenerateListingItemParams([
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             false,  // generateShippingDestinations
             true,   // generateItemImages
@@ -124,34 +55,37 @@ describe('ShippingDestinationRemoveCommand', () => {
         ]).toParamsArray();
 
         // create template without shipping destinations and store its id for testing
-        const listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM, // what to generate
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                                  // how many to generate
             true,                               // return model
-            generateListingItemParams   // what kind of data to generate
+            generateListingItemTemplateParams   // what kind of data to generate
         ) as ListingItemTemplate[];
-        // createdListingItemTemplateId = listingItems[0].id;
-        listingItemId = listingItems[0].id;
+        createdListingItemTemplateId = listingItemTemplates[0].id;
 
+        // create one shipping destination for the previously generated template and store its id for testing,
         // we are shipping to south africa
-        // get default profile
-        const defaultProfile = await testUtil.getDefaultProfile();
-        testData.profile_id = defaultProfile.id;
-        // testData.itemInformation.listing_item_id = itemId;
-        // set listingItem id
-
-        const listingItemTem: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testData);
-
-        createdListingItemTemplateId = listingItemTem.id;
-        createdListingItemsShippingDestinationId = listingItems[0].ItemInformation.ShippingDestinations[0].id;
-
         const addShippingSubCommands = [Commands.SHIPPINGDESTINATION_ROOT.commandName, Commands.SHIPPINGDESTINATION_ADD.commandName] as any[];
         const addShippingResult = await rpc(method, addShippingSubCommands.concat(
             [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]));
-        createdShippingDestinationId = addShippingResult.getBody<JsonRpc2Response>().result.id;
-    });
+        createdShippingDestinationId = addShippingResult.getBody().result.id;
 
-    // TODO: missing tests that delete using shipping destination id
+        // TODO: FIX THIS, listing items are not modified, shipping items do not get removed from listing items
+        // TODO: should be listingitemtemplate
+
+        // create listing item with shipping destinations (1-5) and store its id for testing
+        const listingItems = await testUtil.generateData(
+            CreatableModel.LISTINGITEM,                             // generate listing item
+            1,                                                      // just one
+            true,                                                   // return model
+            new GenerateListingItemTemplateParams().toParamsArray() // all true -> generate everything
+        ) as ListingItem[];
+        createdListingItemId = listingItems[0].id;
+
+        // store the items first shipping destionations id for testing
+        createdListingItemsShippingDestinationId = listingItems[0].ItemInformation.ShippingDestinations[0].id;
+
+    });
 
     test('Should fail to remove shipping destination using invalid country', async () => {
 
@@ -208,18 +142,9 @@ describe('ShippingDestinationRemoveCommand', () => {
     });
 
     test('Should fail to remove shipping destination from listing item (listing items have allready been posted)', async () => {
-
-        testData.itemInformation.listing_item_id = listingItemId;
-        // set listingItem id
-        testData.hash = ObjectHash.getHash(testData);
-        const listingItemTem: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testData);
-
-        createdListingItemTemplateId = listingItemTem.id;
-
         const removeShippingResult: any = await rpc(method, subCommands.concat(
-            [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]
+            [createdListingItemsShippingDestinationId]
         ));
-        shippingDestinationId = listingItemTem.ItemInformation.ShippingDestinations[0].id;
 
         removeShippingResult.expectJson();
         removeShippingResult.expectStatusCode(404);
@@ -229,7 +154,7 @@ describe('ShippingDestinationRemoveCommand', () => {
 
     test('Should remove shipping destination by id', async () => {
         const removeShippingResult: any = await rpc(method, subCommands.concat(
-            [shippingDestinationId]
+            [createdShippingDestinationId]
         ));
         removeShippingResult.expectJson();
         removeShippingResult.expectStatusCode(200);
