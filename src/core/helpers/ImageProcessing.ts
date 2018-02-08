@@ -1,17 +1,10 @@
-import { ImageTriplet } from './ImageTriplet';
+import * as _ from 'lodash';
 import sharp = require('sharp');
+import { ImageVersion } from './ImageVersion';
+import {MessageException} from '../../api/exceptions/MessageException';
 
 declare const Buffer;
 
-export enum MEDIUM_IMAGE_SIZE {
-    height = 400,
-    width = 400
-}
-
-export enum THUMBNAIL_IMAGE_SIZE {
-    height = 250,
-    width = 200
-}
 
 export class ImageProcessing {
 public static milkcat =  '/9j/4AAQSkZJRgABAQEAoACgAAD/4ReaRXhpZgAASUkqAAgAAAAMAA4BAgAgAAAAngAAAA8BAgAYAAAAvgAAABABAgAQAAAA1gAA'
@@ -731,11 +724,15 @@ public static milkcatWide = '/9j/4AAQSkZJRgABAQEAoACgAAD/4RI9RXhpZgAASUkqAAgAAAA
 
     public static PIEXIF_JPEG_START_STR = 'data:image/jpeg;base64,';
 
-    /*
-     * Takes a PNG, GIF, or JPEG image in base64 string format, and converts it to a JPEG, stripping out the metadata in the process.
-     * Then resize the image to three sizes and return them.
+    /**
+     * Takes a PNG, GIF, or JPEG image in base64 string format, and converts it to a JPEG,
+     * stripping out the metadata in the process.
+     *
+     * @param {string} imageRaw
+     * @returns {Promise<string>}
      */
-    public static async prepareImageForSaving(imageRaw: string): Promise<ImageTriplet> {
+    public static async convertToJPEG(imageRaw: string): Promise<string> {
+
         // Convert image to JPEG (and strip metadata in the process)
         let imageBuffer;
         try {
@@ -744,46 +741,51 @@ public static milkcatWide = '/9j/4AAQSkZJRgABAQEAoACgAAD/4RI9RXhpZgAASUkqAAgAAAA
             imageBuffer = await imageBuffer.jpeg().toBuffer();
         } catch ( ex ) {
             if ( ex.toString() === 'Error: Input buffer has corrupt header' ) {
-                throw new Error('Image data was an unknown format. Supports: JPEG, PNG, GIF.');
+                throw new MessageException('Image data was an unknown format. Supports: JPEG, PNG, GIF.');
             } else {
-                console.log('prepareImageForSaving(): ' + ex);
+                console.log('convertToJPEG(): ' + ex);
                 throw ex;
             }
         }
 
-        imageRaw = imageBuffer.toString('base64');
-
-        // Resize to three sizes (big, medium, and thumbnail)
-        return this.tripleSizeImage(imageRaw);
+        return imageBuffer.toString('base64');
     }
 
-    /*
-     * Takes a JPEG image in base64 string format and resizes it to three different sizes, big, medium, and thumbmail.
+    /**
+     * resize given image to different sized versions
+     *
+     * @param {string} imageRaw, base64
+     * @param {ImageVersion[]} toVersions
+     * @returns {Promise<Map<ImageVersion, string>>}
      */
-    public static async tripleSizeImage(imageRaw: string): Promise<ImageTriplet> {
-        // Shrink medium image
-        const medImage: string = await this.resizeImage(imageRaw, MEDIUM_IMAGE_SIZE.width, MEDIUM_IMAGE_SIZE.height);
+    public static async resizeImageData(imageRaw: string, toVersions: ImageVersion[]): Promise<Map<string, string>> {
 
-        // Shrink thumbnail image
-        const thumbImage: string = await this.resizeImage(imageRaw, THUMBNAIL_IMAGE_SIZE.width, THUMBNAIL_IMAGE_SIZE.height);
-
-        return {
-            big: imageRaw,
-            medium: medImage,
-            thumbnail: thumbImage
-        } as ImageTriplet;
+        const imageDatas = new Map<string, string>();
+        for (const version of toVersions) {
+            const resizedImageData = await ImageProcessing.resizeImageToVersion(imageRaw, version);
+            imageDatas.set(version.propName, resizedImageData);
+        }
+        return imageDatas;
     }
 
-    /*
-     * Resize a single image.
+    /**
+     * resize a single image to given image version size
+     *
+     * @param {string} imageRaw, base64
+     * @param {ImageVersion} version
+     * @returns {Promise<string>}
      */
-    public static async resizeImage(imageRaw: string, maxWidth: number, maxHeight: number): Promise<string> {
-      const dataBuffer = Buffer.from(imageRaw, 'base64');
-      const imageBuffer = sharp(dataBuffer);
+    public static async resizeImageToVersion(imageRaw: string, version: ImageVersion): Promise<string> {
+        const dataBuffer = Buffer.from(imageRaw, 'base64');
+        const imageBuffer = sharp(dataBuffer);
 
-      let resizedImage = imageBuffer.resize(maxWidth, maxHeight).max();
-
-      resizedImage = await resizedImage.jpeg().toBuffer();
-      return resizedImage.toString('base64');
+        // resize only if target sizes > 0, else return original
+        if (version.imageWidth > 0 && version.imageHeight > 0) {
+            let resizedImage = imageBuffer.resize(version.imageWidth, version.imageHeight).max();
+            resizedImage = await resizedImage.jpeg().toBuffer();
+            return resizedImage.toString('base64');
+        } else {
+            return imageRaw;
+        }
     }
 }

@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import { ItemImageDataCreateRequest } from './ItemImageDataCreateRequest';
 
 // tslint:disable:variable-name
 export class ItemImageCreateRequest extends RequestBody {
@@ -10,6 +11,7 @@ export class ItemImageCreateRequest extends RequestBody {
     @IsNotEmpty()
     public hash: string;
 
+    @IsNotEmpty()
     public data: any;
 
 }

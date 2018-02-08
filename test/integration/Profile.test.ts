@@ -84,7 +84,7 @@ describe('Profile', () => {
         shoppingCartsService = app.IoC.getNamed<ShoppingCartsService>(Types.Service, Targets.Service.ShoppingCartsService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
 
         // create market
         let defaultMarket = await marketService.getDefault();

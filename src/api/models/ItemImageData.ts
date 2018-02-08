@@ -7,9 +7,6 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
         if (withRelated) {
             return await ItemImageData.where<ItemImageData>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'ItemImageDataRelated',
-                    // 'ItemImageDataRelated.Related'
                 ]
             });
         } else {
@@ -43,11 +40,6 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
-
-    // TODO: add related
-    // public ItemImageDataRelated(): ItemImageDataRelated {
-    //    return this.hasOne(ItemImageDataRelated);
-    // }
 
     public ItemImage(): ItemImage {
         return this.belongsTo(ItemImage, 'item_image_id', 'id');

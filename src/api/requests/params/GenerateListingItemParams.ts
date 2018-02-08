@@ -41,7 +41,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
      */
     constructor(generateParams: boolean[] = []) {
         // set params only if there are some -> by default all are true
-        if (!_.isEmpty() ) {
+        if (!_.isEmpty(generateParams) ) {
             this.generateItemInformation        = generateParams[0] ? true : false;
             this.generateShippingDestinations   = generateParams[1] ? true : false;
             this.generateItemImages             = generateParams[2] ? true : false;

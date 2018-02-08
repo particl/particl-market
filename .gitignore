@@ -46,4 +46,3 @@ data/app2_node_modules
 *.paw
 
 codeship*.yml
-public/cli/build.json

@@ -43,7 +43,8 @@ describe('BidMessageProcessor', () => {
         bidMessageProcessor = app.IoC.getNamed<BidMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.BidMessageProcessor);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
+
 
         // listing-item
         const defaultMarket = await marketService.getDefault();

@@ -50,8 +50,9 @@ describe('FavoriteItem', () => {
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
 
         // listing-item
         defaultProfile = await profileService.getDefault();

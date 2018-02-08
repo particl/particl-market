@@ -1,21 +1,19 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { EscrowType } from '../../src/api/enums/EscrowType';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
-import { Logger } from '../../src/core/Logger';
-import { ListingItemSearchCommand } from '../../src/api/commands/listingitem/ListingItemSearchCommand';
-import { MarketCreateCommand } from '../../src/api/commands/market/MarketCreateCommand';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { ListingItem, ListingItemTemplate } from 'resources';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
+import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
+import { EscrowType } from '../../../src/api/enums/EscrowType';
+import { Currency } from '../../../src/api/enums/Currency';
+import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
+import { PaymentType } from '../../../src/api/enums/PaymentType';
+import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
+import { ListingItemSearchCommand } from '../../../src/api/commands/listingitem/ListingItemSearchCommand';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { ListingItemTemplate } from 'resources';
 
-describe('/ListingItemSearchCommand', () => {
+describe('ListingItemSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const testUtil = new BlackBoxTestUtil();

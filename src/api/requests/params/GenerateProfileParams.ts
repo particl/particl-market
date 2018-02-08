@@ -21,7 +21,7 @@ export class GenerateProfileParams implements GenerateProfileParamsInterface {
      */
     constructor(generateParams: boolean[] = []) {
         // set params only if there are some -> by default all are true
-        if (!_.isEmpty() ) {
+        if (!_.isEmpty(generateParams) ) {
             this.generateShippingAddresses          = generateParams[0] ? true : false;
             this.generateCryptocurrencyAddresses    = generateParams[1] ? true : false;
         }

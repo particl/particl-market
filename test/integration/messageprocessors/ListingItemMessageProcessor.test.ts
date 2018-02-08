@@ -9,8 +9,7 @@ import { ListingItemService } from '../../../src/api/services/ListingItemService
 import { ListingItemMessageProcessor } from '../../../src/api/messageprocessors/ListingItemMessageProcessor';
 import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
-import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
-import { TestDataCreateRequest } from '../../../src/api/requests/TestDataCreateRequest';
+
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { EscrowType } from '../../../src/api/enums/EscrowType';
 import { Currency } from '../../../src/api/enums/Currency';
@@ -117,9 +116,9 @@ describe('ListingItemMessageProcessor', () => {
                 hash: 'imagehash1',
                 data: {
                     dataId: 'dataid1',
-                    protocol: ImageDataProtocolType.IPFS,
-                    encoding: null,
-                    data: null
+                    protocol: ImageDataProtocolType.LOCAL,
+                    encoding: 'BASE64',
+                    data: ImageProcessing.milkcat
                 }
             }, {
                 hash: 'imagehash2',
@@ -133,9 +132,9 @@ describe('ListingItemMessageProcessor', () => {
                 hash: 'imagehash3',
                 data: {
                     dataId: 'dataid3',
-                    protocol: ImageDataProtocolType.SMSG,
-                    encoding: null,
-                    data: 'smsgdata'
+                    protocol: ImageDataProtocolType.LOCAL,
+                    encoding: 'BASE64',
+                    data: ImageProcessing.milkcat
                 }
             }]
         },
@@ -190,7 +189,8 @@ describe('ListingItemMessageProcessor', () => {
         listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
+
     });
 
     afterAll(async () => {

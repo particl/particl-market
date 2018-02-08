@@ -124,6 +124,9 @@ export const Targets = {
         },
         Command: 'Command',
         CommandEnumType: 'CommandEnumType',
+        daemon: {
+            DaemonRootCommand: 'DaemonRootCommand'
+        },
         data: {
             DataAddCommand: 'DataAddCommand',
             DataCleanCommand: 'DataCleanCommand',
@@ -241,6 +244,7 @@ export const Targets = {
     Factory:     {
         BidFactory: 'BidFactory',
         EscrowFactory: 'EscrowFactory',
+        ImageFactory: 'ImageFactory',
         ItemCategoryFactory: 'ItemCategoryFactory',
         ListingItemFactory: 'ListingItemFactory',
         MessagingInformationFactory: 'MessagingInformationFactory',
