@@ -18,6 +18,7 @@ import * as _ from 'lodash';
 import {MessageException} from '../exceptions/MessageException';
 import {CryptocurrencyAddressUpdateRequest} from '../requests/CryptocurrencyAddressUpdateRequest';
 import {CryptocurrencyAddressCreateRequest} from '../requests/CryptocurrencyAddressCreateRequest';
+import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 
 export class ItemImageService {
 
@@ -57,8 +58,19 @@ export class ItemImageService {
         // if the request body was valid we will create the itemImage
         const itemImage = await this.itemImageRepo.create(body);
 
+        if ( !_.isEmpty(itemImageDataOriginal.protocol) && !ImageDataProtocolType[itemImageDataOriginal.protocol] ) {
+            this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
+            throw new MessageException('Invalid protocol.');
+        }
+
+        // TODO: THIS
+        /* if ( !_.isEmpty(itemImageDataOriginal.encoding) && !?????[itemImageDataOriginal.encoding] ) {
+            this.log.warn(`Invalid encoding <${itemImageDataOriginal.encoding}> encountered.`);
+            throw new NotFoundException('Invalid encoding.');
+        } */
+
         // then create the imageDatas from the given original data
-        if (!_.isEmpty(itemImageDataOriginal)) {
+        if ( !_.isEmpty(itemImageDataOriginal.data) ) {
             const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
             const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.Id, itemImageDataOriginal, toVersions);
 
@@ -66,11 +78,13 @@ export class ItemImageService {
             for (const imageData of imageDatas) {
                 await this.itemImageDataService.create(imageData);
             }
-        }
 
-        // finally find and return the created itemImage
-        const newItemImage = await this.findOne(itemImage.Id);
-        return newItemImage;
+            // finally find and return the created itemImage
+            const newItemImage = await this.findOne(itemImage.Id);
+            return newItemImage;
+        } else {
+            return itemImage;
+        }
     }
 
     @validate()

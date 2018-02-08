@@ -50,10 +50,10 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
             // we will replace this generate hash later
             hash: crypto.SHA256(new Date().getTime().toString()).toString(), // TODO: NOTE: Should this be changed to the helper hasher?
             data: {
-                dataId: data.params[1] || '',
-                protocol: data.params[2] || '',
-                encoding: data.params[3] || '',
-                data: data.params[4] || ''
+                dataId: data.params[1],
+                protocol: data.params[2],
+                encoding: data.params[3],
+                data: data.params[4]
             }
         } as ItemImageCreateRequest);
     }
