@@ -1,15 +1,15 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { EscrowType } from '../../src/api/enums/EscrowType';
-import { Currency } from '../../src/api/enums/Currency';
-import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { EscrowType } from '../../../src/api/enums/EscrowType';
+import { Currency } from '../../../src/api/enums/Currency';
+import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
+import { PaymentType } from '../../../src/api/enums/PaymentType';
+import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
 
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
+import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
 describe('/FavoriteRemoveCommand', () => {
     const testUtil = new BlackBoxTestUtil();
