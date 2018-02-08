@@ -116,9 +116,9 @@ describe('ListingItemMessageProcessor', () => {
                 hash: 'imagehash1',
                 data: {
                     dataId: 'dataid1',
-                    protocol: ImageDataProtocolType.IPFS,
-                    encoding: null,
-                    data: null
+                    protocol: ImageDataProtocolType.LOCAL,
+                    encoding: 'BASE64',
+                    data: ImageProcessing.milkcat
                 }
             }, {
                 hash: 'imagehash2',
@@ -132,9 +132,9 @@ describe('ListingItemMessageProcessor', () => {
                 hash: 'imagehash3',
                 data: {
                     dataId: 'dataid3',
-                    protocol: ImageDataProtocolType.SMSG,
-                    encoding: null,
-                    data: 'smsgdata'
+                    protocol: ImageDataProtocolType.LOCAL,
+                    encoding: 'BASE64',
+                    data: ImageProcessing.milkcat
                 }
             }]
         },
