@@ -1,18 +1,18 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';
-import { EscrowType } from '../../src/api/enums/EscrowType';
-import { Currency } from '../../src/api/enums/Currency';
-import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { ListingItemCreateRequest } from '../../../src/api/requests/ListingItemCreateRequest';
+import { EscrowType } from '../../../src/api/enums/EscrowType';
+import { Currency } from '../../../src/api/enums/Currency';
+import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
+import { PaymentType } from '../../../src/api/enums/PaymentType';
+import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
+import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
+import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ListingItem, ListingItemTemplate } from 'resources';
-import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
+import { ListingItemObjectType } from '../../../src/api/enums/ListingItemObjectType';
 
 describe('ListingItemUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
