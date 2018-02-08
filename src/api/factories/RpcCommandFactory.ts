@@ -111,6 +111,10 @@ import { PriceTickerRootCommand } from '../commands/priceticker/PriceTickerRootC
 
 import { Command } from '../commands/Command';
 
+import { CurrencyPriceAddCommand } from '../commands/currencyprice/CurrencyPriceAddCommand';
+import { CurrencyPriceRootCommand } from '../commands/currencyprice/CurrencyPriceRootCommand';
+
+
 // tslint:disable:array-type
 // tslint:disable:max-line-length
 export class RpcCommandFactory {
@@ -223,6 +227,8 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemRootCommand) private shoppingCartItemRootCommand: ShoppingCartItemRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.priceticker.PriceTickerRootCommand) private priceTickerRootCommand: PriceTickerRootCommand,
+        @inject(Types.Command) @named(Targets.Command.currencyprice.CurrencyPriceAddCommand) private currencyPriceAddCommand: CurrencyPriceAddCommand,
+        @inject(Types.Command) @named(Targets.Command.currencyprice.CurrencyPriceRootCommand) private currencyPriceRootCommand: CurrencyPriceRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
@@ -339,6 +345,9 @@ export class RpcCommandFactory {
         this.commands.push(shoppingCartItemRootCommand);
 
         this.commands.push(priceTickerRootCommand);
+
+        this.commands.push(currencyPriceAddCommand);
+        this.commands.push(currencyPriceRootCommand);
 
         this.commands.push(helpCommand);
 

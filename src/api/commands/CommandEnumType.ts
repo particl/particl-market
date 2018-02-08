@@ -145,6 +145,8 @@ export class CommandEnumType extends Enum<Command> {
     public PRICETICKER_ROOT: Command           = new Command('priceticker', 'priceticker', true,
         []);
 
+    public CURRENCYPRICE_ROOT: Command        = new Command('currencyprice', 'currencyprice', true);
+
     constructor() {
         super();
         this.initEnum('Command');
