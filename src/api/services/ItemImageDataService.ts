@@ -66,10 +66,18 @@ export class ItemImageDataService {
         const itemImageData = await this.findOne(id, false);
 
         // set new values
-        itemImageData.DataId = body.dataId;
-        itemImageData.Protocol = body.protocol;
-        itemImageData.Encoding = body.encoding;
-        itemImageData.Data = body.data;
+        if ( body.dataId ) {
+            itemImageData.DataId = body.dataId;
+        }
+        if ( body.protocol ) {
+            itemImageData.Protocol = body.protocol;
+        }
+        if ( body.encoding ) {
+            itemImageData.Encoding = body.encoding;
+        }
+        if ( body.data ) {
+            itemImageData.Data = body.data;
+        }
 
         // update itemImageData record
         const updatedItemImageData = await this.itemImageDataRepo.update(id, itemImageData.toJSON());

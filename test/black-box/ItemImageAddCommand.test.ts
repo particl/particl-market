@@ -8,6 +8,7 @@ import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 
 describe('/ItemImageAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -58,38 +59,41 @@ describe('/ItemImageAddCommand', () => {
     test('Should add item image for Item information with blank ItemImageData', async () => {
         // add item image
         const addDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
+
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         addDataRes.expectDataRpc(keys);
         const result: any = addDataRes.getBody()['result'];
         expect(createdItemInfoId).toBe(result.itemInformationId);
-        expect(result.ItemImageData.dataId).toBe('');
-        expect(result.ItemImageData.protocol).toBe('');
-        expect(result.ItemImageData.encoding).toBe('');
-        expect(result.ItemImageData.data).toBe('');
-        expect(result.ItemImageData.itemImageId).toBe(result.id);
+        expect(result.ItemImageDatas.length).toBe(0);
     });
 
     test('Should failed to add item image because invalid ItemImageData protocol', async () => {
         // add item image
         const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, 'TEST-DATA-ID', 'TEST-DATA-PROTOCOL', 'TEST-ENCODING', 'TEST-DATA']);
         addDataRes.expectJson();
-        addDataRes.expectStatusCode(400);
+        addDataRes.expectStatusCode(404);
     });
 
     test('Should add item image with ItemImageData', async () => {
         // add item image
-        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, 'TEST-DATA-ID', ImageDataProtocolType.LOCAL, 'TEST-ENCODING', 'TEST-DATA']);
+        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, 'TEST-DATA-ID', ImageDataProtocolType.LOCAL, 'TEST-ENCODING', ImageProcessing.milkcatSmall]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         addDataRes.expectDataRpc(keys);
         const result: any = addDataRes.getBody()['result'];
         expect(createdItemInfoId).toBe(result.itemInformationId);
-        expect(result.ItemImageData.dataId).toBe('TEST-DATA-ID');
-        expect(result.ItemImageData.protocol).toBe(ImageDataProtocolType.LOCAL);
-        expect(result.ItemImageData.encoding).toBe('TEST-ENCODING');
-        expect(result.ItemImageData.data).toBe('TEST-DATA');
-        expect(result.ItemImageData.itemImageId).toBe(result.id);
+
+        for ( let i = 0; i < result.ItemImageDatas.length; ++i ) {
+            console.log('Should add item: result.ItemImageDatas[i]: ' + JSON.stringify(result.ItemImageDatas[i], null, 2));
+            expect(result.ItemImageDatas[i].dataId).toBe('TEST-DATA-ID');
+            expect(result.ItemImageDatas[i].protocol).toBe(ImageDataProtocolType.LOCAL);
+            expect(result.ItemImageDatas[i].encoding).toBe('TEST-ENCODING');
+            expect(result.ItemImageDatas[i].itemImageId).toBe(result.id);
+            if ( result.ItemImageDatas[i].imageVersion === 'ORIGINAL' ) {
+                // Check image dimensions match ORIGINAL image dimensions
+            }
+        }
     });
 });
 

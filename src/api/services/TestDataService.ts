@@ -234,7 +234,7 @@ export class TestDataService {
 
     private async generateListingItemTemplates(amount: number, withRelated: boolean = true, generateParams: GenerateListingItemTemplateParams): Promise<any> {
         const items: any[] = [];
-        for (let i = amount; i !== 0; i--) {
+        for (let i = amount; i > 0; i--) {
             const listingItemTemplate = await this.generateListingItemTemplateData(generateParams);
             const savedListingItemTemplate = await this.listingItemTemplateService.create(listingItemTemplate);
             items.push(savedListingItemTemplate);
@@ -247,7 +247,7 @@ export class TestDataService {
 
     private async generateListingItems(amount: number, withRelated: boolean = true, generateParams: GenerateListingItemParams): Promise<any> {
         const items: any[] = [];
-        for (let i = amount; i !== 0; i--) {
+        for (let i = amount; i > 0; i--) {
             const listingItem = await this.generateListingItemData(generateParams);
             const savedListingItem = await this.listingItemService.create(listingItem);
             items.push(savedListingItem);
@@ -260,7 +260,7 @@ export class TestDataService {
 
     private async generateProfiles(amount: number, withRelated: boolean = true, generateParams: GenerateProfileParams): Promise<any> {
         const items: any[] = [];
-        for (let i = amount; i !== 0; i--) {
+        for (let i = amount; i > 0; i--) {
             const profile = this.generateProfileData(generateParams);
             const savedProfile = await this.profileService.create(profile);
             items.push(savedProfile);
@@ -293,7 +293,7 @@ export class TestDataService {
 
     private generateAddressesData(amount: number): Address[] {
         const addresses: any[] = [];
-        for (let i = amount; i !== 0; i--) {
+        for (let i = amount; i > 0; i--) {
             addresses.push({
                 title: Faker.company.companyName(),
                 addressLine1: Faker.address.streetAddress(),
@@ -309,7 +309,7 @@ export class TestDataService {
 
     private generateCryptocurrencyAddressesData(amount: number): CryptocurrencyAddress[] {
         const cryptoAddresses: any[] = [];
-        for (let i = amount; i !== 0; i--) {
+        for (let i = amount; i > 0; i--) {
             cryptoAddresses.push({
                 type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptocurrencyAddressType)),
                 address: Faker.finance.bitcoinAddress()
@@ -341,7 +341,7 @@ export class TestDataService {
 
     private generateShippingDestinationsData(amount: number): any[] {
         const items: any[] = [];
-        for (let i = amount; i !== 0; i--) {
+        for (let i = amount; i > 0; i--) {
             items.push({
                 country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryList)),
                 shippingAvailability: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingAvailability))
@@ -352,14 +352,14 @@ export class TestDataService {
 
     private generateItemImagesData(amount: number): any[] {
         const items: any[] = [];
-        for (let i = amount; i !== 0; i--) {
+        for (let i = amount; i > 0; i--) {
             const item = {
                 hash: Faker.random.uuid(),
                 data: {
                     dataId: Faker.internet.url(),
                     protocol: ImageDataProtocolType.LOCAL,
                     encoding: 'BASE64',
-                    data: ImageProcessing.milkcat
+                    data: ImageProcessing.milkcatSmall
                 }
             };
             items.push(item);
