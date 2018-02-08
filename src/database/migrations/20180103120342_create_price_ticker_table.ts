@@ -9,12 +9,27 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('crypto_id').notNullable();
             table.string('crypto_name').notNullable();
             table.string('crypto_symbol').notNullable();
+            table.string('crypto_rank').notNullable();
 
-            table.float('crypto_price_usd').notNullable();
-            table.float('crypto_price_btc').notNullable();
-            table.float('crypto_price_currency').notNullable();
+            table.string('crypto_price_usd').notNullable();
+            table.string('crypto_price_btc').notNullable();
 
-            table.string('convert_currency').notNullable();
+            table.string('crypto_24_h_volume_usd');
+            table.string('crypto_market_cap_usd');
+            table.string('crypto_available_supply');
+            table.string('crypto_total_supply');
+            table.string('crypto_max_supply');
+
+            table.string('crypto_percent_change_1_h');
+            table.string('crypto_percent_change_24_h');
+            table.string('crypto_percent_change_7_d');
+
+            table.string('crypto_last_updated');
+            table.string('crypto_price_currency');
+            table.string('crypto_24_h_volume_currency');
+            table.string('crypto_market_cap_currency');
+
+            table.string('currency').notNullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

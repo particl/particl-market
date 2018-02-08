@@ -8,7 +8,9 @@ import { PriceTickerRepository } from '../repositories/PriceTickerRepository';
 import { PriceTicker } from '../models/PriceTicker';
 import { PriceTickerCreateRequest } from '../requests/PriceTickerCreateRequest';
 import { PriceTickerUpdateRequest } from '../requests/PriceTickerUpdateRequest';
+import * as Request from 'request';
 
+import { MessageException } from '../exceptions/MessageException';
 
 export class PriceTickerService {
 
@@ -16,7 +18,8 @@ export class PriceTickerService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.PriceTickerRepository) public priceTickerRepo: PriceTickerRepository,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Lib) @named('request') private requestApi: typeof Request
     ) {
         this.log = new Logger(__filename);
     }
@@ -81,8 +84,8 @@ export class PriceTickerService {
      * @returns {Promise<Bookshelf.Collection<PriceTicker>>}
      */
     @validate()
-    public async search(currency: string, cryptoId: string): Promise<PriceTicker> {
-        return this.priceTickerRepo.search(currency, cryptoId);
+    public async search(currency: string): Promise<Bookshelf.Collection<PriceTicker>> {
+        return this.priceTickerRepo.search(currency);
     }
 
     public async destroy(id: number): Promise<void> {
@@ -90,20 +93,104 @@ export class PriceTickerService {
     }
 
     /**
-     * check and update PriceTicker
+     * update PriceTicker
      *
-     * @param currency
-     * @returns {Promise<Bookshelf.Collection<PriceTicker>>}
+     * @param priceTicker
+     * @param apidata
+     * @returns {Promise<any>}
      */
-    public async checkAndUpdatePriceTicker(priceTicker: PriceTicker, updateData: any): Promise<any> {
-        // check updated in more than 1 minute ago
-        const diffMint = await this.checkDiffBtwDate(priceTicker['updatedAt']);
-        if (diffMint > 1) {
-            await this.update(priceTicker.id, {
+    public async updatePriceTicker(priceTickerColl: any, currency: string): Promise<any> {
+        // call api
+        const returnData: any = [];
+        const updateDataCollection = await this.getLatestData(currency);
+        for (const priceTicker of priceTickerColl) {
+            // find and update
+            const updateData = updateDataCollection.filter((el) => {
+                return el.symbol === priceTicker['cryptoSymbol'];
+            })[0];
+            const updatePriceTicker = await this.update(priceTicker.id, {
+                crypto_rank: updateData.rank,
                 crypto_price_usd: updateData.price_usd,
                 crypto_price_btc: updateData.price_btc,
-                crypto_price_currency: updateData[`price_${priceTicker['convertCurrency'].toLowerCase()}`]
+                crypto_24h_volume_usd: updateData['24h_volume_usd'],
+                crypto_market_cap_usd: updateData.market_cap_usd,
+                crypto_available_supply: updateData.available_supply,
+                crypto_total_supply: updateData.total_supply,
+                crypto_max_supply: updateData.max_supply,
+                crypto_percent_change_1h: updateData.percent_change_1h,
+                crypto_percent_change_24h: updateData.percent_change_24h,
+                crypto_percent_change_7d: updateData.percent_change_7d,
+                crypto_last_updated: updateData.last_updated,
+                crypto_price_currency: updateData[`price_${currency.toLowerCase()}`],
+                crypto_24h_volume_currency: updateData[`24h_volume_${currency.toLowerCase()}`],
+                crypto_market_cap_currency: updateData[`market_cap_${currency.toLowerCase()}`]
             } as PriceTickerUpdateRequest);
+            returnData.push(updatePriceTicker);
+        }
+        return returnData;
+    }
+
+    /**
+     * check updated in more than 1 minute ago
+     *
+     * @param currency
+     * @returns {Promise<PriceTicker>}
+     */
+    public async needTobeUpdate(priceTicker: PriceTicker): Promise<boolean> {
+        const diffMint = await this.checkDiffBtwDate(priceTicker['updatedAt']);
+        return (diffMint > process.env.DATA_CHECK_DELAY) ? true : false;
+    }
+
+    public async getAndCreateData(currency: string): Promise<any> {
+        const returnData: any = [];
+        const dataCollection = await this.getLatestData(currency);
+        for (const res of dataCollection) {
+            const createdPriceTicker = await this.create({
+                crypto_id: res.id,
+                crypto_name: res.name,
+                crypto_symbol: res.symbol,
+                crypto_rank: res.rank,
+                crypto_price_usd: res.price_usd,
+                crypto_price_btc: res.price_btc,
+                crypto_24h_volume_usd: res['24h_volume_usd'],
+                crypto_market_cap_usd: res.market_cap_usd,
+                crypto_available_supply: res.available_supply,
+                crypto_total_supply: res.total_supply,
+                crypto_max_supply: res.max_supply,
+                crypto_percent_change_1h: res.percent_change_1h,
+                crypto_percent_change_24h: res.percent_change_24h,
+                crypto_percent_change_7d: res.percent_change_7d,
+                crypto_last_updated: res.last_updated,
+                crypto_price_currency: res[`price_${currency.toLowerCase()}`],
+                crypto_24h_volume_currency: res[`24h_volume_${currency.toLowerCase()}`],
+                crypto_market_cap_currency: res[`market_cap_${currency.toLowerCase()}`],
+                currency
+            } as PriceTickerCreateRequest);
+            returnData.push(createdPriceTicker);
+        }
+        return returnData;
+    }
+
+    /**
+     * call api for getting latest data to update
+     *
+     * @param currency : currency
+     * @returns {<any>}
+     */
+    private async getLatestData(currency: string): Promise<any> {
+        try {
+            return new Promise<any>((resolve, reject) => {
+                Request(`https://api.coinmarketcap.com/v1/ticker/?convert=${currency}&limit=200`, async (error, response, body) => {
+                    if (error) {
+                        reject(error);
+                    }
+                    resolve(JSON.parse(body));
+                });
+            }).catch(() => {
+                throw new MessageException(`Invalid currency ${currency}`);
+            });
+        } catch (err) {
+            throw new MessageException(`Invalid currency ${currency}`);
         }
     }
 
@@ -115,7 +202,7 @@ export class PriceTickerService {
      */
     private async checkDiffBtwDate(timestamp: Date): Promise<number> {
         const current: any = new Date();
-        const tricker: any = new Date(timestamp);
-        return (current - tricker) / 60000;
+        const ticker: any = new Date(timestamp);
+        return (current - ticker) / 60000;
     }
 }
