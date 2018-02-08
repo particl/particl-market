@@ -70,6 +70,9 @@ describe('ShippingDestinationRemoveCommand', () => {
             [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]));
         createdShippingDestinationId = addShippingResult.getBody().result.id;
 
+        // TODO: FIX THIS, listing items are not modified, shipping items do not get removed from listing items
+        // TODO: should be listingitemtemplate
+
         // create listing item with shipping destinations (1-5) and store its id for testing
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,                             // generate listing item
