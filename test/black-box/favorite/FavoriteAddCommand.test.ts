@@ -60,7 +60,7 @@ describe('FavoriteAddCommand', () => {
 
     });
 
-    test('Should add favorite item by listing id and profile id', async () => {
+    test('Should add favorite item by profile id and listing id', async () => {
         // add favorite item
         const getDataRes: any = await rpc(method, [subCommand, defaultProfileId, createdListingItemId]);
         getDataRes.expectJson();
@@ -70,7 +70,7 @@ describe('FavoriteAddCommand', () => {
         expect(result.profileId).toBe(defaultProfileId);
     });
 
-    test('Should add favorite item by listing hash and profile id', async () => {
+    test('Should add favorite item by profile id and listing hash', async () => {
         // add favorite item by item hash and profile
         const getDataRes: any = await rpc(method, [subCommand, defaultProfileId, createdListingItemHash]);
         getDataRes.expectJson();

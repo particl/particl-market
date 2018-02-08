@@ -10,128 +10,121 @@ import { CryptocurrencyAddressType } from '../../../src/api/enums/Cryptocurrency
 import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import {GenerateListingItemParams} from '../../../src/api/requests/params/GenerateListingItemParams';
+import {ListingItem, Profile} from 'resources';
+import {GenerateProfileParams} from '../../../src/api/requests/params/GenerateProfileParams';
 
-describe('/FavoriteRemoveCommand', () => {
+describe('FavoriteRemoveCommand', () => {
+
     const testUtil = new BlackBoxTestUtil();
     const method =  Commands.FAVORITE_ROOT.commandName;
-    const subCommand =  Commands.FAVORITE_REMOVE.commandName;
-    const addMakretMethod =  Commands.MARKET_ADD.commandName;
-
-    const testData = {
-        market_id: 0,
-        hash: 'hash',
-        itemInformation: {
-            title: 'item title',
-            shortDescription: 'item short desc',
-            longDescription: 'item long desc',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            },
-            itemLocation: {
-                region: 'South Africa',
-                address: 'asdf, asdf, asdf',
-                locationMarker: {
-                    markerTitle: 'Helsinki',
-                    markerText: 'Helsinki',
-                    lat: 12.1234,
-                    lng: 23.2314
-                }
-            },
-            shippingDestinations: [{
-                country: 'United Kingdom',
-                shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
-            }, {
-                country: 'China',
-                shippingAvailability: ShippingAvailability.SHIPS
-            }, {
-                country: 'South Africa',
-                shippingAvailability: ShippingAvailability.ASK
-            }],
-            itemImages: [{
-                hash: 'imagehash',
-                data: {
-                    dataId: 'dataid',
-                    protocol: ImageDataProtocolType.IPFS,
-                    encoding: null,
-                    data: null
-                }
-            }]
-        },
-        paymentInformation: {
-            type: PaymentType.SALE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 100,
-                    seller: 100
-                }
-            },
-            itemPrice: {
-                currency: Currency.BITCOIN,
-                basePrice: 0.0001,
-                shippingPrice: {
-                    domestic: 0.123,
-                    international: 1.234
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.NORMAL,
-                    address: '1234'
-                }
-            }
-        },
-        messagingInformation: [{
-            protocol: MessagingProtocolType.SMSG,
-            publicKey: 'publickey'
-        }]
-        // TODO: ignoring listingitemobjects for now
-    };
+    const subCommand = Commands.FAVORITE_REMOVE.commandName;
+    const subCommandList = Commands.FAVORITE_LIST.commandName;
 
     let defaultProfileId;
-    let profileId;
-    let listingItemHash;
-    let listingItemId;
-    const favoriteModel = 'favoriteitem';
+    let defaultMarketId;
+
+    let createdListingItemIdOne;
+    let createdListingItemHashOne;
+
+    let createdProfileId;
 
     beforeAll(async () => {
+
+        // clean up the db, first removes all data and then seeds the db with default data
         await testUtil.cleanDb();
+
+        // fetch default profile
         const defaultProfile = await testUtil.getDefaultProfile();
         defaultProfileId = defaultProfile.id;
-        const profileModel = 'profile';
-        const listingModel = 'listingitem';
-        const addProfileRes: any = await testUtil.addData(CreatableModel.PROFILE, { name: 'TESTING-PROFILE-NAME', address: 'TESTING-PROFILE-ADDRESS' });
-        profileId = addProfileRes.id;
-        // create market
-        const resMarket = await rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_ADD.commandName, 'Test Market', 'privateKey', 'Market Address']);
-        const resultMarket: any = resMarket.getBody()['result'];
-        testData.market_id = resultMarket.id;
-        // create listing item
-        const addListingItem: any = await testUtil.addData(CreatableModel.LISTINGITEM, testData);
-        const addListingItemResult = addListingItem;
-        listingItemHash = addListingItemResult.hash;
-        listingItemId = addListingItemResult.id;
+
+        // fetch default market
+        const defaultMarket = await testUtil.getDefaultMarket();
+        defaultMarketId = defaultMarket.id;
+
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        // create two items and store their id's for testing
+        const listingItems = await testUtil.generateData(
+            CreatableModel.LISTINGITEM,         // what to generate
+            1,                          // how many to generate
+            true,                    // return model
+            generateListingItemParams           // what kind of data to generate
+        ) as ListingItem[];
+
+        // store id's for testing
+        createdListingItemIdOne = listingItems[0].id;
+        createdListingItemHashOne = listingItems[0].hash;
+
+        // create a second profile
+        const generateProfileParams = new GenerateProfileParams([
+            true,   // generateShippingAddresses
+            true   // generateCryptocurrencyAddresses
+        ]).toParamsArray();
+
+        const profiles = await testUtil.generateData(
+            CreatableModel.PROFILE,             // what to generate
+            1,                          // how many to generate
+            true,                    // return model
+            generateProfileParams               // what kind of data to generate
+        ) as Profile[];
+        createdProfileId = profiles[0].id;
     });
 
-    test('Should remove favorite item by listing id and profile id', async () => {
+    test('Should remove favorite item by profile id and listing id', async () => {
         // add favorite item
-        const addFavItem: any = await testUtil.addData(CreatableModel.FAVORITEITEM, { listing_item_id: listingItemId, profile_id: profileId });
+        await testUtil.addData(CreatableModel.FAVORITEITEM, {
+            listing_item_id: createdListingItemIdOne,
+            profile_id: createdProfileId
+        });
+
         // remove favorite item by item id and profile
-        const getDataRes: any = await rpc(method, [subCommand, profileId, listingItemId]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
+        const removeResult: any = await rpc(method, [subCommand, createdProfileId, createdListingItemIdOne]);
+        removeResult.expectJson();
+        removeResult.expectStatusCode(200);
+
+        // check that the remove really worked
+        const listResult: any = await rpc(method, [subCommandList, createdProfileId]);
+        listResult.expectJson();
+        listResult.expectStatusCode(200);
+        const result: any = listResult.getBody()['result'];
+
+        expect(result.length).toBe(0);
     });
 
-    test('Should remove favorite item by listing id and with default profile', async () => {
+    test('Should remove favorite item by profile id and hash', async () => {
         // add favorite item
-        const addFavItem: any = await testUtil.addData(CreatableModel.FAVORITEITEM, { listing_item_id: listingItemId, profile_id: defaultProfileId });
-        // remove favorite item by item id without passing profile
-        const getDataRes: any = await rpc(method, [subCommand, null, listingItemId]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
+        await testUtil.addData(CreatableModel.FAVORITEITEM, {
+            listing_item_id: createdListingItemIdOne,
+            profile_id: createdProfileId
+        });
+
+        // remove favorite item by item id and profile
+        const removeResult: any = await rpc(method, [subCommand, createdProfileId, createdListingItemHashOne]);
+        removeResult.expectJson();
+        removeResult.expectStatusCode(200);
+
+        // check that the remove really worked
+        const listResult: any = await rpc(method, [subCommandList, createdProfileId]);
+        listResult.expectJson();
+        listResult.expectStatusCode(200);
+        const result: any = listResult.getBody()['result'];
+
+        expect(result.length).toBe(0);
     });
 
     test('Should fail remove favorite because favorite already removed', async () => {
         // remove favorite
-        const getDataRes: any = await rpc(method, [subCommand, null, listingItemId]);
+        const getDataRes: any = await rpc(method, [subCommand, createdProfileId, createdListingItemIdOne]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(404);
     });
