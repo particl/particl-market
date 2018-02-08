@@ -14,6 +14,7 @@ export const Targets = {
         Bid: 'Bid',
         BidData: 'BidData',
         CryptocurrencyAddress: 'CryptocurrencyAddress',
+        CurrencyPrice: 'CurrencyPrice',
         Escrow: 'Escrow',
         EscrowRatio: 'EscrowRatio',
         FavoriteItem: 'FavoriteItem',
@@ -42,6 +43,7 @@ export const Targets = {
         BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
+        CurrencyPriceRepository: 'CurrencyPriceRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
         EscrowRepository: 'EscrowRepository',
         FavoriteItemRepository: 'FavoriteItemRepository',
@@ -71,6 +73,7 @@ export const Targets = {
         BidService: 'BidService',
         CoreRpcService: 'CoreRpcService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
+        CurrencyPriceService: 'CurrencyPriceService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
@@ -232,6 +235,10 @@ export const Targets = {
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
+        },
+        currencyprice: {
+            CurrencyPriceRootCommand: 'CurrencyPriceRootCommand',
+            CurrencyPriceAddCommand: 'CurrencyPriceAddCommand'
         }
     },
     Factory: {
@@ -271,6 +278,7 @@ export const Targets = {
         BidController: 'BidController',
         BidDataController: 'BidDataController',
         CryptocurrencyAddressController: 'CryptocurrencyAddressController',
+        CurrencyPriceController: 'CurrencyPriceController',
         EscrowController: 'EscrowController',
         EscrowRatioController: 'EscrowRatioController',
         FavoriteItemController: 'FavoriteItemController',
