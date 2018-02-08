@@ -107,8 +107,6 @@ import { ShoppingCartItemRemoveCommand } from '../commands/shoppingcartitems/Sho
 import { ShoppingCartItemListCommand } from '../commands/shoppingcartitems/ShoppingCartItemListCommand';
 import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitems/ShoppingCartItemRootCommand';
 
-
-import { PriceTickerFetchCommand } from '../commands/priceticker/PriceTickerFetchCommand';
 import { PriceTickerRootCommand } from '../commands/priceticker/PriceTickerRootCommand';
 
 import { Command } from '../commands/Command';
@@ -224,8 +222,6 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemListCommand) private shoppingCartItemListCommand: ShoppingCartItemListCommand,
         @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemRootCommand) private shoppingCartItemRootCommand: ShoppingCartItemRootCommand,
 
-
-        @inject(Types.Command) @named(Targets.Command.priceticker.PriceTickerFetchCommand) private priceTickerFetchCommand: PriceTickerFetchCommand,
         @inject(Types.Command) @named(Targets.Command.priceticker.PriceTickerRootCommand) private priceTickerRootCommand: PriceTickerRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
@@ -342,7 +338,6 @@ export class RpcCommandFactory {
         this.commands.push(shoppingCartItemListCommand);
         this.commands.push(shoppingCartItemRootCommand);
 
-        this.commands.push(priceTickerFetchCommand);
         this.commands.push(priceTickerRootCommand);
 
         this.commands.push(helpCommand);

@@ -18,8 +18,14 @@ export class PriceTicker extends Bookshelf.Model<PriceTicker> {
         }
     }
 
-    public static async search(currency: string, cryptoId: string): Promise<PriceTicker> {
-        return PriceTicker.where<PriceTicker>({ convert_currency: currency, crypto_id : cryptoId }).fetch();
+    public static async search(currency: string): Promise<Collection<PriceTicker>> {
+        const priceTickerCollection = PriceTicker.forge<Collection<PriceTicker>>()
+            .query(qb => {
+                qb.where('currency', '=', currency);
+            })
+            .orderBy('id', 'ASC');
+
+        return priceTickerCollection.fetchAll();
     }
 
     public get tableName(): string { return 'price_ticker'; }

@@ -46,8 +46,8 @@ export class PriceTickerRepository {
         }
     }
 
-    public async search(currency: string, cryptoId: string): Promise<PriceTicker> {
-        return this.PriceTickerModel.search(currency, cryptoId);
+    public async search(currency: string): Promise<Bookshelf.Collection<PriceTicker>> {
+        return this.PriceTickerModel.search(currency);
     }
 
     public async destroy(id: number): Promise<void> {

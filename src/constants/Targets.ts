@@ -238,7 +238,6 @@ export const Targets = {
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         },
         priceticker: {
-            PriceTickerFetchCommand: 'PriceTickerFetchCommand',
             PriceTickerRootCommand: 'PriceTickerRootCommand'
         }
     },
