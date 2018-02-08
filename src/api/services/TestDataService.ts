@@ -57,6 +57,7 @@ import { CreatableModel } from '../enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../requests/params/GenerateListingItemTemplateParams';
 import { GenerateListingItemParams } from '../requests/params/GenerateListingItemParams';
 import { GenerateProfileParams } from '../requests/params/GenerateProfileParams';
+import {ImageProcessing} from '../../core/helpers/ImageProcessing';
 
 export class TestDataService {
 
@@ -356,9 +357,9 @@ export class TestDataService {
                 hash: Faker.random.uuid(),
                 data: {
                     dataId: Faker.internet.url(),
-                    protocol: Faker.random.arrayElement(Object.getOwnPropertyNames(ImageDataProtocolType)),
-                    encoding: Faker.hacker.abbreviation(),
-                    data: Faker.random.image()
+                    protocol: ImageDataProtocolType.LOCAL,
+                    encoding: 'BASE64',
+                    data: ImageProcessing.milkcat
                 }
             };
             items.push(item);
