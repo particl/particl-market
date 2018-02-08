@@ -30,6 +30,7 @@ export const Targets = {
         Market: 'Market',
         MessagingInformation: 'MessagingInformation',
         PaymentInformation: 'PaymentInformation',
+        PriceTicker: 'PriceTicker',
         Profile: 'Profile',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
@@ -58,6 +59,7 @@ export const Targets = {
         MarketRepository: 'MarketRepository',
         MessagingInformationRepository: 'MessagingInformationRepository',
         PaymentInformationRepository: 'PaymentInformationRepository',
+        PriceTickerRepository: 'PriceTickerRepository',
         ProfileRepository: 'ProfileRepository',
         ShippingDestinationRepository: 'ShippingDestinationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
@@ -91,6 +93,7 @@ export const Targets = {
         MessageBroadcastService: 'MessageBroadcastService',
         MessagingInformationService: 'MessagingInformationService',
         PaymentInformationService: 'PaymentInformationService',
+        PriceTickerService: 'PriceTickerService',
         ProfileService: 'ProfileService',
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
@@ -233,6 +236,10 @@ export const Targets = {
             ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
+        },
+        priceticker: {
+            PriceTickerFetchCommand: 'PriceTickerFetchCommand',
+            PriceTickerRootCommand: 'PriceTickerRootCommand'
         }
     },
     Factory:     {
@@ -289,6 +296,7 @@ export const Targets = {
         MarketController: 'MarketController',
         MessagingInformationController: 'MessagingInformationController',
         PaymentInformationController: 'PaymentInformationController',
+        PriceTickerController: 'PriceTickerController',
         ProfileController: 'ProfileController',
         RpcController: 'RpcController',
         ShippingDestinationController: 'ShippingDestinationController',
