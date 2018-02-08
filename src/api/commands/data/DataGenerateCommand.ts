@@ -9,6 +9,7 @@ import { TestDataGenerateRequest } from '../../requests/TestDataGenerateRequest'
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import {CreatableModel} from '../../enums/CreatableModel';
 
 export class DataGenerateCommand extends BaseCommand implements RpcCommandInterface<any> {
 
@@ -22,11 +23,15 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
         this.log = new Logger(__filename);
     }
 
-
     /**
+     * data.params[]:
+     *  [0]: CreatableModel, model to generate
+     *  [1]: amount
+     *  [2]: withRelated, return full objects or just id's
+     *  [3...]: generateParams
      *
-     * @param data
-     * @returns {Promise<Bookshelf.Collection<any>>}
+     * @param {RpcRequest} data
+     * @returns {Promise<any>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
