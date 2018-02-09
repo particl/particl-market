@@ -11,7 +11,7 @@ import { CurrencyPriceUpdateRequest } from '../requests/CurrencyPriceUpdateReque
 import { CurrencyPriceParams } from '../requests/CurrencyPriceParams';
 import * as Request from 'request';
 import { MessageException } from '../exceptions/MessageException';
-import * as _ from 'lodash';
+import { SupportedCurrencies } from '../enums/SupportedCurrencies';
 
 export class CurrencyPriceService {
 
@@ -52,49 +52,64 @@ export class CurrencyPriceService {
     }
 
     /**
-     * search CurrencyPrice using given CurrencyPriceParams
      *
-     * @param options
-     * @returns {Promise<CurrencyPrice>}
+     * data.params[]:
+     * fromCurrency: fromCurrency
+     * toCurrencies[]: array of toCurrencies
+     * example: [INR, USD, EUR, GBP]
+     *
+     * description: from argument must be PART for now and toCurrencies is an array of toCurrencies like [INR, USD, EUR, GBP].
+     * ...
      */
-    @validate()
-    public async convertCurrency(
-        @request(CurrencyPriceParams) options: CurrencyPriceParams
-        ): Promise<CurrencyPrice> {
 
-        const currencyPriceModel: CurrencyPrice = await this.search({
-                from: options.from,
-                to: options.to
-            } as CurrencyPriceParams);
-        const currency = currencyPriceModel && currencyPriceModel.toJSON();
+    public async getCurrencyPrices(fromCurrency: string, toCurrencies: string[]): Promise<Bookshelf.Collection<CurrencyPrice>> {
 
-        // check if currency already exist in the db then update the price
-        if (currency) {
-            const current: any = new Date();
-            const tricker: any = new Date(currency.updatedAt);
-            // call the api if the results in db are older than 1 min
-            if (((current - tricker) / 60000) > 1) {
-                // get the update currency price
-                const updatedCurrency = await this.getUpdatedCurrencyPrice(options.from, options.to);
-                // update the existing currency price
-                return await this.update(currency.id, {
-                    from: options.from,
-                    to: options.to,
-                    price: updatedCurrency.result
-                } as CurrencyPriceUpdateRequest);
+        const returnData: any = [];
+        for (const toCurrency of toCurrencies) {
+            // check for valid currency
+            if (SupportedCurrencies[toCurrency]) {
+                const currencyPriceModel: CurrencyPrice = await this.search({
+                    from: fromCurrency,
+                    to: toCurrency
+                } as CurrencyPriceParams);
+
+                const currency = currencyPriceModel && currencyPriceModel.toJSON();
+
+                // check if currency already exist in the db then update the price
+                if (currency) {
+                    const needToUpdate = await this.needToUpdate(currency.updatedAt);
+                    if (needToUpdate) {
+                        // get the update currency price
+                        const updatedCurrency = await this.getUpdatedCurrencyPrice(fromCurrency, toCurrency);
+                        // update the existing currency price
+                        const updatedCurrencyPrice = await this.update(currency.id, {
+                            from: fromCurrency,
+                            to: toCurrency,
+                            price: updatedCurrency.result
+                        } as CurrencyPriceUpdateRequest);
+
+                        returnData.push(updatedCurrencyPrice);
+                    } else {
+                        returnData.push(currency);
+                    }
+                } else {
+                    // get the update currency price
+                    const updatedCurrency = await this.getUpdatedCurrencyPrice(fromCurrency, toCurrency);
+                    // create the new currency price
+                    const createdCurrencyPrice = await this.create({
+                        from: fromCurrency,
+                        to: toCurrency,
+                        price: updatedCurrency.result
+                    } as CurrencyPriceCreateRequest);
+
+                    returnData.push(createdCurrencyPrice);
+                }
             } else {
-                return currency;
+                throw new MessageException(`Invalid currency ${toCurrency}`);
             }
-        } else {
-            // get the update currency price
-            const updatedCurrency = await this.getUpdatedCurrencyPrice(options.from, options.to);
-            // create the new currency price
-            return await this.create({
-                from: options.from,
-                to: options.to,
-                price: updatedCurrency.result
-            } as CurrencyPriceCreateRequest);
         }
+        // return all currency prices
+        return returnData;
     }
 
     @validate()
@@ -155,5 +170,13 @@ export class CurrencyPriceService {
         } catch (err) {
             throw new MessageException(`Cannot add currency price ${err}`);
         }
+    }
+
+    // check whether the results in db are older than 1 min
+    private async needToUpdate(currencyUpdatedAt: number): Promise<boolean> {
+        const current: any = new Date();
+        const tricker: any = new Date(currencyUpdatedAt);
+        // check if the results in db are older than 1 min
+        return (((current - tricker) / 60000) > 1);
     }
 }

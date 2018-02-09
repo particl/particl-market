@@ -43,8 +43,4 @@ export class CurrencyPrice extends Bookshelf.Model<CurrencyPrice> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public CurrencyPriceRelated(): CurrencyPriceRelated {
-    //    return this.hasOne(CurrencyPriceRelated);
-    // }
 }

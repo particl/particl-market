@@ -142,9 +142,7 @@ export class CommandEnumType extends Enum<Command> {
     public ITEMOBJECT_ROOT: Command           = new Command('itemobject', 'itemobject', true,
         [this.ITEMOBJECT_SEARCH]);
 
-    public CURRENCYPRICE_ADD: Command         = new Command('currencypriceadd', 'add', false);
-    public CURRENCYPRICE_ROOT: Command        = new Command('currencyprice', 'currencyprice', true,
-        [this.CURRENCYPRICE_ADD]);
+    public CURRENCYPRICE_ROOT: Command        = new Command('currencyprice', 'currencyprice', true, []);
 
     constructor() {
         super();

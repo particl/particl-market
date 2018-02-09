@@ -238,8 +238,7 @@ export const Targets = {
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         },
         currencyprice: {
-            CurrencyPriceRootCommand: 'CurrencyPriceRootCommand',
-            CurrencyPriceAddCommand: 'CurrencyPriceAddCommand'
+            CurrencyPriceRootCommand: 'CurrencyPriceRootCommand'
         }
     },
     Factory:     {
