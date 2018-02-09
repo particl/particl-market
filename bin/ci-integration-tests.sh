@@ -12,9 +12,5 @@ cat .env
 cat test/.env.test
 cat test/.env.blackbox
 
-npm install knex --save
-npm install bookshelf --save
-npm install sqlite3
-
 wait-port $APP_HOST:$APP_PORT/cli
 npm run test:integration:pretty
