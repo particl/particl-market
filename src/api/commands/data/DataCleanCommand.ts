@@ -33,7 +33,7 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public help(): string {
-        return this.getName() + '';
+        return this.getName() + ' ';
     }
 
     public description(): string {

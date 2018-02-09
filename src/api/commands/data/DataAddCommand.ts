@@ -41,7 +41,10 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
     }
 
     public help(): string {
-        return this.getName() + '<model> <json> [<withRelated>]';
+        return this.getName() + '<model> <json> [<withRelated>] \n'
+            + '    <model>              - String - [TODO] \n'
+            + '    <json>               - String - [TODO] \n'
+            + '    <withRelated>        - [optional] Boolean - [TODO] ';
     }
 
     public description(): string {
