@@ -1,20 +1,18 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { EscrowType } from '../../src/api/enums/EscrowType';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { EscrowType } from '../../../src/api/enums/EscrowType';
+import { Currency } from '../../../src/api/enums/Currency';
+import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
+import { PaymentType } from '../../../src/api/enums/PaymentType';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
-describe('/EscrowDestroyCommand', () => {
-
+describe('EscrowUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ESCROW_ROOT.commandName;
-    const subCommand = Commands.ESCROW_REMOVE.commandName;
+    const subCommand = Commands.ESCROW_UPDATE.commandName;
 
     let profileId;
-    let createdTemplateId;
     const testDataListingItemTemplate = {
         profile_id: 0,
         itemInformation: {
@@ -49,28 +47,37 @@ describe('/EscrowDestroyCommand', () => {
         }
     };
 
+    const testData = {
+        type: EscrowType.NOP,
+        ratio: {
+            buyer: 1000,
+            seller: 1000
+        }
+    };
+
     beforeAll(async () => {
         await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
         profileId = defaultProfile.id;
     });
 
-    test('Should destroy Escrow by RPC', async () => {
+    test('Should update Escrow by RPC', async () => {
+        // set profile id
         testDataListingItemTemplate.profile_id = profileId;
 
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
 
         const addListingItemTempResult = addListingItemTempRes;
-        createdTemplateId = addListingItemTempResult.id;
+        const createdTemplateId = addListingItemTempResult.id;
+        const paymentInformationId = addListingItemTempResult.PaymentInformation.id;
 
-        const destroyDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
-        destroyDataRes.expectJson();
-        destroyDataRes.expectStatusCode(200);
-    });
-
-    test('Should fail destroy Escrow because already been destroyed', async () => {
-        const destroyDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
-        destroyDataRes.expectJson();
-        destroyDataRes.expectStatusCode(404);
+        const updateDataRes: any = await rpc(method, [subCommand, createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
+        updateDataRes.expectJson();
+        updateDataRes.expectStatusCode(200);
+        const result: any = updateDataRes.getBody()['result'];
+        expect(result.paymentInformationId).toBe(paymentInformationId);
+        expect(result.type).toBe(testData.type);
+        expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
+        expect(result.Ratio.seller).toBe(testData.ratio.seller);
     });
 });

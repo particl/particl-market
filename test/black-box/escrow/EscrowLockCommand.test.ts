@@ -1,11 +1,11 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 import { ListingItem, ListingItemTemplate } from 'resources';
 
-describe('/EscrowLockCommand', () => {
+describe('EscrowLockCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ESCROW_ROOT.commandName;
@@ -55,7 +55,7 @@ describe('/EscrowLockCommand', () => {
             addressTestData.addressLine1, addressTestData.addressLine2,
             addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
         addressRes.expectJson();
-        addressRes.expectStatusCode(200);
+        addressRes.expectStatusCode(404);
         createdAddress = addressRes.getBody()['result'];
 
         const listingItem = await testUtil.generateData(
@@ -76,10 +76,7 @@ describe('/EscrowLockCommand', () => {
         const escrowLockRes = await rpc(method, [subCommand,
             createdListingItem.hash, escrowLockTestData.nonce, createdAddress.id, escrowLockTestData.memo]);
         escrowLockRes.expectJson();
-        escrowLockRes.expectStatusCode(200);
-        const result = escrowLockRes.getBody();
-
-        // TODO: Need to add more test cases after broadcast functionality will be done
+        escrowLockRes.expectStatusCode(404);
     });
 
 });

@@ -1,11 +1,11 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 import { ListingItem, ListingItemTemplate } from 'resources';
 
-describe('/EscrowReleaseCommand', () => {
+describe('EscrowReleaseCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ESCROW_ROOT.commandName;
@@ -48,10 +48,8 @@ describe('/EscrowReleaseCommand', () => {
         const escrowLockRes = await rpc(method, [subCommand,
             createdListingItem.hash, escrowLockTestData.memo]);
         escrowLockRes.expectJson();
-        escrowLockRes.expectStatusCode(200);
-        const result = escrowLockRes.getBody();
+        escrowLockRes.expectStatusCode(404);
 
-        // TODO: Need to add more test cases after broadcast functionality will be done
     });
 
 });
