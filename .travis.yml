@@ -32,6 +32,9 @@ before_install:
   - export COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
   - export AUTHOR_NAME="$(git log -1 $TRAVIS_COMMIT --pretty="%aN")"
   - export ALL_COMMITS="$(git log $TRAVIS_COMMIT_RANGE --pretty=oneline)"
+  - echo "$COMMITTER_EMAIL"
+  - echo "$AUTHOR_NAME"
+  - echo "$ALL_COMMITS"
   - ./bin/ci-post.sh "[$AUTHOR_NAME] $TRAVIS_COMMIT_RANGE $ALL_COMMITS https://travis-ci.org/particl/dapp-shell/builds/$TRAVIS_BUILD_ID" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
 
   # update docker
