@@ -45,7 +45,7 @@ env:
 
 
 before_install:
-  - 'bin/ci-post.sh $TRAVIS_COMMIT_MESSAGE $TRAVIS_BRANCH/$TRAVIS_COMMIT $DISCORD_URL'
+  - bin/ci-post.sh $TRAVIS_COMMIT_MESSAGE $TRAVIS_BRANCH/$TRAVIS_COMMIT $DISCORD_URL
   # update docker
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
