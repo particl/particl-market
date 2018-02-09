@@ -1,7 +1,7 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { ShippingCountries } from '../../src/core/helpers/ShippingCountries';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
 
 describe('AddressCreateCommand', () => {
     const testUtil = new BlackBoxTestUtil();

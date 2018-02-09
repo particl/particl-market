@@ -112,28 +112,28 @@ describe('ListingItemTemplate', () => {
                 shippingAvailability: ShippingAvailability.ASK
             }],
             itemImages: [{
-                hash: 'imagehash1',
+                hash: 'imagehash4',
                 data: {
-                    dataId: 'dataid1',
-                    protocol: ImageDataProtocolType.IPFS,
-                    encoding: null,
-                    data: null
-                }
-            }, {
-                hash: 'imagehash2',
-                data: {
-                    dataId: 'dataid2',
+                    dataId: null,
                     protocol: ImageDataProtocolType.LOCAL,
                     encoding: 'BASE64',
                     data: ImageProcessing.milkcat
                 }
             }, {
-                hash: 'imagehash3',
+                hash: 'imagehash5',
                 data: {
-                    dataId: 'dataid3',
-                    protocol: ImageDataProtocolType.SMSG,
-                    encoding: null,
-                    data: 'smsgdata'
+                    dataId: null,
+                    protocol: ImageDataProtocolType.LOCAL,
+                    encoding: 'BASE64',
+                    data: ImageProcessing.milkcatTall
+                }
+            }, {
+                hash: 'imagehash6',
+                data: {
+                    dataId: null,
+                    protocol: ImageDataProtocolType.LOCAL,
+                    encoding: 'BASE64',
+                    data: ImageProcessing.milkcatWide
                 }
             }]
         },
@@ -211,9 +211,9 @@ describe('ListingItemTemplate', () => {
                 hash: 'imagehash1 UPDATED',
                 data: {
                     dataId: 'dataid1 UPDATED',
-                    protocol: ImageDataProtocolType.IPFS,
-                    encoding: null,
-                    data: null
+                    protocol: ImageDataProtocolType.LOCAL,
+                    encoding: 'BASE64',
+                    data: ImageProcessing.milkcat
                 }
             }]
         },
@@ -288,7 +288,8 @@ describe('ListingItemTemplate', () => {
         listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
+
         defaultProfile = await profileService.getDefault();
         defaultMarket = await marketService.getDefault();
     });

@@ -63,6 +63,8 @@ export class ItemInformationService {
 
         const body = JSON.parse(JSON.stringify(data));
 
+        // this.log.debug('body: ', body);
+
         // ItemInformation needs to be related to either one
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);

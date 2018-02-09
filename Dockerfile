@@ -23,4 +23,5 @@ RUN yarn install
 
 #CMD [ "yarn", "serve" ]
 #CMD [ "bin/entrypoint.sh" ]
+
 EXPOSE 3000 3100 3200

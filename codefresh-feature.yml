@@ -111,7 +111,7 @@ steps:
 
   blackbox_test_step:
     type: composition
-    title: running integration tests
+    title: running blackbox tests
     working_directory: ${{main_clone}}
     composition:
       version: '2'

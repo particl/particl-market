@@ -65,7 +65,8 @@ describe('Escrow', () => {
         paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
+
         const defaultProfile = await profileService.getDefault();
         // create payment-information
         const createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({

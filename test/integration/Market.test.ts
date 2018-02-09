@@ -43,7 +43,8 @@ describe('Market', () => {
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
+
     });
 
     // afterAll(async () => {

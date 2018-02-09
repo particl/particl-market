@@ -4,13 +4,21 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
-import { ValidationException } from '../exceptions/ValidationException';
 import { ItemImageRepository } from '../repositories/ItemImageRepository';
 import { ItemImage } from '../models/ItemImage';
 import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
 import { ItemImageUpdateRequest } from '../requests/ItemImageUpdateRequest';
-import { RpcRequest } from '../requests/RpcRequest';
 import { ItemImageDataService } from './ItemImageDataService';
+import { ImageProcessing } from '../../core/helpers/ImageProcessing';
+import { ImageTriplet } from '../../core/helpers/ImageTriplet';
+import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
+import { ImageFactory } from '../factories/ImageFactory';
+import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
+import * as _ from 'lodash';
+import {MessageException} from '../exceptions/MessageException';
+import {CryptocurrencyAddressUpdateRequest} from '../requests/CryptocurrencyAddressUpdateRequest';
+import {CryptocurrencyAddressCreateRequest} from '../requests/CryptocurrencyAddressCreateRequest';
+import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 
 export class ItemImageService {
 
@@ -19,6 +27,7 @@ export class ItemImageService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
         @inject(Types.Repository) @named(Targets.Repository.ItemImageRepository) public itemImageRepo: ItemImageRepository,
+        @inject(Types.Factory) @named(Targets.Factory.ImageFactory) public imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -43,25 +52,46 @@ export class ItemImageService {
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
-        const itemImageData = body.data;
+        const itemImageDataOriginal: ItemImageDataCreateRequest = body.data;
         delete body.data;
 
-        // If the request body was valid we will create the itemImage
+        // if the request body was valid we will create the itemImage
         const itemImage = await this.itemImageRepo.create(body);
 
-        // create related models
-        itemImageData.item_image_id = itemImage.Id;
-        await this.itemImageDataService.create(itemImageData);
+        if ( !_.isEmpty(itemImageDataOriginal.protocol) && !ImageDataProtocolType[itemImageDataOriginal.protocol] ) {
+            this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
+            throw new MessageException('Invalid protocol.');
+        }
 
-        // finally find and return the created itemImage
-        const newItemImage = await this.findOne(itemImage.Id);
-        return newItemImage;
+        // TODO: THIS
+        /* if ( !_.isEmpty(itemImageDataOriginal.encoding) && !?????[itemImageDataOriginal.encoding] ) {
+            this.log.warn(`Invalid encoding <${itemImageDataOriginal.encoding}> encountered.`);
+            throw new NotFoundException('Invalid encoding.');
+        } */
+
+        // then create the imageDatas from the given original data
+        if ( !_.isEmpty(itemImageDataOriginal.data) ) {
+            const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
+            const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.Id, itemImageDataOriginal, toVersions);
+
+            // save all image datas
+            for (const imageData of imageDatas) {
+                await this.itemImageDataService.create(imageData);
+            }
+
+            // finally find and return the created itemImage
+            const newItemImage = await this.findOne(itemImage.Id);
+            return newItemImage;
+        } else {
+            return itemImage;
+        }
     }
 
     @validate()
     public async update(id: number, @request(ItemImageUpdateRequest) data: ItemImageUpdateRequest): Promise<ItemImage> {
 
         const body = JSON.parse(JSON.stringify(data));
+        const itemImageDataOriginal: ItemImageDataCreateRequest = body.data;
 
         // find the existing one without related
         const itemImage = await this.findOne(id, false);
@@ -72,14 +102,22 @@ export class ItemImageService {
         // update itemImage record
         const updatedItemImage = await this.itemImageRepo.update(id, itemImage.toJSON());
 
-        // find related record and delete it
-        let itemImageData = updatedItemImage.related('ItemImageData').toJSON();
-        await this.itemImageDataService.destroy(itemImageData.id);
+        // find and remove old related ItemImageDatas
+        const oldImageDatas = updatedItemImage.related('ItemImageDatas').toJSON();
+        for (const imageData of oldImageDatas) {
+            await this.itemImageDataService.destroy(imageData.id);
+        }
 
-        // recreate related data
-        itemImageData = body.data;
-        itemImageData.item_image_id = id;
-        await this.itemImageDataService.create(itemImageData);
+        // then create new imageDatas from the given original data
+        if (!_.isEmpty(itemImageDataOriginal)) {
+            const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
+            const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.Id, itemImageDataOriginal, toVersions);
+
+            // create new image datas
+            for (const imageData of imageDatas) {
+                await this.itemImageDataService.create(imageData);
+            }
+        }
 
         // finally find and return the updated itemImage
         const newItemImage = await this.findOne(id);
@@ -89,47 +127,4 @@ export class ItemImageService {
     public async destroy(id: number): Promise<void> {
         await this.itemImageRepo.destroy(id);
     }
-
-    // TODO: remove
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemImage>> {
-        return this.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ItemImage> {
-        return this.findOne(data.params[0]);
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemImage> {
-        return this.create({
-            hash: data.params[0],
-            data: {
-                dataId: data.params[1] || '',
-                protocol: data.params[2] || '',
-                encoding: data.params[3] || '',
-                data: data.params[4] || ''
-            }
-        } as ItemImageCreateRequest);
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemImage> {
-        return this.update(data.params[0], {
-            hash: data.params[1],
-            data: {
-                dataId: data.params[2] || '',
-                protocol: data.params[3] || '',
-                encoding: data.params[4] || '',
-                data: data.params[5] || ''
-            }
-        } as ItemImageUpdateRequest);
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
-    }
-
 }

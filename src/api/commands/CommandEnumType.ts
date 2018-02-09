@@ -25,11 +25,10 @@ export class CommandEnumType extends Enum<Command> {
         [this.BID_SEARCH, this.BID_ACCEPT, this.BID_CANCEL, this.BID_REJECT, this.BID_SEND]);
 
     public ITEM_SEARCH: Command         = new Command('itemsearch', 'search', false);
-    public ITEM_SEARCH_OWN: Command     = new Command('itemsearchown', 'searchown', false);
     public ITEM_GET: Command            = new Command('itemget', 'get', false);
     public ITEM_POST_UPDATE: Command    = new Command('itempostupdate', 'update', false);
     public ITEM_ROOT: Command           = new Command('item', 'item', true,
-        [this.ITEM_SEARCH, this.ITEM_SEARCH_OWN, this.ITEM_GET, this.ITEM_POST_UPDATE]);
+        [this.ITEM_SEARCH, this.ITEM_GET, this.ITEM_POST_UPDATE]);
     // TODO: bids
 
     public ESCROW_ADD: Command      = new Command('escrowadd', 'add', false);
