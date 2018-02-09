@@ -6,8 +6,7 @@ services:
       context: ./
       dockerfile: Dockerfile.ci
     volumes:
-      - .:/app/
-      - ./node_modules:/app/node_modules
+      - ./data/app1:/app/data
     ports:
       - 3100:3100
     command: bin/ci-entrypoint.sh
@@ -27,6 +26,8 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile.ci
+    volumes:
+      - ./data/app2:/app/data
     ports:
       - 3200:3200
     command: bin/ci-entrypoint.sh
