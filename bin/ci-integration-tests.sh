@@ -8,5 +8,9 @@ export RPCHOSTNAME=$6
 export MAINNET_PORT=$7
 export TESTNET_PORT=$8
 docker-compose logs --tail=10000
+cat .env
+cat test/.env.test
+cat test/.env.blackbox
+
 wait-port $APP_HOST:$APP_PORT/cli
 npm run test:integration:pretty
