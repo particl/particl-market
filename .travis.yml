@@ -49,7 +49,6 @@ before_install:
   - export COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
   - export AUTHOR_NAME="$(git log -1 $TRAVIS_COMMIT --pretty="%aN")"
   - ./bin/ci-post.sh "[$AUTHOR_NAME] $TRAVIS_COMMIT_MESSAGE" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
-  - ./bin/ci-post.sh "running tests https://travis-ci.org/particl/dapp-shell/builds/$TRAVIS_BUILD_ID" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
 
   # update docker
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
@@ -88,6 +87,7 @@ install:
 #  - docker pull myorg/myimage || true
 
 script:
+  - ./bin/ci-post.sh "running tests https://travis-ci.org/particl/dapp-shell/builds/$TRAVIS_BUILD_ID" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
   - npm test
   - npm run test:integration:pretty
   - ./bin/ci-blackbox-tests.sh
