@@ -74,8 +74,8 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public help(): string {
-        return this.getName() + ' <itemhash>\n'
-        + '    <itemhash>  - string - The hash if the item whose bid we want to reject.';
+        return this.getName() + ' <itemhash> \n'
+        + '    <itemhash>  - String - The hash if the item whose bid we want to reject. ';
     }
 
     public description(): string {
