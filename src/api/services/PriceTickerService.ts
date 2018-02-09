@@ -62,9 +62,31 @@ export class PriceTickerService {
         const priceTicker = await this.findOne(id, false);
 
         // set new values
+        priceTicker.CryptoId = body.crypto_id;
+        priceTicker.CryptoName = body.crypto_name;
+        priceTicker.CryptoPriceCurrency = body.crypto_price_currency;
+
+        priceTicker.CryptoRank = body.crypto_rank;
+        priceTicker.CryptoSymbol = body.crypto_symbol;
         priceTicker.CryptoPriceUsd = body.crypto_price_usd;
         priceTicker.CryptoPriceBtc = body.crypto_price_btc;
+
+        priceTicker.Crypto24HVolumeUsd = body.crypto_24h_volume_usd;
+        priceTicker.CryptoMarketCapUsd = body.crypto_market_cap_usd;
+        priceTicker.CryptoAvailableSupply = body.crypto_available_supply;
+
+        priceTicker.CryptoTotalSupply = body.crypto_total_supply;
+        priceTicker.CryptoMaxSupply = body.crypto_max_supply;
+        priceTicker.CryptoPercentChange1H = body.crypto_percent_change_1h;
+
+        priceTicker.CryptoPercentChange24H = body.crypto_percent_change_24h;
+        priceTicker.CryptoPercentChange7D = body.crypto_percent_change_7d;
+        priceTicker.CryptoLastUpdated = body.crypto_last_updated;
+
         priceTicker.CryptoPriceCurrency = body.crypto_price_currency;
+        priceTicker.Crypto24HVolumeCurrency = body.crypto_24h_volume_currency;
+        priceTicker.CryptoMarketCapCurrency = body.crypto_market_cap_currency;
+        // priceTicker.currency = body.crypto_price_currency;
         // update priceTicker record
         const updatedPriceTicker = await this.priceTickerRepo.update(id, priceTicker.toJSON());
 
