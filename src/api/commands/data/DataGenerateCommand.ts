@@ -51,7 +51,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
         return this.getName() + ' <model> [<amount> [<withRelated>]] \n'
             + '    <model>                 - [TODO] ENUM{} - [TODO] \n'
             + '    <amount>                - [optional] Numeric - [TODO] \n'
-            + '    <withRelated>           - [optional] Boolean - [TODO] ';
+            + '        <withRelated>           - [optional] Boolean - [TODO] ';
     }
 
     public description(): string {
