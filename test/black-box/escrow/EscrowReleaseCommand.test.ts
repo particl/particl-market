@@ -48,6 +48,8 @@ describe('EscrowReleaseCommand', () => {
         const escrowLockRes = await rpc(method, [subCommand,
             createdListingItem.hash, escrowLockTestData.memo]);
         escrowLockRes.expectJson();
+
+        // expecting 404, the code is nowhere near finished
         escrowLockRes.expectStatusCode(404);
 
     });

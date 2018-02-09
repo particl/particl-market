@@ -24,13 +24,6 @@ describe('EscrowLockCommand', () => {
         zipCode: '85001'
     };
 
-    const escrowLockTestData = {
-        itemhash: '',
-        nonce: 'TEST NONCE',
-        addressId: null,
-        memo: 'TEST MEMO'
-    };
-
     beforeAll(async () => {
         await testUtil.cleanDb();
 
@@ -45,6 +38,14 @@ describe('EscrowLockCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
+        const listingItem = await testUtil.generateData(
+            CreatableModel.LISTINGITEM, // what to generate
+            1,                                  // how many to generate
+            true,                               // return model
+            generateListingItemParams   // what kind of data to generate
+        ) as ListingItem[];
+        createdListingItem = listingItem[0];
+
         // get default profile
         defaultProfile = await testUtil.getDefaultProfile();
 
@@ -58,25 +59,23 @@ describe('EscrowLockCommand', () => {
         addressRes.expectStatusCode(404);
         createdAddress = addressRes.getBody()['result'];
 
-        const listingItem = await testUtil.generateData(
-            CreatableModel.LISTINGITEM, // what to generate
-            1,                                  // how many to generate
-            true,                               // return model
-            generateListingItemParams   // what kind of data to generate
-        ) as ListingItem[];
-        createdListingItem = listingItem[0];
     });
 
-    test('Should lock Escrow by RPC', async () => {
-        // set hash
-        escrowLockTestData.itemhash = createdListingItem.hash;
-        // set addressId
-        escrowLockTestData.addressId = createdAddress.id;
+    test('Should lock Escrow', async () => {
+
+        const escrowLockTestData = {
+            itemhash: createdListingItem.hash,
+            nonce: 'TEST NONCE',
+            addressId: createdAddress.id,
+            memo: 'TEST MEMO'
+        };
 
         const escrowLockRes = await rpc(method, [subCommand,
             createdListingItem.hash, escrowLockTestData.nonce, createdAddress.id, escrowLockTestData.memo]);
         escrowLockRes.expectJson();
+
         escrowLockRes.expectStatusCode(404);
+
     });
 
 });

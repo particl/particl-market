@@ -41,7 +41,7 @@ describe('EscrowRefundCommand', () => {
         createdListingItem = listingItem[0];
     });
 
-    test('Should Refund Escrow by RPC', async () => {
+    test('Should Refund Escrow', async () => {
         // set hash
         escrowLockTestData.itemhash = createdListingItem.hash;
 
@@ -49,7 +49,6 @@ describe('EscrowRefundCommand', () => {
             createdListingItem.hash, escrowLockTestData.accepted, escrowLockTestData.memo]);
         escrowLockRes.expectJson();
         escrowLockRes.expectStatusCode(404);
-
     });
 
 });
