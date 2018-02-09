@@ -64,14 +64,12 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public help(): string {
-        return this.getName() + ' [<itemhash> [<nonce> [<addressId> [<memo>]]]]\n'
-            + '    <itemhash>           - String - The hash of the listing item for which we want to\n'
-            + '                             lock escrow.\n'
-            + '    <nonce>         - String - The nonce of the escrow\n'
-
-            + '    <addressId>           - Numeric - The addressId of the related profile of escrow we want to lock \n'
-
-            + '    <memo>           - String - The memo of the Escrow';
+        return this.getName() + ' [<itemhash> [<nonce> [<addressId> [<memo>]]]] \n'
+            + '    <itemhash>               - String - The hash of the listing item for which we want to \n'
+            + '                                lock escrow. \n'
+            + '    <nonce>                  - String - The nonce of the escrow \n'
+            + '    <addressId>              - Numeric - The addressId of the related profile of escrow we want to lock \n'
+            + '    <memo>                   - String - The memo of the Escrow ';
     }
 
     public description(): string {

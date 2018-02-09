@@ -74,7 +74,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
     public help(): string {
         return this.getName() + ' <itemhash> \n'
-            + '    <itemhash>  - String - The hash of the item we want to accept. ';
+            + '    <itemhash>               - String - The hash of the item we want to accept. ';
     }
 
     public description(): string {

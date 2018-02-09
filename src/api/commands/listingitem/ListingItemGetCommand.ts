@@ -44,9 +44,8 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
 
     public help(): string {
         return this.getName() + ' <listingItemId> | <hash> \n'
-            + '    <listingItemId>     - [optional] Numeric - The ID of the listing item we want to retrieve. \n'
-
-            + '    <hash>              - [optional] String - The hash of the listing item we want to retrieve. \n';
+            + '    <listingItemId>          - [optional] Numeric - The ID of the listing item we want to retrieve. \n'
+            + '    <hash>                   - [optional] String - The hash of the listing item we want to retrieve. \n';
     }
 
     public description(): string {

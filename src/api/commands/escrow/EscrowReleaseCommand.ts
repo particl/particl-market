@@ -60,10 +60,10 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return this.getName() + ' [<itemhash> [<memo>]]\n'
-            + '    <itemhash>           - String - The hash of the listing item for which we want to\n'
-            + '                             lock escrow.\n'
-            + '    <memo>           - String - The memo of the Escrow';
+        return this.getName() + ' [<itemhash> [<memo>]] \n'
+            + '    <itemhash>               - String - The hash of the listing item for which we want to \n'
+            + '                                lock escrow. \n'
+            + '    <memo>                   - String - The memo of the Escrow ';
     }
 
     public description(): string {

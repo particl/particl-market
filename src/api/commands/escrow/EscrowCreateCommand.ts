@@ -43,13 +43,13 @@ export class EscrowCreateCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio>\n'
-            + '    <listingItemTemplateId>   - Numeric - The ID of the listing item template we want\n'
-            + '                                 to associate with this escrow.\n'
-            + '    <escrowType>              - Enum{NOP,MAD} - The type of the escrow we want to\n'
-            + '                                 create.\n'
-            + '    <buyerRatio>              - Numeric - [TODO]\n'
-            + '    <sellerRatio>             - Numeric - [TODO]';
+        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio> \n'
+            + '    <listingItemTemplateId>  - Numeric - The ID of the listing item template we want \n'
+            + '                                to associate with this escrow. \n'
+            + '    <escrowType>             - Enum{NOP,MAD} - The type of the escrow we want to \n'
+            + '                                create. \n'
+            + '    <buyerRatio>             - Numeric - [TODO] \n'
+            + '    <sellerRatio>            - Numeric - [TODO] ';
     }
 
     public description(): string {
