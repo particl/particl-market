@@ -25,7 +25,7 @@ export class ShippingDestinationRootCommand extends BaseCommand implements RpcCo
     }
 
     public help(): string {
-        return this.getName() + ' (list | add | remove)';
+        return this.getName() + ' (list | add | remove) ';
     }
 
     public description(): string {

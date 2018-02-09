@@ -78,14 +78,14 @@ export class ShippingDestinationAddCommand extends BaseCommand implements RpcCom
 
     public help(): string {
         return this.getName()
-            + ' <listingItemTemplateId> (<country>|<countryCode>) <shippingAvailability>\n'
-            + '    <listingItemTemplateId>    - Numeric - ID of the item template object we want\n'
-            + '                                  to link this shipping destination to.\n'
-            + '    <country>                  - String - The country name.\n'
-            + '    <countryCode>              - String - Two letter country code.\n'
-            + '                                  associated with this shipping destination.\n'
-            + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
-            + '                                  availability of shipping to the specified area.';
+            + ' <listingItemTemplateId> (<country>|<countryCode>) <shippingAvailability> \n'
+            + '    <listingItemTemplateId>            - Numeric - ID of the item template object we want \n'
+            + '                                          to link this shipping destination to. \n'
+            + '    <country>                          - String - The country name. \n'
+            + '    <countryCode>                      - String - Two letter country code. \n'
+            + '                                          associated with this shipping destination. \n'
+            + '    <shippingAvailability>             - Enum{SHIPS,DOES_NOT_SHIP,ASK,UNKNOWN} - The \n'
+            + '                                          availability of shipping to the specified area. ';
     }
 
     public description(): string {

@@ -52,10 +52,10 @@ export class MessagingInformationUpdateCommand extends BaseCommand implements Rp
     }
 
     public help(): string {
-        return this.getName() + ' <listingTemplateId> <protocol> <publicKey>\n'
-            + '    <listingTemplateId>      - Numeric - [TODO]\n'
-            + '    <protocol>               - ENUM{SMSG} - [TODO]\n'
-            + '    <publicKey>              - String - [TODO]';
+        return this.getName() + ' <listingTemplateId> <protocol> <publicKey> \n'
+            + '    <listingTemplateId>      - Numeric - [TODO] \n'
+            + '    <protocol>               - ENUM{SMSG} - [TODO] \n'
+            + '    <publicKey>              - String - [TODO] ';
     }
 
     public description(): string {
