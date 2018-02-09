@@ -8,6 +8,7 @@ import { Commands} from './CommandEnumType';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { BaseCommand } from './BaseCommand';
 import { Command } from './Command';
+import { NotFoundException } from '../exceptions/NotFoundException';
 
 export class HelpCommand extends BaseCommand implements RpcCommandInterface<string> {
 
@@ -48,17 +49,34 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
                 if ( rootCommand ) {
                     if ( rootCommand.commandName === rootCommandName ) {
                         const rootCommandCommand = rpcCommandFactory.get(rootCommand);
-                        helpStr = rootCommandCommand.help() + '\n';
 
-                        for ( const childCommand of rootCommand.childCommands ) {
-                            let childCommandCommand;
-                            try {
-                                childCommandCommand = rpcCommandFactory.get(childCommand);
-                            } catch ( ex ) {
-                                this.log.warn(`help(): Couldn't find ${childCommand}.`);
-                                continue;
+                        if ( data.params.length <= 1 ) { // Get all children of the root command
+                            helpStr = rootCommandCommand.help() + '\n';
+
+                            for ( const childCommand of rootCommand.childCommands ) {
+                                let childCommandCommand;
+                                try {
+                                    childCommandCommand = rpcCommandFactory.get(childCommand);
+                                } catch ( ex ) {
+                                    this.log.warn(`help(): Couldn't find ${childCommand}.`);
+                                    continue;
+                                }
+                                helpStr += childCommandCommand.help() + '\n';
                             }
-                            helpStr += childCommandCommand.help() + '\n';
+                        } else { // Get just a single child of the root command
+                            for ( const childCommand of rootCommand.childCommands ) {
+                                if ( childCommand.commandName === data.params[1] ) {
+                                    let childCommandCommand;
+                                    try {
+                                        childCommandCommand = rpcCommandFactory.get(childCommand);
+                                    } catch ( ex ) {
+                                        this.log.warn(`help(): Couldn't find ${childCommand}.`);
+                                        continue;
+                                    }
+                                    return  rootCommandName + ' ' + childCommandCommand.help() + '\n';
+                                }
+                            }
+                            throw new NotFoundException(`Command <${data.params[0]} ${data.params[1]}> not found.`);
                         }
                     }
                 }
