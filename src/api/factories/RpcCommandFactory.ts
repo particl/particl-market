@@ -111,7 +111,6 @@ import { PriceTickerRootCommand } from '../commands/priceticker/PriceTickerRootC
 
 import { Command } from '../commands/Command';
 
-import { CurrencyPriceAddCommand } from '../commands/currencyprice/CurrencyPriceAddCommand';
 import { CurrencyPriceRootCommand } from '../commands/currencyprice/CurrencyPriceRootCommand';
 
 
@@ -226,8 +225,11 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemListCommand) private shoppingCartItemListCommand: ShoppingCartItemListCommand,
         @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemRootCommand) private shoppingCartItemRootCommand: ShoppingCartItemRootCommand,
 
+<<<<<<< ec18c940056c2fcbd6f52ef635df5851517c1e2c
         @inject(Types.Command) @named(Targets.Command.priceticker.PriceTickerRootCommand) private priceTickerRootCommand: PriceTickerRootCommand,
         @inject(Types.Command) @named(Targets.Command.currencyprice.CurrencyPriceAddCommand) private currencyPriceAddCommand: CurrencyPriceAddCommand,
+=======
+>>>>>>> made changes according to the PR#153 comments
         @inject(Types.Command) @named(Targets.Command.currencyprice.CurrencyPriceRootCommand) private currencyPriceRootCommand: CurrencyPriceRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
@@ -346,7 +348,6 @@ export class RpcCommandFactory {
 
         this.commands.push(priceTickerRootCommand);
 
-        this.commands.push(currencyPriceAddCommand);
         this.commands.push(currencyPriceRootCommand);
 
         this.commands.push(helpCommand);

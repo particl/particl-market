@@ -244,8 +244,7 @@ export const Targets = {
             PriceTickerRootCommand: 'PriceTickerRootCommand'
         },
         currencyprice: {
-            CurrencyPriceRootCommand: 'CurrencyPriceRootCommand',
-            CurrencyPriceAddCommand: 'CurrencyPriceAddCommand'
+            CurrencyPriceRootCommand: 'CurrencyPriceRootCommand'
         }
     },
     Factory:     {
