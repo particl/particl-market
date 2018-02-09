@@ -45,48 +45,66 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
             }
         } else {
             const rootCommandName = data.params[0];
-            for ( const rootCommand of Commands.rootCommands ) {
+            let rootCommand;
+            let rootCommandCommand;
+            let foundRoot = false;
+            for ( rootCommand of Commands.rootCommands ) {
                 if ( rootCommand ) {
                     if ( rootCommand.commandName === rootCommandName ) {
-                        const rootCommandCommand = rpcCommandFactory.get(rootCommand);
-
-                        if ( data.params.length <= 1 ) { // Get all children of the root command
-                            helpStr = rootCommandCommand.help() + '\n';
-
-                            for ( const childCommand of rootCommand.childCommands ) {
-                                let childCommandCommand;
-                                try {
-                                    childCommandCommand = rpcCommandFactory.get(childCommand);
-                                } catch ( ex ) {
-                                    this.log.warn(`help(): Couldn't find ${childCommand}.`);
-                                    continue;
-                                }
-                                helpStr += childCommandCommand.help() + '\n';
-                            }
-                        } else { // Get just a single child of the root command
-                            for ( const childCommand of rootCommand.childCommands ) {
-                                if ( childCommand.commandName === data.params[1] ) {
-                                    let childCommandCommand;
-                                    try {
-                                        childCommandCommand = rpcCommandFactory.get(childCommand);
-                                    } catch ( ex ) {
-                                        this.log.warn(`help(): Couldn't find ${childCommand}.`);
-                                        continue;
-                                    }
-                                    return  rootCommandName + ' ' + childCommandCommand.help() + '\n';
-                                }
-                            }
-                            throw new NotFoundException(`Command <${data.params[0]} ${data.params[1]}> not found.`);
-                        }
+                        foundRoot = true;
+                        rootCommandCommand = rpcCommandFactory.get(rootCommand);
+                        break;
                     }
                 }
             }
+            if ( !foundRoot ) {
+                // Root command wasn't found
+                throw new NotFoundException(`Command <${data.params[0]}> not found.`); 
+            }
+
+            if ( data.params.length <= 1 ) {
+                /*
+                 * Get all children of the root command.
+                 */
+                helpStr = rootCommandCommand.help();
+
+                for ( const childCommand of rootCommand.childCommands ) {
+                    let childCommandCommand;
+                    try {
+                        childCommandCommand = rpcCommandFactory.get(childCommand);
+                    } catch ( ex ) {
+                        this.log.warn(`help(): Couldn't find ${childCommand}.`);
+                        continue;
+                    }
+                    helpStr += childCommandCommand.help() + '\n';
+                }
+            } else { // if ( data.params.legnt <= 2 ) {
+                /*
+                 * Get just a single child of the root command.
+                 */
+                for ( const childCommand of rootCommand.childCommands ) {
+                    if ( childCommand.commandName === data.params[1] ) {
+                        let childCommandCommand;
+                        try {
+                            childCommandCommand = rpcCommandFactory.get(childCommand);
+                        } catch ( ex ) {
+                            this.log.warn(`help(): Couldn't find ${childCommand}.`);
+                            continue;
+                        }
+                        return  rootCommandName + ' ' + childCommandCommand.help();
+                    }
+                }
+                throw new NotFoundException(`Command <${data.params[0]} ${data.params[1]}> not found.`);
+            }
         }
+        helpStr = helpStr.trim(); // Remove trailing \n
         return helpStr;
     }
 
     public help(): string {
-        return this.getName() + ' [command]';
+        return this.getName() + ' [<command> [<subCommand>]] \n'
+            + '    <command>        - [optional] string - Command that we want to view help for. \n'
+            + '    <subCommand>     - [optional] string - Subcommand that we want to view help for. ';
     }
 
 }
