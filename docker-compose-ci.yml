@@ -13,6 +13,7 @@ services:
     environment:
       - NODE_ENV=development
       - APP_PORT=3100
+      - APP_HOST=http://localhost
       - RPCUSER=test
       - RPCPASSWORD=test
       - RPCHOSTNAME=feature1.particl.xyz
