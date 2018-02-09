@@ -74,7 +74,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
         return this.getName() + ' <itemhash> [(<bidDataId>, <bidDataValue>), ...] \n'
             + '    <itemhash>           - String - The hash of the item we want to send bids for. \n'
             + '    <bidDataId>          - [optional] Numeric - The id of the bid we want to send. \n'
-            + '        <bidDataValue>   - [optional] String - The value of the bid we want to send. ';
+            + '    <bidDataValue>       - [optional] String - The value of the bid we want to send. ';
     }
 
     public description(): string {
