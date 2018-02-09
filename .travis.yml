@@ -45,7 +45,7 @@ env:
 
 
 before_install:
-  - ./bin/ci-post.sh "$TRAVIS_COMMIT_MESSAGE" "$TRAVIS_BRANCH/$TRAVIS_COMMIT" "$DISCORD_URL"
+  - ./bin/ci-post.sh "$TRAVIS_COMMIT_MESSAGE" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
   # update docker
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
   - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
@@ -95,17 +95,17 @@ after_success:
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:master-f Dockerfile.ci .;
       docker push $IMAGE_NAME:master;
       docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git master kontena-master.yml;
-      ./bin/ci-post.sh "build finished and redeployed. http://master1.particl.xyz/cli" "$TRAVIS_BRANCH/$TRAVIS_COMMIT" "$DISCORD_URL"
+      ./bin/ci-post.sh "build finished and redeployed. http://master1.particl.xyz/cli" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
     elif [[ $TRAVIS_BRANCH == "develop" && $TRAVIS_PULL_REQUEST == "false" ]]; then
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:develop -f Dockerfile.ci .;
       docker push $IMAGE_NAME:develop;
       docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git develop kontena-develop.yml;
-      ./bin/ci-post.sh "build finished and redeployed. http://dev1.particl.xyz/cli" "$TRAVIS_BRANCH/$TRAVIS_COMMIT" "$DISCORD_URL"
+      ./bin/ci-post.sh "build finished and redeployed. http://dev1.particl.xyz/cli" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
     else
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci .;
       docker push $IMAGE_NAME:$IMAGE_TAG;
       docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $TRAVIS_BRANCH kontena-feature.yml;
-      ./bin/ci-post.sh "build finished and redeployed. http://feature1.particl.xyz/cli" "$TRAVIS_BRANCH/$TRAVIS_COMMIT" "$DISCORD_URL"
+      ./bin/ci-post.sh "build finished and redeployed. http://feature1.particl.xyz/cli" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
     fi
 
 
@@ -131,7 +131,7 @@ after_success:
 
 after_failure:
 #   - curl -d "{\"content\": \"Build failed. $TRAVIS_BRANCH/$TRAVIS_COMMIT $TRAVIS_COMMIT_MESSAGE\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-    - ./bin/ci-post.sh "build failed." "$TRAVIS_BRANCH/$TRAVIS_COMMIT" "$DISCORD_URL"
+    - ./bin/ci-post.sh "build failed." "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
 
 #before_deploy:
 #  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
