@@ -26,28 +26,20 @@ export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInt
         this.log = new Logger(__filename);
     }
 
+    /**
+     *
+     * data.params[]:
+     * currencies[]: array of currencies
+     * example: [INR, USD, EUR, GBP]
+     *
+     * description: Array of currency like.. [INR, USD, EUR, GBP].
+     * ...
+     */
+
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
         if (data.params.length > 0) {
-            const currencies = data.params;
-            let returnData: any = [];
-            for (const currency of currencies) { // INR, USD
-                let searchData: any = await this.priceTickerService.search(currency);
-                let priceTicker: any = [];
-                searchData = searchData.toJSON();
-                if (searchData.length > 0) {
-                    // check and update first record only
-                    const needToBeUpdate = await this.priceTickerService.needTobeUpdate(searchData[0]);
-                    priceTicker = searchData;
-                    if (needToBeUpdate) {
-                        priceTicker = await this.priceTickerService.updatePriceTicker(searchData, currency);
-                    }
-                } else {
-                    // call api and create
-                    priceTicker = await this.priceTickerService.getAndCreateData(currency);
-                }
-                returnData = returnData.concat(priceTicker);
-            }
+            const returnData = await this.priceTickerService.executePriceTicker(data.params);
             return returnData;
         } else {
             throw new MessageException('Currency can\'t be blank');
@@ -55,7 +47,8 @@ export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInt
     }
 
     public help(): string {
-        return this.getName();
+        return this.getName() + '<currency> [currencies...]\n'
+        + '    <currency>    - currency\n';
     }
 
     public description(): string {
