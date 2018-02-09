@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile.ci
     ports:
       - 3100:3100
-    command: bin/entrypoint.sh
+    command: bin/ci-entrypoint.sh
     env_file:
       - .env.docker-compose
     environment:
@@ -26,7 +26,7 @@ services:
       dockerfile: Dockerfile.ci
     ports:
       - 3200:3200
-    command: bin/entrypoint.sh
+    command: bin/ci-entrypoint.sh
     env_file:
       - .env.docker-compose
     environment:
