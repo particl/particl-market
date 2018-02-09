@@ -5,6 +5,7 @@ import { ItemImage } from './ItemImage';
 import { ShippingDestination } from './ShippingDestination';
 import { ItemCategory } from './ItemCategory';
 import { ListingItemTemplate } from './ListingItemTemplate';
+import {ListingItem} from './ListingItem';
 
 export class ItemInformation extends Bookshelf.Model<ItemInformation> {
 
@@ -58,15 +59,8 @@ export class ItemInformation extends Bookshelf.Model<ItemInformation> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    public get ListingItemTemplateId(): string { return this.get('listing_item_template_id'); }
-    public set ListingItemTemplateId(value: string) { this.set('listing_item_template_id', value); }
-
     public ItemCategory(): ItemCategory {
         return this.belongsTo(ItemCategory, 'item_category_id', 'id');
-    }
-
-    public ListingItemTemplate(): ListingItemTemplate {
-        return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
     }
 
     public ItemLocation(): ItemLocation {
@@ -80,4 +74,13 @@ export class ItemInformation extends Bookshelf.Model<ItemInformation> {
     public ShippingDestinations(): Collection<ShippingDestination> {
         return this.hasMany(ShippingDestination, 'item_information_id', 'id');
     }
+
+    public ListingItemTemplate(): ListingItemTemplate {
+        return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
+    }
+
+    public ListingItem(): ListingItem {
+        return this.belongsTo(ListingItem, 'listing_item_id', 'id');
+    }
+
 }

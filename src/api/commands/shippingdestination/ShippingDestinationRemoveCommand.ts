@@ -32,6 +32,7 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
      * data.params[]:
      *  [0]: shippingDestinationId
      * or
+     * TODO: this seems unnecessary, in what situation would we need this?
      *  [0]: listing_item_template_id
      *  [1]: country/countryCode
      *  [2]: shipping availability (ShippingAvailability enum)
@@ -42,12 +43,20 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         if ( data.params.length === 1 ) {
-            // <shippingDestinationId>
             const shippingDestinationId: number = data.params[0];
 
-            return this.shippingDestinationService.destroy(shippingDestinationId);
+            /// shipping destinations related to listing items cant be modified
+            const shippingDestinationModel = await this.shippingDestinationService.findOne(shippingDestinationId);
+            const shippingDestination = shippingDestinationModel.toJSON();
+
+            if (!!shippingDestination.ItemInformation.ListingItem.id) {
+                this.log.warn(`Can't delete shipping destination, because the item has allready been posted!`);
+                throw new MessageException(`Can't delete shipping destination, because the item has allready been posted!`);
+            } else {
+                return this.shippingDestinationService.destroy(shippingDestinationId);
+            }
+
         } else if ( data.params.length === 3 ) {
-            // <listing_item_template_id> (<country>|<countryCode>) <shipping availability>
 
             const listingItemTemplateId: number = data.params[0];
             let countryCode: string = data.params[1];
@@ -69,8 +78,8 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
             const itemInformation = searchRes[1];
 
             if (itemInformation.listingItemId) {
-                this.log.warn(`Can't delete shipping destination because the item has allready been posted!`);
-                throw new MessageException(`Can't delete shipping destination because the item has allready been posted!`);
+                this.log.warn(`Can't delete shipping destination, because the item has allready been posted!`);
+                throw new MessageException(`Can't delete shipping destination, because the item has allready been posted!`);
             }
 
             if (shippingDestination === null) {

@@ -1,17 +1,13 @@
-import { rpc, api } from './lib/api';
-import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { ShippingDestinationRemoveCommand } from '../../src/api/commands/shippingdestination/ShippingDestinationRemoveCommand';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { ShippingCountries } from '../../src/core/helpers/ShippingCountries';
+import { rpc, api } from '../lib/api';
+import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { ShippingDestinationRemoveCommand } from '../../../src/api/commands/shippingdestination/ShippingDestinationRemoveCommand';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as countryList from 'iso3166-2-db/countryList/en.json';
-import { JsonRpc2Response} from '../../src/core/api/jsonrpc';
 import { ListingItem, ListingItemTemplate } from 'resources';
-import { Logger } from '../../src/core/Logger';
+import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 
 /**
  * shipping destination can be removed using following params:
@@ -20,10 +16,6 @@ import { Logger } from '../../src/core/Logger';
  * [0]: listing_item_template_id
  * [1]: country/countryCode
  * [2]: shipping availability (ShippingAvailability enum)
- *
- * TODO: why do we have shipping availability there? if user wants to remove the shipping destinations availability,
- * then shouldn't templateid + country code be enough information to remove that? there's always only one availability
- * for one country, you can't ship and not_ship at the same time.
  *
  */
 describe('ShippingDestinationRemoveCommand', () => {
@@ -54,6 +46,7 @@ describe('ShippingDestinationRemoveCommand', () => {
             true    // generateListingItemObjects
         ]).toParamsArray();
 
+        /// TEMPLATE
         // create template without shipping destinations and store its id for testing
         const listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
@@ -70,15 +63,13 @@ describe('ShippingDestinationRemoveCommand', () => {
             [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]));
         createdShippingDestinationId = addShippingResult.getBody().result.id;
 
-        // TODO: FIX THIS, listing items are not modified, shipping items do not get removed from listing items
-        // TODO: should be listingitemtemplate
-
+        // LISTING ITEM
         // create listing item with shipping destinations (1-5) and store its id for testing
         const listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM,                             // generate listing item
-            1,                                                      // just one
-            true,                                                   // return model
-            new GenerateListingItemTemplateParams().toParamsArray() // all true -> generate everything
+            CreatableModel.LISTINGITEM,                         // generate listing item
+            1,                                          // just one
+            true,                                    // return model
+            new GenerateListingItemParams().toParamsArray()     // all true -> generate everything
         ) as ListingItem[];
         createdListingItemId = listingItems[0].id;
 
@@ -112,7 +103,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         expect(removeShippingResult.error.error.message).toBe('Entity with identifier ' + createdListingItemTemplateId + ' does not exist');
     });
 
-    test('Should fail to remove shipping destination for invalid itemtemplate id', async () => {
+    test('Should fail to remove shipping destination using invalid itemtemplate id', async () => {
         const removeShippingResult: any = await rpc(method, subCommands.concat(
             [createdListingItemTemplateId + 100, countryList.ZA.iso, ShippingAvailability.SHIPS]
         ));
@@ -123,7 +114,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         expect(removeShippingResult.error.error.message).toBe('Entity with identifier ' + (createdListingItemTemplateId + 100) + ' does not exist');
     });
 
-    test('Should remove shipping destination', async () => {
+    test('Should remove shipping destination from template', async () => {
         const removeShippingResult: any = await rpc(method, subCommands.concat(
             [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]
         ));
@@ -132,7 +123,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         removeShippingResult.expectStatusCode(200);
     });
 
-    test('Should fail remove shipping destination because it already removed', async () => {
+    test('Should fail to remove shipping destination from template because it already removed', async () => {
         const removeShippingResult: any = await rpc(method, subCommands.concat(
             [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]
         ));
@@ -141,7 +132,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         removeShippingResult.expectStatusCode(404);
     });
 
-    test('Should fail to remove shipping destination from listing item (listing items have allready been posted)', async () => {
+    test('Should fail to remove shipping destination from listing item (listing items have allready been posted, so they cant be modified)', async () => {
         const removeShippingResult: any = await rpc(method, subCommands.concat(
             [createdListingItemsShippingDestinationId]
         ));
@@ -149,10 +140,16 @@ describe('ShippingDestinationRemoveCommand', () => {
         removeShippingResult.expectJson();
         removeShippingResult.expectStatusCode(404);
         expect(removeShippingResult.error.error.success).toBe(false);
-        expect(removeShippingResult.error.error.message).toBe('Can\'t delete shipping destination because the item has allready been posted!');
+        expect(removeShippingResult.error.error.message).toBe('Can\'t delete shipping destination, because the item has allready been posted!');
     });
 
     test('Should remove shipping destination by id', async () => {
+
+        const addShippingSubCommands = [Commands.SHIPPINGDESTINATION_ROOT.commandName, Commands.SHIPPINGDESTINATION_ADD.commandName] as any[];
+        const addShippingResult = await rpc(method, addShippingSubCommands.concat(
+            [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]));
+        createdShippingDestinationId = addShippingResult.getBody().result.id;
+
         const removeShippingResult: any = await rpc(method, subCommands.concat(
             [createdShippingDestinationId]
         ));
