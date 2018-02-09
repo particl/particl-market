@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #set -e
-yarn install --force
+yarn install
 bin/copy-env.sh
 bin/ci-create-dbs.sh
 bin/ci-create-build-version.sh
