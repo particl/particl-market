@@ -61,9 +61,13 @@ install:
   - ./bin/copy-env.sh
   - ./bin/ci-create-dbs.sh
   - ./bin/ci-create-build-version.sh
+  - cp -rf node_modules data/app1_node_modules
+  - cp -rf node_modules data/app2_node_modules
+
   # build and run the stack
   - docker-compose --file docker-compose-ci.yml up --build -d
   - docker ps
+  - docker-compose ps
 
 script:
 #  - ./bin/ci-post.sh "running tests https://travis-ci.org/particl/dapp-shell/builds/$TRAVIS_BUILD_ID" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
