@@ -52,6 +52,7 @@ before_install:
   # install other misc stuff
   - npm install -g wait-port
   - npm install -g -s --no-progress yarn
+  - npm install -g yarn
   #- docker pull $IMAGE_NAME:develop || true
 
 install:

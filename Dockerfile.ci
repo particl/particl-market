@@ -18,5 +18,5 @@ COPY ./test/.env.blackbox.example /app/test/.env.blackbox
 RUN bin/ci-create-dbs.sh
 RUN bin/ci-create-build-version.sh
 
-CMD [ "yarn", "serve" ]
+#CMD [ "yarn", "serve" ]
 EXPOSE 3000 3100 3200
