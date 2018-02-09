@@ -92,6 +92,29 @@ export class PriceTickerService {
         await this.priceTickerRepo.destroy(id);
     }
 
+    public async executePriceTicker(currencies: string[]): Promise<any> {
+        // const currencies = data.params;
+        let returnData: any = [];
+        for (const currency of currencies) { // INR, USD
+            let searchData: any = await this.search(currency);
+            let priceTicker: any = [];
+            searchData = searchData.toJSON();
+            if (searchData.length > 0) {
+                // check and update first record only
+                const needToBeUpdate = await this.needTobeUpdate(searchData[0]);
+                priceTicker = searchData;
+                if (needToBeUpdate) {
+                    priceTicker = await this.updatePriceTicker(searchData, currency);
+                }
+            } else {
+                // call api and create
+                priceTicker = await this.getAndCreateData(currency);
+            }
+            returnData = returnData.concat(priceTicker);
+        }
+        return returnData;
+    }
+
     /**
      * update PriceTicker
      *
@@ -99,7 +122,7 @@ export class PriceTickerService {
      * @param apidata
      * @returns {Promise<any>}
      */
-    public async updatePriceTicker(priceTickerColl: any, currency: string): Promise<any> {
+    private async updatePriceTicker(priceTickerColl: any, currency: string): Promise<any> {
         // call api
         const returnData: any = [];
         const updateDataCollection = await this.getLatestData(currency);
@@ -136,12 +159,12 @@ export class PriceTickerService {
      * @param currency
      * @returns {Promise<PriceTicker>}
      */
-    public async needTobeUpdate(priceTicker: PriceTicker): Promise<boolean> {
+    private async needTobeUpdate(priceTicker: PriceTicker): Promise<boolean> {
         const diffMint = await this.checkDiffBtwDate(priceTicker['updatedAt']);
         return (diffMint > process.env.DATA_CHECK_DELAY) ? true : false;
     }
 
-    public async getAndCreateData(currency: string): Promise<any> {
+    private async getAndCreateData(currency: string): Promise<any> {
         const returnData: any = [];
         const dataCollection = await this.getLatestData(currency);
         for (const res of dataCollection) {
