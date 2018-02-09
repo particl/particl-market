@@ -66,7 +66,7 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
                 /*
                  * Get all children of the root command.
                  */
-                helpStr = rootCommandCommand.help();
+                helpStr = rootCommandCommand.help() + '\n';
 
                 for ( const childCommand of rootCommand.childCommands ) {
                     let childCommandCommand;
