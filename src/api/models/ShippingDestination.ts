@@ -1,5 +1,7 @@
 import { Bookshelf } from '../../config/Database';
 import { ShippingDestinationSearchParams } from '../requests/ShippingDestinationSearchParams';
+import {ListingItemTemplate} from './ListingItemTemplate';
+import {ItemInformation} from './ItemInformation';
 
 export class ShippingDestination extends Bookshelf.Model<ShippingDestination> {
 
@@ -7,9 +9,9 @@ export class ShippingDestination extends Bookshelf.Model<ShippingDestination> {
         if (withRelated) {
             return await ShippingDestination.where<ShippingDestination>({ id: value }).fetch({
                 withRelated: [
-                    // TODO:
-                    // 'ShippingDestinationRelated',
-                    // 'ShippingDestinationRelated.Related'
+                    'ItemInformation',
+                    'ItemInformation.ListingItem',
+                    'ItemInformation.ListingItemTemplate'
                 ]
             });
         } else {
@@ -41,8 +43,8 @@ export class ShippingDestination extends Bookshelf.Model<ShippingDestination> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public ShippingDestinationRelated(): ShippingDestinationRelated {
-    //    return this.hasOne(ShippingDestinationRelated);
-    // }
+    public ItemInformation(): ItemInformation {
+        return this.belongsTo(ItemInformation, 'item_information_id', 'id');
+    }
+
 }

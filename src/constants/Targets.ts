@@ -124,6 +124,9 @@ export const Targets = {
         },
         Command: 'Command',
         CommandEnumType: 'CommandEnumType',
+        daemon: {
+            DaemonRootCommand: 'DaemonRootCommand'
+        },
         data: {
             DataAddCommand: 'DataAddCommand',
             DataCleanCommand: 'DataCleanCommand',

@@ -22,9 +22,13 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
     }
 
     /**
+     * data.params[]:
+     *  [0]: CreatableModel, model to generate
+     *  [1]: json
+     *  [2]: withRelated, return full objects or just id's
      *
-     * @param data
-     * @returns {Promise<Bookshelf.Model<any>>}
+     * @param {RpcRequest} data
+     * @returns {Promise<any>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
@@ -43,6 +47,5 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
     public description(): string {
         return 'Adds data to the database.';
     }
-
 
 }

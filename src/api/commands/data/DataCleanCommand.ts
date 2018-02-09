@@ -20,13 +20,20 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
         this.log = new Logger(__filename);
     }
 
+    /**
+     * data.params[]:
+     *  none
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<void>}
+     */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         return await this.testDataService.clean();
     }
 
     public help(): string {
-        return this.getName() + ' <TODO>';
+        return this.getName() + '';
     }
 
     public description(): string {
