@@ -28,23 +28,6 @@ env:
     - MAINNET_PORT=52738
     - TESTNET_PORT=52935
 
-# TRAVIS_BRANCH:
-#  for push builds, or builds not triggered by a pull request, this is the name of the branch.
-#  for builds triggered by a pull request this is the name of the branch targeted by the pull request.
-#  for builds triggered by a tag, this is the same as the name of the tag (TRAVIS_TAG)
-# TRAVIS_COMMIT:
-#  The commit that the current build is testing.
-# TRAVIS_EVENT_TYPE:
-#  Indicates how the build was triggered. One of push, pull_request, api, cron
-# TRAVIS_PULL_REQUEST_BRANCH:
-#  if the current job is a pull request, the name of the branch from which the PR originated.
-#  if the current job is a push build, this variable is empty (
-# TRAVIS_TEST_RESULT:
-#  is set to 0 if the build is successful and 1 if the build is broken.
-# TRAVIS_TAG:
-#  If the current build is for a git tag, this variable is set to the tag’s name.
-
-
 before_install:
   - export COMMITTER_EMAIL="$(git log -1 $TRAVIS_COMMIT --pretty="%cE")"
   - export AUTHOR_NAME="$(git log -1 $TRAVIS_COMMIT --pretty="%aN")"
@@ -66,7 +49,6 @@ before_install:
   - npm install -g -s --no-progress yarn
   #- docker pull $IMAGE_NAME:develop || true
 
-
 install:
   # install deps and set up the app locally
   - yarn install
@@ -76,15 +58,6 @@ install:
   # build and run the stack
   - docker-compose --file docker-compose-ci.yml up --build -d
   - docker ps
-
-#  - docker build --pull --cache-from "$IMAGE_NAME" -t $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci .
-#  - docker push $DOCKER_IMAGE:$TRAVIS_COMMIT
-#  - docker run -d $DOCKER_IMAGE:$TRAVIS_COMMIT
-#  - docker build -t ludx/dapp-shell-ci -f Dockerfile.ci .
-#  - docker build --pull --cache-from "$IMAGE_NAME" -t r.cfcr.io/ludx/dapp-shell-ci:latest -t r.cfcr.io/ludx/dapp-shell-ci:develop -t r.cfcr.io/ludx/dapp-shell-ci:master -f Dockerfile.ci .
-
-#before_script:
-#  - docker pull myorg/myimage || true
 
 script:
 #  - ./bin/ci-post.sh "running tests https://travis-ci.org/particl/dapp-shell/builds/$TRAVIS_BUILD_ID" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
@@ -101,23 +74,16 @@ after_success:
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:master-f Dockerfile.ci .;
       docker push $IMAGE_NAME:master;
       docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git master kontena-master.yml;
-#      ./bin/ci-post.sh "build finished and redeployed. http://master1.particl.xyz/cli" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
     elif [[ $TRAVIS_BRANCH == "develop" && $TRAVIS_PULL_REQUEST == "false" ]]; then
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:develop -f Dockerfile.ci .;
       docker push $IMAGE_NAME:develop;
       docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git develop kontena-develop.yml;
-#      ./bin/ci-post.sh "build finished and redeployed. http://dev1.particl.xyz/cli" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
     else
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci .;
       docker push $IMAGE_NAME:$IMAGE_TAG;
       docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $TRAVIS_BRANCH kontena-feature.yml;
-#      ./bin/ci-post.sh "build finished and redeployed. http://feature1.particl.xyz/cli" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
     fi
 
-
-      # curl -d "{\"content\": \"Build finished and image deployed. http://master1.particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-      # curl -d "{\"content\": \"Build finished and image deployed. http://dev1.particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-      # curl -d "{\"content\": \"Build finished and image deployed. http://feature1.particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
 
 #  - if [ "$TRAVIS_BRANCH" == "master" ]; then
 #      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
@@ -136,31 +102,10 @@ after_success:
 #    fi
 
 #after_failure:
-#   - curl -d "{\"content\": \"Build failed. $TRAVIS_BRANCH/$TRAVIS_COMMIT $TRAVIS_COMMIT_MESSAGE\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
 #    - ./bin/ci-post.sh "build failed." "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
 
-#before_deploy:
-#  - docker login -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
-#  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:latest"
-#  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${version}"
-#  - git_sha="$(git rev-parse --short HEAD)"
-#  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:develop"
-#  - docker tag "$IMAGE_NAME" "${IMAGE_NAME}:${git_sha}-develop"
-
-#deploy:
-#  provider: script
-#  script: docker push "${IMAGE_NAME}:latest" && docker push "${IMAGE_NAME}:${version}"
-#  script: docker push "${IMAGE_NAME}:develop" && docker push "${IMAGE_NAME}:${git_sha}-develop"
-#  on:
-#    branch: master
-
-#after_deploy:
-
 after_script:
-  # login to registry
   - docker images
-#  - curl -d "{\"content\": \"Build finished and image deployed. http://[TODO].particl.xyz/cli\", \"username\": \"CI\"}" -H 'Content-Type: application/json' -X POST ${{DISCORD_URL}}
-
 
 #notifications:
 #  email:
