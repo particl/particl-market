@@ -35,7 +35,8 @@ before_install:
   - echo "$COMMITTER_EMAIL"
   - echo "$AUTHOR_NAME"
   - echo "$ALL_COMMITS"
-  - ./bin/ci-post.sh "[$AUTHOR_NAME] $TRAVIS_COMMIT_RANGE $ALL_COMMITS https://travis-ci.org/particl/dapp-shell/builds/$TRAVIS_BUILD_ID" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
+#  - ./bin/ci-post.sh "[$AUTHOR_NAME] $TRAVIS_COMMIT_RANGE $ALL_COMMITS https://travis-ci.org/particl/dapp-shell/builds/$TRAVIS_BUILD_ID" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
+  - ./bin/ci-post.sh "[$AUTHOR_NAME] $TRAVIS_COMMIT_RANGE $TRAVIS_COMMIT_MESSAGE https://travis-ci.org/particl/dapp-shell/builds/$TRAVIS_BUILD_ID" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
 
   # update docker
   - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
