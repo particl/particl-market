@@ -1,13 +1,13 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { EscrowType } from '../../src/api/enums/EscrowType';
-import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { EscrowType } from '../../../src/api/enums/EscrowType';
+import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/ListingItemTemplateCreateRequest';
+import { PaymentType } from '../../../src/api/enums/PaymentType';
+import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
-describe('/EscrowCreateCommand', () => {
+describe('EscrowCreateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ESCROW_ROOT.commandName;

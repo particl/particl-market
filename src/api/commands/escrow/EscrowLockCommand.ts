@@ -33,34 +33,27 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
      * [1]: nonce
      * [2]: addressId (from profile deliveryaddresses)
      * [3]: memo
-     * @param data
+     *
+     * @param {RpcRequest} data
      * @returns {Promise<any>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
-        // find listing item by hash
-        const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
 
-        // fetch related escrow
+        const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
         const paymentInformation = listingItem.related('PaymentInformation').toJSON();
 
         if (_.isEmpty(paymentInformation) || _.isEmpty(listingItem)) {
             throw new MessageException('PaymentInformation or ListingItem not found!');
         }
 
-        const escrow = paymentInformation.Escrow;
-
-        if (_.isEmpty(escrow)) {
-            throw new MessageException('Escrow not found!');
-        }
-
-        return this.escrowService.lock({
+        return this.escrowService.lock(listingItem.toJSON(), {
             listing: data.params[0],
             nonce: data.params[1],
             addressId: data.params[2],
             memo: data.params[3],
             action: EscrowMessageType.MPA_LOCK
-        } as EscrowLockRequest, escrow as Escrow);
+        } as EscrowLockRequest);
     }
 
     public help(): string {

@@ -21,6 +21,7 @@ import { MessageBroadcastService } from '../services/MessageBroadcastService';
 import { EscrowFactory } from '../factories/EscrowFactory';
 import { EscrowMessageInterface } from '../messages/EscrowMessageInterface';
 import { EscrowMessage } from '../messages/EscrowMessage';
+import {ListingItem} from 'resources';
 
 export class EscrowService {
 
@@ -185,12 +186,19 @@ export class EscrowService {
         await this.escrowRepo.destroy(id);
     }
 
+    /**
+     *
+     * @param {EscrowLockRequest} escrowRequest
+     * @returns {Promise<void>}
+     */
     @validate()
-    public async lock(@request(EscrowLockRequest) escrowRequest: EscrowLockRequest, escrow: Escrow): Promise<void> {
+    public async lock(listingItem: ListingItem, @request(EscrowLockRequest) escrowRequest: EscrowLockRequest): Promise<void> {
 
-        // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
-        // resources.Escrow module not able to include here.
-
+        // TODO:
+        const escrow = listingItem.PaymentInformation.Escrow;
+        if (_.isEmpty(escrow)) {
+            throw new MessageException('Escrow not found!');
+        }
         const escrowModel: any = escrow;
 
         // fetch the address
