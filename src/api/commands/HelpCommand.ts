@@ -103,8 +103,8 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
 
     public help(): string {
         return this.getName() + ' [<command> [<subCommand>]] \n'
-            + '    <command>        - [optional] string - Command that we want to view help for. \n'
-            + '    <subCommand>     - [optional] string - Subcommand that we want to view help for. ';
+            + '    <command>        - [optional] String - Command that we want to view help for. \n'
+            + '    <subCommand>     - [optional] String - Subcommand that we want to view help for. ';
     }
 
 }
