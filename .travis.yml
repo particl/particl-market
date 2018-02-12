@@ -76,9 +76,12 @@ script:
 #  - ./bin/ci-blackbox-tests.sh development 3100 http://feature1.particl.xyz test test feature1.particl.xyz 52738 52935
 #  - ./bin/ci-ui-tests.sh development 3100 http://feature1.particl.xyz test test feature1.particl.xyz 52738 52935
 #  - docker-compose down
-
   - docker login r.cfcr.io -u "$REGISTRY_USER" -p "$REGISTRY_PASS"
   - docker pull r.cfcr.io/ludx/codefresh-custom-runner:latest
+  - echo "TRAVIS_BRANCH $TRAVIS_BRANCH"
+  - echo "TRAVIS_PULL_REQUEST $TRAVIS_PULL_REQUEST"
+  - echo "IMAGE_NAME $IMAGE_NAME"
+  - echo "IMAGE_TAG $IMAGE_TAG"
   - if [[ $TRAVIS_BRANCH == "master" && $TRAVIS_PULL_REQUEST == "false" ]]; then
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:master-f Dockerfile.ci .;
       docker push $IMAGE_NAME:master;
@@ -100,6 +103,7 @@ script:
     fi
 
 after_success:
+  - echo "build success."
 
 #  - if [ "$TRAVIS_BRANCH" == "master" ]; then
 #      docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD";
@@ -117,8 +121,9 @@ after_success:
 #      docker push USER/REPO;
 #    fi
 
-#after_failure:
+after_failure:
 #    - ./bin/ci-post.sh "build failed." "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
+  - echo "build failure."
 
 after_script:
   - docker images
