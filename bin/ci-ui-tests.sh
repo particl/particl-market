@@ -9,4 +9,4 @@ export MAINNET_PORT=$7
 export TESTNET_PORT=$8
 
 wait-port $APP_HOST:$APP_PORT/cli
-npm run test:black-box:pretty
+npm run test:ui:pretty
