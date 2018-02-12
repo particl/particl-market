@@ -7,5 +7,6 @@ export RPCPASSWORD=$5
 export RPCHOSTNAME=$6
 export MAINNET_PORT=$7
 export TESTNET_PORT=$8
+
 wait-port $APP_HOST:$APP_PORT/cli
 npm run test:black-box:pretty

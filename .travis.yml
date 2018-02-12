@@ -72,9 +72,9 @@ install:
 script:
 #  - ./bin/ci-post.sh "running tests https://travis-ci.org/particl/dapp-shell/builds/$TRAVIS_BUILD_ID" "$TRAVIS_BRANCH/$COMMIT" "$DISCORD_URL"
   - npm test
-  - ./bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
-  - ./bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
-  - ./bin/ci-ui-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
+  - ./bin/ci-integration-tests.sh development 3100 http://feature1.particl.xyz test test feature1.particl.xyz 52738 52935
+  - ./bin/ci-blackbox-tests.sh development 3100 http://feature1.particl.xyz test test feature1.particl.xyz 52738 52935
+  - ./bin/ci-ui-tests.sh development 3100 http://feature1.particl.xyz test test feature1.particl.xyz 52738 52935
   - docker-compose down
 
 after_success:
