@@ -39,9 +39,9 @@ export class ShoppingCartAddCommand extends BaseCommand implements RpcCommandInt
     }
 
     public help(): string {
-        return this.getName() + ' <name> <profileId>\n'
-            + '    <name>          - The name of the shopping cart we want to create.\n'
-            + '    <profileId>       -  profile id for which cart will be created';
+        return this.getName() + ' <name> <profileId> \n'
+            + '    <name>                   - The name of the shopping cart we want to create. \n'
+            + '    <profileId>              - Profile id for which cart will be created. ';
     }
 
     public description(): string {

@@ -68,17 +68,17 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return this.getName() + ' <profileId> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>]'
-            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
-            + '                              this address with.\n'
-            + '    <title>                - String - A short identifier for the address.\n'
-            + '    <addressLine1>         - String - The first line of the address.\n'
-            + '    <addressLine2>         - String - The second line of the address.\n'
-            + '    <city>                 - String - The city of the address.\n'
-            + '    <state>                 - String - The state of the address.\n'
-            + '    <country>              - String - The country name of the address.\n'
-            + '    <countryCode>          - String - Two letter country code of the address.\n'
-            + '    <zip>                  - String - The ZIP code of your address.';
+        return this.getName() + ' <profileId> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] \n'
+            + '    <profileId>              - Numeric - The ID of the profile we want to associate \n'
+            + '                                this address with. \n'
+            + '    <title>                  - String - A short identifier for the address. \n'
+            + '    <addressLine1>           - String - The first line of the address. \n'
+            + '    <addressLine2>           - String - The second line of the address. \n'
+            + '    <city>                   - String - The city of the address. \n'
+            + '    <state>                  - String - The state of the address. \n'
+            + '    <country>                - String - The country name of the address. \n'
+            + '    <countryCode>            - String - Two letter country code of the address. \n'
+            + '    <zip>                    - String - The ZIP code of your address. ';
     }
 
     public description(): string {

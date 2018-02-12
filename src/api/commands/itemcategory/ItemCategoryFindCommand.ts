@@ -35,9 +35,9 @@ export class ItemCategoryFindCommand extends BaseCommand implements RpcCommandIn
     }
 
     public help(): string {
-        return this.getName() + ' [<searchString>]\n'
-            + '    <searchString>                  - [optional] String - A search string for finding\n'
-            + '                                       categories by name.';
+        return this.getName() + ' [<searchString>] \n'
+            + '    <searchString>                - [optional] String - A search string for finding \n'
+            + '                                     categories by name. ';
     }
 
     public description(): string {

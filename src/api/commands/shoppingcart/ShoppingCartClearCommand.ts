@@ -33,8 +33,8 @@ export class ShoppingCartClearCommand extends BaseCommand implements RpcCommandI
     }
 
     public help(): string {
-        return this.getName() + ' <cartId>\n'
-            + '    <cartId>          - The Id of the shopping cart we want to clear\n';
+        return this.getName() + ' <cartId> \n'
+            + '    <cartId>                 - The Id of the shopping cart we want to clear. ';
     }
 
     public description(): string {

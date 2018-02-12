@@ -36,8 +36,8 @@ export class ShoppingCartItemListCommand extends BaseCommand implements RpcComma
     }
 
     public help(): string {
-        return this.getName() + ' <cartId>\n'
-            + '    <cartId>          - The Id of the shopping cart whose listingItem we want';
+        return this.getName() + ' <cartId> \n'
+            + '    <cartId>                 - The Id of the shopping cart whose listingItem we want. ';
     }
 
     public description(): string {

@@ -33,8 +33,8 @@ export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInt
     }
 
     public help(): string {
-        return this.getName() + ' <cartId>\n'
-            + '    <cartId>          - The Id of the shopping cart we want to get\n';
+        return this.getName() + ' <cartId> \n'
+            + '    <cartId>                 - The Id of the shopping cart we want to get. ';
     }
 
     public description(): string {

@@ -35,8 +35,8 @@ export class AddressRemoveCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return this.getName() + ' <addressId>\n'
-            + '    <addressId>            - The ID of the address we want to remove and destroy.';
+        return this.getName() + ' <addressId> \n'
+            + '    <addressId>              - The ID of the address we want to remove and destroy. ';
     }
 
     public description(): string {

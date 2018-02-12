@@ -44,9 +44,9 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return this.getName() + ' <profileId>\n'
-            + '    <profileId>                     - Numeric - The ID of the profile we\n'
-            + '                                       want to associate this favorite with.';
+        return this.getName() + ' <profileId> \n'
+            + '    <profileId>                   - Numeric - The ID of the profile we \n'
+            + '                                     want to associate this favorite with. ';
     }
 
     public description(): string {

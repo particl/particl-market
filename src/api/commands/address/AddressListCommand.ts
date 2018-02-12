@@ -50,9 +50,9 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public help(): string {
-        return this.getName() + ' [<profileId>]\n'
-            + '    <profileId>            - Numeric - The ID of the profile we want to associate\n'
-            + '                              this address with.';
+        return this.getName() + ' [<profileId>] \n'
+            + '    <profileId>              - Numeric - The ID of the profile we want to associate \n'
+            + '                                this address with. ';
     }
 
     public description(): string {

@@ -37,9 +37,9 @@ export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return this.getName() + ' <profileId> <newProfileName>\n'
-            + '    <profileId>          - Numeric - The ID of the profile we want to modify.\n'
-            + '    <newProfileName>     - String - The new name we want to apply to the profile.';
+        return this.getName() + ' <profileId> <newProfileName> \n'
+            + '    <profileId>              - Numeric - The ID of the profile we want to modify. \n'
+            + '    <newProfileName>         - String - The new name we want to apply to the profile. ';
     }
 
     public description(): string {

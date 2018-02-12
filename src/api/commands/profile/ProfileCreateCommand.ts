@@ -39,12 +39,12 @@ export class ProfileCreateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public help(): string {
-        return this.getName() + ' <profileName> [<profileAddress>]\n'
-            + '    <profileName>          - The name of the profile we want to create.\n'
-            + '    <profileAddress>       - [optional] the particl address of this profile.\n'
-            + '                              This is the address that\'s used in the particl\n'
-            + '                              messaging system. Will be automatically generated\n'
-            + '                              if omitted.';
+        return this.getName() + ' <profileName> [<profileAddress>] \n'
+            + '    <profileName>            - The name of the profile we want to create. \n'
+            + '    <profileAddress>         - [optional] the particl address of this profile. \n'
+            + '                                This is the address that\'s used in the particl \n'
+            + '                                messaging system. Will be automatically generated \n'
+            + '                                if omitted. ';
     }
 
     public description(): string {
