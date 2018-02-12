@@ -61,8 +61,8 @@ install:
   - ./bin/copy-env.sh
   - ./bin/ci-create-dbs.sh
   - ./bin/ci-create-build-version.sh
-#  - cp -rf node_modules data/app1_node_modules
-#  - cp -rf node_modules data/app2_node_modules
+  - rm -rf data/app1_node_modules
+  - rm -rf data/app2_node_modules
 
   # build and run the stack
 #  - docker-compose --file docker-compose-ci.yml up --build -d
