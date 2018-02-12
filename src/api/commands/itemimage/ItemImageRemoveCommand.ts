@@ -41,8 +41,8 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
     }
 
     public help(): string {
-        return this.getName() + ' <itemImageId>\n'
-            + '    <itemImageId>                   - Numeric - The ID of the image we want to remove.';
+        return this.getName() + ' <itemImageId> \n'
+            + '    <itemImageId>                 - Numeric - The ID of the image we want to remove.';
     }
 
     public description(): string {

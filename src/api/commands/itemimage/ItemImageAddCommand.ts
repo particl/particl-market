@@ -60,13 +60,13 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
 
     public help(): string {
         return this.getName()
-            + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]]\n'
-            + '    <listingItemTemplateId>          - Numeric - The ID of the listing item template\n'
-            + '                                        we want to associate this item image with.\n'
-            + '    <dataId>                         - [optional] String - [TODO]\n'
-            + '    <protocol>                       - [optional] Enum{LOCAL, IPFS, HTTPS, ONION, SMSG} - The protocol we want to use to load the image.\n'
-            + '    <encoding>                       - [optional] Enum{BASE64} - The format the image is encoded in.\n'
-            + '    <data>                           - [optional] String - The image\'s data.';
+            + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]] \n'
+            + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template \n'
+            + '                                     we want to associate this item image with. \n'
+            + '    <dataId>                      - [optional] String - [TODO] \n'
+            + '    <protocol>                    - [optional] Enum{LOCAL, IPFS, HTTPS, ONION, SMSG} - The protocol we want to use to load the image. \n'
+            + '    <encoding>                    - [optional] Enum{BASE64} - The format the image is encoded in. \n'
+            + '    <data>                        - [optional] String - The image\'s data. ';
     }
 
     public description(): string {

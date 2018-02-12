@@ -34,9 +34,9 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
     }
 
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId>\n'
-            + '    <listingItemTemplateId>             - Numeric - The listingItemTemplateId of the item information we want\n'
-            + '                                       to retrieve.';
+        return this.getName() + ' <listingItemTemplateId> \n'
+            + '    <listingItemTemplateId>       - Numeric - The listingItemTemplateId of the item information we want \n'
+            + '                                     to retrieve.';
     }
 
     public description(): string {

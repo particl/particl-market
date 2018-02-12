@@ -32,9 +32,9 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
     }
 
     public help(): string {
-        return this.getName() + ' <listingTemplateId>\n'
-            + '    <listingTemplateId>    -    Numeric - The ID of the listing item template that we\n'
-            + '                                 want to destroy.';
+        return this.getName() + ' <listingTemplateId> \n'
+            + '    <listingTemplateId>           - Numeric - The ID of the listing item template that we \n'
+            + '                                     want to destroy. ';
     }
 
     public description(): string {

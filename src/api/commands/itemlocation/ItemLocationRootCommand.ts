@@ -33,7 +33,7 @@ export class ItemLocationRootCommand extends BaseCommand implements RpcCommandIn
     }
 
     public help(): string {
-        return this.getName() + ' (add|update|remove)';
+        return this.getName() + ' (add|update|remove) ';
     }
 
     public description(): string {
