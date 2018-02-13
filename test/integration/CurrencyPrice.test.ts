@@ -10,6 +10,7 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { CurrencyPrice } from '../../src/api/models/CurrencyPrice';
 
 import { CurrencyPriceService } from '../../src/api/services/CurrencyPriceService';
+import { CurrencyPriceParams } from '../../src/api/requests/CurrencyPriceParams';
 
 describe('CurrencyPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -21,6 +22,7 @@ describe('CurrencyPrice', () => {
     let currencyPriceService: CurrencyPriceService;
 
     let createdId;
+    let createdCurrencyPrice;
 
     const testData = {
         from: 'PART',
@@ -54,12 +56,21 @@ describe('CurrencyPrice', () => {
         createdId = currencyPriceModel.Id;
 
         const result = currencyPriceModel.toJSON();
-
+        createdCurrencyPrice = result;
         // test the values
         // expect(result.value).toBe(testData.value);
         expect(result.from).toBe(testData.from);
         expect(result.to).toBe(testData.to);
         expect(result.price).toBe(testData.price);
+    });
+
+    test('Should get currency price from db without updated', async () => {
+        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['INR']);
+        expect(currencyPriceModel[0].from).toBe('PART');
+        expect(currencyPriceModel[0].to).toBe('INR');
+        expect(createdCurrencyPrice.from).toBe('PART');
+        expect(createdCurrencyPrice.to).toBe('INR');
+        expect(createdCurrencyPrice.price).toBe(currencyPriceModel[0].price);
     });
 
     test('Should throw ValidationException because we want to create a empty currency price', async () => {
@@ -104,6 +115,77 @@ describe('CurrencyPrice', () => {
         expect(result.from).toBe(testDataUpdated.from);
         expect(result.to).toBe(testDataUpdated.to);
         expect(result.price).toBe(testDataUpdated.price);
+    });
+
+    test('Should get currency price with updated price', async () => {
+        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['INR']);
+        expect(currencyPriceModel[0].from).toBe('PART');
+        expect(currencyPriceModel[0].to).toBe('INR');
+        expect(createdCurrencyPrice.from).toBe('PART');
+        expect(createdCurrencyPrice.to).toBe('INR');
+        expect(currencyPriceModel[0].updatedAt).toBeGreaterThan(createdCurrencyPrice.updatedAt);
+
+        createdCurrencyPrice = currencyPriceModel[0];
+    });
+
+    test('Should get currency price one from db and another with updated price', async () => {
+        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['INR', 'USD']);
+        expect(currencyPriceModel[0].from).toBe('PART');
+        expect(currencyPriceModel[0].to).toBe('INR');
+        expect(currencyPriceModel[0].updatedAt).toBe(createdCurrencyPrice.updatedAt);
+        expect(currencyPriceModel[0].id).toBe(createdCurrencyPrice.id);
+        expect(currencyPriceModel[0].price).toBe(createdCurrencyPrice.price);
+
+        expect(currencyPriceModel[1].to).toBe('USD');
+        expect(currencyPriceModel[1]['from']).toBe('PART');
+        expect(currencyPriceModel[1].updatedAt).toBe(currencyPriceModel[1].createdAt);
+
+        createdCurrencyPrice = currencyPriceModel;
+    });
+
+    test('Should get currency price from db', async () => {
+        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['INR', 'USD']);
+        expect(currencyPriceModel[0].from).toBe('PART');
+        expect(currencyPriceModel[0].to).toBe('INR');
+        expect(currencyPriceModel[0].updatedAt).toBe(createdCurrencyPrice[0].updatedAt);
+        expect(createdCurrencyPrice[0].id).toBe(currencyPriceModel[0].id);
+        expect(createdCurrencyPrice[0].price).toBe(currencyPriceModel[0].price);
+        expect(createdCurrencyPrice[0].createdAt).toBe(currencyPriceModel[0].createdAt);
+
+        expect(createdCurrencyPrice[1].id).toBe(currencyPriceModel[1].id);
+        expect(currencyPriceModel[1].to).toBe('USD');
+        expect(currencyPriceModel[1]['from']).toBe('PART');
+        expect(createdCurrencyPrice[1].updatedAt).toBe(currencyPriceModel[1].updatedAt);
+        expect(createdCurrencyPrice[1].createdAt).toBe(currencyPriceModel[1].createdAt);
+        expect(createdCurrencyPrice[1].price).toBe(currencyPriceModel[1].price);
+
+        process.env.CHASING_COINS_API_DELAY = 0;
+        createdCurrencyPrice = currencyPriceModel;
+    });
+
+    test('Should get updated currency price', async () => {
+        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['INR', 'USD']);
+        expect(currencyPriceModel[0].from).toBe('PART');
+        expect(currencyPriceModel[0].to).toBe('INR');
+        expect(currencyPriceModel[0].updatedAt).toBeGreaterThan(createdCurrencyPrice[0].updatedAt);
+        expect(createdCurrencyPrice[0].id).toBe(currencyPriceModel[0].id);
+        expect(createdCurrencyPrice[0].createdAt).toBe(currencyPriceModel[0].createdAt);
+
+        expect(createdCurrencyPrice[1].id).toBe(currencyPriceModel[1].id);
+        expect(currencyPriceModel[1].to).toBe('USD');
+        expect(currencyPriceModel[1]['from']).toBe('PART');
+        expect(createdCurrencyPrice[1].updatedAt).toBeLessThan(currencyPriceModel[1].updatedAt);
+        expect(createdCurrencyPrice[1].createdAt).toBe(currencyPriceModel[1].createdAt);
+
+        createdCurrencyPrice = currencyPriceModel[1];
+    });
+
+    test('Should search currency price by from PART and to USD currency', async () => {
+        const currencyPriceModel = await currencyPriceService.search({from: 'PART', to: 'USD'} as CurrencyPriceParams);
+        expect(currencyPriceModel.From).toBe('PART');
+        expect(currencyPriceModel.To).toBe('USD');
+        expect(createdCurrencyPrice.price).toBe(currencyPriceModel.Price);
+        expect(createdCurrencyPrice.id).toBe(currencyPriceModel.id);
     });
 
     test('Should delete the currency price', async () => {
