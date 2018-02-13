@@ -7,11 +7,7 @@ export class PriceTicker extends Bookshelf.Model<PriceTicker> {
     public static async fetchById(value: number, withRelated: boolean = true): Promise<PriceTicker> {
         if (withRelated) {
             return await PriceTicker.where<PriceTicker>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'PriceTickerRelated',
-                    // 'PriceTickerRelated.Related'
-                ]
+                withRelated: []
             });
         } else {
             return await PriceTicker.where<PriceTicker>({ id: value }).fetch();

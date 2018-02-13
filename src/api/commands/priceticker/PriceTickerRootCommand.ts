@@ -43,7 +43,7 @@ export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInt
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<PriceTicker>> {
         if (data.params.length > 0) {
             let returnData: any = [];
-            returnData = await this.priceTickerService.executePriceTicker(data.params);
+            returnData = await this.priceTickerService.getPriceTickers(data.params);
             return returnData;
         } else {
             throw new MessageException('Currency can\'t be blank');
