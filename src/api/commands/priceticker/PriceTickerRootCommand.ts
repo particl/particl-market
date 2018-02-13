@@ -1,3 +1,4 @@
+import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -14,7 +15,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { PriceTicker } from '../../models/PriceTicker';
 
 
-export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<PriceTicker>> {
 
     public log: LoggerType;
 
@@ -29,17 +30,20 @@ export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInt
     /**
      *
      * data.params[]:
-     * currencies[]: array of currencies
-     * example: [INR, USD, EUR, GBP]
+     * [0] currecny
+     *  .
+     * [n] currency
      *
-     * description: Array of currency like.. [INR, USD, EUR, GBP].
-     * ...
+     * example: [ETH, BTC, XRP]
+     *
+     * @param data
+     * @returns {Promise<Bookshelf.Collection<PriceTicker>>}
      */
-
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<PriceTicker>> {
         if (data.params.length > 0) {
-            const returnData = await this.priceTickerService.executePriceTicker(data.params);
+            let returnData: any = [];
+            returnData = await this.priceTickerService.executePriceTicker(data.params);
             return returnData;
         } else {
             throw new MessageException('Currency can\'t be blank');
@@ -48,7 +52,7 @@ export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInt
 
     public help(): string {
         return this.getName() + '<currency> [currencies...]\n'
-        + '    <currency>    - currency\n';
+            + '    <currency>    - currency\n';
     }
 
     public description(): string {

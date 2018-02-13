@@ -18,14 +18,8 @@ export class PriceTicker extends Bookshelf.Model<PriceTicker> {
         }
     }
 
-    public static async search(currency: string): Promise<Collection<PriceTicker>> {
-        const priceTickerCollection = PriceTicker.forge<Collection<PriceTicker>>()
-            .query(qb => {
-                qb.where('currency', '=', currency);
-            })
-            .orderBy('id', 'ASC');
-
-        return priceTickerCollection.fetchAll();
+    public static async getOneBySymbol(currency: string): Promise<PriceTicker> {
+        return await PriceTicker.where<PriceTicker>({ crypto_symbol: currency }).fetch();
     }
 
     public get tableName(): string { return 'price_ticker'; }
@@ -85,12 +79,12 @@ export class PriceTicker extends Bookshelf.Model<PriceTicker> {
     public get CryptoLastUpdated(): string { return this.get('crypto_last_updated'); }
     public set CryptoLastUpdated(value: string) { this.set('crypto_last_updated', value); }
 
-    public get CryptoPriceCurrency(): string { return this.get('crypto_price_currency'); }
-    public set CryptoPriceCurrency(value: string) { this.set('crypto_price_currency', value); }
+    public get CryptoPriceEur(): string { return this.get('crypto_price_eur'); }
+    public set CryptoPriceEur(value: string) { this.set('crypto_price_eur', value); }
 
-    public get Crypto24HVolumeCurrency(): string { return this.get('crypto_24_h_volume_currency'); }
-    public set Crypto24HVolumeCurrency(value: string) { this.set('crypto_24_h_volume_currency', value); }
+    public get Crypto24HVolumeEur(): string { return this.get('crypto_24_h_volume_eur'); }
+    public set Crypto24HVolumeEur(value: string) { this.set('crypto_24_h_volume_eur', value); }
 
-    public get CryptoMarketCapCurrency(): string { return this.get('crypto_market_cap_currency'); }
-    public set CryptoMarketCapCurrency(value: string) { this.set('crypto_market_cap_currency', value); }
+    public get CryptoMarketCapEur(): string { return this.get('crypto_market_cap_eur'); }
+    public set CryptoMarketCapEur(value: string) { this.set('crypto_market_cap_eur', value); }
 }
