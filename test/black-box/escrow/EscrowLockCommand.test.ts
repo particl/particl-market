@@ -74,7 +74,7 @@ describe('EscrowLockCommand', () => {
             createdListingItem.hash, escrowLockTestData.nonce, createdAddress.id, escrowLockTestData.memo]);
         escrowLockRes.expectJson();
 
-        escrowLockRes.expectStatusCode(404);
+        escrowLockRes.expectStatusCode(200);
 
     });
 

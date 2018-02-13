@@ -53,6 +53,7 @@ services:
       - loadbalancerstack/internet_lb
 #    volumes:
 #      - /root/data/dapp-shell-feature1:/app/data
+    command: bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
       - APP_NAME=dapp-shell
@@ -99,6 +100,7 @@ services:
       - loadbalancerstack/internet_lb
 #    volumes:
 #      - /root/data/dapp-shell-feature2:/app/data
+    command: bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
       - APP_NAME=dapp-shell
