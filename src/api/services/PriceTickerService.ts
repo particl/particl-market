@@ -39,16 +39,8 @@ export class PriceTickerService {
 
     @validate()
     public async create( @request(PriceTickerCreateRequest) body: PriceTickerCreateRequest): Promise<PriceTicker> {
-        // TODO: extract and remove related models from request
-        // const priceTickerRelated = body.related;
-        // delete body.related;
-
         // If the request body was valid we will create the priceTicker
         const priceTicker = await this.priceTickerRepo.create(body);
-
-        // TODO: create related models
-        // priceTickerRelated._id = priceTicker.Id;
-        // await this.priceTickerRelatedService.create(priceTickerRelated);
 
         // finally find and return the created priceTicker
         const newPriceTicker = await this.findOne(priceTicker.id);
@@ -89,12 +81,6 @@ export class PriceTickerService {
         // update priceTicker record
         const updatedPriceTicker = await this.priceTickerRepo.update(id, priceTicker.toJSON());
 
-        // TODO: find related record and update it
-
-        // TODO: finally find and return the updated priceTicker
-        // const newPriceTicker = await this.findOne(id);
-        // return newPriceTicker;
-
         return updatedPriceTicker;
     }
 
@@ -118,7 +104,7 @@ export class PriceTickerService {
      *
      * @returns {Promise<PriceTicker[]>}
      */
-    public async executePriceTicker(currencies: string[]): Promise<PriceTicker[]> {
+    public async getPriceTickers(currencies: string[]): Promise<PriceTicker[]> {
         const returnData: any = [];
         for (const currency of currencies) { // ETH, BTC, XRP
             let priceTicker;
@@ -182,7 +168,7 @@ export class PriceTickerService {
     }
 
     /**
-     * check updated in more than 1 minute ago
+     * check updated in more than process.env.DATA_CHECK_DELAY ago
      *
      * @param currency
      * @returns {Promise<boolean>}
@@ -215,14 +201,14 @@ export class PriceTickerService {
     }
 
     /**
-     * return diffrence between passing timestamp and current timestamp in MINUTES
+     * return diffrence between passing timestamp and current timestamp in SECONDS
      *
      * @param date : timestamp
-     * @returns {<number>} timeDiff in minutes
+     * @returns {<number>} timeDiff in seconds
      */
     private async checkDiffBtwDate(timestamp: Date): Promise<number> {
         const current: any = new Date();
         const ticker: any = new Date(timestamp);
-        return (current - ticker) / 60000;
+        return (current - ticker) / 1000;
     }
 }

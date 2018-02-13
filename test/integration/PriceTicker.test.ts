@@ -226,7 +226,7 @@ describe('PriceTicker', () => {
 
     test('Should get updated priceticker if timestamp is older', async () => {
         const currencies = ['ETH'];
-        const PriceTickerModel: any = await priceTickerService.executePriceTicker(currencies);
+        const PriceTickerModel: any = await priceTickerService.getPriceTickers(currencies);
         const result = PriceTickerModel[0];
 
         // should be updated
