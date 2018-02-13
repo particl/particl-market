@@ -53,13 +53,13 @@ export class CurrencyPriceService {
 
     /**
      *
-     * data.params[]:
-     * fromCurrency: fromCurrency
+     * fromCurrency: fromCurrency name (PART for now)
      * toCurrencies[]: array of toCurrencies
-     * example: [INR, USD, EUR, GBP]
+     * example: toCurrencies[] = [INR, USD, EUR, GBP]
      *
      * description: from argument must be PART for now and toCurrencies is an array of toCurrencies like [INR, USD, EUR, GBP].
-     * ...
+     *
+     * @returns {Promise<Bookshelf.Collection<CurrencyPrice>>}
      */
 
     public async getCurrencyPrices(fromCurrency: string, toCurrencies: string[]): Promise<Bookshelf.Collection<CurrencyPrice>> {
@@ -88,7 +88,7 @@ export class CurrencyPriceService {
                             price: updatedCurrency.result
                         } as CurrencyPriceUpdateRequest);
 
-                        returnData.push(updatedCurrencyPrice);
+                        returnData.push(updatedCurrencyPrice.toJSON());
                     } else {
                         returnData.push(currency);
                     }
@@ -102,7 +102,7 @@ export class CurrencyPriceService {
                         price: updatedCurrency.result
                     } as CurrencyPriceCreateRequest);
 
-                    returnData.push(createdCurrencyPrice);
+                    returnData.push(createdCurrencyPrice.toJSON());
                 }
             } else {
                 throw new MessageException(`Invalid currency ${toCurrency}`);
@@ -172,11 +172,15 @@ export class CurrencyPriceService {
         }
     }
 
-    // check whether the results in db are older than 1 min
+    /**
+     * currencyUpdatedAt: timestamp
+     * @returns {Promise<boolean>}
+     */
+
     private async needToUpdate(currencyUpdatedAt: number): Promise<boolean> {
         const current: any = new Date();
         const tricker: any = new Date(currencyUpdatedAt);
         // check if the results in db are older than 1 min
-        return (((current - tricker) / 60000) > 1);
+        return (((current - tricker) / 60000) > process.env.CHASING_COINS_API_DELAY);
     }
 }
