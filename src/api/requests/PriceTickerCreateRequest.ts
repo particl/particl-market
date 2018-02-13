@@ -47,15 +47,13 @@ export class PriceTickerCreateRequest extends RequestBody {
 
     public crypto_last_updated: string;
 
-    public crypto_price_currency: string;
-
-    public crypto_24h_volume_currency: string;
-
-    public crypto_market_cap_currency: string;
-
-
+    @IsNotEmpty()
+    public crypto_price_eur: string;
 
     @IsNotEmpty()
-    public currency: string;
+    public crypto_24h_volume_eur: string;
+
+    @IsNotEmpty()
+    public crypto_market_cap_eur: string;
 }
 // tslint:enable:variable-name

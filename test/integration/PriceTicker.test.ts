@@ -39,10 +39,9 @@ describe('PriceTicker', () => {
         crypto_percent_change_24h: '7.28',
         crypto_percent_change_7d: '-20.22',
         crypto_last_updated: '1518071364',
-        crypto_price_currency: '514365.57325',
-        crypto_24h_volume_currency: '635934521500.0000000000',
-        crypto_market_cap_currency: '8668422978032',
-        currency: 'INR'
+        crypto_price_eur: '514365.57325',
+        crypto_24h_volume_eur: '635934521500.0000000000',
+        crypto_market_cap_eur: '8668422978032'
     } as PriceTickerCreateRequest;
 
     const testDataUpdated = {
@@ -61,11 +60,11 @@ describe('PriceTicker', () => {
         crypto_percent_change_24h: '7.16',
         crypto_percent_change_7d: '-29.01',
         crypto_last_updated: '1518071354',
-        crypto_price_currency: '51684.0642',
-        crypto_24h_volume_currency: '271041885874.9999694824',
-        crypto_market_cap_currency: '5038254779310',
-        currency: 'INR'
+        crypto_price_eur: '51684.0642',
+        crypto_24h_volume_eur: '271041885874.9999694824',
+        crypto_market_cap_eur: '5038254779310'
     } as PriceTickerUpdateRequest;
+    let lastUpdated;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -83,14 +82,10 @@ describe('PriceTicker', () => {
 
     test('Should create a new PriceTicker', async () => {
         const PriceTickerModel: PriceTicker = await priceTickerService.create(testData);
-        // expect(PriceTickerModel).toBe(1);
         createdId = PriceTickerModel.Id;
 
         const result = PriceTickerModel.toJSON();
-
-        // test the values
-
-        expect(result.currency).toBe(testData.currency);
+        lastUpdated = result.updatedAt;
         expect(result.cryptoId).toBe(testData.crypto_id);
         expect(result.cryptoName).toBe(testData.crypto_name);
         expect(result.cryptoSymbol).toBe(testData.crypto_symbol);
@@ -106,9 +101,11 @@ describe('PriceTicker', () => {
         expect(result.cryptoPercentChange24H).toBe(testData.crypto_percent_change_24h);
         expect(result.cryptoPercentChange7D).toBe(testData.crypto_percent_change_7d);
         expect(result.cryptoLastUpdated).toBe(testData.crypto_last_updated);
-        expect(result.cryptoPriceCurrency).toBe(testData.crypto_price_currency);
-        expect(result.crypto24HVolumeCurrency).toBe(testData.crypto_24h_volume_currency);
-        expect(result.cryptoMarketCapCurrency).toBe(testData.crypto_market_cap_currency);
+        expect(result.cryptoPriceEur).toBe(testData.crypto_price_eur);
+        expect(result.crypto24HVolumeEur).toBe(testData.crypto_24h_volume_eur);
+        expect(result.cryptoMarketCapEur).toBe(testData.crypto_market_cap_eur);
+
+        expect(result.updatedAt).toBe(result.createdAt);
 
     });
 
@@ -127,7 +124,6 @@ describe('PriceTicker', () => {
         const result = PriceTickerData[0];
 
         // test the values
-        expect(result.currency).toBe(testData.currency);
         expect(result.cryptoId).toBe(testData.crypto_id);
         expect(result.cryptoName).toBe(testData.crypto_name);
         expect(result.cryptoSymbol).toBe(testData.crypto_symbol);
@@ -143,9 +139,10 @@ describe('PriceTicker', () => {
         expect(result.cryptoPercentChange24H).toBe(testData.crypto_percent_change_24h);
         expect(result.cryptoPercentChange7D).toBe(testData.crypto_percent_change_7d);
         expect(result.cryptoLastUpdated).toBe(testData.crypto_last_updated);
-        expect(result.cryptoPriceCurrency).toBe(testData.crypto_price_currency);
-        expect(result.crypto24HVolumeCurrency).toBe(testData.crypto_24h_volume_currency);
-        expect(result.cryptoMarketCapCurrency).toBe(testData.crypto_market_cap_currency);
+        expect(result.cryptoPriceEur).toBe(testData.crypto_price_eur);
+        expect(result.crypto24HVolumeEur).toBe(testData.crypto_24h_volume_eur);
+        expect(result.cryptoMarketCapEur).toBe(testData.crypto_market_cap_eur);
+        expect(result.updatedAt).toBe(lastUpdated);
     });
 
     test('Should return one PriceTicker', async () => {
@@ -153,7 +150,6 @@ describe('PriceTicker', () => {
         const result = PriceTickerModel.toJSON();
 
         // test the values
-        expect(result.currency).toBe(testData.currency);
         expect(result.cryptoId).toBe(testData.crypto_id);
         expect(result.cryptoName).toBe(testData.crypto_name);
         expect(result.cryptoSymbol).toBe(testData.crypto_symbol);
@@ -169,16 +165,16 @@ describe('PriceTicker', () => {
         expect(result.cryptoPercentChange24H).toBe(testData.crypto_percent_change_24h);
         expect(result.cryptoPercentChange7D).toBe(testData.crypto_percent_change_7d);
         expect(result.cryptoLastUpdated).toBe(testData.crypto_last_updated);
-        expect(result.cryptoPriceCurrency).toBe(testData.crypto_price_currency);
-        expect(result.crypto24HVolumeCurrency).toBe(testData.crypto_24h_volume_currency);
-        expect(result.cryptoMarketCapCurrency).toBe(testData.crypto_market_cap_currency);
+        expect(result.cryptoPriceEur).toBe(testData.crypto_price_eur);
+        expect(result.crypto24HVolumeEur).toBe(testData.crypto_24h_volume_eur);
+        expect(result.cryptoMarketCapEur).toBe(testData.crypto_market_cap_eur);
     });
 
     test('Should update the PriceTicker', async () => {
         const PriceTickerModel: PriceTicker = await priceTickerService.update(createdId, testDataUpdated);
         const result = PriceTickerModel.toJSON();
 
-        expect(result.currency).toBe(testDataUpdated.currency);
+        // expect(result.currency).toBe(testDataUpdated.currency);
         expect(result.cryptoId).toBe(testDataUpdated.crypto_id);
         expect(result.cryptoName).toBe(testDataUpdated.crypto_name);
         expect(result.cryptoSymbol).toBe(testDataUpdated.crypto_symbol);
@@ -194,9 +190,67 @@ describe('PriceTicker', () => {
         expect(result.cryptoPercentChange24H).toBe(testDataUpdated.crypto_percent_change_24h);
         expect(result.cryptoPercentChange7D).toBe(testDataUpdated.crypto_percent_change_7d);
         expect(result.cryptoLastUpdated).toBe(testDataUpdated.crypto_last_updated);
-        expect(result.cryptoPriceCurrency).toBe(testDataUpdated.crypto_price_currency);
-        expect(result.crypto24HVolumeCurrency).toBe(testDataUpdated.crypto_24h_volume_currency);
-        expect(result.cryptoMarketCapCurrency).toBe(testDataUpdated.crypto_market_cap_currency);
+        expect(result.cryptoPriceEur).toBe(testDataUpdated.crypto_price_eur);
+        expect(result.crypto24HVolumeEur).toBe(testDataUpdated.crypto_24h_volume_eur);
+        expect(result.cryptoMarketCapEur).toBe(testDataUpdated.crypto_market_cap_eur);
+    });
+
+    test('Should get PriceTicker by symbol', async () => {
+        const PriceTickerModel: PriceTicker = await priceTickerService.getOneBySymbol(testDataUpdated.crypto_symbol);
+        const result = PriceTickerModel.toJSON();
+
+        expect(result.cryptoId).toBe(testDataUpdated.crypto_id);
+        expect(result.cryptoName).toBe(testDataUpdated.crypto_name);
+        expect(result.cryptoSymbol).toBe(testDataUpdated.crypto_symbol);
+        expect(result.cryptoRank).toBe(testDataUpdated.crypto_rank);
+        expect(result.cryptoPriceUsd).toBe(testDataUpdated.crypto_price_usd);
+        expect(result.cryptoPriceBtc).toBe(testDataUpdated.crypto_price_btc);
+        expect(result.crypto24HVolumeUsd).toBe(testDataUpdated.crypto_24h_volume_usd);
+        expect(result.cryptoMarketCapUsd).toBe(testDataUpdated.crypto_market_cap_usd);
+        expect(result.cryptoAvailableSupply).toBe(testDataUpdated.crypto_available_supply);
+        expect(result.cryptoTotalSupply).toBe(testDataUpdated.crypto_total_supply);
+        expect(result.cryptoMaxSupply).toBe(testDataUpdated.crypto_max_supply);
+        expect(result.cryptoPercentChange1H).toBe(testDataUpdated.crypto_percent_change_1h);
+        expect(result.cryptoPercentChange24H).toBe(testDataUpdated.crypto_percent_change_24h);
+        expect(result.cryptoPercentChange7D).toBe(testDataUpdated.crypto_percent_change_7d);
+        expect(result.cryptoLastUpdated).toBe(testDataUpdated.crypto_last_updated);
+        expect(result.cryptoPriceEur).toBe(testDataUpdated.crypto_price_eur);
+        expect(result.crypto24HVolumeEur).toBe(testDataUpdated.crypto_24h_volume_eur);
+        expect(result.cryptoMarketCapEur).toBe(testDataUpdated.crypto_market_cap_eur);
+    });
+
+    test('Should get no record, if we try to get priceticker by non existing symbol', async () => {
+        const PriceTickerModel: PriceTicker = await priceTickerService.getOneBySymbol('TEST_CRYPTO');
+        expect(PriceTickerModel).toBeNull();
+    });
+
+    test('Should get updated priceticker if timestamp is older', async () => {
+        const currencies = ['ETH'];
+        const PriceTickerModel: any = await priceTickerService.executePriceTicker(currencies);
+        const result = PriceTickerModel[0];
+
+        // should be updated
+        expect(result.updatedAt).not.toBe(lastUpdated);
+        expect(result.updatedAt).toBeGreaterThan(result.createdAt);
+
+        expect(result.cryptoId).toBeDefined();
+        expect(result.cryptoName).toBeDefined();
+        expect(result.cryptoSymbol).toBeDefined();
+        expect(result.cryptoRank).toBeDefined();
+        expect(result.cryptoPriceUsd).toBeDefined();
+        expect(result.cryptoPriceBtc).toBeDefined();
+        expect(result.crypto24HVolumeUsd).toBeDefined();
+        expect(result.cryptoMarketCapUsd).toBeDefined();
+        expect(result.cryptoAvailableSupply).toBeDefined();
+        expect(result.cryptoTotalSupply).toBeDefined();
+        expect(result.cryptoMaxSupply).toBeDefined();
+        expect(result.cryptoPercentChange1H).toBeDefined();
+        expect(result.cryptoPercentChange24H).toBeDefined();
+        expect(result.cryptoPercentChange7D).toBeDefined();
+        expect(result.cryptoLastUpdated).toBeDefined();
+        expect(result.cryptoPriceEur).toBeDefined();
+        expect(result.crypto24HVolumeEur).toBeDefined();
+        expect(result.cryptoMarketCapEur).toBeDefined();
     });
 
     test('Should delete the PriceTicker', async () => {

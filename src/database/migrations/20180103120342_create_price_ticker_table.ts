@@ -25,11 +25,9 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('crypto_percent_change_7_d');
 
             table.string('crypto_last_updated');
-            table.string('crypto_price_currency');
-            table.string('crypto_24_h_volume_currency');
-            table.string('crypto_market_cap_currency');
-
-            table.string('currency').notNullable();
+            table.string('crypto_price_eur');
+            table.string('crypto_24_h_volume_eur');
+            table.string('crypto_market_cap_eur');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
