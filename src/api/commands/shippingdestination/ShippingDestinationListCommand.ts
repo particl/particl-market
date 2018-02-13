@@ -62,7 +62,7 @@ export class ShippingDestinationListCommand extends BaseCommand implements RpcCo
 
     public help(): string {
         return this.getName()
-            + ' (template <listingItemTemplateId> | item <listingItemId>) \n'
+            + ' (template <listingItemTemplateId>|item <listingItemId>) \n'
             + '    template <listingItemTemplateId>   - Numeric - ID of the item template object associated with \n'
             + '                                          the shipping destinations we want to list. \n'
             + '    item <listingItemId>               - Numeric - ID of the listing item whose shipping destinations \n'

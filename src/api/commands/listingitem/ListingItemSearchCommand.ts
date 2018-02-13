@@ -57,7 +57,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
     }
 
     public help(): string {
-        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId> | <categoryName>) [(<profileId> | <ALL>) \n'
+        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId>|<categoryName>) [(<profileId>|<ALL>) \n'
             + '    [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]] \n'
             + '    <page>                   - [optional] Numeric - The number page we want to \n'
             + '                                view of search listing item results. \n'

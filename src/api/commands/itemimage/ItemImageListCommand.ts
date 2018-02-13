@@ -55,7 +55,7 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
 
     public help(): string {
         return this.getName()
-            + ' (template <listingItemTemplateId> | item <listingItemId>) \n'
+            + ' (template <listingItemTemplateId>|item <listingItemId>) \n'
             + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template whose images we want to list. \n'
             + '    <listingItemId>               - Numeric - The ID of the listing item whose images we want to list. ';
     }

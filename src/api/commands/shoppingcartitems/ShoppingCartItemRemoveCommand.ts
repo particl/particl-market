@@ -54,7 +54,7 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
     }
 
     public help(): string {
-        return this.getName() + ' <cartId> <itemId|hash> \n'
+        return this.getName() + ' <cartId> (<itemId>|<hash>) \n'
             + '    <cartId>                 - The Id of the shopping cart we want to use. \n'
             + '    <itemId>                 -  Id of the ListingItem we want to add to the cart. \n'
             + '    <hash>                   -  Hash of the ListingItem we want to add to the cart. ';

@@ -87,8 +87,8 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     }
 
     public help(): string {
-        return this.getName() + 'createlistingitemtemplate <profileId> <title> <shortDescription> <longDescription> <categoryName>'
-            + ' <paymentType> <currency> <basePrice> <domesticShippingPrice> <internationalShippingPrice>   [<paymentAddress>] \n'
+        return this.getName() + ' <profileId> <title> <shortDescription> <longDescription> <categoryName> \n'
+            + '     <paymentType> <currency> <basePrice> <domesticShippingPrice> <internationalShippingPrice> [<paymentAddress>] \n'
             + '    <profileId>                   - Numeric - The ID of the profile to associate this \n'
             + '                                     item listing template with. \n'
             + '    <title>                       - String - The default title to associate with \n'
