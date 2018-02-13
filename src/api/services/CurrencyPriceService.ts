@@ -180,7 +180,7 @@ export class CurrencyPriceService {
     private async needToUpdate(currencyUpdatedAt: number): Promise<boolean> {
         const current: any = new Date();
         const tricker: any = new Date(currencyUpdatedAt);
-        // check if the results in db are older than 1 min
-        return (((current - tricker) / 60000) > process.env.CHASING_COINS_API_DELAY);
+        // check if the results in db are older than 60 second
+        return (((current - tricker) / 1000) > process.env.CHASING_COINS_API_DELAY);
     }
 }

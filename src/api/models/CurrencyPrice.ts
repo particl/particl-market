@@ -6,11 +6,7 @@ export class CurrencyPrice extends Bookshelf.Model<CurrencyPrice> {
     public static async fetchById(value: number, withRelated: boolean = true): Promise<CurrencyPrice> {
         if (withRelated) {
             return await CurrencyPrice.where<CurrencyPrice>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'CurrencyPriceRelated',
-                    // 'CurrencyPriceRelated.Related'
-                ]
+                withRelated: []
             });
         } else {
             return await CurrencyPrice.where<CurrencyPrice>({ id: value }).fetch();
