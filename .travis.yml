@@ -96,6 +96,7 @@ script:
       docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $TRAVIS_BRANCH kontena-feature.yml || travis_terminate 1;
       ./bin/ci-blackbox-tests.sh development 80 http://feature1.particl.xyz test test feature1.particl.xyz 52738 52935 || travis_terminate 1;
     fi
+  - echo "tests done."
 #      ./bin/ci-ui-tests.sh development 80 http://master1.particl.xyz test test master1.particl.xyz 52738 52935 || travis_terminate 1;
 #      ./bin/ci-ui-tests.sh development 80 http://dev1.particl.xyz test test dev1.particl.xyz 52738 52935 || travis_terminate 1;
 #      ./bin/ci-ui-tests.sh development 80 http://feature1.particl.xyz test test feature1.particl.xyz 52738 52935 || travis_terminate 1;
