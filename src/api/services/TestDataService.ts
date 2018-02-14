@@ -215,7 +215,8 @@ export class TestDataService {
             'shopping_cart_items',
             'item_categories',
             'markets',
-            'users'     // todo: not needed
+            'users',     // todo: not needed
+            'price_ticker'
         ];
 
         for (const table of tablesToClean) {

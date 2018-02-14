@@ -85,20 +85,20 @@ script:
       docker push $IMAGE_NAME:master || travis_terminate 1;
       docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git master kontena-master.yml || travis_terminate 1;
       ./bin/ci-blackbox-tests.sh development 80 http://feature1.particl.xyz test test feature1.particl.xyz 52738 52935 || travis_terminate 1;
-      ./bin/ci-ui-tests.sh development 80 http://master1.particl.xyz test test master1.particl.xyz 52738 52935 || travis_terminate 1;
     elif [[ $TRAVIS_BRANCH == "develop" && $TRAVIS_PULL_REQUEST == "false" ]]; then
       docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:develop -f Dockerfile.ci . || travis_terminate 1;
       docker push $IMAGE_NAME:develop || travis_terminate 1;
       docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git develop kontena-develop.yml || travis_terminate 1;
       ./bin/ci-blackbox-tests.sh development 80 http://dev1.particl.xyz test test dev1.particl.xyz 52738 52935 || travis_terminate 1;
-      ./bin/ci-ui-tests.sh development 80 http://dev1.particl.xyz test test dev1.particl.xyz 52738 52935 || travis_terminate 1;
     else
-      docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:$IMAGE_TAG -f Dockerfile.ci . || travis_terminate 1;
-      docker push $IMAGE_NAME:$IMAGE_TAG || travis_terminate 1;
+      docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:$IMAGE_TAG --tag $IMAGE_NAME:feature -f Dockerfile.ci . || travis_terminate 1;
+      docker push $IMAGE_NAME:feature || travis_terminate 1;
       docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $TRAVIS_BRANCH kontena-feature.yml || travis_terminate 1;
       ./bin/ci-blackbox-tests.sh development 80 http://feature1.particl.xyz test test feature1.particl.xyz 52738 52935 || travis_terminate 1;
-      ./bin/ci-ui-tests.sh development 80 http://feature1.particl.xyz test test feature1.particl.xyz 52738 52935 || travis_terminate 1;
     fi
+#      ./bin/ci-ui-tests.sh development 80 http://master1.particl.xyz test test master1.particl.xyz 52738 52935 || travis_terminate 1;
+#      ./bin/ci-ui-tests.sh development 80 http://dev1.particl.xyz test test dev1.particl.xyz 52738 52935 || travis_terminate 1;
+#      ./bin/ci-ui-tests.sh development 80 http://feature1.particl.xyz test test feature1.particl.xyz 52738 52935 || travis_terminate 1;
 
 after_success:
   - echo "build success."
