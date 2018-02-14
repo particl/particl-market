@@ -40,7 +40,7 @@ export class CoreRpcService {
         const url = this.getUrl();
         const options = this.getOptions();
 
-        this.log.debug('CALL: ' + method + ' ' + params);
+        // this.log.debug('CALL: ' + method + ' ' + params);
         // this.log.debug('call url:', url);
         // this.log.debug('call postData:', postData);
 
@@ -61,7 +61,7 @@ export class CoreRpcService {
                     throw new InternalServerException([jsonRpcResponse.error.code, jsonRpcResponse.error.message]);
                 }
 
-                this.log.debug('RESULT:', jsonRpcResponse.result);
+                // this.log.debug('RESULT:', jsonRpcResponse.result);
                 return jsonRpcResponse.result;
             })
             .catch(error => {
@@ -93,7 +93,7 @@ export class CoreRpcService {
             headers
         };
 
-        this.log.info('initializing rpc with opts:', rpcOpts);
+        // this.log.debug('initializing rpc with opts:', rpcOpts);
         return rpcOpts;
     }
 
