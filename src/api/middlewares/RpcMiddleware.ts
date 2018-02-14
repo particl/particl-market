@@ -1,6 +1,9 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core } from '../../constants';
+import { Types, Core, Targets } from '../../constants';
+import { app } from '../../app';
+
+const authenticateMiddleware = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.AuthenticateMiddleware);
 
 export class RpcMiddleware implements interfaces.Middleware {
 
@@ -17,7 +20,9 @@ export class RpcMiddleware implements interfaces.Middleware {
         if (!this.isValidVersionTwoRequest(req)) {
             return res.failed(400, 'Invalid JSON-RPC 2.0 request');
         } else {
-            next();
+            if (authenticateMiddleware.use(req, res, next)) {
+                next();
+            }
         }
     }
 
@@ -28,18 +33,18 @@ export class RpcMiddleware implements interfaces.Middleware {
             && request.headers['content-type']
             && request.headers['content-type'].indexOf('application/json') > -1
             && request.body
-            && typeof(request.body) === 'object'
+            && typeof (request.body) === 'object'
             && request.body.jsonrpc === '2.0'
-            && typeof(request.body.method) === 'string'
+            && typeof (request.body.method) === 'string'
             && (
-                typeof(request.body.params) === 'undefined'
+                typeof (request.body.params) === 'undefined'
                 || Array.isArray(request.body.params)
-                || (request.body.params && typeof(request.body.params) === 'object')
+                || (request.body.params && typeof (request.body.params) === 'object')
             )
             && (
-                typeof(request.body.id) === 'undefined'
-                || typeof(request.body.id) === 'string'
-                || typeof(request.body.id) === 'number'
+                typeof (request.body.id) === 'undefined'
+                || typeof (request.body.id) === 'string'
+                || typeof (request.body.id) === 'number'
                 || request.body.id === null
             )
         );
