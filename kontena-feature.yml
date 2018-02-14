@@ -89,6 +89,7 @@ services:
       - KONTENA_LB_VIRTUAL_HOSTS=feature1.particl.xyz
     affinity:
       - node==kontena-agent1
+    cpus: 4.0
 
   app2:
     image: r.cfcr.io/ludx/dapp-shell-ci:feature
