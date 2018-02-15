@@ -14,6 +14,7 @@ export const Targets = {
         Bid: 'Bid',
         BidData: 'BidData',
         CryptocurrencyAddress: 'CryptocurrencyAddress',
+        CurrencyPrice: 'CurrencyPrice',
         Escrow: 'Escrow',
         EscrowRatio: 'EscrowRatio',
         FavoriteItem: 'FavoriteItem',
@@ -30,6 +31,7 @@ export const Targets = {
         Market: 'Market',
         MessagingInformation: 'MessagingInformation',
         PaymentInformation: 'PaymentInformation',
+        PriceTicker: 'PriceTicker',
         Profile: 'Profile',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
@@ -42,6 +44,7 @@ export const Targets = {
         BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
         CryptocurrencyAddressRepository: 'CryptocurrencyAddressRepository',
+        CurrencyPriceRepository: 'CurrencyPriceRepository',
         EscrowRatioRepository: 'EscrowRatioRepository',
         EscrowRepository: 'EscrowRepository',
         FavoriteItemRepository: 'FavoriteItemRepository',
@@ -58,6 +61,7 @@ export const Targets = {
         MarketRepository: 'MarketRepository',
         MessagingInformationRepository: 'MessagingInformationRepository',
         PaymentInformationRepository: 'PaymentInformationRepository',
+        PriceTickerRepository: 'PriceTickerRepository',
         ProfileRepository: 'ProfileRepository',
         ShippingDestinationRepository: 'ShippingDestinationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
@@ -71,6 +75,7 @@ export const Targets = {
         BidService: 'BidService',
         CoreRpcService: 'CoreRpcService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
+        CurrencyPriceService: 'CurrencyPriceService',
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
@@ -91,6 +96,7 @@ export const Targets = {
         MessageBroadcastService: 'MessageBroadcastService',
         MessagingInformationService: 'MessagingInformationService',
         PaymentInformationService: 'PaymentInformationService',
+        PriceTickerService: 'PriceTickerService',
         ProfileService: 'ProfileService',
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
@@ -233,6 +239,12 @@ export const Targets = {
             ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
+        },
+        priceticker: {
+            PriceTickerRootCommand: 'PriceTickerRootCommand'
+        },
+        currencyprice: {
+            CurrencyPriceRootCommand: 'CurrencyPriceRootCommand'
         }
     },
     Factory:     {
@@ -273,6 +285,7 @@ export const Targets = {
         BidController: 'BidController',
         BidDataController: 'BidDataController',
         CryptocurrencyAddressController: 'CryptocurrencyAddressController',
+        CurrencyPriceController: 'CurrencyPriceController',
         EscrowController: 'EscrowController',
         EscrowRatioController: 'EscrowRatioController',
         FavoriteItemController: 'FavoriteItemController',
@@ -289,6 +302,7 @@ export const Targets = {
         MarketController: 'MarketController',
         MessagingInformationController: 'MessagingInformationController',
         PaymentInformationController: 'PaymentInformationController',
+        PriceTickerController: 'PriceTickerController',
         ProfileController: 'ProfileController',
         RpcController: 'RpcController',
         ShippingDestinationController: 'ShippingDestinationController',
