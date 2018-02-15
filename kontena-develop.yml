@@ -90,6 +90,7 @@ services:
     affinity:
       - node==kontena-agent1
     cpus: 4.0
+    mem_limit: 2g
 
   app2:
     image: r.cfcr.io/ludx/dapp-shell-ci:develop
