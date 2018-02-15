@@ -72,9 +72,13 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingItemTemplateId> <region> <address> <gpsMarkerTitle> <gpsMarkerDescription> <gpsMarkerLatitude>'
+            + ' <gpsMarkerLongitude> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId> <region> <address> <gpsMarkerTitle> <gpsMarkerDescription> <gpsMarkerLatitude> '
-            + ' <gpsMarkerLongitude> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>  - Numeric - The ID of the listing item template we want \n'
             + '                                to associate with this item location. \n'
             + '    <region>                 - String - Region, i.e. country or country code. \n'

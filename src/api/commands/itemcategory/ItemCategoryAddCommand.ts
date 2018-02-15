@@ -49,8 +49,12 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' <categoryName> <description> (<parentItemCategoryId>|<parentItemCategoryKey>) ';
+    }
+
     public help(): string {
-        return this.getName() + ' <categoryName> <description> (<parentItemCategoryId>|<parentItemCategoryKey>) \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <categoryName>                - String - The name of the category to create. \n'
             + '    <description>                 - String - A description of the category to \n'
             + '                                     create. \n'

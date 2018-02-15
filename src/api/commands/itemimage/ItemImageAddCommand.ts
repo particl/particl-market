@@ -58,9 +58,12 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         } as ItemImageCreateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]] ';
+    }
+
     public help(): string {
-        return this.getName()
-            + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]] \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template \n'
             + '                                     we want to associate this item image with. \n'
             + '    <dataId>                      - [optional] String - [TODO] \n'

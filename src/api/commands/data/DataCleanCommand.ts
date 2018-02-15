@@ -32,8 +32,12 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
         return await this.testDataService.clean();
     }
 
-    public help(): string {
+    public usage(): string {
         return this.getName() + ' ';
+    }
+
+    public help(): string {
+        return this.usage() + ' -  ' + this.description() + '\n';
     }
 
     public description(): string {

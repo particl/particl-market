@@ -31,8 +31,12 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
         return this.listingItemTemplateService.destroy(data.params[0]);
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingTemplateId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingTemplateId> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingTemplateId>           - Numeric - The ID of the listing item template that we \n'
             + '                                     want to destroy. ';
     }

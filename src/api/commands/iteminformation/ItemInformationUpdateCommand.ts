@@ -46,8 +46,12 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         } as ItemInformationUpdateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingItemTemplateId> <title> <shortDescription> <longDescription> <categoryId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId> <title> <shortDescription> <longDescription> <categoryId> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template \n'
             + '                                     whose associated item information we want to \n'
             + '                                     update. \n'

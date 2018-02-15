@@ -39,8 +39,12 @@ export class ProfileDestroyCommand extends BaseCommand implements RpcCommandInte
         return this.profileService.destroy(profileId);
     }
 
+    public usage(): string {
+        return this.getName() + ' (<profileId>|<profileName>) ';
+    }
+
     public help(): string {
-        return this.getName() + ' (<profileId>|<profileName>) \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <profileID>              -  That profile ID of the profile we want to destroy. \n'
             + '    <profileName>            -  String - The name of the profile we \n'
             + '                                 want to destroy. ';

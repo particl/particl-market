@@ -38,8 +38,12 @@ export class ShoppingCartAddCommand extends BaseCommand implements RpcCommandInt
         } as ShoppingCartsCreateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <name> <profileId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <name> <profileId> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <name>                   - The name of the shopping cart we want to create. \n'
             + '    <profileId>              - Profile id for which cart will be created. ';
     }

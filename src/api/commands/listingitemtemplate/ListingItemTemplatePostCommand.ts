@@ -42,15 +42,19 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingTemplateId> <marketId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingTemplateId> <marketId> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingTemplateId>           - Numeric - The ID of the listing item template that we \n'
             + '                                     want to post. \n'
             + '    <marketId>                    - Numeric - The ID of the markte id. ';
     }
 
     public description(): string {
-        return 'Post listing item by listingTemplateId and marketId';
+        return 'Post listing item by listingTemplateId and marketId.';
     }
 
 }

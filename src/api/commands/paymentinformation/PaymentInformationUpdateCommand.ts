@@ -56,9 +56,13 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
         } as PaymentInformationUpdateRequest);
     }
 
-    public help(): string {
+    public usage(): string {
         return this.getName() + ' <listingItemTemplateId> <paymentType> <currency> <basePrice> <domesticShippingPrice>'
-            + ' <internationalShippingPrice> <paymentAddress> \n'
+            + ' <internationalShippingPrice> <paymentAddress> ';
+    }
+
+    public help(): string {
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template \n'
             + '                                     we want to associate this payment information \n'
             + '                                     with. \n'

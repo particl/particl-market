@@ -67,8 +67,12 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
         } as AddressCreateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <profileId> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] ';
+    }
+
     public help(): string {
-        return this.getName() + ' <profileId> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] \n'
+        return this.usage() + ' -  ' + this.description() + '\n'
             + '    <profileId>              - Numeric - The ID of the profile we want to associate \n'
             + '                                this address with. \n'
             + '    <title>                  - String - A short identifier for the address. \n'

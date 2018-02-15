@@ -93,8 +93,12 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' (<shippingDestinationId>|<listing_item_template_id> (<country>|<countryCode>) <shipping availability>) ';
+    }
+
     public help(): string {
-        return this.getName() + ' (<shippingDestinationId>|<listing_item_template_id> (<country>|<countryCode>) <shipping availability>) \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <shippingDestinationId>            - Numeric - ID of the shipping destination object we want \n'
             + '                                          to remove. \n'
             + '    <listingItemTemplateId>            - Numeric - ID of the item template object whose destination we want \n'

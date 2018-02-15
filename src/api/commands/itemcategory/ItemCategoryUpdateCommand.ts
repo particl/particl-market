@@ -56,8 +56,12 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' <categoryId> <categoryName> <description> [<parentItemCategoryId>] ';
+    }
+
     public help(): string {
-        return this.getName() + ' <categoryId> <categoryName> <description> [<parentItemCategoryId>] \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <categoryId>                  - Numeric - The ID of the category we want to \n'
             + '                                     update. \n'
             + '    <categoryName>                - String - The new name of the category we want \n'

@@ -56,8 +56,12 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
         } as ListingItemSearchParams, data.params[10]);
     }
 
+    public usage(): string {
+        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId>|<categoryName>) [(<profileId>|<ALL>) ';
+    }
+
     public help(): string {
-        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId>|<categoryName>) [(<profileId>|<ALL>) \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]] \n'
             + '    <page>                   - [optional] Numeric - The number page we want to \n'
             + '                                view of search listing item results. \n'
@@ -84,9 +88,9 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
     }
 
     public description(): string {
-        return 'Search listing items with pagination by category id or \n'
-        + ' category name or by profileId, or by listing item price \n'
-        + ' min and max price range, or by country or shipping destination';
+        return 'Search listing items with pagination by category id or'
+        + ' category name or by profileId, or by listing item price'
+        + ' min and max price range, or by country or shipping destination.';
     }
 
 }

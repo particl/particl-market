@@ -41,8 +41,12 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingItemTemplateId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>  - Numeric - The ID of the listing item template. ';
     }
 

@@ -33,8 +33,12 @@ export class ShoppingCartRemoveCommand extends BaseCommand implements RpcCommand
         return this.shoppingCartsService.destroy(data.params[0]);
     }
 
+    public usage(): string {
+        return this.getName() + ' <cartId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <cartId> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <cartId>                 - The Id of the shopping cart we want to remove. ';
     }
 
