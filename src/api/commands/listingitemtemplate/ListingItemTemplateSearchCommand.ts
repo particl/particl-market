@@ -71,4 +71,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
         + ' category name or by profileId, or by perticular searchString matched with itemInformation title.';
     }
 
+    public example(): string {
+        return 'template ' + this.getName() + ' 1 10 ASC 1 74 \'pet exorcism\'';
+    }
 }

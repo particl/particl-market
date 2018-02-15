@@ -57,4 +57,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         return 'Post listing item by listingTemplateId and marketId.';
     }
 
+    public example(): string {
+        return 'template ' + this.getName() + ' 1 1';
+    }
 }
