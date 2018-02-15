@@ -46,20 +46,23 @@ export class ItemInformationCreateCommand extends BaseCommand implements RpcComm
         } as ItemInformationCreateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingTemplateId> <title> <shortDescription> <longDescription> <categoryId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingTemplateId> <title> <shortDescription> <longDescription> <categoryId>\n'
-            + '    <listingTemplateId>             - Numeric - The ID of the listing item template we\n'
-            + '                                       want to associate the created item information\n'
-            + '                                       with.\n'
-            + '    <title>                         - String - The title of the created item\n'
-            + '                                       information.\n'
-            + '    <shortDescription>              - String - A short description of the created\n'
-            + '                                       item information.\n'
-            + '    <longDescription>               - String - A long description of the created\n'
-            + '                                       item information.\n'
-            + '    <categoryId>                   - String - The id that identifies the item\n'
-            + '                                       category we want to associate the created\n'
-            + '                                       item information with.';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <listingTemplateId>           - Numeric - The ID of the listing item template we \n'
+            + '                                     want to associate the created item information with. \n'
+            + '    <title>                       - String - The title of the created item \n'
+            + '                                     information. \n'
+            + '    <shortDescription>            - String - A short description of the created \n'
+            + '                                     item information. \n'
+            + '    <longDescription>             - String - A long description of the created \n'
+            + '                                     item information. \n'
+            + '    <categoryId>                  - String - The id that identifies the item \n'
+            + '                                     category we want to associate the created \n'
+            + '                                     item information with. ';
     }
 
     public description(): string {

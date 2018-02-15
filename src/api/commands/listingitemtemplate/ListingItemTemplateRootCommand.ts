@@ -37,7 +37,7 @@ export class ListingItemTemplateRootCommand extends BaseCommand implements RpcCo
 
     public help(): string {
         // return this.getName() + ' (search | get | add | remove | information | image | location | import)';
-        return this.getName() + ' (search | get | add | remove)';
+        return this.getName() + ' (search|get|add|remove) ';
     }
 
     public description(): string {

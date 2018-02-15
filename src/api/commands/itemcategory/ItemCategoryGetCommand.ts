@@ -39,12 +39,16 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' (<categoryId>|<categoryKey>) ';
+    }
+
     public help(): string {
-        return this.getName() + ' (<categoryId>|<categoryKey>)\n'
-            + '    <categoryId>                    - Numeric - The ID belonging to the category we\n'
-            + '                                       want to retrive.\n'
-            + '    <categoryKey>                   - String - The key that identifies the category\n'
-            + '                                       we want to retrieve.';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <categoryId>                  - Numeric - The ID belonging to the category we \n'
+            + '                                     want to retrive. \n'
+            + '    <categoryKey>                 - String - The key that identifies the category \n'
+            + '                                     we want to retrieve. ';
     }
 
     public description(): string {

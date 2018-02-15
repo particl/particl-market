@@ -54,6 +54,7 @@ import { ItemLocationRootCommand } from '../commands/itemlocation/ItemLocationRo
 
 import { ListingItemGetCommand } from '../commands/listingitem/ListingItemGetCommand';
 import { ListingItemSearchCommand } from '../commands/listingitem/ListingItemSearchCommand';
+import { ListingItemUpdateCommand } from '../commands/listingitem/ListingItemUpdateCommand';
 import { ListingItemRootCommand } from '../commands/listingitem/ListingItemRootCommand';
 
 import { ListingItemTemplateAddCommand } from '../commands/listingitemtemplate/ListingItemTemplateAddCommand';
@@ -167,6 +168,7 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemGetCommand) private listingItemGetCommand: ListingItemGetCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemSearchCommand) private listingItemSearchCommand: ListingItemSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemUpdateCommand) private listingItemUpdateCommand: ListingItemUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemRootCommand) private listingItemRootCommand: ListingItemRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateAddCommand) private listingItemTemplateAddCommand: ListingItemTemplateAddCommand,
@@ -284,6 +286,7 @@ export class RpcCommandFactory {
 
         this.commands.push(listingItemGetCommand);
         this.commands.push(listingItemSearchCommand);
+        this.commands.push(listingItemUpdateCommand);
         this.commands.push(listingItemRootCommand);
 
         this.commands.push(listingItemTemplatePostCommand);

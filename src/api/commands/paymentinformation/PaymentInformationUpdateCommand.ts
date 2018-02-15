@@ -56,24 +56,28 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
         } as PaymentInformationUpdateRequest);
     }
 
-    public help(): string {
+    public usage(): string {
         return this.getName() + ' <listingItemTemplateId> <paymentType> <currency> <basePrice> <domesticShippingPrice>'
-            + ' <internationalShippingPrice> <paymentAddress>\n'
-            + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template\n'
-            + '                                     we want to associate this payment information\n'
-            + '                                     with.\n'
-            + '    <paymentType>                 - String  - Whether associated items are for free or\n'
-            + '                                     for sale.\n'
-            + '    <currency>                    - String  - The currency that we want to receive\n'
-            + '                                     payment in.\n'
-            + '    <basePrice>                   - Numeric - The base price of the item associated\n'
-            + '                                     with this object.\n'
-            + '    <domesticShippingPrice>       - Numeric - The domestic shipping price of the\n'
-            + '                                     item associated with this object.\n'
-            + '    <internationalShippingPrice>  - Numeric - The international shipping price of\n'
-            + '                                     the item associated with this object.\n'
-            + '    <paymentAddress>              - String  - The cryptocurrency address we want to\n'
-            + '                                     receive payment in.';
+            + ' <internationalShippingPrice> <paymentAddress> ';
+    }
+
+    public help(): string {
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template \n'
+            + '                                     we want to associate this payment information \n'
+            + '                                     with. \n'
+            + '    <paymentType>                 - String  - Whether associated items are for free or \n'
+            + '                                     for sale. \n'
+            + '    <currency>                    - String  - The currency that we want to receive \n'
+            + '                                     payment in. \n'
+            + '    <basePrice>                   - Numeric - The base price of the item associated \n'
+            + '                                     with this object. \n'
+            + '    <domesticShippingPrice>       - Numeric - The domestic shipping price of the \n'
+            + '                                     item associated with this object. \n'
+            + '    <internationalShippingPrice>  - Numeric - The international shipping price of \n'
+            + '                                     the item associated with this object. \n'
+            + '    <paymentAddress>              - String  - The cryptocurrency address we want to \n'
+            + '                                     receive payment in. ';
     }
 
     public description(): string {

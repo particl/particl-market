@@ -28,7 +28,7 @@ export class PaymentInformationRootCommand extends BaseCommand implements RpcCom
     }
 
     public help(): string {
-        return this.getName() + ' (update)';
+        return this.getName() + ' (update) ';
     }
 
     public description(): string {

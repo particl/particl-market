@@ -25,7 +25,7 @@ export class ShoppingCartRootCommand extends BaseCommand implements RpcCommandIn
     }
 
     public help(): string {
-        return this.getName() + '(list | get | add | update | remove | clear | search)';
+        return this.getName() + ' (list|get|add|update|remove|clear|search) ';
     }
 
     public description(): string {

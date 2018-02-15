@@ -32,9 +32,14 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
         return this.shoppingCartsService.findAllByProfile(data.params[0]);
     }
 
+    public usage(): string {
+        return this.getName() + ' [<profileId>|<profileName>] ';
+    }
+
     public help(): string {
-        return this.getName() + ' [<profileId> | <profileName>]\n'
-            + '    [<profileId> | <profileName>]          - The Id/Name of the profile associated with the shopping cart we want to search for\n';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <profileId>              - The Id of the profile associated with the shopping cart we want to search for. \n'
+            + '    <profileName>            - The name of the profile associated with the shopping cart we want to search for. ';
     }
 
     public description(): string {

@@ -93,16 +93,20 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' (<shippingDestinationId>|<listing_item_template_id> (<country>|<countryCode>) <shipping availability>) ';
+    }
+
     public help(): string {
-        return this.getName() + ' (<shippingDestinationId>|<listing_item_template_id> (<country>|<countryCode>) <shipping availability>)\n'
-            + '    <shippingDestinationId>    - Numeric - ID of the shipping destination object we want\n'
-            + '                                  to remove.\n'
-            + '    <listingItemTemplateId>    - Numeric - ID of the item template object whose destination we want\n'
-            + '                                  to remove.\n'
-            + '    <country>                  - String - The country name of the shipping destination we want to remove.\n'
-            + '    <countryCode>              - String - Two letter country code of the destination we want to remove.\n'
-            + '    <shippingAvailability>     - Enum{SHIPS, DOES_NOT_SHIP, ASK, UNKNOWN} - The\n'
-            + '                                  availability of shipping destination we want to remove.';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <shippingDestinationId>            - Numeric - ID of the shipping destination object we want \n'
+            + '                                          to remove. \n'
+            + '    <listingItemTemplateId>            - Numeric - ID of the item template object whose destination we want \n'
+            + '                                          to remove. \n'
+            + '    <country>                          - String - The country name of the shipping destination we want to remove. \n'
+            + '    <countryCode>                      - String - Two letter country code of the destination we want to remove. \n'
+            + '    <shippingAvailability>             - Enum{SHIPS,DOES_NOT_SHIP,ASK,UNKNOWN} - The \n'
+            + '                                          availability of shipping destination we want to remove. ';
     }
 
     public description(): string {
