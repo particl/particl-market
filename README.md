@@ -15,7 +15,7 @@ Install [Node.js and NPM](https://nodejs.org/en/download/)
 
 Then install yarn globally
 ```
-npm install yarn -g
+npm install yarn -g 
 ```
 
 And finally install Docker

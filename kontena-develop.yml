@@ -53,6 +53,7 @@ services:
       - loadbalancerstack/internet_lb
 #    volumes:
 #      - /root/data/dapp-shell-dev1:/app/data
+    command: ./bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
       - APP_NAME=dapp-shell
@@ -88,6 +89,8 @@ services:
       - KONTENA_LB_VIRTUAL_HOSTS=dev1.particl.xyz
     affinity:
       - node==kontena-agent1
+    cpus: 4.0
+    mem_limit: 2g
 
   app2:
     image: r.cfcr.io/ludx/dapp-shell-ci:develop
@@ -99,6 +102,7 @@ services:
       - loadbalancerstack/internet_lb
 #    volumes:
 #      - /root/data/dapp-shell-dev2:/app/data
+    command: ./bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
       - APP_NAME=dapp-shell

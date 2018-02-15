@@ -44,7 +44,7 @@ services:
       - node==kontena-agent1
 
   app1:
-    image: r.cfcr.io/ludx/dapp-shell-ci:latest
+    image: r.cfcr.io/ludx/dapp-shell-ci:feature
     instances: 1
     depends_on:
       - particld1
@@ -53,6 +53,7 @@ services:
       - loadbalancerstack/internet_lb
 #    volumes:
 #      - /root/data/dapp-shell-feature1:/app/data
+    command: bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
       - APP_NAME=dapp-shell
@@ -76,21 +77,23 @@ services:
       - MONITOR_ENABLED=true
       - MONITOR_ROUTE=/status
       - DB_CLIENT=sqlite3
-      - DB_CONNECTION=/data/marketplace.db
+      - DB_CONNECTION=/app/data/marketplace.db
       - DB_POOL_MIN=2
       - DB_POOL_MAX=10
-      - DB_MIGRATION_DIR=/src/database/migrations
+      - DB_MIGRATION_DIR=/app/src/database/migrations
       - DB_MIGRATION_TABLE=version
-      - DB_SEEDS_DIR=/src/database/seeds
+      - DB_SEEDS_DIR=/app/src/database/seeds
       - KONTENA_LB_MODE=http
       - KONTENA_LB_BALANCE=roundrobin
       - KONTENA_LB_INTERNAL_PORT=3333
       - KONTENA_LB_VIRTUAL_HOSTS=feature1.particl.xyz
     affinity:
       - node==kontena-agent1
+    cpus: 4.0
+    mem_limit: 2g
 
   app2:
-    image: r.cfcr.io/ludx/dapp-shell-ci:latest
+    image: r.cfcr.io/ludx/dapp-shell-ci:feature
     instances: 1
     depends_on:
       - particld2
@@ -99,6 +102,7 @@ services:
       - loadbalancerstack/internet_lb
 #    volumes:
 #      - /root/data/dapp-shell-feature2:/app/data
+    command: bin/ci-entrypoint.sh
     environment:
       - NODE_ENV=development
       - APP_NAME=dapp-shell
