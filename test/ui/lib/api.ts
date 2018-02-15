@@ -1,5 +1,5 @@
 import * as dotenv from 'dotenv';
-dotenv.config({path: './test/.blackbox'});
+dotenv.config({path: './test/.env.blackbox'});
 import * as _ from 'lodash';
 import * as request from 'request-promise';
 import { Options } from 'request-promise';
