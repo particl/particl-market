@@ -88,4 +88,8 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
     public description(): string {
         return 'Create an address and associate it with a profile.';
     }
+
+    public example(): string {
+        return 'address ' + this.getName() + ' 1 myLocation \'123 Fake St\' \'\' Springfield NT \'United States\' 90701';
+    }
 }

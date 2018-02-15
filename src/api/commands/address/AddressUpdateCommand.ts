@@ -91,4 +91,8 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
     public description(): string {
         return 'Update the details of an address given by ID.';
     }
+
+    public example(): string {
+        return 'address 1 ' + this.getName() + ' homeAddress \'1060 West Addison Street\' \'\' Chicago IL \'United States\' 60613 ';
+    }
 }
