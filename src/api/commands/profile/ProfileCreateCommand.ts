@@ -33,8 +33,8 @@ export class ProfileCreateCommand extends BaseCommand implements RpcCommandInter
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Profile> {
         return this.profileService.create({
-            name : data.params[0],
-            address : data.params[1]
+            name : (data.params[0] || null),
+            address : (data.params[1] || null)
         } as ProfileCreateRequest);
     }
 

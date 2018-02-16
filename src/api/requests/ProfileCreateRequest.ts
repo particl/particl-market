@@ -9,7 +9,7 @@ export class ProfileCreateRequest extends RequestBody {
     @IsNotEmpty()
     public name: string;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public address: string;         // profile address
 
     // related
