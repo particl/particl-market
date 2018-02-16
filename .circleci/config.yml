@@ -40,7 +40,6 @@ jobs:
 
     steps:
       - checkout
-
       - run: export COMMIT=$(echo {{ .Environment.CIRCLE_SHA1 }} | cut -c -7)
 
       - run: |
