@@ -5,7 +5,7 @@
 #
 
 defaults: &defaults
-  working_directory: /tmp
+  working_directory: /app
   docker:
     # primary container, this is where commands are executed for jobs using the Docker executor.
     - image: circleci/node:9.5.0-browsers
@@ -21,7 +21,7 @@ jobs:
     <<: *defaults
 
     environment:
-      TEST_RESULTS: /tmp/test-results
+      TEST_RESULTS: /app/test-results
       COMMIT: ${CIRCLE_SHA1::8}
       AUTHOR_NAME: "$(git log -1 $CIRCLE_SHA1 --pretty=\"%aN\")"
       REGISTRY: "r.cfcr.io"
@@ -103,7 +103,6 @@ jobs:
 
 
       # build the application image
-      - run: docker build -t company/app:$CIRCLE_BRANCH .
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:feature -f Dockerfile.ci .
       - run: docker push $IMAGE_NAME:feature
@@ -157,11 +156,11 @@ jobs:
  #           docker push circleci/cci-demo-docker:$TAG
 
       - store_artifacts:
-          path: /tmp/test-results
+          path: $TEST_RESULTS
           destination: raw-test-output
 
       - store_test_results:
-          path: /tmp/test-results
+          path: $TEST_RESULTS
 
 
 workflows:
