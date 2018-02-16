@@ -104,7 +104,7 @@ jobs:
 
       # build the application image
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker build --pull --cache-from "$IMAGE_NAME" --tag $IMAGE_NAME:feature -f Dockerfile.ci .
+      - run: docker build --pull --cache-from "$IMAGE_NAME" --tag "$IMAGE_NAME:feature" -f Dockerfile.ci .
       - run: docker push $IMAGE_NAME:feature
 
       # deploy the image
