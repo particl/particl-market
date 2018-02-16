@@ -140,6 +140,7 @@ jobs:
           version: 17.11.0-ce
       - run: docker-compose --version
 
+      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run:
           name: Start container and verify it's working
           command: |
