@@ -22,7 +22,7 @@ jobs:
 
     environment:
       TEST_RESULTS: /app/test-results
-      COMMIT: $(echo $CIRCLE_SHA1 | cut -c -7)
+      COMMIT: $(echo {{ .Environment.CIRCLE_SHA1 }} | cut -c -7)
       AUTHOR_NAME: $(git log -1 $CIRCLE_SHA1 --pretty=\"%aN\")
       REGISTRY: "r.cfcr.io"
       IMAGE: "ludx/dapp-shell-ci"
