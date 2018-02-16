@@ -91,7 +91,8 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
                     this.log.warn(`Command <${command}> not found.`);
                     throw new NotFoundException(`Command <${command}> not found.`);
                 }
-                return commandCommand.help() + '\n        ' + commandCommand.example();
+                const example = commandCommand.example();
+                return commandCommand.help() + '\n        ' + (example ? example : '');
             }
         }
 
@@ -112,4 +113,7 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
             + '    <subCommand>             - [optional] String - Subcommand that we want to view help for. ';
     }
 
+    public example(): string {
+        return this.getName() + ' help listingitem';
+    }
 }

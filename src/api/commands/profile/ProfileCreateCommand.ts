@@ -55,4 +55,7 @@ export class ProfileCreateCommand extends BaseCommand implements RpcCommandInter
         return 'Create a new profile.';
     }
 
+    public example(): string {
+        return 'profile ' + this.getName() + ' myProfile PkE5U1Erz9bANXAxvHeiw6t14vDTP9EdNM ';
+    }
 }

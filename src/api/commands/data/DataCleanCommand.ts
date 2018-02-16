@@ -44,4 +44,7 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
         return 'Cleans database, inserts default data.';
     }
 
+    public example(): string {
+        return 'data ' + this.getName();
+    }
 }

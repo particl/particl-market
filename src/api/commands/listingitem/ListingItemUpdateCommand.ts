@@ -54,4 +54,8 @@ export class ListingItemUpdateCommand extends BaseCommand implements RpcCommandI
     public description(): string {
         return 'Update the details of listing item given by listingitemHash or by listingItemTemplateId.';
     }
+
+    public example(): string {
+        return 'item ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb 1';
+    }
 }

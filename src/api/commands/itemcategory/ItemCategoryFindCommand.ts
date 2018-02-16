@@ -48,4 +48,7 @@ export class ItemCategoryFindCommand extends BaseCommand implements RpcCommandIn
         return 'Command for getting an item categories search by particular search string';
     }
 
+    public example(): string {
+        return 'category ' + this.getName() + ' luxury ';
+    }
 }

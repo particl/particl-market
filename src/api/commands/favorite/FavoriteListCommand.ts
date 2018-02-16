@@ -56,4 +56,8 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
     public description(): string {
         return 'List the favorites associated with a profileId.';
     }
+
+    public example(): string {
+        return 'favorite ' + this.getName() + ' 1 ';
+    }
 }

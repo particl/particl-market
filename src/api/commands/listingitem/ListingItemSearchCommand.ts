@@ -57,12 +57,12 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
     }
 
     public usage(): string {
-        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId>|<categoryName>) [(<profileId>|<ALL>) ';
+        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId>|<categoryName>) [(<profileId>|<ALL>) '
+            + '[<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]] \n';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]] \n'
             + '    <page>                   - [optional] Numeric - The number page we want to \n'
             + '                                view of search listing item results. \n'
             + '    <pageLimit>              - [optional] Numeric - The number of results per page. \n'
@@ -93,4 +93,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
         + ' min and max price range, or by country or shipping destination.';
     }
 
+    public example(): string {
+        return 'item ' + this.getName() + ' 1 10 ASC 76 1 100 200 Australia China wine';
+    }
 }

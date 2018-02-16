@@ -43,4 +43,7 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
         return 'List all the item categories.';
     }
 
+    public example(): string {
+        return 'category ' + this.getName() + ' ';
+    }
 }

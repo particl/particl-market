@@ -114,6 +114,10 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
              + ' the country associated with it, and the shipping availability associated with it.';
     }
 
+    public example(): string {
+        return 'shipping ' + this.getName() + ' 1 Australia SHIPS ';
+    }
+
     /**
      * TODO: NOTE: This function may be duplicated between commands.
      * data.params[]:
