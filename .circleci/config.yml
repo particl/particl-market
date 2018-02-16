@@ -40,7 +40,9 @@ jobs:
 
     steps:
       - checkout
-      - run: export COMMIT=$(echo $CIRCLE_SHA1 | cut -c -7)
+
+      - run: export COMMIT=$(echo {{ .Environment.CIRCLE_SHA1 }} | cut -c -7)
+
       - run: |
           echo "Env variables:"
           echo $CIRCLE_SHA1
