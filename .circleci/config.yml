@@ -22,36 +22,17 @@ jobs:
 
     environment:
       TEST_RESULTS: /app/test-results
-#      COMMIT: $(echo {{ .Environment.CIRCLE_SHA1 }} | cut -c -7)
-      AUTHOR_NAME: $(git log -1 $CIRCLE_SHA1 --pretty=\"%aN\")
       REGISTRY: "r.cfcr.io"
-      IMAGE: "ludx/dapp-shell-ci"
-      IMAGE_NAME: $REGISTRY/$IMAGE
-      IMAGE_TAG: $CIRCLE_BRANCH-$COMMIT
+      IMAGE_NAME: "ludx/dapp-shell-ci"
       DISCORD_URL: "https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR"
       RPCUSER: "test"
       RPCPASSWORD: "test"
       RPCHOSTNAME: "localhost"
       MAINNET_PORT: 52738
       TESTNET_PORT: 52935
-      COMMITTER_EMAIL: "$(git log -1 $TRAVIS_COMMIT --pretty=\"%cE\")"
-      AUTHOR_NAME: "$(git log -1 $TRAVIS_COMMIT --pretty=\"%aN\")"
-      ALL_COMMITS: "$(git log $TRAVIS_COMMIT_RANGE --pretty=oneline)"
 
     steps:
       - checkout
-      - run: export COMMIT=$(echo $CIRCLE_SHA1 | cut -c -7)
-      - run: export AUTHOR_NAME=$(git log -1 $CIRCLE_SHA1 --pretty=\"%aN\")
-      - run: export IMAGE_NAME="${REGISTRY}/${IMAGE}"
-      - run: export IMAGE_TAG="${CIRCLE_BRANCH} -${COMMIT}"
-
-      - run: |
-          echo "Env variables:"
-          echo $CIRCLE_SHA1
-          echo $COMMIT
-          echo $AUTHOR_NAME
-          echo $IMAGE_NAME
-          echo $IMAGE_TAG
 #      - run: mkdir -p workspace
 #      - run: echo "Hello, world!" > workspace/echo-output
       # Persist the specified paths (workspace/echo-output) into the workspace for use in downstream job.
