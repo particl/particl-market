@@ -26,8 +26,8 @@ jobs:
       AUTHOR_NAME: "$(git log -1 $CIRCLE_SHA1 --pretty=\"%aN\")"
       REGISTRY: "r.cfcr.io"
       IMAGE: "ludx/dapp-shell-ci"
-      IMAGE_NAME: "$REGISTRY/$IMAGE"
-      IMAGE_TAG: "$CIRCLE_BRANCH-$COMMIT"
+      IMAGE_NAME: $REGISTRY/$IMAGE
+      IMAGE_TAG: $CIRCLE_BRANCH-$COMMIT
       DISCORD_URL: "https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR"
       RPCUSER: "test"
       RPCPASSWORD: "test"
