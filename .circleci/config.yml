@@ -138,7 +138,7 @@ jobs:
       # - docker-compose --file docker-compose-ci.yml up --build -d
       # - docker ps
       # - docker-compose ps
-
+      - checkout
       - run:
           name: Start container and verify it's working
           command: |
