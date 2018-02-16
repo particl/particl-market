@@ -155,12 +155,12 @@ jobs:
  #           docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
  #           docker push circleci/cci-demo-docker:$TAG
 
-      - store_artifacts:
-          path: $TEST_RESULTS
-          destination: raw-test-output
+#      - store_artifacts:
+#          path: $TEST_RESULTS
+#          destination: raw-test-output
 
-      - store_test_results:
-          path: $TEST_RESULTS
+#      - store_test_results:
+#          path: $TEST_RESULTS
 
 
 workflows:
