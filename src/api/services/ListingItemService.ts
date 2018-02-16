@@ -28,6 +28,7 @@ import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplateP
 import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostRequest';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
+import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { MessageException } from '../exceptions/MessageException';
@@ -35,7 +36,9 @@ import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { MessageBroadcastService } from './MessageBroadcastService';
 import { Market } from '../models/Market';
+import { FlaggedItem } from '../models/FlaggedItem';
 import { ListingItemObjectService } from './ListingItemObjectService';
+import { FlaggedItemService } from './FlaggedItemService';
 
 export class ListingItemService {
 
@@ -51,6 +54,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) public messageBroadcastService: MessageBroadcastService,
+        @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
@@ -348,6 +352,35 @@ export class ListingItemService {
         }
     }
 
+    /**
+     *
+     * listingItemId: listingItemId or hash
+     *
+     * @returns {Promise<FlaggedItem>}
+     */
+
+    public async flagItem(listingItemId: number | string): Promise<FlaggedItem> {
+        let listingItem;
+        // if listingItemId is number then findById, else findOneByHash
+        if (typeof listingItemId === 'number') {
+            listingItem = await this.findOne(listingItemId);
+        } else {
+            listingItem = await this.findOneByHash(listingItemId);
+        }
+
+        // check if item already flagged
+        const isFlagged = await this.isItemFlagged(listingItem);
+
+        if (isFlagged) {
+            throw new MessageException('Item already beeing flagged!');
+        } else {
+            // create FlaggedItem
+            return await this.flaggedItemService.create({
+                listingItemId: listingItem.id
+            } as FlaggedItemCreateRequest);
+        }
+    }
+
     // check if object is exist in a array
     private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
         return await _.find(objectArray, (object) => {
@@ -361,5 +394,11 @@ export class ListingItemService {
           return itemObject['order'];
         });
         return highestOrder ? highestOrder['order'] : 0;
+    }
+
+    // check if ListingItem already Flagged
+    private async isItemFlagged(listingItem: ListingItem): Promise<boolean> {
+        const flaggedItem = listingItem.related('FlaggedItem').toJSON();
+        return _.size(flaggedItem) !== 0;
     }
 }

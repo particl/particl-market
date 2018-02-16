@@ -8,6 +8,7 @@ import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
 import { FavoriteItem } from './FavoriteItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
 import { Bid } from './Bid';
+import { FlaggedItem } from './FlaggedItem';
 import { Market } from './Market';
 import { ShoppingCartItems } from './ShoppingCartItems';
 
@@ -30,7 +31,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'MessagingInformation',
         'ListingItemObjects',
         'Bids',
-        'Market'
+        'Market',
+        'FlaggedItem'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {
@@ -169,6 +171,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public Market(): Market {
         return this.belongsTo(Market, 'market_id', 'id');
+    }
+
+    public FlaggedItem(): FlaggedItem {
+        return this.hasOne(FlaggedItem);
     }
 
     public ShoppingCartItems(): Collection<ShoppingCartItems> {
