@@ -31,8 +31,12 @@ export class ItemCategoryListCommand extends BaseCommand implements RpcCommandIn
         return await this.itemCategoryService.findRoot();
     }
 
+    public usage(): string {
+        return this.getName() + ' ';
+    }
+
     public help(): string {
-        return this.getName();
+        return this.usage() + '  -  ' + this.description() + ' \n';
     }
 
     public description(): string {

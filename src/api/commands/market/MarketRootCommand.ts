@@ -29,7 +29,7 @@ export class MarketRootCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public help(): string {
-        return this.getName() + ' (list|add)';
+        return this.getName() + ' (list|add) ';
     }
 
     public description(): string {

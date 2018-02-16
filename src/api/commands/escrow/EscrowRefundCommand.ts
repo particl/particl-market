@@ -63,14 +63,16 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         } as EscrowRefundRequest, escrow);
     }
 
+    public usage(): string {
+        return this.getName() + ' [<itemhash> [<accepted> [<memo>]]] ';
+    }
+
     public help(): string {
-        return this.getName() + ' [<itemhash> [<accepted> [<memo>]]]\n'
-            + '    <itemhash>           - String - The hash of the listing item for which we want to\n'
-            + '                             lock escrow.\n'
-
-            + '    <accepted>         - String - The accepted status of the escrow\n'
-
-            + '    <memo>           - String - The memo of the Escrow';
+        return this.usage() + ' -  ' + this.description() + '\n'
+            + '    <itemhash>               - String - The hash of the listing item for which we want to \n'
+            + '                                lock escrow. \n'
+            + '    <accepted>               - String - The accepted status of the escrow \n'
+            + '    <memo>                   - String - The memo of the Escrow ';
     }
 
     public description(): string {

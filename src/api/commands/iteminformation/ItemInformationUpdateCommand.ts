@@ -46,20 +46,24 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         } as ItemInformationUpdateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingItemTemplateId> <title> <shortDescription> <longDescription> <categoryId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId> <title> <shortDescription> <longDescription> <categoryId>\n'
-            + '    <listingItemTemplateId>         - Numeric - The ID of the listing item template\n'
-            + '                                       whose associated item information we want to\n'
-            + '                                       update.\n'
-            + '    <title>                         - String - The new title of the item information\n'
-            + '                                       we\'re updating.\n'
-            + '    <shortDescription>              - String - The new short description of the item\n'
-            + '                                       information we\'re updating.\n'
-            + '    <longDescription>               - String - The new long description of the item\n'
-            + '                                       information we\'re updating.\n'
-            + '    <categoryId>                   - String - The ID that identifies the new\n'
-            + '                                       category we want to assign to the item\n'
-            + '                                       information we\'re updating.';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template \n'
+            + '                                     whose associated item information we want to \n'
+            + '                                     update. \n'
+            + '    <title>                       - String - The new title of the item information \n'
+            + '                                     we\'re updating. \n'
+            + '    <shortDescription>            - String - The new short description of the item \n'
+            + '                                     information we\'re updating. \n'
+            + '    <longDescription>             - String - The new long description of the item \n'
+            + '                                     information we\'re updating. \n'
+            + '    <categoryId>                  - String - The ID that identifies the new \n'
+            + '                                     category we want to assign to the item \n'
+            + '                                     information we\'re updating. ';
     }
 
     public description(): string {

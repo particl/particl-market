@@ -31,11 +31,15 @@ export class EscrowDestroyCommand extends BaseCommand implements RpcCommandInter
         return this.escrowService.destroyCheckByListingItem(data.params[0]);
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingItemTemplateId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId>\n'
-            + '    <listingItemTemplateId>         - Numeric - The ID belonging to the listing item\n'
-            + '                                       template that the escrow we want to delete is\n'
-            + '                                       associated with.';
+        return this.usage() + ' -  ' + this.description() + '\n'
+            + '    <listingItemTemplateId>  - Numeric - The ID belonging to the listing item \n'
+            + '                                template that the escrow we want to delete is \n'
+            + '                                associated with. ';
     }
 
     public description(): string {

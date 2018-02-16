@@ -31,7 +31,7 @@ export class DataRootCommand extends BaseCommand implements RpcCommandInterface<
     }
 
     public help(): string {
-        return this.getName() + ' (add|generate|clean)';
+        return this.getName() + ' (add|generate|clean) ';
     }
 
     public description(): string {
