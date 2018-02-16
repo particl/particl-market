@@ -42,8 +42,8 @@ jobs:
       - checkout
       - run: export COMMIT=$(echo $CIRCLE_SHA1 | cut -c -7)
       - run: export AUTHOR_NAME=$(git log -1 $CIRCLE_SHA1 --pretty=\"%aN\")
-      - run: export IMAGE_NAME=$REGISTRY/$IMAGE
-      - run: export IMAGE_TAG=$CIRCLE_BRANCH-$COMMIT
+      - run: export IMAGE_NAME="${REGISTRY}/${IMAGE}"
+      - run: export IMAGE_TAG="${CIRCLE_BRANCH}-${COMMIT}"
 
       - run: |
           echo "Env variables:"
