@@ -40,7 +40,13 @@ jobs:
 
     steps:
       - checkout
-
+      - run:
+        command: |
+          echo "Env variables:"
+          echo $COMMIT
+          echo $AUTHOR_NAME
+          echo $IMAGE_NAME
+          echo $IMAGE_TAG
 #      - run: mkdir -p workspace
 #      - run: echo "Hello, world!" > workspace/echo-output
       # Persist the specified paths (workspace/echo-output) into the workspace for use in downstream job.
