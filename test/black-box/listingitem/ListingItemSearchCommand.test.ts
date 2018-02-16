@@ -7,7 +7,6 @@ import { Currency } from '../../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
-import { ListingItemSearchCommand } from '../../../src/api/commands/listingitem/ListingItemSearchCommand';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';

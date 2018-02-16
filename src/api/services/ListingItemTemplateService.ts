@@ -156,19 +156,6 @@ export class ListingItemTemplateService {
             await this.paymentInformationService.destroy(paymentInformation.id);
         }
 
-        // // find related record and delete it and recreate related data
-        // let messagingInformation = updatedListingItemTemplate.related('MessagingInformation').toJSON() || [];
-        // for (const msgInfo of messagingInformation) {
-        //     msgInfo.listing_item_template_id = id;
-        //     await this.messagingInformationService.destroy(msgInfo.id);
-        // }
-        // // add new
-        // messagingInformation = body.messagingInformation || [];
-        // for (const msgInfo of messagingInformation) {
-        //     msgInfo.listing_item_template_id = id;
-        //     await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
-        // }
-
         // find related record and delete it and recreate related data
         const existintMessagingInformation = updatedListingItemTemplate.related('MessagingInformation').toJSON() || [];
 
