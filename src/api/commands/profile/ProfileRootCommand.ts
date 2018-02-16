@@ -43,7 +43,7 @@ export class ProfileRootCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public help(): string {
-        return this.getName() + ' (get|add|update|remove|address|favorite)';
+        return this.getName() + ' (get|add|update|remove|address|favorite) ';
     }
 
     public description(): string {

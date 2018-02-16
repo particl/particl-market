@@ -55,6 +55,7 @@ import { ItemLocationRootCommand } from '../commands/itemlocation/ItemLocationRo
 import { ListingItemGetCommand } from '../commands/listingitem/ListingItemGetCommand';
 import { ListingItemSearchCommand } from '../commands/listingitem/ListingItemSearchCommand';
 import { ListingItemFlagCommand } from '../commands/listingitem/ListingItemFlagCommand';
+import { ListingItemUpdateCommand } from '../commands/listingitem/ListingItemUpdateCommand';
 import { ListingItemRootCommand } from '../commands/listingitem/ListingItemRootCommand';
 
 import { ListingItemTemplateAddCommand } from '../commands/listingitemtemplate/ListingItemTemplateAddCommand';
@@ -112,6 +113,9 @@ import { PriceTickerRootCommand } from '../commands/priceticker/PriceTickerRootC
 
 import { Command } from '../commands/Command';
 
+import { CurrencyPriceRootCommand } from '../commands/currencyprice/CurrencyPriceRootCommand';
+
+
 // tslint:disable:array-type
 // tslint:disable:max-line-length
 export class RpcCommandFactory {
@@ -166,6 +170,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemGetCommand) private listingItemGetCommand: ListingItemGetCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemFlagCommand) private listingItemFlagCommand: ListingItemFlagCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemSearchCommand) private listingItemSearchCommand: ListingItemSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemUpdateCommand) private listingItemUpdateCommand: ListingItemUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemRootCommand) private listingItemRootCommand: ListingItemRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateAddCommand) private listingItemTemplateAddCommand: ListingItemTemplateAddCommand,
@@ -225,6 +230,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemRootCommand) private shoppingCartItemRootCommand: ShoppingCartItemRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.priceticker.PriceTickerRootCommand) private priceTickerRootCommand: PriceTickerRootCommand,
+        @inject(Types.Command) @named(Targets.Command.currencyprice.CurrencyPriceRootCommand) private currencyPriceRootCommand: CurrencyPriceRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
@@ -283,6 +289,7 @@ export class RpcCommandFactory {
         this.commands.push(listingItemGetCommand);
         this.commands.push(listingItemFlagCommand);
         this.commands.push(listingItemSearchCommand);
+        this.commands.push(listingItemUpdateCommand);
         this.commands.push(listingItemRootCommand);
 
         this.commands.push(listingItemTemplatePostCommand);
@@ -342,6 +349,8 @@ export class RpcCommandFactory {
         this.commands.push(shoppingCartItemRootCommand);
 
         this.commands.push(priceTickerRootCommand);
+
+        this.commands.push(currencyPriceRootCommand);
 
         this.commands.push(helpCommand);
 

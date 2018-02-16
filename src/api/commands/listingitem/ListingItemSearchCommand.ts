@@ -56,46 +56,41 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
         } as ListingItemSearchParams, data.params[10]);
     }
 
+    public usage(): string {
+        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId>|<categoryName>) [(<profileId>|<ALL>) ';
+    }
+
     public help(): string {
-        return this.getName() + ' [<page> [<pageLimit> [<order> ' +
-            '[(<categoryId> | <categoryName>)[(<profileId> | <ALL>) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]]\n'
-            + '    <page>                          - [optional] Numeric - The number page we want to\n'
-            + '                                       view of search listing item results.\n'
-            + '        <pageLimit>                 - [optional] Numeric - The number of results per\n'
-            + '                                       page.\n'
-            + '            <order>                 - ENUM{ASC} - The order of the returned results.\n'
-            + '            <categoryId>            - [optional] Numeric - The ID identifying the\n'
-            + '                                       category associated with the listing items\n'
-            + '                                       we want to search for.\n'
-            + '            <categoryName>          - [optional] String - The key identifying the\n'
-            + '                                       category associated with the listing items\n'
-            + '                                       we want to search for.\n'
-
-            + '            <profileId>             -  [optional] Numeric - The ID identifying the\n'
-
-            + '            <minPrice>                 -  [optional] Numeric - The minPrice of the listing item price \n'
-
-            + '                                       we want to search for between basePrice rance.\n'
-            + '            <maxPrice>                 -  [optional] Numeric - The maxPrice of the listing item price\n'
-
-            + '                                       we want to search for between basePrice rance.\n'
-            + '            <country>                 -  [optional] String - The country of the listing item\n'
-
-            + '                                       we want to search for.\n'
-            + '           <shippingDestination>      -  [optional] String - The shipping destination of the listing item\n'
-
-            + '                                       we want to search for \n'
-            + '            <ALL>                   - [optional] any string or * or none \n'
-            + '                                       means dont wnat to search with profile\n'
-            + '                                       we want to search for.\n'
-            + '               <searchString>        - [optional] String - A string that is used to\n'
-            + '                                       find listing items by their titles.';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]] \n'
+            + '    <page>                   - [optional] Numeric - The number page we want to \n'
+            + '                                view of search listing item results. \n'
+            + '    <pageLimit>              - [optional] Numeric - The number of results per page. \n'
+            + '    <order>                  - [optional] ENUM{ASC} - The order of the returned results. \n'
+            + '    <categoryId>             - [optional] Numeric - The ID identifying the category associated \n'
+            + '                                with the listing items we want to search for. \n'
+            + '    <categoryName>           - [optional] String - The key identifying the category associated \n'
+            + '                                with the listing items we want to search for. \n'
+            + '    <profileId>              - [optional] Numeric - The ID identifying the \n'
+            + '    <minPrice>               - [optional] Numeric - The minimum price of the listing item price \n'
+            + '                                we want to search for between basePrice range. \n'
+            + '    <maxPrice>               - [optional] Numeric - The maximum price of the listing item price \n'
+            + '                                we want to search for between basePrice range. \n'
+            + '    <country>                - [optional] String - The country of the listing item \n'
+            + '                                we want to search for. \n'
+            + '    <shippingDestination>    - [optional] String - The shipping destination of the listing item \n'
+            + '                                we want to search for. \n'
+            + '    ALL                      - [optional] [TODO: REWRITE] any string or * or none \n'
+            + '                                means dont want to search with profile \n'
+            + '                                we want to search for. \n'
+            + '    <searchString>           - [optional] String - A string that is used to \n'
+            + '                                find listing items by their titles. ';
     }
 
     public description(): string {
-        return 'Search listing items with pagination by category id or \n'
-        + ' category name or by profileId, or by listing item price \n'
-        + ' min and max price range, or by country or shipping destination';
+        return 'Search listing items with pagination by category id or'
+        + ' category name or by profileId, or by listing item price'
+        + ' min and max price range, or by country or shipping destination.';
     }
 
 }

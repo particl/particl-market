@@ -60,13 +60,16 @@ export class ShippingDestinationListCommand extends BaseCommand implements RpcCo
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' (template <listingItemTemplateId>|item <listingItemId>) ';
+    }
+
     public help(): string {
-        return this.getName()
-            + ' (template <listingItemTemplateId> | item <listingItemId>)\n'
-            + '    <listingItemTemplateId>    - Numeric - ID of the item template object associated with\n'
-            + '                                  the shipping destinations we want to list.\n'
-            + '    <listingItemId>            - Numeric - ID of the listing item whose shipping destinations\n'
-            + '                                  we want to list.';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    template <listingItemTemplateId>   - Numeric - ID of the item template object associated with \n'
+            + '                                          the shipping destinations we want to list. \n'
+            + '    item <listingItemId>               - Numeric - ID of the listing item whose shipping destinations \n'
+            + '                                          we want to list. ';
     }
 
     public description(): string {
