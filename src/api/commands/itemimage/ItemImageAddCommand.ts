@@ -72,11 +72,14 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
             + '    <data>                        - [optional] String - The image\'s data. ';
     }
 
-    public example(): string {
-        return 'image ' + this.getName() + ' 1 someDataId LOCAL BASE64 iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAIAAADZSiLoAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH4gIQCyAa2TIm7wAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAaSURBVAjXY/j//z8DA8P///8Z/v//D+EgAAD4JQv1hrMfIwAAAABJRU5ErkJggg== ';
-    }
-
     public description(): string {
         return 'Add an item image to a listing item template, identified by its ID.';
+    }
+
+    public example(): string {
+        return 'image ' + this.getName() + ' 1 someDataId LOCAL BASE64 '
+            + 'iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAIAAADZSiLoAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUU'
+            + 'H4gIQCyAa2TIm7wAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAaSURBVAjXY/j//z8'
+            + 'DA8P///8Z/v//D+EgAAD4JQv1hrMfIwAAAABJRU5ErkJggg== ';
     }
 }
