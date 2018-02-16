@@ -51,11 +51,15 @@ export class MessagingInformationUpdateCommand extends BaseCommand implements Rp
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingTemplateId> <protocol> <publicKey> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingTemplateId> <protocol> <publicKey>\n'
-            + '    <listingTemplateId>      - Numeric - [TODO]\n'
-            + '    <protocol>               - ENUM{SMSG} - [TODO]\n'
-            + '    <publicKey>              - String - [TODO]';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <listingTemplateId>      - Numeric - [TODO] \n'
+            + '    <protocol>               - ENUM{SMSG} - [TODO] \n'
+            + '    <publicKey>              - String - [TODO] ';
     }
 
     public description(): string {

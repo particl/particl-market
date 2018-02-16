@@ -33,10 +33,14 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
         return this.itemInformationService.findByItemTemplateId(data.params[0]);
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingItemTemplateId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId>\n'
-            + '    <listingItemTemplateId>             - Numeric - The listingItemTemplateId of the item information we want\n'
-            + '                                       to retrieve.';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <listingItemTemplateId>       - Numeric - The listingItemTemplateId of the item information we want \n'
+            + '                                     to retrieve.';
     }
 
     public description(): string {

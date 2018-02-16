@@ -43,12 +43,16 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' [<profileId>|<profileName>] ';
+    }
+
     public help(): string {
-        return this.getName() + ' [<profileId>|<profileName>]\n'
-            + '    <profileId>           - [optional] Numeric - The ID of the profile we want to\n'
-            + '                             retrieve.\n'
-            + '    <profileName>         - [optional] String - The name of the profile we want to\n'
-            + '                             retrieve.';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <profileId>              - [optional] Numeric - The ID of the profile we want to \n'
+            + '                                retrieve. \n'
+            + '    <profileName>            - [optional] String - The name of the profile we want to \n'
+            + '                                retrieve. ';
     }
 
     public description(): string {

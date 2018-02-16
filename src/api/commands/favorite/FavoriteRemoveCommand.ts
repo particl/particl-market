@@ -46,14 +46,18 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
         return this.favoriteItemService.destroy(favoriteItem.Id);
     }
 
+    public usage(): string {
+        return this.getName() + ' <profileId> (<itemId>|<hash>) ';
+    }
+
     public help(): string {
-        return this.getName() + ' <profileId> (<itemId> | <hash>)\n'
-            + '    <profileId>                     - Numeric - The ID of the profile\n'
-            + '                                       associated with the favorite we want to remove.\n'
-            + '    <itemId>                        - Numeric - The ID of the listing item you want\n'
-            + '                                       to remove from your favorites.\n'
-            + '    <hash>                          - String - The hash of the listing item you want\n'
-            + '                                       to remove from your favourites.\n';
+        return this.usage() + ' -  ' + this.description() + '\n'
+            + '    <profileId>                   - Numeric - The ID of the profile \n'
+            + '                                     associated with the favorite we want to remove. \n'
+            + '    <itemId>                      - Numeric - The ID of the listing item you want \n'
+            + '                                     to remove from your favorites. \n'
+            + '    <hash>                        - String - The hash of the listing item you want \n'
+            + '                                     to remove from your favourites. ';
     }
 
     public description(): string {

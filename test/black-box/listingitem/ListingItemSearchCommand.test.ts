@@ -348,7 +348,7 @@ describe('ListingItemSearchCommand', () => {
         expect(categoryId).toBe(categoryRes.id);
     });
 
-    test('Should search listing items by ItemInformation title', async () => {
+    test('Should search listing items by searchString = ItemInformation title', async () => {
         // set search term
         searchString = testData.itemInformation.title;
         const getDataRes: any = await rpc(method, [subCommand, pageNumber,
@@ -470,4 +470,25 @@ describe('ListingItemSearchCommand', () => {
         expect(result.length).toBe(1);
         expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(shippingDestination);
     });
+
+    test('Should search listing item by shipping Destination, min-max price and SearchString = information title', async () => {
+        category = '';
+        searchString = testData.itemInformation.title;
+        profileId = 'ALL';
+        minPrice = 0;
+        maxPrice = 5;
+        country = '';
+        shippingDestination = 'United Kingdom';
+        withRelated = true;
+        const getDataRes: any = await rpc(method, [subCommand, pageNumber,
+            pageLimit, order, category, type, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
+
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(testData.itemInformation.title).toBe(result[0].ItemInformation.title);
+        expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(shippingDestination);
+    });
+
 });

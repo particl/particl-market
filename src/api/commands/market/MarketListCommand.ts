@@ -35,8 +35,12 @@ export class MarketListCommand extends BaseCommand implements RpcCommandInterfac
         return this.marketService.findAll();
     }
 
+    public usage(): string {
+        return this.getName() + ' ';
+    }
+
     public help(): string {
-        return this.getName();
+        return this.usage() + ' -  ' + this.description();
     }
 
     public description(): string {
