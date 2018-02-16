@@ -22,9 +22,8 @@ jobs:
 
     environment:
       TEST_RESULTS: /tmp/test-results
-
       COMMIT: ${CIRCLE_SHA1::8}
-      AUTHOR_NAME: "$(git log -1 $CIRCLE_SHA1 --pretty="%aN")"
+      AUTHOR_NAME: "$(git log -1 $CIRCLE_SHA1 --pretty=\"%aN\")"
       REGISTRY: "r.cfcr.io"
       IMAGE: "ludx/dapp-shell-ci"
       IMAGE_NAME: "$REGISTRY/$IMAGE"
