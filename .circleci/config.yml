@@ -5,7 +5,7 @@
 #
 
 defaults: &defaults
-  working_directory: /app
+  working_directory: /~dappshell
   docker:
     # primary container, this is where commands are executed for jobs using the Docker executor.
     - image: circleci/node:9.5.0-browsers
