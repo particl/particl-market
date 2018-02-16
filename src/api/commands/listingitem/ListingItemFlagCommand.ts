@@ -6,7 +6,6 @@ import { ListingItemService } from '../../services/ListingItemService';
 import { FlaggedItemService } from '../../services/FlaggedItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
-import { FlaggedItemParams } from '../../requests/FlaggedItemParams';
 import { FlaggedItem } from '../../models/FlaggedItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
