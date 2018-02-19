@@ -69,7 +69,7 @@ services:
     image: r.cfcr.io/ludx/dapp-shell-ci:feature
     # command: bin/ci-entrypoint.sh
     # command: sleep infinity
-    command: while true; do sleep 86400; done
+    command: cat
     depends_on:
       - app1
       - app2
