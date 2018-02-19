@@ -90,7 +90,8 @@ jobs:
 
     # machine: true
     docker:
-      - image: ypereirareis/docker-compose
+      # - image: ypereirareis/docker-compose
+      - image: circleci/node:9.5.0-browsers
 
     environment:
       TEST_RESULTS: /app/test-results
