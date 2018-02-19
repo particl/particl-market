@@ -51,4 +51,8 @@ export class ShoppingCartAddCommand extends BaseCommand implements RpcCommandInt
     public description(): string {
         return 'Add a new shopping cart for profile.';
     }
+
+    public example(): string {
+        return 'cart ' + this.getName() + ' newCart 1 ';
+    }
 }

@@ -45,4 +45,8 @@ export class ShoppingCartListCommand extends BaseCommand implements RpcCommandIn
     public description(): string {
         return 'List the all shopping cart associated with given profile id or profile name.';
     }
+
+    public example(): string {
+        return 'cart ' + this.getName() + ' 1 ';
+    }
 }

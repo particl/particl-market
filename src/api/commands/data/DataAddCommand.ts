@@ -57,4 +57,8 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
         return 'Adds data to the database.';
     }
 
+    public example(): string {
+        return '';
+        // return 'bid ' + this.getName() + ' [TODO] ';
+    }
 }

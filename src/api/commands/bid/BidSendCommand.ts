@@ -85,6 +85,11 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
         return 'Send bid.';
     }
 
+    public example(): string {
+        return '';
+        // return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb 1 [TODO] ';
+    }
+
     /**
      * data[]:
      * [0]: id, string

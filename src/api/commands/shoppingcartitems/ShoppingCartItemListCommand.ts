@@ -47,4 +47,8 @@ export class ShoppingCartItemListCommand extends BaseCommand implements RpcComma
     public description(): string {
         return 'List all item of shopping cart as per given cartId.';
     }
+
+    public example(): string {
+        return 'cartitem ' + this.getName() + ' 1 ';
+    }
 }
