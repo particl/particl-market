@@ -153,11 +153,15 @@ jobs:
             # docker-compose will start 2 containers, the one with service will be named `dappshell_app1_1`
             # we start another container with curl in the same network as `contacts`, this way we have
             # all exposed ports from `contacts` available on `localhost` in this new container
-            docker run --network container:dappshell_app1_1 $REGISTRY/$IMAGE_NAME npm test
-            docker run --network container:dappshell_app1_1 $REGISTRY/$IMAGE_NAME bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
-            docker run --network container:dappshell_app1_1 $REGISTRY/$IMAGE_NAME bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
+            docker run $REGISTRY/$IMAGE_NAME npm test
+            docker run $REGISTRY/$IMAGE_NAME bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
+            docker run $REGISTRY/$IMAGE_NAME bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
+
             docker-compose down
 #              $REGISTRY/$IMAGE_NAME --retry 10 --retry-delay 1 --retry-connrefused http://localhost:8080/contacts/test
+#            docker run --network container:dappshell_app1_1 $REGISTRY/$IMAGE_NAME npm test
+#            docker run --network container:dappshell_app1_1 $REGISTRY/$IMAGE_NAME bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
+#            docker run --network container:dappshell_app1_1 $REGISTRY/$IMAGE_NAME bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
 
 
       # run tests!
