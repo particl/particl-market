@@ -63,3 +63,17 @@ services:
       - RPCHOSTNAME=feature2.particl.xyz
       - MAINNET_PORT=53738
       - TESTNET_PORT=53935
+
+  testrunner:
+    image: r.cfcr.io/ludx/dapp-shell-ci:feature
+#    command: bin/ci-entrypoint.sh
+    env_file:
+      - .env.docker-compose
+    environment:
+      - NODE_ENV=development
+      - APP_PORT=3100
+      - RPCUSER=test
+      - RPCPASSWORD=test
+      - RPCHOSTNAME=feature1.particl.xyz
+      - MAINNET_PORT=52738
+      - TESTNET_PORT=52935
