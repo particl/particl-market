@@ -4,6 +4,12 @@ import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ProfileService } from '../../src/api/services/ProfileService';
+import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+import { ItemLocationService } from '../../src/api/services/ItemLocationService';
+import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
+import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
+import { ItemImageService } from '../../src/api/services/ItemImageService';
+import { ItemInformationService } from '../../src/api/services/ItemInformationService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -12,14 +18,13 @@ import { ItemInformation } from '../../src/api/models/ItemInformation';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
 import { ItemInformationCreateRequest } from '../../src/api/requests/ItemInformationCreateRequest';
 import { ItemInformationUpdateRequest } from '../../src/api/requests/ItemInformationUpdateRequest';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 describe('ItemInformation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -30,9 +35,18 @@ describe('ItemInformation', () => {
     let testDataService: TestDataService;
     let itemInformationService: ItemInformationService;
     let profileService: ProfileService;
+    let listingItemTemplateService: ListingItemTemplateService;
+    let itemLocationService: ItemLocationService;
+    let locationMarkerService: LocationMarkerService;
+    let shippingDestinationService: ShippingDestinationService;
+    let itemImageService: ItemImageService;
 
     let createdId;
     let createdListingItemTemplate;
+    let createdItemLocation;
+    let createdLocationMarker;
+    let shippingDestination;
+    let itemImages;
     let defaultProfile;
 
     const testData = {
@@ -153,6 +167,11 @@ describe('ItemInformation', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.ItemLocationService);
+        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
+        shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.ShippingDestinationService);
+        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -186,6 +205,10 @@ describe('ItemInformation', () => {
         createdId = itemInformationModel.Id;
 
         const result = itemInformationModel.toJSON();
+        createdItemLocation = result.ItemLocation;
+        createdLocationMarker = result.ItemLocation.LocationMarker;
+        shippingDestination = result.ShippingDestinations;
+        itemImages = result.ItemImages;
 
         expect(result.title).toBe(testData.title);
         expect(result.shortDescription).toBe(testData.shortDescription);
@@ -205,7 +228,7 @@ describe('ItemInformation', () => {
 
     test('Should throw ValidationException because we want to create a empty item information', async () => {
         expect.assertions(1);
-        await itemInformationService.create({}).catch(e =>
+        await itemInformationService.create({} as ItemInformationCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -275,10 +298,48 @@ describe('ItemInformation', () => {
     });
 
     test('Should delete the item information', async () => {
-        expect.assertions(1);
+        expect.assertions(10);
         await itemInformationService.destroy(createdId);
         await itemInformationService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
+        );
+
+        // itemLocation
+        await itemLocationService.findOne(createdItemLocation.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdItemLocation.id))
+        );
+
+        // LocationMarker
+        await locationMarkerService.findOne(createdLocationMarker.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdLocationMarker.id))
+        );
+
+        // ShippingDestinations
+        await shippingDestinationService.findOne(shippingDestination[0].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(shippingDestination[0].id))
+        );
+        await shippingDestinationService.findOne(shippingDestination[1].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(shippingDestination[1].id))
+        );
+        await shippingDestinationService.findOne(shippingDestination[2].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(shippingDestination[2].id))
+        );
+
+        // ItemImages
+        await itemImageService.findOne(itemImages[0].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemImages[0].id))
+        );
+        await itemImageService.findOne(itemImages[1].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemImages[1].id))
+        );
+        await itemImageService.findOne(itemImages[2].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemImages[2].id))
+        );
+
+        // delete listing item
+        await listingItemTemplateService.destroy(createdListingItemTemplate.id);
+        await listingItemTemplateService.findOne(createdListingItemTemplate.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdListingItemTemplate.id))
         );
     });
 

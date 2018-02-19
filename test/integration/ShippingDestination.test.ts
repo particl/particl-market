@@ -10,11 +10,15 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ShippingDestination } from '../../src/api/models/ShippingDestination';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 
+import { ItemLocationService } from '../../src/api/services/ItemLocationService';
+import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
 import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
-
-import { MarketService } from '../../src/api/services/MarketService';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
+import { ItemImageService } from '../../src/api/services/ItemImageService';
 import { ItemInformationService } from '../../src/api/services/ItemInformationService';
+
+import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+import { ListingItemService } from '../../src/api/services/ListingItemService';
+
 import { ShippingDestinationCreateRequest } from '../../src/api/requests/ShippingDestinationCreateRequest';
 import { ShippingDestinationUpdateRequest } from '../../src/api/requests/ShippingDestinationUpdateRequest';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
@@ -30,9 +34,13 @@ describe('ShippingDestination', () => {
 
     let testDataService: TestDataService;
     let shippingDestinationService: ShippingDestinationService;
-    let marketService: MarketService;
-    let listingItemService: ListingItemService;
+    let listingItemTemplateService: ListingItemTemplateService;
     let itemInformationService: ItemInformationService;
+    let itemLocationService: ItemLocationService;
+    let locationMarkerService: LocationMarkerService;
+    let itemImageService: ItemImageService;
+
+    let listingItemService: ListingItemService;
 
     const testData = {
         country: 'United Kingdom',
@@ -54,9 +62,12 @@ describe('ShippingDestination', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         shippingDestinationService = app.IoC.getNamed<ShippingDestinationService>(Types.Service, Targets.Service.ShippingDestinationService);
-        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
+        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.ItemLocationService);
+        locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
+        itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -64,12 +75,12 @@ describe('ShippingDestination', () => {
         let generateParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             false,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+            false,   // generateItemImages
+            false,   // generatePaymentInformation
+            false,   // generateEscrow
+            false,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false    // generateListingItemObjects
         ]).toParamsArray();
 
         // create listingitem without ShippingDestinations and store its id for testing
@@ -84,12 +95,12 @@ describe('ShippingDestination', () => {
         generateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             false,  // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+            false,   // generateItemImages
+            false,   // generatePaymentInformation
+            false,   // generateEscrow
+            false,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false    // generateListingItemObjects
         ]).toParamsArray();
 
         // create listingitemtemplate without ShippingDestinations and store its id for testing
@@ -100,7 +111,6 @@ describe('ShippingDestination', () => {
             generateParams                              // what kind of data to generate
         } as TestDataGenerateRequest);
         createdListingItemTemplate = listingItemTemplates[0].toJSON();
-
     });
 
     afterAll(async () => {
@@ -200,18 +210,67 @@ describe('ShippingDestination', () => {
     });
 
     test('Should delete the shipping destination related to template', async () => {
-        expect.assertions(1);
+        expect.assertions(5);
         await shippingDestinationService.destroy(createdTemplateShippingDestinationId);
         await shippingDestinationService.findOne(createdTemplateShippingDestinationId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdTemplateShippingDestinationId))
         );
+
+        // delete listing-item-template
+        await listingItemTemplateService.destroy(createdListingItemTemplate.id);
+        await listingItemTemplateService.findOne(createdListingItemTemplate.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdListingItemTemplate.id))
+        );
+
+        const ItemInformation = createdListingItemTemplate.ItemInformation;
+        await itemInformationService.findOne(ItemInformation.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(ItemInformation.id))
+        );
+
+        const createdItemLocation = ItemInformation.ItemLocation;
+        const createdLocationMarker = ItemInformation.ItemLocation.LocationMarker;
+
+        // itemLocation
+        await itemLocationService.findOne(createdItemLocation.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdItemLocation.id))
+        );
+
+        // LocationMarker
+        await locationMarkerService.findOne(createdLocationMarker.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdLocationMarker.id))
+        );
     });
 
     test('Should delete the shipping destination related to listing item', async () => {
-        expect.assertions(1);
+        expect.assertions(5);
+
         await shippingDestinationService.destroy(createdListingItemShippingDestinationId);
         await shippingDestinationService.findOne(createdListingItemShippingDestinationId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdListingItemShippingDestinationId))
+        );
+
+        // delete listing-item
+        await listingItemService.destroy(createdListingItem.id);
+        await listingItemService.findOne(createdListingItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdListingItem.id))
+        );
+
+        const ItemInformation = createdListingItem.ItemInformation;
+        await itemInformationService.findOne(ItemInformation.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(ItemInformation.id))
+        );
+
+        const createdItemLocation = ItemInformation.ItemLocation;
+        const createdLocationMarker = ItemInformation.ItemLocation.LocationMarker;
+
+        // itemLocation
+        await itemLocationService.findOne(createdItemLocation.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdItemLocation.id))
+        );
+
+        // LocationMarker
+        await locationMarkerService.findOne(createdLocationMarker.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdLocationMarker.id))
         );
     });
 
