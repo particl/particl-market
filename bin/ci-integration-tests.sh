@@ -7,4 +7,13 @@ export RPCPASSWORD=$5
 export RPCHOSTNAME=$6
 export MAINNET_PORT=$7
 export TESTNET_PORT=$8
+
+echo $NODE_ENV
+echo $APP_PORT
+echo $APP_HOST
+echo $RPCUSER
+echo $RPCPASSWORD
+echo $RPCHOSTNAME
+
+wait-port $APP_HOST:$APP_PORT/cli
 npm run test:integration:pretty
