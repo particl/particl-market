@@ -6,12 +6,6 @@
 
 defaults: &defaults
   working_directory: ~/dappshell
-  docker:
-    # primary container, this is where commands are executed for jobs using the Docker executor.
-    - image: circleci/node:9.5.0-browsers
-    # specify service dependencies here if necessary
-    # - image: ludx/particl:latest
-    # - image: r.cfcr.io/ludx/codefresh-custom-runner
 
 version: 2
 jobs:
@@ -19,6 +13,13 @@ jobs:
   # builds feature branch
   build_feature:
     <<: *defaults
+
+    docker:
+      # primary container, this is where commands are executed for jobs using the Docker executor.
+      - image: circleci/node:9.5.0-browsers
+      # specify service dependencies here if necessary
+      # - image: ludx/particl:latest
+      # - image: r.cfcr.io/ludx/codefresh-custom-runner
 
     environment:
       TEST_RESULTS: /app/test-results
@@ -87,6 +88,8 @@ jobs:
   test_feature:
     <<: *defaults
 
+    machine: true
+
     environment:
       TEST_RESULTS: /app/test-results
       REGISTRY: "r.cfcr.io"
@@ -135,9 +138,9 @@ jobs:
       # The Remote Docker Environment has the following technical specifications:
       # cpu: 2, processor: Intel(R) Xeon(R) @ 2.3GHz, ram: 8GB, hd: 100GB
 
-      - setup_remote_docker:
-          docker_layer_caching: true
-          version: 17.11.0-ce
+      # - setup_remote_docker:
+      #    docker_layer_caching: true
+      #    version: 17.11.0-ce
       - run: docker-compose --version
 
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
