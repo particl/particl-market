@@ -67,9 +67,7 @@ services:
   testrunner:
     # container_name: testrunner
     image: r.cfcr.io/ludx/dapp-shell-ci:feature
-    # command: bin/ci-entrypoint.sh
-    # command: sleep infinity
-    command: cat
+    command: bin/ci-testrunner.sh
     depends_on:
       - app1
       - app2
