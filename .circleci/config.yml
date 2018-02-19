@@ -94,7 +94,9 @@ jobs:
       # - image: ypereirareis/docker-compose
       # - image: circleci/node:9.5.0-browsers
       - image: $REGISTRY/$IMAGE_NAME:feature
-
+        auth:
+          username: $REGISTRY_USER
+          password: $REGISTRY_PASS
     environment:
       TEST_RESULTS: /app/test-results
       REGISTRY: "r.cfcr.io"
