@@ -36,8 +36,26 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<FlaggedItem> {
-        // flag the listing item by listing item id or hash
-        return await this.listingItemService.flagItem(data.params[0]);
+
+        let listingItem;
+        // if listingItemId is number then findById, else findOneByHash
+        if (typeof data.params[0] === 'number') {
+            listingItem = await this.listingItemService.findOne(data.params[0]);
+        } else {
+            listingItem = await this.listingItemService.findOneByHash(data.params[0]);
+        }
+
+        // check if item already flagged
+        const isFlagged = await this.listingItemService.isItemFlagged(listingItem);
+
+        if (isFlagged) {
+            throw new MessageException('Item already beeing flagged!');
+        } else {
+            // create FlaggedItem
+            return await this.flaggedItemService.create({
+                listingItemId: listingItem.id
+            } as FlaggedItemCreateRequest);
+        }
     }
 
     public help(): string {

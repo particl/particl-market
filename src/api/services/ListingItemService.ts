@@ -352,33 +352,10 @@ export class ListingItemService {
         }
     }
 
-    /**
-     *
-     * listingItemId: listingItemId or hash
-     *
-     * @returns {Promise<FlaggedItem>}
-     */
-
-    public async flagItem(listingItemId: number | string): Promise<FlaggedItem> {
-        let listingItem;
-        // if listingItemId is number then findById, else findOneByHash
-        if (typeof listingItemId === 'number') {
-            listingItem = await this.findOne(listingItemId);
-        } else {
-            listingItem = await this.findOneByHash(listingItemId);
-        }
-
-        // check if item already flagged
-        const isFlagged = await this.isItemFlagged(listingItem);
-
-        if (isFlagged) {
-            throw new MessageException('Item already beeing flagged!');
-        } else {
-            // create FlaggedItem
-            return await this.flaggedItemService.create({
-                listingItemId: listingItem.id
-            } as FlaggedItemCreateRequest);
-        }
+    // check if ListingItem already Flagged
+    public async isItemFlagged(listingItem: ListingItem): Promise<boolean> {
+        const flaggedItem = listingItem.related('FlaggedItem').toJSON();
+        return _.size(flaggedItem) !== 0;
     }
 
     // check if object is exist in a array
@@ -396,9 +373,5 @@ export class ListingItemService {
         return highestOrder ? highestOrder['order'] : 0;
     }
 
-    // check if ListingItem already Flagged
-    private async isItemFlagged(listingItem: ListingItem): Promise<boolean> {
-        const flaggedItem = listingItem.related('FlaggedItem').toJSON();
-        return _.size(flaggedItem) !== 0;
-    }
+
 }
