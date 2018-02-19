@@ -87,16 +87,15 @@ jobs:
   # tests feature branch
   test_feature:
     # <<: *defaults
-    working_directory: /app
 
     # machine: true
     docker:
       # - image: ypereirareis/docker-compose
-      # - image: circleci/node:9.5.0-browsers
-      - image: $REGISTRY/$IMAGE_NAME:feature
-        auth:
-          username: $REGISTRY_USER
-          password: $REGISTRY_PASS
+      - image: circleci/node:9.5.0-browsers
+      # - image: $REGISTRY/$IMAGE_NAME:feature
+      #  auth:
+      #    username: $REGISTRY_USER
+      #    password: $REGISTRY_PASS
     environment:
       TEST_RESULTS: /app/test-results
       REGISTRY: "r.cfcr.io"
@@ -154,7 +153,7 @@ jobs:
 
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run:
-          name: Start container and verify it's working
+          name: start container and verify it's working
           command: |
             set -x
             docker-compose --file docker-compose-circle.yml up --build -d
