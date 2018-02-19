@@ -159,6 +159,7 @@ jobs:
             docker-compose --file docker-compose-circle.yml up --build -d
             sleep 5
             docker-compose ps
+            docker stats --no-stream
             docker-compose logs
 
             docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'npm test'
