@@ -65,7 +65,7 @@ services:
       - TESTNET_PORT=53935
 
   testrunner:
-    container_name: testrunner
+    # container_name: testrunner
     image: r.cfcr.io/ludx/dapp-shell-ci:feature
     # command: bin/ci-entrypoint.sh
     # command: sleep infinity
