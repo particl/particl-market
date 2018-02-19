@@ -56,9 +56,13 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
         } as PaymentInformationUpdateRequest);
     }
 
-    public help(): string {
+    public usage(): string {
         return this.getName() + ' <listingItemTemplateId> <paymentType> <currency> <basePrice> <domesticShippingPrice>'
-            + ' <internationalShippingPrice> <paymentAddress> \n'
+            + ' <internationalShippingPrice> <paymentAddress> ';
+    }
+
+    public help(): string {
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template \n'
             + '                                     we want to associate this payment information \n'
             + '                                     with. \n'
@@ -80,4 +84,7 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
         return 'Update the details of payment information associated with listingItemTemplateId.';
     }
 
+    public example(): string {
+        return 'payment ' + this.getName() + '  1 FREE PART 123 12 34 PkE5U1Erz9bANXAxvHeiw6t14vDTP9EdNM ';
+    }
 }

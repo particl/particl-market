@@ -40,12 +40,20 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
         return this.itemImageService.destroy(data.params[0]);
     }
 
+    public usage(): string {
+        return this.getName() + ' <itemImageId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <itemImageId> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <itemImageId>                 - Numeric - The ID of the image we want to remove.';
     }
 
     public description(): string {
         return 'Remove an item\'s image, identified by its ID.';
+    }
+
+    public example(): string {
+        return 'image ' + this.getName() + ' 1 ';
     }
 }

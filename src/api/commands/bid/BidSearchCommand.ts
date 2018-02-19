@@ -40,8 +40,12 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
         } as BidSearchParams);
     }
 
+    public usage(): string {
+        return this.getName() + ' <itemhash> [<status>] ';
+    }
+
     public help(): string {
-        return this.getName() + ' <itemhash> [<status>] \n'
+        return this.usage() + ' -  ' + this.description() + '\n'
             + '    <itemhash>               - String - The hash of the item we want to search bids for. \n'
             + '    <status>                 - [optional] ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL} - \n'
             + '                                The status of the bids we want to search for. ';
@@ -49,5 +53,9 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
 
     public description(): string {
             return 'Search bids by itemhash or bid status';
+    }
+
+    public example(): string {
+        return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb MPA_ACCEPT ';
     }
 }

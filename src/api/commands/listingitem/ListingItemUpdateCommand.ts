@@ -41,13 +41,21 @@ export class ListingItemUpdateCommand extends BaseCommand implements RpcCommandI
 
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingitemHash> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingitemHash> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <hash>                   - String - The hash of the listing item we want to Update. \n'
             + '    <listingItemTemplateId>  - Number - The Id of the listing item template which listing-item we want to Update. ';
     }
 
     public description(): string {
         return 'Update the details of listing item given by listingitemHash or by listingItemTemplateId.';
+    }
+
+    public example(): string {
+        return 'item ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb 1';
     }
 }

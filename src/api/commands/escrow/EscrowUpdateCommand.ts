@@ -42,8 +42,12 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
         });
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio> \n'
+        return this.usage() + ' -  ' + this.description() + '\n'
             + '    <listingItemTemplateId>  - Numeric - The ID of the listing item template \n'
             + '                                associated with the escrow we want to modify. \n'
             + '    <escrowType>             - String - The escrow type we want to give to the \n'

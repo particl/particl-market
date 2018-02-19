@@ -47,14 +47,24 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
         } as TestDataGenerateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <model> [<amount> [<withRelated>]] ';
+    }
+
     public help(): string {
-        return this.getName() + ' <model> [<amount> [<withRelated>]] \n'
-            + '    <model>                  - [TODO] ENUM{} - The type of data we want to generate. \n'
+        return this.usage() + ' -  ' + this.description() + '\n'
+            + '    <model>                  - ENUM{listingitemtemplate|listingitem|profile|itemcategory \n'
+            + '                                |favoriteitem|iteminformation|bid|paymentinformation|itemimage} \n'
+            + '                                - The type of data we want to generate. \n'
             + '    <amount>                 - [optional] Numeric - The number of objects we want to generate. \n'
             + '    <withRelated>            - [optional] Boolean - Whether we want to include all sub objects in the generated data. ';
     }
 
     public description(): string {
         return 'Generates data to the database.';
+    }
+
+    public example(): string {
+        return 'data ' + this.getName() + ' profile 1 true';
     }
 }

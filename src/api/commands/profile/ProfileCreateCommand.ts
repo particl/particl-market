@@ -33,13 +33,17 @@ export class ProfileCreateCommand extends BaseCommand implements RpcCommandInter
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Profile> {
         return this.profileService.create({
-            name : data.params[0],
-            address : data.params[1]
+            name : (data.params[0] || null),
+            address : (data.params[1] || null)
         } as ProfileCreateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <profileName> [<profileAddress>] ';
+    }
+
     public help(): string {
-        return this.getName() + ' <profileName> [<profileAddress>] \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <profileName>            - The name of the profile we want to create. \n'
             + '    <profileAddress>         - [optional] the particl address of this profile. \n'
             + '                                This is the address that\'s used in the particl \n'
@@ -51,4 +55,7 @@ export class ProfileCreateCommand extends BaseCommand implements RpcCommandInter
         return 'Create a new profile.';
     }
 
+    public example(): string {
+        return 'profile ' + this.getName() + ' myProfile PkE5U1Erz9bANXAxvHeiw6t14vDTP9EdNM ';
+    }
 }

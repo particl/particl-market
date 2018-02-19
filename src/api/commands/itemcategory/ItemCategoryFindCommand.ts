@@ -34,8 +34,12 @@ export class ItemCategoryFindCommand extends BaseCommand implements RpcCommandIn
         return await this.itemCategoryService.findByName(data.params[0]);
     }
 
+    public usage(): string {
+        return this.getName() + ' [<searchString>] ';
+    }
+
     public help(): string {
-        return this.getName() + ' [<searchString>] \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <searchString>                - [optional] String - A search string for finding \n'
             + '                                     categories by name. ';
     }
@@ -44,4 +48,7 @@ export class ItemCategoryFindCommand extends BaseCommand implements RpcCommandIn
         return 'Command for getting an item categories search by particular search string';
     }
 
+    public example(): string {
+        return 'category ' + this.getName() + ' luxury ';
+    }
 }

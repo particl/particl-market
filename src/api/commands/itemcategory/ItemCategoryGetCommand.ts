@@ -39,8 +39,12 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' (<categoryId>|<categoryKey>) ';
+    }
+
     public help(): string {
-        return this.getName() + ' (<categoryId>|<categoryKey>) \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <categoryId>                  - Numeric - The ID belonging to the category we \n'
             + '                                     want to retrive. \n'
             + '    <categoryKey>                 - String - The key that identifies the category \n'
@@ -51,4 +55,7 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
         return 'Command for getting an item category associated with category Id or key';
     }
 
+    public example(): string {
+        return 'category ' + this.getName() + ' 6 ';
+    }
 }

@@ -53,14 +53,22 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' <categoryId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <categoryId> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <categoryId>                  - Numeric - The ID belonging to the category we \n'
             + '                                     want to destroy. ';
     }
 
     public description(): string {
         return 'Remove and destroy an item category via categoryId.';
+    }
+
+    public example(): string {
+        return 'category ' + this.getName() + ' 81 ';
     }
 
     /**

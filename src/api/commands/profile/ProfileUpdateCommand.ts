@@ -36,8 +36,12 @@ export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInter
         });
     }
 
+    public usage(): string {
+        return this.getName() + ' <profileId> <newProfileName> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <profileId> <newProfileName> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <profileId>              - Numeric - The ID of the profile we want to modify. \n'
             + '    <newProfileName>         - String - The new name we want to apply to the profile. ';
     }
@@ -46,4 +50,7 @@ export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInter
         return 'Update the details of a profile given by profileId.';
     }
 
+    public example(): string {
+        return 'profile ' + this.getName() + ' 2 myNewProfile ';
+    }
 }

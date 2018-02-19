@@ -49,13 +49,21 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
         return profile.toJSON().ShippingAddresses;
     }
 
+    public usage(): string {
+        return this.getName() + ' [<profileId>] ';
+    }
+
     public help(): string {
-        return this.getName() + ' [<profileId>] \n'
+        return this.usage() + ' -  ' + this.description() + '\n'
             + '    <profileId>              - Numeric - The ID of the profile we want to associate \n'
             + '                                this address with. ';
     }
 
     public description(): string {
         return 'List all addresses belonging to a profile.';
+    }
+
+    public example(): string {
+        return 'address ' + this.getName() + ' 1';
     }
 }

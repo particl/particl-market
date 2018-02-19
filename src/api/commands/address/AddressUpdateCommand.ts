@@ -71,8 +71,12 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
         } as AddressUpdateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <addressId> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] ';
+    }
+
     public help(): string {
-        return this.getName() + ' <addressId> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] \n'
+        return this.usage() + ' -  ' + this.description() + '\n'
             + '    <addressId>              - Numeric - The ID of the address we want to modify. \n'
             + '    <title>                  - String - A short identifier for the address. \n'
             + '    <addressLine1>           - String - The first line of the address. \n'
@@ -86,5 +90,9 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
 
     public description(): string {
         return 'Update the details of an address given by ID.';
+    }
+
+    public example(): string {
+        return 'address 1 ' + this.getName() + ' homeAddress \'1060 West Addison Street\' \'\' Chicago IL \'United States\' 60613 ';
     }
 }

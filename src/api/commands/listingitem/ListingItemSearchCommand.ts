@@ -56,9 +56,13 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
         } as ListingItemSearchParams, data.params[10]);
     }
 
+    public usage(): string {
+        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId>|<categoryName>) [(<profileId>|<ALL>) '
+            + '[<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]] \n';
+    }
+
     public help(): string {
-        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId>|<categoryName>) [(<profileId>|<ALL>) \n'
-            + '    [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]] \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <page>                   - [optional] Numeric - The number page we want to \n'
             + '                                view of search listing item results. \n'
             + '    <pageLimit>              - [optional] Numeric - The number of results per page. \n'
@@ -84,9 +88,12 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
     }
 
     public description(): string {
-        return 'Search listing items with pagination by category id or \n'
-        + ' category name or by profileId, or by listing item price \n'
-        + ' min and max price range, or by country or shipping destination';
+        return 'Search listing items with pagination by category id or'
+        + ' category name or by profileId, or by listing item price'
+        + ' min and max price range, or by country or shipping destination.';
     }
 
+    public example(): string {
+        return 'item ' + this.getName() + ' 1 10 ASC 76 1 100 200 Australia China wine';
+    }
 }

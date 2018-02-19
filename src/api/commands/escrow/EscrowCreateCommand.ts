@@ -42,8 +42,12 @@ export class EscrowCreateCommand extends BaseCommand implements RpcCommandInterf
         });
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId> <escrowType> <buyerRatio> <sellerRatio> \n'
+        return this.usage() + ' -  ' + this.description() + '\n'
             + '    <listingItemTemplateId>  - Numeric - The ID of the listing item template we want \n'
             + '                                to associate with this escrow. \n'
             + '    <escrowType>             - Enum{NOP,MAD} - The type of the escrow we want to \n'
@@ -56,4 +60,7 @@ export class EscrowCreateCommand extends BaseCommand implements RpcCommandInterf
         return 'Create an escrow and associate it with a listingItemTemplate.';
     }
 
+    public example(): string {
+        return 'escrow ' + this.getName() + ' 1 MAD 1 1 ';
+    }
 }

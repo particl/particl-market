@@ -76,9 +76,12 @@ export class ShippingDestinationAddCommand extends BaseCommand implements RpcCom
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingItemTemplateId> (<country>|<countryCode>) <shippingAvailability> ';
+    }
+
     public help(): string {
-        return this.getName()
-            + ' <listingItemTemplateId> (<country>|<countryCode>) <shippingAvailability> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>            - Numeric - ID of the item template object we want \n'
             + '                                          to link this shipping destination to. \n'
             + '    <country>                          - String - The country name. \n'
@@ -90,6 +93,10 @@ export class ShippingDestinationAddCommand extends BaseCommand implements RpcCom
 
     public description(): string {
         return 'Create a new shipping destination and associate it with an item information object.';
+    }
+
+    public example(): string {
+        return 'shipping ' + this.getName() + ' 1 Australia UNKNOWN';
     }
 
     private validateShippingAvailability(shippingAvailStr: string): ShippingAvailability {

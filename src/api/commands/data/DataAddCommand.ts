@@ -40,9 +40,15 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
         } as TestDataCreateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <model> <json> [<withRelated>] ';
+    }
+
     public help(): string {
-        return this.getName() + '<model> <json> [<withRelated>] \n'
-            + '    <model>                  - String - [TODO] \n'
+        return this.usage() + ' -  ' + this.description() + '\n'
+            + '    <model>                  - ENUM{listingitemtemplate|listingitem|profile|itemcategory \n'
+            + '                                |favoriteitem|iteminformation|bid|paymentinformation|itemimage} \n'
+            + '                                - The type of data we want to generate. \n'
             + '    <json>                   - String - [TODO] \n'
             + '    <withRelated>            - [optional] Boolean - [TODO] ';
     }
@@ -51,4 +57,8 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
         return 'Adds data to the database.';
     }
 
+    public example(): string {
+        return '';
+        // return 'bid ' + this.getName() + ' [TODO] ';
+    }
 }

@@ -46,8 +46,12 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         } as ItemInformationUpdateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingItemTemplateId> <title> <shortDescription> <longDescription> <categoryId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingItemTemplateId> <title> <shortDescription> <longDescription> <categoryId> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template \n'
             + '                                     whose associated item information we want to \n'
             + '                                     update. \n'
@@ -66,4 +70,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         return 'Update the item details of an item information given by listingItemTemplateId.';
     }
 
+    public example(): string {
+        return 'information ' + this.getName() + ' 1 Cigarettes \'Cigarette packet\' \'COUGHING NAILS -- when you\\\'ve just got to have a cigarette.\' 76';
+    }
 }

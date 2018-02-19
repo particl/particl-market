@@ -40,8 +40,12 @@ export class MarketCreateCommand extends BaseCommand implements RpcCommandInterf
         } as MarketCreateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <name> <privateKey> <address> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <name> <privateKey> <address> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <name>                   - String - The unique name of the market being created. \n'
             + '    <privateKey>             - String - The private key of the market being creted. \n'
             + '    <address>                - String - [TODO] ';
@@ -51,4 +55,7 @@ export class MarketCreateCommand extends BaseCommand implements RpcCommandInterf
         return 'Create a new market.';
     }
 
+    public example(): string {
+        return 'market ' + this.getName() + ' market add \'Dream Market\' \'InY0uRdr34M5\' \'lchudifyeqm4ldjj\' ';
+    }
 }

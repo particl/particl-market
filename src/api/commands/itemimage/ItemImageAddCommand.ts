@@ -58,9 +58,12 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         } as ItemImageCreateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]] ';
+    }
+
     public help(): string {
-        return this.getName()
-            + ' <listingItemTemplateId> [<dataId> [<protocol> [<encoding> [<data>]]]] \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template \n'
             + '                                     we want to associate this item image with. \n'
             + '    <dataId>                      - [optional] String - [TODO] \n'
@@ -71,5 +74,12 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
 
     public description(): string {
         return 'Add an item image to a listing item template, identified by its ID.';
+    }
+
+    public example(): string {
+        return 'image ' + this.getName() + ' 1 someDataId LOCAL BASE64 '
+            + 'iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAIAAADZSiLoAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUU'
+            + 'H4gIQCyAa2TIm7wAAABl0RVh0Q29tbWVudABDcmVhdGVkIHdpdGggR0lNUFeBDhcAAAAaSURBVAjXY/j//z8'
+            + 'DA8P///8Z/v//D+EgAAD4JQv1hrMfIwAAAABJRU5ErkJggg== ';
     }
 }

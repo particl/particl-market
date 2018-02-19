@@ -93,8 +93,12 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' (<shippingDestinationId>|<listing_item_template_id> (<country>|<countryCode>) <shipping availability>) ';
+    }
+
     public help(): string {
-        return this.getName() + ' (<shippingDestinationId>|<listing_item_template_id> (<country>|<countryCode>) <shipping availability>) \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <shippingDestinationId>            - Numeric - ID of the shipping destination object we want \n'
             + '                                          to remove. \n'
             + '    <listingItemTemplateId>            - Numeric - ID of the item template object whose destination we want \n'
@@ -108,6 +112,10 @@ export class ShippingDestinationRemoveCommand extends BaseCommand implements Rpc
     public description(): string {
         return 'Destroy a shipping destination object specified by the ID of the item information object its linked to,'
              + ' the country associated with it, and the shipping availability associated with it.';
+    }
+
+    public example(): string {
+        return 'shipping ' + this.getName() + ' 1 Australia SHIPS ';
     }
 
     /**

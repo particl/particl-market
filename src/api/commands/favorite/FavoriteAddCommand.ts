@@ -59,8 +59,12 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
         return favoriteItem;
     }
 
+    public usage(): string {
+        return this.getName() + ' <profileId> (<itemId>|<hash>) ';
+    }
+
     public help(): string {
-        return this.getName() + ' <profileId> (<itemId>|<hash>) \n'
+        return this.usage() + ' -  ' + this.description() + '\n'
             + '    <profileId>                   - Numeric - The ID of the profile we \n'
             + '                                     want to associate this favorite with. \n'
             + '    <itemId>                      - Numeric - The ID of the listing item you want to \n'
@@ -71,6 +75,10 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
 
     public description(): string {
         return 'Command for adding an item to your favorites, identified by ID or hash.';
+    }
+
+    public example(): string {
+        return 'favorite ' + this.getName() + ' 1 1 b90cee25-036b-4dca-8b17-0187ff325dbb ';
     }
 
     /**

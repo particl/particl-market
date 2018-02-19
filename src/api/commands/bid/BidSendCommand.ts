@@ -70,8 +70,12 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' <itemhash> [(<bidDataId>, <bidDataValue>), ...] ';
+    }
+
     public help(): string {
-        return this.getName() + ' <itemhash> [(<bidDataId>, <bidDataValue>), ...] \n'
+        return this.usage() + ' -  ' + this.description() + '\n'
             + '    <itemhash>               - String - The hash of the item we want to send bids for. \n'
             + '    <bidDataId>              - [optional] Numeric - The id of the bid we want to send. \n'
             + '    <bidDataValue>           - [optional] String - The value of the bid we want to send. ';
@@ -79,6 +83,11 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
 
     public description(): string {
         return 'Send bid.';
+    }
+
+    public example(): string {
+        return '';
+        // return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb 1 [TODO] ';
     }
 
     /**

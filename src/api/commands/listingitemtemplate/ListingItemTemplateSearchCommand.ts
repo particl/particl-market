@@ -47,8 +47,12 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
         } as ListingItemTemplateSearchParams);
     }
 
+    public usage(): string {
+        return this.getName() + ' <page> <pageLimit> <order> <profileId> [<categoryName> [<searchString>]] ';
+    }
+
     public help(): string {
-        return this.getName() + ' <page> <pageLimit> <order> <profileId> [<categoryName> [<searchString>]] \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <page>                   - Numeric - The number page we want to view of search \n'
             + '                                listing item template results. \n'
             + '    <pageLimit>              - Numeric - The number of results per page. \n'
@@ -63,8 +67,11 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
     }
 
     public description(): string {
-        return 'Search listing items with pagination by category id or \n'
-        + ' category name or by profileId, or by perticular searchString matched with itemInformation title';
+        return 'Search listing items with pagination by category id or'
+        + ' category name or by profileId, or by perticular searchString matched with itemInformation title.';
     }
 
+    public example(): string {
+        return 'template ' + this.getName() + ' 1 10 ASC 1 74 \'pet exorcism\'';
+    }
 }

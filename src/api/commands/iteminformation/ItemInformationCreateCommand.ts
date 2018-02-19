@@ -46,8 +46,12 @@ export class ItemInformationCreateCommand extends BaseCommand implements RpcComm
         } as ItemInformationCreateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <listingTemplateId> <title> <shortDescription> <longDescription> <categoryId> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <listingTemplateId> <title> <shortDescription> <longDescription> <categoryId> \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingTemplateId>           - Numeric - The ID of the listing item template we \n'
             + '                                     want to associate the created item information with. \n'
             + '    <title>                       - String - The title of the created item \n'
@@ -65,4 +69,8 @@ export class ItemInformationCreateCommand extends BaseCommand implements RpcComm
         return 'Create an iteminformation and associate it with a listingTemplateId.';
     }
 
+    public example(): string {
+        return 'information ' + this.getName() + ' 1 \'Midori Tabako packet\''
+        + ' \'Cigarette packet\' \'You can\\\'t understand the runes, but the packet smells funny.\' 76';
+    }
 }

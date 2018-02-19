@@ -53,14 +53,21 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' (template <listingItemTemplateId>|item <listingItemId>) ';
+    }
+
     public help(): string {
-        return this.getName()
-            + ' (template <listingItemTemplateId>|item <listingItemId>) \n'
+        return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingItemTemplateId>       - Numeric - The ID of the listing item template whose images we want to list. \n'
             + '    <listingItemId>               - Numeric - The ID of the listing item whose images we want to list. ';
     }
 
     public description(): string {
         return 'Return all images for listing item.';
+    }
+
+    public example(): string {
+        return 'image ' + this.getName() + ' 1 1 ';
     }
 }
