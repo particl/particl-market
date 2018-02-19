@@ -128,6 +128,8 @@ jobs:
       REGISTRY: "r.cfcr.io"
       IMAGE_NAME: "ludx/dapp-shell-ci"
       DISCORD_URL: "https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR"
+      APP_HOST: http://localhost
+      APP_PORT: 3100
       RPCUSER: "test"
       RPCPASSWORD: "test"
       RPCHOSTNAME: "localhost"
