@@ -138,7 +138,7 @@ jobs:
 
       # activate the Remote Docker Environment, which enables you to add docker-compose commands to build images
       # The Remote Docker Environment has the following technical specifications:
-      # cpu: 2, processor: Intel(R) Xeon(R) @ 2.3GHz, ram: 8GB, hd: 100GB
+      # cpu: 2, processor: Intel(R) Xeon(R) @ 2.3GHz, ram: 8GB, hd: 100GB 
 
       - setup_remote_docker:
           docker_layer_caching: true
