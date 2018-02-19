@@ -144,9 +144,9 @@ jobs:
       # The Remote Docker Environment has the following technical specifications:
       # cpu: 2, processor: Intel(R) Xeon(R) @ 2.3GHz, ram: 8GB, hd: 100GB
 
-      - setup_remote_docker:
-          docker_layer_caching: true
-          version: 17.11.0-ce
+      # - setup_remote_docker:
+      #    docker_layer_caching: true
+      #    version: 17.11.0-ce
 
       - run: docker-compose --version
       - run: sudo npm install -g wait-port
