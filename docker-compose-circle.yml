@@ -6,10 +6,10 @@ services:
 #      context: ./
 #      dockerfile: Dockerfile.ci
     image: r.cfcr.io/ludx/dapp-shell-ci:feature
-    volumes:
-      - .:/app/
-      - ./data/app1:/app/data
-      - ./data/app1_node_modules:/app/node_modules
+#    volumes:
+#      - .:/app/
+#      - ./data/app1:/app/data
+#      - ./data/app1_node_modules:/app/node_modules
     ports:
       - 3100:3100
     command: bin/ci-entrypoint.sh
@@ -30,10 +30,10 @@ services:
 #      context: ./
 #      dockerfile: Dockerfile.ci
     image: r.cfcr.io/ludx/dapp-shell-ci:feature
-    volumes:
-      - .:/app/
-      - ./data/app2:/app/data
-      - ./data/app2_node_modules:/app/node_modules
+#    volumes:
+#      - .:/app/
+#      - ./data/app2:/app/data
+#      - ./data/app2_node_modules:/app/node_modules
     ports:
       - 3200:3200
     command: bin/ci-entrypoint.sh
