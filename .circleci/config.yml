@@ -88,14 +88,41 @@ jobs:
   test_feature:
     <<: *defaults
 
-    machine: true
-    # docker:
+    # machine: true
+    docker:
       # - image: ypereirareis/docker-compose
-      # - image: circleci/node:9.5.0-browsers
+      - image: circleci/node:9.5.0-browsers
+      # app1
+      - image: r.cfcr.io/ludx/dapp-shell-ci:feature
+        name: app1
+        entrypoint: bin/ci-entrypoint.sh
+        auth:
+          username: $REGISTRY_USER
+          password: $REGISTRY_PASS
+        environment:
+          REGISTRY: "r.cfcr.io"
+          IMAGE_NAME: "ludx/dapp-shell-ci"
+          APP_HOST: http://localhost
+          APP_PORT: 3100
+          RPCUSER: "test"
+          RPCPASSWORD: "test"
+          RPCHOSTNAME: "localhost"
+          MAINNET_PORT: 52738
+          TESTNET_PORT: 52935
+
+        # command: bin/ci-entrypoint.sh
+
       # - image: $REGISTRY/$IMAGE_NAME:feature
       #  auth:
       #    username: $REGISTRY_USER
       #    password: $REGISTRY_PASS
+    # docker:
+      # primary container, this is where commands are executed for jobs using the Docker executor.
+      # - image: circleci/node:9.5.0-browsers
+      # specify service dependencies here if necessary
+      # - image: ludx/particl:latest
+      # - image: r.cfcr.io/ludx/codefresh-custom-runner
+
     environment:
       TEST_RESULTS: /app/test-results
       REGISTRY: "r.cfcr.io"
@@ -151,23 +178,29 @@ jobs:
       - run: docker-compose --version
       - run: sudo npm install -g wait-port
 
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run:
-          name: start container and verify it's working
-          command: |
-            set -x
-            docker-compose --file docker-compose-circle.yml up --build -d
-            sleep 5
-            docker-compose ps
-            docker stats --no-stream
-            docker-compose logs
+      - run: wait-port $APP_HOST:$APP_PORT/cli
 
-            docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'npm test'
-            docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935'
-            docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935'
-            docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'bin/ci-ui-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935'
+      - run: docker ps
+      - run: docker stats --no-stream
 
-            docker-compose --file docker-compose-circle.yml down
+
+      # - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+#      - run:
+#          name: start container and verify it's working
+#          command: |
+#            set -x
+#            docker-compose --file docker-compose-circle.yml up --build -d
+#            sleep 5
+#            docker-compose ps
+#            docker stats --no-stream
+#            docker-compose logs
+#            docker-compose --file docker-compose-circle.yml down
+
+#            docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'npm test'
+#            docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935'
+#            docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935'
+#            docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'bin/ci-ui-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935'
+
 #              $REGISTRY/$IMAGE_NAME --retry 10 --retry-delay 1 --retry-connrefused http://localhost:8080/contacts/test
 #            docker run --network container:dappshell_app1_1 $REGISTRY/$IMAGE_NAME npm test
 #            docker run --network container:dappshell_app1_1 $REGISTRY/$IMAGE_NAME bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
