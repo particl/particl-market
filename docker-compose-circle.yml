@@ -35,8 +35,8 @@ services:
       - MAINNET_PORT=52738
       - TESTNET_PORT=52935
     mem_reservation: 250000000
-    mem_limit: 500000000
-    memswap_limit: 1000000000
+    mem_limit: 400000000
+    memswap_limit: 400000000
 
 #  app2:
 #    image: r.cfcr.io/ludx/dapp-shell-ci:feature
@@ -78,6 +78,6 @@ services:
       - MAINNET_PORT=52738
       - TESTNET_PORT=52935
     mem_reservation: 250000000
-    mem_limit: 500000000
-    memswap_limit: 1000000000
+    mem_limit: 400000000
+    memswap_limit: 400000000
 
