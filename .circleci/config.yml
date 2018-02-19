@@ -95,7 +95,7 @@ jobs:
       # app1
       - image: r.cfcr.io/ludx/dapp-shell-ci:feature
         name: app1
-        entrypoint: bin/ci-entrypoint.sh
+        command: bin/ci-entrypoint.sh
         auth:
           username: $REGISTRY_USER
           password: $REGISTRY_PASS
