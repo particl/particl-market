@@ -34,13 +34,9 @@ services:
       - RPCHOSTNAME=feature1.particl.xyz
       - MAINNET_PORT=52738
       - TESTNET_PORT=52935
-    deploy:
-      resources:
-        limits:
-          memory: 200M
-        reservations:
-          memory: 200M
-
+    mem_reservation: 52428800
+    mem_limit: 104857600
+    memswap_limit: 157286400
 
   app2:
 #    build:
@@ -58,6 +54,7 @@ services:
 #    networks:
 #      - internal
 #    privileged: true
+
     command: bin/ci-entrypoint.sh
     env_file:
       - .env.docker-compose
@@ -69,12 +66,9 @@ services:
       - RPCHOSTNAME=feature2.particl.xyz
       - MAINNET_PORT=53738
       - TESTNET_PORT=53935
-    deploy:
-      resources:
-        limits:
-          memory: 200M
-        reservations:
-          memory: 200M
+    mem_reservation: 52428800
+    mem_limit: 104857600
+    memswap_limit: 157286400
 
   testrunner:
     # container_name: testrunner
@@ -93,9 +87,6 @@ services:
       - RPCHOSTNAME=feature1.particl.xyz
       - MAINNET_PORT=52738
       - TESTNET_PORT=52935
-    deploy:
-      resources:
-        limits:
-          memory: 200M
-        reservations:
-          memory: 200M
+    mem_reservation: 52428800
+    mem_limit: 104857600
+    memswap_limit: 157286400
