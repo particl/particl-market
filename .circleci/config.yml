@@ -61,9 +61,9 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
+
       - run: docker-compose --version
       - run: sudo npm install -g wait-port
-
 
       # install deps and set up the app locally
       - run: yarn install
@@ -143,7 +143,9 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
+
       - run: docker-compose --version
+      - run: sudo npm install -g wait-port
 
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run:
@@ -151,6 +153,8 @@ jobs:
           command: |
             set -x
             docker-compose --file docker-compose-circle.yml up --build -d
+            docker-compose ps
+            wait-port http://localhost:3100/cli
 
             docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'npm test'
             docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935'
