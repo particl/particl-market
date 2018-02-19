@@ -15,9 +15,9 @@ services:
 #      - ./data/app1:/app/data
 #      - ./data/app1_node_modules:/app/node_modules
     expose:
-      - "3100:3100"
+      - 3100
     ports:
-      - "3100:3100"
+      - 3100:3100
     networks:
       - internal
     privileged: true
@@ -48,9 +48,9 @@ services:
 #      - ./data/app2:/app/data
 #      - ./data/app2_node_modules:/app/node_modules
     expose:
-      - "3200:3200"
+      - 3200
     ports:
-      - "3200:3200"
+      - 3200:3200
     command: bin/ci-entrypoint.sh
     networks:
       - internal
