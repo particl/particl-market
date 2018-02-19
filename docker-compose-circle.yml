@@ -65,8 +65,12 @@ services:
       - TESTNET_PORT=53935
 
   testrunner:
+    container_name: testrunner
     image: r.cfcr.io/ludx/dapp-shell-ci:feature
 #    command: bin/ci-entrypoint.sh
+    depends_on:
+      - app1
+      - app2
     env_file:
       - .env.docker-compose
     environment:
