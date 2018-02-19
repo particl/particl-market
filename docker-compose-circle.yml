@@ -1,8 +1,8 @@
 version: '2'
 
-networks:
-    internal:
-        driver: bridge
+# networks:
+#    internal:
+#        driver: bridge
 
 services:
   app1:
@@ -18,9 +18,9 @@ services:
       - 3100
     ports:
       - 3100:3100
-    networks:
-      - internal
-    privileged: true
+#    networks:
+#      - internal
+#    privileged: true
 
     command: bin/ci-entrypoint.sh
     env_file:
@@ -34,9 +34,6 @@ services:
       - RPCHOSTNAME=feature1.particl.xyz
       - MAINNET_PORT=52738
       - TESTNET_PORT=52935
-    networks:
-        - internal
-    privileged: true
 
   app2:
 #    build:
@@ -51,11 +48,11 @@ services:
       - 3200
     ports:
       - 3200:3200
-    command: bin/ci-entrypoint.sh
-    networks:
-      - internal
-    privileged: true
+#    networks:
+#      - internal
+#    privileged: true
 
+    command: bin/ci-entrypoint.sh
     env_file:
       - .env.docker-compose
     environment:
