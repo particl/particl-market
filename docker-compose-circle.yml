@@ -34,9 +34,9 @@ services:
       - RPCHOSTNAME=feature1.particl.xyz
       - MAINNET_PORT=52738
       - TESTNET_PORT=52935
-    mem_reservation: 524288000
-    mem_limit: 1048576000
-    memswap_limit: 1572864000
+    mem_reservation: 250000000
+    mem_limit: 500000000
+    memswap_limit: 1000000000
 
   app2:
 #    build:
@@ -66,9 +66,9 @@ services:
       - RPCHOSTNAME=feature2.particl.xyz
       - MAINNET_PORT=53738
       - TESTNET_PORT=53935
-    mem_reservation: 524288000
-    mem_limit: 1048576000
-    memswap_limit: 1572864000
+    mem_reservation: 250000000
+    mem_limit: 500000000
+    memswap_limit: 1000000000
 
 
   testrunner:
@@ -88,7 +88,7 @@ services:
       - RPCHOSTNAME=feature1.particl.xyz
       - MAINNET_PORT=52738
       - TESTNET_PORT=52935
-    mem_reservation: 524288000
-    mem_limit: 1048576000
-    memswap_limit: 1572864000
+    mem_reservation: 250000000
+    mem_limit: 500000000
+    memswap_limit: 1000000000
 
