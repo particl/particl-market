@@ -1,5 +1,9 @@
 version: '3'
 
+networks:
+    internal:
+        driver: bridge
+
 services:
   app1:
 #    build:
@@ -12,6 +16,10 @@ services:
 #      - ./data/app1_node_modules:/app/node_modules
     ports:
       - 3100:3100
+    networks:
+      - internal
+    privileged: true
+
     command: bin/ci-entrypoint.sh
     env_file:
       - .env.docker-compose
@@ -24,6 +32,9 @@ services:
       - RPCHOSTNAME=feature1.particl.xyz
       - MAINNET_PORT=52738
       - TESTNET_PORT=52935
+    networks:
+        - internal
+    privileged: true
 
   app2:
 #    build:
@@ -37,6 +48,10 @@ services:
     ports:
       - 3200:3200
     command: bin/ci-entrypoint.sh
+    networks:
+      - internal
+    privileged: true
+
     env_file:
       - .env.docker-compose
     environment:
@@ -48,3 +63,28 @@ services:
       - MAINNET_PORT=53738
       - TESTNET_PORT=53935
 
+  testrunner:
+    # this just sleeps, we execute the test command using docker-compose exec.
+    container_name: testrunner
+    image: r.cfcr.io/ludx/dapp-shell-ci:feature
+    command: bin/ci-entrypoint.sh
+    # command: sleep infinity
+    links:
+      - app1
+      - app2
+    depends_on:
+      - app1
+      - app2
+    env_file:
+      - .env.docker-compose
+    environment:
+      - NODE_ENV=development
+      - APP_PORT=3100
+      - RPCUSER=test
+      - RPCPASSWORD=test
+      - RPCHOSTNAME=feature1.particl.xyz
+      - MAINNET_PORT=52738
+      - TESTNET_PORT=52935
+
+    networks:
+        - internal
