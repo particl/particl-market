@@ -86,12 +86,12 @@ jobs:
 
   # tests feature branch
   test_feature:
-    # <<: *defaults
+    <<: *defaults
 
-    # machine: true
-    docker:
+    machine: true
+    # docker:
       # - image: ypereirareis/docker-compose
-      - image: circleci/node:9.5.0-browsers
+      # - image: circleci/node:9.5.0-browsers
       # - image: $REGISTRY/$IMAGE_NAME:feature
       #  auth:
       #    username: $REGISTRY_USER
