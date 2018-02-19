@@ -88,9 +88,9 @@ jobs:
   test_feature:
     <<: *defaults
 
-    machine: true
-    # docker:
-    #  - image: ypereirareis/docker-compose
+    # machine: true
+    docker:
+      - image: ypereirareis/docker-compose
 
     environment:
       TEST_RESULTS: /app/test-results
@@ -215,7 +215,7 @@ workflows:
       - test_feature:
           requires:
             - build_feature
-          context: feature
+#          context: feature
 #      - test_develop:
 #          requires:
 #            - build_develop
