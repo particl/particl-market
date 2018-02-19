@@ -15,5 +15,4 @@ echo $RPCUSER
 echo $RPCPASSWORD
 echo $RPCHOSTNAME
 
-wait-port $APP_HOST:$APP_PORT/cli
 npm run test:integration:pretty
