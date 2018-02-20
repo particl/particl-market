@@ -7,6 +7,10 @@
 defaults: &defaults
   working_directory: ~/dappshell
 
+# -------------------------------------------------------------------
+#   BRANCH ENV VARS
+# -------------------------------------------------------------------
+
 envfeature: &envfeature
   REGISTRY: r.cfcr.io
   IMAGE_NAME: ludx/dapp-shell-ci
@@ -47,6 +51,10 @@ envdev: &envmaster
 version: 2
 jobs:
 
+# -------------------------------------------------------------------
+#   FEATURE JOB
+# -------------------------------------------------------------------
+
   # builds the feature branch
   build_feature:
     <<: *defaults
@@ -55,7 +63,10 @@ jobs:
     environment:
       <<: *envfeature
       RPCHOSTNAME: feature1.particl.xyz
-
+      MAINNET_PORT: 52738
+      TESTNET_PORT: 52935
+      APP_HOST: http://localhost
+      APP_PORT: 3100
     steps:
       - checkout
 
@@ -122,7 +133,7 @@ jobs:
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
           environment:
             DOCKERIZE_VERSION: v0.6.0
-      - run: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
+      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
@@ -138,9 +149,9 @@ jobs:
       # - run: ./bin/ci-create-dbs.sh
       # - run: ./bin/ci-create-build-version.sh
       - run: npm test
-      # - run: bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
-      # - run: bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
-      # - run: bin/ci-ui-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
+      # - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
+      # - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
+      # - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
 
   # feature branch integration test
   integration_test_feature:
@@ -151,6 +162,8 @@ jobs:
     environment:
       <<: *envfeature
       RPCHOSTNAME: feature1.particl.xyz
+      APP_HOST: http://localhost
+      APP_PORT: 3100
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -171,16 +184,14 @@ jobs:
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
           environment:
             DOCKERIZE_VERSION: v0.6.0
-      - run: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
+      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
-      - run: bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
-      - run: bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
-      - run: bin/ci-ui-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
+      - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
 
   # feature branch blackbox test
   blackbox_test_feature:
@@ -191,6 +202,8 @@ jobs:
     environment:
       <<: *envfeature
       RPCHOSTNAME: feature1.particl.xyz
+      APP_HOST: http://localhost
+      APP_PORT: 3100
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -211,14 +224,14 @@ jobs:
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
           environment:
             DOCKERIZE_VERSION: v0.6.0
-      - run: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
+      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
-      - run: bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
+      - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
 
   # feature branch ui test
   ui_test_feature:
@@ -229,6 +242,8 @@ jobs:
     environment:
       <<: *envfeature
       RPCHOSTNAME: feature1.particl.xyz
+      APP_HOST: http://localhost
+      APP_PORT: 3100
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -249,13 +264,13 @@ jobs:
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
           environment:
             DOCKERIZE_VERSION: v0.6.0
-      - run: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
+      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
-      - run: bin/ci-ui-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
+      - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
 
   # feature branch deploy
   deploy_feature:
@@ -281,6 +296,262 @@ jobs:
       - run: docker push $REGISTRY/$IMAGE_NAME:feature
       - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-feature.yml;
 
+# -------------------------------------------------------------------
+#   DEVELOP JOB
+# -------------------------------------------------------------------
+
+  # builds the develop branch
+  build_develop:
+    <<: *defaults
+    docker:
+      - image: circleci/node:9.5.0-browsers
+    environment:
+      <<: *envdevelop
+      RPCHOSTNAME: dev1.particl.xyz
+      MAINNET_PORT: 54738
+      TESTNET_PORT: 54935
+
+    steps:
+      - checkout
+
+      # download and cache dependencies
+      - restore_cache:
+          keys:
+          - dappshell-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - dappshell-dependencies-
+
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 17.11.0-ce
+
+      # install deps and set up the app locally
+      - run: yarn install
+      - run: ./bin/copy-env.sh
+      - run: ./bin/ci-create-dbs.sh
+      - run: ./bin/ci-create-build-version.sh
+
+      # cache
+      - save_cache:
+          paths:
+            - node_modules
+          key: dappshell-dependencies-{{ checksum "package.json" }} # cache will be regenerated every time something is changed in package.json file, different branches of this project will generate the same cache key.
+          # key: dappshell-{{ .Branch }}-{{ checksum "package.json" }} # same as the previous one, but each branch will generate separate cache
+
+      # build the app image
+      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+      - run: docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1" -f Dockerfile.ci .
+      - run: docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1
+
+      - persist_to_workspace:
+          root: ~/dappshell
+          paths:
+            - .
+
+  # develop branch unit test
+  unit_test_develop:
+    <<: *defaults
+    machine:
+      enabled: true
+      image: circleci/classic:latest
+    environment:
+      <<: *envdevelop
+      RPCHOSTNAME: dev1.particl.xyz
+      APP_HOST: http://localhost
+      APP_PORT: 3200
+    steps:
+      - attach_workspace:
+          at: ~/dappshell
+      - restore_cache:
+          keys:
+          - dappshell-dependencies-{{ checksum "package.json" }}
+          - dappshell-dependencies-
+      - run:
+          name: apt-get updates
+          command: |
+            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+            sudo apt-get update
+            sudo apt-get install gcc-4.9 g++-4.9 nodejs
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+      - run:
+          name: install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.6.0
+      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
+      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
+      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
+      # - run: node --version
+      # - run: docker logs app1
+      # - run: docker ps
+      # - run: docker stats --no-stream
+      # install deps and set up the app locally
+      - run: npm install -g -s --no-progress yarn
+      - run: yarn install
+      # - run: ./bin/copy-env.sh
+      # - run: ./bin/ci-create-dbs.sh
+      # - run: ./bin/ci-create-build-version.sh
+      - run: npm test
+      # - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+      # - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+      # - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+
+  # develop branch integration test
+  integration_test_develop:
+    <<: *defaults
+    machine:
+      enabled: true
+      image: circleci/classic:latest
+    environment:
+      <<: *envdevelop
+      RPCHOSTNAME: dev1.particl.xyz
+      APP_HOST: http://localhost
+      APP_PORT: 3200
+
+    steps:
+      - attach_workspace:
+          at: ~/dappshell
+      - restore_cache:
+          keys:
+          - dappshell-dependencies-{{ checksum "package.json" }}
+          - dappshell-dependencies-
+      - run:
+          name: apt-get updates
+          command: |
+            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+            sudo apt-get update
+            sudo apt-get install gcc-4.9 g++-4.9 nodejs
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+      - run:
+          name: install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.6.0
+      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
+      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
+      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
+      - run: npm install -g -s --no-progress yarn
+      - run: yarn install
+      - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+
+  # develop branch blackbox test
+  blackbox_test_develop:
+    <<: *defaults
+    machine:
+      enabled: true
+      image: circleci/classic:latest
+    environment:
+      <<: *envdevelop
+      RPCHOSTNAME: dev1.particl.xyz
+      APP_HOST: http://localhost
+      APP_PORT: 3200
+
+    steps:
+      - attach_workspace:
+          at: ~/dappshell
+      - restore_cache:
+          keys:
+          - dappshell-dependencies-{{ checksum "package.json" }}
+          - dappshell-dependencies-
+      - run:
+          name: apt-get updates
+          command: |
+            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+            sudo apt-get update
+            sudo apt-get install gcc-4.9 g++-4.9 nodejs
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+      - run:
+          name: install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.6.0
+      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
+      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
+      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
+      - run: npm install -g -s --no-progress yarn
+      - run: yarn install
+      - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+
+  # develop branch ui test
+  ui_test_develop:
+    <<: *defaults
+    machine:
+      enabled: true
+      image: circleci/classic:latest
+    environment:
+      <<: *envdevelop
+      RPCHOSTNAME: dev1.particl.xyz
+      APP_HOST: http://localhost
+      APP_PORT: 3200
+    steps:
+      - attach_workspace:
+          at: ~/dappshell
+      - restore_cache:
+          keys:
+          - dappshell-dependencies-{{ checksum "package.json" }}
+          - dappshell-dependencies-
+      - run:
+          name: apt-get updates
+          command: |
+            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
+            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+            sudo apt-get update
+            sudo apt-get install gcc-4.9 g++-4.9 nodejs
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+      - run:
+          name: install dockerize
+          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+          environment:
+            DOCKERIZE_VERSION: v0.6.0
+      - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
+      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
+      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
+      - run: npm install -g -s --no-progress yarn
+      - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+
+  # develop branch deploy
+  deploy_develop:
+    <<: *defaults
+    docker:
+      - image: circleci/node:9.5.0-browsers
+    environment:
+      <<: *envdevelop
+    steps:
+      - attach_workspace:
+          at: ~/dappshell
+      - restore_cache:
+          keys:
+          - dappshell-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - dappshell-dependencies-
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 17.11.0-ce
+      # build and deploy the app
+      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+      - run: docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:develop" -f Dockerfile.ci .
+      - run: docker push $REGISTRY/$IMAGE_NAME:develop
+      - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-develop.yml;
+
+
+# -------------------------------------------------------------------
+#   MASTER JOB
+# -------------------------------------------------------------------
+
+# -------------------------------------------------------------------
+#   WORKFLOWS
+# -------------------------------------------------------------------
 
 workflows:
   version: 2
