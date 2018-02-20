@@ -21,8 +21,8 @@ export class AuthenticateMiddleware implements interfaces.Middleware {
         const authentication = auth(req);
 
         if (!authentication || !this.isAuthenticate(authentication)) {
-            this.log.warn('Unauthorized');
-            return res.failed(401, 'Unauthorized: Access is denied due to invalid credentials');
+            this.log.warn('You are not allowed to request this resource!');
+            return res.failed(401, 'You are not allowed to request this resource!');
         }
         return next();
     }
@@ -72,16 +72,16 @@ export class AuthenticateMiddleware implements interfaces.Middleware {
     //     });
     // }
 
-    private getToken(req: myExpress.Request): string | null {
-        const authorization = req.headers.authorization;
+    // private getToken(req: myExpress.Request): string | null {
+    //     const authorization = req.headers.authorization;
 
-        // Retrieve the token form the Authorization header
-        if (authorization && authorization.split(' ')[0] === 'Bearer') {
-            return authorization.split(' ')[1];
-        }
+    //     // Retrieve the token form the Authorization header
+    //     if (authorization && authorization.split(' ')[0] === 'Bearer') {
+    //         return authorization.split(' ')[1];
+    //     }
 
-        // No token was provided by the client
-        return null;
-    }
+    //     // No token was provided by the client
+    //     return null;
+    // }
 
 }

@@ -3,8 +3,6 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { app } from '../../app';
 
-const authenticateMiddleware = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.AuthenticateMiddleware);
-
 export class RpcMiddleware implements interfaces.Middleware {
 
     public log: LoggerType;
@@ -19,11 +17,8 @@ export class RpcMiddleware implements interfaces.Middleware {
         // validate rpc request
         if (!this.isValidVersionTwoRequest(req)) {
             return res.failed(400, 'Invalid JSON-RPC 2.0 request');
-        } else {
-            if (authenticateMiddleware.use(req, res, next)) {
-                next();
-            }
         }
+        next();
     }
 
     public isValidVersionTwoRequest(request: myExpress.Request): boolean {

@@ -14,7 +14,7 @@ export interface ApiOptions<T> {
     port?: number;
 }
 
-export const api = async <T>(method: string, path: string, options: ApiOptions<T> = {}) => {
+export const api = async <T> ( method: string, path: string, options: ApiOptions<T> = {}) => {
 
     const HOST = options.host ? options.host : process.env.APP_HOST;
     const PORT = options.port ? options.port : process.env.APP_PORT;
@@ -29,8 +29,9 @@ export const api = async <T>(method: string, path: string, options: ApiOptions<T
         if (!_.has(options, 'Content-Type')) {
             options.headers['Content-Type'] = 'application/json';
         }
-        if (auth)
+        if (auth) {
             options.headers['Authorization'] = auth;
+        }
     }
 
     const o: Options = {
