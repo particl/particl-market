@@ -4,7 +4,6 @@
 # -------------------------------------------------------------------
 
 workflows:
-  version: 2
 
   build_test_deploy:
     jobs:
@@ -78,7 +77,6 @@ workflows:
             - integration_test_develop
             - blackbox_test_develop
             - ui_test_develop
-
       - deploy_master:
             - unit_test_master
             - integration_test_master
