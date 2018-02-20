@@ -88,27 +88,27 @@ jobs:
   test_feature:
     <<: *defaults
 
-    # machine: true
-    docker:
+    machine: true
+#    docker:
       # - image: ypereirareis/docker-compose
-      - image: circleci/node:9.5.0-browsers
+#      - image: circleci/node:9.5.0-browsers
       # app1
-      - image: r.cfcr.io/ludx/dapp-shell-ci:feature
-        name: app1
-        command: bin/ci-entrypoint.sh
-        auth:
-          username: $REGISTRY_USER
-          password: $REGISTRY_PASS
-        environment:
-          REGISTRY: r.cfcr.io
-          IMAGE_NAME: ludx/dapp-shell-ci
-          APP_HOST: http://localhost
-          APP_PORT: 3100
-          RPCUSER: test
-          RPCPASSWORD: test
-          RPCHOSTNAME: feature1.particl.xyz
-          MAINNET_PORT: 52738
-          TESTNET_PORT: 52935
+#      - image: r.cfcr.io/ludx/dapp-shell-ci:feature
+#        name: app1
+#        command: bin/ci-entrypoint.sh
+#        auth:
+#          username: $REGISTRY_USER
+#          password: $REGISTRY_PASS
+#        environment:
+#          REGISTRY: r.cfcr.io
+#          IMAGE_NAME: ludx/dapp-shell-ci
+#          APP_HOST: http://localhost
+#          APP_PORT: 3100
+#          RPCUSER: test
+#          RPCPASSWORD: test
+#          RPCHOSTNAME: feature1.particl.xyz
+#          MAINNET_PORT: 52738
+#          TESTNET_PORT: 52935
 
 
       # - image: $REGISTRY/$IMAGE_NAME:feature
@@ -176,11 +176,15 @@ jobs:
            # && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
 #          environment:
 #            DOCKERIZE_VERSION: v0.6.0
+
+      - run:
+          name: wait for particld
+          command: dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
+
       - run:
           name: wait for db
           command: dockerize -wait http://localhost:3100/cli -timeout 150s
 
-      # - run: sleep 120 && nc -vz localhost 3100
       # - run: wait-port $APP_HOST:$APP_PORT/cli
       # - run: wait-port http://localhost:3100/cli
 
