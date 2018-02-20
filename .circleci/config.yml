@@ -168,7 +168,6 @@ jobs:
       #    docker_layer_caching: true
       #    version: 17.11.0-ce
 
-      - run: ls -al /usr/local/bin
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
@@ -184,17 +183,17 @@ jobs:
           command: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
 
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
 
       # docker run --network container:my-app appropriate/curl --retry 10 --retry-connrefused http://localhost:8080
       # -d
       # -p 3100:3100
 
-      - run: docker logs app1
-
       - run:
           name: wait for app
-          command: ./dockerize -wait http://localhost:3100/cli -timeout 150s
+          command: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+
+      - run: docker logs app1
 
       # - run: wait-port $APP_HOST:$APP_PORT/cli
       # - run: wait-port http://localhost:3100/cli
