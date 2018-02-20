@@ -37,14 +37,18 @@ export class ListingItemObjectSearchCommand extends BaseCommand implements RpcCo
         } as ListingItemObjectSearchParams);
     }
 
+    public usage(): string {
+        return this.getName() + ' <searchString> ';
+    }
+
     public help(): string {
-        return this.getName() + ' <searchString>\n'
-            + '               <searchString>        -String - A string that is used to\n'
-            + '                                       find listing items object by matching their type or description.';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <searchString>           - String - A string that is used to find listing items objects by\n'
+            + '                                matching their type or description. ';
     }
 
     public description(): string {
-        return 'Search listing items objects by given string match with listing item object type or description';
+        return 'Search listing items objects by given string match with listing item object type or description.';
     }
 
 }

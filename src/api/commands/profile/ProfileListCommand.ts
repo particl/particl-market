@@ -36,8 +36,12 @@ export class ProfileListCommand extends BaseCommand implements RpcCommandInterfa
         return await this.profileService.findAll();
     }
 
+    public usage(): string {
+        return this.getName() + ' ';
+    }
+
     public help(): string {
-        return this.getName();
+        return this.usage() + ' -  ' + this.description() + ' \n';
     }
 
     public description(): string {

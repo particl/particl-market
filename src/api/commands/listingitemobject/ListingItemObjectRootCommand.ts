@@ -29,7 +29,7 @@ export class ListingItemObjectRootCommand extends BaseCommand implements RpcComm
     }
 
     public help(): string {
-        return this.getName() + ' (search)';
+        return this.getName() + ' (search) ';
     }
 
     public description(): string {

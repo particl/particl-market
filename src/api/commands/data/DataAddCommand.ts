@@ -40,8 +40,15 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
         } as TestDataCreateRequest);
     }
 
+    public usage(): string {
+        return this.getName() + ' <model> <json> [<withRelated>] ';
+    }
+
     public help(): string {
-        return this.getName() + '<model> <json> [<withRelated>]';
+        return this.usage() + ' -  ' + this.description() + '\n'
+            + '    <model>                  - String - [TODO] \n'
+            + '    <json>                   - String - [TODO] \n'
+            + '    <withRelated>            - [optional] Boolean - [TODO] ';
     }
 
     public description(): string {

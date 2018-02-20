@@ -34,10 +34,14 @@ export class ItemCategoryFindCommand extends BaseCommand implements RpcCommandIn
         return await this.itemCategoryService.findByName(data.params[0]);
     }
 
+    public usage(): string {
+        return this.getName() + ' [<searchString>] ';
+    }
+
     public help(): string {
-        return this.getName() + ' [<searchString>]\n'
-            + '    <searchString>                  - [optional] String - A search string for finding\n'
-            + '                                       categories by name.';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <searchString>                - [optional] String - A search string for finding \n'
+            + '                                     categories by name. ';
     }
 
     public description(): string {
