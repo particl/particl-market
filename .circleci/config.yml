@@ -168,6 +168,8 @@ jobs:
       #    docker_layer_caching: true
       #    version: 17.11.0-ce
 
+      - run: apk add --no-cache make gcc g++ python git
+
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
