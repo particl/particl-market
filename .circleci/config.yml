@@ -137,22 +137,6 @@ jobs:
 
     steps:
 
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --env-file .env.docker-compose -p 3100:3100 $REGISTRY/$IMAGE_NAME bin/ci-entrypoint.sh
-
-
-
-      # deploy the image
-      #- run: docker push company/app:$CIRCLE_BRANCH
-
-      # build and push Docker image
-      #- run: |
-      #    TAG=0.1.$CIRCLE_BUILD_NUM
-      #    docker build -t   CircleCI-Public/circleci-demo-docker:$TAG .
-      #    docker login -u $DOCKER_USER -p $DOCKER_PASS
-      #    docker push CircleCI-Public/circleci-demo-docker:$TAG
-
-
       # Start
       # The primary container runs in a separate environment from Remote Docker.
       # Therefore, Docker containers cannot directly communicate with the containers
@@ -177,9 +161,12 @@ jobs:
       # The Remote Docker Environment has the following technical specifications:
       # cpu: 2, processor: Intel(R) Xeon(R) @ 2.3GHz, ram: 8GB, hd: 100GB
 
-      # - setup_remote_docker:
-      #    docker_layer_caching: true
-      #    version: 17.11.0-ce
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 17.11.0-ce
+
+      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+      - run: docker run -d --name app1 --env-file .env.docker-compose -p 3100:3100 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
 
       - run: docker-compose --version
       - run: ls -al /usr/local/bin
