@@ -111,7 +111,7 @@ jobs:
 
       # install deps and set up the app locally
       # - run: npm install -g -s --no-progress yarn
-      # - run: yarn install
+      - run: yarn install
       # - run: ./bin/copy-env.sh
       # - run: ./bin/ci-create-dbs.sh
       # - run: ./bin/ci-create-build-version.sh
