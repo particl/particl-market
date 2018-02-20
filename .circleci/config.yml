@@ -4,7 +4,7 @@
 # -------------------------------------------------------------------
 
 workflows:
-
+  version: 2
   build_test_deploy:
     jobs:
       - build_feature:
@@ -22,8 +22,6 @@ workflows:
           filters:
             branches:
               only: master
-
-      # TEST FEATURE BRANCH
       - unit_test_feature:
           requires:
             - build_feature
@@ -36,8 +34,6 @@ workflows:
       - ui_test_feature:
           requires:
             - build_feature
-
-      # TEST DEVELOP BRANCH
       - unit_test_develop:
           requires:
             - build_develop
@@ -50,8 +46,6 @@ workflows:
       - ui_test_develop:
           requires:
             - build_develop
-
-      # TEST MASTER BRANCH
       - unit_test_master:
           requires:
             - build_master
@@ -64,14 +58,12 @@ workflows:
       - ui_test_master:
           requires:
             - build_master
-
       - deploy_feature:
           requires:
             - unit_test_feature
             - integration_test_feature
             - blackbox_test_feature
             - ui_test_feature
-
       - deploy_develop:
             - unit_test_develop
             - integration_test_develop
