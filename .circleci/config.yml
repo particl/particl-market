@@ -90,9 +90,10 @@ jobs:
       - run:
           name: apt-get updates
           command: |
+            curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -
             sudo add-apt-repository ppa:ubuntu-toolchain-r/test
             sudo apt-get update
-            sudo apt-get install gcc-4.9 g++-4.9
+            sudo apt-get install gcc-4.9 g++-4.9 nodejs
             sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
       - run:
           name: install dockerize
@@ -105,6 +106,7 @@ jobs:
       - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
 
+      - run: node --version
       # - run: docker logs app1
       # - run: docker ps
       # - run: docker stats --no-stream
