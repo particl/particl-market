@@ -72,35 +72,28 @@ jobs:
   test_feature:
     <<: *defaults
 
-    # machine:
-    #  enabled: true
-    #  image: circleci/classic:latest
-
-    docker:
-      - image: circleci/node:9.5.0-browsers
+    machine:
+      enabled: true
+      image: circleci/classic:latest
 
     environment:
       <<: *envfeature
       RPCHOSTNAME: feature1.particl.xyz
 
     steps:
-      - setup_remote_docker:
-          docker_layer_caching: true
-          version: 17.11.0-ce
-
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
-      # - run:
-      #    name: apt-get updates
-      #    command: |
-      #      sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-      #      sudo apt-get update
-      #      sudo apt-get install gcc-4.9 g++-4.9
-      #      sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+      - run:
+          name: apt-get updates
+          command: |
+            sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+            sudo apt-get update
+            sudo apt-get install gcc-4.9 g++-4.9
+            sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
@@ -128,14 +121,6 @@ jobs:
       - run: bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
       - run: bin/ci-ui-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
 
- #     - deploy:
- #         name: Build and push Docker image
- #         command: |
- #           TAG="0.1.${CIRCLE_BUILD_NUM}"
- #           docker build -t circleci/cci-demo-docker:$TAG .
- #           docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
- #           docker push circleci/cci-demo-docker:$TAG
-
   # deploy the feature branch
   deploy_feature:
     <<: *defaults
@@ -162,6 +147,13 @@ jobs:
           name: deploy
           command: echo yay!
 
+ #     - deploy:
+ #         name: Build and push Docker image
+ #         command: |
+ #           TAG="0.1.${CIRCLE_BUILD_NUM}"
+ #           docker build -t circleci/cci-demo-docker:$TAG .
+ #           docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
+ #           docker push circleci/cci-demo-docker:$TAG
 
 
 workflows:
