@@ -161,14 +161,14 @@ jobs:
       # The Remote Docker Environment has the following technical specifications:
       # cpu: 2, processor: Intel(R) Xeon(R) @ 2.3GHz, ram: 8GB, hd: 100GB
 
-      - setup_remote_docker:
-          docker_layer_caching: true
-          version: 17.11.0-ce
+      # - setup_remote_docker:
+      #    docker_layer_caching: true
+      #    version: 17.11.0-ce
 
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --env-file .env.docker-compose -p 3100:3100 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
 
-      - run: docker-compose --version
+      - run: docker logs app1
       - run: ls -al /usr/local/bin
 #      - run:
 #          name: install dockerize
