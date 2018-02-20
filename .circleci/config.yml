@@ -137,6 +137,11 @@ jobs:
 
     steps:
 
+      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+      - run: docker run -d --name app1 --env-file .env.docker-compose -p 3100:3100 $REGISTRY/$IMAGE_NAME bin/ci-entrypoint.sh
+
+
+
       # deploy the image
       #- run: docker push company/app:$CIRCLE_BRANCH
 
@@ -196,7 +201,6 @@ jobs:
       - run: docker stats --no-stream
 
 
-      # - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
 #      - run:
 #          name: start container and verify it's working
 #          command: |
