@@ -202,10 +202,10 @@ workflows:
 
       - deploy_feature:
           requires:
-            - unit_test_feature
-            - integration_test_feature
-            - blackbox_test_feature
-            - ui_test_feature
+            - test_feature
+            # - integration_test_feature
+            # - blackbox_test_feature
+            # - ui_test_feature
 
 #      - deploy_develop:
 #          requires:
