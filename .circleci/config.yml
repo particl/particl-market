@@ -7,20 +7,21 @@
 defaults: &defaults
   working_directory: ~/dappshell
   environment:
-    TEST_RESULTS: /app/test-results
-    REGISTRY: "r.cfcr.io"
-    IMAGE_NAME: "ludx/dapp-shell-ci"
-    DISCORD_URL: "https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR"
-    RPCUSER: "test"
-    RPCPASSWORD: "test"
-    RPCHOSTNAME: "localhost"
+    REGISTRY: r.cfcr.io
+    IMAGE_NAME: ludx/dapp-shell-ci
+    DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
+    APP_HOST: http://localhost
+    APP_PORT: 3100
+    RPCUSER: test
+    RPCPASSWORD: test
+    RPCHOSTNAME: localhost
     MAINNET_PORT: 52738
     TESTNET_PORT: 52935
 
 version: 2
 jobs:
 
-  # builds feature branch
+  # builds the feature branch
   build_feature:
     <<: *defaults
 
@@ -32,16 +33,6 @@ jobs:
 
     steps:
       - checkout
-      # Persist the specified paths (workspace/echo-output) into the workspace for use in downstream job.
-#      - persist_to_workspace:
-          # Must be an absolute path, or relative path from working_directory.  This is a directory on
-          # the container which is taken to be the root directory of the workspace.
-#          root: workspace
-          # Must be relative path from root
-#          paths:
-#            - echo-output
-
-#      - run: mkdir -p $TEST_RESULTS
 
       # download and cache dependencies
       - restore_cache:
@@ -50,16 +41,10 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
 
-      # activate the Remote Docker Environment, which enables you to add docker-compose commands to build images
-      # The Remote Docker Environment has the following technical specifications:
-      # cpu: 2, processor: Intel(R) Xeon(R) @ 2.3GHz, ram: 8GB, hd: 100GB
-
+      # activate the Remote Docker Environment
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
-
-      # - run: docker-compose --version
-      # - run: sudo npm install -g wait-port
 
       # install deps and set up the app locally
       - run: yarn install
@@ -74,81 +59,30 @@ jobs:
           key: dappshell-dependencies-{{ checksum "package.json" }} # cache will be regenerated every time something is changed in package.json file, different branches of this project will generate the same cache key.
           # key: dappshell-{{ .Branch }}-{{ checksum "package.json" }} # same as the previous one, but each branch will generate separate cache
 
-
-      # build the application image
+      # build the app image
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:feature" -f Dockerfile.ci .
       - run: docker push $REGISTRY/$IMAGE_NAME:feature
-      - run: ls -al
 
-  # tests feature branch
+      - persist_to_workspace:
+          root: ~/dappshell
+          paths:
+            - .
+
+  # tests the feature branch
   test_feature:
     <<: *defaults
 
     machine:
       enabled: true
-      # Use Ubuntu 14.04 with bleeding edge Docker daemon 17.06.0-ce.
       image: circleci/classic:latest
-#    docker:
-      # - image: ypereirareis/docker-compose
-#      - image: circleci/node:9.5.0-browsers
-      # app1
-#      - image: r.cfcr.io/ludx/dapp-shell-ci:feature
-#        name: app1
-#        command: bin/ci-entrypoint.sh
-#        auth:
-#          username: $REGISTRY_USER
-#          password: $REGISTRY_PASS
-#        environment:
-#          REGISTRY: r.cfcr.io
-#          IMAGE_NAME: ludx/dapp-shell-ci
-#          APP_HOST: http://localhost
-#          APP_PORT: 3100
-#          RPCUSER: test
-#          RPCPASSWORD: test
-#          RPCHOSTNAME: feature1.particl.xyz
-#          MAINNET_PORT: 52738
-#          TESTNET_PORT: 52935
-
-
-      # - image: $REGISTRY/$IMAGE_NAME:feature
-      #  auth:
-      #    username: $REGISTRY_USER
-      #    password: $REGISTRY_PASS
-    # docker:
-      # primary container, this is where commands are executed for jobs using the Docker executor.
-      # - image: circleci/node:9.5.0-browsers
-      # specify service dependencies here if necessary
-      # - image: ludx/particl:latest
-      # - image: r.cfcr.io/ludx/codefresh-custom-runner
 
     environment:
-      TEST_RESULTS: /app/test-results
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: "https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR"
-      APP_HOST: http://localhost
-      APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
       RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
 
     steps:
-
-      # Start
-      # The primary container runs in a separate environment from Remote Docker.
-      # Therefore, Docker containers cannot directly communicate with the containers
-      # running in remote docker.
-      # To interact with a running service, use docker and a container running
-      # in the service’s network.
-
-      # build and run the stack
-      # - docker-compose --file docker-compose-ci.yml up --build -d
-      # - docker ps
-      # - docker-compose ps
-      - checkout
+      - attach_workspace:
+          at: ~/dappshell
 
       # download and cache dependencies
       - restore_cache:
@@ -156,14 +90,6 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
-
-      # activate the Remote Docker Environment, which enables you to add docker-compose commands to build images
-      # The Remote Docker Environment has the following technical specifications:
-      # cpu: 2, processor: Intel(R) Xeon(R) @ 2.3GHz, ram: 8GB, hd: 100GB
-
-      # - setup_remote_docker:
-      #    docker_layer_caching: true
-      #    version: 17.11.0-ce
 
       - run:
           name: apt-get updates
@@ -176,39 +102,36 @@ jobs:
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          # && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          # tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
           environment:
             DOCKERIZE_VERSION: v0.6.0
-
-      - run: ls -al /usr/local/bin
 
       - run:
           name: wait for particld
           command: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
 
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
-
-      # docker run --network container:my-app appropriate/curl --retry 10 --retry-connrefused http://localhost:8080
-      # -d
-      # -p 3100:3100
+      - run:
+          name: login to $REGISTRY
+          command: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
 
       - run:
-          name: wait for app
+          name: start app1
+          command: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+
+      - run:
+          name: start app2
+          command: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+
+      - run:
+          name: wait for app1
           command: ./dockerize -wait http://localhost:3100/cli -timeout 180s
 
-      - run: docker logs app1
-
-      # - run: wait-port $APP_HOST:$APP_PORT/cli
-      # - run: wait-port http://localhost:3100/cli
-
-      - run: docker ps
-      - run: docker stats --no-stream
+      # - run: docker logs app1
+      # - run: docker ps
+      # - run: docker stats --no-stream
 
       # install deps and set up the app locally
-      - run: npm install -g -s --no-progress yarn
-      - run: yarn install
+      # - run: npm install -g -s --no-progress yarn
+      # - run: yarn install
       - run: ./bin/copy-env.sh
       - run: ./bin/ci-create-dbs.sh
       - run: ./bin/ci-create-build-version.sh
@@ -218,41 +141,6 @@ jobs:
       - run: bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
       - run: bin/ci-ui-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
 
-
-#      - run:
-#          name: start container and verify it's working
-#          command: |
-#            set -x
-#            docker-compose --file docker-compose-circle.yml up --build -d
-#            sleep 5
-#            docker-compose ps
-#            docker stats --no-stream
-#            docker-compose logs
-#            docker-compose --file docker-compose-circle.yml down
-
-#            docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'npm test'
-#            docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935'
-#            docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935'
-#            docker-compose --file docker-compose-circle.yml exec -T testrunner sh -c 'bin/ci-ui-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935'
-
-#              $REGISTRY/$IMAGE_NAME --retry 10 --retry-delay 1 --retry-connrefused http://localhost:8080/contacts/test
-#            docker run --network container:dappshell_app1_1 $REGISTRY/$IMAGE_NAME npm test
-#            docker run --network container:dappshell_app1_1 $REGISTRY/$IMAGE_NAME bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
-#            docker run --network container:dappshell_app1_1 $REGISTRY/$IMAGE_NAME bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
-
-            # docker-compose will start 2 containers, the one with service will be named `dappshell_app1_1`
-            # we start another container with curl in the same network as `contacts`, this way we have
-            # all exposed ports from `contacts` available on `localhost` in this new container
-            # docker run $REGISTRY/$IMAGE_NAME npm test
-            # docker run $REGISTRY/$IMAGE_NAME bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
-            # docker run $REGISTRY/$IMAGE_NAME bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
-
-
-
-      # run tests!
-#      - run: yarn test
-
-
  #     - deploy:
  #         name: Build and push Docker image
  #         command: |
@@ -261,12 +149,31 @@ jobs:
  #           docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
  #           docker push circleci/cci-demo-docker:$TAG
 
-#      - store_artifacts:
-#          path: $TEST_RESULTS
-#          destination: raw-test-output
+  # deploy the feature branch
+  deploy_feature:
+    <<: *defaults
 
-#      - store_test_results:
-#          path: $TEST_RESULTS
+    docker:
+      - image: circleci/node:9.5.0-browsers
+
+    environment:
+      RPCHOSTNAME: feature1.particl.xyz
+
+    steps:
+      - attach_workspace:
+          at: ~/dappshell
+
+      # download and cache dependencies
+      - restore_cache:
+          keys:
+          - dappshell-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - dappshell-dependencies-
+
+      - run:
+          name: deploy
+          command: echo yay!
+
 
 
 workflows:
@@ -290,10 +197,20 @@ workflows:
 #            branches:
 #              only: master
 
-      - test_feature:
+      # TEST FEATURE BRANCH
+      - unit_test_feature:
           requires:
             - build_feature
-#          context: feature
+      - integration_test_feature:
+          requires:
+            - build_feature
+      - blackbox_test_feature:
+          requires:
+            - build_feature
+      - ui_test_feature:
+          requires:
+            - build_feature
+
 #      - test_develop:
 #          requires:
 #            - build_develop
@@ -303,10 +220,13 @@ workflows:
 #            - build_master
 #          context: master
 
-#      - deploy_feature:
-#          requires:
-#            - test_feature
-#          context: feature
+      - deploy_feature:
+          requires:
+            - unit_test_feature
+            - integration_test_feature
+            - blackbox_test_feature
+            - ui_test_feature
+
 #      - deploy_develop:
 #          requires:
 #            - test_develop
