@@ -170,7 +170,7 @@ jobs:
 
       # activate the Remote Docker Environment, which enables you to add docker-compose commands to build images
       # The Remote Docker Environment has the following technical specifications:
-      # cpu: 2, processor: Intel(R) Xeon(R) @ 2.3GHz, ram: 8GB, hd: 100GB 
+      # cpu: 2, processor: Intel(R) Xeon(R) @ 2.3GHz, ram: 8GB, hd: 100GB
 
       # - setup_remote_docker:
       #    docker_layer_caching: true
@@ -179,6 +179,7 @@ jobs:
       - run: docker-compose --version
       - run: sudo npm install -g wait-port
 
+      - run: sleep 120 && nc -vz localhost 3100
       # - run: wait-port $APP_HOST:$APP_PORT/cli
       - run: wait-port http://localhost:3100/cli
 
