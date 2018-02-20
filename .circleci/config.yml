@@ -100,17 +100,16 @@ jobs:
           username: $REGISTRY_USER
           password: $REGISTRY_PASS
         environment:
-          REGISTRY: "r.cfcr.io"
-          IMAGE_NAME: "ludx/dapp-shell-ci"
+          REGISTRY: r.cfcr.io
+          IMAGE_NAME: ludx/dapp-shell-ci
           APP_HOST: http://localhost
           APP_PORT: 3100
-          RPCUSER: "test"
-          RPCPASSWORD: "test"
-          RPCHOSTNAME: "localhost"
+          RPCUSER: test
+          RPCPASSWORD: test
+          RPCHOSTNAME: feature1.particl.xyz
           MAINNET_PORT: 52738
           TESTNET_PORT: 52935
 
-        # command: bin/ci-entrypoint.sh
 
       # - image: $REGISTRY/$IMAGE_NAME:feature
       #  auth:
@@ -125,14 +124,14 @@ jobs:
 
     environment:
       TEST_RESULTS: /app/test-results
-      REGISTRY: "r.cfcr.io"
-      IMAGE_NAME: "ludx/dapp-shell-ci"
+      REGISTRY: r.cfcr.io
+      IMAGE_NAME: ludx/dapp-shell-ci
       DISCORD_URL: "https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR"
       APP_HOST: http://localhost
       APP_PORT: 3100
-      RPCUSER: "test"
-      RPCPASSWORD: "test"
-      RPCHOSTNAME: "localhost"
+      RPCUSER: test
+      RPCPASSWORD: test
+      RPCHOSTNAME: feature1.particl.xyz
       MAINNET_PORT: 52738
       TESTNET_PORT: 52935
 
