@@ -210,6 +210,9 @@ jobs:
       - run: docker stats --no-stream
 
       # install deps and set up the app locally
+      - run: npm install -g -s --no-progress yarn
+      #- run: npm install -g ts-node
+      #- run: npm install -g typescript
       - run: yarn install
       - run: ./bin/copy-env.sh
       - run: ./bin/ci-create-dbs.sh
