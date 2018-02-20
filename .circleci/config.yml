@@ -177,13 +177,13 @@ jobs:
       #    version: 17.11.0-ce
 
       - run: docker-compose --version
-      - run: ls -al
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+      - run: ls -al /usr/local/bin
+#      - run:
+#          name: install dockerize
+#          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
            # && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.6.0
+#          environment:
+#            DOCKERIZE_VERSION: v0.6.0
       - run:
           name: wait for db
           command: dockerize -wait http://localhost:3100/cli -timeout 150s
