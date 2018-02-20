@@ -178,13 +178,15 @@ jobs:
           environment:
             DOCKERIZE_VERSION: v0.6.0
 
+      - run: ls -al /usr/local/bin
+
       - run:
           name: wait for particld
-          command: dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
+          command: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
 
       - run:
           name: wait for db
-          command: dockerize -wait http://localhost:3100/cli -timeout 150s
+          command: ./dockerize -wait http://localhost:3100/cli -timeout 150s
 
       # - run: wait-port $APP_HOST:$APP_PORT/cli
       # - run: wait-port http://localhost:3100/cli
