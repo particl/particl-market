@@ -5,7 +5,7 @@
 
 workflows:
   version: 2
-  build_test_deploy:
+  build_test_deploy_feature:
     jobs:
       - build_feature:
           filters:
@@ -14,14 +14,6 @@ workflows:
               ignore:
                 - develop
                 - master
-      - build_develop:
-          filters:
-            branches:
-              only: develop
-      - build_master:
-          filters:
-            branches:
-              only: master
       - unit_test_feature:
           requires:
             - build_feature
@@ -34,6 +26,21 @@ workflows:
       - ui_test_feature:
           requires:
             - build_feature
+
+
+  build_test_deploy_develop:
+    jobs:
+      - build_develop:
+          filters:
+            branches:
+              only: develop
+
+  build_test_deploy_develop:
+    jobs:
+      - build_master:
+          filters:
+            branches:
+              only: master
 
 #      - unit_test_develop:
 #          requires:
