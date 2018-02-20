@@ -3,7 +3,7 @@
 [![Travis Build Status](https://travis-ci.org/particl/dapp-shell.svg?branch=develop)](https://travis-ci.org/particl/dapp-shell)
 [![Codefresh build status]( https://g.codefresh.io/api/badges/build?repoOwner=particl&repoName=dapp-shell&branch=develop&pipelineName=dapp-shell&accountName=ludx&type=cf-2)]( https://g.codefresh.io/repositories/particl/dapp-shell/builds?filter=trigger:build;branch:develop;service:5a6b2e1fc09dc20001b37ddb~dapp-shell)
 
-## Getting Started
+## Getting Started 
 ### Step 1:  Set up the Development Environment 
 You need to set up your development environment before you can do anything.
 
