@@ -23,7 +23,7 @@ envfeature: &envfeature
   MAINNET_PORT: 52738
   TESTNET_PORT: 52935
 
-envdev: &envdev
+envdevelop: &envdevelop
   REGISTRY: r.cfcr.io
   IMAGE_NAME: ludx/dapp-shell-ci
   DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
@@ -35,7 +35,7 @@ envdev: &envdev
   MAINNET_PORT: 54738
   TESTNET_PORT: 54935
 
-envdev: &envmaster
+envmaster: &envmaster
   REGISTRY: r.cfcr.io
   IMAGE_NAME: ludx/dapp-shell-ci
   DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
