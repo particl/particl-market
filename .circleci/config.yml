@@ -89,6 +89,9 @@ jobs:
     <<: *defaults
 
     machine: true
+      enabled: true
+      # Use Ubuntu 14.04 with bleeding edge Docker daemon 17.06.0-ce.
+      image: circleci/classic:edge
 #    docker:
       # - image: ypereirareis/docker-compose
 #      - image: circleci/node:9.5.0-browsers
@@ -165,10 +168,6 @@ jobs:
       #    docker_layer_caching: true
       #    version: 17.11.0-ce
 
-      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run --name app1 --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
-      # -d
-      # -p 3100:3100
       - run: ls -al /usr/local/bin
       - run:
           name: install dockerize
@@ -183,6 +182,13 @@ jobs:
       - run:
           name: wait for particld
           command: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
+
+      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+      - run: docker run --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+
+      # docker run --network container:my-app appropriate/curl --retry 10 --retry-connrefused http://localhost:8080
+      # -d
+      # -p 3100:3100
 
       - run: docker logs app1
 
