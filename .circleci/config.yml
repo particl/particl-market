@@ -6,17 +6,18 @@
 
 defaults: &defaults
   working_directory: ~/dappshell
-  environment:
-    REGISTRY: r.cfcr.io
-    IMAGE_NAME: ludx/dapp-shell-ci
-    DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
-    APP_HOST: http://localhost
-    APP_PORT: 3100
-    RPCUSER: test
-    RPCPASSWORD: test
-    RPCHOSTNAME: localhost
-    MAINNET_PORT: 52738
-    TESTNET_PORT: 52935
+
+envfeature: &envfeature
+  REGISTRY: r.cfcr.io
+  IMAGE_NAME: ludx/dapp-shell-ci
+  DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
+  APP_HOST: http://localhost
+  APP_PORT: 3100
+  RPCUSER: test
+  RPCPASSWORD: test
+  RPCHOSTNAME: localhost
+  MAINNET_PORT: 52738
+  TESTNET_PORT: 52935
 
 version: 2
 jobs:
@@ -24,12 +25,11 @@ jobs:
   # builds the feature branch
   build_feature:
     <<: *defaults
-
     docker:
-      # primary container, this is where commands are executed for jobs using the Docker executor.
       - image: circleci/node:9.5.0-browsers
-      # specify service dependencies here if necessary
-      # - image: r.cfcr.io/ludx/codefresh-custom-runner
+    environment:
+      <<: *envfeature
+      RPCHOSTNAME: feature1.particl.xyz
 
     steps:
       - checkout
@@ -41,7 +41,6 @@ jobs:
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
 
-      # activate the Remote Docker Environment
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
@@ -73,14 +72,22 @@ jobs:
   test_feature:
     <<: *defaults
 
-    machine:
-      enabled: true
-      image: circleci/classic:latest
+    # machine:
+    #  enabled: true
+    #  image: circleci/classic:latest
+
+    docker:
+      - image: circleci/node:9.5.0-browsers
 
     environment:
+      <<: *envfeature
       RPCHOSTNAME: feature1.particl.xyz
 
     steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 17.11.0-ce
+
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
@@ -137,6 +144,7 @@ jobs:
       - image: circleci/node:9.5.0-browsers
 
     environment:
+      <<: *envfeature
       RPCHOSTNAME: feature1.particl.xyz
 
     steps:
