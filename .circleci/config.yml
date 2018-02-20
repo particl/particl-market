@@ -83,14 +83,10 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/dappshell
-
-      # download and cache dependencies
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
-          # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
-
       - run:
           name: apt-get updates
           command: |
@@ -98,32 +94,16 @@ jobs:
             sudo apt-get update
             sudo apt-get install gcc-4.9 g++-4.9
             sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-
       - run:
           name: install dockerize
           command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && tar -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
           environment:
             DOCKERIZE_VERSION: v0.6.0
-
-      - run:
-          name: wait for particld
-          command: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
-
-      - run:
-          name: login to $REGISTRY
-          command: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-
-      - run:
-          name: start app1
-          command: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
-
-      - run:
-          name: start app2
-          command: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
-
-      - run:
-          name: wait for app1
-          command: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
+      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
 
       # - run: docker logs app1
       # - run: docker ps
@@ -132,9 +112,9 @@ jobs:
       # install deps and set up the app locally
       # - run: npm install -g -s --no-progress yarn
       # - run: yarn install
-      - run: ./bin/copy-env.sh
-      - run: ./bin/ci-create-dbs.sh
-      - run: ./bin/ci-create-build-version.sh
+      # - run: ./bin/copy-env.sh
+      # - run: ./bin/ci-create-dbs.sh
+      # - run: ./bin/ci-create-build-version.sh
 
       - run: npm test
       - run: bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
@@ -198,18 +178,18 @@ workflows:
 #              only: master
 
       # TEST FEATURE BRANCH
-      - unit_test_feature:
+      - test_feature:
           requires:
             - build_feature
-      - integration_test_feature:
-          requires:
-            - build_feature
-      - blackbox_test_feature:
-          requires:
-            - build_feature
-      - ui_test_feature:
-          requires:
-            - build_feature
+#      - integration_test_feature:
+#          requires:
+#            - build_feature
+#      - blackbox_test_feature:
+#          requires:
+#            - build_feature
+#      - ui_test_feature:
+#          requires:
+#            - build_feature
 
 #      - test_develop:
 #          requires:
