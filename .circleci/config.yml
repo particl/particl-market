@@ -181,7 +181,7 @@ jobs:
 
       - run: sleep 120 && nc -vz localhost 3100
       # - run: wait-port $APP_HOST:$APP_PORT/cli
-      - run: wait-port http://localhost:3100/cli
+      # - run: wait-port http://localhost:3100/cli
 
       - run: docker ps
       - run: docker stats --no-stream
