@@ -120,7 +120,7 @@ jobs:
       # - image: circleci/node:9.5.0-browsers
       # specify service dependencies here if necessary
       # - image: ludx/particl:latest
-      # - image: r.cfcr.io/ludx/codefresh-custom-runner
+      # - image: r.cfcr.io/ludx/codefresh-custom-runner 
 
     environment:
       TEST_RESULTS: /app/test-results
