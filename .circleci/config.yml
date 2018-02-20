@@ -166,7 +166,8 @@ jobs:
       #    version: 17.11.0-ce
 
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --env-file .env.docker-compose $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      - run: docker run --name app1 --env-file .env.docker-compose $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      # -d
       # -p 3100:3100
       - run: ls -al /usr/local/bin
       - run:
