@@ -15,9 +15,34 @@ envfeature: &envfeature
   APP_PORT: 3100
   RPCUSER: test
   RPCPASSWORD: test
-  RPCHOSTNAME: localhost
+  RPCHOSTNAME: feature1.particl.xyz
   MAINNET_PORT: 52738
   TESTNET_PORT: 52935
+
+envdev: &envdev
+  REGISTRY: r.cfcr.io
+  IMAGE_NAME: ludx/dapp-shell-ci
+  DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
+  APP_HOST: http://localhost
+  APP_PORT: 3200
+  RPCUSER: test
+  RPCPASSWORD: test
+  RPCHOSTNAME: dev1.particl.xyz
+  MAINNET_PORT: 54738
+  TESTNET_PORT: 54935
+
+envdev: &envmaster
+  REGISTRY: r.cfcr.io
+  IMAGE_NAME: ludx/dapp-shell-ci
+  DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
+  APP_HOST: http://localhost
+  APP_PORT: 3300
+  RPCUSER: test
+  RPCPASSWORD: test
+  RPCHOSTNAME: master1.particl.xyz
+  MAINNET_PORT: 56738
+  TESTNET_PORT: 566935
+
 
 version: 2
 jobs:
@@ -60,8 +85,8 @@ jobs:
 
       # build the app image
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:feature" -f Dockerfile.ci .
-      - run: docker push $REGISTRY/$IMAGE_NAME:feature
+      - run: docker build --pull --cache-from "$IMAGE_NAME" --tag "$REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1" -f Dockerfile.ci .
+      - run: docker push $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1
 
       - persist_to_workspace:
           root: ~/dappshell
@@ -99,9 +124,9 @@ jobs:
             DOCKERIZE_VERSION: v0.6.0
       - run: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       # - run: node --version
       # - run: docker logs app1
       # - run: docker ps
@@ -148,9 +173,9 @@ jobs:
             DOCKERIZE_VERSION: v0.6.0
       - run: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
       - run: bin/ci-integration-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
@@ -188,9 +213,9 @@ jobs:
             DOCKERIZE_VERSION: v0.6.0
       - run: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
       - run: bin/ci-blackbox-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
@@ -226,45 +251,35 @@ jobs:
             DOCKERIZE_VERSION: v0.6.0
       - run: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
-      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: bin/ci-ui-tests.sh development 3100 http://localhost test test feature1.particl.xyz 52738 52935
 
-  # deploy the feature branch
+  # feature branch deploy
   deploy_feature:
     <<: *defaults
-
     docker:
       - image: circleci/node:9.5.0-browsers
-
     environment:
       <<: *envfeature
-      RPCHOSTNAME: feature1.particl.xyz
-
     steps:
       - attach_workspace:
           at: ~/dappshell
-
-      # download and cache dependencies
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
-
-      - run:
-          name: deploy
-          command: echo yay!
-
- #     - deploy:
- #         name: Build and push Docker image
- #         command: |
- #           TAG="0.1.${CIRCLE_BUILD_NUM}"
- #           docker build -t circleci/cci-demo-docker:$TAG .
- #           docker login -u $DOCKER_LOGIN -p $DOCKER_PASSWORD
- #           docker push circleci/cci-demo-docker:$TAG
+      - setup_remote_docker:
+          docker_layer_caching: true
+          version: 17.11.0-ce
+      # build and deploy the app
+      - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
+      - run: docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:feature" -f Dockerfile.ci .
+      - run: docker push $REGISTRY/$IMAGE_NAME:feature
+      - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-feature.yml;
 
 
 workflows:
