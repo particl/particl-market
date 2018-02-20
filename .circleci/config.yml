@@ -102,15 +102,15 @@ jobs:
       - run: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
-      - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
       - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
 
       # - run: docker logs app1
       # - run: docker ps
       # - run: docker stats --no-stream
 
       # install deps and set up the app locally
-      # - run: npm install -g -s --no-progress yarn
+      - run: npm install -g -s --no-progress yarn
       - run: yarn install
       # - run: ./bin/copy-env.sh
       # - run: ./bin/ci-create-dbs.sh
