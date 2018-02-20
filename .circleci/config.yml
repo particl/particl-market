@@ -166,9 +166,8 @@ jobs:
       #    version: 17.11.0-ce
 
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
-      - run: docker run -d --name app1 --env-file .env.docker-compose -p 3100:3100 $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
-
-      - run: docker logs app1
+      - run: docker run -d --name app1 --env-file .env.docker-compose $REGISTRY/$IMAGE_NAME:feature bin/ci-entrypoint.sh
+      # -p 3100:3100
       - run: ls -al /usr/local/bin
       - run:
           name: install dockerize
@@ -184,8 +183,10 @@ jobs:
           name: wait for particld
           command: ./dockerize -wait tcp://feature1.particl.xyz:52935 -timeout 30s
 
+      - run: docker logs app1
+
       - run:
-          name: wait for db
+          name: wait for app
           command: ./dockerize -wait http://localhost:3100/cli -timeout 150s
 
       # - run: wait-port $APP_HOST:$APP_PORT/cli
