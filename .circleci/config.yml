@@ -120,7 +120,7 @@ jobs:
       # - image: circleci/node:9.5.0-browsers
       # specify service dependencies here if necessary
       # - image: ludx/particl:latest
-      # - image: r.cfcr.io/ludx/codefresh-custom-runner 
+      # - image: r.cfcr.io/ludx/codefresh-custom-runner
 
     environment:
       TEST_RESULTS: /app/test-results
@@ -179,7 +179,8 @@ jobs:
       - run: docker-compose --version
       - run: sudo npm install -g wait-port
 
-      - run: wait-port $APP_HOST:$APP_PORT/cli
+      # - run: wait-port $APP_HOST:$APP_PORT/cli
+      - run: wait-port http://localhost:3100/cli
 
       - run: docker ps
       - run: docker stats --no-stream
