@@ -34,6 +34,18 @@ workflows:
           filters:
             branches:
               only: develop
+      - unit_test_develop:
+          requires:
+            - build_develop
+      - integration_test_develop:
+          requires:
+            - build_develop
+      - blackbox_test_develop:
+          requires:
+            - build_develop
+      - ui_test_develop:
+          requires:
+            - build_develop
 
   build_test_deploy_develop:
     jobs:
@@ -42,18 +54,6 @@ workflows:
             branches:
               only: master
 
-#      - unit_test_develop:
-#          requires:
-#            - build_develop
-#      - integration_test_develop:
-#          requires:
-#            - build_develop
-#      - blackbox_test_develop:
-#          requires:
-#            - build_develop
-#      - ui_test_develop:
-#          requires:
-#            - build_develop
 #      - unit_test_master:
 #          requires:
 #            - build_master
