@@ -122,7 +122,7 @@ jobs:
       <<: *commonenv
     steps:
       - checkout
-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       # download and cache dependencies
       - restore_cache:
           keys:
@@ -173,6 +173,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -221,6 +222,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -258,6 +260,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -295,6 +298,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -331,6 +335,7 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
@@ -339,6 +344,7 @@ jobs:
       - run: docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:feature" -f Dockerfile.ci .
       - run: docker push $REGISTRY/$IMAGE_NAME:feature
       - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-feature.yml;
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
 # -------------------------------------------------------------------
 #   DEVELOP JOB
@@ -354,6 +360,7 @@ jobs:
 
     steps:
       - checkout
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
 
       # download and cache dependencies
       - restore_cache:
@@ -405,6 +412,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -454,6 +462,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -492,6 +501,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -530,6 +540,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -567,6 +578,7 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
@@ -575,6 +587,7 @@ jobs:
       - run: docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:develop" -f Dockerfile.ci .
       - run: docker push $REGISTRY/$IMAGE_NAME:develop
       - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-develop.yml;
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
 
 # -------------------------------------------------------------------
@@ -591,6 +604,7 @@ jobs:
 
     steps:
       - checkout
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
 
       # download and cache dependencies
       - restore_cache:
@@ -642,6 +656,8 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - run:
           name: apt-get updates
           command: |
@@ -691,6 +707,8 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - run:
           name: apt-get updates
           command: |
@@ -729,6 +747,8 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - run:
           name: apt-get updates
           command: |
@@ -767,6 +787,8 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - run:
           name: apt-get updates
           command: |
@@ -804,6 +826,8 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
@@ -812,5 +836,6 @@ jobs:
       - run: docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:master" -f Dockerfile.ci .
       - run: docker push $REGISTRY/$IMAGE_NAME:master
       - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-master.yml;
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
 
