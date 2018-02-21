@@ -848,6 +848,11 @@ jobs:
 
 
   hodl:
+    <<: *defaults
+    docker:
+      - image: circleci/node:9.5.0-browsers
+    environment:
+      <<: *commonenv
     steps:
       - attach_workspace:
           at: ~/dappshell
