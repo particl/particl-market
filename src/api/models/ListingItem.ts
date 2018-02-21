@@ -82,6 +82,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 if (typeof options.profileId === 'number') {
                     qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                     qb.where('listing_item_templates.profile_id', '=', options.profileId);
+                } else if (options.profileId === 'OWN') { // ListingItems belonging to any profile
+                    qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                 }
 
                 // search by item price
@@ -94,13 +96,13 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id');
 
                 // search by item location (country)
-                if (options.country && typeof options.country === 'string' ) {
+                if (options.country && typeof options.country === 'string') {
                     qb.innerJoin('item_locations', 'item_informations.id', 'item_locations.item_information_id');
                     qb.where('item_locations.region', options.country);
                 }
 
                 // search by shipping destination
-                if (options.shippingDestination && typeof options.shippingDestination === 'string' ) {
+                if (options.shippingDestination && typeof options.shippingDestination === 'string') {
                     qb.innerJoin('shipping_destinations', 'item_informations.id', 'shipping_destinations.item_information_id');
                     qb.where('shipping_destinations.country', options.shippingDestination);
                 }
