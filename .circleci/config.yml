@@ -54,7 +54,7 @@ workflows:
             - build_develop
       - deploy_develop:
           type: approval
-s          requires:
+          requires:
             - unit_test_develop
             - integration_test_develop
             - blackbox_test_develop
@@ -90,6 +90,16 @@ s          requires:
 defaults: &defaults
   working_directory: ~/dappshell
 
+commonenv: &commonenv
+  REGISTRY: r.cfcr.io
+  IMAGE_NAME: ludx/dapp-shell-ci
+  RPCUSER: test
+  RPCPASSWORD: test
+  RPCHOSTNAME: circle.particl.xyz
+  MAINNET_PORT: 58738
+  TESTNET_PORT: 58935
+
+
 # -------------------------------------------------------------------
 #   BRANCH ENV VARS
 # -------------------------------------------------------------------
@@ -108,15 +118,9 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
+      <<: *commonenv
     steps:
       - checkout
 
@@ -161,15 +165,10 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
+      <<: *commonenv
+
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -217,15 +216,9 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
+      <<: *commonenv
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -262,15 +255,9 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
+      <<: *commonenv
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -307,15 +294,9 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
+      <<: *commonenv
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -350,15 +331,9 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
+      <<: *commonenv
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -386,15 +361,9 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3200
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: dev1.particl.xyz
-      MAINNET_PORT: 54738
-      TESTNET_PORT: 54935
+      <<: *commonenv
 
     steps:
       - checkout
@@ -440,15 +409,9 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3200
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: dev1.particl.xyz
-      MAINNET_PORT: 54738
-      TESTNET_PORT: 54935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -497,15 +460,9 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3200
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: dev1.particl.xyz
-      MAINNET_PORT: 54738
-      TESTNET_PORT: 54935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -543,15 +500,9 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3200
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: dev1.particl.xyz
-      MAINNET_PORT: 54738
-      TESTNET_PORT: 54935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -589,15 +540,9 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3200
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: dev1.particl.xyz
-      MAINNET_PORT: 54738
-      TESTNET_PORT: 54935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -633,15 +578,9 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3200
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: dev1.particl.xyz
-      MAINNET_PORT: 54738
-      TESTNET_PORT: 54935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -671,15 +610,9 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3300
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: master1.particl.xyz
-      MAINNET_PORT: 56738
-      TESTNET_PORT: 56935
+      <<: *commonenv
 
     steps:
       - checkout
@@ -725,15 +658,9 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3300
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: master1.particl.xyz
-      MAINNET_PORT: 56738
-      TESTNET_PORT: 56935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -782,15 +709,9 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3300
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: master1.particl.xyz
-      MAINNET_PORT: 56738
-      TESTNET_PORT: 56935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -828,15 +749,9 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3300
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: master1.particl.xyz
-      MAINNET_PORT: 56738
-      TESTNET_PORT: 56935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -874,15 +789,9 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3300
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: master1.particl.xyz
-      MAINNET_PORT: 56738
-      TESTNET_PORT: 56935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -918,15 +827,9 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
       APP_HOST: http://localhost
       APP_PORT: 3300
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: master1.particl.xyz
-      MAINNET_PORT: 56738
-      TESTNET_PORT: 56935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
