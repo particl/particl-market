@@ -8,8 +8,9 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ListingItemSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItem>> {
 
@@ -29,36 +30,47 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: category, number|string, if string, try to find using key, can be null
-     *  [4]: profileId, number
-     *  [5]: minPrice, number to search item basePrice between 2 range
-     *  [6]: maxPrice, number to search item basePrice between 2 range
-     *  [7]: country, string, can be null
-     *  [8]: shippingDestination, string, can be null
-     *  [9]: searchString, string, can be null
-     *  [10]: withRelated, boolean
+     *  [4]: type (FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL)
+     *  [5]: profileId, (NUMBER | OWN | ALL | *)
+     *  [6]: minPrice, number to search item basePrice between 2 range
+     *  [7]: maxPrice, number to search item basePrice between 2 range
+     *  [8]: country, string, can be null
+     *  [9]: shippingDestination, string, can be null
+     *  [10]: searchString, string, can be null
+     *  [11]: withRelated, boolean
      *
      * @param data
      * @returns {Promise<ListingItem>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItem>> {
-        return this.listingItemService.search({
-            page: data.params[0] || 1,
-            pageLimit: data.params[1] || 5, // default page limit 5
-            order: data.params[2] || 'ASC',
-            category: data.params[3],
-            profileId: data.params[4],
-            minPrice: data.params[5],
-            maxPrice: data.params[6],
-            country: data.params[7],
-            shippingDestination: data.params[8],
-            searchString: data.params[9] || ''
-        } as ListingItemSearchParams, data.params[10]);
+        if (data.params[4]) { // type
+            if (typeof data.params[5] === 'number' || data.params[5] === 'OWN' || data.params[5] === 'ALL' || data.params[5] === '*') {
+                return this.listingItemService.search({
+                    page: data.params[0] || 1,
+                    pageLimit: data.params[1] || 5, // default page limit 5
+                    order: data.params[2] || 'ASC',
+                    category: data.params[3],
+                    type: data.params[4],
+                    profileId: data.params[5],
+                    minPrice: data.params[6],
+                    maxPrice: data.params[7],
+                    country: data.params[8],
+                    shippingDestination: data.params[9],
+                    searchString: data.params[10] || ''
+                } as ListingItemSearchParams, data.params[11]);
+            } else {
+                throw new MessageException('Value needs to be number | OWN | ALL. you could pass * as all too');
+            }
+        } else {
+            throw new MessageException('Type can\'t be blank, should be FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL');
+        }
     }
 
+    // tslint:disable:max-line-length
     public usage(): string {
-        return this.getName() + ' [<page> [<pageLimit> [<order> [(<categoryId>|<categoryName>) [(<profileId>|<ALL>) '
-            + '[<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]] \n';
+        return this.getName() + ' [<page> [<pageLimit> [<order> ' +
+        '[(<categoryId> | <categoryName>)[ <type> [(<profileId>| OWN | ALL) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]]]';
     }
 
     public help(): string {
@@ -71,7 +83,19 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '                                with the listing items we want to search for. \n'
             + '    <categoryName>           - [optional] String - The key identifying the category associated \n'
             + '                                with the listing items we want to search for. \n'
-            + '    <profileId>              - [optional] Numeric - The ID identifying the \n'
+            + '    <type>                  -  ENUM{FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL} \n'
+            + '                                 FLAGGED = ListingItems you have flagged \n'
+            + '                                 PENDING = ListingItemTemplates posted to marketplace\n'
+            + '                                           but not yet received as ListingItem \n'
+            + '                                 IN_ESCROW = ListingItems that are escrow \n'
+            + '                                 SHIPPED = ListingItems that have been shipped \n'
+            + '                                 SOLD = ListingItems that have been sold \n'
+            + '                                 EXPIRED = ListingItems that have been expired \n'
+            + '                                 ALL = all items\n'
+            + '    <profileId>             -  (NUMBER | OWN | ALL | *) \n'
+            + '                                 NUMBER - ListingItems belonging to profileId \n'
+            + '                                 OWN - ListingItems belonging to any profile \n'
+            + '                                 ALL / * - ALL ListingItems\n'
             + '    <minPrice>               - [optional] Numeric - The minimum price of the listing item price \n'
             + '                                we want to search for between basePrice range. \n'
             + '    <maxPrice>               - [optional] Numeric - The maximum price of the listing item price \n'
@@ -87,13 +111,16 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '                                find listing items by their titles. ';
     }
 
+    // tslint:enable:max-line-length
+
     public description(): string {
         return 'Search listing items with pagination by category id or'
-        + ' category name or by profileId, or by listing item price'
-        + ' min and max price range, or by country or shipping destination.';
+            + ' category name or by profileId, or by listing item price'
+            + ' min and max price range, or by country or shipping destination.';
     }
 
     public example(): string {
         return 'item ' + this.getName() + ' 1 10 ASC 76 1 100 200 Australia China wine';
     }
+
 }
