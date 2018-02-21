@@ -4,6 +4,7 @@ import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BidService } from '../../services/BidService';
+import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -17,7 +18,8 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService
+        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService
     ) {
         super(Commands.BID_SEARCH);
         this.log = new Logger(__filename);
@@ -26,16 +28,19 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     /**
      *
      * data.params[]:
-     * [0]: itemhash, string
-     * [1]: status, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
+     * [0]: hash, string
+     * [1]: status, [Optional] ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Bid>> {
+
+        const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
+
         return this.bidService.search({
-            listingItemHash: data.params[0],
+            listingItemId: listingItem.id,
             action: data.params[1]
         } as BidSearchParams);
     }

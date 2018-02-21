@@ -31,7 +31,7 @@ import { FavoriteAddCommand } from '../commands/favorite/FavoriteAddCommand';
 import { FavoriteRemoveCommand } from '../commands/favorite/FavoriteRemoveCommand';
 import { ItemCategoryListCommand } from '../commands/itemcategory/ItemCategoryListCommand';
 import { ItemCategoryAddCommand } from '../commands/itemcategory/ItemCategoryAddCommand';
-import { ItemCategoryFindCommand } from '../commands/itemcategory/ItemCategoryFindCommand';
+import { ItemCategorySearchCommand } from '../commands/itemcategory/ItemCategorySearchCommand';
 import { ItemCategoryGetCommand } from '../commands/itemcategory/ItemCategoryGetCommand';
 import { ItemCategoryRemoveCommand } from '../commands/itemcategory/ItemCategoryRemoveCommand';
 import { ItemCategoryUpdateCommand } from '../commands/itemcategory/ItemCategoryUpdateCommand';
@@ -145,7 +145,7 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryListCommand) private itemCategoryListCommand: ItemCategoryListCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryAddCommand) private itemCategoryAddCommand: ItemCategoryAddCommand,
-        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryFindCommand) private itemCategoryFindCommand: ItemCategoryFindCommand,
+        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategorySearchCommand) private itemCategorySearchCommand: ItemCategorySearchCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryGetCommand) private itemCategoryGetCommand: ItemCategoryGetCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryRemoveCommand) private itemCategoryRemoveCommand: ItemCategoryRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryUpdateCommand) private itemCategoryUpdateCommand: ItemCategoryUpdateCommand,
@@ -263,7 +263,7 @@ export class RpcCommandFactory {
 
         this.commands.push(itemCategoryListCommand);
         this.commands.push(itemCategoryAddCommand);
-        this.commands.push(itemCategoryFindCommand);
+        this.commands.push(itemCategorySearchCommand);
         this.commands.push(itemCategoryGetCommand);
         this.commands.push(itemCategoryRemoveCommand);
         this.commands.push(itemCategoryUpdateCommand);

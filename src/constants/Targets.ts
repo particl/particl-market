@@ -154,7 +154,7 @@ export const Targets = {
         HelpCommand: 'HelpCommand',
         itemcategory: {
             ItemCategoryAddCommand: 'ItemCategoryAddCommand',
-            ItemCategoryFindCommand: 'ItemCategoryFindCommand',
+            ItemCategorySearchCommand: 'ItemCategorySearchCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
             ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
