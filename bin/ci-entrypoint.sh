@@ -1,6 +1,5 @@
 #!/bin/sh
 
-#set -e
 yarn install
 rm -rf data/marketplace.db
 rm -rf data/marketplace-test.db
