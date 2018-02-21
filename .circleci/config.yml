@@ -167,13 +167,13 @@ jobs:
       <<: *commonenv
 
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -216,13 +216,13 @@ jobs:
     environment:
       <<: *commonenv
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -254,13 +254,13 @@ jobs:
     environment:
       <<: *commonenv
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -292,13 +292,13 @@ jobs:
     environment:
       <<: *commonenv
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -328,7 +328,6 @@ jobs:
     environment:
       <<: *commonenv
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
@@ -336,6 +335,7 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
@@ -406,13 +406,13 @@ jobs:
       <<: *commonenv
 
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -456,13 +456,13 @@ jobs:
       <<: *commonenv
 
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -495,13 +495,13 @@ jobs:
       <<: *commonenv
 
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -534,13 +534,13 @@ jobs:
       <<: *commonenv
 
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -571,7 +571,6 @@ jobs:
       <<: *commonenv
 
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
@@ -579,6 +578,7 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
@@ -650,14 +650,14 @@ jobs:
       <<: *commonenv
 
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - run:
           name: apt-get updates
           command: |
@@ -701,14 +701,14 @@ jobs:
       <<: *commonenv
 
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - run:
           name: apt-get updates
           command: |
@@ -741,14 +741,14 @@ jobs:
       <<: *commonenv
 
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - run:
           name: apt-get updates
           command: |
@@ -781,14 +781,14 @@ jobs:
       <<: *commonenv
 
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - run:
           name: apt-get updates
           command: |
@@ -819,8 +819,6 @@ jobs:
       <<: *commonenv
 
     steps:
-      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
-
       - attach_workspace:
           at: ~/dappshell
       - restore_cache:
@@ -828,6 +826,8 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
