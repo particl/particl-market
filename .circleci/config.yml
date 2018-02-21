@@ -51,11 +51,11 @@ workflows:
       - ui_test_develop:
           requires:
             - build_develop
-#      - deploy_develop:
-#            - unit_test_develop
-#            - integration_test_develop
-#            - blackbox_test_develop
-#             - ui_test_develop
+      - deploy_develop:
+            - unit_test_develop
+            - integration_test_develop
+            - blackbox_test_develop
+            - ui_test_develop
 
   build_test_deploy_master:
     jobs:
