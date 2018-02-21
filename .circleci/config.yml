@@ -53,7 +53,8 @@ workflows:
           requires:
             - build_develop
       - deploy_develop:
-          requires:
+          type: approval
+s          requires:
             - unit_test_develop
             - integration_test_develop
             - blackbox_test_develop
@@ -78,6 +79,7 @@ workflows:
           requires:
             - build_master
       - deploy_master:
+          type: approval
           requires:
             - unit_test_master
             - integration_test_master
