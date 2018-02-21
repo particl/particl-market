@@ -80,8 +80,6 @@ describe('ListingItem', () => {
     let createdListingItemObjects;
     let defaultProfile;
     let defaultMarket;
-    let createdHash;
-    let createdNewItemId;
 
     const testData = {
         hash: 'hash1',
@@ -1128,53 +1126,6 @@ describe('ListingItem', () => {
             expect(e).toEqual(new NotFoundException(cryptoCurrencyId))
         );
 
-    });
-
-    test('Should flag listing item by id', async () => {
-        const flaggedModel = await listingItemService.flagItem(createdId);
-        const resultCreate = flaggedModel.toJSON();
-        expect(resultCreate.listingItemId).toBe(createdId);
-    });
-
-    test('Should throw MessageException because already been flagged for the given listing item id', async () => {
-        expect.assertions(1);
-        await listingItemService.flagItem(createdId).catch(e =>
-            expect(e).toEqual(new MessageException('Item already beeing flagged!'))
-        );
-    });
-
-    test('Should flag listing item by hash', async () => {
-        const testDataToSave = JSON.parse(JSON.stringify(testData));
-        testData.hash = crypto.SHA256(new Date().getTime().toString()).toString();
-        testDataToSave.market_id = defaultMarket.Id;
-
-        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
-        const result = listingItemModel.toJSON();
-        createdHash = result.hash;
-        createdNewItemId = result.id;
-        const flaggedModel = await listingItemService.flagItem(result.id);
-        const resultCreate = flaggedModel.toJSON();
-        expect(resultCreate.listingItemId).toBe(result.id);
-    });
-
-    test('Should throw MessageException because already been flagged for the given listing item hash', async () => {
-        expect.assertions(2);
-        await listingItemService.flagItem(createdHash).catch(e =>
-            expect(e).toEqual(new MessageException('Item already beeing flagged!'))
-        );
-
-        // delete listing item
-        await listingItemService.destroy(createdNewItemId);
-        await listingItemService.findOne(createdNewItemId, false).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdNewItemId))
-        );
-    });
-
-    test('Should throw MessageException because already been flagged for the given listing item id', async () => {
-        expect.assertions(1);
-        await listingItemService.flagItem(createdId).catch(e =>
-            expect(e).toEqual(new MessageException('Item already beeing flagged!'))
-        );
     });
 
     test('Should update same listing-item with messaging-information + item-information and listingItemObjects', async () => {
