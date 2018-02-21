@@ -27,6 +27,7 @@ workflows:
           requires:
             - build_feature
       - deploy_feature:
+          type: approval
           requires:
             - unit_test_feature
             - integration_test_feature
@@ -52,7 +53,8 @@ workflows:
           requires:
             - build_develop
       - deploy_develop:
-          requires:
+          type: approval
+s          requires:
             - unit_test_develop
             - integration_test_develop
             - blackbox_test_develop
@@ -77,6 +79,7 @@ workflows:
           requires:
             - build_master
       - deploy_master:
+          type: approval
           requires:
             - unit_test_master
             - integration_test_master
@@ -107,7 +110,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3100
       RPCUSER: test
@@ -161,7 +163,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3100
       RPCUSER: test
@@ -218,7 +219,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3100
       RPCUSER: test
@@ -264,7 +264,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3100
       RPCUSER: test
@@ -310,7 +309,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3100
       RPCUSER: test
@@ -354,7 +352,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3100
       RPCUSER: test
@@ -391,7 +388,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3200
       RPCUSER: test
@@ -446,7 +442,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3200
       RPCUSER: test
@@ -504,7 +499,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3200
       RPCUSER: test
@@ -551,7 +545,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3200
       RPCUSER: test
@@ -598,7 +591,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3200
       RPCUSER: test
@@ -643,7 +635,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3200
       RPCUSER: test
@@ -682,7 +673,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3300
       RPCUSER: test
@@ -737,7 +727,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3300
       RPCUSER: test
@@ -795,7 +784,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3300
       RPCUSER: test
@@ -842,7 +830,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3300
       RPCUSER: test
@@ -889,7 +876,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3300
       RPCUSER: test
@@ -934,7 +920,6 @@ jobs:
     environment:
       REGISTRY: r.cfcr.io
       IMAGE_NAME: ludx/dapp-shell-ci
-      DISCORD_URL: https://discordapp.com/api/webhooks/405329233720639488/dWkcjRhtGBfMJjV29158ZavOWMno7FXAPBEVuGDrVnGYI5rcRG_pMDPveaGhyUlGLbRR
       APP_HOST: http://localhost
       APP_PORT: 3300
       RPCUSER: test
