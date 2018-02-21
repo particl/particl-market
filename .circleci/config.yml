@@ -10,7 +10,6 @@ workflows:
       - build_feature:
           filters:
             branches:
-              only: /.*/
               ignore:
                 - develop
                 - master
