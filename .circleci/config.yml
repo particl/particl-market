@@ -52,6 +52,7 @@ workflows:
           requires:
             - build_develop
       - deploy_develop:
+          requires:
             - unit_test_develop
             - integration_test_develop
             - blackbox_test_develop
@@ -75,11 +76,12 @@ workflows:
       - ui_test_master:
           requires:
             - build_master
-#      - deploy_master:
-#            - unit_test_master
-#            - integration_test_master
-#            - blackbox_test_master
-#            - ui_test_master
+      - deploy_master:
+          requires:
+            - unit_test_master
+            - integration_test_master
+            - blackbox_test_master
+            - ui_test_master
 
 
 defaults: &defaults
