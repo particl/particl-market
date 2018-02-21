@@ -6,6 +6,8 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
+import { MessageException } from '../../src/api/exceptions/MessageException';
+
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ListingItem } from '../../src/api/models/ListingItem';
@@ -1432,4 +1434,5 @@ describe('ListingItem', () => {
             expect(e).toEqual(new NotFoundException(createdId))
         );
     });
+
 });
