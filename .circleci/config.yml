@@ -27,6 +27,7 @@ workflows:
           requires:
             - build_feature
       - deploy_feature:
+          type: approval
           requires:
             - unit_test_feature
             - integration_test_feature
