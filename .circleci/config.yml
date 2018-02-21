@@ -25,13 +25,16 @@ workflows:
       - ui_test_feature:
           requires:
             - build_feature
-      - deploy_feature:
+      - hodl:
           type: approval
           requires:
             - unit_test_feature
             - integration_test_feature
             - blackbox_test_feature
             - ui_test_feature
+      - deploy_feature:
+          requires:
+            - hodl
 
   build_test_deploy_develop:
     jobs:
@@ -51,13 +54,16 @@ workflows:
       - ui_test_develop:
           requires:
             - build_develop
-      - deploy_develop:
+      - hodl:
           type: approval
           requires:
             - unit_test_develop
             - integration_test_develop
             - blackbox_test_develop
             - ui_test_develop
+      - deploy_develop:
+          requires:
+            - hodl
 
   build_test_deploy_master:
     jobs:
@@ -77,13 +83,15 @@ workflows:
       - ui_test_master:
           requires:
             - build_master
-      - deploy_master:
-          type: approval
+      - hodl:
           requires:
             - unit_test_master
             - integration_test_master
             - blackbox_test_master
             - ui_test_master
+      - deploy_master:
+          requires:
+            - hodl
 
 
 defaults: &defaults
@@ -839,3 +847,18 @@ jobs:
       - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
 
+  hodl:
+    <<: *defaults
+    docker:
+      - image: circleci/node:9.5.0-browsers
+    environment:
+      <<: *commonenv
+    steps:
+      - attach_workspace:
+          at: ~/dappshell
+      - restore_cache:
+          keys:
+          - dappshell-dependencies-{{ checksum "package.json" }}
+          # fallback to using the latest cache if no exact match is found
+          - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Hodl! Waiting approval for deployment $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
