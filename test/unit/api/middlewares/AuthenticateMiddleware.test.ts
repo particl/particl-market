@@ -15,7 +15,7 @@ describe('AuthenticateMiddleware', () => {
         process.env.AUTH0_HOST = 'test';
         request = jest.fn();
         authenticate = new AuthenticateMiddleware(LogMock, request);
-        authToken = 'Basic ' + new Buffer(process.env.USER_NAME + ':' + process.env.USER_PASSWORD).toString('base64');
+        authToken = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         res = {
             failed: jest.fn()
         };

@@ -15,10 +15,11 @@ export class RpcMiddleware implements interfaces.Middleware {
 
     public use = (req: myExpress.Request, res: myExpress.Response, next: myExpress.NextFunction): void => {
         // validate rpc request
-        if (!this.isValidVersionTwoRequest(req)) {
+        if (this.isValidVersionTwoRequest(req)) {
+            next();
+        } else {
             return res.failed(400, 'Invalid JSON-RPC 2.0 request');
         }
-        next();
     }
 
     public isValidVersionTwoRequest(request: myExpress.Request): boolean {

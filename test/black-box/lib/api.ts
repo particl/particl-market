@@ -19,7 +19,7 @@ export const api = async <T> ( method: string, path: string, options: ApiOptions
     const HOST = options.host ? options.host : process.env.APP_HOST;
     const PORT = options.port ? options.port : process.env.APP_PORT;
     const uri = `${HOST}:${PORT}${path}`;
-    const auth = 'Basic ' + new Buffer(process.env.USER_NAME + ':' + process.env.USER_PASSWORD).toString('base64');
+    const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
 
     if (!_.has(options, 'headers')) {
         options.headers = {};
