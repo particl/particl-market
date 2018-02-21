@@ -54,7 +54,7 @@ workflows:
             - build_develop
       - deploy_develop:
           type: approval
-s          requires:
+          requires:
             - unit_test_develop
             - integration_test_develop
             - blackbox_test_develop
