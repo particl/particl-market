@@ -294,7 +294,7 @@ export class ListingItemService {
      * post a ListingItem based on a given ListingItem as ListingItemMessage
      *
      * @param data
-     * @returns {Promise<any>}
+     * @returns {Promise<void>}
      */
     @validate()
     public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<void> {
@@ -323,7 +323,7 @@ export class ListingItemService {
      * update a ListingItem based on a given ListingItem as ListingItemUpdateMessage
      *
      * @param data
-     * @returns {Promise<any>}
+     * @returns {Promise<void>}
      */
     @validate()
     public async updatePostItem( @request(ListingItemUpdatePostRequest) data: ListingItemUpdatePostRequest): Promise<void> {
