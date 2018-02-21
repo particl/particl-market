@@ -217,6 +217,7 @@ export class TestDataService {
             'markets',
             'users',     // todo: not needed
             'price_ticker',
+            'flagged_items',
             'currency_prices'
         ];
 
