@@ -91,6 +91,8 @@ defaults: &defaults
   working_directory: ~/dappshell
 
 commonenv: &commonenv
+  APP_HOST: http://localhost
+  APP_PORT: 3100
   REGISTRY: r.cfcr.io
   IMAGE_NAME: ludx/dapp-shell-ci
   RPCUSER: test
@@ -118,8 +120,6 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3100
       <<: *commonenv
     steps:
       - checkout
@@ -165,8 +165,6 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3100
       <<: *commonenv
 
     steps:
@@ -192,7 +190,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       # - run: node --version
       # - run: docker logs app1
@@ -216,8 +214,6 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3100
       <<: *commonenv
     steps:
       - attach_workspace:
@@ -242,7 +238,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
@@ -255,8 +251,6 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3100
       <<: *commonenv
     steps:
       - attach_workspace:
@@ -281,7 +275,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
@@ -294,8 +288,6 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3100
       <<: *commonenv
     steps:
       - attach_workspace:
@@ -320,7 +312,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
@@ -331,8 +323,6 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3100
       <<: *commonenv
     steps:
       - attach_workspace:
@@ -361,8 +351,6 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3200
       <<: *commonenv
 
     steps:
@@ -409,8 +397,6 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3200
       <<: *commonenv
 
     steps:
@@ -436,7 +422,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       # - run: node --version
       # - run: docker logs app1
@@ -460,8 +446,6 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3200
       <<: *commonenv
 
     steps:
@@ -487,7 +471,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
@@ -500,8 +484,6 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3200
       <<: *commonenv
 
     steps:
@@ -527,7 +509,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
@@ -540,8 +522,6 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3200
       <<: *commonenv
 
     steps:
@@ -567,7 +547,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
@@ -578,8 +558,6 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3200
       <<: *commonenv
 
     steps:
@@ -610,8 +588,6 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3300
       <<: *commonenv
 
     steps:
@@ -658,8 +634,6 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3300
       <<: *commonenv
 
     steps:
@@ -685,7 +659,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       # - run: node --version
       # - run: docker logs app1
@@ -709,8 +683,6 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3300
       <<: *commonenv
 
     steps:
@@ -736,7 +708,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
@@ -749,8 +721,6 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3300
       <<: *commonenv
 
     steps:
@@ -776,7 +746,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
@@ -789,8 +759,6 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3300
       <<: *commonenv
 
     steps:
@@ -816,7 +784,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
@@ -827,8 +795,6 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      APP_HOST: http://localhost
-      APP_PORT: 3300
       <<: *commonenv
 
     steps:
