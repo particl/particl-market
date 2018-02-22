@@ -6,11 +6,7 @@ export class LocationMarker extends Bookshelf.Model<LocationMarker> {
     public static async fetchById(value: number, withRelated: boolean = true): Promise<LocationMarker> {
         if (withRelated) {
             return await LocationMarker.where<LocationMarker>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'LocationMarkerRelated',
-                    // 'LocationMarkerRelated.Related'
-                ]
+                withRelated: []
             });
         } else {
             return await LocationMarker.where<LocationMarker>({ id: value }).fetch();

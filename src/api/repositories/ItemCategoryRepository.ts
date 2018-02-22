@@ -55,7 +55,6 @@ export class ItemCategoryRepository {
     public async update(id: number, data: any, patching: boolean = true): Promise<ItemCategory> {
         const itemCategory = this.ItemCategoryModel.forge<ItemCategory>({ id });
         try {
-            // this.log.debug('data: ', data);
 
             const itemCategoryUpdated = await itemCategory.save(data, { defaults: true, patch: patching });
             return await this.ItemCategoryModel.fetchById(itemCategoryUpdated.id);

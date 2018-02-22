@@ -73,9 +73,4 @@ export class Bid extends Bookshelf.Model<Bid> {
     public BidData(): Collection<BidData> {
        return this.hasMany(BidData, 'bid_id', 'id');
     }
-
-    // TODO: add related
-    // public BidRelated(): BidRelated {
-    //    return this.hasOne(BidRelated);
-    // }
 }
