@@ -35,8 +35,4 @@ export class EscrowRatio extends Bookshelf.Model<EscrowRatio> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public EscrowRatioRelated(): EscrowRatioRelated {
-    //    return this.hasOne(EscrowRatioRelated);
-    // }
 }

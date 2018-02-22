@@ -10,7 +10,6 @@ workflows:
       - build_feature:
           filters:
             branches:
-              only: /.*/
               ignore:
                 - develop
                 - master
@@ -26,12 +25,16 @@ workflows:
       - ui_test_feature:
           requires:
             - build_feature
-      - deploy_feature:
+      - hodl:
+          type: approval
           requires:
             - unit_test_feature
             - integration_test_feature
             - blackbox_test_feature
             - ui_test_feature
+      - deploy_feature:
+          requires:
+            - hodl
 
   build_test_deploy_develop:
     jobs:
@@ -51,12 +54,16 @@ workflows:
       - ui_test_develop:
           requires:
             - build_develop
-      - deploy_develop:
+      - hodl:
+          type: approval
           requires:
             - unit_test_develop
             - integration_test_develop
             - blackbox_test_develop
             - ui_test_develop
+      - deploy_develop:
+          requires:
+            - hodl
 
   build_test_deploy_master:
     jobs:
@@ -76,16 +83,31 @@ workflows:
       - ui_test_master:
           requires:
             - build_master
-      - deploy_master:
+      - hodl:
           requires:
             - unit_test_master
             - integration_test_master
             - blackbox_test_master
             - ui_test_master
+      - deploy_master:
+          requires:
+            - hodl
 
 
 defaults: &defaults
   working_directory: ~/dappshell
+
+commonenv: &commonenv
+  APP_HOST: http://localhost
+  APP_PORT: 3100
+  REGISTRY: r.cfcr.io
+  IMAGE_NAME: ludx/dapp-shell-ci
+  RPCUSER: test
+  RPCPASSWORD: test
+  RPCHOSTNAME: circle.particl.xyz
+  MAINNET_PORT: 58738
+  TESTNET_PORT: 58935
+
 
 # -------------------------------------------------------------------
 #   BRANCH ENV VARS
@@ -105,18 +127,10 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
+      <<: *commonenv
     steps:
       - checkout
-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       # download and cache dependencies
       - restore_cache:
           keys:
@@ -158,15 +172,8 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
+      <<: *commonenv
+
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -174,6 +181,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -190,7 +198,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       # - run: node --version
       # - run: docker logs app1
@@ -214,15 +222,7 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
+      <<: *commonenv
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -230,6 +230,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -246,7 +247,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
@@ -259,15 +260,7 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
+      <<: *commonenv
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -275,6 +268,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -291,7 +285,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
@@ -304,15 +298,7 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
+      <<: *commonenv
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -320,6 +306,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -336,7 +323,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
@@ -347,15 +334,7 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3100
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: feature1.particl.xyz
-      MAINNET_PORT: 52738
-      TESTNET_PORT: 52935
+      <<: *commonenv
     steps:
       - attach_workspace:
           at: ~/dappshell
@@ -364,6 +343,7 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
@@ -372,6 +352,7 @@ jobs:
       - run: docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:feature" -f Dockerfile.ci .
       - run: docker push $REGISTRY/$IMAGE_NAME:feature
       - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellfeature-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-feature.yml;
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
 # -------------------------------------------------------------------
 #   DEVELOP JOB
@@ -383,18 +364,11 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3200
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: dev1.particl.xyz
-      MAINNET_PORT: 54738
-      TESTNET_PORT: 54935
+      <<: *commonenv
 
     steps:
       - checkout
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
 
       # download and cache dependencies
       - restore_cache:
@@ -437,15 +411,7 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3200
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: dev1.particl.xyz
-      MAINNET_PORT: 54738
-      TESTNET_PORT: 54935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -454,6 +420,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -470,7 +437,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       # - run: node --version
       # - run: docker logs app1
@@ -494,15 +461,7 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3200
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: dev1.particl.xyz
-      MAINNET_PORT: 54738
-      TESTNET_PORT: 54935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -511,6 +470,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -527,7 +487,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
@@ -540,15 +500,7 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3200
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: dev1.particl.xyz
-      MAINNET_PORT: 54738
-      TESTNET_PORT: 54935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -557,6 +509,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -573,7 +526,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
@@ -586,15 +539,7 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3200
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: dev1.particl.xyz
-      MAINNET_PORT: 54738
-      TESTNET_PORT: 54935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -603,6 +548,7 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - run:
           name: apt-get updates
           command: |
@@ -619,7 +565,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
@@ -630,15 +576,7 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3200
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: dev1.particl.xyz
-      MAINNET_PORT: 54738
-      TESTNET_PORT: 54935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -648,6 +586,7 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
@@ -656,6 +595,7 @@ jobs:
       - run: docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:develop" -f Dockerfile.ci .
       - run: docker push $REGISTRY/$IMAGE_NAME:develop
       - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshelldev-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-develop.yml;
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"
 
 
 # -------------------------------------------------------------------
@@ -668,18 +608,11 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3300
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: master1.particl.xyz
-      MAINNET_PORT: 56738
-      TESTNET_PORT: 56935
+      <<: *commonenv
 
     steps:
       - checkout
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Building $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
 
       # download and cache dependencies
       - restore_cache:
@@ -722,15 +655,7 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3300
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: master1.particl.xyz
-      MAINNET_PORT: 56738
-      TESTNET_PORT: 56935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -739,6 +664,8 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running unit tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - run:
           name: apt-get updates
           command: |
@@ -755,7 +682,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       # - run: node --version
       # - run: docker logs app1
@@ -779,15 +706,7 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3300
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: master1.particl.xyz
-      MAINNET_PORT: 56738
-      TESTNET_PORT: 56935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -796,6 +715,8 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running integration tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - run:
           name: apt-get updates
           command: |
@@ -812,7 +733,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
@@ -825,15 +746,7 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3300
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: master1.particl.xyz
-      MAINNET_PORT: 56738
-      TESTNET_PORT: 56935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -842,6 +755,8 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running blackbox tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - run:
           name: apt-get updates
           command: |
@@ -858,7 +773,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
@@ -871,15 +786,7 @@ jobs:
       enabled: true
       image: circleci/classic:latest
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3300
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: master1.particl.xyz
-      MAINNET_PORT: 56738
-      TESTNET_PORT: 56935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -888,6 +795,8 @@ jobs:
           keys:
           - dappshell-dependencies-{{ checksum "package.json" }}
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Running ui tests $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - run:
           name: apt-get updates
           command: |
@@ -904,7 +813,7 @@ jobs:
       - run: ./dockerize -wait tcp://$RPCHOSTNAME:$TESTNET_PORT -timeout 30s
       - run: docker login $REGISTRY -u $REGISTRY_USER -p $REGISTRY_PASS
       - run: docker run -d --name app1 --net=host --env-file .env.circle.app1 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
-      - run: ./dockerize -wait http://localhost:3100/cli -timeout 180s
+      - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
@@ -915,15 +824,7 @@ jobs:
     docker:
       - image: circleci/node:9.5.0-browsers
     environment:
-      REGISTRY: r.cfcr.io
-      IMAGE_NAME: ludx/dapp-shell-ci
-      APP_HOST: http://localhost
-      APP_PORT: 3300
-      RPCUSER: test
-      RPCPASSWORD: test
-      RPCHOSTNAME: master1.particl.xyz
-      MAINNET_PORT: 56738
-      TESTNET_PORT: 56935
+      <<: *commonenv
 
     steps:
       - attach_workspace:
@@ -933,6 +834,8 @@ jobs:
           - dappshell-dependencies-{{ checksum "package.json" }}
           # fallback to using the latest cache if no exact match is found
           - dappshell-dependencies-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deploying $CIRCLE_BUILD_URL" "CircleCI" "$DISCORD_URL"
+
       - setup_remote_docker:
           docker_layer_caching: true
           version: 17.11.0-ce
@@ -941,5 +844,4 @@ jobs:
       - run: docker build --pull --cache-from "$REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1" --tag "$REGISTRY/$IMAGE_NAME:master" -f Dockerfile.ci .
       - run: docker push $REGISTRY/$IMAGE_NAME:master
       - run: docker run --entrypoint "./kontena-stack-upgrade.sh" r.cfcr.io/ludx/codefresh-custom-runner ruth-master gridsteri dappshellmaster-stack git@github.com:particl/dapp-shell.git $CIRCLE_BRANCH kontena-master.yml;
-
-
+      - run: ./bin/ci-post.sh "[$CIRCLE_BRANCH] Deployed http://feature.particl.xyz/cli" "CircleCI" "$DISCORD_URL"

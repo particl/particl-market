@@ -4,11 +4,14 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { MessageException } from '../exceptions/MessageException';
 import { FavoriteItemRepository } from '../repositories/FavoriteItemRepository';
 import { FavoriteItem } from '../models/FavoriteItem';
 import { FavoriteItemCreateRequest } from '../requests/FavoriteItemCreateRequest';
 import { FavoriteItemUpdateRequest } from '../requests/FavoriteItemUpdateRequest';
 import { FavoriteSearchParams } from '../requests/FavoriteSearchParams';
+import { ListingItemService } from './ListingItemService';
+import { ProfileService } from './ProfileService';
 
 export class FavoriteItemService {
 
@@ -16,6 +19,8 @@ export class FavoriteItemService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.FavoriteItemRepository) public favoriteItemRepo: FavoriteItemRepository,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -44,7 +49,8 @@ export class FavoriteItemService {
     @validate()
     public async search(
         @request(FavoriteSearchParams) options: FavoriteSearchParams): Promise<FavoriteItem> {
-        return this.favoriteItemRepo.search(options);
+        const searchParams = await this.checkSearchByItemHashOrProfileName(options);
+        return this.favoriteItemRepo.search(searchParams);
     }
 
 
@@ -74,5 +80,33 @@ export class FavoriteItemService {
 
     public async destroy(id: number): Promise<void> {
         await this.favoriteItemRepo.destroy(id);
+    }
+
+    /**
+     * search favorite item using given FavoriteSearchParams
+     * when itemId is string then find by item hash
+     * when profileId is string then find by profile name
+     *
+     * @param options
+     * @returns {Promise<FavoriteSearchParams> }
+     */
+
+    private async checkSearchByItemHashOrProfileName(options: FavoriteSearchParams): Promise<FavoriteSearchParams> {
+
+        // if options.itemId is string then find by hash
+        if (typeof options.itemId === 'string') {
+            const listingItem = await this.listingItemService.findOneByHash(options.itemId);
+            options.itemId = listingItem.id;
+        }
+        // if options.profileId is string then find by profile name
+        if (typeof options.profileId === 'string') {
+            const profile = await this.profileService.findOneByName(options.profileId);
+            if (profile === null) {
+                throw new MessageException(`Profile not found for the given name = ${options.profileId}`);
+            }
+            options.profileId = profile.id;
+        }
+
+        return options;
     }
 }

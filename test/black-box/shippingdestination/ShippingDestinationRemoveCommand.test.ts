@@ -1,7 +1,6 @@
 import { rpc, api } from '../lib/api';
 import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { ShippingDestinationRemoveCommand } from '../../../src/api/commands/shippingdestination/ShippingDestinationRemoveCommand';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';

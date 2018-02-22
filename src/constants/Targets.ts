@@ -18,6 +18,7 @@ export const Targets = {
         Escrow: 'Escrow',
         EscrowRatio: 'EscrowRatio',
         FavoriteItem: 'FavoriteItem',
+        FlaggedItem: 'FlaggedItem',
         ItemCategory: 'ItemCategory',
         ItemImage: 'ItemImage',
         ItemImageData: 'ItemImageData',
@@ -48,6 +49,7 @@ export const Targets = {
         EscrowRatioRepository: 'EscrowRatioRepository',
         EscrowRepository: 'EscrowRepository',
         FavoriteItemRepository: 'FavoriteItemRepository',
+        FlaggedItemRepository: 'FlaggedItemRepository',
         ItemCategoryRepository: 'ItemCategoryRepository',
         ItemImageDataRepository: 'ItemImageDataRepository',
         ItemImageRepository: 'ItemImageRepository',
@@ -82,6 +84,7 @@ export const Targets = {
         EscrowRatioService: 'EscrowRatioService',
         EscrowService: 'EscrowService',
         FavoriteItemService: 'FavoriteItemService',
+        FlaggedItemService: 'FlaggedItemService',
         ItemCategoryService: 'ItemCategoryService',
         ItemImageDataService: 'ItemImageDataService',
         ItemImageService: 'ItemImageService',
@@ -183,7 +186,8 @@ export const Targets = {
             ListingItemGetCommand: 'ListingItemGetCommand',
             ListingItemRootCommand: 'ListingItemRootCommand',
             ListingItemSearchCommand: 'ListingItemSearchCommand',
-            ListingItemUpdateCommand: 'ListingItemUpdateCommand'
+            ListingItemUpdateCommand: 'ListingItemUpdateCommand',
+            ListingItemFlagCommand: 'ListingItemFlagCommand'
         },
         listingitemobject: {
             ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
@@ -209,6 +213,9 @@ export const Targets = {
         paymentinformation: {
             PaymentInformationRootCommand: 'PaymentInformationRootCommand',
             PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'
+        },
+        priceticker: {
+            PriceTickerRootCommand: 'PriceTickerRootCommand'
         },
         profile: {
             ProfileCreateCommand: 'ProfileCreateCommand',
@@ -239,9 +246,6 @@ export const Targets = {
             ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
-        },
-        priceticker: {
-            PriceTickerRootCommand: 'PriceTickerRootCommand'
         },
         currencyprice: {
             CurrencyPriceRootCommand: 'CurrencyPriceRootCommand'
@@ -289,6 +293,7 @@ export const Targets = {
         EscrowController: 'EscrowController',
         EscrowRatioController: 'EscrowRatioController',
         FavoriteItemController: 'FavoriteItemController',
+        FlaggedItemController: 'FlaggedItemController',
         ItemCategoryController: 'ItemCategoryController',
         ItemImageController: 'ItemImageController',
         ItemImageDataController: 'ItemImageDataController',

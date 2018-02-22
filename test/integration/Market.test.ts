@@ -47,10 +47,6 @@ describe('Market', () => {
 
     });
 
-    // afterAll(async () => {
-    //     //
-    // });
-
     it('Should create a new market', async () => {
         const marketModel: Market = await marketService.create(testData);
         createdId = marketModel.Id;

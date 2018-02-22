@@ -42,7 +42,6 @@ export class CryptocurrencyAddressService {
             this.log.error('CryptocurrencyAddressService.create(): ', e);
             throw e;
         });
-        // this.log.debug('CryptocurrencyAddressService created: ', JSON.stringify(cryptocurrencyAddress.toJSON(), null, 2));
 
         // finally find and return the created cryptocurrencyAddress
         return await this.findOne(cryptocurrencyAddress.Id);

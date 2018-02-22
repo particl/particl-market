@@ -8,11 +8,7 @@ export class FavoriteItem extends Bookshelf.Model<FavoriteItem> {
     public static async fetchById(value: number, withRelated: boolean = true): Promise<FavoriteItem> {
         if (withRelated) {
             return await FavoriteItem.where<FavoriteItem>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'FavoriteItemRelated',
-                    // 'FavoriteItemRelated.Related'
-                ]
+                withRelated: []
             });
         } else {
             return await FavoriteItem.where<FavoriteItem>({ id: value }).fetch();
@@ -49,9 +45,4 @@ export class FavoriteItem extends Bookshelf.Model<FavoriteItem> {
     public ListingItem(): ListingItem {
       return this.belongsTo(ListingItem, 'listing_item_id', 'id');
     }
-
-    // TODO: add related
-    // public FavoriteItemRelated(): FavoriteItemRelated {
-    //    return this.hasOne(FavoriteItemRelated);
-    // }
 }
