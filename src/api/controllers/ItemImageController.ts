@@ -4,9 +4,11 @@ import { Types, Core, Targets } from '../../constants';
 import { app } from '../../app';
 import { ItemImageService } from '../services/ItemImageService';
 import { Logger as LoggerType } from '../../core/Logger';
+import sharp = require('sharp');
+import * as _ from 'lodash';
 
 // Get middlewares
-const restApi = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RestApiMiddleware);
+const restApi = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.AuthenticateMiddleware);
 
 @controller('/item-images', restApi.use)
 export class ItemImageController {
@@ -53,5 +55,29 @@ export class ItemImageController {
         this.log.debug('destroy: ', parseInt(id, 10));
         return res.destroyed();
     }
-    // Implement your routes here
+
+    @httpGet('/:id/:imageVersion')
+    public async publishImage( @response() res: myExpress.Response, @requestParam('id') id: string, @requestParam('imageVersion')
+      imageVersion: string): Promise<any> {
+
+      // find the itemImage by id
+      const itemImage = await this.itemImageService.findOne(parseInt(id, 10));
+
+      const itemImageResult = itemImage.toJSON();
+
+      // search the itemImageData like params image version
+      const imgVersion = await _.find(itemImageResult.ItemImageDatas, data => data['imageVersion'] === imageVersion);
+
+      if (itemImage === null || itemImageResult.ItemImageDatas.length === 0 || !imgVersion) {
+        res.status(404).send('Image Not found');
+      } else {
+        const dataBuffer = new Buffer(imgVersion['data'], 'base64');
+        const imageBuffer = sharp(dataBuffer);
+        const newInfo = await imageBuffer.metadata();
+        res.setHeader('Content-Disposition', 'filename=' + imageVersion + '.'
+          + newInfo.format );
+        res.send(dataBuffer);
+      }
+    }
 }
+
