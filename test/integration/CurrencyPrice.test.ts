@@ -188,6 +188,21 @@ describe('CurrencyPrice', () => {
         expect(createdCurrencyPrice.id).toBe(currencyPriceModel.id);
     });
 
+    test('Should return null search result because invalid from currency', async () => {
+        const currencyPriceModel = await currencyPriceService.search({from: 'INR', to: 'USD'} as CurrencyPriceParams);
+        expect(currencyPriceModel).toBe(null);
+    });
+
+    test('Should return null search result because not supported to currency', async () => {
+        const currencyPriceModel = await currencyPriceService.search({from: 'PART', to: 'TEST'} as CurrencyPriceParams);
+        expect(currencyPriceModel).toBe(null);
+    });
+
+    test('Should return null search result because currency price does not exist in the db for the given to currency', async () => {
+        const currencyPriceModel = await currencyPriceService.search({from: 'PART', to: 'PKR'} as CurrencyPriceParams);
+        expect(currencyPriceModel).toBe(null);
+    });
+
     test('Should delete the currency price', async () => {
         expect.assertions(1);
         await currencyPriceService.destroy(createdId);

@@ -10,6 +10,7 @@ import { ListingItemService } from '../../src/api/services/ListingItemService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
+import { MessageException } from '../../src/api/exceptions/MessageException';
 
 import { FavoriteItem } from '../../src/api/models/FavoriteItem';
 import { ListingItem } from '../../src/api/models/ListingItem';
@@ -17,6 +18,7 @@ import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequ
 
 import { FavoriteItemCreateRequest } from '../../src/api/requests/FavoriteItemCreateRequest';
 import { FavoriteItemUpdateRequest } from '../../src/api/requests/FavoriteItemUpdateRequest';
+import { FavoriteSearchParams } from '../../src/api/requests/FavoriteSearchParams';
 
 describe('FavoriteItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -56,6 +58,8 @@ describe('FavoriteItem', () => {
 
         // listing-item
         defaultProfile = await profileService.getDefault();
+        defaultProfile = defaultProfile.toJSON();
+
         const defaultMarket = await marketService.getDefault();
         createdListingItem = await testDataService.create<ListingItem>({
             model: 'listingitem',
@@ -65,6 +69,7 @@ describe('FavoriteItem', () => {
             } as any,
             withRelated: true
         } as TestDataCreateRequest);
+        createdListingItem = createdListingItem.toJSON();
     });
 
     afterAll(async () => {
@@ -122,7 +127,6 @@ describe('FavoriteItem', () => {
         );
     });
 
-
     test('Should update the favorite item', async () => {
         testDataUpdated.profile_id = defaultProfile.id;
         testDataUpdated.listing_item_id = createdListingItem.id;
@@ -132,6 +136,87 @@ describe('FavoriteItem', () => {
         // test the values
         expect(result.profileId).toBe(defaultProfile.id);
         expect(result.listingItemId).toBe(createdListingItem.id);
+    });
+
+    test('Should return empty favorite item search result because invalid profile id or item id', async () => {
+        testDataUpdated.profile_id = defaultProfile.id;
+        testDataUpdated.listing_item_id = createdListingItem.id;
+        const favoriteItemModel: FavoriteItem = await favoriteItemService.search({profileId: 0, itemId: 0} as FavoriteSearchParams);
+        expect(favoriteItemModel).toBe(null);
+    });
+
+    test('Should return empty favorite item search result because invalid profile id', async () => {
+        testDataUpdated.profile_id = defaultProfile.id;
+        testDataUpdated.listing_item_id = createdListingItem.id;
+        const favoriteItemModel: FavoriteItem = await favoriteItemService.search({profileId: 0, itemId: createdListingItem.id} as FavoriteSearchParams);
+        expect(favoriteItemModel).toBe(null);
+    });
+
+    test('Should return empty favorite item search result because invalid item id', async () => {
+        testDataUpdated.profile_id = defaultProfile.id;
+        testDataUpdated.listing_item_id = createdListingItem.id;
+        const favoriteItemModel: FavoriteItem = await favoriteItemService.search({profileId: defaultProfile.id, itemId: 0} as FavoriteSearchParams);
+        expect(favoriteItemModel).toBe(null);
+    });
+
+    test('Should search favorite item by profile id and item id', async () => {
+        testDataUpdated.profile_id = defaultProfile.id;
+        testDataUpdated.listing_item_id = createdListingItem.id;
+        const favoriteItemModel: FavoriteItem = await favoriteItemService.search({profileId: defaultProfile.id,
+            itemId: createdListingItem.id} as FavoriteSearchParams);
+        expect(favoriteItemModel).not.toBe(null);
+        const result = favoriteItemModel.toJSON();
+        expect(result.profileId).toBe(defaultProfile.id);
+        expect(result.listingItemId).toBe(createdListingItem.id);
+    });
+
+    test('Should search favorite item by profile name and item id', async () => {
+        testDataUpdated.profile_id = defaultProfile.id;
+        testDataUpdated.listing_item_id = createdListingItem.id;
+        const favoriteItemModel: FavoriteItem = await favoriteItemService.search({profileId: defaultProfile.name,
+            itemId: createdListingItem.id} as FavoriteSearchParams);
+        expect(favoriteItemModel).not.toBe(null);
+        const result = favoriteItemModel.toJSON();
+        expect(result.profileId).toBe(defaultProfile.id);
+        expect(result.listingItemId).toBe(createdListingItem.id);
+    });
+
+    test('Should search favorite item by profile id and item hash', async () => {
+        testDataUpdated.profile_id = defaultProfile.id;
+        testDataUpdated.listing_item_id = createdListingItem.id;
+        const favoriteItemModel: FavoriteItem = await favoriteItemService.search({profileId: defaultProfile.id,
+            itemId: createdListingItem.hash} as FavoriteSearchParams);
+        expect(favoriteItemModel).not.toBe(null);
+        const result = favoriteItemModel.toJSON();
+        expect(result.profileId).toBe(defaultProfile.id);
+        expect(result.listingItemId).toBe(createdListingItem.id);
+    });
+
+    test('Should search favorite item by profile name and item hash', async () => {
+        testDataUpdated.profile_id = defaultProfile.id;
+        testDataUpdated.listing_item_id = createdListingItem.id;
+        const favoriteItemModel: FavoriteItem = await favoriteItemService.search({profileId: defaultProfile.name,
+            itemId: createdListingItem.hash} as FavoriteSearchParams);
+        expect(favoriteItemModel).not.toBe(null);
+        const result = favoriteItemModel.toJSON();
+        expect(result.profileId).toBe(defaultProfile.id);
+        expect(result.listingItemId).toBe(createdListingItem.id);
+    });
+
+    test('Should throw ValidationException because we want to search by invalid item hash', async () => {
+        expect.assertions(1);
+        await favoriteItemService.search({profileId: defaultProfile.name,
+            itemId: 'TEST HASH'} as FavoriteSearchParams).catch(e =>
+            expect(e).toEqual(new NotFoundException('TEST HASH'))
+        );
+    });
+
+    test('Should throw MessageException because we want to search by invalid profile name', async () => {
+        expect.assertions(1);
+        await favoriteItemService.search({profileId: 'TEST PROFILE NAME',
+            itemId: createdListingItem.id} as FavoriteSearchParams).catch(e =>
+            expect(e).toEqual(new MessageException('Profile not found for the given name = TEST PROFILE NAME'))
+        );
     });
 
     test('Should delete the favorite item', async () => {
