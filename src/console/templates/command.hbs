@@ -5,12 +5,13 @@ import { Types, Core, Targets } from '../../{{deepness}}constants';
 import { {{name.capitalize}}Service } from '../{{deepness}}services/{{name.capitalize}}Service';
 import { RpcRequest } from '../{{deepness}}requests/RpcRequest';
 import { {{name.capitalize}} } from '../{{deepness}}models/{{name.capitalize}}';
-import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
-import { BaseCommand } from '../BaseCommand';
-import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
+import { RpcCommandInterface } from './RpcCommandInterface';
+import { Commands } from './CommandEnumType';
+import { BaseCommand } from './BaseCommand';
+import { RpcCommandFactory } from '../factories/RpcCommandFactory';
+import { NotFoundException } from '../exceptions/NotFoundException';
 
-export class {{name.capitalize}}Command implements RpcCommand<{{name.capitalize}}> {
+export class {{name.capitalize}}Command extends BaseCommand implements RpcCommandInterface<{{name.capitalize}}> {
 
     public log: LoggerType;
 
@@ -19,16 +20,16 @@ export class {{name.capitalize}}Command implements RpcCommand<{{name.capitalize}
     ) {
         super(Commands.CHANGE_THIS);
         this.log = new Logger(__filename);
-        this.name = '{{name.capitalize}}';//TODO: replace me with the command name
+        this.name = '{{name.capitalize}}'; // TODO: replace me with the command name
     }
 
     /**
-    * command description
-    *
-    * @param data, RpcRequest
-    * @param rpcCommandFactory, RpcCommandFactory
-    * @returns {Promise<any>}
-    */
+     * command description
+     *
+     * @param data, RpcRequest
+     * @param rpcCommandFactory, RpcCommandFactory
+     * @returns {Promise<any>}
+     */
     @validate()
     public async execute( @request(RpcRequest) data: any): Promise<{{name.capitalize}}> {
         throw new NotFoundException();
@@ -38,6 +39,9 @@ export class {{name.capitalize}}Command implements RpcCommand<{{name.capitalize}
 
     public help(): string {
         return this.getName() + ' TODO: (command param help)';
-        return '{{name.capitalize}}Command: TODO: Fill in help string.';
+    }
+
+    public description(): string {
+        return 'Commands for managing {{name.capitalize}}Command.';
     }
 }

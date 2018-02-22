@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import { api } from './lib/api';
+import { api, rpc } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 
@@ -12,44 +12,8 @@ describe('/ProfileGetCommand', () => {
         'id', 'name', 'updatedAt', 'createdAt'
     ];
 
-    const testData = {
-        method,
-        params: [
-            Commands.PROFILE_ADD.commandName, 'DEFAULT-PROFILE', 'DEFAULT-PROFILE-ADDRESS'
-        ],
-        jsonrpc: '2.0'
-    };
-
-    const testData2 = {
-        name: 'DEFAULT-PROFILE-NAME',
-        address: 'DEFAULT-ADDRESS',
-        shippingAddresses: [{
-            title: 'Title',
-            addressLine1: 'Add',
-            addressLine2: 'ADD 22',
-            city: 'city',
-            state: 'test state',
-            country: 'Sweden',
-            zipCode: '85001'
-        }, {
-            title: 'Tite',
-            addressLine1: 'Ad',
-            addressLine2: 'ADD 222',
-            city: 'city',
-            state: 'test state 2',
-            country: 'Finland',
-            zipCode: '85001'
-        }]
-    };
-
-    const testDataGet = {
-        method,
-        params: [
-            subCommand,
-            '0'
-        ],
-        jsonrpc: '2.0'
-    };
+    const profileName = 'DEFAULT-TEST-PROFILE';
+    const profileAddress = 'DEFAULT-TEST-ADDRESS';
 
     let createdId;
     beforeAll(async () => {
@@ -58,59 +22,55 @@ describe('/ProfileGetCommand', () => {
 
     test('Should return one profile by ID', async () => {
         // created profile
-        const res = await api('POST', '/api/rpc', {
-            body: testData
-        });
+        const res = await rpc(method, [Commands.PROFILE_ADD.commandName, profileName, profileAddress]);
+        // call rpc api
         res.expectJson();
         res.expectStatusCode(200);
         res.expectDataRpc(keys);
         const result: object = res.getBody()['result'];
         createdId = result['id'];
-
         // get profile
-        testDataGet.params[1] = createdId;
-        const resMain = await api('POST', '/api/rpc', {
-            body: testDataGet
-        });
+        const resMain = await rpc(method, [subCommand, createdId]);
         resMain.expectJson();
         resMain.expectStatusCode(200);
         resMain.expectDataRpc(keys);
         const resultMain: any = resMain.getBody()['result'];
-        expect(resultMain.id).toBe(testDataGet.params[1]);
-    });
-
-    test('Should return one profile with addresses by ID', async () => {
-        // create profile
-        const res = await api('POST', '/api/profiles', {
-            body: testData2
-        });
-        res.expectJson();
-        res.expectStatusCode(201);
-        res.expectData(keys);
-        createdId = res.getData()['id'];
-
-        // get profile
-        testDataGet.params[1] = createdId;
-        const resMain = await api('POST', '/api/rpc', {
-            body: testDataGet
-        });
-        resMain.expectJson();
-        resMain.expectStatusCode(200);
-        resMain.expectDataRpc(keys);
-        const resultMain: any = resMain.getBody()['result'];
-        expect(resultMain.id).toBe(testDataGet.params[1]);
-        expect(resultMain.ShippingAddresses).toHaveLength(2);
+        expect(resultMain.id).toBe(createdId);
+        expect(resultMain.name).toBe(profileName);
+        expect(resultMain.address).toBe(profileAddress);
+        expect(resultMain.CryptocurrencyAddresses).toBeDefined();
+        expect(resultMain.FavoriteItems).toBeDefined();
+        expect(resultMain.ShippingAddresses).toBeDefined();
+        expect(resultMain.ShoppingCarts).toBeDefined();
     });
 
     test('Should return one profile by Name', async () => {
-        testDataGet.params[1] = 'DEFAULT-PROFILE-NAME';
-        const res = await api('POST', '/api/rpc', {
-            body: testDataGet
-        });
-        res.expectJson();
-        res.expectStatusCode(200);
-        res.expectDataRpc(keys);
-        const result: any = res.getBody()['result'];
-        expect(result.name).toBe(testData2.name);
+        const resMain = await rpc(method, [subCommand, profileName]);
+        resMain.expectJson();
+        resMain.expectStatusCode(200);
+        resMain.expectDataRpc(keys);
+        const resultMain: any = resMain.getBody()['result'];
+        expect(resultMain.id).toBe(createdId);
+        expect(resultMain.name).toBe(profileName);
+        expect(resultMain.address).toBe(profileAddress);
+        expect(resultMain.CryptocurrencyAddresses).toBeDefined();
+        expect(resultMain.FavoriteItems).toBeDefined();
+        expect(resultMain.ShippingAddresses).toBeDefined();
+        expect(resultMain.ShoppingCarts).toBeDefined();
     });
+
+    test('Should return null profile by invalid Name', async () => {
+        const resMain = await rpc(method, [subCommand, 'profileName']);
+        resMain.expectJson();
+        resMain.expectStatusCode(200);
+        const resultMain: any = resMain.getBody()['result'];
+        expect(resultMain).toBeNull();
+    });
+
+    test('Should return null profile by invalid Id', async () => {
+        const resMain = await rpc(method, [subCommand, 123123]);
+        resMain.expectJson();
+        resMain.expectStatusCode(404);
+    });
+
 });
