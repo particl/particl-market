@@ -12,7 +12,6 @@ import { Container, decorate, injectable } from 'inversify';
 import { Types, Core, Targets } from '../constants';
 import { events, EventEmitter } from './api/events';
 import { Logger } from './Logger';
-import { CliIo } from './CliIo';
 import { IocConfig } from '../config/IocConfig';
 import { Environment } from './helpers/Environment';
 
@@ -29,14 +28,6 @@ export class IoC {
         this.container = new Container();
         const config = new IocConfig();
         config.configure(this);
-    }
-
-    public setCliIo(cliIo: CliIo): void {
-        this.cliIo = cliIo;
-    }
-
-    public getCliIo(): CliIo {
-        return this.cliIo;
     }
 
     public configure(configuration: (container: Container) => Container): void {
@@ -83,11 +74,6 @@ export class IoC {
     private bindCore(): void {
         this.container.bind<typeof Logger>(Types.Core).toConstantValue(Logger).whenTargetNamed(Core.Logger);
         this.container.bind<EventEmitter>(Types.Core).toConstantValue(events).whenTargetNamed(Core.Events);
-
-        if ( !this.cliIo ) {
-            this.cliIo = new CliIo();
-        }
-        this.container.bind<CliIo>(Types.Core).toConstantValue(this.cliIo).whenTargetNamed(Core.CliIo);
     }
 
     private bindModels(): Promise<void> {

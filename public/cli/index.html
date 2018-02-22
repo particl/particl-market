@@ -194,7 +194,8 @@
 </script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    const socket = io('http://172.18.0.4:' + (Number(location.port) + 2552));
+    const socket = io('' , {path: '/'});
+
     socket.open();
     socket.on('connect', () => {
         term.echo('Connected');

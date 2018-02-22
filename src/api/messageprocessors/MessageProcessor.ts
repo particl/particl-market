@@ -1,10 +1,10 @@
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { CliIo } from '../../core/CliIo';
 import { Types, Core, Targets } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { CoreRpcService } from '../services/CoreRpcService';
+import { EventEmitter } from '../../core/api/events';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -16,9 +16,13 @@ export class MessageProcessor implements MessageProcessorInterface {
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Core) @named(Core.CliIo) public cliIo: CliIo
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
     ) {
         this.log = new Logger(__filename);
+
+        eventEmitter.on('ping', event => {
+            this.eventEmitter.emit('pong', 'pong');
+        });
     }
 
     public process(message: ActionMessageInterface): void {
@@ -48,10 +52,6 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @returns {Promise<void>}
      */
     private async poll(): Promise<void> {
-        this.cliIo.emit('message', 'ping2');
-        this.cliIo.getIo().emit('message', 'ping3');
-        // console.log('2: ' + this.cliIo.tmp);
-        // console.log('3: ' + this.cliIo.getIo());
         await this.pollMessages()
             .then( messages => {
                 // this.log.debug('poll() response:', messages);
