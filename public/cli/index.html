@@ -197,17 +197,17 @@
 </script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    const socket = io('' , {path: '/'});
+    const socket = io('ws://localhost:3000', {transports: ['websocket']});
 
-    socket.open();
     socket.on('connect', () => {
+        console.log('connected!');
         term.echo('Connected');
     });
     socket.on('error', (error) => {
-        term.echo('particld ERROR: ' + error);
+        term.echo('socket.io ERROR: ' + error);
     });
-    socket.on('message', (msg) => {
-        term.echo('particld message: ' + msg);
+    socket.on('cli', (event) => {
+        term.echo('socket.io message: ' + event.message);
     });
 </script>
 </body>

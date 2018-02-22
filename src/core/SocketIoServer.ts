@@ -9,40 +9,41 @@ import { IoC } from './IoC';
 export class SocketIoServer {
 
     public tmp = 'AASDASDF';
-    public socketIO: SocketIO.Server;
+    public socketIO: SocketIO;
 
     private log = new Logger(__filename);
     private eventEmitter;
 
     constructor(public httpServer: http.Server, ioc: IoC) {
         this.eventEmitter = ioc.container.getNamed<EventEmitter>(Types.Core, Core.Events);
-        this.socketIO = SocketIO(httpServer);
-        this.configure();
+        this.socketIO = this.configure(SocketIO(httpServer));
     }
 
     public emit(eventType: string, msg: string): void {
         this.socketIO.emit(eventType, msg);
     }
 
-    private configure(): void {
+    private configure(io: SocketIO): SocketIO {
         this.log.debug('Configuring SocketIoServer');
 
-        this.socketIO.on('connection', (client) => {
+        io.set('transports', ['websocket', 'polling']);
 
-            this.log.debug('connection opened.');
-            this.eventEmitter.emit(ServerStartedListener.Event, 'Hello!');
-            this.eventEmitter.emit(ServerStartedListener.Event, 'Hello!');
-            this.eventEmitter.emit(ServerStartedListener.Event, 'Hello!');
-            this.eventEmitter.emit(ServerStartedListener.Event, 'Hello!');
-            this.eventEmitter.emit(ServerStartedListener.Event, 'Hello!');
+        io.on('connection', (client) => {
+            this.log.info('socket.io: user connected');
 
-            setInterval(() => {
-                client.emit('ping', 'ping');
-            }, 10000);
+            // listen to messages for cli
+            this.eventEmitter.on('cli', (event) => {
+                console.log('message for cli', event);
+                client.emit('cli', event);
+            });
 
-            client.on('pong', (event) => console.log('received pong: ', event));
-            client.on('message', (event) => console.log('received message from client: ', event));
-            client.on('disconnect', (event) => console.log('client has disconnected'));
+            client.on('disconnect', (event) => {
+                this.log.info('socket.io: user disconnected');
+                this.eventEmitter.removeAllListeners('cli');
+            });
         });
+
+        return io;
     }
+
 }
