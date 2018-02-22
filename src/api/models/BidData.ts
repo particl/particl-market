@@ -35,8 +35,4 @@ export class BidData extends Bookshelf.Model<BidData> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public BidDataRelated(): BidDataRelated {
-    //    return this.hasOne(BidDataRelated);
-    // }
 }

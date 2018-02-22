@@ -7,6 +7,11 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ShippingPriceService } from '../../src/api/services/ShippingPriceService';
 import { ProfileService } from '../../src/api/services/ProfileService';
 
+import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
+import { EscrowService } from '../../src/api/services/EscrowService';
+import { ItemPriceService } from '../../src/api/services/ItemPriceService';
+
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
@@ -29,9 +34,14 @@ describe('ShippingPrice', () => {
     let testDataService: TestDataService;
     let shippingPriceService: ShippingPriceService;
     let profileService: ProfileService;
+    let paymentInformationService: PaymentInformationService;
+    let listingItemTemplateService: ListingItemTemplateService;
+    let escrowService: EscrowService;
+    let itemPriceService: ItemPriceService;
 
     let createdId;
     let itemPriceId;
+    let listingItemTemplate;
 
     const testData = {
         domestic: 2.12,
@@ -49,6 +59,11 @@ describe('ShippingPrice', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         shippingPriceService = app.IoC.getNamed<ShippingPriceService>(Types.Service, Targets.Service.ShippingPriceService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+
+        paymentInformationService = app.IoC.getNamed<PaymentInformationService>(Types.Service, Targets.Service.PaymentInformationService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        escrowService = app.IoC.getNamed<EscrowService>(Types.Service, Targets.Service.EscrowService);
+        itemPriceService = app.IoC.getNamed<ItemPriceService>(Types.Service, Targets.Service.ItemPriceService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -69,7 +84,8 @@ describe('ShippingPrice', () => {
             } as any,
             withRelated: true
         } as TestDataCreateRequest);
-        itemPriceId = createdListingItemTemplate.toJSON().PaymentInformation.ItemPrice.id;
+        listingItemTemplate = createdListingItemTemplate.toJSON();
+        itemPriceId = listingItemTemplate.PaymentInformation.ItemPrice.id;
     });
 
     afterAll(async () => {
@@ -136,10 +152,27 @@ describe('ShippingPrice', () => {
     });
 
     test('Should delete the shipping price', async () => {
-        expect.assertions(1);
+        expect.assertions(4);
         await shippingPriceService.destroy(createdId);
         await shippingPriceService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
+        );
+
+        // delete listing-item-template
+        await listingItemTemplateService.destroy(listingItemTemplate.id);
+        await listingItemTemplateService.findOne(listingItemTemplate.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemTemplate.id))
+        );
+
+        const paymentInformation = listingItemTemplate.PaymentInformation;
+        // payment information
+        await paymentInformationService.findOne(paymentInformation.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(paymentInformation.id))
+        );
+
+        // findout itemPrice
+        await itemPriceService.findOne(paymentInformation.ItemPrice.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(paymentInformation.ItemPrice.id))
         );
     });
 
