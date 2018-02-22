@@ -134,6 +134,9 @@
             $.ajax({
                 url: '/api/rpc',
                 type: 'POST',
+                headers: {
+                    "Authorization": "Basic " + btoa("test:test")
+                },
                 contentType: "application/json; charset=utf-8",
                 success: function (data) {
                     console.log('result: ', data);
