@@ -12,6 +12,9 @@ import { Types, Core } from '../constants';
 import { EventEmitter } from './api/events';
 import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
 import { Environment } from './helpers/Environment';
+import { CliIo } from './CliIo';
+
+import io = require('socket.io');
 
 export interface Configurable {
     configure(app: App): void;
@@ -95,6 +98,24 @@ export class App {
             this.log.info('Starting app...');
             this.server = new Server(this.bootstrapApp.startServer(this.express));
             this.server.use(this.express);
+
+            const myIo = new io(this.server);
+            const listenPort = Number(process.env.APP_PORT) + 2552;
+            this.log.info('Binding daemon CLI server to ' + listenPort);
+            myIo.listen(listenPort);
+            myIo.on('connection', (socket) => {
+                this.log.info('Particld socket.io server connected to CLI.');
+                myIo.emit('message', 'Connected');
+            });
+            myIo.on('error', (error) => {
+                this.log.error('Error with particld socket.io: ' + error);
+                myIo.emit('error', error);
+            });
+            setInterval(() => {
+                myIo.emit('message', 'ping');
+            }, 10000);
+
+            this.ioc.getCliIo().setIo(myIo);
         }
 
         this.log.info('App is ready!');

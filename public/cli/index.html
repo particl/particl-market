@@ -192,6 +192,19 @@
     }
 
 </script>
-
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io('http://172.18.0.4:' + (Number(location.port) + 2552));
+    socket.open();
+    socket.on('connect', () => {
+        term.echo('Connected');
+    });
+    socket.on('error', (error) => {
+        term.echo('particld ERROR: ' + error);
+    });
+    socket.on('message', (msg) => {
+        term.echo('particld message: ' + msg);
+    });
+</script>
 </body>
 </html>
