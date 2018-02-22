@@ -197,7 +197,7 @@
 </script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
-    const socket = io('ws://localhost:3000', {transports: ['websocket']});
+    const socket = io('ws://' + window.location.href.split("/")[2], {transports: ['websocket']});
 
     socket.on('connect', () => {
         console.log('connected!');
