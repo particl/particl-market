@@ -67,6 +67,10 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
         return 'Remove and destroy an item category via categoryId.';
     }
 
+    public example(): string {
+        return 'category ' + this.getName() + ' 81 ';
+    }
+
     /**
      * function to check category is default, check category is not associated with listing-item
      *

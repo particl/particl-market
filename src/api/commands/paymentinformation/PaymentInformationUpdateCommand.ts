@@ -84,4 +84,7 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
         return 'Update the details of payment information associated with listingItemTemplateId.';
     }
 
+    public example(): string {
+        return 'payment ' + this.getName() + '  1 FREE PART 123 12 34 PkE5U1Erz9bANXAxvHeiw6t14vDTP9EdNM ';
+    }
 }

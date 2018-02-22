@@ -75,4 +75,8 @@ export class ShippingDestinationListCommand extends BaseCommand implements RpcCo
     public description(): string {
         return 'List the shipping destinations associated with a template or item.';
     }
+
+    public example(): string {
+        return 'shipping ' + this.getName() + ' template 1 ';
+    }
 }

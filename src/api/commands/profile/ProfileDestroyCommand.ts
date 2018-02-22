@@ -54,4 +54,7 @@ export class ProfileDestroyCommand extends BaseCommand implements RpcCommandInte
         return 'Destroy a profile by profile id or profileName.';
     }
 
+    public example(): string {
+        return 'profile ' + this.getName() + ' 2 myNewProfile ';
+    }
 }

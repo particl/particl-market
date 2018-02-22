@@ -55,4 +55,7 @@ export class MarketCreateCommand extends BaseCommand implements RpcCommandInterf
         return 'Create a new market.';
     }
 
+    public example(): string {
+        return 'market ' + this.getName() + ' market add \'Dream Market\' \'InY0uRdr34M5\' \'lchudifyeqm4ldjj\' ';
+    }
 }

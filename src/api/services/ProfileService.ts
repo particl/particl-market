@@ -10,6 +10,7 @@ import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
 import { ProfileUpdateRequest } from '../requests/ProfileUpdateRequest';
 import { AddressService } from './AddressService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
+import { CoreRpcService } from './CoreRpcService';
 import { ShoppingCartsService } from './ShoppingCartsService';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
 import { AddressUpdateRequest } from '../requests/AddressUpdateRequest';
@@ -26,6 +27,7 @@ export class ProfileService {
         @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ShoppingCartsService) public shoppingCartsService: ShoppingCartsService,
         @inject(Types.Repository) @named(Targets.Repository.ProfileRepository) public profileRepo: ProfileRepository,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -62,6 +64,10 @@ export class ProfileService {
     public async create( @request(ProfileCreateRequest) data: ProfileCreateRequest): Promise<Profile> {
         const body = JSON.parse(JSON.stringify(data));
 
+        if ( !body.address ) {
+            body.address = await this.getNewAddressFromDaemon();
+        }
+
         // extract and remove related models from request
         const shippingAddresses = body.shippingAddresses || [];
         delete body.shippingAddresses;
@@ -90,6 +96,23 @@ export class ProfileService {
         // finally find and return the created profileId
         const newProfile = await this.findOne(profile.Id);
         return newProfile;
+    }
+
+    public async getNewAddressFromDaemon(): Promise<string> {
+        let newAddress;
+        await this.coreRpcService.call('getnewaddress')
+            .then( async (res) => {
+                this.log.info('Successfully created new address for profile: ' + res);
+                newAddress = res;
+            })
+            .catch(reason => {
+                this.log.warn('Could not create new address for profile: ' + reason);
+                newAddress = 'ERROR_NO_ADDRESS';
+            });
+        if ( newAddress ) {
+            return newAddress;
+        }
+        throw new Error('Something has gone terribly wrong.');
     }
 
     @validate()

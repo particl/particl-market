@@ -51,4 +51,7 @@ export class ShoppingCartUpdateCommand extends BaseCommand implements RpcCommand
         return 'Update shopping cart name via cartId';
     }
 
+    public example(): string {
+        return 'cart ' + this.getName() + ' 1 updatedCart ';
+    }
 }

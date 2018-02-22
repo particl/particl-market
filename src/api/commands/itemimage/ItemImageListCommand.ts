@@ -66,4 +66,8 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
     public description(): string {
         return 'Return all images for listing item.';
     }
+
+    public example(): string {
+        return 'image ' + this.getName() + ' 1 1 ';
+    }
 }

@@ -24,7 +24,7 @@ export class DefaultProfileService {
             name: 'DEFAULT'
         } as ProfileCreateRequest;
 
-        defaultProfile.address = await this.getAddress();
+        defaultProfile.address = await this.profileService.getNewAddressFromDaemon();
         const newProfile = await this.insertOrUpdateProfile(defaultProfile);
 
         this.log.debug('default profile:', newProfile.toJSON());
@@ -42,22 +42,5 @@ export class DefaultProfileService {
             this.log.debug('updated new default profile');
         }
         return newProfile;
-    }
-
-    private async getAddress(): Promise<string> {
-        return 'FIXFIXFIX';
-        /*
-        FFS fix this after merge
-        await this.coreRpcService.call('getnewaddress')
-            .then( async (res) => {
-                this.log.info('Successfully created new address for profile: ' + res.result);
-                return res.result;
-            })
-            .catch(reason => {
-                // TODO: temporarily returning empty address, FIXTHIS!
-                this.log.info('Could not create new address for profile: ', reason);
-                return '';
-            });
-        */
     }
 }

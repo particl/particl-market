@@ -50,4 +50,7 @@ export class ProfileUpdateCommand extends BaseCommand implements RpcCommandInter
         return 'Update the details of a profile given by profileId.';
     }
 
+    public example(): string {
+        return 'profile ' + this.getName() + ' 2 myNewProfile ';
+    }
 }

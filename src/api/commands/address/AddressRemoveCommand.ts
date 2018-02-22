@@ -46,4 +46,8 @@ export class AddressRemoveCommand extends BaseCommand implements RpcCommandInter
     public description(): string {
         return 'Remove and destroy an address via ID.';
     }
+
+    public example(): string {
+        return 'address ' + this.getName() + ' 1';
+    }
 }

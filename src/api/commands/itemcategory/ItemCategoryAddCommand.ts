@@ -68,6 +68,10 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
         return 'Command for adding an item category.';
     }
 
+    public example(): string {
+        return 'category ' + this.getName() + ' newCategory \'description of the new category\' cat_wholesale_other ';
+    }
+
     /**
      * function to return category id
      * TODO: NOTE: This function may be duplicated between commands.

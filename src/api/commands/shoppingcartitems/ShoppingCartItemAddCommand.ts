@@ -65,4 +65,8 @@ export class ShoppingCartItemAddCommand extends BaseCommand implements RpcComman
     public description(): string {
         return 'Add a new item into shopping cart as per given listingItem and cart.';
     }
+
+    public example(): string {
+        return 'cartitem ' + this.getName() + ' 1 1 b90cee25-036b-4dca-8b17-0187ff325dbb ';
+    }
 }

@@ -70,4 +70,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
         return 'Update the item details of an item information given by listingItemTemplateId.';
     }
 
+    public example(): string {
+        return 'information ' + this.getName() + ' 1 Cigarettes \'Cigarette packet\' \'COUGHING NAILS -- when you\\\'ve just got to have a cigarette.\' 76';
+    }
 }

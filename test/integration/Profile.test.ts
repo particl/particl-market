@@ -111,13 +111,6 @@ describe('Profile', () => {
         );
     });
 
-    test('Should throw ValidationException because missing profile address', async () => {
-        expect.assertions(1);
-        await profileService.create({ name: 'test' } as ProfileCreateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
     test('Should create a new profile with just delivery addresses', async () => {
         const profileModel: Profile = await profileService.create(testData);
         createdId = profileModel.Id;

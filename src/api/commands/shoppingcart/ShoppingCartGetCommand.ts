@@ -44,4 +44,8 @@ export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInt
     public description(): string {
         return 'Get shopping cart by given cart id';
     }
+
+    public example(): string {
+        return 'cart ' + this.getName() + ' 1 ';
+    }
 }

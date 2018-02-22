@@ -55,4 +55,7 @@ export class ItemCategoryGetCommand extends BaseCommand implements RpcCommandInt
         return 'Command for getting an item category associated with category Id or key';
     }
 
+    public example(): string {
+        return 'category ' + this.getName() + ' 6 ';
+    }
 }

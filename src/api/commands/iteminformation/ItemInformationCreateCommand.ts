@@ -69,4 +69,8 @@ export class ItemInformationCreateCommand extends BaseCommand implements RpcComm
         return 'Create an iteminformation and associate it with a listingTemplateId.';
     }
 
+    public example(): string {
+        return 'information ' + this.getName() + ' 1 \'Midori Tabako packet\''
+        + ' \'Cigarette packet\' \'You can\\\'t understand the runes, but the packet smells funny.\' 76';
+    }
 }
