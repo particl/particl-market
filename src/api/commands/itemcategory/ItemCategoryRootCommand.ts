@@ -7,7 +7,7 @@ import { Types, Core, Targets } from '../../../constants';
 
 import { ItemCategoryListCommand } from './ItemCategoryListCommand';
 import { ItemCategoryAddCommand } from './ItemCategoryAddCommand';
-import { ItemCategoryFindCommand } from './ItemCategoryFindCommand';
+import { ItemCategorySearchCommand } from './ItemCategorySearchCommand';
 import { ItemCategoryGetCommand } from './ItemCategoryGetCommand';
 import { ItemCategoryRemoveCommand } from './ItemCategoryRemoveCommand';
 import { ItemCategoryUpdateCommand } from './ItemCategoryUpdateCommand';
@@ -21,12 +21,6 @@ export class ItemCategoryRootCommand extends BaseCommand implements RpcCommandIn
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryListCommand) private itemCategoryListCommand: ItemCategoryListCommand,
-        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryAddCommand) private itemCategoryAddCommand: ItemCategoryAddCommand,
-        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryFindCommand) private itemCategoryFindCommand: ItemCategoryFindCommand,
-        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryGetCommand) private itemCategoryGetCommand: ItemCategoryGetCommand,
-        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryRemoveCommand) private itemCategoryRemoveCommand: ItemCategoryRemoveCommand,
-        @inject(Types.Command) @named(Targets.Command.itemcategory.ItemCategoryUpdateCommand) private itemCategoryUpdateCommand: ItemCategoryUpdateCommand,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.CATEGORY_ROOT);
