@@ -69,12 +69,7 @@ export class ShoppingCartsService {
         // update shoppingCarts record
         const updatedShoppingCarts = await this.shoppingCartsRepo.update(id, shoppingCarts.toJSON());
 
-        // TODO: find related record and update it
-
-        // TODO: finally find and return the updated shoppingCarts
-        // const newShoppingCarts = await this.findOne(id);
         // return newShoppingCarts;
-
         return updatedShoppingCarts;
     }
 

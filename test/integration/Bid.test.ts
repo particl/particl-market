@@ -16,7 +16,7 @@ import { Bid } from '../../src/api/models/Bid';
 import { ListingItem } from '../../src/api/models/ListingItem';
 
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
-import { Country } from '../../src/api/enums/Country';
+// import { Country } from '../../src/api/enums/Country';
 
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';

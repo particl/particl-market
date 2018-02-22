@@ -122,12 +122,11 @@ export class DefaultItemCategoryService {
         let newItemCategory = await this.itemCategoryService.findOneByKey(category.key);
         if (newItemCategory === null) {
             newItemCategory = await this.itemCategoryService.create(category);
-            // this.log.debug('created new default category: ', await this.getPath( newItemCategory ));
+
         } else {
             const categoryUpdate: any = category;
             categoryUpdate.id = newItemCategory.Id;
             newItemCategory = await this.itemCategoryService.update(newItemCategory.Id, categoryUpdate as ItemCategoryUpdateRequest);
-            // this.log.debug('updated new default category: ', await this.getPath( newItemCategory ));
         }
         return newItemCategory;
     }
