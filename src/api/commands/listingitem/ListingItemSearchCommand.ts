@@ -122,4 +122,5 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
     public example(): string {
         return 'item ' + this.getName() + ' 1 10 ASC 76 1 100 200 Australia China wine';
     }
+
 }
