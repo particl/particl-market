@@ -53,16 +53,9 @@ export class ShoppingCartItemsService {
             this.log.warn(`listing item already exist on shopping cart`);
             throw new MessageException(`listing item already exist on shopping cart`);
         }
-        // TODO: extract and remove related models from request
-        // const shoppingCartItemsRelated = body.related;
-        // delete body.related;
 
         // If the request body was valid we will create the shoppingCartItems
         const shoppingCartItems = await this.shoppingCartItemsRepo.create(body);
-
-        // TODO: create related models
-        // shoppingCartItemsRelated._id = shoppingCartItems.Id;
-        // await this.shoppingCartItemsRelatedService.create(shoppingCartItemsRelated);
 
         // finally find and return the created shoppingCartItems
         const newShoppingCartItems = await this.findOne(shoppingCartItems.id);
@@ -80,10 +73,6 @@ export class ShoppingCartItemsService {
         // update shoppingCartItems record
         const updatedShoppingCartItems = await this.shoppingCartItemsRepo.update(id, shoppingCartItems.toJSON());
 
-        // TODO: find related record and update it
-
-        // TODO: finally find and return the updated shoppingCartItems
-        // const newShoppingCartItems = await this.findOne(id);
         // return newShoppingCartItems;
 
         return updatedShoppingCartItems;

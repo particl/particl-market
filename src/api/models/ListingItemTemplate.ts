@@ -126,8 +126,4 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         return this.belongsTo(Profile, 'profile_id', 'id');
     }
 
-    // TODO: add related
-    // public ListingItemTemplateRelated(): ListingItemTemplateRelated {
-    //    return this.hasOne(ListingItemTemplateRelated);
-    // }
 }

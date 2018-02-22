@@ -84,43 +84,11 @@ export class ListingItemObjectService {
         // update listingItemObject record
         const updatedListingItemObject = await this.listingItemObjectRepo.update(id, listingItemObject.toJSON());
 
-        // TODO:
-
         return updatedListingItemObject;
     }
 
     public async destroy(id: number): Promise<void> {
         await this.listingItemObjectRepo.destroy(id);
     }
-
-    // TODO: remove
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ListingItemObject> {
-        return this.findOne(data.params[0]);
-    }
-
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ListingItemObject>> {
-        return this.findAll();
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ListingItemObject> {
-        return this.create({
-            data: data.params[0] // TODO: convert your params to ListingItemObjectCreateRequest
-        });
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ListingItemObject> {
-        return this.update(data.params[0], {
-            data: data.params[1] // TODO: convert your params to ListingItemObjectUpdateRequest
-        });
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
-    }
-
 }
+
