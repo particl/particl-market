@@ -29,31 +29,47 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
     /**
      *
      * data.params[]:
-     *  [0]: profileId
+     *  [0]: profileId or profileName
+     *
+     * if data.params[0] is number then find favorites by profileId else find  by profile Name
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<FavoriteItem>>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<FavoriteItem>> {
-        // find the profile by id
-        const profile = await this.profileService.findOne(data.params[0]);
+
+        let profile;
+
+        // if data.params[0] is number then find favorite by profileId else find
+        if (typeof data.params[0] === 'number') {
+            profile = await this.profileService.findOne(data.params[0]);
+        } else {
+            profile = await this.profileService.findOneByName(data.params[0]);
+            if (profile === null) {
+                this.log.warn(`Profile with the name = ${data.params[0]} was not found!`);
+                throw new MessageException(`Profile with the name = ${data.params[0]} was not found!`);
+            }
+        }
 
         // return the related FavoriteItem for the profile
         return profile.related('FavoriteItems') as Bookshelf.Collection<FavoriteItem>;
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> ';
+        return this.getName() + ' [<profileId>|<profileName>] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <profileId>                   - Numeric - The ID of the profile we \n'
-            + '                                     want to associate this favorite with. ';
+            + '    <profileId>                   - [optional]- Numeric - The ID of the profile we \n'
+            + '                                     want to retrive favorites associated with that profile id. \n'
+
+            + '    <profileName>                 - [optional] - String - The name of the profile we \n'
+            + '                                     want to retrive favorites associated with that profile name. \n';
     }
 
     public description(): string {
-        return 'List the favorites associated with a profileId.';
+        return 'List the favorites associated with a profileId or profileName.';
     }
 }
