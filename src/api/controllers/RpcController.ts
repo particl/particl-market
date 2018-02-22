@@ -14,9 +14,11 @@ import { Commands} from '../commands/CommandEnumType';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
-let rpcIdCount = 0;
 
-@controller('/rpc', rpc.use)
+const authenticateMiddleware = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.AuthenticateMiddleware);
+
+let rpcIdCount = 0;
+@controller('/rpc', authenticateMiddleware.use, rpc.use)
 export class RpcController {
 
     private log: LoggerType;

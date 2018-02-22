@@ -71,12 +71,7 @@ export class MarketService {
         // update market record
         const updatedMarket = await this.marketRepo.update(id, market.toJSON());
 
-        // TODO: find related record and update it
-
-        // TODO: finally find and return the updated market
-        // const newMarket = await this.findOne(id);
         // return newMarket;
-
         return updatedMarket;
     }
 

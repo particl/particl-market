@@ -6,8 +6,7 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemImageData> {
         if (withRelated) {
             return await ItemImageData.where<ItemImageData>({ id: value }).fetch({
-                withRelated: [
-                ]
+                withRelated: []
             });
         } else {
             return await ItemImageData.where<ItemImageData>({ id: value }).fetch();

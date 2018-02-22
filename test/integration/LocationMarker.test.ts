@@ -5,6 +5,9 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
 import { ProfileService } from '../../src/api/services/ProfileService';
+import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+import { ItemLocationService } from '../../src/api/services/ItemLocationService';
+import { ItemInformationService } from '../../src/api/services/ItemInformationService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -25,7 +28,13 @@ describe('LocationMarker', () => {
     let testDataService: TestDataService;
     let locationMarkerService: LocationMarkerService;
     let profileService: ProfileService;
+    let listingItemTemplateService: ListingItemTemplateService;
+    let itemInformationService: ItemInformationService;
+    let itemLocationService: ItemLocationService;
+
     let itemLocationId;
+    let itemInformation;
+    let listingItemTemplate;
 
     let createdId;
 
@@ -49,6 +58,9 @@ describe('LocationMarker', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.ItemLocationService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -74,7 +86,9 @@ describe('LocationMarker', () => {
             } as any,
             withRelated: true
         } as TestDataCreateRequest);
-        itemLocationId = createdListingItemTemplate.toJSON().ItemInformation.ItemLocation.id;
+        listingItemTemplate = createdListingItemTemplate.toJSON();
+        itemInformation = listingItemTemplate.ItemInformation;
+        itemLocationId = itemInformation.ItemLocation.id;
     });
 
     afterAll(async () => {
@@ -153,11 +167,28 @@ describe('LocationMarker', () => {
     });
 
     test('Should delete the location marker', async () => {
-        expect.assertions(1);
+        expect.assertions(4);
         await locationMarkerService.destroy(createdId);
         await locationMarkerService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );
+
+        // listing-item-template
+        await listingItemTemplateService.destroy(listingItemTemplate.id);
+        await listingItemTemplateService.findOne(listingItemTemplate.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(listingItemTemplate.id))
+        );
+
+        // itemLocation
+        await itemLocationService.findOne(itemLocationId).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemLocationId))
+        );
+
+        // item-information
+        await itemInformationService.findOne(itemInformation.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(itemInformation.id))
+        );
+
     });
 
 });

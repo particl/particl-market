@@ -1,6 +1,7 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core } from '../../constants';
+import { Types, Core, Targets } from '../../constants';
+import { app } from '../../app';
 
 export class RpcMiddleware implements interfaces.Middleware {
 
@@ -14,10 +15,10 @@ export class RpcMiddleware implements interfaces.Middleware {
 
     public use = (req: myExpress.Request, res: myExpress.Response, next: myExpress.NextFunction): void => {
         // validate rpc request
-        if (!this.isValidVersionTwoRequest(req)) {
-            return res.failed(400, 'Invalid JSON-RPC 2.0 request');
-        } else {
+        if (this.isValidVersionTwoRequest(req)) {
             next();
+        } else {
+            return res.failed(400, 'Invalid JSON-RPC 2.0 request');
         }
     }
 
@@ -28,18 +29,18 @@ export class RpcMiddleware implements interfaces.Middleware {
             && request.headers['content-type']
             && request.headers['content-type'].indexOf('application/json') > -1
             && request.body
-            && typeof(request.body) === 'object'
+            && typeof (request.body) === 'object'
             && request.body.jsonrpc === '2.0'
-            && typeof(request.body.method) === 'string'
+            && typeof (request.body.method) === 'string'
             && (
-                typeof(request.body.params) === 'undefined'
+                typeof (request.body.params) === 'undefined'
                 || Array.isArray(request.body.params)
-                || (request.body.params && typeof(request.body.params) === 'object')
+                || (request.body.params && typeof (request.body.params) === 'object')
             )
             && (
-                typeof(request.body.id) === 'undefined'
-                || typeof(request.body.id) === 'string'
-                || typeof(request.body.id) === 'number'
+                typeof (request.body.id) === 'undefined'
+                || typeof (request.body.id) === 'string'
+                || typeof (request.body.id) === 'number'
                 || request.body.id === null
             )
         );
