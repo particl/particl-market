@@ -19,8 +19,8 @@ import { BidRejectCommand } from '../commands/bid/BidRejectCommand';
 import { BidSendCommand } from '../commands/bid/BidSendCommand';
 
 import { EscrowRootCommand } from '../commands/escrow/EscrowRootCommand';
-import { EscrowCreateCommand } from '../commands/escrow/EscrowCreateCommand';
-import { EscrowDestroyCommand } from '../commands/escrow/EscrowDestroyCommand';
+import { EscrowAddCommand } from '../commands/escrow/EscrowAddCommand';
+import { EscrowRemoveCommand } from '../commands/escrow/EscrowRemoveCommand';
 import { EscrowUpdateCommand } from '../commands/escrow/EscrowUpdateCommand';
 import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
 import { EscrowRefundCommand } from '../commands/escrow/EscrowRefundCommand';
@@ -42,7 +42,7 @@ import { ItemImageListCommand } from '../commands/itemimage/ItemImageListCommand
 import { ItemImageAddCommand } from '../commands/itemimage/ItemImageAddCommand';
 import { ItemImageRemoveCommand } from '../commands/itemimage/ItemImageRemoveCommand';
 
-import { ItemInformationCreateCommand } from '../commands/iteminformation/ItemInformationCreateCommand';
+import { ItemInformationAddCommand } from '../commands/iteminformation/ItemInformationAddCommand';
 import { ItemInformationGetCommand } from '../commands/iteminformation/ItemInformationGetCommand';
 import { ItemInformationUpdateCommand } from '../commands/iteminformation/ItemInformationUpdateCommand';
 import { ItemInformationRootCommand } from '../commands/iteminformation/ItemInformationRootCommand';
@@ -68,7 +68,7 @@ import { ListingItemTemplateRootCommand } from '../commands/listingitemtemplate/
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
 import { MessagingInformationRootCommand } from '../commands/messaginginformation/MessagingInformationRootCommand';
 
-import { MarketCreateCommand } from '../commands/market/MarketCreateCommand';
+import { MarketAddCommand } from '../commands/market/MarketAddCommand';
 import { MarketRootCommand } from '../commands/market/MarketRootCommand';
 import { MarketListCommand } from '../commands/market/MarketListCommand';
 
@@ -77,12 +77,12 @@ import { PaymentInformationRootCommand } from '../commands/paymentinformation/Pa
 
 import { AddressRootCommand } from '../commands/address/AddressRootCommand';
 import { AddressListCommand } from '../commands/address/AddressListCommand';
-import { AddressCreateCommand } from '../commands/address/AddressCreateCommand';
+import { AddressAddCommand } from '../commands/address/AddressAddCommand';
 import { AddressUpdateCommand } from '../commands/address/AddressUpdateCommand';
 import { AddressRemoveCommand } from '../commands/address/AddressRemoveCommand';
 
-import { ProfileCreateCommand } from '../commands/profile/ProfileCreateCommand';
-import { ProfileDestroyCommand } from '../commands/profile/ProfileDestroyCommand';
+import { ProfileAddCommand } from '../commands/profile/ProfileAddCommand';
+import { ProfileRemoveCommand } from '../commands/profile/ProfileRemoveCommand';
 import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
 import { ProfileGetCommand } from '../commands/profile/ProfileGetCommand';
 import { ProfileListCommand } from '../commands/profile/ProfileListCommand';
@@ -132,8 +132,8 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.bid.BidSendCommand) private bidSendCommand: BidSendCommand,
 
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRootCommand) private escrowRootCommand: EscrowRootCommand,
-        @inject(Types.Command) @named(Targets.Command.escrow.EscrowCreateCommand) private escrowCreateCommand: EscrowCreateCommand,
-        @inject(Types.Command) @named(Targets.Command.escrow.EscrowDestroyCommand) private escrowDestroyCommand: EscrowDestroyCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowAddCommand) private escrowAddCommand: EscrowAddCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowRemoveCommand) private escrowRemoveCommand: EscrowRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowUpdateCommand) private escrowUpdateCommand: EscrowUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowLockCommand) private escrowLockCommand: EscrowLockCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRefundCommand) private escrowRefundCommand: EscrowRefundCommand,
@@ -157,13 +157,13 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageAddCommand) private itemImageAddCommand: ItemImageAddCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRemoveCommand) private itemImageRemoveCommand: ItemImageRemoveCommand,
 
-        @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationCreateCommand) private itemInformationCreateCommand: ItemInformationCreateCommand,
+        @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationAddCommand) private itemInformationAddCommand: ItemInformationAddCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationGetCommand) private itemInformationGetCommand: ItemInformationGetCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationUpdateCommand) private itemInformationUpdateCommand: ItemInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationRootCommand) private itemInformationRootCommand: ItemInformationRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationAddCommand) private itemLocationAddCommand: ItemLocationAddCommand,
-        @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationRemoveCommand) private itemLocationDestroyCommand: ItemLocationRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationRemoveCommand) private itemLocationRemoveCommand: ItemLocationRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationUpdateCommand) private itemLocationUpdateCommand: ItemLocationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.itemlocation.ItemLocationRootCommand) private itemLocationRootCommand: ItemLocationRootCommand,
 
@@ -180,7 +180,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplatePostCommand) private listingItemTemplatePostCommand: ListingItemTemplatePostCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateRootCommand) private listingItemTemplateRootCommand: ListingItemTemplateRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.market.MarketCreateCommand) private marketCreateCommand: MarketCreateCommand,
+        @inject(Types.Command) @named(Targets.Command.market.MarketAddCommand) private marketAddCommand: MarketAddCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketRootCommand) private marketRootCommand: MarketRootCommand,
         @inject(Types.Command) @named(Targets.Command.market.MarketListCommand) private marketListCommand: MarketListCommand,
 
@@ -192,12 +192,12 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.address.AddressRootCommand) private addressRootCommand: AddressRootCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressListCommand) private addressListCommand: AddressListCommand,
-        @inject(Types.Command) @named(Targets.Command.address.AddressCreateCommand) private addressCreateCommand: AddressCreateCommand,
+        @inject(Types.Command) @named(Targets.Command.address.AddressAddCommand) private addressAddCommand: AddressAddCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressUpdateCommand) private addressUpdateCommand: AddressUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.address.AddressRemoveCommand) private addressRemoveCommand: AddressRemoveCommand,
 
-        @inject(Types.Command) @named(Targets.Command.profile.ProfileCreateCommand) private profileCreateCommand: ProfileCreateCommand,
-        @inject(Types.Command) @named(Targets.Command.profile.ProfileDestroyCommand) private profileDestroyCommand: ProfileDestroyCommand,
+        @inject(Types.Command) @named(Targets.Command.profile.ProfileAddCommand) private profileAddCommand: ProfileAddCommand,
+        @inject(Types.Command) @named(Targets.Command.profile.ProfileRemoveCommand) private profileRemoveCommand: ProfileRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileGetCommand) private profileGetCommand: ProfileGetCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileUpdateCommand) private profileUpdateCommand: ProfileUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.profile.ProfileListCommand) private profileListCommand: ProfileListCommand,
@@ -251,8 +251,8 @@ export class RpcCommandFactory {
         this.commands.push(bidSendCommand);
 
         this.commands.push(escrowRootCommand);
-        this.commands.push(escrowCreateCommand);
-        this.commands.push(escrowDestroyCommand);
+        this.commands.push(escrowAddCommand);
+        this.commands.push(escrowRemoveCommand);
         this.commands.push(escrowUpdateCommand);
         this.commands.push(escrowLockCommand);
         this.commands.push(escrowRefundCommand);
@@ -276,13 +276,13 @@ export class RpcCommandFactory {
         this.commands.push(itemImageAddCommand);
         this.commands.push(itemImageRemoveCommand);
 
-        this.commands.push(itemInformationCreateCommand);
+        this.commands.push(itemInformationAddCommand);
         this.commands.push(itemInformationGetCommand);
         this.commands.push(itemInformationUpdateCommand);
         this.commands.push(itemInformationRootCommand);
 
         this.commands.push(itemLocationAddCommand);
-        this.commands.push(itemLocationDestroyCommand);
+        this.commands.push(itemLocationRemoveCommand);
         this.commands.push(itemLocationUpdateCommand);
         this.commands.push(itemLocationRootCommand);
 
@@ -299,7 +299,7 @@ export class RpcCommandFactory {
         this.commands.push(listingItemTemplateSearchCommand);
         this.commands.push(listingItemTemplateRootCommand);
 
-        this.commands.push(marketCreateCommand);
+        this.commands.push(marketAddCommand);
         this.commands.push(marketRootCommand);
         this.commands.push(marketListCommand);
 
@@ -311,12 +311,12 @@ export class RpcCommandFactory {
 
         this.commands.push(addressRootCommand);
         this.commands.push(addressListCommand);
-        this.commands.push(addressCreateCommand);
+        this.commands.push(addressAddCommand);
         this.commands.push(addressUpdateCommand);
         this.commands.push(addressRemoveCommand);
 
-        this.commands.push(profileCreateCommand);
-        this.commands.push(profileDestroyCommand);
+        this.commands.push(profileAddCommand);
+        this.commands.push(profileRemoveCommand);
         this.commands.push(profileGetCommand);
         this.commands.push(profileUpdateCommand);
         this.commands.push(profileListCommand);

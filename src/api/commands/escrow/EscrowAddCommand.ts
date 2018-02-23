@@ -9,7 +9,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class EscrowCreateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
+export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
 

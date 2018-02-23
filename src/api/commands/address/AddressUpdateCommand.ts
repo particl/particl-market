@@ -45,20 +45,17 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
-        this.log.debug('AddressUpdateCommand.update(): 100');
+
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
         let countryCode: string = data.params[6];
         countryCode = ShippingCountries.validate(this.log, countryCode);
-        this.log.debug('AddressUpdateCommand.update(): 200');
 
         // Validate ZIP code
         const zipCodeStr = data.params[7];
         if (!ShippingZips.validate(countryCode, zipCodeStr)) {
-            this.log.debug('AddressUpdateCommand.update(): 250');
             throw new NotFoundException('ZIP/postal-code, country code, combination not valid.');
         }
-        this.log.debug('AddressUpdateCommand.update(): 300');
 
         return this.addressService.update(data.params[0], {
             title : data.params[1],
