@@ -85,4 +85,8 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     public description(): string {
         return 'Cancel bid.';
     }
+
+    public example(): string {
+        return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb ';
+    }
 }

@@ -62,4 +62,8 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
     public description(): string {
         return 'List all addresses belonging to a profile.';
     }
+
+    public example(): string {
+        return 'address ' + this.getName() + ' 1';
+    }
 }

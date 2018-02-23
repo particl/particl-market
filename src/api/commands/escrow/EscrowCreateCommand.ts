@@ -60,4 +60,7 @@ export class EscrowCreateCommand extends BaseCommand implements RpcCommandInterf
         return 'Create an escrow and associate it with a listingItemTemplate.';
     }
 
+    public example(): string {
+        return 'escrow ' + this.getName() + ' 1 MAD 1 1 ';
+    }
 }

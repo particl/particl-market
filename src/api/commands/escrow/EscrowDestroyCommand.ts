@@ -45,4 +45,8 @@ export class EscrowDestroyCommand extends BaseCommand implements RpcCommandInter
     public description(): string {
         return 'Command for removing an escrow, identified by listingItemTemplateId.';
     }
+
+    public example(): string {
+        return 'escrow ' + this.getName() + ' 1 ';
+    }
 }

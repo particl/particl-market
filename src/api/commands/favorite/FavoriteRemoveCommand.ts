@@ -64,6 +64,10 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
         return 'Command for removing an item from your favorites, identified by ID or hash.';
     }
 
+    public example(): string {
+        return 'favorite ' + this.getName() + ' 1 1 b90cee25-036b-4dca-8b17-0187ff325dbb ';
+    }
+
     /**
      * TODO: NOTE: This function may be duplicated between commands.
      * data.params[]:

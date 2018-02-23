@@ -56,4 +56,7 @@ export class ListingItemGetCommand extends BaseCommand implements RpcCommandInte
         return 'Get a listing item via listingItemId or hash.';
     }
 
+    public example(): string {
+        return 'item ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb';
+    }
 }

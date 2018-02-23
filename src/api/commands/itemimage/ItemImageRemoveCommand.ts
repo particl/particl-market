@@ -52,4 +52,8 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
     public description(): string {
         return 'Remove an item\'s image, identified by its ID.';
     }
+
+    public example(): string {
+        return 'image ' + this.getName() + ' 1 ';
+    }
 }

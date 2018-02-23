@@ -47,4 +47,8 @@ export class ProfileListCommand extends BaseCommand implements RpcCommandInterfa
     public description(): string {
         return 'List all the profiles.';
     }
+
+    public example(): string {
+        return 'profile ' + this.getName() + ' ';
+    }
 }

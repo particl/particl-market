@@ -38,5 +38,4 @@ export class AdminCommand extends BaseCommand implements RpcCommandInterface<any
     public description(): string {
         return 'Admin root command.';
     }
-
 }

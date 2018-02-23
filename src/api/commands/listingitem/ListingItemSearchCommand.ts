@@ -118,4 +118,9 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + ' category name or by profileId, or by listing item price'
             + ' min and max price range, or by country or shipping destination.';
     }
+
+    public example(): string {
+        return 'item ' + this.getName() + ' 1 10 ASC 76 1 100 200 Australia China wine';
+    }
+
 }

@@ -124,4 +124,12 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         return 'Add a new listing item template associate it with a profile.';
     }
 
+    public example(): string {
+        return 'template ' + this.getName() + ' 1'
+        + ' \'The Communist Manifesto\''
+        + ' \'Fight capitalism by buying this book!\''
+        + ' \'Impress all your hippest comrades by attending your next communist revolutionary Starbucks meeting with the original'
+        + ' and best book on destroying your economy!\''
+        + ' 16 SALE BITCOIN 1848 1922 1945 396tyYFbHxgJcf3kSrSdugp6g4tctUP3ay ';
+    }
 }

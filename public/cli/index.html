@@ -99,13 +99,22 @@
     var scanlines = $('.scanlines');
     var term = $('#term').terminal(function(command, term) {
         if (command !== '') {
-
-            var params = command.split(' ');
+            var params = command.match(/\\?.|^$/g).reduce((p, c) => {
+                if(c === '\''){
+                    p.quote ^= 1;
+                }else if(!p.quote && c === ' '){
+                    p.a.push('');
+                }else{
+                    p.a[p.a.length-1] += c.replace(/\\(.)/,'$1');
+                }
+                return  p;
+            }, {a: ['']}).a;
             var method = params.shift();
 
+            var isANumber = /^-?\d+(.\d+)?$/;
             for (var i=0; i < params.length; i++) {
                 var param = parseFloat(params[i]);
-                if (!isNaN(param)){
+                if (isANumber.test(params[i]) && !isNaN(param)){
                     params[i] = param;
                 }
                 if (params[i] === 'true' || params[i] === 'false') {

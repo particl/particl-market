@@ -9,9 +9,11 @@ export class BidSearchParams extends RequestBody {
     @IsEnum(BidMessageType)
     public action: BidMessageType;
 
-    public listingItemHash: string;
+    @IsNotEmpty()
+    public listingItemId: number;
 
-    public profileId: number;
+
+    public listingItemHash: string;
 
 }
 // tslint:enable:variable-name

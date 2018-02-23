@@ -95,6 +95,10 @@ export class ShippingDestinationAddCommand extends BaseCommand implements RpcCom
         return 'Create a new shipping destination and associate it with an item information object.';
     }
 
+    public example(): string {
+        return 'shipping ' + this.getName() + ' 1 Australia UNKNOWN';
+    }
+
     private validateShippingAvailability(shippingAvailStr: string): ShippingAvailability {
         const shippingAvail: ShippingAvailability = ShippingAvailability[shippingAvailStr];
         if ( ShippingAvailability[shippingAvail] === undefined ) {
