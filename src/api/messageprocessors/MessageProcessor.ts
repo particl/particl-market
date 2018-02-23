@@ -36,9 +36,9 @@ export class MessageProcessor implements MessageProcessorInterface {
         this.timeout = setTimeout(
             async () => {
                 await this.poll();
-                this.eventEmitter.emit('cli', {
+                /* this.eventEmitter.emit('cli', {
                     message: 'message from messageprocessor to the cli'
-                });
+                }); */
                 this.schedulePoll();
             },
             this.interval
@@ -60,6 +60,9 @@ export class MessageProcessor implements MessageProcessorInterface {
             })
             .catch( reason => {
                 this.log.error('poll() error:', reason);
+                this.eventEmitter.emit('cli', {
+                    message: 'poll() error' + reason
+                });
                 return;
             });
     }

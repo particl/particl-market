@@ -9,6 +9,7 @@ import { BidMessage } from '../messages/BidMessage';
 import { BidService } from '../services/BidService';
 import { ListingItemService } from '../services/ListingItemService';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { EventEmitter } from '../../core/api/events';
 
 export class BidMessageProcessor implements MessageProcessorInterface {
 
@@ -18,6 +19,7 @@ export class BidMessageProcessor implements MessageProcessorInterface {
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -44,6 +46,10 @@ export class BidMessageProcessor implements MessageProcessorInterface {
         // get the BidCreateRequest and create the bid
         const bidCreateRequest = await this.bidFactory.getModel(data, listingItem.id);
         this.log.debug('process, bidCreateRequest: ', bidCreateRequest);
+
+        this.eventEmitter.emit('cli', {
+            message: 'bid message received ' + JSON.stringify(bidCreateRequest)
+        });
 
         return await this.bidService.create(bidCreateRequest);
     }
