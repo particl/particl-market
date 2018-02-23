@@ -8,7 +8,6 @@ import { IoC } from './IoC';
 
 export class SocketIoServer {
 
-    public tmp = 'AASDASDF';
     public socketIO: SocketIO;
 
     private log = new Logger(__filename);
