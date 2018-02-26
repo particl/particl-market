@@ -23,8 +23,8 @@ export class DefaultMarketService {
     public async seedDefaultMarket(): Promise<void> {
         const defaultMarket = {
             name: 'DEFAULT',
-            private_key: 'DEFAULT-PRIVATE-KEY',
-            address: 'DEFAULT-MARKET-ADDRESS'
+            private_key: '9GDvyFtyKv2vhgup4QsXSmtCFzZGV1d2TVXuYmd1rmsw5254Qk2',
+            address: 'pmktprNQUTvKEWJaRJaLDHToYum3qwwivX'
         } as MarketCreateRequest;
         await this.insertOrUpdateMarket(defaultMarket);
         return;
