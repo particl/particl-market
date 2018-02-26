@@ -1,16 +1,9 @@
 # dapp-shell
  
-[![Travis Build Status](https://travis-ci.org/particl/dapp-shell.svg?branch=develop)](https://travis-ci.org/particl/dapp-shell)
-[![Codefresh build status]( https://g.codefresh.io/api/badges/build?repoOwner=particl&repoName=dapp-shell&branch=develop&pipelineName=dapp-shell&accountName=ludx&type=cf-2)]( https://g.codefresh.io/repositories/particl/dapp-shell/builds?filter=trigger:build;branch:develop;service:5a6b2e1fc09dc20001b37ddb~dapp-shell)
-<<<<<<< HEAD
- 
-## Getting Started
-### Step 1:  Set up the Development Environment
-=======
+[![CircleCI](https://circleci.com/gh/particl/dapp-shell/tree/develop.svg?style=svg)](https://circleci.com/gh/particl/dapp-shell/tree/develop)
 
 ## Getting Started 
 ### Step 1:  Set up the Development Environment 
->>>>>>> 93bf8f188e510dff8ee5817fd867cfd40aa0466c
 You need to set up your development environment before you can do anything.
 
 Install [Node.js and NPM](https://nodejs.org/en/download/)
