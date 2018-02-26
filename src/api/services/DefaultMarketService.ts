@@ -21,6 +21,7 @@ export class DefaultMarketService {
 
 
     public async seedDefaultMarket(): Promise<void> {
+        // todo: move default market info to env variables?
         const defaultMarket = {
             name: 'DEFAULT',
             private_key: '9GDvyFtyKv2vhgup4QsXSmtCFzZGV1d2TVXuYmd1rmsw5254Qk2',
@@ -31,7 +32,7 @@ export class DefaultMarketService {
     }
 
     public async insertOrUpdateMarket(market: MarketCreateRequest): Promise<Market> {
-        let newMarket = await this.marketService.findByAddress('DEFAULT-MARKET-ADDRESS');
+        let newMarket = await this.marketService.findByAddress('pmktprNQUTvKEWJaRJaLDHToYum3qwwivX');
         if (newMarket === null) {
             newMarket = await this.marketService.create(market as MarketCreateRequest);
             this.log.debug('created new default Market');
