@@ -24,7 +24,7 @@ export class DefaultProfileService {
             name: 'DEFAULT'
         } as ProfileCreateRequest;
 
-        defaultProfile.address = await this.profileService.getNewAddressFromDaemon();
+        defaultProfile.address = await this.coreRpcService.getNewAddressFromDaemon();
         const newProfile = await this.insertOrUpdateProfile(defaultProfile);
 
         this.log.debug('default profile:', newProfile.toJSON());

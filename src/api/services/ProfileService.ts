@@ -65,7 +65,7 @@ export class ProfileService {
         const body = JSON.parse(JSON.stringify(data));
 
         if ( !body.address ) {
-            body.address = await this.getNewAddressFromDaemon();
+            body.address = await this.coreRpcService.getNewAddressFromDaemon();
         }
 
         // extract and remove related models from request
@@ -96,23 +96,6 @@ export class ProfileService {
         // finally find and return the created profileId
         const newProfile = await this.findOne(profile.Id);
         return newProfile;
-    }
-
-    public async getNewAddressFromDaemon(): Promise<string> {
-        let newAddress;
-        await this.coreRpcService.call('getnewaddress')
-            .then( async (res) => {
-                this.log.info('Successfully created new address for profile: ' + res);
-                newAddress = res;
-            })
-            .catch(reason => {
-                this.log.warn('Could not create new address for profile: ' + reason);
-                newAddress = 'ERROR_NO_ADDRESS';
-            });
-        if ( newAddress ) {
-            return newAddress;
-        }
-        throw new Error('Something has gone terribly wrong.');
     }
 
     @validate()
