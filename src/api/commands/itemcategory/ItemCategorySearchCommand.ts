@@ -9,6 +9,7 @@ import { ItemCategory } from '../../models/ItemCategory';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ItemCategorySearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ItemCategory>> {
 
@@ -24,23 +25,28 @@ export class ItemCategorySearchCommand extends BaseCommand implements RpcCommand
 
     /**
      * data.params[]:
-     *  [0]: searchString, string, can be null
+     *  [0]: searchString, string, can't be null
      *
      * @param data
      * @returns {Promise<ItemCategory>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ItemCategory>> {
+
+        if (!data.params[0]) {
+            throw new MessageException('SearchString can not be null');
+        }
+
         return await this.itemCategoryService.findByName(data.params[0]);
     }
 
     public usage(): string {
-        return this.getName() + ' [<searchString>] ';
+        return this.getName() + ' <searchString> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <searchString>                - [optional] String - A search string for finding \n'
+            + '    <searchString>                - String - A search string for finding \n'
             + '                                     categories by name. ';
     }
 
