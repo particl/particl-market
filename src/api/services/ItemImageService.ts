@@ -58,7 +58,7 @@ export class ItemImageService {
         // if the request body was valid we will create the itemImage
         const itemImage = await this.itemImageRepo.create(body);
 
-        if ( _.isEmpty(itemImageDataOriginal.protocol) && ImageDataProtocolType[itemImageDataOriginal.protocol] ) {
+        if ( _.isEmpty(itemImageDataOriginal.protocol) && !ImageDataProtocolType[itemImageDataOriginal.protocol] ) {
             this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
             throw new MessageException('Invalid protocol.');
         }
