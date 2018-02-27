@@ -98,12 +98,19 @@ export class ProfileService {
         const newProfile = await this.findOne(profile.Id);
         return newProfile;
     }
+
     public async getNewAddress(): Promise<string> {
-        const address = await this.coreRpcService.getNewAddress().catch(reason => {
-            this.log.warn('Could not create new address for profile: ' + reason);
-            throw new MessageException('Error while generating new address.');
-        });
-        return address;
+        const newAddress = await this.coreRpcService.getNewAddress()
+            .then( async (res) => {
+                this.log.info('Successfully created new address for profile: ' + res);
+                return res;
+            })
+            .catch(async (reason) => {
+                this.log.warn('Could not create new address for profile: ' + reason);
+                return 'ERROR_NO_ADDRESS';
+            });
+        this.log.debug('new address: ', newAddress );
+        return newAddress;
     }
 
     @validate()
