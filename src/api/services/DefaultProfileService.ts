@@ -40,7 +40,6 @@ export class DefaultProfileService {
             if (newProfile.Address === 'ERROR_NO_ADDRESS') {
                 profile.address = await this.coreRpcService.getNewAddress();
             }
-
             newProfile = await this.profileService.update(newProfile.Id, profile);
         }
         return newProfile;

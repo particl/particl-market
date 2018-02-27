@@ -34,6 +34,10 @@ export class CoreRpcService {
         return this.call('getnewaddress');
     }
 
+    public async smsgImportPrivKey( privateKey: string, label: string = '' ): Promise<any> {
+        return this.call('smsgimportprivkey', [privateKey]);
+    }
+
     /**
      *
      * @returns {Promise<any>}
@@ -51,6 +55,8 @@ export class CoreRpcService {
             params,
             id
         });
+
+        this.log.debug('call: ' + method + ' ' + params );
 
         const url = this.getUrl();
         const options = this.getOptions();

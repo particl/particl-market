@@ -25,7 +25,6 @@ export class MessageBroadcastService {
      * @returns {Promise<void>}
      */
     public async broadcast(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<void> {
-
         this.coreRpcService.sendSmsgMessage(profileAddress, marketAddress, message);
         return Promise.resolve();
     }
