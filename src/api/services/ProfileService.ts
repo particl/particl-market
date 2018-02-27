@@ -98,6 +98,7 @@ export class ProfileService {
         const newProfile = await this.findOne(profile.Id);
         return newProfile;
     }
+
     public async getNewAddress(): Promise<string> {
         const address = await this.coreRpcService.getNewAddress().catch(reason => {
             this.log.warn('Could not create new address for profile: ' + reason);

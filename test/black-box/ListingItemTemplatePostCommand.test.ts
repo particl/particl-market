@@ -84,9 +84,8 @@ describe('ListingItemPostCommand', () => {
     });
 
     test('Should have received posted listingitem', async () => {
-
-
-
+        // asdf
+        const test = 1;
     });
 
 
