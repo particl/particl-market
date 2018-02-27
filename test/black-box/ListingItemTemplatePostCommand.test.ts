@@ -21,12 +21,10 @@ describe('ListingItemPostCommand', () => {
         await testUtil.cleanDb();
 
         // fetch default profile
-        const defaultProfileModel = await testUtil.getDefaultProfile();
-        defaultProfile = defaultProfileModel.toJSON();
+        defaultProfile = await testUtil.getDefaultProfile();
 
         // fetch default market
-        const defaultMarketModel = await testUtil.getDefaultMarket();
-        defaultMarket = defaultMarketModel.toJSON();
+        defaultMarket = await testUtil.getDefaultMarket();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation

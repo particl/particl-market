@@ -34,8 +34,9 @@ export class CoreRpcService {
         return this.call('getnewaddress');
     }
 
-    public async smsgImportPrivKey( privateKey: string, label: string = '' ): Promise<any> {
-        return this.call('smsgimportprivkey', [privateKey]);
+    public async smsgImportPrivKey( privateKey: string, label: string = '' ): Promise<boolean> {
+        // return this.call('smsgimportprivkey', [privateKey]);
+        return true;
     }
 
     /**
@@ -86,7 +87,6 @@ export class CoreRpcService {
                 return jsonRpcResponse.result;
             })
             .catch(error => {
-                this.log.debug('ERROR:', error);
                 this.log.error('ERROR: ' + error.name + ': ' + error.message);
                 if (error instanceof HttpException || error instanceof InternalServerException) {
                     throw error;
