@@ -17,6 +17,7 @@ import { AddressUpdateRequest } from '../requests/AddressUpdateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { CryptocurrencyAddressUpdateRequest } from '../requests/CryptocurrencyAddressUpdateRequest';
 import { ShoppingCartsCreateRequest } from '../requests/ShoppingCartsCreateRequest';
+import {MessageException} from '../exceptions/MessageException';
 
 export class ProfileService {
 
@@ -65,7 +66,7 @@ export class ProfileService {
         const body = JSON.parse(JSON.stringify(data));
 
         if ( !body.address ) {
-            body.address = await this.getNewAddressFromDaemon();
+            body.address = await this.getNewAddress();
         }
 
         // extract and remove related models from request
@@ -98,21 +99,28 @@ export class ProfileService {
         return newProfile;
     }
 
-    public async getNewAddressFromDaemon(): Promise<string> {
-        let newAddress;
-        await this.coreRpcService.call('getnewaddress')
+    /*
+    public async getNewAddress(): Promise<string> {
+        const address = await this.coreRpcService.getNewAddress().catch(reason => {
+            this.log.warn('Could not create new address for profile: ' + reason);
+            throw new MessageException('Error while generating new address.');
+        });
+        return address;
+    }
+    */
+
+    public async getNewAddress(): Promise<string> {
+        const newAddress = await this.coreRpcService.getNewAddress()
             .then( async (res) => {
                 this.log.info('Successfully created new address for profile: ' + res);
-                newAddress = res;
+                return res;
             })
-            .catch(reason => {
+            .catch(async (reason) => {
                 this.log.warn('Could not create new address for profile: ' + reason);
-                newAddress = 'ERROR_NO_ADDRESS';
+                return 'ERROR_NO_ADDRESS';
             });
-        if ( newAddress ) {
-            return newAddress;
-        }
-        throw new Error('Something has gone terribly wrong.');
+        this.log.debug('new address: ', newAddress );
+        return newAddress;
     }
 
     @validate()
