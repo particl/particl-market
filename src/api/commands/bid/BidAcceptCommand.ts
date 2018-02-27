@@ -57,7 +57,8 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
             } else if (bid.action === BidMessageType.MPA_BID) {
                 // broadcast the accepted bid message
-                await this.messageBroadcastService.broadcast({
+                // TODO: add profile and market addresses
+                await this.messageBroadcastService.broadcast('', '', {
                     listing: data.params[0],
                     action: BidMessageType.MPA_ACCEPT
                 } as BidMessage);

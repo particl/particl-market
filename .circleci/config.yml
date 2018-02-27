@@ -568,6 +568,7 @@ jobs:
       - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
+      - run: yarn install
       - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
 
   # develop branch deploy

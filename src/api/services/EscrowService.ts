@@ -203,7 +203,9 @@ export class EscrowService {
 
         // use escrowfactory to generate the lock message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel, address);
-        return await this.messageBroadcastService.broadcast(escrowActionMessage);
+
+        // TODO: add profile and market addresses
+        return await this.messageBroadcastService.broadcast('', '', escrowActionMessage);
     }
 
     @validate()
@@ -216,7 +218,8 @@ export class EscrowService {
 
         // use escrowfactory to generate the refund message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
-        return await this.messageBroadcastService.broadcast(escrowActionMessage);
+        // TODO: add profile and market addresses
+        return await this.messageBroadcastService.broadcast('', '', escrowActionMessage);
     }
 
     @validate()
@@ -229,7 +232,8 @@ export class EscrowService {
 
         // use escrowfactory to generate the release message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
-        return await this.messageBroadcastService.broadcast(escrowActionMessage);
+        // TODO: add profile and market addresses
+        return await this.messageBroadcastService.broadcast('', '', escrowActionMessage);
     }
 
 }
