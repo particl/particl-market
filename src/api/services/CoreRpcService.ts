@@ -50,8 +50,8 @@ export class CoreRpcService {
      * @returns {Promise<any>}
      */
     public async sendSmsgMessage(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<any> {
-        this.log.debug('SEND SMSG, from: ' + profileAddress + ', to: ' + marketAddress + ', message: ' + JSON.stringify(message, null, 2));
-        return await this.call('smsgsend', [profileAddress, marketAddress, message]);
+        this.log.debug('SEND SMSG, from: ' + profileAddress + ', to: ' + marketAddress);
+        return await this.call('smsgsend', [profileAddress, marketAddress, JSON.stringify(message)]);
     }
 
     public async call(method: string, params: any[] = []): Promise<any> {
