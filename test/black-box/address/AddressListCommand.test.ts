@@ -9,6 +9,8 @@ describe('AddressListCommand', () => {
     let defaultProfileId;
 
     const testData = {
+        firstName: 'Johnny',
+        lastName: 'Depp',
         title: 'Work',
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
@@ -48,9 +50,9 @@ describe('AddressListCommand', () => {
         // add address
         const res = await rpc(method, [Commands.ADDRESS_ADD.commandName,
             defaultProfileId,
-            testData.title,
-            testData.addressLine1, testData.addressLine2,
-            testData.city, testData.state, testData.country, testData.zipCode]);
+        testData.firstName, testData.lastName, testData.title,
+        testData.addressLine1, testData.addressLine2,
+        testData.city, testData.state, testData.country, testData.zipCode]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -67,9 +69,9 @@ describe('AddressListCommand', () => {
         // add address
         const res = await rpc(method, [Commands.ADDRESS_ADD.commandName,
             defaultProfileId,
-            testData.title,
-            testData.addressLine1, testData.addressLine2,
-            testData.city, testData.state, testData.country, testData.zipCode]);
+        testData.firstName, testData.lastName, testData.title,
+        testData.addressLine1, testData.addressLine2,
+        testData.city, testData.state, testData.country, testData.zipCode]);
         res.expectJson();
         res.expectStatusCode(200);
 

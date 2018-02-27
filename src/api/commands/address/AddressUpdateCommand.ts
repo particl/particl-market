@@ -9,7 +9,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { AddressUpdateRequest } from '../../requests/AddressUpdateRequest';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingZips } from '../../../core/helpers/ShippingZips';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { NotFoundException } from '../../exceptions/NotFoundException';
@@ -31,13 +31,15 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
      *
      * data.params[]:
      *  [0]: address id
-     *  [1]: title
-     *  [2]: addressLine1
-     *  [3]: addressLine2
-     *  [4]: city
-     *  [5]: state
-     *  [6]: country/countryCode
-     *  [7]: zipCode
+     *  [1]: firstName
+     *  [2]: lastName
+     *  [3]: title
+     *  [4]: addressLine1
+     *  [5]: addressLine2
+     *  [6]: city
+     *  [7]: state
+     *  [8]: country/countryCode
+     *  [9]: zipCode
      *
      * @param data
      * @param rpcCommandFactory
@@ -48,12 +50,12 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
         this.log.debug('AddressUpdateCommand.update(): 100');
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
-        let countryCode: string = data.params[6];
+        let countryCode: string = data.params[8];
         countryCode = ShippingCountries.validate(this.log, countryCode);
         this.log.debug('AddressUpdateCommand.update(): 200');
 
         // Validate ZIP code
-        const zipCodeStr = data.params[7];
+        const zipCodeStr = data.params[9];
         if (!ShippingZips.validate(countryCode, zipCodeStr)) {
             this.log.debug('AddressUpdateCommand.update(): 250');
             throw new NotFoundException('ZIP/postal-code, country code, combination not valid.');
@@ -61,23 +63,29 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
         this.log.debug('AddressUpdateCommand.update(): 300');
 
         return this.addressService.update(data.params[0], {
-            title : data.params[1],
-            addressLine1 : data.params[2],
-            addressLine2 : data.params[3],
-            city : data.params[4],
-            state : data.params[5],
-            country : countryCode,
-            zipCode : zipCodeStr
+            firstName: data.params[1],
+            lastName: data.params[2],
+            title: data.params[3],
+            addressLine1: data.params[4],
+            addressLine2: data.params[5],
+            city: data.params[6],
+            state: data.params[7],
+            country: countryCode,
+            zipCode: zipCodeStr
         } as AddressUpdateRequest);
     }
 
+    // tslint:disable:max-line-length
     public usage(): string {
-        return this.getName() + ' <addressId> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] ';
+        return this.getName() + ' <addressId> <firstName> <lastName> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] ';
     }
+    // tslint:enable:max-line-length
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <addressId>              - Numeric - The ID of the address we want to modify. \n'
+            + '    <firstName>              - String - First Name of user. \n'
+            + '    <lastName>               - String - Last Name of user. \n'
             + '    <title>                  - String - A short identifier for the address. \n'
             + '    <addressLine1>           - String - The first line of the address. \n'
             + '    <addressLine2>           - String - The second line of the address. \n'
@@ -93,6 +101,6 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public example(): string {
-        return 'address 1 ' + this.getName() + ' homeAddress \'1060 West Addison Street\' \'\' Chicago IL \'United States\' 60613 ';
+        return 'address 1 ' + this.getName() + 'johnny \' deep \' homeAddress \'1060 West Addison Street\' \'\' Chicago IL \'United States\' 60613 ';
     }
 }

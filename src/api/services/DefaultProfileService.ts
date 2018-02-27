@@ -36,7 +36,6 @@ export class DefaultProfileService {
         if (newProfile === null) {
             this.log.debug('created new default profile');
             newProfile = await this.profileService.create(profile);
-
         } else {
             newProfile = await this.profileService.update(newProfile.Id, profile);
             this.log.debug('updated new default profile');
