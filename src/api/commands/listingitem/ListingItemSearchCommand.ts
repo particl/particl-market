@@ -8,6 +8,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
+import { ListingItemSearchType } from '../../enums/ListingItemSearchType';
+
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
@@ -44,27 +46,32 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItem>> {
-        if (data.params[4]) { // type
-            if (typeof data.params[5] === 'number' || data.params[5] === 'OWN' || data.params[5] === 'ALL' || data.params[5] === '*') {
-                return this.listingItemService.search({
-                    page: data.params[0] || 1,
-                    pageLimit: data.params[1] || 5, // default page limit 5
-                    order: data.params[2] || 'ASC',
-                    category: data.params[3],
-                    type: data.params[4],
-                    profileId: data.params[5],
-                    minPrice: data.params[6],
-                    maxPrice: data.params[7],
-                    country: data.params[8],
-                    shippingDestination: data.params[9],
-                    searchString: data.params[10] || ''
-                } as ListingItemSearchParams, data.params[11]);
-            } else {
-                throw new MessageException('Value needs to be number | OWN | ALL. you could pass * as all too');
-            }
-        } else {
-            throw new MessageException('Type can\'t be blank, should be FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL');
+        const type = data.params[4] || 'ALL';
+        const profileId = data.params[5] || 'ALL';
+
+        // check valid search type
+        if (!ListingItemSearchType[type]) {
+            throw new MessageException('Type should be FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL');
         }
+
+        // check vaild profile profileId search params
+        if (typeof profileId !== 'number' && profileId !== 'OWN' && profileId !== 'ALL' && profileId !== '*') {
+            throw new MessageException('Value needs to be number | OWN | ALL. you could pass * as all too');
+        }
+
+        return this.listingItemService.search({
+            page: data.params[0] || 1,
+            pageLimit: data.params[1] || 5, // default page limit 5
+            order: data.params[2] || 'ASC',
+            category: data.params[3],
+            type,
+            profileId,
+            minPrice: data.params[6],
+            maxPrice: data.params[7],
+            country: data.params[8],
+            shippingDestination: data.params[9],
+            searchString: data.params[10] || ''
+        } as ListingItemSearchParams, data.params[11]);
     }
 
     // tslint:disable:max-line-length
