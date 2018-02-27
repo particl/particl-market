@@ -69,17 +69,6 @@ describe('ItemImageData', () => {
         data: ImageProcessing.milkcat
     } as ItemImageDataUpdateRequest;
 
-    const itemImageTestData = {
-        // item_information_id: null,
-        hash: 'TEST-HASH',
-        data: {
-            dataId: 'QmUwHMFY9GSiKgjqyZpgAv2LhBrh7GV8rtLuagbry9wmMU',
-            protocol: ImageDataProtocolType.IPFS,
-            encoding: null,
-            data: null
-        }
-    };
-
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
