@@ -38,6 +38,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     test('Should create a new Listing Item Template by RPC with Profile + Item-information + Payment-information', async () => {
 
+        // todo: test with existing category, not a custom one
         categoryResult = await rpc('category', ['add', 'templateCategory', 'category for Template', 'cat_ROOT']);
         categoryResult.expectJson();
         categoryResult.expectStatusCode(200);

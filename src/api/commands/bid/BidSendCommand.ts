@@ -59,7 +59,8 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
             // convert the bid data params as bid data key value pair
             const bidData = this.setBidData(data.params);
             // broadcast the message in to the network
-            await this.messageBroadcastService.broadcast({
+            // TODO: add profile and market addresses
+            await this.messageBroadcastService.broadcast('', '', {
               objects: bidData,
               listing: listingItemHash,
               action: BidMessageType.MPA_BID

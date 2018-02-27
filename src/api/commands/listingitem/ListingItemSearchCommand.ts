@@ -104,9 +104,6 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '                                we want to search for. \n'
             + '    <shippingDestination>    - [optional] String - The shipping destination of the listing item \n'
             + '                                we want to search for. \n'
-            + '    ALL                      - [optional] [TODO: REWRITE] any string or * or none \n'
-            + '                                means dont want to search with profile \n'
-            + '                                we want to search for. \n'
             + '    <searchString>           - [optional] String - A string that is used to \n'
             + '                                find listing items by their titles. ';
     }
