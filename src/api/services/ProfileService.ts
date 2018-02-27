@@ -17,6 +17,7 @@ import { AddressUpdateRequest } from '../requests/AddressUpdateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { CryptocurrencyAddressUpdateRequest } from '../requests/CryptocurrencyAddressUpdateRequest';
 import { ShoppingCartsCreateRequest } from '../requests/ShoppingCartsCreateRequest';
+import {MessageException} from '../exceptions/MessageException';
 
 export class ProfileService {
 
@@ -65,7 +66,7 @@ export class ProfileService {
         const body = JSON.parse(JSON.stringify(data));
 
         if ( !body.address ) {
-            body.address = await this.coreRpcService.getNewAddressFromDaemon();
+            body.address = await this.getNewAddress();
         }
 
         // extract and remove related models from request
@@ -96,6 +97,13 @@ export class ProfileService {
         // finally find and return the created profileId
         const newProfile = await this.findOne(profile.Id);
         return newProfile;
+    }
+    public async getNewAddress(): Promise<string> {
+        const address = await this.coreRpcService.getNewAddress().catch(reason => {
+            this.log.warn('Could not create new address for profile: ' + reason);
+            throw new MessageException('Error while generating new address.');
+        });
+        return address;
     }
 
     @validate()

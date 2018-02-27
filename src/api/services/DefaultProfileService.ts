@@ -24,22 +24,23 @@ export class DefaultProfileService {
             name: 'DEFAULT'
         } as ProfileCreateRequest;
 
-        defaultProfile.address = await this.coreRpcService.getNewAddressFromDaemon();
         const newProfile = await this.insertOrUpdateProfile(defaultProfile);
 
-        this.log.debug('default profile:', newProfile.toJSON());
+        this.log.debug('default profile: ', newProfile.toJSON());
         return;
     }
 
     public async insertOrUpdateProfile(profile: ProfileCreateRequest): Promise<Profile> {
         let newProfile = await this.profileService.findOneByName(profile.name);
         if (newProfile === null) {
-            this.log.debug('created new default profile');
             newProfile = await this.profileService.create(profile);
+            this.log.debug('created new default profile');
 
         } else {
+            if (newProfile.Address === 'ERROR_NO_ADDRESS') {
+                profile.address = await this.coreRpcService.getNewAddress();
+            }
             newProfile = await this.profileService.update(newProfile.Id, profile);
-            this.log.debug('updated new default profile');
         }
         return newProfile;
     }
