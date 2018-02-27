@@ -143,6 +143,7 @@ jobs:
           version: 17.11.0-ce
 
       # install deps and set up the app locally
+      - run: npm rebuild
       - run: yarn install
       - run: ./bin/copy-env.sh
       - run: ./bin/ci-create-dbs.sh
@@ -382,6 +383,7 @@ jobs:
           version: 17.11.0-ce
 
       # install deps and set up the app locally
+      - run: npm rebuild
       - run: yarn install
       - run: ./bin/copy-env.sh
       - run: ./bin/ci-create-dbs.sh
@@ -627,6 +629,7 @@ jobs:
           version: 17.11.0-ce
 
       # install deps and set up the app locally
+      - run: npm rebuild
       - run: yarn install
       - run: ./bin/copy-env.sh
       - run: ./bin/ci-create-dbs.sh
