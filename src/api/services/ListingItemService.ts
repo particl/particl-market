@@ -39,6 +39,7 @@ import { Market } from '../models/Market';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { FlaggedItemService } from './FlaggedItemService';
+import {NotImplementedException} from '../exceptions/NotImplementedException';
 
 export class ListingItemService {
 
@@ -307,7 +308,10 @@ export class ListingItemService {
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId);
         const itemTemplate = itemTemplateModel.toJSON();
 
-        // fetch the market, dont remove, will be used later with the broadcast
+        // get the templates profile address
+        const profileAddress = itemTemplate.Profile.address;
+
+        // fetch the market, will be used later with the broadcast
         const marketModel: Market = await _.isEmpty(data.marketId)
             ? await this.marketService.getDefault()
             : await this.marketService.findOne(data.marketId);
@@ -317,10 +321,8 @@ export class ListingItemService {
         const rootCategoryWithRelated = await this.itemCategoryService.findRoot();
         const addItemMessage = await this.listingItemFactory.getMessage(itemTemplate, rootCategoryWithRelated);
 
-        // TODO: Need to update broadcast message return after broadcast functionality will be done.
-        this.messageBroadcastService.broadcast(addItemMessage as ListingItemMessage);
-        return itemTemplate;
-
+        this.messageBroadcastService.broadcast(profileAddress, market.address, addItemMessage as ListingItemMessage);
+        return Promise.resolve();
     }
 
     /**
@@ -332,9 +334,16 @@ export class ListingItemService {
     @validate()
     public async updatePostItem( @request(ListingItemUpdatePostRequest) data: ListingItemUpdatePostRequest): Promise<void> {
 
+        // TODO: update not implemented/supported yet
+
+        throw new NotImplementedException();
+        /*
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.findOne(data.listingItemTemplateId);
         const itemTemplate = itemTemplateModel.toJSON();
+
+        // get the templates profile address
+        const profileAddress = itemTemplate.Profile.address;
 
         // check listing-item
         const listingItems = itemTemplateModel.related('ListingItem').toJSON() || [];
@@ -345,11 +354,12 @@ export class ListingItemService {
             updateItemMessage.hash = data.hash; // replace with param hash of listing-item
 
             // TODO: Need to update broadcast message return after broadcast functionality will be done.
-            this.messageBroadcastService.broadcast(updateItemMessage as ListingItemMessage);
+            this.messageBroadcastService.broadcast(profileAddress, market.address, updateItemMessage as ListingItemMessage);
         } else {
             this.log.warn(`No listingItem related with listing_item_template_id=${data.hash}!`);
             throw new MessageException(`No listingItem related with listing_item_template_id=${data.hash}!`);
         }
+        */
     }
 
     // check if ListingItem already Flagged
