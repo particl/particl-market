@@ -49,9 +49,9 @@ describe('ItemImageData', () => {
     let listingItemService: ListingItemService;
     let itemInformationService: ItemInformationService;
 
-    let createdListingItem;
-    let createdImage;
-    let createdImageDataId;
+    // let createdListingItem;
+    // let createdImage;
+    // let createdImageDataId;
 
     const testData = {
         imageVersion: ImageVersions.ORIGINAL.propName,
