@@ -6,6 +6,8 @@ import * as WebRequest from 'web-request';
 import { HttpException } from '../exceptions/HttpException';
 import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
+import {ItemMessageInterface} from '../messages/ItemMessageInterface';
+import {ActionMessageInterface} from '../messages/ActionMessageInterface';
 
 let RPC_REQUEST_ID = 1;
 
@@ -28,6 +30,23 @@ export class CoreRpcService {
         return this.call('getnetworkinfo');
     }
 
+    public async getNewAddress(): Promise<any> {
+        return this.call('getnewaddress');
+    }
+
+    public async smsgImportPrivKey( privateKey: string, label: string = '' ): Promise<any> {
+        return this.call('smsgimportprivkey', [privateKey]);
+    }
+
+    /**
+     *
+     * @returns {Promise<any>}
+     */
+    public async sendSmsgMessage(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<any> {
+        this.log.debug('SEND SMSG, from: ' + profileAddress + ', to: ' + marketAddress + ', message: ' + JSON.stringify(message, null, 2));
+        return this.call('smsgsend', [profileAddress, marketAddress, message]);
+    }
+
     public async call(method: string, params: any[] = []): Promise<any> {
 
         const id = RPC_REQUEST_ID++;
@@ -36,6 +55,8 @@ export class CoreRpcService {
             params,
             id
         });
+
+        this.log.debug('call: ' + method + ' ' + params );
 
         const url = this.getUrl();
         const options = this.getOptions();
@@ -65,6 +86,7 @@ export class CoreRpcService {
                 return jsonRpcResponse.result;
             })
             .catch(error => {
+                this.log.debug('ERROR:', error);
                 this.log.error('ERROR: ' + error.name + ': ' + error.message);
                 if (error instanceof HttpException || error instanceof InternalServerException) {
                     throw error;

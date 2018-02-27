@@ -252,10 +252,14 @@ export class TestDataService {
         const items: any[] = [];
         for (let i = amount; i > 0; i--) {
             const listingItem = await this.generateListingItemData(generateParams);
+            // this.log.debug('listingItem: ', listingItem);
             const savedListingItem = await this.listingItemService.create(listingItem);
-            items.push(savedListingItem);
+            // this.log.debug('savedListingItem: ', savedListingItem.toJSON());
+            items.push(savedListingItem.toJSON());
         }
-        return this.generateResponse(items, withRelated);
+        // this.log.debug('items: ', items);
+
+        return await this.generateResponse(items, withRelated);
     }
 
     // -------------------
@@ -271,11 +275,11 @@ export class TestDataService {
         return this.generateResponse(items, withRelated);
     }
 
-    private generateResponse(items: any, withRelated: boolean): Promise<any> {
+    private async generateResponse(items: any, withRelated: boolean): Promise<any> {
         if (withRelated) {
             return items;
         } else {
-            return items.map(item => item.id);
+            return await items.map(item => item.id);
         }
     }
 
