@@ -33,11 +33,13 @@ export class DefaultProfileService {
     public async insertOrUpdateProfile(profile: ProfileCreateRequest): Promise<Profile> {
         let newProfile = await this.profileService.findOneByName(profile.name);
         if (newProfile === null) {
+            this.log.debug('creating new default profile');
             newProfile = await this.profileService.create(profile);
             this.log.debug('created new default profile');
 
         } else {
             if (newProfile.Address === 'ERROR_NO_ADDRESS') {
+                this.log.debug('updating profile address');
                 profile.address = await this.coreRpcService.getNewAddress();
             }
             newProfile = await this.profileService.update(newProfile.Id, profile);
