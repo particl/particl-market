@@ -99,6 +99,7 @@ export class ProfileService {
         return newProfile;
     }
 
+    /*
     public async getNewAddress(): Promise<string> {
         const address = await this.coreRpcService.getNewAddress().catch(reason => {
             this.log.warn('Could not create new address for profile: ' + reason);
@@ -106,25 +107,21 @@ export class ProfileService {
         });
         return address;
     }
+    */
 
-    /*
     public async getNewAddress(): Promise<string> {
-        let newAddress;
-        await this.coreRpcService.getNewAddress()
+        const newAddress = await this.coreRpcService.getNewAddress()
             .then( async (res) => {
                 this.log.info('Successfully created new address for profile: ' + res);
                 return res;
             })
             .catch(async (reason) => {
                 this.log.warn('Could not create new address for profile: ' + reason);
-                newAddress = 'ERROR_NO_ADDRESS';
+                return 'ERROR_NO_ADDRESS';
             });
-        if ( newAddress ) {
-            return newAddress;
-        }
-        throw new MessageException('Error while generating new address.');
+        this.log.debug('new address: ', newAddress );
+        return newAddress;
     }
-    */
 
     @validate()
     public async update(id: number, @request(ProfileUpdateRequest) data: any): Promise<Profile> {
