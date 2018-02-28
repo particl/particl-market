@@ -2,7 +2,7 @@ import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
-import { testDataListingItemTemplate, addressTestData } from './BidCommandCommon';
+import { addressTestData } from './BidCommandCommon';
 
 describe('BidSendCommand', () => {
 
@@ -29,8 +29,6 @@ describe('BidSendCommand', () => {
             addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
         addressRes.expectJson();
         addressRes.expectStatusCode(200);
-
-        testDataListingItemTemplate.market_id = (await testUtil.getDefaultMarket()).id;
     });
 
     test('Should send a bid by RPC', async () => {

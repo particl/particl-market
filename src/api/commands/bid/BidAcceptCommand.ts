@@ -107,7 +107,6 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
                 // Create Escrow address
                 // TODO: create raw transaction, sign transaction, booya
-                console.log('bid', bid);
                 const escrow = (await this.coreRpcService.call('addmultisigaddress', [
                     2,
                     [pubkey, bid.BidData.find(kv => kv.dataId === 'pubkey').dataValue],
@@ -116,7 +115,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
                 const txout = {};
 
-                txout[escrow.address] = totalPrice * 3; // TODO: Shipping... ;(
+                txout[escrow.address] = +(totalPrice * 3).toFixed(8); // TODO: Shipping... ;(
                 txout[changeAddr] = change;
 
                 const buyerChangeAddr = bid.BidData.find(kv => kv.dataId === 'changeAddr').dataValue; // TODO: Error handling - nice messagee..
@@ -140,7 +139,10 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
                     throw new Error('Buyer didn\'t supply outputs!'); // TODO: proper message for no outputs :P
                 }
 
-                console.log(txout);
+                console.log([
+                    outputs.concat(buyerOutputs),
+                    txout
+                ]);
                 const rawtx = await this.coreRpcService.call('createrawtransaction', [
                     outputs.concat(buyerOutputs),
                     txout

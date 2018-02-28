@@ -4,8 +4,7 @@ import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
-
-import { testDataListingItemTemplate, addressTestData } from './BidCommandCommon';
+import { addressTestData } from './BidCommandCommon';
 
 describe('BidAcceptCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -15,7 +14,15 @@ describe('BidAcceptCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        testDataListingItemTemplate.market_id = (await testUtil.getDefaultMarket()).id;
+
+        // create address
+        const addressRes = await rpc(Commands.ADDRESS_ROOT.commandName, [Commands.ADDRESS_ADD.commandName,
+            (await testUtil.getDefaultProfile()).id,
+            addressTestData.title,
+            addressTestData.addressLine1, addressTestData.addressLine2,
+            addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
+        addressRes.expectJson();
+        addressRes.expectStatusCode(200);
     });
 
     test('Should accept a bid by RPC', async () => {
@@ -31,7 +38,7 @@ describe('BidAcceptCommand', () => {
         const changeAddress = 'pYTjD9CRepFvh1YvVfowY2J14DK9ayrvrr';
 
         // create listing item
-        const listingItem: any = await testUtil.addData(CreatableModel.LISTINGITEM, testDataListingItemTemplate);
+        const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
 
         // create bid
         const bid = await testUtil.addData(CreatableModel.BID, {
@@ -41,10 +48,10 @@ describe('BidAcceptCommand', () => {
                 {id: 'outputs', value: outputs},
                 {id: 'changeAddr', value: changeAddress},
             ],
-            listing_item_id: listingItem.id
+            listing_item_id: listingItem[0].id
         } as BidCreateRequest);
-        console.log('2: gets here');
-        const res: any = await rpc(method, [subMethod, listingItem.hash]);
+
+        const res: any = await rpc(method, [subMethod, listingItem[0].hash]);
         res.expectJson();
 
         // TODO: Need to implements after broadcast functionality get done
