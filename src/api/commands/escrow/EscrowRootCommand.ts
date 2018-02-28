@@ -7,7 +7,7 @@ import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { EscrowCreateCommand } from './EscrowCreateCommand';
 import { EscrowDestroyCommand } from './EscrowDestroyCommand';
-import { EscrowLockCommand } from './EscrowLockCommand';
+import { EscrowAcceptCommand } from './EscrowAcceptCommand';
 import { EscrowRefundCommand } from './EscrowRefundCommand';
 import { EscrowReleaseCommand } from './EscrowReleaseCommand';
 import { EscrowUpdateCommand } from './EscrowUpdateCommand';
@@ -21,7 +21,7 @@ export class EscrowRootCommand extends BaseCommand implements RpcCommandInterfac
     constructor(
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowCreateCommand) private escrowCreateCommand: EscrowCreateCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowDestroyCommand) private escrowDestroyCommand: EscrowDestroyCommand,
-        @inject(Types.Command) @named(Targets.Command.escrow.EscrowLockCommand) private escrowLockCommand: EscrowLockCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowAcceptCommand) private escrowAcceptCommand: EscrowAcceptCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRefundCommand) private escrowRefundCommand: EscrowRefundCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowReleaseCommand) private escrowReleaseCommand: EscrowReleaseCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowUpdateCommand) private escrowUpdateCommand: EscrowUpdateCommand,

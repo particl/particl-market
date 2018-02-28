@@ -85,6 +85,10 @@ export class BidService {
 
         for (const dataToSave of bidData) {
             dataToSave.bid_id = bid.Id;
+            dataToSave.dataValue = typeof dataToSave.value === 'string' ? dataToSave.value : JSON.stringify(dataToSave.value);
+            dataToSave.dataId = dataToSave.id;
+            delete dataToSave.id;
+            delete dataToSave.value;
             await this.bidDataService.create(dataToSave as BidDataCreateRequest);
         }
 

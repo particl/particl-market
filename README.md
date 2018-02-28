@@ -247,3 +247,16 @@ by [w3tech](https://github.com/w3tecch)
 * [Auth0 API Documentation](https://auth0.com/docs/api/management/v2)
 * [swagger Documentation](http://swagger.io/)
 
+
+## Test Hacks
+```
+rm -rf /tmp/particl_testing/node1 /tmp/particl_testing/node2
+mkdir -p /tmp/particl_testing/node1 /tmp/particl_testing/node2
+./particld -regtest -daemon -datadir=/tmp/particl_testing/node1
+sleep 5
+./particl-cli -datadir=/tmp/particl_testing/node1 -regtest extkeyimportmaster 'abandon baby cabbage dad eager fabric gadget habit ice kangaroo lab absorb'
+./particl-cli -datadir=/tmp/particl_testing/node1 -regtest getnewaddress
+./particl-cli -datadir=/tmp/particl_testing/node1 -regtest sendtoaddress pX9N6S76ZtA5BfsiJmqBbjaEgLMHpt58it 1000
+./particl-cli -datadir=/tmp/particl_testing/node1 -regtest walletsettings stakelimit '{"height":10}'
+./particld -regtest -daemon -datadir=/tmp/particl_testing/node2 -port=55555 -rpcport=51945 -connect=127.0.0.1
+```

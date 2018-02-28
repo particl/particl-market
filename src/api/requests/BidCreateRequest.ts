@@ -12,6 +12,9 @@ export class BidCreateRequest extends RequestBody {
     @IsNotEmpty()
     public action: BidMessageType;
 
+    // @IsNotEmpty()
+    public addressId: number;
+
     public bidData: any;
 }
 // tslint:enable:variable-name

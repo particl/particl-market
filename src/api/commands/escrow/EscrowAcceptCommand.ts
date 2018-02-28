@@ -7,14 +7,14 @@ import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
 import { ListingItemService } from '../../services/ListingItemService';
-import { EscrowLockRequest } from '../../requests/EscrowLockRequest';
+import { EscrowAcceptRequest } from '../../requests/EscrowAcceptRequest';
 import { EscrowMessageType } from '../../enums/EscrowMessageType';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import * as _ from 'lodash';
 
-export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
+export class EscrowAcceptCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
 
@@ -31,8 +31,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
      * data.params[]:
      * [0]: itemhash
      * [1]: nonce
-     * [2]: addressId (from profile deliveryaddresses)
-     * [3]: memo
+     * [2]: memo
      * @param data
      * @returns {Promise<any>}
      */
@@ -54,17 +53,16 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
             throw new MessageException('Escrow not found!');
         }
 
-        return this.escrowService.lock({
+        return this.escrowService.accept({
             listing: data.params[0],
             nonce: data.params[1],
-            addressId: data.params[2],
-            memo: data.params[3],
-            action: EscrowMessageType.MPA_LOCK
-        } as EscrowLockRequest, escrow as Escrow);
+            memo: data.params[2],
+            action: EscrowMessageType.MPA_ACCEPT
+        } as EscrowAcceptRequest, escrow as Escrow);
     }
 
     public usage(): string {
-        return this.getName() + ' [<itemhash> [<nonce> [<addressId> [<memo>]]]] ';
+        return this.getName() + ' [<itemhash> [<nonce> [<memo>]]] '; // TODO...
     }
 
     public help(): string {
@@ -72,7 +70,6 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
             + '    <itemhash>               - String - The hash of the listing item for which we want to \n'
             + '                                lock escrow. \n'
             + '    <nonce>                  - String - The nonce of the escrow \n'
-            + '    <addressId>              - Numeric - The addressId of the related profile of escrow we want to lock \n'
             + '    <memo>                   - String - The memo of the Escrow ';
     }
 

@@ -15,7 +15,7 @@ describe('EscrowFactory', () => {
     test('Should get EscrowLockMessage', async () => {
 
         const request = {
-            action: EscrowMessageType.MPA_LOCK,
+            action: EscrowMessageType.MPA_ACCEPT,
             listing: 'f08f3d6e',
             nonce: 'randomness',
             memo: 'Please deliver by 17 March 2017'
@@ -29,6 +29,7 @@ describe('EscrowFactory', () => {
             }
         };
 
+/*
         const address = {
             title: 'Title',
             addressLine1: '20 seventeen street',
@@ -38,16 +39,17 @@ describe('EscrowFactory', () => {
             country: 'Finland',
             zipCode: '85001'
         };
-
-        const escrowMessage: EscrowMessage = await escrowFactory.getMessage(request, escrow, address);
+*/
+        const escrowMessage: EscrowMessage = await escrowFactory.getMessage(request, escrow);
 
         expect(escrowMessage.action).toBe(request.action);
         expect(escrowMessage.listing).toBe(request.listing);
         expect(escrowMessage.nonce).toBe(request.nonce);
         // todo: fix when zip is added
+        /* TODO: Move to BidSendTests...
         expect(escrowMessage.info.address).toBe(address.addressLine1 + ', ' + address.addressLine2 + ', ' + address.zipCode + ', ' +
             address.city + ', ' +
-            address.state + ', ' + address.country);
+            address.state + ', ' + address.country);*/
         expect(escrowMessage.info.memo).toBe(request.memo);
         expect(escrowMessage.escrow.rawtx).not.toBeNull();
 

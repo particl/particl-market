@@ -15,6 +15,10 @@ import { BidMessageType } from '../../enums/BidMessageType';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
+// Ryno changes
+import { CoreRpcService } from '../../services/CoreRpcService';
+import { Output } from 'resources';
+
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
     public log: LoggerType;
@@ -23,6 +27,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory
     ) {
         super(Commands.BID_SEND);
@@ -34,10 +39,11 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
      *
      * data.params[]:
      * [0]: itemhash, string
-     * [1]: bidDataId, string
-     * [2]: bidDataValue, string
-     * [3]: bidDataId, string
-     * [4]: bidDataValue, string
+     * [1]: addressId (from profile deliveryaddresses)
+     * [2]: bidDataId, string
+     * [3]: bidDataValue, string
+     * [4]: bidDataId, string
+     * [5]: bidDataValue, string
      * ......
      *
      * @param data
@@ -56,17 +62,63 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
             // get listing item hash it is in first argument in the data.params
             const listingItemHash = data.params.shift();
 
+            // TODO: Ryno Hacks - Refactor code below...
+            // Get unspent
+            const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
+            const outputs: Output[] = [];
+            const listingItemPrice = listingItem.toJSON().PaymentInformation.ItemPrice;
+            const basePrice = listingItemPrice.basePrice;
+            const shippingPriceMax = Math.max(
+                listingItemPrice.ShippingPrice.international,
+                listingItemPrice.ShippingPrice.domestic);
+            const totalPrice = basePrice + shippingPriceMax;
+
+            let sum = 0;
+            let change = 0;
+
+            if (basePrice) {
+                unspent.find(output => {
+                    if (output.spendable && output.solvable) {
+                        sum += output.amount;
+                        outputs.push({
+                            txid: output.txid,
+                            vout: output.vout,
+                            amount: output.amount
+                        });
+                    }
+                    if (sum > (totalPrice * 2)) { // TODO: Ratio
+                        change = +(sum - (totalPrice * 2 - 0.0001)).toFixed(8); // TODO: Get actual fee...
+                        return true;
+                    }
+                    return false;
+                });
+
+                if (sum < basePrice) {
+                    throw new Error('You are too broke...');
+                }
+            } else {
+                throw new Error(`ListingItem with the hash=${listingItemHash} does not have a price!`);
+            }
+
+            const addr = await this.coreRpcService.call('getnewaddress', ['_escrow']);
+            const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']);
+            const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
+
             // convert the bid data params as bid data key value pair
-            const bidData = this.setBidData(data.params);
+            const bidData = this.setBidData(data.params.concat([
+                'outputs', outputs, 'pubkey', pubkey, 'changeAddr', changeAddr, 'change', change
+            ]));
+            // End - Ryno Hacks
+
             // broadcast the message in to the network
-            // TODO: add profile and market addresses
-            await this.messageBroadcastService.broadcast('', '', {
-              objects: bidData,
-              listing: listingItemHash,
-              action: BidMessageType.MPA_BID
+            const res = await this.messageBroadcastService.broadcast('', '', {
+                objects: bidData,
+                listing: listingItemHash,
+                action: BidMessageType.MPA_BID
             } as BidMessage);
 
             // TODO: We will change the return data once broadcast functionality will be implemented
+            // TODO: We might potentially want to save the bid if we ever want to cancel it, but its an outgoing bid.
             return data;
         }
     }
@@ -78,6 +130,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <itemhash>               - String - The hash of the item we want to send bids for. \n'
+            + '    <addressId>              - Numeric - The addressId of the related profile we want to use \n' // <--- TODO
             + '    <bidDataId>              - [optional] Numeric - The id of the bid we want to send. \n'
             + '    <bidDataValue>           - [optional] String - The value of the bid we want to send. ';
     }

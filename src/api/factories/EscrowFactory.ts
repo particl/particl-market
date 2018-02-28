@@ -3,7 +3,7 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { EscrowMessage } from '../messages/EscrowMessage';
-import { EscrowLockRequest } from '../requests/EscrowLockRequest';
+import { EscrowAcceptRequest } from '../requests/EscrowAcceptRequest';
 import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
 import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
 import { EscrowMessageType } from '../enums/EscrowMessageType';
@@ -32,15 +32,15 @@ export class EscrowFactory {
      * @returns {EscrowMessage}
      */
     public async getMessage(
-        request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest,
+        request: EscrowAcceptRequest | EscrowRefundRequest | EscrowReleaseRequest,
         escrow?: resources.Escrow,
         address?: resources.Address
     ): Promise<EscrowMessage> {
 
         switch (request.action) {
 
-            case EscrowMessageType.MPA_LOCK:
-                return await this.getLockMessage(request as EscrowLockRequest, escrow, address);
+            case EscrowMessageType.MPA_ACCEPT:
+                return await this.getAcceptMessage(request as EscrowAcceptRequest, escrow);
 
             case EscrowMessageType.MPA_RELEASE:
                 return await this.getReleaseMessage(request as EscrowReleaseRequest, escrow);
@@ -69,25 +69,22 @@ export class EscrowFactory {
     }
 
     /**
-     * creates the EscrowMessage for EscrowLockRequest
+     * creates the EscrowMessage for EscrowAcceptRequest
      *
      * @param lockRequest
      * @param escrow
-     * @param address
      * @returns {EscrowMessage}
      */
-    private async getLockMessage(lockRequest: EscrowLockRequest, escrow?: resources.Escrow, address?: resources.Address): Promise<EscrowMessage> {
+    private async getAcceptMessage(lockRequest: EscrowAcceptRequest, escrow?: resources.Escrow): Promise<EscrowMessage> {
 
-        this.checkEscrowActionValidity(EscrowMessageType.MPA_LOCK, escrow);
+        this.checkEscrowActionValidity(EscrowMessageType.MPA_ACCEPT, escrow);
         const rawTx = this.createRawTx(lockRequest, escrow);
-        const addressOneLiner = this.getAddressOneLiner(address);
 
         return {
             action: lockRequest.action,
             listing: lockRequest.listing,
             nonce: lockRequest.nonce,
             info: {
-                address: addressOneLiner,
                 memo: lockRequest.memo
             },
             escrow: {
@@ -165,7 +162,7 @@ export class EscrowFactory {
      * @param escrow
      * @returns {string}
      */
-    private createRawTx(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow?: resources.Escrow): string {
+    private createRawTx(request: EscrowAcceptRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow?: resources.Escrow): string {
         // MPA_RELEASE:
         // rawtx: 'The buyer sends the half signed rawtx which releases the escrow and paymeny.
         // The vendor then recreates the whole transaction (check ouputs, inputs, scriptsigs
@@ -182,7 +179,7 @@ export class EscrowFactory {
         return 'todo: implement';
     }
 
-
+    // TODO: Move to BidFactory
     private getAddressOneLiner(address: resources.Address = {} as resources.Address): string {
         const addressArray: any = [];
 

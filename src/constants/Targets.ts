@@ -142,7 +142,7 @@ export const Targets = {
         escrow: {
             EscrowCreateCommand: 'EscrowCreateCommand',
             EscrowDestroyCommand: 'EscrowDestroyCommand',
-            EscrowLockCommand: 'EscrowLockCommand',
+            EscrowAcceptCommand: 'EscrowAcceptCommand',
             EscrowRefundCommand: 'EscrowRefundCommand',
             EscrowReleaseCommand: 'EscrowReleaseCommand',
             EscrowRootCommand: 'EscrowRootCommand',
