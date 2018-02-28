@@ -1,11 +1,11 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { EscrowType } from '../../src/api/enums/EscrowType';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { PaymentType } from '../../../src/api/enums/PaymentType';
+import { EscrowType } from '../../../src/api/enums/EscrowType';
+import { Currency } from '../../../src/api/enums/Currency';
+import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
 describe('/ListingItemTemplateSearchCommand', () => {
     const testUtil = new BlackBoxTestUtil();

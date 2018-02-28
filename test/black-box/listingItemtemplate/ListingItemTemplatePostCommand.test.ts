@@ -1,10 +1,10 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { PaymentType } from '../../../src/api/enums/PaymentType';
+import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/ListingItemTemplateCreateRequest';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('ListingItemPostCommand', () => {

@@ -1,9 +1,9 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Commands } from '../../src/api/commands/CommandEnumType';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
 
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { Currency } from '../../src/api/enums/Currency';
+import { PaymentType } from '../../../src/api/enums/PaymentType';
+import { Currency } from '../../../src/api/enums/Currency';
 
 describe('ListingItemTemplateAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();

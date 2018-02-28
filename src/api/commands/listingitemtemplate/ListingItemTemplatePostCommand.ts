@@ -30,7 +30,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *  [1]: marketId, may be optional
      *
      * @param data
-     * @returns {Promise<ListingItem>}
+     * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
