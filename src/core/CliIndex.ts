@@ -11,7 +11,6 @@ export class CliIndex {
     public setup(app: express.Application): void {
         if (Environment.isTruthy(process.env.CLI_ENABLED)) {
             app.use(express.static('public'));
-            
         }
     }
 }
