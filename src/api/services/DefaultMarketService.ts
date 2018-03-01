@@ -37,12 +37,12 @@ export class DefaultMarketService {
         let newMarket = await this.marketService.findByAddress(market.address);
         if (newMarket === null) {
             newMarket = await this.marketService.create(market as MarketCreateRequest);
-            // await this.coreRpcService.smsgImportPrivKey(newMarket.PrivateKey);
             this.log.debug('created new default Market: ', newMarket);
         } else {
             newMarket = await this.marketService.update(newMarket.Id, market as MarketUpdateRequest);
             this.log.debug('updated new default Market: ', newMarket);
         }
+        await this.coreRpcService.smsgImportPrivKey(newMarket.PrivateKey);
         return newMarket;
     }
 }

@@ -1,13 +1,11 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ListingItem, ListingItemTemplate } from 'resources';
 
-describe('ListingItemPostCommand', () => {
+describe('ListingItemTemplatePostCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
@@ -47,7 +45,11 @@ describe('ListingItemPostCommand', () => {
     });
 
     test('Should post a item in to the market place with market id', async () => {
-        /*
+
+        // fetch amount of listingitems, should be 0
+        const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id, defaultMarket.id]);
+
+
         const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id, defaultMarket.id]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -56,7 +58,14 @@ describe('ListingItemPostCommand', () => {
         expect(result).toHaveProperty('PaymentInformation');
         expect(result).toHaveProperty('MessagingInformation');
         expect(result.id).toBe(listingItemTemplace[0].id);
-        */
+
+        setTimeout(function() {
+
+
+            done();
+        }, 10000);
+
+
     });
 
     test('Should post a item in to the market place without market id', async () => {
