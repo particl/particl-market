@@ -35,8 +35,7 @@ export class CoreRpcService {
     }
 
     public async smsgImportPrivKey( privateKey: string, label: string = '' ): Promise<boolean> {
-        // return await this.call('smsgimportprivkey', [privateKey]);
-        return true;
+        return await this.call('smsgimportprivkey', [privateKey, label]);
     }
 
     public async smsgInbox(params: any[] = []): Promise<any> {

@@ -45,6 +45,11 @@ describe('ListingItemTemplatePostCommand', () => {
     });
 
     test('Should post a item in to the market place with market id', async () => {
+
+        // fetch amount of listingitems, should be 0
+        const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id, defaultMarket.id]);
+
+
         const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id, defaultMarket.id]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -53,6 +58,14 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(result).toHaveProperty('PaymentInformation');
         expect(result).toHaveProperty('MessagingInformation');
         expect(result.id).toBe(listingItemTemplace[0].id);
+
+        setTimeout(function() {
+
+
+            done();
+        }, 10000);
+
+
     });
 
     test('Should post a item in to the market place without market id', async () => {
