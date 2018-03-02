@@ -113,6 +113,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '                                we want to search for. \n'
             + '    <searchString>           - [optional] String - A string that is used to \n'
             + '                                find listing items by their titles. ';
+            + '    <withRelated>            - [optional] Boolean - Whether to include the actual listing items. '
     }
 
     // tslint:enable:max-line-length
