@@ -9,6 +9,7 @@ declare module 'resources' {
         updatedAt: Date;
         ShippingDestinations: ShippingDestination[];
         ItemCategory: ItemCategory;
+        ItemImages: ItemImage[];
     }
 
 }
