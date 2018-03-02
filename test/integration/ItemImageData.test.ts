@@ -101,7 +101,7 @@ describe('ItemImageData', () => {
             withRelated: true,                  // return model
             generateParams                      // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0].toJSON();
+        createdListingItem = listingItems[0];
 
         // create an image, without data
         const itemImage: ItemImage = await itemImageService.create({

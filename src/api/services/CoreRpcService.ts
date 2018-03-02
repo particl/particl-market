@@ -125,6 +125,23 @@ export class CoreRpcService {
         return rpcOpts;
     }
 
+    public async getNewAddressFromDaemon(): Promise<string> {
+        let newAddress;
+        await this.call('getnewaddress')
+            .then( async (res) => {
+                this.log.info('Successfully created new address for profile: ' + res);
+                newAddress = res;
+            })
+            .catch(reason => {
+                this.log.warn('Could not create new address for profile: ' + reason);
+                newAddress = 'ERROR_NO_ADDRESS';
+            });
+        if ( newAddress ) {
+            return newAddress;
+        }
+        throw new Error('Something has gone terribly wrong.');
+    }
+
     private getUrl(): string {
         const host = (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.DEFAULT_HOSTNAME);
         const port = (Environment.isDevelopment() || Environment.isTest() ?
