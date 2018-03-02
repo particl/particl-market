@@ -8,7 +8,7 @@ describe('ProfileAddCommand', () => {
     const method = Commands.PROFILE_ROOT.commandName;
     const subCommand = Commands.PROFILE_ADD.commandName;
     const profileAddress = 'DEFAULT-TEST-ADDRESS';
-    let profileName = 'DEFAULT-TEST-PROFILE';
+    const profileName = 'DEFAULT-TEST-PROFILE';
     let createdProfile;
 
     beforeAll(async () => {
