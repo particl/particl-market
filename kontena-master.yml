@@ -4,7 +4,7 @@ version: 0.1.0
 services:
 
   particld1:
-    image: ludx/particl:latest
+    image: ludx/particl:master
     instances: 1
     volumes:
       - /root/data/particld-master1:/root/.particl
@@ -24,7 +24,7 @@ services:
       - node==kontena-agent1
 
   particld2:
-    image: ludx/particl:latest
+    image: ludx/particl:master
     instances: 1
     volumes:
       - /root/data/particld-master2:/root/.particl

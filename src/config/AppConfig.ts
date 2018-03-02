@@ -39,7 +39,8 @@ export class AppConfig implements Configurable {
             .use(compression())
 
             // Parse incoming request bodies in a middleware before your handlers, available under the req.body property.
-            .use(bodyParser.json())
+            // TODO: decide on some limit
+            .use(bodyParser.json({ limit: '5mb' }))
             .use(bodyParser.urlencoded({
                 extended: true
             }))

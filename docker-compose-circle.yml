@@ -60,24 +60,24 @@ services:
 #    memswap_limit: 1000000000
 
 
-  testrunner:
+#  testrunner:
     # container_name: testrunner
-    image: r.cfcr.io/ludx/dapp-shell-ci:feature
-    command: bin/ci-testrunner.sh
-    depends_on:
-      - app1
-#      - app2
-    env_file:
-      - .env.docker-compose
-    environment:
-      - NODE_ENV=development
-      - APP_PORT=3100
-      - RPCUSER=test
-      - RPCPASSWORD=test
-      - RPCHOSTNAME=feature1.particl.xyz
-      - MAINNET_PORT=52738
-      - TESTNET_PORT=52935
-    mem_reservation: 250000000
-    mem_limit: 400000000
-    memswap_limit: 400000000
+#    image: r.cfcr.io/ludx/dapp-shell-ci:feature
+#    command: bin/ci-testrunner.sh
+#    depends_on:
+#      - app1
+    #  - app2
+#    env_file:
+#      - .env.docker-compose
+#    environment:
+#      - NODE_ENV=development
+#      - APP_PORT=3100
+#      - RPCUSER=test
+#      - RPCPASSWORD=test
+#      - RPCHOSTNAME=feature1.particl.xyz
+#      - MAINNET_PORT=52738
+#      - TESTNET_PORT=52935
+#    mem_reservation: 250000000
+#    mem_limit: 400000000
+#    memswap_limit: 400000000
 
