@@ -42,7 +42,7 @@ export class DefaultMarketService {
             newMarket = await this.marketService.update(newMarket.Id, market as MarketUpdateRequest);
             this.log.debug('updated new default Market: ', newMarket);
         }
-        await this.coreRpcService.smsgImportPrivKey(newMarket.PrivateKey);
+        // await this.coreRpcService.smsgImportPrivKey(newMarket.PrivateKey);
         return newMarket;
     }
 }
