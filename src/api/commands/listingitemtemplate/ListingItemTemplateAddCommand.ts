@@ -87,7 +87,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
     }
 
     public usage(): string {
-        return this.getName() + ' <profileId> <title> <shortDescription> <longDescription> <categoryName>'
+        return this.getName() + ' <profileId> <title> <shortDescription> <longDescription> <categoryId>'
             + ' <paymentType> <currency> <basePrice> <domesticShippingPrice> <internationalShippingPrice> [<paymentAddress>] ';
     }
 
@@ -101,7 +101,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
             + '                                     listing item template we are creating. \n'
             + '    <longDescription>             - String - A longer default description for the \n'
             + '                                     listing item template we are creating. \n'
-            + '    <categoryName>                - String - The identifier key of the default \n'
+            + '    <categoryId>                - Numeric - The identifier id of the default \n'
             + '                                     category we want to use with the item listing \n'
             + '                                     template we\'re creating. \n'
             + '    <paymentType>                 - String - Whether the item listing template is by \n'
