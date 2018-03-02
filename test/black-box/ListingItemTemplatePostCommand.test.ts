@@ -62,7 +62,7 @@ describe('ListingItemTemplatePostCommand', () => {
         setTimeout(() => {
 
 
-            done();
+            // done();
         }, 10000);
 
 
