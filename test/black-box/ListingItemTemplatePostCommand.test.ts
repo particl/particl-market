@@ -59,7 +59,7 @@ describe('ListingItemTemplatePostCommand', () => {
         // expect(result).toHaveProperty('MessagingInformation');
         // expect(result.id).toBe(listingItemTemplace[0].id);
 
-        setTimeout(function() {
+        setTimeout(() => {
 
 
             done();
