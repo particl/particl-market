@@ -217,16 +217,17 @@ describe('ListingItemSearchCommand', () => {
         createdHashSecond = addListingItem2.hash;
     });
 
-    test('Should fail to get listing items if type is not pass', async () => {
+    test('Should fail to get listing items if type is invalid', async () => {
         const getDataRes: any = await rpc(method, [subCommand, pageNumber,
-            pageLimit, order, category, '', profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
+            pageLimit, order, category, 'TEST', profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(404);
         expect(getDataRes.error.error.success).toBe(false);
-        expect(getDataRes.error.error.message).toBe('Type can\'t be blank, should be FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL');
+        expect(getDataRes.error.error.message).toBe('Type should be FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL');
     });
 
     test('Should fail to get listing items if profileid is not (NUMBER | OWN | ALL)', async () => {
+        profileId = 'test';
         const getDataRes: any = await rpc(method, [subCommand, pageNumber,
             pageLimit, order, category, type, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
         getDataRes.expectJson();
@@ -256,6 +257,52 @@ describe('ListingItemSearchCommand', () => {
         expect(result.length).toBe(2);
         expect(result[0].hash).toBe(createdHashFirst);
         expect(result[1].hash).toBe(createdHashSecond);
+    });
+
+    test('Should get all listing items with default profileid = ALL ', async () => {
+        // get all listing items
+        const getDataRes: any = await rpc(method, [subCommand, pageNumber,
+            pageLimit, order, category, type, '', minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(2);
+        expect(result[0].hash).toBe(createdHashFirst);
+        expect(result[1].hash).toBe(createdHashSecond);
+    });
+
+    test('Should get all listing items with default type = ALL ', async () => {
+        // get all listing items
+        const getDataRes: any = await rpc(method, [subCommand, pageNumber,
+            pageLimit, order, category, '', 'ALL', minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(2);
+        expect(result[0].hash).toBe(createdHashFirst);
+        expect(result[1].hash).toBe(createdHashSecond);
+    });
+
+    test('Should get all listing items with default type = ALL and default profileId = ALL', async () => {
+        // get all listing items
+        const getDataRes: any = await rpc(method, [subCommand, pageNumber,
+            pageLimit, order, category, '', '', minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(2);
+        expect(result[0].hash).toBe(createdHashFirst);
+        expect(result[1].hash).toBe(createdHashSecond);
+    });
+
+    test('Should fail to search listing items with invalid profile Id', async () => {
+        // get all listing items
+        const getDataRes: any = await rpc(method, [subCommand, pageNumber,
+            pageLimit, order, category, '', 'INVALID', minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(404);
+        expect(getDataRes.error.error.success).toBe(false);
+        expect(getDataRes.error.error.message).toBe('Value needs to be number | OWN | ALL. you could pass * as all too');
     });
 
     test('Should get all listing items, profileid = *', async () => {
@@ -488,6 +535,16 @@ describe('ListingItemSearchCommand', () => {
         expect(result.length).toBe(1);
         expect(testData.itemInformation.title).toBe(result[0].ItemInformation.title);
         expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(shippingDestination);
+    });
+
+    test('Should search all listing item without any searching criteria', async () => {
+        const getDataRes: any = await rpc(method, [subCommand, pageNumber,
+            pageLimit, order]);
+
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(200);
+        const result: any = getDataRes.getBody()['result'];
+        expect(result.length).toBe(2);
     });
 
 });
