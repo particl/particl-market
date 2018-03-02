@@ -48,19 +48,6 @@ describe('ProfileAddCommand', () => {
         expect(res.error.error.message).toBe(`Profile already exist for the given name = ${profileName}`);
     });
 
-    test('Should create a new profile without address by RPC', async () => {
-        profileName = 'DEFAULT-TEST-PROFILE-NEW';
-        const res = await rpc(method, [subCommand, profileName]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.name).toBe(profileName);
-        expect(result.address).toBe('ERROR_NO_ADDRESS');
-        // check default shopping cart
-        expect(result.ShoppingCarts).toHaveLength(1);
-        expect(result.ShoppingCarts[0].name).toBe('DEFAULT');
-    });
-
     test('Should fail because we want to create an empty profile', async () => {
         const res = await rpc(method, [subCommand]);
         res.expectJson();
