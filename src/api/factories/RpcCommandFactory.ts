@@ -5,6 +5,8 @@ import { Types, Core, Targets } from '../../constants';
 import { RpcCommandInterface } from '../commands/RpcCommandInterface';
 import { NotFoundException } from '../exceptions/NotFoundException';
 
+import { DaemonRootCommand } from '../commands/daemon/DaemonRootCommand';
+
 import { DataAddCommand } from '../commands/data/DataAddCommand';
 import { DataCleanCommand } from '../commands/data/DataCleanCommand';
 import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
@@ -124,6 +126,8 @@ export class RpcCommandFactory {
     public commands: Array<RpcCommandInterface<any>> = [];
 
     constructor(
+        @inject(Types.Command) @named(Targets.Command.daemon.DaemonRootCommand) private daemonRootCommand: DaemonRootCommand,
+
         @inject(Types.Command) @named(Targets.Command.bid.BidRootCommand) private bidRootCommand: BidRootCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidSearchCommand) private bidSearchCommand: BidSearchCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidAcceptCommand) private bidAcceptCommand: BidAcceptCommand,
@@ -242,6 +246,8 @@ export class RpcCommandFactory {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
+
+        this.commands.push(daemonRootCommand);
 
         this.commands.push(bidRootCommand);
         this.commands.push(bidSearchCommand);
