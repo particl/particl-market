@@ -149,6 +149,16 @@ export class IoC {
 
     private bindFile(type: any, name: string, value: any): void {
         decorate(injectable(), value);
+
+        // Make the RpcController a singleton
+        if (value && value.name && value.name == 'RpcController') {
+            this.container
+                .bind<any>(type)
+                .to(value).inSingletonScope()
+                .whenTargetNamed(name);
+                return;
+        }
+
         this.container
             .bind<any>(type)
             .to(value)
