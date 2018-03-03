@@ -98,7 +98,7 @@
     "handlebars": "^4.0.10",
     "helmet": "^3.6.1",
     "inquirer": "^3.2.0",
-    "inversify": "^4.2.0",
+    "inversify": "^4.11.0",
     "inversify-express-utils": "^4.0.0",
     "iso3166-2-db": "^2.2.1",
     "jayson": "^2.0.5",
