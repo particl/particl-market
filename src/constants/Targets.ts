@@ -110,7 +110,7 @@ export const Targets = {
     },
     Command:     {
         address: {
-            AddressCreateCommand: 'AddressCreateCommand',
+            AddressAddCommand: 'AddressAddCommand',
             AddressListCommand: 'AddressListCommand',
             AddressRemoveCommand: 'AddressRemoveCommand',
             AddressRootCommand: 'AddressRootCommand',
@@ -140,8 +140,8 @@ export const Targets = {
             DataRootCommand: 'DataRootCommand'
         },
         escrow: {
-            EscrowCreateCommand: 'EscrowCreateCommand',
-            EscrowDestroyCommand: 'EscrowDestroyCommand',
+            EscrowAddCommand: 'EscrowAddCommand',
+            EscrowRemoveCommand: 'EscrowRemoveCommand',
             EscrowLockCommand: 'EscrowLockCommand',
             EscrowRefundCommand: 'EscrowRefundCommand',
             EscrowReleaseCommand: 'EscrowReleaseCommand',
@@ -171,7 +171,7 @@ export const Targets = {
             ItemImageRootCommand: 'ItemImageRootCommand'
         },
         iteminformation: {
-            ItemInformationCreateCommand: 'ItemInformationCreateCommand',
+            ItemInformationAddCommand: 'ItemInformationAddCommand',
             ItemInformationGetCommand: 'ItemInformationGetCommand',
             ItemInformationRootCommand: 'ItemInformationRootCommand',
             ItemInformationUpdateCommand: 'ItemInformationUpdateCommand'
@@ -202,7 +202,7 @@ export const Targets = {
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
         },
         market: {
-            MarketCreateCommand: 'MarketCreateCommand',
+            MarketAddCommand: 'MarketAddCommand',
             MarketListCommand: 'MarketListCommand',
             MarketRootCommand: 'MarketRootCommand'
         },
@@ -218,8 +218,8 @@ export const Targets = {
             PriceTickerRootCommand: 'PriceTickerRootCommand'
         },
         profile: {
-            ProfileCreateCommand: 'ProfileCreateCommand',
-            ProfileDestroyCommand: 'ProfileDestroyCommand',
+            ProfileAddCommand: 'ProfileAddCommand',
+            ProfileRemoveCommand: 'ProfileRemoveCommand',
             ProfileGetCommand: 'ProfileGetCommand',
             ProfileListCommand: 'ProfileListCommand',
             ProfileRootCommand: 'ProfileRootCommand',

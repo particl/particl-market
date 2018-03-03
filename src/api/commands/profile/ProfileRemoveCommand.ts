@@ -8,7 +8,7 @@ import { ProfileService } from '../../services/ProfileService';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class ProfileDestroyCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
     public log: LoggerType;
     public name: string;
     public helpStr: string;

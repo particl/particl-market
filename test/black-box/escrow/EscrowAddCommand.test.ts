@@ -7,7 +7,7 @@ import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
-describe('EscrowCreateCommand', () => {
+describe('EscrowAddCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ESCROW_ROOT.commandName;
