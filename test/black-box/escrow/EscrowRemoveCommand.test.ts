@@ -7,7 +7,7 @@ import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
-describe('EscrowDestroyCommand', () => {
+describe('EscrowRemoveCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ESCROW_ROOT.commandName;
