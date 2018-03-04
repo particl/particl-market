@@ -13,7 +13,6 @@ import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MessageException } from '../../exceptions/MessageException';
 
 export class AddressListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Address>> {
 

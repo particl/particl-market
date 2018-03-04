@@ -4,11 +4,6 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemTemplateAddCommand } from './ListingItemTemplateAddCommand';
-import { ListingItemTemplateRemoveCommand } from './ListingItemTemplateRemoveCommand';
-import { ListingItemTemplateGetCommand } from './ListingItemTemplateGetCommand';
-import { ListingItemTemplatePostCommand } from './ListingItemTemplatePostCommand';
-import { ListingItemTemplateSearchCommand } from './ListingItemTemplateSearchCommand';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
@@ -18,11 +13,6 @@ export class ListingItemTemplateRootCommand extends BaseCommand implements RpcCo
     public log: LoggerType;
     // tslint:disable:max-line-length
     constructor(
-        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateAddCommand) private listingItemTemplateAddCommand: ListingItemTemplateAddCommand,
-        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateRemoveCommand) private listingItemTemplateRemoveCommand: ListingItemTemplateRemoveCommand,
-        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateGetCommand) private listingItemTemplateGetCommand: ListingItemTemplateGetCommand,
-        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplatePostCommand) private listingItemTemplatePostCommand: ListingItemTemplatePostCommand,
-        @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateSearchCommand) private listingItemTemplateSearchCommand: ListingItemTemplateSearchCommand,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.TEMPLATE_ROOT);

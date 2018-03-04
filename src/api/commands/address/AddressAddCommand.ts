@@ -14,7 +14,7 @@ import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 
-export class AddressCreateCommand extends BaseCommand implements RpcCommandInterface<Address> {
+export class AddressAddCommand extends BaseCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
 
     constructor(

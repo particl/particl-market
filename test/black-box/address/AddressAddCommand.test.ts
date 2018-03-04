@@ -3,7 +3,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
 
-describe('AddressCreateCommand', () => {
+describe('AddressAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ADDRESS_ROOT.commandName;
     const subCommand = Commands.ADDRESS_ADD.commandName;

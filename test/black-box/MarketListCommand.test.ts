@@ -31,13 +31,20 @@ describe('MarketListCommand', () => {
         // add markets
         await rpc(method, [addMarketCommand, marketData.name, marketData.private_key, marketData.address]);
 
-        await rpc(method, [addMarketCommand, marketData.name, marketData.private_key, marketData.address]);
-
         const res = await rpc(method, [subCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(2);
+    });
+
+    test('Should fail to create market if try with existing market name', async () => {
+        // add markets
+        const marketRes = await rpc(method, [addMarketCommand, marketData.name, marketData.private_key, marketData.address]);
+        marketRes.expectJson();
+        marketRes.expectStatusCode(400);
+        expect(marketRes.error.error.success).toBe(false);
+        expect(marketRes.error.error.message).toBe('Could not create the market!');
     });
 
 });

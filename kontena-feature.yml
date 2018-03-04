@@ -50,7 +50,7 @@ services:
       - particld1
     links:
       - particld1
-      - loadbalancerstack/internet_lb
+      - loadbalancerstack/internet-lb
 #    volumes:
 #      - /root/data/dapp-shell-feature1:/app/data
     command: bin/ci-entrypoint.sh
@@ -99,7 +99,7 @@ services:
       - particld2
     links:
       - particld2
-      - loadbalancerstack/internet_lb
+      - loadbalancerstack/internet-lb
 #    volumes:
 #      - /root/data/dapp-shell-feature2:/app/data
     command: bin/ci-entrypoint.sh
