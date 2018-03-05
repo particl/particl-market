@@ -142,7 +142,6 @@ export class CoreRpcService {
         return rpcOpts;
     }
 
-
     private getUrl(): string {
         const host = (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.DEFAULT_HOSTNAME);
         const port = (Environment.isDevelopment() || Environment.isTest() ?
