@@ -35,8 +35,7 @@ export class CoreRpcService {
     }
 
     public async smsgImportPrivKey( privateKey: string, label: string = '' ): Promise<boolean> {
-        // return await this.call('smsgimportprivkey', [privateKey]);
-        return true;
+        return await this.call('smsgimportprivkey', [privateKey, label]);
     }
 
     public async smsgInbox(params: any[] = []): Promise<any> {
@@ -50,8 +49,9 @@ export class CoreRpcService {
      * @returns {Promise<any>}
      */
     public async sendSmsgMessage(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<any> {
-        this.log.debug('SEND SMSG, from: ' + profileAddress + ', to: ' + marketAddress + ', message: ' + JSON.stringify(message, null, 2));
-        return await this.call('smsgsend', [profileAddress, marketAddress, message]);
+        this.log.debug('SEND SMSG, from: ' + profileAddress + ', to: ' + marketAddress);
+        // return await this.call('smsgsend', [profileAddress, marketAddress, JSON.stringify(message)]);
+        return '';
     }
 
     public async call(method: string, params: any[] = []): Promise<any> {
@@ -101,6 +101,23 @@ export class CoreRpcService {
                 }
             });
 
+    }
+
+    public async getNewAddressFromDaemon(): Promise<string> {
+        let newAddress;
+        await this.call('getnewaddress')
+            .then( async (res) => {
+                this.log.info('Successfully created new address for profile: ' + res);
+                newAddress = res;
+            })
+            .catch(reason => {
+                this.log.warn('Could not create new address for profile: ' + reason);
+                newAddress = 'ERROR_NO_ADDRESS';
+            });
+        if ( newAddress ) {
+            return newAddress;
+        }
+        throw new Error('Something has gone terribly wrong.');
     }
 
     private getOptions(): any {

@@ -4,7 +4,6 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { PaymentInformationUpdateCommand } from './PaymentInformationUpdateCommand';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
@@ -14,8 +13,6 @@ export class PaymentInformationRootCommand extends BaseCommand implements RpcCom
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand)
-            private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.PAYMENTINFORMATION_ROOT);

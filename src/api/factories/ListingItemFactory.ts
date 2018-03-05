@@ -42,6 +42,10 @@ export class ListingItemFactory {
         const itemCategory = this.itemCategoryFactory.getArray(category as resources.ItemCategory, rootCategoryWithRelated as ItemCategory);
 
         const itemInformation = listingItemTemplate.ItemInformation;
+
+        // todo: removing images for nows
+        delete itemInformation.ItemImages;
+
         itemInformation['category'] = itemCategory;
         return {
             hash: listingItemTemplate.hash,

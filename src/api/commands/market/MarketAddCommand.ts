@@ -10,7 +10,7 @@ import { MarketCreateRequest } from '../../requests/MarketCreateRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
-export class MarketCreateCommand extends BaseCommand implements RpcCommandInterface<Market> {
+export class MarketAddCommand extends BaseCommand implements RpcCommandInterface<Market> {
 
     public log: LoggerType;
 

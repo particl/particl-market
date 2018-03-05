@@ -9,8 +9,9 @@ import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
-export class ProfileCreateCommand extends BaseCommand implements RpcCommandInterface<Profile> {
+export class ProfileAddCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 
     public log: LoggerType;
 
@@ -32,8 +33,14 @@ export class ProfileCreateCommand extends BaseCommand implements RpcCommandInter
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Profile> {
+        const profile = await this.profileService.findOneByName(data.params[0]);
+        // check if profile already exist for the given name
+        if (profile !== null) {
+            throw new MessageException(`Profile already exist for the given name = ${data.params[0]}`);
+        }
+        // create profile
         return this.profileService.create({
-            name : (data.params[0] || null),
+            name : data.params[0],
             address : (data.params[1] || null)
         } as ProfileCreateRequest);
     }

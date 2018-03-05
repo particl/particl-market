@@ -321,8 +321,7 @@ export class ListingItemService {
         const rootCategoryWithRelated = await this.itemCategoryService.findRoot();
         const addItemMessage = await this.listingItemFactory.getMessage(itemTemplate, rootCategoryWithRelated);
 
-        this.messageBroadcastService.broadcast(profileAddress, market.address, addItemMessage as ListingItemMessage);
-        return Promise.resolve();
+        return this.messageBroadcastService.broadcast(profileAddress, market.address, addItemMessage as ListingItemMessage);
     }
 
     /**

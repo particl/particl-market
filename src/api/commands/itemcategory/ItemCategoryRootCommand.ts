@@ -5,13 +5,6 @@ import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 
-import { ItemCategoryListCommand } from './ItemCategoryListCommand';
-import { ItemCategoryAddCommand } from './ItemCategoryAddCommand';
-import { ItemCategorySearchCommand } from './ItemCategorySearchCommand';
-import { ItemCategoryGetCommand } from './ItemCategoryGetCommand';
-import { ItemCategoryRemoveCommand } from './ItemCategoryRemoveCommand';
-import { ItemCategoryUpdateCommand } from './ItemCategoryUpdateCommand';
-
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';

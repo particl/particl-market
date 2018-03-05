@@ -35,11 +35,13 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
 
-        return this.listingItemService.post({
+        const response = this.listingItemService.post({
             listingItemTemplateId: data.params[0],
             marketId: data.params[1] || undefined
         } as ListingItemTemplatePostRequest);
 
+        this.log.debug('ListingItemTemplatePostCommand.post, response: ', response);
+        return response;
     }
 
     public usage(): string {
