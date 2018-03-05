@@ -24,8 +24,7 @@ export class MessageBroadcastService {
      * @param {ActionMessageInterface | ItemMessageInterface} message
      * @returns {Promise<void>}
      */
-    public async broadcast(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<void> {
-        this.coreRpcService.sendSmsgMessage(profileAddress, marketAddress, message);
-        return Promise.resolve();
+    public async broadcast(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<any> {
+        return this.coreRpcService.sendSmsgMessage(profileAddress, marketAddress, message);
     }
 }

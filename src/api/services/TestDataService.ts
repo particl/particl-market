@@ -255,7 +255,7 @@ export class TestDataService {
             // this.log.debug('listingItem: ', listingItem);
             const savedListingItem = await this.listingItemService.create(listingItem);
             // this.log.debug('savedListingItem: ', savedListingItem.toJSON());
-            items.push(savedListingItem.toJSON());
+            items.push(savedListingItem);
         }
         // this.log.debug('items: ', items);
 

@@ -8,8 +8,11 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { ListingItemTemplate } from 'resources';
+import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
+import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 
-describe('/ItemImageRemoveCommand', () => {
+describe('ItemImageRemoveCommand', () => {
+
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ITEMIMAGE_ROOT.commandName;
     const subCommand = Commands.ITEMIMAGE_REMOVE.commandName;
@@ -77,11 +80,15 @@ describe('/ItemImageRemoveCommand', () => {
         listingItemId = listingItems[0]['id'];
 
         // add item image
-        const addDataRes: any = await rpc(Commands.ITEMIMAGE_ROOT.commandName, [Commands.ITEMIMAGE_ADD.commandName, createdTemplateId]);
+        const addDataRes: any = await rpc(Commands.ITEMIMAGE_ROOT.commandName, [Commands.ITEMIMAGE_ADD.commandName, createdTemplateId, 'TEST-DATA-ID',
+            ImageDataProtocolType.LOCAL,
+            'BASE64',
+            ImageProcessing.milkcatSmall]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         addDataRes.expectDataRpc(keys);
         createdItemImageId = addDataRes.getBody()['result'].id;
+
     });
 
     test('Should fail to remove ItemImage because there is a ListingItem related to ItemInformation.', async () => {
@@ -95,7 +102,10 @@ describe('/ItemImageRemoveCommand', () => {
         const newCreatedTemplateId = result.id;
 
         // add item image
-        const itemImageRes: any = await rpc(Commands.ITEMIMAGE_ROOT.commandName, [Commands.ITEMIMAGE_ADD.commandName, newCreatedTemplateId]);
+        const itemImageRes: any = await rpc(Commands.ITEMIMAGE_ROOT.commandName, [Commands.ITEMIMAGE_ADD.commandName, newCreatedTemplateId, 'TEST-DATA-ID',
+            ImageDataProtocolType.LOCAL,
+            'BASE64',
+            ImageProcessing.milkcatSmall]);
         itemImageRes.expectJson();
         itemImageRes.expectStatusCode(200);
         createdItemImageIdNew = itemImageRes.getBody()['result'].id;

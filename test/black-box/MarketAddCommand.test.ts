@@ -2,7 +2,7 @@ import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands} from '../../src/api/commands/CommandEnumType';
 
-describe('MarketCreateCommand', () => {
+describe('MarketAddCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const method =  Commands.MARKET_ROOT.commandName;
