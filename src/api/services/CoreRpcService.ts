@@ -34,7 +34,7 @@ export class CoreRpcService {
         return await this.call('getnewaddress');
     }
 
-    public async smsgImportPrivKey( privateKey: string, label: string = '' ): Promise<boolean> {
+    public async smsgImportPrivKey( privateKey: string, label: string = 'default market' ): Promise<boolean> {
         return await this.call('smsgimportprivkey', [privateKey, label]);
     }
 
@@ -63,14 +63,13 @@ export class CoreRpcService {
             id
         });
 
-        this.log.debug('call: ' + method + ' ' + params );
 
         const url = this.getUrl();
         const options = this.getOptions();
 
-        // this.log.debug('CALL: ' + method + ' ' + params);
-        // this.log.debug('call url:', url);
-        // this.log.debug('call postData:', postData);
+        this.log.debug('call: ' + method + ' ' + params);
+        this.log.debug('call url:', url);
+        this.log.debug('call postData:', postData);
 
         return await WebRequest.post(url, options, postData)
             .then( response => {
