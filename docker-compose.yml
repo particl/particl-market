@@ -15,6 +15,8 @@ services:
       - particld1
     depends_on:
       - particld1
+    env_file:
+      - .env.docker-compose
     environment:
       - NODE_ENV=development
       - APP_PORT=3100
@@ -38,6 +40,8 @@ services:
       - particld2
     depends_on:
       - particld2
+    env_file:
+      - .env.docker-compose
     environment:
       - NODE_ENV=development
       - APP_PORT=3200
