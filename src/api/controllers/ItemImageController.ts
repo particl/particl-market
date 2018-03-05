@@ -36,7 +36,7 @@ export class ItemImageController {
 //        const itemImage = await this.itemImageService.create(body);
 //        this.log.debug('create: ', JSON.stringify(itemImage, null, 2));
 //        return res.created(itemImage.toJSON());
-        return 'ok';
+        return req.files[0];
     }
 
     @httpGet('/:id')
