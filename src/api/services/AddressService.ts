@@ -50,6 +50,8 @@ export class AddressService {
         const address = await this.findOne(id, false);
         // set new values
         address.Title = body.title;
+        address.FirstName = body.firstName;
+        address.LastName = body.lastName;
         address.AddressLine1 = body.addressLine1;
         address.AddressLine2 = body.addressLine2;
         address.zipCode = body.zipCode;
