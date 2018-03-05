@@ -30,8 +30,8 @@ export class ShoppingCartItemsRepository {
         return this.ShoppingCartItemsModel.findOneByListingItemOnCart(cartId, listingItemId);
     }
 
-    public async findListItemsByCartId(cartId: number): Promise<Bookshelf.Collection<ShoppingCartItems>> {
-        return this.ShoppingCartItemsModel.findListItemsByCartId(cartId);
+    public async findListItemsByCartId(cartId: number, withRelated: boolean): Promise<Bookshelf.Collection<ShoppingCartItems>> {
+        return this.ShoppingCartItemsModel.findListItemsByCartId(cartId, withRelated);
     }
 
     public async create(data: any): Promise<ShoppingCartItems> {

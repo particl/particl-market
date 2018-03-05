@@ -1,3 +1,4 @@
+import * as Bookshelf from 'bookshelf';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -117,26 +118,61 @@ describe('ShoppingCartItems', () => {
         expect(result.listingItemId).toBe(testData.listing_item_id);
     });
 
-    // /*
-    // test('Should throw ValidationException because there is no related_id', async () => {
-    //     expect.assertions(1);
-    //     await shoppingCartItemsService.update(createdId, testDataUpdated).catch(e =>
-    //         expect(e).toEqual(new ValidationException('Request body is not valid', []))
-    //     );
-    // });
-    // */
+    test('Should find shopping cart items by cart id', async () => {
+        const listingItem: Bookshelf.Collection<ShoppingCartItems> = await shoppingCartItemsService.findListItemsByCartId(defaultShoppingCart.id);
+        const result = listingItem.toJSON();
 
-    // test('Should update the shopping cart items', async () => {
-    //     // testDataUpdated['related_id'] = 0;
-    //     const shoppingCartItemsModel: ShoppingCartItems = await shoppingCartItemsService.update(createdId, testDataUpdated);
-    //     const result = shoppingCartItemsModel.toJSON();
+        expect(result[0].ListingItem.Bids).toBeDefined();
+        expect(result[0].ListingItem.FlaggedItem).toBeDefined();
+        expect(result[0].ListingItem.ItemInformation).toBeDefined();
+        expect(result[0].ListingItem.ListingItemObjects).toBeDefined();
+        expect(result[0].ListingItem.Market).toBeDefined();
+        expect(result[0].ListingItem.MessagingInformation).toBeDefined();
+        expect(result[0].ListingItem.PaymentInformation).toBeDefined();
 
-    //     // test the values
-    //     // expect(result.value).toBe(testDataUpdated.value);
-    // });
+        expect(result[0].listingItemId).toBe(testData.listing_item_id);
+        expect(result[0].shoppingCartId).toBe(defaultShoppingCart.id);
+    });
+
+    test('Should find shopping cart items by cart id and listingItem id', async () => {
+        const listingItem: ShoppingCartItems = await shoppingCartItemsService.findOneByListingItemOnCart(defaultShoppingCart.id, testData.listing_item_id);
+        const result = listingItem.toJSON();
+
+        expect(result.ListingItem.Bids).toBeDefined();
+        expect(result.ListingItem.FlaggedItem).toBeDefined();
+        expect(result.ListingItem.ItemInformation).toBeDefined();
+        expect(result.ListingItem.ListingItemObjects).toBeDefined();
+        expect(result.ListingItem.Market).toBeDefined();
+        expect(result.ListingItem.MessagingInformation).toBeDefined();
+        expect(result.ListingItem.PaymentInformation).toBeDefined();
+
+        expect(result.listingItemId).toBe(testData.listing_item_id);
+        expect(result.shoppingCartId).toBe(defaultShoppingCart.id);
+    });
+
+    test('Should clear all shopping cart items of cart by cartId', async () => {
+        const clearCart = await shoppingCartItemsService.clearCart(defaultShoppingCart.id);
+
+        const listingItem: Bookshelf.Collection<ShoppingCartItems> = await shoppingCartItemsService.findListItemsByCartId(defaultShoppingCart.id);
+        const result = listingItem.toJSON();
+        expect(result).toHaveLength(0); // check cart empty
+    });
 
     test('Should delete the shopping cart items', async () => {
-        expect.assertions(2);
+        // add new Item on cart
+        expect.assertions(5);
+
+        testData.shopping_cart_id = defaultShoppingCart.id;
+        testData.listing_item_id = createdListingItem.id;
+        const shoppingCartItemsModel: ShoppingCartItems = await shoppingCartItemsService.create(testData);
+        createdId = shoppingCartItemsModel.Id;
+
+        const result = shoppingCartItemsModel.toJSON();
+
+        expect(result.id).not.toBeUndefined();
+        expect(result.shoppingCartId).toBe(testData.shopping_cart_id);
+        expect(result.listingItemId).toBe(testData.listing_item_id);
+
         await shoppingCartItemsService.destroy(createdId);
         await shoppingCartItemsService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
@@ -147,5 +183,4 @@ describe('ShoppingCartItems', () => {
             expect(e).toEqual(new NotFoundException(createdListingItem.id))
         );
     });
-
 });

@@ -7,8 +7,25 @@ import { ListingItem } from './ListingItem';
 export class ShoppingCartItems extends Bookshelf.Model<ShoppingCartItems> {
 
     public static RELATIONS = [
-        'ShoppingCarts',
-        'ListingItem'
+        'ListingItem',
+        'ListingItem.ItemInformation',
+        'ListingItem.ItemInformation.ItemCategory',
+        'ListingItem.ItemInformation.ItemLocation',
+        'ListingItem.ItemInformation.ItemLocation.LocationMarker',
+        'ListingItem.ItemInformation.ItemImages',
+        'ListingItem.ItemInformation.ItemImages.ItemImageDatas',
+        'ListingItem.ItemInformation.ShippingDestinations',
+        'ListingItem.PaymentInformation',
+        'ListingItem.PaymentInformation.Escrow',
+        'ListingItem.PaymentInformation.Escrow.Ratio',
+        'ListingItem.PaymentInformation.ItemPrice',
+        'ListingItem.PaymentInformation.ItemPrice.ShippingPrice',
+        'ListingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress',
+        'ListingItem.MessagingInformation',
+        'ListingItem.ListingItemObjects',
+        'ListingItem.Bids',
+        'ListingItem.Market',
+        'ListingItem.FlaggedItem'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ShoppingCartItems> {

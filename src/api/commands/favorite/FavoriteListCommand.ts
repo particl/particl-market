@@ -10,6 +10,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ProfileService } from '../../services/ProfileService';
+import { FavoriteItemService } from '../../services/FavoriteItemService';
 
 /*
  * Get a list of all favorites for profile
@@ -20,7 +21,8 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService
     ) {
         super(Commands.FAVORITE_LIST);
         this.log = new Logger(__filename);
@@ -30,6 +32,7 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
      *
      * data.params[]:
      *  [0]: profileId or profileName
+     *  [1]: withRelated, boolean
      *
      * if data.params[0] is number then find favorites by profileId else find  by profile Name
      *
@@ -52,12 +55,11 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
             }
         }
 
-        // return the related FavoriteItem for the profile
-        return profile.related('FavoriteItems') as Bookshelf.Collection<FavoriteItem>;
+        return await this.favoriteItemService.findFavoritesByProfileId(profile.id, data.params[1]);
     }
 
     public usage(): string {
-        return this.getName() + ' [<profileId>|<profileName>] ';
+        return this.getName() + ' [<profileId>|<profileName>] [<withRelated>]';
     }
 
     public help(): string {
@@ -66,7 +68,9 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
             + '                                     want to retrive favorites associated with that profile id. \n'
 
             + '    <profileName>                 - [optional] - String - The name of the profile we \n'
-            + '                                     want to retrive favorites associated with that profile name. \n';
+            + '                                     want to retrive favorites associated with that profile name. \n'
+
+            + '    <withRelated>                 - [optional] Boolean - Whether we want to include all sub objects. ';
     }
 
     public description(): string {
@@ -74,6 +78,6 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public example(): string {
-        return 'favorite ' + this.getName() + ' 1 ';
+        return 'favorite ' + this.getName() + ' 1 ' + true;
     }
 }

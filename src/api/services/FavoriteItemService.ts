@@ -53,6 +53,17 @@ export class FavoriteItemService {
         return this.favoriteItemRepo.search(searchParams);
     }
 
+    /**
+     * find favorite item by profileId
+     *
+     * @param profileId
+     * @param withRelated
+     * @returns {Promise<Bookshelf.Collection<FavoriteItem>> }
+     */
+    public async findFavoritesByProfileId(profileId: number, withRelated: boolean): Promise<Bookshelf.Collection<FavoriteItem>> {
+        return this.favoriteItemRepo.findFavoritesByProfileId(profileId, withRelated);
+    }
+
 
     @validate()
     public async create( @request(FavoriteItemCreateRequest) body: FavoriteItemCreateRequest): Promise<FavoriteItem> {
