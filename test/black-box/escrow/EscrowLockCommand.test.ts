@@ -61,9 +61,9 @@ describe('EscrowLockCommand', () => {
 
     });
 
+/*
     test('Should lock Escrow', async () => {
 
-/*
         const escrowLockTestData = {
             itemhash: createdListingItem.hash,
             nonce: 'TEST NONCE',
@@ -76,7 +76,7 @@ describe('EscrowLockCommand', () => {
         escrowLockRes.expectJson();
 
         escrowLockRes.expectStatusCode(404);
-*/
     });
+*/
 
 });
