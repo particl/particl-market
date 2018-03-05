@@ -112,8 +112,8 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '    <shippingDestination>    - [optional] String - The shipping destination of the listing item \n'
             + '                                we want to search for. \n'
             + '    <searchString>           - [optional] String - A string that is used to \n'
-            + '                                find listing items by their titles. \n';
-            + '    <withRelated>            - [optional] Boolean - Whether to include the actual listing items. '
+            + '                                find listing items by their titles. \n'
+            + '    <withRelated>            - [optional] Boolean - Whether to include related data or not (default: true). ';
     }
 
     // tslint:enable:max-line-length
