@@ -14,6 +14,8 @@ describe('ProfileRemoveCommand', () => {
         name: 'DEFAULT-PROFILE-TEST',
         address: 'DEFAULT-PROFILE-ADDRESS',
         shippingAddresses: [{
+            firstName: 'Robert',
+            lastName: 'Downey',
             title: 'Title',
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
@@ -22,6 +24,8 @@ describe('ProfileRemoveCommand', () => {
             country: 'Sweden',
             zipCode: '85001'
         }, {
+            firstName: 'Johnny',
+            lastName: 'Depp',
             title: 'Tite',
             addressLine1: 'Ad',
             addressLine2: 'ADD 222',
