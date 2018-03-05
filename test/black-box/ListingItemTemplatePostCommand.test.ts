@@ -32,7 +32,7 @@ describe('ListingItemTemplatePostCommand', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            true    // generateListingItemObjects
         ]).toParamsArray();
 
         listingItemTemplace = await testUtil.generateData(
