@@ -52,39 +52,43 @@ describe('ListingItemFactory', () => {
             .getMessage(listingItemTemplateTestData, rootCategoryWithChildren)
             .then((message) => {
 
+                console.log('message: ', JSON.stringify(message, null, 2));
                 expect(message.hash).toBe(listingItemTemplateTestData.hash);
 
-/*
-                // itemInformation
-                expect(res.information).not.toBe(undefined);
-                expect(res.information.title).toBe(req.ItemInformation.title);
-                expect(res.information.shortDescription).toBe(req.ItemInformation.shortDescription);
-                expect(res.information.longDescription).toBe(req.ItemInformation.longDescription);
+                expect(message.id).not.toBeDefined();
+                expect(message.profileId).not.toBeDefined();
+                expect(message.updatedAt).not.toBeDefined();
+                expect(message.createdAt).not.toBeDefined();
 
-                expect(res.information.category).not.toBe(undefined);
-                expect(res.information.category).toHaveLength(3);
+                expect(message.ItemInformation).not.toBeDefined();
+                expect(message.PaymentInformation).not.toBeDefined();
+                expect(message.MessagingInformation).not.toBeDefined();
+                expect(message.ListingItemObjects).not.toBeDefined();
+                expect(message.Profile).not.toBeDefined();
+                expect(message.ListingItem).not.toBeDefined();
 
-                // paymentInformation
-                expect(res.payment).not.toBe(undefined);
-                expect(res.payment.type).toBe(req.PaymentInformation.type);
-                expect(res.payment.Escrow.type).toBe(req.PaymentInformation.Escrow.type);
-                const itemPrice = res.payment.ItemPrice;
-                expect(itemPrice.currency).toBe(req.PaymentInformation.ItemPrice.currency);
-                expect(itemPrice.basePrice).toBe(req.PaymentInformation.ItemPrice.basePrice);
+                expect(message.information).toBeDefined();
+                expect(message.information.id).not.toBeDefined();
 
-                // messagingInformation
-                expect(res.messaging).not.toBe(undefined);
-                const messagingInformation = res.messaging[0];
-                expect(messagingInformation.protocol).toBe(req.MessagingInformation[0].protocol);
-                expect(messagingInformation.publicKey).toBe(req.MessagingInformation[0].publicKey);
+                expect(message.information.title).toBe(listingItemTemplateTestData.ItemInformation.title);
+                // TODO: test rest of the information fields
 
-                // listingObjects
-                expect(res.objects).not.toBe(undefined);
-                const listingItemObjects = res.objects[0];
-                expect(listingItemObjects.type).toBe(req.ListingItemObjects[0].type);
-                expect(listingItemObjects.description).toBe(req.ListingItemObjects[0].description);
-                expect(listingItemObjects.order).toBe(req.ListingItemObjects[0].order);
-*/
+                expect(message.information.ItemCategory).not.toBeDefined();
+                expect(message.information.ItemLocation).not.toBeDefined();
+                expect(message.information.ShippingDestinations).not.toBeDefined();
+
+                expect(message.category).toBeDefined();
+                expect(message.category).toBe([
+                    'cat_ROOT',
+                    'cat_high_value',
+                    'cat_high_luxyry_items'
+                ]);
+
+                // TODO: test payment fields
+                // TODO: test messaging fields
+                // TODO: test objects fields
+
+
             });
     });
 

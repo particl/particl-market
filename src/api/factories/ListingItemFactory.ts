@@ -40,7 +40,7 @@ export class ListingItemFactory {
 
         listingItemTemplate.hash = ObjectHash.getHash(listingItemTemplate);
         const category = listingItemTemplate.ItemInformation.ItemCategory;
-        const itemCategory = this.itemCategoryFactory.getArray(category as resources.ItemCategory, rootCategoryWithRelated as ItemCategory);
+        const itemCategory = await this.itemCategoryFactory.getArray(category as resources.ItemCategory, rootCategoryWithRelated as ItemCategory);
 
         const itemInformation = listingItemTemplate.ItemInformation;
 
