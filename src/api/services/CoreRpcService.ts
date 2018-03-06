@@ -63,7 +63,6 @@ export class CoreRpcService {
             id
         });
 
-
         const url = this.getUrl();
         const options = this.getOptions();
 
@@ -100,23 +99,6 @@ export class CoreRpcService {
                 }
             });
 
-    }
-
-    public async getNewAddressFromDaemon(): Promise<string> {
-        let newAddress;
-        await this.call('getnewaddress')
-            .then( async (res) => {
-                this.log.info('Successfully created new address for profile: ' + res);
-                newAddress = res;
-            })
-            .catch(reason => {
-                this.log.warn('Could not create new address for profile: ' + reason);
-                newAddress = 'ERROR_NO_ADDRESS';
-            });
-        if ( newAddress ) {
-            return newAddress;
-        }
-        throw new Error('Something has gone terribly wrong.');
     }
 
     private getOptions(): any {

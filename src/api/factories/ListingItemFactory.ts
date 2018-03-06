@@ -29,6 +29,7 @@ export class ListingItemFactory {
 
     /**
      * Creates a ListingItemMessage from given data
+     *
      * @param listingItemTemplate
      * @returns {Promise<ListingItemMessage>}
      */
