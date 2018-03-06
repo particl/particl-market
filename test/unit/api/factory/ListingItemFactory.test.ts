@@ -3,6 +3,7 @@ import { ListingItemFactory } from '../../../../src/api/factories/ListingItemFac
 import * as listingItemTemplateTestData from '../../data/listingItemTemplate.json';
 import { ItemCategory, default as resources } from 'resources';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
+import {ListingItemMessage} from '../../../../src/api/messages/ListingItemMessage';
 
 describe('ListingItemFactory', () => {
 
@@ -46,50 +47,64 @@ describe('ListingItemFactory', () => {
         //
     });
 
-    test('Should get ListingItemMessage', () => {
+    test('Should get ListingItemMessage', async () => {
 
-        listingItemFactory
-            .getMessage(listingItemTemplateTestData, rootCategoryWithChildren)
-            .then((message) => {
+        const message: ListingItemMessage = await listingItemFactory
+            .getMessage(listingItemTemplateTestData, rootCategoryWithChildren);
 
-                console.log('message: ', JSON.stringify(message, null, 2));
-                expect(message.hash).toBe(listingItemTemplateTestData.hash);
+        // console.log('message: ', JSON.stringify(message, null, 2));
+        // console.log('message.information: ', JSON.stringify(message.information, null, 2));
+        // console.log('message.information.id: ', message.information.id);
+        // console.log('message.ItemInformation: ', JSON.stringify(message.ItemInformation, null, 2));
 
-                expect(message.id).not.toBeDefined();
-                expect(message.profileId).not.toBeDefined();
-                expect(message.updatedAt).not.toBeDefined();
-                expect(message.createdAt).not.toBeDefined();
+        expect(message.hash).toBe(listingItemTemplateTestData.hash);
 
-                expect(message.ItemInformation).not.toBeDefined();
-                expect(message.PaymentInformation).not.toBeDefined();
-                expect(message.MessagingInformation).not.toBeDefined();
-                expect(message.ListingItemObjects).not.toBeDefined();
-                expect(message.Profile).not.toBeDefined();
-                expect(message.ListingItem).not.toBeDefined();
+        expect(message).not.toHaveProperty('id');
+        expect(message).not.toHaveProperty('profileId');
+        expect(message).not.toHaveProperty('updatedAt');
+        expect(message).not.toHaveProperty('createdAt');
 
-                expect(message.information).toBeDefined();
-                expect(message.information.id).not.toBeDefined();
+        expect(message).not.toHaveProperty('ItemInformation');
+        expect(message).not.toHaveProperty('PaymentInformation');
+        expect(message).not.toHaveProperty('MessagingInformation');
+        expect(message).not.toHaveProperty('ListingItemObjects');
+        expect(message).not.toHaveProperty('Profile');
+        expect(message).not.toHaveProperty('ListingItem');
 
-                expect(message.information.title).toBe(listingItemTemplateTestData.ItemInformation.title);
-                // TODO: test rest of the information fields
+        expect(message.information).toBeDefined();
+        expect(message.information).not.toHaveProperty('id');
+        expect(message.information).not.toHaveProperty('shortDescription');
+        expect(message.information).not.toHaveProperty('longDescription');
+        expect(message.information).not.toHaveProperty('itemCategoryId');
+        expect(message.information).not.toHaveProperty('listingItemId');
+        expect(message.information).not.toHaveProperty('listingItemTemplateId');
+        expect(message.information).not.toHaveProperty('updatedAt');
+        expect(message.information).not.toHaveProperty('createdAt');
+        expect(message.information).not.toHaveProperty('ItemCategory');
+        expect(message.information).not.toHaveProperty('ItemLocation');
+        expect(message.information).not.toHaveProperty('ShippingDestinations');
 
-                expect(message.information.ItemCategory).not.toBeDefined();
-                expect(message.information.ItemLocation).not.toBeDefined();
-                expect(message.information.ShippingDestinations).not.toBeDefined();
+        expect(message.information.title).toBe(listingItemTemplateTestData.ItemInformation.title);
+        expect(message.information.short_description).toBe(listingItemTemplateTestData.ItemInformation.shortDescription);
+        expect(message.information.long_description).toBe(listingItemTemplateTestData.ItemInformation.longDescription);
+        expect(message.information.category).toBeDefined();
+        expect(message.information.category).toBe([
+            'cat_ROOT',
+            'cat_high_value',
+            'cat_high_luxyry_items'
+        ]);
+        // TODO: etc..., test every single field has the correct information
 
-                expect(message.category).toBeDefined();
-                expect(message.category).toBe([
-                    'cat_ROOT',
-                    'cat_high_value',
-                    'cat_high_luxyry_items'
-                ]);
-
-                // TODO: test payment fields
-                // TODO: test messaging fields
-                // TODO: test objects fields
+        expect(message.information.ItemCategory).not.toBeDefined();
+        expect(message.information.ItemLocation).not.toBeDefined();
+        expect(message.information.ShippingDestinations).not.toBeDefined();
 
 
-            });
+        // TODO: test payment fields
+        // TODO: test messaging fields
+        // TODO: test objects fields
+
+
     });
 
 /*
