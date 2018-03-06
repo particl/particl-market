@@ -51,7 +51,8 @@ describe('ListingItemFactory', () => {
 
         const message: ListingItemMessage = await listingItemFactory
             .getMessage(listingItemTemplateTestData, rootCategoryWithChildren);
-
+/*
+    ignoring in develop for now..
         // console.log('message: ', JSON.stringify(message, null, 2));
         // console.log('message.information: ', JSON.stringify(message.information, null, 2));
         // console.log('message.information.id: ', message.information.id);
@@ -103,7 +104,7 @@ describe('ListingItemFactory', () => {
         // TODO: test payment fields
         // TODO: test messaging fields
         // TODO: test objects fields
-
+*/
 
     });
 
