@@ -275,6 +275,7 @@ export const Targets = {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
         PopulateUserMiddleware: 'PopulateUserMiddleware',
         RestApiMiddleware: 'RestApiMiddleware',
+        MulterMiddleware: 'MulterMiddleware',
         RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {

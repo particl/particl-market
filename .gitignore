@@ -42,6 +42,7 @@ data/app1
 data/app2
 data/app1_node_modules
 data/app2_node_modules
+data/uploads
 
 *.paw
 
