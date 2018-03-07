@@ -308,6 +308,7 @@ export class ListingItemService {
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId);
         const itemTemplate = itemTemplateModel.toJSON();
 
+        this.log.debug('post template: ', JSON.stringify(itemTemplate, null, 2));
         // get the templates profile address
         const profileAddress = itemTemplate.Profile.address;
 

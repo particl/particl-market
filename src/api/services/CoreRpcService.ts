@@ -34,7 +34,7 @@ export class CoreRpcService {
         return await this.call('getnewaddress');
     }
 
-    public async smsgImportPrivKey( privateKey: string, label: string = '' ): Promise<boolean> {
+    public async smsgImportPrivKey( privateKey: string, label: string = 'default market' ): Promise<boolean> {
         return await this.call('smsgimportprivkey', [privateKey, label]);
     }
 
@@ -50,8 +50,8 @@ export class CoreRpcService {
      */
     public async sendSmsgMessage(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<any> {
         this.log.debug('SEND SMSG, from: ' + profileAddress + ', to: ' + marketAddress);
-        // return await this.call('smsgsend', [profileAddress, marketAddress, JSON.stringify(message)]);
-        return '';
+        this.log.debug('SEND SMSG, message: ' + JSON.stringify(message, null, 2));
+        return await this.call('smsgsend', [profileAddress, marketAddress, JSON.stringify(message)]);
     }
 
     public async call(method: string, params: any[] = []): Promise<any> {
@@ -63,14 +63,12 @@ export class CoreRpcService {
             id
         });
 
-        this.log.debug('call: ' + method + ' ' + params );
-
         const url = this.getUrl();
         const options = this.getOptions();
 
-        // this.log.debug('CALL: ' + method + ' ' + params);
-        // this.log.debug('call url:', url);
-        // this.log.debug('call postData:', postData);
+        this.log.debug('call: ' + method + ' ' + params);
+        this.log.debug('call url:', url);
+        this.log.debug('call postData:', postData);
 
         return await WebRequest.post(url, options, postData)
             .then( response => {
@@ -101,23 +99,6 @@ export class CoreRpcService {
                 }
             });
 
-    }
-
-    public async getNewAddressFromDaemon(): Promise<string> {
-        let newAddress;
-        await this.call('getnewaddress')
-            .then( async (res) => {
-                this.log.info('Successfully created new address for profile: ' + res);
-                newAddress = res;
-            })
-            .catch(reason => {
-                this.log.warn('Could not create new address for profile: ' + reason);
-                newAddress = 'ERROR_NO_ADDRESS';
-            });
-        if ( newAddress ) {
-            return newAddress;
-        }
-        throw new Error('Something has gone terribly wrong.');
     }
 
     private getOptions(): any {

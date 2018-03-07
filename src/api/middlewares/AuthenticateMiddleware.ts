@@ -4,7 +4,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core } from '../../constants';
 import { events } from '../../core/api/events';
 import { UserAuthenticatedListener } from '../listeners/user/UserAuthenticatedListener';
-import * as auth from 'basic-auth';
+import * as basicAuth from 'basic-auth';
 
 export class AuthenticateMiddleware implements interfaces.Middleware {
 
@@ -18,19 +18,15 @@ export class AuthenticateMiddleware implements interfaces.Middleware {
     }
 
     public use = (req: myExpress.Request, res: myExpress.Response, next: myExpress.NextFunction): void => {
-        const authentication = auth(req);
-
-        if (authentication && this.isAuthenticate(authentication)) {
-            return next();
+        if (req.headers.authorization && req.headers.authorization.search('Basic ') === 0) {
+            const authentication = new Buffer(req.headers.authorization.split(' ')[1], 'base64').toString();
+            if ( authentication === process.env.RPCUSER + ':' + process.env.RPCPASSWORD) {
+                return next();
+            } else {
+                return res.failed(401, 'You are not allowed to request this resource!');
+            }
         } else {
-            this.log.warn('You are not allowed to request this resource!');
             return res.failed(401, 'You are not allowed to request this resource!');
         }
-    }
-
-    private isAuthenticate(authentication: any): boolean {
-        const user = authentication.name;
-        const password = authentication.pass;
-        return (user === process.env.RPCUSER && password === process.env.RPCPASSWORD) ? true : false;
     }
 }

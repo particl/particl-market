@@ -79,6 +79,7 @@
     "@types/request-promise": "^4.1.36",
     "@types/serve-favicon": "^2.2.28",
     "@types/winston": "^2.3.3",
+    "basic-auth": "^2.0.0",
     "body-parser": "^1.17.2",
     "bookshelf": "^0.10.3",
     "bookshelf-camelcase": "^1.1.4",
