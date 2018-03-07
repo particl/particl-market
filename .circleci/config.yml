@@ -107,6 +107,9 @@ commonenv: &commonenv
   RPCHOSTNAME: circle.particl.xyz
   MAINNET_PORT: 58738
   TESTNET_PORT: 58935
+  DEFAULT_MARKETPLACE_NAME: DEFAULT
+  DEFAULT_MARKETPLACE_PRIVATE_KEY: 2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek
+  DEFAULT_MARKETPLACE_ADDRESS: pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA
 
 
 # -------------------------------------------------------------------
