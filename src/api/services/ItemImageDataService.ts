@@ -78,6 +78,12 @@ export class ItemImageDataService {
         if ( body.data ) {
             itemImageData.Data = body.data;
         }
+        if ( body.originalMime ) {
+            itemImageData.OriginalMime = body.originalMime;
+        }
+        if ( body.originalName ) {
+            itemImageData.OriginalName = body.originalName;
+        }
 
         // update itemImageData record
         const updatedItemImageData = await this.itemImageDataRepo.update(id, itemImageData.toJSON());

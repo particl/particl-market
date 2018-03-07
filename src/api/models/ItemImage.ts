@@ -40,5 +40,4 @@ export class ItemImage extends Bookshelf.Model<ItemImage> {
     public ItemInformation(): ItemInformation {
         return this.belongsTo(ItemInformation, 'item_information_id', 'id');
     }
-
 }
