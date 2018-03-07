@@ -19,7 +19,20 @@ describe('ListingItemFactory', () => {
         //
     });
 
-    // tslint:disable:max-line-length
+    const expectMessageFromListingItem = (message: ListingItemMessage, testData: resources.ListingItemTemplate) => {
+        expect(message.hash).toBe(ObjectHash.getHash(testData));
+        expect(message).not.toHaveProperty('id');
+        expect(message).not.toHaveProperty('profileId');
+        expect(message).not.toHaveProperty('updatedAt');
+        expect(message).not.toHaveProperty('createdAt');
+        expect(message).not.toHaveProperty('ItemInformation');
+        expect(message).not.toHaveProperty('PaymentInformation');
+        expect(message).not.toHaveProperty('MessagingInformation');
+        expect(message).not.toHaveProperty('ListingItemObjects');
+        expect(message).not.toHaveProperty('Profile');
+        expect(message).not.toHaveProperty('ListingItem');
+    };
+// tslint:disable:max-line-length
     test('Should get ListingItemMessage', async () => {
 
         const message: ListingItemMessage = await listingItemFactory
@@ -31,17 +44,7 @@ describe('ListingItemFactory', () => {
         // console.log('message.ItemInformation: ', JSON.stringify(message.ItemInformation, null, 2));
 
         // message
-        expect(message.hash).toBe(ObjectHash.getHash(listingItemTemplateTestData));
-        expect(message).not.toHaveProperty('id');
-        expect(message).not.toHaveProperty('profileId');
-        expect(message).not.toHaveProperty('updatedAt');
-        expect(message).not.toHaveProperty('createdAt');
-        expect(message).not.toHaveProperty('ItemInformation');
-        expect(message).not.toHaveProperty('PaymentInformation');
-        expect(message).not.toHaveProperty('MessagingInformation');
-        expect(message).not.toHaveProperty('ListingItemObjects');
-        expect(message).not.toHaveProperty('Profile');
-        expect(message).not.toHaveProperty('ListingItem');
+        expectMessageFromListingItem(message, listingItemTemplateTestData);
 
         // message.information
         expect(message.information).toBeDefined();
@@ -90,12 +93,11 @@ describe('ListingItemFactory', () => {
 
         // message.information.shipping_destinations
         expect(message.information.shipping_destinations).toBeDefined();
-        expect(message.information.shipping_destinations.length).toBe(3);
-        expect(message.information.shipping_destinations[0]).toBe('MOROCCO');
-        expect(message.information.shipping_destinations[1]).toBe('PANAMA');
-        expect(message.information.shipping_destinations[2]).toBe('ARMENIA');
+        expect(message.information.shipping_destinations.length).toBe(2);
+        expect(message.information.shipping_destinations).toContain('-MOROCCO');
+        expect(message.information.shipping_destinations).toContain('PANAMA');
 
-        // // message.information.images
+        // message.information.images
         expect(message.information.images).toBeDefined();
         expect(message.information.images.length).toBe(5);
         expect(message.information.images[0]).not.toHaveProperty('id');

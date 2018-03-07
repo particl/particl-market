@@ -15,6 +15,7 @@ import { MessagingInformation } from '../models/MessagingInformation';
 import { ListingItemObject } from '../models/ListingItemObject';
 import * as resources from 'resources';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
+import {ShippingAvailability} from '../enums/ShippingAvailability';
 
 export class ListingItemFactory {
 
@@ -89,8 +90,8 @@ export class ListingItemFactory {
 
         const category = await this.itemCategoryFactory.getArray(listingItemCategory);
         const location = await this.getMessageInformationLocation(itemInformation.ItemLocation);
-        const shippingDestinations = await this.getMessageInformationShippingDestination(itemInformation.ShippingDestinations);
-        const images = await this.getMessageInformationImage(itemInformation.ItemImages);
+        const shippingDestinations = await this.getMessageInformationShippingDestinations(itemInformation.ShippingDestinations);
+        const images = await this.getMessageInformationImages(itemInformation.ItemImages);
 
         return {
             title: itemInformation.title,
@@ -119,24 +120,31 @@ export class ListingItemFactory {
         };
     }
 
-    private async getMessageInformationShippingDestination(
+    private async getMessageInformationShippingDestinations(
         shippingDestinations: resources.ShippingDestination[]
     ): Promise<string[]> {
         const shippingDesArray: string[] = [];
         shippingDestinations.forEach((value) => {
-            shippingDesArray.push(value.country);
+            switch (value.shippingAvailability) {
+                case ShippingAvailability.SHIPS:
+                    shippingDesArray.push(value.country);
+                    break;
+                case ShippingAvailability.DOES_NOT_SHIP:
+                    shippingDesArray.push('-' + value.country);
+                    break;
+            }
         });
         return shippingDesArray;
     }
 
-    private async getMessageInformationImage(
+    private async getMessageInformationImages(
         images: resources.ItemImage[]
     ): Promise<object[]> {
         const imagesArray: object[] = [];
         const that = this;
         images.forEach(async (value) => {
             // for image data
-            const imageData = await that.getMessageInformationImageData(value.ItemImageDatas);
+            const imageData = await that.getMessageInformationImageDatas(value.ItemImageDatas);
             const image = {
                 hash: value.hash,
                 data: imageData
@@ -146,7 +154,7 @@ export class ListingItemFactory {
         return imagesArray;
     }
 
-    private async getMessageInformationImageData(
+    private async getMessageInformationImageDatas(
         itemImageDatas: resources.ItemImageData[]
     ): Promise<object[]> {
         const imageDataArray: object[] = [];
@@ -154,7 +162,8 @@ export class ListingItemFactory {
             imageDataArray.push({
                 protocol: value.protocol,
                 encoding: value.encoding,
-                data: value.data
+                data: value.data,
+                id: value.dataId
             });
         });
         return imageDataArray;
