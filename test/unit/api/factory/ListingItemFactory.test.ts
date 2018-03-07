@@ -1,47 +1,16 @@
 import { LogMock } from '../../lib/LogMock';
 import { ListingItemFactory } from '../../../../src/api/factories/ListingItemFactory';
-import * as listingItemTemplateTestData from '../../data/listingItemTemplate.json';
 import { ItemCategory, default as resources } from 'resources';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
-import {ListingItemMessage} from '../../../../src/api/messages/ListingItemMessage';
+import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMessage';
+
+import * as listingItemTemplateTestData from '../../data/listingItemTemplate.json';
+import * as listingItemCategoryWithRelatedTestData from '../../data/listingItemCategoryWithRelated.json';
 
 describe('ListingItemFactory', () => {
 
     const itemCategoryFactory = new ItemCategoryFactory(LogMock);
     const listingItemFactory = new ListingItemFactory(LogMock, itemCategoryFactory);
-
-    const rootCategoryWithChildren = {
-        id: 321,
-        key: 'cat_ROOT',
-        name: 'ROOT',
-        description: 'root item category',
-        parentItemCategoryId: null,
-        updatedAt: 1520294530628,
-        createdAt: 1520294530628,
-        ChildItemCategories: [
-            {
-                id: 322,
-                key: 'cat_high_value',
-                name: 'High Value (10,000$+)',
-                description: '',
-                parentItemCategoryId: 321,
-                updatedAt: 1520294530628,
-                createdAt: 1520294530628,
-                ChildItemCategories: [
-                    {
-                        id: 326,
-                        key: 'cat_high_luxyry_items',
-                        name: 'Luxury Items',
-                        description: '',
-                        parentItemCategoryId: 322,
-                        updatedAt: 1520294530628,
-                        createdAt: 1520294530628
-                    }
-                ]
-            }
-        ]
-    } as ItemCategory;
-
 
     beforeEach(() => {
         //
@@ -50,7 +19,7 @@ describe('ListingItemFactory', () => {
     test('Should get ListingItemMessage', async () => {
 
         const message: ListingItemMessage = await listingItemFactory
-            .getMessage(listingItemTemplateTestData, rootCategoryWithChildren);
+            .getMessage(listingItemTemplateTestData, listingItemCategoryWithRelatedTestData);
 
         console.log('message: ', JSON.stringify(message, null, 2));
         // console.log('message.information: ', JSON.stringify(message.information, null, 2));

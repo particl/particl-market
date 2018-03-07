@@ -30,24 +30,27 @@ export class ListingItemFactory {
     /**
      * Creates a ListingItemMessage from given data
      *
-     * @param listingItemTemplate
+     * @param {"resources".ListingItemTemplate} listingItemTemplate
+     * @param {"resources".ItemCategory} listingItemCategory
      * @returns {Promise<ListingItemMessage>}
      */
     public async getMessage(
         listingItemTemplate: resources.ListingItemTemplate,
-        rootCategoryWithRelated: ItemCategory
+        listingItemCategory: resources.ItemCategory
     ): Promise<ListingItemMessage> {
 
+        // create the hash (propably should have been created allready)
         listingItemTemplate.hash = ObjectHash.getHash(listingItemTemplate);
-        const category = listingItemTemplate.ItemInformation.ItemCategory;
-        const itemCategory = await this.itemCategoryFactory.getArray(category as resources.ItemCategory, rootCategoryWithRelated as ItemCategory);
+
+        const itemCategoryArray = await this.itemCategoryFactory.getArray(listingItemCategory);
+        this.log.debug('itemCategoryArray: ', itemCategoryArray);
 
         const itemInformation = listingItemTemplate.ItemInformation;
 
         // todo: removing images for nows
         delete itemInformation.ItemImages;
 
-        itemInformation['category'] = itemCategory;
+        itemInformation['category'] = itemCategoryArray;
         return {
             hash: listingItemTemplate.hash,
             information: itemInformation,
