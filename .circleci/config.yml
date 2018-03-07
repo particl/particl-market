@@ -213,9 +213,9 @@ jobs:
       # - run: ./bin/ci-create-dbs.sh
       # - run: ./bin/ci-create-build-version.sh
       - run: npm test
-      # - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
-      # - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
-      # - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
+      # - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST
+      # - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
+      # - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST
 
   # feature branch integration test
   integration_test_feature:
@@ -255,7 +255,7 @@ jobs:
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
-      - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
+      - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST
 
   # feature branch blackbox test
   blackbox_test_feature:
@@ -295,7 +295,7 @@ jobs:
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
-      - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
+      - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
 
   # feature branch ui test
   ui_test_feature:
@@ -332,7 +332,7 @@ jobs:
       - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
-      - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test feature1.particl.xyz $MAINNET_PORT $TESTNET_PORT
+      - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST
 
   # feature branch deploy
   deploy_feature:
@@ -457,9 +457,9 @@ jobs:
       # - run: ./bin/ci-create-dbs.sh
       # - run: ./bin/ci-create-build-version.sh
       - run: npm test
-      # - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
-      # - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
-      # - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+      # - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST
+      # - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
+      # - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST
 
   # develop branch integration test
   integration_test_develop:
@@ -499,7 +499,7 @@ jobs:
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
-      - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+      - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST
 
   # develop branch blackbox test
   blackbox_test_develop:
@@ -539,7 +539,7 @@ jobs:
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
-      - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+      - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
 
   # develop branch ui test
   ui_test_develop:
@@ -578,7 +578,7 @@ jobs:
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
-      - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+      - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST
 
   # develop branch deploy
   deploy_develop:
@@ -707,9 +707,9 @@ jobs:
       # - run: ./bin/ci-create-dbs.sh
       # - run: ./bin/ci-create-build-version.sh
       - run: npm test
-      # - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
-      # - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
-      # - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+      # - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST
+      # - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
+      # - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST
 
   # master branch integration test
   integration_test_master:
@@ -751,7 +751,7 @@ jobs:
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
-      - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+      - run: bin/ci-integration-tests.sh development $APP_PORT $APP_HOST
 
   # master branch blackbox test
   blackbox_test_master:
@@ -793,7 +793,7 @@ jobs:
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
       - run: yarn install
-      - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+      - run: bin/ci-blackbox-tests.sh development $APP_PORT $APP_HOST
 
   # master branch ui test
   ui_test_master:
@@ -832,7 +832,7 @@ jobs:
       - run: ./dockerize -wait $APP_HOST:$APP_PORT/cli -timeout 180s
       # - run: docker run -d --name app2 --net=host --env-file .env.circle.app2 $REGISTRY/$IMAGE_NAME:$CIRCLE_BRANCH-$CIRCLE_SHA1 bin/ci-entrypoint.sh
       - run: npm install -g -s --no-progress yarn
-      - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST test test $RPCHOSTNAME $MAINNET_PORT $TESTNET_PORT
+      - run: bin/ci-ui-tests.sh development $APP_PORT $APP_HOST
 
   # master branch deploy
   deploy_master:
