@@ -79,6 +79,7 @@ export class CoreRpcService {
                 // this.log.debug('response.content: ', response.content);
 
                 if (response.statusCode !== 200) {
+                    this.log.debug('response:', response);
                     throw new HttpException(response.statusCode, response.statusMessage);
                 }
 
