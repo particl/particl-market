@@ -104,7 +104,7 @@ export class ListingItemService {
     @validate()
     public async search(
         @request(ListingItemSearchParams) options: ListingItemSearchParams,
-        withRelated: boolean = false
+        withRelated: boolean = true
         ): Promise<Bookshelf.Collection<ListingItem>> {
         // if valid params
         // todo: check whether category is string or number, if string, try to find the Category by key
@@ -308,6 +308,7 @@ export class ListingItemService {
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId);
         const itemTemplate = itemTemplateModel.toJSON();
 
+        this.log.debug('post template: ', JSON.stringify(itemTemplate, null, 2));
         // get the templates profile address
         const profileAddress = itemTemplate.Profile.address;
 
@@ -321,8 +322,7 @@ export class ListingItemService {
         const rootCategoryWithRelated = await this.itemCategoryService.findRoot();
         const addItemMessage = await this.listingItemFactory.getMessage(itemTemplate, rootCategoryWithRelated);
 
-        this.messageBroadcastService.broadcast(profileAddress, market.address, addItemMessage as ListingItemMessage);
-        return Promise.resolve();
+        return this.messageBroadcastService.broadcast(profileAddress, market.address, addItemMessage as ListingItemMessage);
     }
 
     /**

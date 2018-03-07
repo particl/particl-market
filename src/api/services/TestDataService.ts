@@ -255,7 +255,7 @@ export class TestDataService {
             // this.log.debug('listingItem: ', listingItem);
             const savedListingItem = await this.listingItemService.create(listingItem);
             // this.log.debug('savedListingItem: ', savedListingItem.toJSON());
-            items.push(savedListingItem.toJSON());
+            items.push(savedListingItem);
         }
         // this.log.debug('items: ', items);
 
@@ -304,6 +304,8 @@ export class TestDataService {
         const addresses: any[] = [];
         for (let i = amount; i > 0; i--) {
             addresses.push({
+                firstName: Faker.name.firstName(),
+                lastName: Faker.name.lastName(),
                 title: Faker.company.companyName(),
                 addressLine1: Faker.address.streetAddress(),
                 addressLine2: Faker.address.secondaryAddress(),

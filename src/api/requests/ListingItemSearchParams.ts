@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty, ValidateIf } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { SearchOrder } from '../enums/SearchOrder';
 import { ListingItemSearchType } from '../enums/ListingItemSearchType';
@@ -18,7 +18,8 @@ export class ListingItemSearchParams extends RequestBody {
 
     public category: string | number;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
+    @ValidateIf(o => o.type)
     @IsEnum(ListingItemSearchType)
     public type: ListingItemSearchType;
 

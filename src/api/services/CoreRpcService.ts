@@ -27,16 +27,21 @@ export class CoreRpcService {
     }
 
     public async getNetworkInfo(): Promise<any> {
-        return this.call('getnetworkinfo');
+        return await this.call('getnetworkinfo');
     }
 
     public async getNewAddress(): Promise<any> {
-        return this.call('getnewaddress');
+        return await this.call('getnewaddress');
     }
 
-    public async smsgImportPrivKey( privateKey: string, label: string = '' ): Promise<boolean> {
-        // return this.call('smsgimportprivkey', [privateKey]);
-        return true;
+    public async smsgImportPrivKey( privateKey: string, label: string = 'default market' ): Promise<boolean> {
+        return await this.call('smsgimportprivkey', [privateKey, label]);
+    }
+
+    public async smsgInbox(params: any[] = []): Promise<any> {
+        const response = await this.call('smsginbox', params);
+        // this.log.debug('got response:', response);
+        return response;
     }
 
     /**
@@ -44,8 +49,9 @@ export class CoreRpcService {
      * @returns {Promise<any>}
      */
     public async sendSmsgMessage(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<any> {
-        this.log.debug('SEND SMSG, from: ' + profileAddress + ', to: ' + marketAddress + ', message: ' + JSON.stringify(message, null, 2));
-        return this.call('smsgsend', [profileAddress, marketAddress, message]);
+        this.log.debug('SEND SMSG, from: ' + profileAddress + ', to: ' + marketAddress);
+        this.log.debug('SEND SMSG, message: ' + JSON.stringify(message, null, 2));
+        return await this.call('smsgsend', [profileAddress, marketAddress, JSON.stringify(message)]);
     }
 
     public async call(method: string, params: any[] = []): Promise<any> {
@@ -57,14 +63,12 @@ export class CoreRpcService {
             id
         });
 
-        this.log.debug('call: ' + method + ' ' + params );
-
         const url = this.getUrl();
         const options = this.getOptions();
 
-        // this.log.debug('CALL: ' + method + ' ' + params);
-        // this.log.debug('call url:', url);
-        // this.log.debug('call postData:', postData);
+        this.log.debug('call: ' + method + ' ' + params);
+        this.log.debug('call url:', url);
+        this.log.debug('call postData:', postData);
 
         return await WebRequest.post(url, options, postData)
             .then( response => {
@@ -121,7 +125,7 @@ export class CoreRpcService {
 
     private getUrl(): string {
         const host = (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.DEFAULT_HOSTNAME);
-        const port = (Environment.isDevelopment() ?
+        const port = (Environment.isDevelopment() || Environment.isTest() ?
             (process.env.TESTNET_PORT ? process.env.TESTNET_PORT : this.DEFAULT_TESTNET_PORT) :
             (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT));
         return 'http://' + host + ':' + port;

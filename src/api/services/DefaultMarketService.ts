@@ -23,26 +23,37 @@ export class DefaultMarketService {
 
 
     public async seedDefaultMarket(): Promise<void> {
-        // todo: move default market info to env variables?
+
+        const MARKETPLACE_NAME          = process.env.DEFAULT_MARKETPLACE_NAME
+                                            ? process.env.DEFAULT_MARKETPLACE_NAME
+                                            : 'DEFAULT';
+        const MARKETPLACE_PRIVATE_KEY   = process.env.DEFAULT_MARKETPLACE_PRIVATE_KEY
+                                            ? process.env.DEFAULT_MARKETPLACE_PRIVATE_KEY
+                                            : '2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek';
+        const MARKETPLACE_ADDRESS       = process.env.DEFAULT_MARKETPLACE_ADDRESS
+                                            ? process.env.DEFAULT_MARKETPLACE_ADDRESS
+                                            : 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA';
+
         const defaultMarket = {
-            name: 'DEFAULT',
-            private_key: '2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek',
-            address: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA'
+            name: MARKETPLACE_NAME,
+            private_key: MARKETPLACE_PRIVATE_KEY,
+            address: MARKETPLACE_ADDRESS
         } as MarketCreateRequest;
         await this.insertOrUpdateMarket(defaultMarket);
         return;
     }
 
     public async insertOrUpdateMarket(market: MarketCreateRequest): Promise<Market> {
-        let newMarket = await this.marketService.findByAddress(market.address);
-        if (newMarket === null) {
-            newMarket = await this.marketService.create(market as MarketCreateRequest);
-            // await this.coreRpcService.smsgImportPrivKey(newMarket.PrivateKey);
-            this.log.debug('created new default Market: ', newMarket);
+        let newMarketModel = await this.marketService.findByAddress(market.address);
+        if (newMarketModel === null) {
+            newMarketModel = await this.marketService.create(market as MarketCreateRequest);
+            this.log.debug('created new default Market: ', JSON.stringify(newMarketModel, null, 2));
         } else {
-            newMarket = await this.marketService.update(newMarket.Id, market as MarketUpdateRequest);
-            this.log.debug('updated new default Market: ', newMarket);
+            newMarketModel = await this.marketService.update(newMarketModel.Id, market as MarketUpdateRequest);
+            this.log.debug('updated new default Market: ', JSON.stringify(newMarketModel, null, 2));
         }
+        const newMarket = newMarketModel.toJSON();
+        await this.coreRpcService.smsgImportPrivKey(newMarket.privateKey);
         return newMarket;
     }
 }

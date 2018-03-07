@@ -153,6 +153,7 @@ export class IoC {
         this.container
             .bind<any>(type)
             .to(value)
+            .inSingletonScope()
             .whenTargetNamed(name);
     }
 

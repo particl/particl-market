@@ -11,6 +11,8 @@ import * as crypto from 'crypto-js';
 import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { ObjectHash } from '../../../core/helpers/ObjectHash';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
@@ -38,6 +40,10 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
+        // check listingItemTemplate id present in params
+        if (!data.params[0]) {
+            throw new MessageException('ListingItemTemplate id can not be null.');
+        }
         // find listing item template
         const listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
 
@@ -47,8 +53,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         // create item images
         return await this.itemImageService.create({
             item_information_id: itemInformation.id,
-            // we will replace this generate hash later
-            hash: crypto.SHA256(new Date().getTime().toString()).toString(), // TODO: NOTE: Should this be changed to the helper hasher?
+            hash: ObjectHash.getHash(itemInformation),
             data: {
                 dataId: data.params[1],
                 protocol: data.params[2],

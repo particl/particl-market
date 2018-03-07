@@ -4,8 +4,6 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { MarketCreateCommand } from './MarketCreateCommand';
-import { MarketListCommand } from './MarketListCommand';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
@@ -15,8 +13,6 @@ export class MarketRootCommand extends BaseCommand implements RpcCommandInterfac
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Command) @named(Targets.Command.market.MarketCreateCommand) private marketCreateCommand: MarketCreateCommand,
-        @inject(Types.Command) @named(Targets.Command.market.MarketListCommand) private marketListCommand: MarketListCommand,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.MARKET_ROOT);

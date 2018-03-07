@@ -68,8 +68,7 @@ export class App {
     }
 
     /**
-     * TODO:
-     * - no rest api in prod
+     * ..called from app.ts
      *
      * @returns {Promise<EventEmitter>}
      */

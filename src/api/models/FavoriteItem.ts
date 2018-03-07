@@ -1,4 +1,5 @@
 import { Bookshelf } from '../../config/Database';
+import { Collection } from 'bookshelf';
 import { Profile } from './Profile';
 import { ListingItem } from './ListingItem';
 import { FavoriteSearchParams } from '../requests/FavoriteSearchParams';
@@ -8,7 +9,10 @@ export class FavoriteItem extends Bookshelf.Model<FavoriteItem> {
     public static async fetchById(value: number, withRelated: boolean = true): Promise<FavoriteItem> {
         if (withRelated) {
             return await FavoriteItem.where<FavoriteItem>({ id: value }).fetch({
-                withRelated: []
+                withRelated: [
+                    'ListingItem',
+                    'Profile'
+                ]
             });
         } else {
             return await FavoriteItem.where<FavoriteItem>({ id: value }).fetch();
@@ -18,6 +22,43 @@ export class FavoriteItem extends Bookshelf.Model<FavoriteItem> {
     // find favorite by profile id and listing item id
     public static async search(options: FavoriteSearchParams): Promise<FavoriteItem> {
         return await FavoriteItem.where<FavoriteItem>({ listing_item_id: options.itemId, profile_id: options.profileId }).fetch();
+    }
+
+    public static async findFavoritesByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<FavoriteItem>> {
+        const favoriteItems = FavoriteItem.forge<Collection<FavoriteItem>>()
+            .query(qb => {
+                qb.where('profile_id', '=', profileId);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await favoriteItems.fetchAll({
+                withRelated: [
+                    'ListingItem',
+                    'ListingItem.ItemInformation',
+                    'ListingItem.ItemInformation.ItemCategory',
+                    'ListingItem.ItemInformation.ItemLocation',
+                    'ListingItem.ItemInformation.ItemLocation.LocationMarker',
+                    'ListingItem.ItemInformation.ItemImages',
+                    'ListingItem.ItemInformation.ItemImages.ItemImageDatas',
+                    'ListingItem.ItemInformation.ShippingDestinations',
+                    'ListingItem.PaymentInformation',
+                    'ListingItem.PaymentInformation.Escrow',
+                    'ListingItem.PaymentInformation.Escrow.Ratio',
+                    'ListingItem.PaymentInformation.ItemPrice',
+                    'ListingItem.PaymentInformation.ItemPrice.ShippingPrice',
+                    'ListingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress',
+                    'ListingItem.MessagingInformation',
+                    'ListingItem.ListingItemObjects',
+                    'ListingItem.Bids',
+                    'ListingItem.Market',
+                    'ListingItem.FlaggedItem',
+                    'Profile'
+                ]
+            });
+        } else {
+            return await favoriteItems.fetchAll();
+        }
     }
 
     public get tableName(): string { return 'favorite_items'; }

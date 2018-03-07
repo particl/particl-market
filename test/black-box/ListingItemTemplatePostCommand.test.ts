@@ -1,13 +1,11 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ListingItem, ListingItemTemplate } from 'resources';
 
-describe('ListingItemPostCommand', () => {
+describe('ListingItemTemplatePostCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
@@ -34,7 +32,7 @@ describe('ListingItemPostCommand', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            true    // generateListingItemObjects
         ]).toParamsArray();
 
         listingItemTemplace = await testUtil.generateData(
@@ -47,20 +45,31 @@ describe('ListingItemPostCommand', () => {
     });
 
     test('Should post a item in to the market place with market id', async () => {
-        /*
+
+        // fetch amount of listingitems, should be 0
         const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id, defaultMarket.id]);
+
+
+        // const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id, defaultMarket.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result = res.getBody()['result'];
-        expect(result).toHaveProperty('ItemInformation');
-        expect(result).toHaveProperty('PaymentInformation');
-        expect(result).toHaveProperty('MessagingInformation');
-        expect(result.id).toBe(listingItemTemplace[0].id);
-        */
+        // expect(result).toHaveProperty('ItemInformation');
+        // expect(result).toHaveProperty('PaymentInformation');
+        // expect(result).toHaveProperty('MessagingInformation');
+        // expect(result.id).toBe(listingItemTemplace[0].id);
+
+        setTimeout(() => {
+
+
+            // done();
+        }, 10000);
+
+
     });
 
+    /*
     test('Should post a item in to the market place without market id', async () => {
-        /*
         const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -69,23 +78,21 @@ describe('ListingItemPostCommand', () => {
         expect(result).toHaveProperty('PaymentInformation');
         expect(result).toHaveProperty('MessagingInformation');
         expect(result.id).toBe(listingItemTemplace[0].id);
-        */
+
     });
 
     test('Should fail to post a item in to the market place because of invalid listingItemTemplate id', async () => {
-        /*
         // post item with invalid listingItemTemplate id
         const res: any = await rpc(templateCommand, [templatePostCommand, 55]);
         res.expectJson();
         res.expectStatusCode(404);
-        */
     });
 
     test('Should have received posted listingitem', async () => {
         // asdf
         const test = 1;
     });
-
+    */
 
 
 });
