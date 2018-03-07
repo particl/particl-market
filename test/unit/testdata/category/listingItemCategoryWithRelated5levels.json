@@ -1,0 +1,47 @@
+{
+    "id": 716,
+    "key": "cat_wholesale_consumer_goods",
+    "name": "Wholesale Consumer Goods",
+    "description": "",
+    "parentItemCategoryId": 715,
+    "updatedAt": 1520383591584,
+    "createdAt": 1520383591584,
+    "ParentItemCategory": {
+        "id": 715,
+        "key": "cat_wholesale_science_industrial",
+        "name": "Wholesale / Science & Industrial Products",
+        "description": "",
+        "parentItemCategoryId": 641,
+        "updatedAt": 1520383591567,
+        "createdAt": 1520383591567,
+        "ParentItemCategory": {
+            "id": 641,
+            "key": "cat_test_level2",
+            "name": "TEST LEVEL 2",
+            "description": "test2",
+            "parentItemCategoryId": null,
+            "updatedAt": 1520383590201,
+            "createdAt": 1520383590201,
+            "ParentItemCategory": {
+                "id": 642,
+                "key": "cat_test_level1",
+                "name": "TEST LEVEL 1",
+                "description": "test1",
+                "parentItemCategoryId": null,
+                "updatedAt": 1520383590201,
+                "createdAt": 1520383590201,
+                "ParentItemCategory": {
+                    "id": 643,
+                    "key": "cat_ROOT",
+                    "name": "ROOT",
+                    "description": "root item category",
+                    "parentItemCategoryId": null,
+                    "updatedAt": 1520383590201,
+                    "createdAt": 1520383590201,
+                    "ParentItemCategory": {}
+                }
+            }
+        }
+    },
+    "ChildItemCategories": []
+}

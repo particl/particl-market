@@ -7,8 +7,8 @@ import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMess
 
 import { ObjectHash } from '../../../../src/core/helpers/ObjectHash';
 
-import * as listingItemTemplateBasic from '../../testdata/listingItemTemplateBasic.json';
-import * as listingItemCategoryWithRelatedTestData from '../../testdata/listingItemCategoryWithRelated.json';
+import * as listingItemTemplateBasic from '../../testdata/listingitemtemplate/listingItemTemplateBasic.json';
+import * as listingItemCategoryWithRelated from '../../testdata/category/listingItemCategoryWithRelated.json';
 
 describe('ListingItemFactory', () => {
 
@@ -178,9 +178,9 @@ describe('ListingItemFactory', () => {
     test('Should get ListingItemMessage', async () => {
 
         const message: ListingItemMessage = await listingItemFactory
-            .getMessage(listingItemTemplateBasic, listingItemCategoryWithRelatedTestData);
+            .getMessage(listingItemTemplateBasic, listingItemCategoryWithRelated);
 
-        console.log('message: ', JSON.stringify(message, null, 2));
+        // console.log('message: ', JSON.stringify(message, null, 2));
 
         // test message conversion
         expectMessageFromListingItem(message, listingItemTemplateBasic);
