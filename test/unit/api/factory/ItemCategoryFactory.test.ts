@@ -111,6 +111,7 @@ describe('ItemCategoryFactory', () => {
             parentItemCategoryId: 1
         };
         itemCategoryFactory.getArray(category, rootCategoryWithRelated).then((res, error) => {
+            res = res.toJson();
             expect(res).toHaveLength(2);
             expect(res[0]).toBe(rootCategoryWithRelated.key);
             expect(res[1]).toBe(category.key);
@@ -125,6 +126,7 @@ describe('ItemCategoryFactory', () => {
             parentItemCategoryId: 4
         };
         itemCategoryFactory.getArray(category, rootCategoryWithRelated).then((res, error) => {
+            res = res.toJson();
             expect(res).toHaveLength(3);
             expect(res[0]).toBe(rootCategoryWithRelated.key);
             expect(res[1]).toBe(rootCategoryWithRelated.ChildItemCategories[2].key);
@@ -140,6 +142,7 @@ describe('ItemCategoryFactory', () => {
             parentItemCategoryId: 8
         };
         itemCategoryFactory.getArray(category, rootCategoryWithRelated).then((res, error) => {
+            res = res.toJson();
             expect(res).toHaveLength(5);
             expect(res[0]).toBe(rootCategoryWithRelated.key);
             expect(res[1]).toBe(rootCategoryWithRelated.ChildItemCategories[0].key);

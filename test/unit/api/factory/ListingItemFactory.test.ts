@@ -2,7 +2,10 @@ import { LogMock } from '../../lib/LogMock';
 import { ListingItemFactory } from '../../../../src/api/factories/ListingItemFactory';
 import { ItemCategory, default as resources } from 'resources';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
+
 import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMessage';
+
+import { ObjectHash } from '../../../../src/core/helpers/ObjectHash';
 
 import * as listingItemTemplateTestData from '../../data/listingItemTemplate.json';
 import * as listingItemCategoryWithRelatedTestData from '../../data/listingItemCategoryWithRelated.json';
@@ -16,6 +19,7 @@ describe('ListingItemFactory', () => {
         //
     });
 
+    // tslint:disable:max-line-length
     test('Should get ListingItemMessage', async () => {
 
         const message: ListingItemMessage = await listingItemFactory
@@ -27,7 +31,7 @@ describe('ListingItemFactory', () => {
         // console.log('message.ItemInformation: ', JSON.stringify(message.ItemInformation, null, 2));
 
         // message
-        expect(message.hash).toBe(listingItemTemplateTestData.hash);
+        expect(message.hash).toBe(ObjectHash.getHash(listingItemTemplateTestData));
         expect(message).not.toHaveProperty('id');
         expect(message).not.toHaveProperty('profileId');
         expect(message).not.toHaveProperty('updatedAt');
@@ -56,11 +60,10 @@ describe('ListingItemFactory', () => {
         expect(message.information.short_description).toBe(listingItemTemplateTestData.ItemInformation.shortDescription);
         expect(message.information.long_description).toBe(listingItemTemplateTestData.ItemInformation.longDescription);
         expect(message.information.category).toBeDefined();
-        expect(message.information.category).toBe([
-            'cat_ROOT',
-            'cat_high_value',
-            'cat_high_luxyry_items'
-        ]);
+        expect(message.information.category.length).toBe(3);
+        expect(message.information.category[0]).toBe('cat_ROOT');
+        expect(message.information.category[1]).toBe('cat_wholesale_science_industrial');
+        expect(message.information.category[2]).toBe('cat_wholesale_consumer_goods');
 
         // message.information.location
         expect(message.information.location).toBeDefined();
@@ -87,10 +90,12 @@ describe('ListingItemFactory', () => {
 
         // message.information.shipping_destinations
         expect(message.information.shipping_destinations).toBeDefined();
-        expect(message.information.shipping_destinations.length).toBe(2);
-        expect(message.information.shipping_destinations).toBe(['-MOROCCO', 'PANAMA']);
+        expect(message.information.shipping_destinations.length).toBe(3);
+        expect(message.information.shipping_destinations[0]).toBe('MOROCCO');
+        expect(message.information.shipping_destinations[1]).toBe('PANAMA');
+        expect(message.information.shipping_destinations[2]).toBe('ARMENIA');
 
-        // message.information.images
+        // // message.information.images
         expect(message.information.images).toBeDefined();
         expect(message.information.images.length).toBe(5);
         expect(message.information.images[0]).not.toHaveProperty('id');
@@ -175,25 +180,26 @@ describe('ListingItemFactory', () => {
         expect(message.messaging[0]).not.toHaveProperty('updatedAt');
         expect(message.messaging[0]).not.toHaveProperty('createdAt');
         expect(message.messaging[0].protocol).toBe(listingItemTemplateTestData.MessagingInformation[0].protocol);
-        expect(message.messaging[0].public_key).toBe(listingItemTemplateTestData.MessagingInformation[0].public_key);
+        expect(message.messaging[0].public_key).toBe(listingItemTemplateTestData.MessagingInformation[0].publicKey);
 
         // message.objects
         // TODO: test objects fields
 
 
     });
+    // tslint:enable:max-line-length
 
-/*
-    test('Should get the listing-item message from message-processor', () => {
-        const marketId = 1;
-        const result = listingItemFactory.getModel(listingItemForModal, marketId);
-        // check ListingItemCreateRequest
-        expect(result.hash).not.toBeNull();
-        expect(result.market_id).toBe(marketId);
-        expect(result.itemInformation).not.toBe(undefined);
-        expect(result.listingItemObjects).not.toBe(undefined);
-        expect(result.paymentInformation).not.toBe(undefined);
-        expect(result.messagingInformation).not.toBe(undefined);
-    });
-*/
+    /*
+        test('Should get the listing-item message from message-processor', () => {
+            const marketId = 1;
+            const result = listingItemFactory.getModel(listingItemForModal, marketId);
+            // check ListingItemCreateRequest
+            expect(result.hash).not.toBeNull();
+            expect(result.market_id).toBe(marketId);
+            expect(result.itemInformation).not.toBe(undefined);
+            expect(result.listingItemObjects).not.toBe(undefined);
+            expect(result.paymentInformation).not.toBe(undefined);
+            expect(result.messagingInformation).not.toBe(undefined);
+        });
+    */
 });
