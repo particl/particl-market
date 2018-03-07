@@ -25,12 +25,11 @@ export class MulterMiddleware implements interfaces.Middleware {
     }
 
     public imageFilter = (req, file, cb) => {
-        // TODO: maybe parse the images to check they are in fact valid images.
-        // TODO: maybe check image sizes to make sure they're not too large.
         // accept image only
         if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
             return cb(new Error('Only image files are allowed!'), false);
         }
+
         cb(null, true);
     }
 }
