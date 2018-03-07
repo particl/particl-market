@@ -40,25 +40,20 @@ export class ListingItemFactory {
     ): Promise<ListingItemMessage> {
 
         // create the hash (propably should have been created allready)
-        listingItemTemplate.hash = ObjectHash.getHash(listingItemTemplate);
+        const hash = ObjectHash.getHash(listingItemTemplate);
 
-        const itemCategoryArray = await this.itemCategoryFactory.getArray(listingItemCategory);
-        this.log.debug('itemCategoryArray: ', itemCategoryArray);
+        const information = this.getMessageInformation(listingItemTemplate.ItemInformation, listingItemCategory);
+        const payment = this.getMessagePayment(listingItemTemplate.PaymentInformation);
+        const messaging = this.getMessageMessaging(listingItemTemplate.MessagingInformation);
+        const objects = this.getMessageObjects(listingItemTemplate.ListingItemObjects);
 
-        const itemInformation = listingItemTemplate.ItemInformation;
-
-        // todo: removing images for nows
-        delete itemInformation.ItemImages;
-
-        itemInformation['category'] = itemCategoryArray;
         return {
-            hash: listingItemTemplate.hash,
-            information: itemInformation,
-            payment: listingItemTemplate.PaymentInformation,
-            messaging: listingItemTemplate.MessagingInformation,
-            objects: listingItemTemplate.ListingItemObjects
+            hash,
+            information,
+            payment,
+            messaging,
+            objects,
         } as ListingItemMessage;
-
     }
 
     /**
@@ -86,4 +81,46 @@ export class ListingItemFactory {
             listingItemObjects: data.objects as ListingItemObject
         } as ListingItemCreateRequest;
     }
+
+    private async getMessageInformation(
+        itemInformation: resources.ItemInformation,
+        listingItemCategory: resources.ItemCategory
+    ): Promise<any> {
+
+        const category = await this.itemCategoryFactory.getArray(listingItemCategory);
+        const location = await this.getMessageInformationLocation(itemInformation.ItemLocation);
+        const address = {};
+
+        return {
+            title: itemInformation.title,
+            short_description: itemInformation.shortDescription,
+            long_description: itemInformation.longDescription,
+            category,
+            location: location,
+            address: address
+        };
+    }
+
+    private async getMessageInformationLocation(
+        itemLocation: resources.ItemLocation,
+        listingItemCategory: resources.ItemCategory
+    ): Promise<any> {
+
+        // TODO
+        asdf
+        const category = await this.itemCategoryFactory.getArray(listingItemCategory);
+        const location = await this.getMessageInformationLocation(itemInformation.ItemLocation);
+        const address = {};
+
+        return {
+            title: itemInformation.title,
+            short_description: itemInformation.shortDescription,
+            long_description: itemInformation.longDescription,
+            category,
+            location: location,
+            address: address
+        };
+    }
+
+
 }
