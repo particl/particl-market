@@ -6,6 +6,8 @@ declare module 'resources' {
         basePrice: number;
         createdAt: Date;
         updatedAt: Date;
+        ShippingPrice: ShippingPrice;
+        CryptocurrencyAddress: CryptocurrencyAddress;
     }
 
 }

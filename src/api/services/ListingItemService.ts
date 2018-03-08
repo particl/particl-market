@@ -308,7 +308,7 @@ export class ListingItemService {
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId);
         const itemTemplate = itemTemplateModel.toJSON();
 
-        this.log.debug('post template: ', JSON.stringify(itemTemplate, null, 2));
+        // this.log.debug('post template: ', JSON.stringify(itemTemplate, null, 2));
         // get the templates profile address
         const profileAddress = itemTemplate.Profile.address;
 
@@ -319,8 +319,16 @@ export class ListingItemService {
         const market = marketModel.toJSON();
 
         // create ListingItemMessage
-        const rootCategoryWithRelated = await this.itemCategoryService.findRoot();
-        const addItemMessage = await this.listingItemFactory.getMessage(itemTemplate, rootCategoryWithRelated);
+        // const rootCategoryWithRelated = await this.itemCategoryService.findRoot();
+        // const rootCategory = rootCategoryWithRelated.toJSON();
+        // this.log.debug('rootCategory: ', JSON.stringify(rootCategory, null, 2));
+
+        // find itemCategory with related
+        const itemCategoryModel = await this.itemCategoryService.findOneByKey(itemTemplate.ItemInformation.ItemCategory.key, true);
+        const itemCategory = itemCategoryModel.toJSON();
+        this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
+
+        const addItemMessage = await this.listingItemFactory.getMessage(itemTemplate, itemCategory);
 
         return this.messageBroadcastService.broadcast(profileAddress, market.address, addItemMessage as ListingItemMessage);
     }
