@@ -8,6 +8,8 @@ declare module 'resources' {
         createdAt: Date;
         updatedAt: Date;
         parentItemCategoryId: any;
+        ChildItemCategories: any[];
+        ParentItemCategory: any;
     }
 
 }
