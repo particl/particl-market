@@ -44,7 +44,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     });
 
-    test('Should post a ListingItem in to the default marketplace', async () => {
+    test('Should post a ListingItem in to the default marketplace', async (done) => {
 
         // fetch amount of listingitems, should be 0
         const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id, defaultMarket.id]);
@@ -60,7 +60,8 @@ describe('ListingItemTemplatePostCommand', () => {
         setTimeout(() => {
 
 
-            // done();
+
+            done();
         }, 10000);
 
 

@@ -46,14 +46,14 @@ export class MessageProcessor implements MessageProcessorInterface {
     }
 
     /**
-     * main poll
+     * main poller
      *
      * @returns {Promise<void>}
      */
     private async poll(): Promise<void> {
         await this.pollMessages()
             .then( messages => {
-                // this.log.debug('poll() response:', messages);
+                this.log.debug('poll() response:', messages);
                 // TODO: if we have new message, pass those to processing
 
                 return;

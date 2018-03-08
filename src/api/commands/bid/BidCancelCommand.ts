@@ -8,7 +8,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidMessage } from '../../messages/BidMessage';
 import { BidFactory } from '../../factories/BidFactory';
 import { ListingItemService } from '../../services/ListingItemService';
-import { MessageBroadcastService } from '../../services/MessageBroadcastService';
+import { SmsgService } from '../../services/SmsgService';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
 import { BidMessageType } from '../../enums/BidMessageType';
@@ -23,7 +23,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory
     ) {
         super(Commands.BID_CANCEL);
@@ -60,7 +60,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
             } else if (bid.action === BidMessageType.MPA_BID) {
                 // broadcase the cancel bid message
                 // TODO: add profile and market addresses
-                await this.messageBroadcastService.broadcast('', '', {
+                await this.smsgService.smsgSend('', '', {
                     listing: data.params[0],
                     action: BidMessageType.MPA_CANCEL
                 } as BidMessage);

@@ -17,7 +17,7 @@ import { ListingItemTemplateRepository } from '../repositories/ListingItemTempla
 import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
 import { EscrowRatioService } from '../services/EscrowRatioService';
 import { AddressService } from '../services/AddressService';
-import { MessageBroadcastService } from '../services/MessageBroadcastService';
+import { SmsgService } from '../services/SmsgService';
 import { EscrowFactory } from '../factories/EscrowFactory';
 import { EscrowMessageInterface } from '../messages/EscrowMessageInterface';
 import { EscrowMessage } from '../messages/EscrowMessage';
@@ -33,7 +33,7 @@ export class EscrowService {
         @inject(Types.Repository) @named(Targets.Repository.PaymentInformationRepository) private paymentInfoRepo: PaymentInformationRepository,
         @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
         @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) private escrowFactory: EscrowFactory,
-        @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -205,7 +205,7 @@ export class EscrowService {
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel, address);
 
         // TODO: add profile and market addresses
-        return await this.messageBroadcastService.broadcast('', '', escrowActionMessage);
+        return await this.smsgService.smsgSend('', '', escrowActionMessage);
     }
 
     @validate()
@@ -219,7 +219,7 @@ export class EscrowService {
         // use escrowfactory to generate the refund message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
         // TODO: add profile and market addresses
-        return await this.messageBroadcastService.broadcast('', '', escrowActionMessage);
+        return await this.smsgService.smsgSend('', '', escrowActionMessage);
     }
 
     @validate()
@@ -233,7 +233,7 @@ export class EscrowService {
         // use escrowfactory to generate the release message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
         // TODO: add profile and market addresses
-        return await this.messageBroadcastService.broadcast('', '', escrowActionMessage);
+        return await this.smsgService.smsgSend('', '', escrowActionMessage);
     }
 
 }

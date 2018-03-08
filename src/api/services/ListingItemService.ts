@@ -34,7 +34,7 @@ import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { MessageException } from '../exceptions/MessageException';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
-import { MessageBroadcastService } from './MessageBroadcastService';
+import { SmsgService } from './SmsgService';
 import { Market } from '../models/Market';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { ListingItemObjectService } from './ListingItemObjectService';
@@ -54,7 +54,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
-        @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) public messageBroadcastService: MessageBroadcastService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
@@ -330,7 +330,7 @@ export class ListingItemService {
 
         const addItemMessage = await this.listingItemFactory.getMessage(itemTemplate, itemCategory);
 
-        return this.messageBroadcastService.broadcast(profileAddress, market.address, addItemMessage as ListingItemMessage);
+        return this.smsgService.smsgSend(profileAddress, market.address, addItemMessage as ListingItemMessage);
     }
 
     /**
@@ -362,7 +362,7 @@ export class ListingItemService {
             updateItemMessage.hash = data.hash; // replace with param hash of listing-item
 
             // TODO: Need to update broadcast message return after broadcast functionality will be done.
-            this.messageBroadcastService.broadcast(profileAddress, market.address, updateItemMessage as ListingItemMessage);
+            this.smsgService.broadcast(profileAddress, market.address, updateItemMessage as ListingItemMessage);
         } else {
             this.log.warn(`No listingItem related with listing_item_template_id=${data.hash}!`);
             throw new MessageException(`No listingItem related with listing_item_template_id=${data.hash}!`);

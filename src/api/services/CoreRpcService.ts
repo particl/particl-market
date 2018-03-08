@@ -34,26 +34,6 @@ export class CoreRpcService {
         return await this.call('getnewaddress');
     }
 
-    public async smsgImportPrivKey( privateKey: string, label: string = 'default market' ): Promise<boolean> {
-        return await this.call('smsgimportprivkey', [privateKey, label]);
-    }
-
-    public async smsgInbox(params: any[] = []): Promise<any> {
-        const response = await this.call('smsginbox', params);
-        // this.log.debug('got response:', response);
-        return response;
-    }
-
-    /**
-     *
-     * @returns {Promise<any>}
-     */
-    public async sendSmsgMessage(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<any> {
-        this.log.debug('SEND SMSG, from: ' + profileAddress + ', to: ' + marketAddress);
-        this.log.debug('SEND SMSG, message: ' + JSON.stringify(message, null, 2));
-        return await this.call('smsgsend', [profileAddress, marketAddress, JSON.stringify(message)]);
-    }
-
     public async call(method: string, params: any[] = []): Promise<any> {
 
         const id = RPC_REQUEST_ID++;
@@ -67,8 +47,8 @@ export class CoreRpcService {
         const options = this.getOptions();
 
         this.log.debug('call: ' + method + ' ' + params);
-        this.log.debug('call url:', url);
-        this.log.debug('call postData:', postData);
+        // this.log.debug('call url:', url);
+        // this.log.debug('call postData:', postData);
 
         return await WebRequest.post(url, options, postData)
             .then( response => {

@@ -10,7 +10,7 @@ import { BidMessage } from '../../messages/BidMessage';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { BidFactory } from '../../factories/BidFactory';
 import { Bid } from '../../models/Bid';
-import { MessageBroadcastService } from '../../services/MessageBroadcastService';
+import { SmsgService } from '../../services/SmsgService';
 import { BidMessageType } from '../../enums/BidMessageType';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
@@ -22,7 +22,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory
     ) {
         super(Commands.BID_SEND);
@@ -60,7 +60,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
             const bidData = this.setBidData(data.params);
             // broadcast the message in to the network
             // TODO: add profile and market addresses
-            await this.messageBroadcastService.broadcast('', '', {
+            await this.smsgService.smsgSend('', '', {
               objects: bidData,
               listing: listingItemHash,
               action: BidMessageType.MPA_BID
