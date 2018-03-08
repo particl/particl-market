@@ -148,6 +148,9 @@ jobs:
       # install deps and set up the app locally
       - run: yarn install
       - run: ./bin/copy-env.sh
+      - run: cp -f .env.circle.app1 .env
+      - run: cp -f .env.circle.app1 test/.env.blackbox
+      - run: cp -f .env.circle.app1 test/.env.test
       - run: ./bin/ci-create-dbs.sh
       - run: ./bin/ci-create-build-version.sh
 
