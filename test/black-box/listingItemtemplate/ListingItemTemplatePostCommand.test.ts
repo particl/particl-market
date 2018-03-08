@@ -44,13 +44,11 @@ describe('ListingItemTemplatePostCommand', () => {
 
     });
 
-    test('Should post a item in to the market place with market id', async () => {
+    test('Should post a ListingItem in to the default marketplace', async () => {
 
         // fetch amount of listingitems, should be 0
         const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id, defaultMarket.id]);
 
-
-        // const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id, defaultMarket.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result = res.getBody()['result'];

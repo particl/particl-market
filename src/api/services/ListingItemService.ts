@@ -326,7 +326,7 @@ export class ListingItemService {
         // find itemCategory with related
         const itemCategoryModel = await this.itemCategoryService.findOneByKey(itemTemplate.ItemInformation.ItemCategory.key, true);
         const itemCategory = itemCategoryModel.toJSON();
-        this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
+        // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
         const addItemMessage = await this.listingItemFactory.getMessage(itemTemplate, itemCategory);
 

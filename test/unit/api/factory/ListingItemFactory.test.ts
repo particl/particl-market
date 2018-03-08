@@ -92,6 +92,7 @@ describe('ListingItemFactory', () => {
         expect(message.information.images[0]).not.toHaveProperty('createdAt');
         expect(message.information.images[0]).not.toHaveProperty('ItemImageDatas');
         expect(message.information.images[0].hash).toBe(testData.ItemInformation.ItemImages[0].hash);
+        expect(message.information.images[0].data.length).toBe(1);
         expect(message.information.images[0].data[0].protocol).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].protocol);
         expect(message.information.images[0].data[0].encoding).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].encoding);
         expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
