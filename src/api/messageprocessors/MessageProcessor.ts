@@ -5,6 +5,7 @@ import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { EventEmitter } from '../../core/api/events';
+import { SmsgService } from '../services/SmsgService';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -15,6 +16,7 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
     ) {
@@ -53,7 +55,7 @@ export class MessageProcessor implements MessageProcessorInterface {
     private async poll(): Promise<void> {
         await this.pollMessages()
             .then( messages => {
-                this.log.debug('poll() response:', messages);
+                this.log.debug('poll() response:', JSON.stringify(messages, null, 2));
                 // TODO: if we have new message, pass those to processing
 
                 return;
@@ -68,7 +70,7 @@ export class MessageProcessor implements MessageProcessorInterface {
     }
 
     private async pollMessages(): Promise<any> {
-        const response = await this.coreRpcService.smsgInbox( ['all']);
+        const response = await this.smsgService.smsgInbox( ['all']);
         // this.log.debug('got response:', response);
         return response;
     }

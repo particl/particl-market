@@ -5,6 +5,7 @@ import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { ItemMessageInterface } from '../messages/ItemMessageInterface';
 
 import { CoreRpcService } from './CoreRpcService';
+import { InternalServerException } from '../exceptions/InternalServerException';
 
 export class SmsgService {
 
@@ -17,11 +18,31 @@ export class SmsgService {
         this.log = new Logger(__filename);
     }
 
-
+    /**
+     * ﻿Adds a private key (as returned by dumpprivkey) to the smsg database.
+     * The imported key can receive messages even if the wallet is locked.
+     *
+     * Arguments:
+     * 1. "privkey"          (string, required) The private key (see dumpprivkey)
+     * 2. "label"            (string, optional, default="") An optional label
+     *
+     * @param {string} privateKey
+     * @param {string} label
+     * @returns {Promise<boolean>}
+     */
     public async smsgImportPrivKey( privateKey: string, label: string = 'default market' ): Promise<boolean> {
         return await this.coreRpcService.call('smsgimportprivkey', [privateKey, label]);
     }
 
+    /**
+     * Decrypt and display all received messages.
+     * Warning: clear will delete all messages.
+     *
+     * ﻿smsginbox [all|unread|clear]
+     *
+     * @param {any[]} params
+     * @returns {Promise<any>}
+     */
     public async smsgInbox(params: any[] = []): Promise<any> {
         const response = await this.coreRpcService.call('smsginbox', params);
         // this.log.debug('got response:', response);
@@ -51,19 +72,27 @@ export class SmsgService {
      * @returns {Promise<any>}
      */
     public async smsgLocalKeys(): Promise<any> {
-        const response = await this.coreRpcService.call('﻿smsglocalkeys');
+        const response = await this.coreRpcService.call('smsglocalkeys');
         this.log.debug('smsgLocalKeys, response: ' + JSON.stringify(response, null, 2));
         return response;
     }
 
     /**
+     * ﻿Add address and matching public key to database.
+     * ﻿smsgaddaddress <address> <pubkey>
      *
-     * @param {string} profileAddress
-     * @param {string} marketAddress
-     * @param {ActionMessageInterface | ItemMessageInterface} message
-     * @returns {Promise<void>}
+     * @param {string} address
+     * @param {string} publicKey
+     * @returns {Promise<any>}
      */
-    public async broadcast(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<any> {
-        return this.smsgSend(profileAddress, marketAddress, message);
+    public async smsgAddAddress(address: string, publicKey: string): Promise<any> {
+        const response = await this.coreRpcService.call('smsgaddaddress', [address, publicKey]);
+        this.log.debug('smsgAddAddress, response: ' + JSON.stringify(response, null, 2));
+        if (response.result === 'Public key added to db.'
+            || (response.result === 'Public key not added to db.' && response.reason === 'Public key exists in database')) {
+            return response;
+        } else {
+            throw new InternalServerException(response.result + ': ' + response.reason);
+        }
     }
 }
