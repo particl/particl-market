@@ -9,6 +9,7 @@ import { ListingItemService } from '../services/ListingItemService';
 import { BidService } from '../services/BidService';
 import { BidFactory } from '../factories/BidFactory';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
+import { EventEmitter } from '../../core/api/events';
 
 export class CancelBidMessageProcessor implements MessageProcessorInterface {
 
@@ -18,6 +19,7 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -42,6 +44,10 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
         // find latest bid
         const latestBidModel = await this.bidService.getLatestBid(listingItem.id);
         const latestBid = latestBidModel.toJSON();
+
+        this.eventEmitter.emit('cli', {
+            message: 'cancel bid message received ' + latestBid
+        });
 
         // get the BidCreateRequest and create the bid
         const bidMessage = await this.bidFactory.getModel(data, listingItem.id, latestBid);

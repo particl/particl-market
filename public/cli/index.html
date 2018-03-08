@@ -203,6 +203,20 @@
     }
 
 </script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    const socket = io('ws://' + window.location.href.split("/")[2], {transports: ['websocket']});
 
+    socket.on('connect', () => {
+        console.log('connected!');
+        term.echo('Connected');
+    });
+    socket.on('error', (error) => {
+        term.echo('socket.io ERROR: ' + error);
+    });
+    socket.on('cli', (event) => {
+        term.echo('socket.io message: ' + event.message);
+    });
+</script>
 </body>
 </html>

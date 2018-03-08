@@ -15,6 +15,7 @@ import { MessagingInformation } from '../models/MessagingInformation';
 import { ListingItemObject } from '../models/ListingItemObject';
 import * as resources from 'resources';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
+import {ShippingAvailability} from '../enums/ShippingAvailability';
 
 export class ListingItemFactory {
 
@@ -30,32 +31,30 @@ export class ListingItemFactory {
     /**
      * Creates a ListingItemMessage from given data
      *
-     * @param listingItemTemplate
+     * @param {'resources'.ListingItemTemplate} listingItemTemplate
+     * @param {'resources'.ItemCategory} listingItemCategory
      * @returns {Promise<ListingItemMessage>}
      */
     public async getMessage(
         listingItemTemplate: resources.ListingItemTemplate,
-        rootCategoryWithRelated: ItemCategory
+        listingItemCategory: resources.ItemCategory
     ): Promise<ListingItemMessage> {
 
-        listingItemTemplate.hash = ObjectHash.getHash(listingItemTemplate);
-        const category = listingItemTemplate.ItemInformation.ItemCategory;
-        const itemCategory = await this.itemCategoryFactory.getArray(category as resources.ItemCategory, rootCategoryWithRelated as ItemCategory);
+        // create the hash (propably should have been created allready)
+        const hash = ObjectHash.getHash(listingItemTemplate);
 
-        const itemInformation = listingItemTemplate.ItemInformation;
+        const information = await this.getMessageInformation(listingItemTemplate.ItemInformation, listingItemCategory);
+        const payment = await this.getMessagePayment(listingItemTemplate.PaymentInformation);
+        const messaging = await this.getMessageMessaging(listingItemTemplate.MessagingInformation);
+        const objects = await this.getMessageObjects(listingItemTemplate.ListingItemObjects);
 
-        // todo: removing images for nows
-        delete itemInformation.ItemImages;
-
-        itemInformation['category'] = itemCategory;
         return {
-            hash: listingItemTemplate.hash,
-            information: itemInformation,
-            payment: listingItemTemplate.PaymentInformation,
-            messaging: listingItemTemplate.MessagingInformation,
-            objects: listingItemTemplate.ListingItemObjects
+            hash,
+            information,
+            payment,
+            messaging,
+            objects
         } as ListingItemMessage;
-
     }
 
     /**
@@ -83,4 +82,152 @@ export class ListingItemFactory {
             listingItemObjects: data.objects as ListingItemObject
         } as ListingItemCreateRequest;
     }
+
+    private async getMessageInformation(
+        itemInformation: resources.ItemInformation,
+        listingItemCategory: resources.ItemCategory
+    ): Promise<any> {
+
+        const category = await this.itemCategoryFactory.getArray(listingItemCategory);
+        const location = await this.getMessageInformationLocation(itemInformation.ItemLocation);
+        const shippingDestinations = await this.getMessageInformationShippingDestinations(itemInformation.ShippingDestinations);
+        const images = await this.getMessageInformationImages(itemInformation.ItemImages);
+
+        return {
+            title: itemInformation.title,
+            short_description: itemInformation.shortDescription,
+            long_description: itemInformation.longDescription,
+            category,
+            location,
+            shipping_destinations: shippingDestinations,
+            images
+        };
+    }
+
+    private async getMessageInformationLocation(
+        itemLocation: resources.ItemLocation
+    ): Promise<any> {
+        const locationMarker: resources.LocationMarker = itemLocation.LocationMarker;
+        return {
+            country: itemLocation.region,
+            address: itemLocation.address,
+            gps: {
+                marker_title: locationMarker.markerTitle,
+                marker_text: locationMarker.markerText,
+                lng: locationMarker.lng,
+                lat: locationMarker.lat
+            }
+        };
+    }
+
+    private async getMessageInformationShippingDestinations(
+        shippingDestinations: resources.ShippingDestination[]
+    ): Promise<string[]> {
+        const shippingDesArray: string[] = [];
+        shippingDestinations.forEach((value) => {
+            switch (value.shippingAvailability) {
+                case ShippingAvailability.SHIPS:
+                    shippingDesArray.push(value.country);
+                    break;
+                case ShippingAvailability.DOES_NOT_SHIP:
+                    shippingDesArray.push('-' + value.country);
+                    break;
+            }
+        });
+        return shippingDesArray;
+    }
+
+    private async getMessageInformationImages(
+        images: resources.ItemImage[]
+    ): Promise<object[]> {
+        const imagesArray: object[] = [];
+        const that = this;
+        images.forEach(async (value) => {
+            // for image data
+            const imageData = await that.getMessageInformationImageDatas(value.ItemImageDatas);
+            const image = {
+                hash: value.hash,
+                data: imageData
+            };
+            imagesArray.push(image);
+        });
+        return imagesArray;
+    }
+
+    private async getMessageInformationImageDatas(
+        itemImageDatas: resources.ItemImageData[]
+    ): Promise<object[]> {
+        const imageDataArray: object[] = [];
+        itemImageDatas.forEach((value) => {
+            imageDataArray.push({
+                protocol: value.protocol,
+                encoding: value.encoding,
+                data: value.data,
+                id: value.dataId
+            });
+        });
+        return imageDataArray;
+    }
+
+
+    private async getMessagePayment(
+        paymentInformation: resources.PaymentInformation
+    ): Promise<any> {
+        const escrow = await this.getMessageEscrow(paymentInformation.Escrow);
+        const cryptocurrency = await this.getMessageCryptoCurrency(paymentInformation.ItemPrice);
+        return {
+            type: paymentInformation.type,
+            escrow,
+            cryptocurrency
+        };
+    }
+
+    private async getMessageEscrow(
+        escrow: resources.Escrow
+    ): Promise<any> {
+        return {
+            type: escrow.type,
+            ratio: {
+                buyer: escrow.Ratio.buyer,
+                seller: escrow.Ratio.seller
+            }
+        };
+    }
+
+    private async getMessageCryptoCurrency(
+        itemPrice: resources.ItemPrice
+    ): Promise<any> {
+        return [
+            {
+                currency: itemPrice.currency,
+                base_price: itemPrice.basePrice,
+                shipping_price: {
+                    domestic: itemPrice.ShippingPrice.domestic,
+                    international: itemPrice.ShippingPrice.international
+                },
+                address: {
+                    type: itemPrice.CryptocurrencyAddress.type,
+                    address: itemPrice.CryptocurrencyAddress.address
+                }
+            }
+        ];
+    }
+
+    private async getMessageMessaging(messagingInformation: resources.MessagingInformation[]): Promise<object[]> {
+        const messageArray: object[] = [];
+        messagingInformation.forEach((value) => {
+            messageArray.push({
+                protocol: value.protocol,
+                public_key: value.publicKey
+            });
+        });
+        return messageArray;
+    }
+
+    // TODO: objects fields
+    private async getMessageObjects(listingItemObjects: resources.ListingItemObject[]): Promise<any> {
+        return [];
+    }
+
+
 }

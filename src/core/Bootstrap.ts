@@ -10,6 +10,7 @@ import { extendExpressResponse } from './api/extendExpressResponse';
 import { SwaggerUI } from './SwaggerUI';
 import { IoC } from './IoC';
 import { CliIndex } from './CliIndex';
+import { SocketIoServer } from './SocketIoServer';
 
 export class Bootstrap {
 
@@ -60,4 +61,7 @@ export class Bootstrap {
         return app;
     }
 
+    public createSocketIoServer(server: Server, ioc: IoC): SocketIoServer {
+         return new SocketIoServer(server.httpServer, ioc);
+    }
 }
