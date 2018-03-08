@@ -4,7 +4,7 @@ version: 0.1.0
 services:
 
   particld1:
-    image: ludx/particl:master
+    image: ludx/particl:0.16
     instances: 1
     volumes:
       - /root/data/particld-circle1:/root/.particl
@@ -16,7 +16,7 @@ services:
       - CONF_SERVER=1                   # Accept command line and JSON-RPC commands
       - CONF_RPCALLOWIP=0.0.0.0/0       # Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24).
       - CONF_LISTEN=1                   # Accept connections from outside (default: 1 if no -proxy or -connect)
-      - CREATEDEFAULTMASTERKEY=true
+#      - CREATEDEFAULTMASTERKEY=true
       - KONTENA_LB_MODE=tcp
       - KONTENA_LB_BALANCE=leastconn
       - KONTENA_LB_EXTERNAL_PORT=58935
@@ -28,7 +28,7 @@ services:
       - node==kontena-agent1
 
   particld2:
-    image: ludx/particl:master
+    image: ludx/particl:0.16
     instances: 1
     volumes:
       - /root/data/particld-circle2:/root/.particl
@@ -40,7 +40,7 @@ services:
       - CONF_SERVER=1                   # Accept command line and JSON-RPC commands
       - CONF_RPCALLOWIP=0.0.0.0/0       # Allow JSON-RPC connections from specified source. Valid for <ip> are a single IP (e.g. 1.2.3.4), a network/netmask (e.g. 1.2.3.4/255.255.255.0) or a network/CIDR (e.g. 1.2.3.4/24).
       - CONF_LISTEN=1                   # Accept connections from outside (default: 1 if no -proxy or -connect)
-      - CREATEDEFAULTMASTERKEY=true
+#      - CREATEDEFAULTMASTERKEY=true
       - KONTENA_LB_MODE=tcp
       - KONTENA_LB_BALANCE=leastconn
       - KONTENA_LB_EXTERNAL_PORT=59935

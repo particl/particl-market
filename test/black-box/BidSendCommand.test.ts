@@ -7,29 +7,22 @@ describe('BidSendCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
 
-    const method =  Commands.BID_ROOT.commandName;
-    const subMethod =  Commands.BID_SEND.commandName;
-
-    const testData = [
-        'colour',
-        'black',
-        'colour',
-        'red'
-    ];
+    const bidCommand =  Commands.BID_ROOT.commandName;
+    const sendCommand =  Commands.BID_SEND.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
 
-    test('Should send a bid by RPC', async () => {
+    test('Should send Bid for a ListingItem', async () => {
         const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
-        testData.unshift(listingItem[0].hash);
-        testData.unshift(subMethod);
-        const res: any = await rpc(method, testData);
+
+/*
+        const res: any = await rpc(bidCommand, testData);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-
+*/
         // TODO: Need to implements after broadcast functionality get done
     });
 

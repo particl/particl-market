@@ -41,16 +41,8 @@ export class ShoppingCartsService {
     @validate()
     public async create( @request(ShoppingCartsCreateRequest) body: any): Promise<ShoppingCarts> {
 
-        // TODO: extract and remove related models from request
-        // const shoppingCartsRelated = body.related;
-        // delete body.related;
-
         // If the request body was valid we will create the shoppingCarts
         const shoppingCarts = await this.shoppingCartsRepo.create(body);
-
-        // TODO: create related models
-        // shoppingCartsRelated._id = shoppingCarts.Id;
-        // await this.shoppingCartsRelatedService.create(shoppingCartsRelated);
 
         // finally find and return the created shoppingCarts
         const newShoppingCarts = await this.findOne(shoppingCarts.id);
@@ -60,17 +52,10 @@ export class ShoppingCartsService {
     @validate()
     public async update(id: number, @request(ShoppingCartsUpdateRequest) body: any): Promise<ShoppingCarts> {
 
-        // find the existing one without related
         const shoppingCarts = await this.findOne(id, false);
-
-        // set new values
         shoppingCarts.Name = body.name;
 
-        // update shoppingCarts record
-        const updatedShoppingCarts = await this.shoppingCartsRepo.update(id, shoppingCarts.toJSON());
-
-        // return newShoppingCarts;
-        return updatedShoppingCarts;
+        return await this.shoppingCartsRepo.update(id, shoppingCarts.toJSON());
     }
 
     public async destroy(id: number): Promise<void> {

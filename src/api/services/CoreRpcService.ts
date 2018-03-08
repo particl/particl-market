@@ -73,12 +73,11 @@ export class CoreRpcService {
         return await WebRequest.post(url, options, postData)
             .then( response => {
 
-                // this.log.debug('response.headers: ', response.headers);
-                // this.log.debug('response.statusCode: ', response.statusCode);
-                // this.log.debug('response.statusMessage: ', response.statusMessage);
-                // this.log.debug('response.content: ', response.content);
-
                 if (response.statusCode !== 200) {
+                    this.log.debug('response.headers: ', response.headers);
+                    this.log.debug('response.statusCode: ', response.statusCode);
+                    this.log.debug('response.statusMessage: ', response.statusMessage);
+                    this.log.debug('response.content: ', response.content);
                     throw new HttpException(response.statusCode, response.statusMessage);
                 }
 
