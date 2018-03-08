@@ -4,6 +4,7 @@ import { Types, Core, Targets } from '../../constants';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { CoreRpcService } from '../services/CoreRpcService';
+import { EventEmitter } from '../../core/api/events';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -14,7 +15,8 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
     ) {
         this.log = new Logger(__filename);
     }
@@ -34,6 +36,9 @@ export class MessageProcessor implements MessageProcessorInterface {
         this.timeout = setTimeout(
             async () => {
                 await this.poll();
+                /* this.eventEmitter.emit('cli', {
+                    message: 'message from messageprocessor to the cli'
+                }); */
                 this.schedulePoll();
             },
             this.interval
@@ -55,6 +60,9 @@ export class MessageProcessor implements MessageProcessorInterface {
             })
             .catch( reason => {
                 this.log.error('poll() error:', reason);
+                this.eventEmitter.emit('cli', {
+                    message: 'poll() error' + reason
+                });
                 return;
             });
     }
