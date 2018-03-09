@@ -98,6 +98,7 @@
     keyboardeventKeyPolyfill.polyfill();
     var scanlines = $('.scanlines');
     var term = $('#term').terminal(function(command, term) {
+        command = command.trim();
         if (command !== '') {
             var params = command.match(/\\?.|^$/g).reduce((p, c) => {
                 if(c === '\''){
