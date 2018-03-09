@@ -1,10 +1,10 @@
 import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
-import { ShoppingCarts } from './ShoppingCarts';
+import { ShoppingCart } from './ShoppingCart';
 import { ListingItem } from './ListingItem';
 
 
-export class ShoppingCartItems extends Bookshelf.Model<ShoppingCartItems> {
+export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
 
     public static RELATIONS = [
         'ListingItem',
@@ -28,52 +28,52 @@ export class ShoppingCartItems extends Bookshelf.Model<ShoppingCartItems> {
         'ListingItem.FlaggedItem'
     ];
 
-    public static async fetchById(value: number, withRelated: boolean = true): Promise<ShoppingCartItems> {
+    public static async fetchById(value: number, withRelated: boolean = true): Promise<ShoppingCartItem> {
         if (withRelated) {
-            return await ShoppingCartItems.where<ShoppingCartItems>({ id: value }).fetch({
+            return await ShoppingCartItem.where<ShoppingCartItem>({ id: value }).fetch({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await ShoppingCartItems.where<ShoppingCartItems>({ id: value }).fetch();
+            return await ShoppingCartItem.where<ShoppingCartItem>({ id: value }).fetch();
         }
     }
 
-    public static async findOneByListingItemOnCart(cartId: number, listingItemId: number, withRelated: boolean = true): Promise<ShoppingCartItems> {
+    public static async findOneByListingItemOnCart(cartId: number, listingItemId: number, withRelated: boolean = true): Promise<ShoppingCartItem> {
         if (withRelated) {
-            return await ShoppingCartItems.where<ShoppingCartItems>({ shopping_cart_id: cartId, listing_item_id: listingItemId }).fetch({
+            return await ShoppingCartItem.where<ShoppingCartItem>({ shopping_cart_id: cartId, listing_item_id: listingItemId }).fetch({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await ShoppingCartItems.where<ShoppingCartItems>({ shopping_cart_id: cartId, listing_item_id: listingItemId }).fetch();
+            return await ShoppingCartItem.where<ShoppingCartItem>({ shopping_cart_id: cartId, listing_item_id: listingItemId }).fetch();
         }
     }
 
-    public static async findListItemsByCartId(cartId: number, withRelated: boolean = true): Promise<Collection<ShoppingCartItems>> {
-        const ShoppingCartItemsCollection = ShoppingCartItems.forge<Collection<ShoppingCartItems>>()
+    public static async findListItemsByCartId(cartId: number, withRelated: boolean = true): Promise<Collection<ShoppingCartItem>> {
+        const ShoppingCartItemCollection = ShoppingCartItem.forge<Collection<ShoppingCartItem>>()
             .query(qb => {
                 qb.where('shopping_cart_id', '=', cartId);
             })
             .orderBy('id', 'ASC');
 
         if (withRelated) {
-            return await ShoppingCartItemsCollection.fetchAll({
+            return await ShoppingCartItemCollection.fetchAll({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await ShoppingCartItemsCollection.fetchAll();
+            return await ShoppingCartItemCollection.fetchAll();
         }
     }
 
     public static async clearCart(cartId: number): Promise<void> {
-        const ShoppingCartItemsCollection = ShoppingCartItems.forge<ShoppingCartItems>()
+        const ShoppingCartItemCollection = ShoppingCartItem.forge<ShoppingCartItem>()
             .query(qb => {
                 qb.where('shopping_cart_id', '=', cartId);
             });
-        await ShoppingCartItemsCollection.destroy();
+        await ShoppingCartItemCollection.destroy();
         return;
     }
 
-    public get tableName(): string { return 'shopping_cart_items'; }
+    public get tableName(): string { return 'shopping_cart_item'; }
     public get hasTimestamps(): boolean { return true; }
 
     public get Id(): number { return this.get('id'); }
@@ -91,8 +91,8 @@ export class ShoppingCartItems extends Bookshelf.Model<ShoppingCartItems> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    public ShoppingCarts(): ShoppingCarts {
-        return this.belongsTo(ShoppingCarts, 'shopping_cart_id', 'id');
+    public ShoppingCart(): ShoppingCart {
+        return this.belongsTo(ShoppingCart, 'shopping_cart_id', 'id');
     }
 
     public ListingItem(): ListingItem {

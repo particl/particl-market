@@ -36,8 +36,8 @@ export const Targets = {
         Profile: 'Profile',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
-        ShoppingCartItems: 'ShoppingCartItems',
-        ShoppingCarts: 'ShoppingCarts',
+        ShoppingCartItem: 'ShoppingCartItem',
+        ShoppingCart: 'ShoppingCart',
         User: 'User'
     },
     Repository:     {
@@ -67,8 +67,8 @@ export const Targets = {
         ProfileRepository: 'ProfileRepository',
         ShippingDestinationRepository: 'ShippingDestinationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
-        ShoppingCartItemsRepository: 'ShoppingCartItemsRepository',
-        ShoppingCartsRepository: 'ShoppingCartsRepository',
+        ShoppingCartItemRepository: 'ShoppingCartItemRepository',
+        ShoppingCartRepository: 'ShoppingCartRepository',
         UserRepository: 'UserRepository'
     },
     Service:     {
@@ -103,8 +103,8 @@ export const Targets = {
         ProfileService: 'ProfileService',
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
-        ShoppingCartItemsService: 'ShoppingCartItemsService',
-        ShoppingCartsService: 'ShoppingCartsService',
+        ShoppingCartItemService: 'ShoppingCartItemService',
+        ShoppingCartService: 'ShoppingCartService',
         TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
@@ -241,7 +241,7 @@ export const Targets = {
             ShoppingCartRootCommand: 'ShoppingCartRootCommand',
             ShoppingCartUpdateCommand: 'ShoppingCartUpdateCommand'
         },
-        shoppingcartitems: {
+        shoppingcartitem: {
             ShoppingCartItemAddCommand: 'ShoppingCartItemAddCommand',
             ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
@@ -313,8 +313,8 @@ export const Targets = {
         RpcController: 'RpcController',
         ShippingDestinationController: 'ShippingDestinationController',
         ShippingPriceController: 'ShippingPriceController',
-        ShoppingCartItemsController: 'ShoppingCartItemsController',
-        ShoppingCartsController: 'ShoppingCartsController',
+        ShoppingCartItemController: 'ShoppingCartItemController',
+        ShoppingCartController: 'ShoppingCartController',
         UserController: 'UserController'
     }
 };

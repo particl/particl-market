@@ -3,7 +3,7 @@ import * as Knex from 'knex';
 
 exports.up = (db: Knex): Promise<any> => {
     return Promise.all([
-        db.schema.createTable('shopping_carts', (table: Knex.CreateTableBuilder) => {
+        db.schema.createTable('shopping_cart', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
             table.string('name').notNullable();
@@ -20,6 +20,6 @@ exports.up = (db: Knex): Promise<any> => {
 
 exports.down = (db: Knex): Promise<any> => {
     return Promise.all([
-        db.schema.dropTable('shopping_carts')
+        db.schema.dropTable('shopping_cart')
     ]);
 };

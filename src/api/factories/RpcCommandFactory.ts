@@ -106,10 +106,10 @@ import { ShoppingCartGetCommand } from '../commands/shoppingcart/ShoppingCartGet
 import { ShoppingCartClearCommand } from '../commands/shoppingcart/ShoppingCartClearCommand';
 import { ShoppingCartRootCommand } from '../commands/shoppingcart/ShoppingCartRootCommand';
 
-import { ShoppingCartItemAddCommand } from '../commands/shoppingcartitems/ShoppingCartItemAddCommand';
-import { ShoppingCartItemRemoveCommand } from '../commands/shoppingcartitems/ShoppingCartItemRemoveCommand';
-import { ShoppingCartItemListCommand } from '../commands/shoppingcartitems/ShoppingCartItemListCommand';
-import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitems/ShoppingCartItemRootCommand';
+import { ShoppingCartItemAddCommand } from '../commands/shoppingcartitem/ShoppingCartItemAddCommand';
+import { ShoppingCartItemRemoveCommand } from '../commands/shoppingcartitem/ShoppingCartItemRemoveCommand';
+import { ShoppingCartItemListCommand } from '../commands/shoppingcartitem/ShoppingCartItemListCommand';
+import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitem/ShoppingCartItemRootCommand';
 
 import { PriceTickerRootCommand } from '../commands/priceticker/PriceTickerRootCommand';
 
@@ -228,10 +228,10 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartClearCommand) private shoppingCartClearCommand: ShoppingCartClearCommand,
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartRootCommand) private shoppingCartRootCommand: ShoppingCartRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemAddCommand) private shoppingCartItemAddCommand: ShoppingCartItemAddCommand,
-        @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemRemoveCommand) private shoppingCartItemRemoveCommand: ShoppingCartItemRemoveCommand,
-        @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemListCommand) private shoppingCartItemListCommand: ShoppingCartItemListCommand,
-        @inject(Types.Command) @named(Targets.Command.shoppingcartitems.ShoppingCartItemRootCommand) private shoppingCartItemRootCommand: ShoppingCartItemRootCommand,
+        @inject(Types.Command) @named(Targets.Command.shoppingcartitem.ShoppingCartItemAddCommand) private shoppingCartItemAddCommand: ShoppingCartItemAddCommand,
+        @inject(Types.Command) @named(Targets.Command.shoppingcartitem.ShoppingCartItemRemoveCommand) private shoppingCartItemRemoveCommand: ShoppingCartItemRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.shoppingcartitem.ShoppingCartItemListCommand) private shoppingCartItemListCommand: ShoppingCartItemListCommand,
+        @inject(Types.Command) @named(Targets.Command.shoppingcartitem.ShoppingCartItemRootCommand) private shoppingCartItemRootCommand: ShoppingCartItemRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.priceticker.PriceTickerRootCommand) private priceTickerRootCommand: PriceTickerRootCommand,
         @inject(Types.Command) @named(Targets.Command.currencyprice.CurrencyPriceRootCommand) private currencyPriceRootCommand: CurrencyPriceRootCommand,

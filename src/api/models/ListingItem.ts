@@ -10,7 +10,7 @@ import { ListingItemTemplate } from './ListingItemTemplate';
 import { Bid } from './Bid';
 import { FlaggedItem } from './FlaggedItem';
 import { Market } from './Market';
-import { ShoppingCartItems } from './ShoppingCartItems';
+import { ShoppingCartItem } from './ShoppingCartItem';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -179,8 +179,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         return this.hasOne(FlaggedItem);
     }
 
-    public ShoppingCartItems(): Collection<ShoppingCartItems> {
-        return this.hasMany(ShoppingCartItems, 'listing_item_id', 'id');
+    public ShoppingCartItem(): Collection<ShoppingCartItem> {
+        return this.hasMany(ShoppingCartItem, 'listing_item_id', 'id');
     }
 
 }

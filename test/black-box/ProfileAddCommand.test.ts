@@ -24,8 +24,8 @@ describe('ProfileAddCommand', () => {
         expect(result.name).toBe(profileName);
         expect(result.address).toBe(profileAddress);
         // check default shopping cart
-        expect(result.ShoppingCarts).toHaveLength(1);
-        expect(result.ShoppingCarts[0].name).toBe('DEFAULT');
+        expect(result.ShoppingCart).toHaveLength(1);
+        expect(result.ShoppingCart[0].name).toBe('DEFAULT');
     });
 
     test('Should return created profile by RPC', async () => {
@@ -36,8 +36,8 @@ describe('ProfileAddCommand', () => {
         expect(result.name).toBe(profileName);
         expect(result.address).toBe(profileAddress);
         // check default shopping cart
-        expect(result.ShoppingCarts).toHaveLength(1);
-        expect(result.ShoppingCarts[0].name).toBe('DEFAULT');
+        expect(result.ShoppingCart).toHaveLength(1);
+        expect(result.ShoppingCart[0].name).toBe('DEFAULT');
     });
 
     test('Should fail to create a new profile because profile with given name aready exist', async () => {
