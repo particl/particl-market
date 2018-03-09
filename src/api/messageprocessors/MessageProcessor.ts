@@ -55,22 +55,28 @@ export class MessageProcessor implements MessageProcessorInterface {
     private async poll(): Promise<void> {
         await this.pollMessages()
             .then( messages => {
-                this.log.debug('poll() response:', JSON.stringify(messages, null, 2));
-                // TODO: if we have new message, pass those to processing
+                if (messages.result !== '0') {
+                    this.log.debug('poll(), new messages:', JSON.stringify(messages, null, 2));
+                    this.eventEmitter.emit('cli', {
+                        message: messages.messages
+                    });
+                    // TODO: if we have new message, pass those to processing
+                }
+
 
                 return;
             })
             .catch( reason => {
-                this.log.error('poll() error:', reason);
+                this.log.error('poll(), error:', reason);
                 this.eventEmitter.emit('cli', {
-                    message: 'poll() error' + reason
+                    message: 'poll(), error' + reason
                 });
                 return;
             });
     }
 
     private async pollMessages(): Promise<any> {
-        const response = await this.smsgService.smsgInbox( ['all']);
+        const response = await this.smsgService.smsgInbox('unread');
         // this.log.debug('got response:', response);
         return response;
     }

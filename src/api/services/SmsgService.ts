@@ -40,11 +40,11 @@ export class SmsgService {
      *
      * ﻿smsginbox [all|unread|clear]
      *
-     * @param {any[]} params
+     * @param {string} param
      * @returns {Promise<any>}
      */
-    public async smsgInbox(params: any[] = []): Promise<any> {
-        const response = await this.coreRpcService.call('smsginbox', params);
+    public async smsgInbox(param: string = 'all'): Promise<any> {
+        const response = await this.coreRpcService.call('smsginbox', [param]);
         // this.log.debug('got response:', response);
         return response;
     }
