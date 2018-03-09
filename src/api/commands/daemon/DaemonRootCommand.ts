@@ -36,8 +36,8 @@ export class DaemonRootCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public help(): string {
-        return this.getName() + ' <command> [<arg> [<arg> [ ... ]]]\n '
-            + '    <command>    - string - The command to execute.\n '
+        return this.getName() + ' <command> [<arg> [<arg> [ ... ]]] \n'
+            + '    <command>    - string - The command to execute. \n'
             + '    <arg>        - string - An argument for the rpc command. ';
     }
 

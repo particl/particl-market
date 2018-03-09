@@ -4,8 +4,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { RpcCommandInterface } from '../commands/RpcCommandInterface';
 import { NotFoundException } from '../exceptions/NotFoundException';
-import { EnvironmentType } from '../enums/EnvironmentType';
-import { Environment } from '../../core/helpers/Environment';
+import { Environment, EnvironmentType } from '../../core/helpers/Environment';
 
 import { DaemonRootCommand } from '../commands/daemon/DaemonRootCommand';
 
@@ -378,11 +377,6 @@ export class RpcCommandFactory {
         for (const commandInstance of this.commands) {
             if (commandInstance.getCommand().toString() === commandType.toString()) {
                 this.log.debug('Found ' + commandInstance.getCommand().toString());
-                if ( Environment.isDevelopment() ) {
-                    this.log.error('found ' + commandType.commandType + ' === development');
-                } else if (Environment.isProduction()) {
-                    this.log.error('not found ' + commandType.commandType + ' === production');
-                }
                 if (commandType.commandType === EnvironmentType.ALL || Environment.isDevelopment() || Environment.isTest()) {
                     return commandInstance;
                 } else {

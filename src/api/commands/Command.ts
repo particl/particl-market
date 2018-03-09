@@ -1,5 +1,5 @@
 import { Enum, EnumValue } from 'ts-enums';
-import { EnvironmentType } from '../enums/EnvironmentType';
+import { EnvironmentType } from '../../core/helpers/Environment';
 
 export class Command extends EnumValue {
 
