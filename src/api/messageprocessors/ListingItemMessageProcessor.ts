@@ -16,6 +16,7 @@ import { ItemCategoryService } from '../services/ItemCategoryService';
 import { MarketService } from '../services/MarketService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { isArray } from 'util';
+import { EventEmitter } from '../../core/api/events';
 
 export class ListingItemMessageProcessor implements MessageProcessorInterface {
 
@@ -27,6 +28,7 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -51,6 +53,10 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         // NOTE: It is only for the testing purpose for the test cases later we will remove the getting default market
         const defaultMarket = await this.marketService.getDefault();
         listingItem.market_id = defaultMarket.id;
+
+        this.eventEmitter.emit('cli', {
+            message: 'listing item message received ' + JSON.stringify(listingItem)
+        });
 
         return await this.listingItemService.create(listingItem as ListingItemCreateRequest);
     }
