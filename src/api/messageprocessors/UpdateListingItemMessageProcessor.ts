@@ -16,6 +16,7 @@ import { ItemCategoryService } from '../services/ItemCategoryService';
 import { MarketService } from '../services/MarketService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { isArray } from 'util';
+import { EventEmitter } from '../../core/api/events';
 
 export class UpdateListingItemMessageProcessor implements MessageProcessorInterface {
 
@@ -27,6 +28,7 @@ export class UpdateListingItemMessageProcessor implements MessageProcessorInterf
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -49,6 +51,10 @@ export class UpdateListingItemMessageProcessor implements MessageProcessorInterf
         const market = await this.marketService.getDefault();
         // create listing-item
         const listingItem = await this.listingItemFactory.getModel(data as ListingItemMessage, market.id);
+
+        this.eventEmitter.emit('cli', {
+            message: 'update listing item message received ' + JSON.stringify(listingItem)
+        });
 
         return await this.listingItemService.update(listingItemTobeUpdate.id, listingItem as ListingItemUpdateRequest);
     }

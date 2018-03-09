@@ -373,14 +373,14 @@ export class RpcCommandFactory {
      * @returns {RpcCommandInterface<any>}
      */
     public get(commandType: Command): RpcCommandInterface<any> {
-        this.log.debug('Looking for command <' + commandType.toString() + '>');
+        // this.log.debug('Looking for command <' + commandType.toString() + '>');
         for (const commandInstance of this.commands) {
             if (commandInstance.getCommand().toString() === commandType.toString()) {
-                this.log.debug('Found ' + commandInstance.getCommand().toString());
+                // this.log.debug('Found ' + commandInstance.getCommand().toString());
                 if (commandType.commandType === EnvironmentType.ALL || Environment.isDevelopment() || Environment.isTest()) {
                     return commandInstance;
                 } else {
-                    this.log.debug('Environment not correct to get ' + commandInstance.getCommand().toString());
+                    // this.log.debug('Environment not correct to get ' + commandInstance.getCommand().toString());
                 }
             }
         }

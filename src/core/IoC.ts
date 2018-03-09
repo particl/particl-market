@@ -22,6 +22,7 @@ export class IoC {
     public customConfiguration: (container: Container) => Container;
 
     private log: Logger = new Logger(__filename);
+    private cliIo;
 
     constructor() {
         this.container = new Container();
