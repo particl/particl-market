@@ -55,12 +55,18 @@ export class SmsgService {
      * @param {string} profileAddress
      * @param {string} marketAddress
      * @param {ActionMessageInterface | ItemMessageInterface} message
+     * @param {boolean} paidMessage
+     * @param {number} daysRetention
      * @returns {Promise<any>}
      */
-    public async smsgSend(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<any> {
+    public async smsgSend(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface,
+                          paidMessage: boolean = true, daysRetention: number = 4): Promise<any> {
         this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
         this.log.debug('smsgSend, message: ' + JSON.stringify(message, null, 2));
-        const response = await this.coreRpcService.call('smsgsend', [profileAddress, marketAddress, JSON.stringify(message)]);
+
+        const response = await this.coreRpcService.call('smsgsend', [profileAddress, marketAddress,
+            JSON.stringify(message), paidMessage, daysRetention]);
+
         this.log.debug('smsgSend, response: ' + JSON.stringify(response, null, 2));
         return response;
     }
