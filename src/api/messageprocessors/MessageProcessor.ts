@@ -57,6 +57,8 @@ export class MessageProcessor implements MessageProcessorInterface {
             .then( messages => {
                 if (messages.result !== '0') {
                     this.log.debug('poll(), new messages:', JSON.stringify(messages, null, 2));
+
+                    // emit the latest message event to cli
                     this.eventEmitter.emit('cli', {
                         message: messages.messages
                     });

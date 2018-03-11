@@ -12,9 +12,11 @@ export class SocketIoServer {
 
     private log = new Logger(__filename);
     private eventEmitter;
+    private clients = {};
 
     constructor(public httpServer: http.Server, ioc: IoC) {
         this.eventEmitter = ioc.container.getNamed<EventEmitter>(Types.Core, Core.Events);
+        this.eventEmitter.setMaxListeners(10);
         this.socketIO = this.configure(SocketIO(httpServer));
     }
 
@@ -25,22 +27,45 @@ export class SocketIoServer {
     private configure(io: SocketIO): SocketIO {
         this.log.debug('Configuring SocketIoServer');
 
-        io.set('transports', ['websocket', 'polling']);
+        io.set('transports', ['polling', 'websocket']);
+        io.set('pingInterval', 3000);
+        io.set('pingTimeout', 10000);
+        io.set('allowUpgrades', false);
+        io.set('upgrade', false);
+        io.set('cookie', false);
+
+        // allow any user to authenticate.
+        io.set('authorization', (handshake, callback) => {
+            return callback(null, true);
+        });
 
         io.on('connection', (client) => {
-            this.log.info('socket.io: user connected');
+            this.clients[client.id] = client;
+            this.log.debug('socket.io: ' + client.id + ' connected');
+            this.log.debug('socket.io: ' + io.engine.clientsCount + ' sockets connected');
 
             // listen to messages for cli
             this.eventEmitter.on('cli', (event) => {
-                console.log('message for cli', event);
+                this.log.debug('message for cli', event);
                 client.emit('cli', event);
             });
 
             client.on('disconnect', (event) => {
-                this.log.info('socket.io: user disconnected');
+                delete this.clients[client.id];
+                this.log.debug('socket.io: ' + client.id + ' disconnected');
                 this.eventEmitter.removeAllListeners('cli');
             });
+
+            client.on('serverpong', (data) => {
+                this.log.debug('received pong from client');
+            });
+
         });
+
+        setInterval(() => {
+            this.log.debug('sending ping to client');
+            io.sockets.emit('serverping', { data: new Date().toString()});
+        }, 5000);
 
         return io;
     }

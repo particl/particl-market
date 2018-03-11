@@ -30,7 +30,7 @@ export class SmsgService {
      * @param {string} label
      * @returns {Promise<boolean>}
      */
-    public async smsgImportPrivKey( privateKey: string, label: string = 'default market' ): Promise<boolean> {
+    public async smsgImportPrivKey(privateKey: string, label: string = 'default market'): Promise<boolean> {
         return await this.coreRpcService.call('smsgimportprivkey', [privateKey, label]);
     }
 
@@ -60,7 +60,8 @@ export class SmsgService {
      * @returns {Promise<any>}
      */
     public async smsgSend(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface,
-                          paidMessage: boolean = true, daysRetention: number = 4): Promise<any> {
+                          paidMessage: boolean = true, daysRetention: number = process.env.PAID_MESSAGE_RETENTION_DAYS): Promise<any> {
+
         this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
         this.log.debug('smsgSend, message: ' + JSON.stringify(message, null, 2));
 
