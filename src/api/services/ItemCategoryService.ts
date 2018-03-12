@@ -49,6 +49,7 @@ export class ItemCategoryService {
         return await this.itemCategoryRepo.findByName(name, withRelated);
     }
 
+    // todo: rename as categoryExists
     // find by name and parent_item_category_id
     public async isCategoryExists(categoryName: string, parentCategory: ItemCategory): Promise<ItemCategory> {
         let parentCategoryId = null;

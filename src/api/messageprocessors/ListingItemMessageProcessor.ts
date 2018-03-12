@@ -17,6 +17,7 @@ import { MarketService } from '../services/MarketService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { isArray } from 'util';
 import { EventEmitter } from '../../core/api/events';
+import * as resources from 'resources';
 
 export class ListingItemMessageProcessor implements MessageProcessorInterface {
 
@@ -24,7 +25,7 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) public listingItemFactory: ListingItemFactory,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) public itemCategoryFactory: ItemCategoryFactory,
-        @inject(Types.Factory) @named(Targets.Factory.MessagingInformationFactory) public mesInfoFactory: MessagingInformationFactory,
+        @inject(Types.Factory) @named(Targets.Factory.MessagingInformationFactory) public messagingInformationFactory: MessagingInformationFactory,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
@@ -37,13 +38,12 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
     @validate()
 
     public async process( @message(ListingItemMessage) data: ListingItemMessage): Promise<ListingItem> {
-        // get Category
-        const itemCategory: ItemCategory = await this.createCategories(data.information.category);
-        data.information.itemCategory = itemCategory;
+
+        // get the category and create the custom categories in case there are some
+        const itemCategory: resources.ItemCategory = await this.getOrCreateCategories(data.information.category);
 
         // get messagingInformation
-        const messagingInformation = await this.mesInfoFactory.get(data.messaging);
-        data.messaging = messagingInformation;
+        const messagingInformation = await this.messagingInformationFactory.get(data.messaging);
 
         // get default profile
         const market = await this.marketService.getDefault();
@@ -67,50 +67,56 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
      * @param categoryArray : string[]
      * @returns {Promise<ItemCategory>}
      */
-    private async createCategories(categoryArray: string[]): Promise<ItemCategory> {
-        const rootCategoryWithRelated: any = await this.itemCategoryService.findRoot();
-        let parentItemCategoryId = 0;
-        let returnCategory;
-        for (const category of categoryArray) { // [cat0, cat1, cat2, cat3, cat4]
-            const catExist = await this.findCategory(rootCategoryWithRelated, category);
-            let categoryExist;
-            if (!catExist) {
-                // not found
-                const categoryCreateReq = await this.itemCategoryFactory.getModel(
-                    category,
-                    parentItemCategoryId
+    private async getOrCreateCategories(categoryArray: string[]): Promise<resources.ItemCategory> {
+
+        const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
+        let rootCategoryToSearchFrom = rootCategoryWithRelatedModel.toJSON();
+
+        for (const categoryKeyOrName of categoryArray) { // [cat0, cat1, cat2, cat3, cat4]
+
+            let existingCategory = await this.findCategory(rootCategoryToSearchFrom, categoryKeyOrName);
+
+            if (!existingCategory) {
+
+                // category did not exist, so we need to create it
+                const categoryCreateRequest = await this.itemCategoryFactory.getModel(
+                    categoryKeyOrName,
+                    rootCategoryToSearchFrom.id
                 );
-                // check with parentID and name
-                categoryExist = await this.itemCategoryService.isCategoryExists(
-                    categoryCreateReq.name,
-                    returnCategory // as parentCategory
-                );
-                if (categoryExist === null) {
-                    // create and return Id
-                    categoryExist = await this.itemCategoryService.create(categoryCreateReq);
-                }
+
+                // create and assign it as existingCategoru
+                const newCategory = await this.itemCategoryService.create(categoryCreateRequest);
+                existingCategory = newCategory.toJSON();
+
             } else {
-                categoryExist = await this.itemCategoryService.findOneByKey(category);
+                // category exists, fetch it
+                const existingCategoryModel = await this.itemCategoryService.findOneByKey(categoryKeyOrName);
+                existingCategory = existingCategoryModel.toJSON();
             }
-            parentItemCategoryId = categoryExist.id;
-            returnCategory = categoryExist;
+            rootCategoryToSearchFrom = existingCategory;
         }
-        return returnCategory as ItemCategory;
+
+        // return the last catego
+        return rootCategoryToSearchFrom;
     }
 
     /**
+     * return the ChildCategory having the given key or name
      *
-     * @param categories : ItemCategory
-     * @param value : string(key/name of category)
-     * @returns {Promise<string[]>}
+     * @param {"resources".ItemCategory} rootCategory
+     * @param {string} keyOrName
+     * @returns {Promise<"resources".ItemCategory>}
      */
-    private async findCategory(categories: ItemCategory, value: string): Promise<any> {
-        if (categories['key'] === value) { // check cat_ROOT
-            return categories;
+    private async findCategory(rootCategory: resources.ItemCategory, keyOrName: string): Promise<resources.ItemCategory> {
+
+        if (rootCategory.key === keyOrName) {
+            // root case
+            return rootCategory;
         } else {
-            const categoriesArray = categories.ChildItemCategories;
-            return _.find(categoriesArray, (itemcategory) => {
-                return (itemcategory['key'] === value || itemcategory['name'] === value);
+            // search the children for a match
+            const childCategories = rootCategory.ChildItemCategories;
+            return _.find(childCategories, (childCategory) => {
+                return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);
             });
         }
     }
