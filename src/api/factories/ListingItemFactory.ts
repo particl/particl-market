@@ -16,6 +16,7 @@ import { ListingItemObject } from '../models/ListingItemObject';
 import * as resources from 'resources';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import {ShippingAvailability} from '../enums/ShippingAvailability';
+import { HashableObjectType } from '../../api/enums/HashableObjectType';
 
 export class ListingItemFactory {
 
@@ -41,7 +42,7 @@ export class ListingItemFactory {
     ): Promise<ListingItemMessage> {
 
         // create the hash (propably should have been created allready)
-        const hash = ObjectHash.getHash(listingItemTemplate);
+        const hash = ObjectHash.getHash(listingItemTemplate, HashableObjectType.LISTINGITEMMESSAGE);
 
         const information = await this.getMessageInformation(listingItemTemplate.ItemInformation, listingItemCategory);
         const payment = await this.getMessagePayment(listingItemTemplate.PaymentInformation);
