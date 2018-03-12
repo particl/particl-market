@@ -34,7 +34,7 @@ export class MessageProcessor implements MessageProcessorInterface {
             if (await this.isMessageForKnownMarket(message)) {
                 const parsed = this.parseJSONSafe(message.text);
                 if (parsed) {
-
+                    //
                 }
             }
             // emit the latest message event to cli
