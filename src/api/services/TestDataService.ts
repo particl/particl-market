@@ -154,6 +154,7 @@ export class TestDataService {
      *  model - listingitemtemplate, listingitem or profile
      *  amount - amount of models to create
      *  withRelated - return full related model data or just id's, defaults to true
+     *  generateParams - boolean array from GenerateListingItemTemplateParams
      *
      * @returns {Promise<ListingItem>}
      */

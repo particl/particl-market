@@ -44,7 +44,7 @@ export class SmsgService {
      * @returns {Promise<any>}
      */
     public async smsgInbox(param: string = 'all'): Promise<any> {
-        const response = await this.coreRpcService.call('smsginbox', [param]);
+        const response = await this.coreRpcService.call('smsginbox', [param], false);
         // this.log.debug('got response:', response);
         return response;
     }

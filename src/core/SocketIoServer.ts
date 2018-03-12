@@ -65,7 +65,7 @@ export class SocketIoServer {
         setInterval(() => {
             this.log.debug('sending ping to client');
             io.sockets.emit('serverping', { data: new Date().toString()});
-        }, 5000);
+        }, 15000);
 
         return io;
     }

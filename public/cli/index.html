@@ -259,7 +259,7 @@
                 log('cli', event.message);
             })
             .on('serverping', (data) => {
-                log('serverping', data);
+                // log('serverping', data);
                 socket.emit('serverpong').emit('pong');
             });
     }

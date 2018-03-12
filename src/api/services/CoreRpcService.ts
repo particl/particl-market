@@ -34,7 +34,7 @@ export class CoreRpcService {
         return await this.call('getnewaddress');
     }
 
-    public async call(method: string, params: any[] = []): Promise<any> {
+    public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {
 
         const id = RPC_REQUEST_ID++;
         const postData = JSON.stringify({
@@ -46,7 +46,9 @@ export class CoreRpcService {
         const url = this.getUrl();
         const options = this.getOptions();
 
-        this.log.debug('call: ' + method + ' ' + params);
+        if (logCall) {
+            this.log.debug('call: ' + method + ' ' + params);
+        }
         // this.log.debug('call url:', url);
         // this.log.debug('call postData:', postData);
 

@@ -11,7 +11,7 @@ describe('ListingItemTemplatePostCommand', () => {
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
-    let listingItemTemplace;
+    let listingItemTemplates: ListingItemTemplate[];
     let defaultProfile;
     let defaultMarket;
 
@@ -35,10 +35,10 @@ describe('ListingItemTemplatePostCommand', () => {
             true    // generateListingItemObjects
         ]).toParamsArray();
 
-        listingItemTemplace = await testUtil.generateData(
+        listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
-            true,                       // return model
+            true,                    // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as ListingItemTemplate[];
 
@@ -47,7 +47,7 @@ describe('ListingItemTemplatePostCommand', () => {
     test('Should post a ListingItem in to the default marketplace', async (done) => {
 
         // fetch amount of listingitems, should be 0
-        const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id, defaultMarket.id]);
+        const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplates[0].id, defaultMarket.id]);
 
         res.expectJson();
         res.expectStatusCode(200);
