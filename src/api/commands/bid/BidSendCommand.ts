@@ -14,6 +14,7 @@ import { SmsgService } from '../../services/SmsgService';
 import { BidMessageType } from '../../enums/BidMessageType';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MarketplaceMessageInterface } from '../../messages/MarketplaceMessageInterface';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
@@ -60,11 +61,16 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
             const bidData = this.setBidData(data.params);
             // broadcast the message in to the network
             // TODO: add profile and market addresses
-            await this.smsgService.smsgSend('', '', {
-              objects: bidData,
-              listing: listingItemHash,
-              action: BidMessageType.MPA_BID
-            } as BidMessage);
+            const marketPlaceMessage = {
+                version: process.env.MARKETPLACE_VERSION,
+                mpaction: {
+                    objects: bidData,
+                    listing: listingItemHash,
+                    action: BidMessageType.MPA_BID
+                }
+            } as MarketplaceMessageInterface;
+
+            await this.smsgService.smsgSend('', '', marketPlaceMessage);
 
             // TODO: We will change the return data once broadcast functionality will be implemented
             return data;

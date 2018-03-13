@@ -15,6 +15,7 @@ import { BidMessageType } from '../../enums/BidMessageType';
 import { Bid } from '../../models/Bid';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MarketplaceMessageInterface } from '../../messages/MarketplaceMessageInterface';
 
 export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
@@ -58,10 +59,15 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
             } else if (bid.action === BidMessageType.MPA_BID) {
                 // broadcast the accepted bid message
                 // TODO: add profile and market addresses
-                await this.smsgService.smsgSend('', '', {
-                    listing: data.params[0],
-                    action: BidMessageType.MPA_ACCEPT
-                } as BidMessage);
+                const marketPlaceMessage = {
+                    version: process.env.MARKETPLACE_VERSION,
+                    mpaction: {
+                        listing: data.params[0],
+                        action: BidMessageType.MPA_ACCEPT
+                    }
+                } as MarketplaceMessageInterface;
+
+                await this.smsgService.smsgSend('', '', marketPlaceMessage);
 
                 // TODO: We will change the return data once broadcast functionality will be implemented
                 return bid;
