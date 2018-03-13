@@ -42,7 +42,7 @@ export class ListingItemFactory {
     ): Promise<ListingItemMessage> {
 
         // create the hash (propably should have been created allready)
-        const hash = ObjectHash.getHash(listingItemTemplate, HashableObjectType.LISTINGITEMMESSAGE);
+        const hash = await ObjectHash.getHash(listingItemTemplate, HashableObjectType.LISTINGITEMMESSAGE);
 
         const information = await this.getMessageInformation(listingItemTemplate.ItemInformation, listingItemCategory);
         const payment = await this.getMessagePayment(listingItemTemplate.PaymentInformation);

@@ -109,8 +109,7 @@ describe('ItemCategoryUpdateCommand', () => {
                 }
             }
         };
-        const hash = ObjectHash.getHash(listingitemData);
-        listingitemData.hash = hash;
+        listingitemData.hash = await ObjectHash.getHash(listingitemData);
         const listingItems = await testUtil.addData(CreatableModel.LISTINGITEM, listingitemData);
         const res = await rpc(method, [subCommand, categoryData.id, categoryData.name, categoryData.description, parentCategory.id]);
         res.expectJson();

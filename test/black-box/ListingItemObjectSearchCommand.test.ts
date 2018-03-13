@@ -182,8 +182,8 @@ describe('/ListingItemObjectSearchCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
         // set hash
-        testData.hash = ObjectHash.getHash(testData);
-        testDataTwo.hash = ObjectHash.getHash(testDataTwo);
+        testData.hash = await ObjectHash.getHash(testData);
+        testDataTwo.hash = await ObjectHash.getHash(testDataTwo);
 
         // add market
         const res = await rpc(marketRootMethod, [addMakretMethod, 'Test Market', 'privateKey', 'Market Address']);

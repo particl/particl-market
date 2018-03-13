@@ -53,7 +53,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         // create item images
         return await this.itemImageService.create({
             item_information_id: itemInformation.id,
-            hash: ObjectHash.getHash(itemInformation),
+            hash: await ObjectHash.getHash(itemInformation),
             data: {
                 dataId: data.params[1],
                 protocol: data.params[2],
