@@ -1,14 +1,14 @@
 import { LogMock } from '../../lib/LogMock';
 import { ListingItemFactory } from '../../../../src/api/factories/ListingItemFactory';
-import { ItemCategory, default as resources } from 'resources';
+import * as resources from 'resources';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
 
 import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMessage';
 
 import { ObjectHash } from '../../../../src/core/helpers/ObjectHash';
 
-import * as listingItemTemplateBasic from '../../testdata/listingitemtemplate/listingItemTemplateBasic.json';
-import * as listingItemCategoryWithRelated from '../../testdata/category/listingItemCategoryWithRelated.json';
+import * as listingItemTemplateBasic from '../../../testdata/listingitemtemplate/listingItemTemplateBasic.json';
+import * as listingItemCategoryWithRelated from '../../../testdata/category/listingItemCategoryWithRelated.json';
 
 describe('ListingItemFactory', () => {
 
