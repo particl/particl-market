@@ -21,6 +21,7 @@ import { SmsgService } from '../services/SmsgService';
 import { EscrowFactory } from '../factories/EscrowFactory';
 import { EscrowMessageInterface } from '../messages/EscrowMessageInterface';
 import { EscrowMessage } from '../messages/EscrowMessage';
+import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
 
 export class EscrowService {
 
@@ -203,9 +204,13 @@ export class EscrowService {
 
         // use escrowfactory to generate the lock message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel, address);
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: escrowActionMessage
+        } as MarketplaceMessageInterface;
 
         // TODO: add profile and market addresses
-        return await this.smsgService.smsgSend('', '', escrowActionMessage);
+        return await this.smsgService.smsgSend('', '', marketPlaceMessage);
     }
 
     @validate()
@@ -218,8 +223,13 @@ export class EscrowService {
 
         // use escrowfactory to generate the refund message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: escrowActionMessage
+        } as MarketplaceMessageInterface;
+
         // TODO: add profile and market addresses
-        return await this.smsgService.smsgSend('', '', escrowActionMessage);
+        return await this.smsgService.smsgSend('', '', marketPlaceMessage);
     }
 
     @validate()
@@ -232,8 +242,13 @@ export class EscrowService {
 
         // use escrowfactory to generate the release message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: escrowActionMessage
+        } as MarketplaceMessageInterface;
+
         // TODO: add profile and market addresses
-        return await this.smsgService.smsgSend('', '', escrowActionMessage);
+        return await this.smsgService.smsgSend('', '', marketPlaceMessage);
     }
 
 }
