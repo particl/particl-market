@@ -1,11 +1,9 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
-import { ItemMessageInterface } from '../messages/ItemMessageInterface';
-
 import { CoreRpcService } from './CoreRpcService';
 import { InternalServerException } from '../exceptions/InternalServerException';
+import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
 
 export class SmsgService {
 
@@ -54,12 +52,12 @@ export class SmsgService {
      *
      * @param {string} profileAddress
      * @param {string} marketAddress
-     * @param {ActionMessageInterface | ItemMessageInterface} message
+     * @param {MarketplaceMessageInterface} message
      * @param {boolean} paidMessage
      * @param {number} daysRetention
      * @returns {Promise<any>}
      */
-    public async smsgSend(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface,
+    public async smsgSend(profileAddress: string, marketAddress: string, message: MarketplaceMessageInterface,
                           paidMessage: boolean = true, daysRetention: number = process.env.PAID_MESSAGE_RETENTION_DAYS): Promise<any> {
 
         this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
