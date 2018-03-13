@@ -3,5 +3,5 @@ import { ListingItemMessageInterface } from '../messages/ListingItemMessageInter
 import { SmsgMessage } from '../messages/SmsgMessage';
 
 export interface MessageProcessorInterface {
-    process( message: ActionMessageInterface | ListingItemMessageInterface | SmsgMessage[]): void;
+    process( message: ActionMessageInterface | ListingItemMessageInterface | SmsgMessage[], marketAddress: string): void;
 }
