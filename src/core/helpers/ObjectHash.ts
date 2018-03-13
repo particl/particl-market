@@ -3,7 +3,7 @@ import { HashableObjectType } from '../../api/enums/HashableObjectType';
 
 
 export class ObjectHash {
-    public static async getHash(obj: any, type?: any): Promise<string> {
+    public static async getHash(obj: any, type?: HashableObjectType): Promise<string> {
         let revisedObj;
         switch (type) {
             case 'listingItemMessage': {
@@ -28,10 +28,10 @@ export class ObjectHash {
                     PaymentInformation: {
                         type: paymentInformation.type,
                         escrow: {
-                            type: paymentInformation.escrow.type,
+                            type: paymentInformation.Escrow.type,
                             ratio: {
-                                buyer: paymentInformation.escrow.Ratio.buyer,
-                                seller: paymentInformation.escrow.Ratio.seller
+                                buyer: paymentInformation.Escrow.Ratio.buyer,
+                                seller: paymentInformation.Escrow.Ratio.seller
                             }
                         }
                     }
