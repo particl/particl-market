@@ -6,8 +6,8 @@ import * as WebRequest from 'web-request';
 import { HttpException } from '../exceptions/HttpException';
 import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
-import {ItemMessageInterface} from '../messages/ItemMessageInterface';
-import {ActionMessageInterface} from '../messages/ActionMessageInterface';
+import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
+import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 
 let RPC_REQUEST_ID = 1;
 

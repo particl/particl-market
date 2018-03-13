@@ -1,8 +1,8 @@
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { MessageBody } from '../../core/api/MessageBody';
-import { ItemMessageInterface } from './ItemMessageInterface';
+import { ListingItemMessageInterface } from './ListingItemMessageInterface';
 
-export class ListingItemMessage extends MessageBody implements ItemMessageInterface {
+export class ListingItemMessage extends MessageBody implements ListingItemMessageInterface {
 
     @IsNotEmpty()
     public hash: string;
