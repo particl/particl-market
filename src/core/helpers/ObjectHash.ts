@@ -3,13 +3,12 @@ import { HashableObjectType } from '../../api/enums/HashableObjectType';
 
 
 export class ObjectHash {
-    public static getHash(obj: any, type?: HashableObjectType): string {
+    public static async getHash(obj: any, type?: any): Promise<string> {
         let revisedObj;
         switch (type) {
             case 'listingItemMessage': {
                 const itemInformation = obj.ItemInformation;
                 const paymentInformation = obj.PaymentInformation;
-
                 const newObject = {
                     ItemInformation: {
                         title: itemInformation.title,

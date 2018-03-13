@@ -117,7 +117,7 @@ describe('ItemImage', () => {
 
         // add the required data to testData
         testData.item_information_id = createdListingItem.ItemInformation.id;
-        testData.hash = ObjectHash.getHash(testData);
+        testData.hash = await ObjectHash.getHash(testData);
 
         // create
         const itemImageModel: ItemImage = await itemImageService.create(testData);
@@ -169,7 +169,7 @@ describe('ItemImage', () => {
 
     test('Should update the item image', async () => {
         testDataUpdated.item_information_id = createdListingItem.ItemInformation.id;
-        testDataUpdated.hash = ObjectHash.getHash(testData);
+        testDataUpdated.hash = await ObjectHash.getHash(testData);
 
         const itemImageModel: ItemImage = await itemImageService.update(createdImageId, testDataUpdated);
         const result = itemImageModel.toJSON();

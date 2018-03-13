@@ -199,12 +199,12 @@ describe('ListingItemMessageProcessor', () => {
             model: 'listingitem',
             data: {
                 market_id: defaultMarket.Id,
-                hash: ObjectHash.getHash(testData)
+                hash: await ObjectHash.getHash(testData)
             } as any,
             withRelated: true
         } as TestDataCreateRequest);
         createdListingItem = result.toJSON();
-        testData.hash = ObjectHash.getHash(testData);
+        testData.hash = await ObjectHash.getHash(testData);
     });
 
     afterAll(async () => {

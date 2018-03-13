@@ -10,6 +10,8 @@ import { ObjectHash } from '../../../../src/core/helpers/ObjectHash';
 import * as listingItemTemplateBasic from '../../testdata/listingitemtemplate/listingItemTemplateBasic.json';
 import * as listingItemCategoryWithRelated from '../../testdata/category/listingItemCategoryWithRelated.json';
 
+import { HashableObjectType } from '../../../../src/api/enums/HashableObjectType';
+
 describe('ListingItemFactory', () => {
 
     const itemCategoryFactory = new ItemCategoryFactory(LogMock);
@@ -19,8 +21,9 @@ describe('ListingItemFactory', () => {
         //
     });
 
-    const expectMessageFromListingItem = (message: ListingItemMessage, testData: resources.ListingItemTemplate) => {
-        expect(message.hash).toBe(ObjectHash.getHash(testData));
+    const expectMessageFromListingItem = async (message: ListingItemMessage, testData: resources.ListingItemTemplate) => {
+        const hash = await ObjectHash.getHash(testData, HashableObjectType.LISTINGITEMMESSAGE);
+        expect(message.hash).toBe(hash);
         expect(message).not.toHaveProperty('id');
         expect(message).not.toHaveProperty('profileId');
         expect(message).not.toHaveProperty('updatedAt');

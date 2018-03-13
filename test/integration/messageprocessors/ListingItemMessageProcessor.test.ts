@@ -198,7 +198,7 @@ describe('ListingItemMessageProcessor', () => {
     });
 
     test('Should create a new Listing Item by ListingItemMessage', async () => {
-        testData.hash = ObjectHash.getHash(testData);
+        testData.hash = await ObjectHash.getHash(testData);
 
         createdListingItem = await listingItemMessageProcessor.process(testData as ListingItemMessage);
         const result = createdListingItem.toJSON();
@@ -236,7 +236,7 @@ describe('ListingItemMessageProcessor', () => {
     test('Should create a Listing without messaging information', async () => {
         // delete messaging
         delete testData.messaging;
-        testData.hash = ObjectHash.getHash(testData);
+        testData.hash = await ObjectHash.getHash(testData);
         createdListingItemTwo = await listingItemMessageProcessor.process(testData as ListingItemMessage);
         const result = createdListingItemTwo.toJSON();
         createdItemInformation2 = result.ItemInformation;
