@@ -30,13 +30,6 @@ export class ItemImageController {
         this.log = new Logger(__filename);
     }
 
-    @httpGet('/')
-    public async findAll( @response() res: myExpress.Response): Promise<any> {
-        const itemImages = await this.itemImageService.findAll();
-        this.log.debug('findAll: ', JSON.stringify(itemImages, null, 2));
-        return res.found(itemImages.toJSON());
-    }
-
     @httpPost('/template/:templateId')
     public async create( @response() res: myExpress.Response, @requestParam('templateId') templateIdStr: string,
                          @requestBody() body: any, @request() req: any): Promise<any> {
@@ -55,8 +48,8 @@ export class ItemImageController {
         // this.log.debug('templateId: ' + templateId);
         // this.log.debug('files: ', req.files);
 
+        const listingItemTemplate = await this.listingItemTemplateService.findOne(templateId);
         for ( const file of req.files ) {
-            // this.log.debug(`Found image <${file.fieldname}>.`);
             if ( file.fieldname === 'image' ) {
                 const imageFile = file;
 
@@ -65,15 +58,15 @@ export class ItemImageController {
                 // this.log.error('dataStr = ' + dataStr);
 
                 // find listing item template
-                const listingItemTemplate = await this.listingItemTemplateService.findOne(templateId);
                 this.log.debug('imageFile.mimetype = ' + imageFile.mimetype);
                 // find related itemInformation
+
+                let retItemImage;
                 const itemInformation = await listingItemTemplate.related('ItemInformation').toJSON();
                 const itemImage = itemInformation.ItemImages[0];
                 if ( !itemImage ) {
                     // Doesn't exist yet, create instead of update
-                    const tmpDataId = this.makeid();
-                    return await this.itemImageService.create(
+                    retItemImage = await this.itemImageService.create(
                         {
                             item_information_id: itemInformation.id,
                             hash: ObjectHash.getHash(itemInformation),
@@ -81,7 +74,7 @@ export class ItemImageController {
                                 protocol: ImageDataProtocolType.LOCAL,
                                 encoding: 'BASE64',
                                 data: dataStr,
-                                dataId: tmpDataId,
+                                dataId: imageFile.path,
                                 originalMime: imageFile.mimetype,
                                 originalName: imageFile.originalname
                             }
@@ -91,8 +84,8 @@ export class ItemImageController {
                     // this.log.debug('itemImage = ' + JSON.stringify(itemImage));
                     this.log.debug('itemImageId = ' + itemImageId);
 
-                    // create item images
-                    return await this.itemImageService.update(
+                    // Update item images
+                    retItemImage = await this.itemImageService.update(
                         itemImageId,
                         {
                             item_information_id: itemInformation.id,
@@ -106,40 +99,19 @@ export class ItemImageController {
                             }
                         } as ItemImageUpdateRequest);
                 }
+                // Return url to image instead of image.
+                retItemImage = retItemImage.toJSON();
+                const retItemImages = retItemImage.ItemImageDatas;
+                for ( const i in retItemImages ) {
+                    if ( i ) {
+                        const retImage = retItemImages[i];
+                        retImage.data = 'http://../' + retImage.id;
+                    }
+                }
+                return retItemImage;
             }
         }
         throw new MessageException('Was expecting an image file called "image".');
-    }
-
-    public makeid(): string {
-        const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-        let text = '';
-
-        for (let i = 0; i < 5; i++) {
-            text += possible.charAt(Math.floor(Math.random() * possible.length));
-        }
-        return text;
-    }
-
-    @httpGet('/:id')
-    public async findOne( @response() res: myExpress.Response, @requestParam('id') id: string): Promise<any> {
-        const itemImage = await this.itemImageService.findOne(parseInt(id, 10));
-        this.log.debug('findOne: ', JSON.stringify(itemImage, null, 2));
-        return res.found(itemImage.toJSON());
-    }
-
-    @httpPut('/:id')
-    public async update( @response() res: myExpress.Response, @requestParam('id') id: string, @requestBody() body: any): Promise<any> {
-        const itemImage = await this.itemImageService.update(parseInt(id, 10), body);
-        this.log.debug('update: ', JSON.stringify(itemImage, null, 2));
-        return res.updated(itemImage.toJSON());
-    }
-
-    @httpDelete('/:id')
-    public async destroy( @response() res: myExpress.Response, @requestParam('id') id: string): Promise<any> {
-        await this.itemImageService.destroy(parseInt(id, 10));
-        this.log.debug('destroy: ', parseInt(id, 10));
-        return res.destroyed();
     }
 
     @httpGet('/:id/:imageVersion')
