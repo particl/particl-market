@@ -18,7 +18,7 @@ export class MarketRepository {
     }
 
     public async getDefault(withRelated: boolean = true): Promise<Market> {
-        return this.findOneByName('DEFAULT', withRelated);
+        return this.findOneByName(process.env.DEFAULT_MARKETPLACE_NAME, withRelated);
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Market>> {
