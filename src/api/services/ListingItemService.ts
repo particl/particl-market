@@ -28,18 +28,16 @@ import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplateP
 import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostRequest';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
-import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 
 import { ListingItemTemplateService } from './ListingItemTemplateService';
-import { MessageException } from '../exceptions/MessageException';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
-import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { SmsgService } from './SmsgService';
 import { Market } from '../models/Market';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { FlaggedItemService } from './FlaggedItemService';
-import {NotImplementedException} from '../exceptions/NotImplementedException';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
 
 export class ListingItemService {
 
@@ -318,19 +316,19 @@ export class ListingItemService {
             : await this.marketService.findOne(data.marketId);
         const market = marketModel.toJSON();
 
-        // create ListingItemMessage
-        // const rootCategoryWithRelated = await this.itemCategoryService.findRoot();
-        // const rootCategory = rootCategoryWithRelated.toJSON();
-        // this.log.debug('rootCategory: ', JSON.stringify(rootCategory, null, 2));
-
         // find itemCategory with related
         const itemCategoryModel = await this.itemCategoryService.findOneByKey(itemTemplate.ItemInformation.ItemCategory.key, true);
         const itemCategory = itemCategoryModel.toJSON();
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
-        const addItemMessage = await this.listingItemFactory.getMessage(itemTemplate, itemCategory);
+        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, itemCategory);
 
-        return this.smsgService.smsgSend(profileAddress, market.address, addItemMessage as ListingItemMessage);
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            item: listingItemMessage
+        } as MarketplaceMessageInterface;
+
+        return this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage);
     }
 
     /**
