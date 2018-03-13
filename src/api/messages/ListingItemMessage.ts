@@ -7,9 +7,15 @@ export class ListingItemMessage extends MessageBody implements ListingItemMessag
     @IsNotEmpty()
     public hash: string;
 
+    @IsNotEmpty()
     public information: any;
+
+    @IsNotEmpty()
     public payment: any;
+
+    @IsNotEmpty()
     public messaging: any;
-    public objects: any;
+
+    public objects?: any;
 
 }
