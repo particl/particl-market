@@ -15,7 +15,7 @@ describe('ItemCategoryFactory', () => {
     });
 
     // getModel tests
-    test('Should get the categoryCreateMessage from categoryFactory.getModal', async () => {
+    test('Should get the ItemCategoryCreateRequest from itemCategoryFactory.getModel', async () => {
         const categoryArray = ['cat_ROOT', 'cat_high_value', 'cat_high_business_corporate'];
         const result: ItemCategoryCreateRequest = await itemCategoryFactory.getModel(categoryArray, listingItemCategoryRootWithRelated);
         expect(result.name).toBe('Business / Corporate');

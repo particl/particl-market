@@ -1,21 +1,26 @@
 import { inject, named } from 'inversify';
-import * as crypto from 'crypto-js';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
-import { PaymentType } from '../enums/PaymentType';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ItemCategoryFactory } from './ItemCategoryFactory';
-import { ItemCategory } from '../models/ItemCategory';
-import { ItemLocation } from '../models/ItemLocation';
-import { ItemImage } from '../models/ItemImage';
-import { ShippingDestination } from '../models/ShippingDestination';
-import { PaymentInformation } from '../models/PaymentInformation';
-import { MessagingInformation } from '../models/MessagingInformation';
-import { ListingItemObject } from '../models/ListingItemObject';
 import * as resources from 'resources';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
-import {ShippingAvailability} from '../enums/ShippingAvailability';
+import { ShippingAvailability } from '../enums/ShippingAvailability';
+import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
+import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
+import { LocationMarkerCreateRequest } from '../requests/LocationMarkerCreateRequest';
+import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
+import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
+import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
+import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
+import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
+import { EscrowRatioCreateRequest } from '../requests/EscrowRatioCreateRequest';
+import { ItemPriceCreateRequest } from '../requests/ItemPriceCreateRequest';
+import { ShippingPriceCreateRequest } from '../requests/ShippingPriceCreateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
+import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
+import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 
 export class ListingItemFactory {
 
@@ -55,30 +60,198 @@ export class ListingItemFactory {
     }
 
     /**
-     * Factory will return model based on the message
+     * Creates a ListingItemCreateRequest from given data
      *
      * @param data
      * @returns {ListingItemCreateRequest}
      */
-    public getModel(data: ListingItemMessage, marketId: number): ListingItemCreateRequest {
+    public async getModel(listingItemMessage: ListingItemMessageInterface, marketId: number,
+                          rootCategory: resources.ItemCategory): Promise<ListingItemCreateRequest> {
+
+        const itemInformation = await this.getModelItemInformation(listingItemMessage.information, rootCategory);
+        const paymentInformation = await this.getModelPaymentInformation(listingItemMessage.payment);
+        const messagingInformation = await this.getModelMessagingInformation(listingItemMessage.messaging);
+        const listingItemObjects = await this.getModelListingItemObjects(listingItemMessage.objects);
+
         return {
-            hash: data.hash,
+            hash: listingItemMessage.hash,
             market_id: marketId,
-            itemInformation: {
-                title: data.information.title,
-                shortDescription: data.information.shortDescription,
-                longDescription: data.information.longDescription,
-                itemCategory: data.information.itemCategory as ItemCategory,
-                itemLocation: data.information.itemLocation as ItemLocation,
-                itemImages: data.information.itemImages as ItemImage,
-                shippingDestinations: data.information.shippingDestinations as ShippingDestination
-            },
-            paymentInformation: data.payment as PaymentInformation,
-            messagingInformation: data.messaging as MessagingInformation,
-            listingItemObjects: data.objects as ListingItemObject
+            itemInformation,
+            paymentInformation,
+            messagingInformation,
+            listingItemObjects
         } as ListingItemCreateRequest;
     }
 
+    // ---------------
+    // MODEL
+    // ---------------
+    private async getModelListingItemObjects(objects: any): Promise<ListingItemObjectCreateRequest[]> {
+        // TODO: impl
+        return [];
+    }
+
+    private async getModelMessagingInformation(messaging: any): Promise<MessagingInformationCreateRequest[]> {
+        const messagingArray: MessagingInformationCreateRequest[] = [];
+        for (const messagingData of messaging) {
+            messagingArray.push({
+                protocol: messagingData.protocol,
+                publicKey: messagingData.public_key
+            } as MessagingInformationCreateRequest);
+        }
+        return messagingArray;
+    }
+
+    private async getModelPaymentInformation(payment: any): Promise<PaymentInformationCreateRequest> {
+        const escrow = await this.getModelEscrow(payment.escrow);
+        const itemPrice = await this.getModelItemPrice(payment.cryptocurrency);
+
+        return {
+            type: payment.type,
+            escrow,
+            itemPrice
+        } as PaymentInformationCreateRequest;
+    }
+
+    private async getModelItemPrice(cryptocurrency: any): Promise<ItemPriceCreateRequest> {
+        const shippingPrice = await this.getModelShippingPrice(cryptocurrency[0].shipping_price);
+        const cryptocurrencyAddress = await this.getModelCryptocurrencyAddress(cryptocurrency[0].address);
+        return {
+            currency: cryptocurrency[0].currency,
+            basePrice: cryptocurrency[0].base_price,
+            shippingPrice,
+            cryptocurrencyAddress
+        } as ItemPriceCreateRequest;
+    }
+
+    private async getModelShippingPrice(shippingPrice: any): Promise<ShippingPriceCreateRequest> {
+        return {
+            domestic: shippingPrice.domestic,
+            international: shippingPrice.international
+        } as ShippingPriceCreateRequest;
+    }
+
+    private async getModelCryptocurrencyAddress(cryptocurrencyAddress: any): Promise<CryptocurrencyAddressCreateRequest> {
+        return {
+            type: cryptocurrencyAddress.type,
+            address: cryptocurrencyAddress.address
+        } as CryptocurrencyAddressCreateRequest;
+    }
+
+    private async getModelEscrow(escrow: any): Promise<EscrowCreateRequest> {
+        const ratio = await this.getModelEscrowRatio(escrow.ratio);
+        return {
+            type: escrow.type,
+            ratio
+        } as EscrowCreateRequest;
+    }
+
+    private async getModelEscrowRatio(ratio: any): Promise<EscrowRatioCreateRequest> {
+        return {
+            buyer: ratio.buyer,
+            seller: ratio.seller
+        } as EscrowRatioCreateRequest;
+    }
+
+    private async getModelItemInformation(information: any, rootCategory: resources.ItemCategory): Promise<ItemInformationCreateRequest> {
+        const itemCategory = await this.itemCategoryFactory.getModel(information.category, rootCategory);
+        const itemLocation = await this.getModelLocation(information.location);
+        const shippingDestinations = await this.getModelShippingDestinations(information.shipping_destinations);
+        const itemImages = await this.getModelImages(information.images);
+
+        return {
+            title: information.title,
+            shortDescription: information.short_description,
+            longDescription: information.long_description,
+            itemCategory,
+            itemLocation,
+            shippingDestinations,
+            itemImages
+        } as ItemInformationCreateRequest;
+    }
+
+    private async getModelLocation(location: any): Promise<any> {
+
+        const region = location.country;
+        const address = location.address;
+        const locationMarker = await this.getModelLocationMarker(location.gps);
+
+        return {
+            region,
+            address,
+            locationMarker
+        };
+    }
+
+    private async getModelLocationMarker(gps: any): Promise<LocationMarkerCreateRequest> {
+
+        const markerTitle = gps.marker_title;
+        const markerText = gps.marker_text;
+        const lat = gps.lat;
+        const lng = gps.lng;
+
+        return {
+            markerTitle,
+            markerText,
+            lat,
+            lng
+        } as LocationMarkerCreateRequest;
+    }
+
+    private async getModelShippingDestinations(shippingDestinations: string[]): Promise<resources.ShippingDestination[]> {
+
+        const destinations: resources.ShippingDestination[] = [];
+        for (const destination of shippingDestinations) {
+
+            let shippingAvailability = ShippingAvailability.SHIPS;
+            let country = destination;
+
+            if (destination.charAt(0) === '-') {
+                shippingAvailability = ShippingAvailability.DOES_NOT_SHIP;
+                country = destination.substring(1);
+            }
+
+            destinations.push({
+                country,
+                shippingAvailability
+            } as resources.ShippingDestination);
+        }
+
+        return destinations;
+    }
+
+    private async getModelImages(images: any[]): Promise<ItemImageCreateRequest[]> {
+
+        const imageCreateRequests: ItemImageCreateRequest[] = [];
+        for (const image of images) {
+            const data = await this.getModelImageData(image.data);
+            imageCreateRequests.push({
+                hash: image.hash,
+                data
+            } as ItemImageCreateRequest);
+        }
+        return imageCreateRequests;
+    }
+
+    private async getModelImageData(imageDatas: any[]): Promise<ItemImageDataCreateRequest[]> {
+
+        const imageDataCreateRequests: ItemImageDataCreateRequest[] = [];
+        for (const imageData of imageDatas) {
+            imageDataCreateRequests.push({
+                dataId: imageData.id,
+                protocol: imageData.protocol,
+                imageVersion: ImageVersions.ORIGINAL.propName,
+                encoding: imageData.encoding,
+                data: imageData.data
+            } as ItemImageDataCreateRequest);
+        }
+        return imageDataCreateRequests;
+    }
+
+
+    // ---------------
+    // MESSAGE
+    // ---------------
     private async getMessageInformation(itemInformation: resources.ItemInformation, listingItemCategory: resources.ItemCategory): Promise<any> {
         const category = await this.itemCategoryFactory.getArray(listingItemCategory);
         const location = await this.getMessageInformationLocation(itemInformation.ItemLocation);
@@ -142,7 +315,7 @@ export class ListingItemFactory {
         const imageDataArray: object[] = [];
         for (const imageData of itemImageDatas) {
             // we only want the original
-            if (imageData.imageVersion === 'ORIGINAL') {
+            if (imageData.imageVersion === ImageVersions.ORIGINAL.propName) {
                 imageDataArray.push({
                     protocol: imageData.protocol,
                     encoding: imageData.encoding,
