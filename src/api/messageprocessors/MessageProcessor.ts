@@ -8,6 +8,9 @@ import { EventEmitter } from '../../core/api/events';
 import { SmsgService } from '../services/SmsgService';
 import { SmsgMessage } from '../messages/SmsgMessage';
 import { MarketService } from '../services/MarketService';
+import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
+import { ListingItemMessageProcessor } from './ListingItemMessageProcessor';
+import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -16,6 +19,7 @@ export class MessageProcessor implements MessageProcessorInterface {
     private timeout: any;
     private interval = 3000;
 
+    // tslint:disable:max-line-length
     constructor(
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
@@ -25,6 +29,7 @@ export class MessageProcessor implements MessageProcessorInterface {
     ) {
         this.log = new Logger(__filename);
     }
+    // tslint:enable:max-line-length
 
     public async process(messages: SmsgMessage[]): Promise<void> {
         this.log.debug('poll(), new messages:', JSON.stringify(messages, null, 2));
@@ -112,12 +117,12 @@ export class MessageProcessor implements MessageProcessorInterface {
         return response;
     }
 
-    private async parseJSONSafe(json: string): Promise<object|null> {
+    private async parseJSONSafe(json: string): Promise<MarketplaceMessageInterface|null> {
         let parsed = null;
         try {
             parsed = JSON.parse(json);
         } catch (e) {
-            //
+            this.log.error('parseJSONSafe, invalid JSON:', json);
         }
         return parsed;
     }

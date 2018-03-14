@@ -23,7 +23,7 @@ describe('ListingItemFactory', () => {
     });
 
     const expectMessageFromListingItem = (message: ListingItemMessage, testData: resources.ListingItemTemplate) => {
-        expect(message.hash).toBe(ObjectHash.getHash(testData));
+        expect(message.hash).toBe(testData.hash);
         expect(message).not.toHaveProperty('id');
         expect(message).not.toHaveProperty('profileId');
         expect(message).not.toHaveProperty('updatedAt');
@@ -260,7 +260,7 @@ describe('ListingItemFactory', () => {
     };
 
 
-    test('Should get ListingItemMessage', async () => {
+    test('Should create ListingItemMessage', async () => {
 
         createdListingItemMessage = await listingItemFactory.getMessage(listingItemTemplateBasic, listingItemCategoryWithRelated);
 

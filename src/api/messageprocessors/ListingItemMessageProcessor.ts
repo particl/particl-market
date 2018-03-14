@@ -15,9 +15,9 @@ import { MessagingInformationFactory } from '../factories/MessagingInformationFa
 import { ItemCategoryService } from '../services/ItemCategoryService';
 import { MarketService } from '../services/MarketService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
-import { isArray } from 'util';
 import { EventEmitter } from '../../core/api/events';
 import * as resources from 'resources';
+import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
 
 export class ListingItemMessageProcessor implements MessageProcessorInterface {
 
@@ -36,29 +36,32 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
     }
 
     @validate()
+    public async process( @message(ListingItemMessage) listingItemMessage: ListingItemMessageInterface, marketAddress: string): Promise<ListingItem> {
 
-    public async process( @message(ListingItemMessage) data: ListingItemMessage): Promise<ListingItem> {
+        // get market
+        const marketModel = await this.marketService.findByAddress(marketAddress);
+        const market = marketModel.toJSON();
 
-        // get the category and create the custom categories in case there are some
-        const itemCategory: resources.ItemCategory = await this.getOrCreateCategories(data.information.category);
+        // create the new custom categories in case there are some
+        const itemCategory: resources.ItemCategory = await this.getOrCreateCategories(listingItemMessage.information.category);
 
-        // get messagingInformation
-        const messagingInformation = await this.messagingInformationFactory.get(data.messaging);
+        // find the categories/get the root category with related
+        const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
+        const rootCategory = rootCategoryWithRelatedModel.toJSON();
 
-        // get default profile
-        const market = await this.marketService.getDefault();
-        // create listing-item
-        const listingItem = await this.listingItemFactory.getModel(data as ListingItemMessage, market.id);
+        // create ListingItem
+        const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, rootCategory);
+        this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
-        // NOTE: It is only for the testing purpose for the test cases later we will remove the getting default market
-        const defaultMarket = await this.marketService.getDefault();
-        listingItem.market_id = defaultMarket.id;
+        const listingItem = await this.listingItemService.create(listingItemCreateRequest);
 
-        this.eventEmitter.emit('cli', {
-            message: 'listing item message received ' + JSON.stringify(listingItem)
-        });
+        // emit the latest message event to cli
+        // this.eventEmitter.emit('cli', {
+        //    message: 'new ListingItem received: ' + JSON.stringify(listingItem)
+        // });
 
-        return await this.listingItemService.create(listingItem as ListingItemCreateRequest);
+        // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
+        return listingItem;
     }
 
     /**
@@ -79,10 +82,10 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
             if (!existingCategory) {
 
                 // category did not exist, so we need to create it
-                const categoryCreateRequest = await this.itemCategoryFactory.getModel(
-                    categoryKeyOrName,
-                    rootCategoryToSearchFrom.id
-                );
+                const categoryCreateRequest = {
+                    name: categoryKeyOrName,
+                    parent_item_category_id: rootCategoryToSearchFrom.id
+                } as ItemCategoryCreateRequest;
 
                 // create and assign it as existingCategoru
                 const newCategory = await this.itemCategoryService.create(categoryCreateRequest);

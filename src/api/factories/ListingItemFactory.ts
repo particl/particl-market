@@ -21,6 +21,8 @@ import { ShippingPriceCreateRequest } from '../requests/ShippingPriceCreateReque
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
+import {MessagingProtocolType} from '../enums/MessagingProtocolType';
+import {ImageDataProtocolType} from "src/api/enums/ImageDataProtocolType";
 
 export class ListingItemFactory {
 
@@ -42,21 +44,20 @@ export class ListingItemFactory {
      */
     public async getMessage(listingItemTemplate: resources.ListingItemTemplate, listingItemCategory: resources.ItemCategory): Promise<ListingItemMessage> {
 
-        // create the hash (propably should have been created allready)
-        const hash = ObjectHash.getHash(listingItemTemplate);
-
         const information = await this.getMessageInformation(listingItemTemplate.ItemInformation, listingItemCategory);
         const payment = await this.getMessagePayment(listingItemTemplate.PaymentInformation);
         const messaging = await this.getMessageMessaging(listingItemTemplate.MessagingInformation);
         const objects = await this.getMessageObjects(listingItemTemplate.ListingItemObjects);
 
-        return {
-            hash,
+        const message = {
+            hash: listingItemTemplate.hash,
             information,
             payment,
             messaging,
             objects
         } as ListingItemMessage;
+
+        return message;
     }
 
     /**
@@ -95,7 +96,7 @@ export class ListingItemFactory {
         const messagingArray: MessagingInformationCreateRequest[] = [];
         for (const messagingData of messaging) {
             messagingArray.push({
-                protocol: messagingData.protocol,
+                protocol: MessagingProtocolType[messagingData.protocol],
                 publicKey: messagingData.public_key
             } as MessagingInformationCreateRequest);
         }

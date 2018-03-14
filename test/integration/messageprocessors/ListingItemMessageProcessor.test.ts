@@ -4,19 +4,19 @@ import { Types, Core, Targets } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
 import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
 import { TestDataService } from '../../../src/api/services/TestDataService';
-import { ListingItemService } from '../../../src/api/services/ListingItemService';
 
 import { ListingItemMessageProcessor } from '../../../src/api/messageprocessors/ListingItemMessageProcessor';
 import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemFactory } from '../../../src/api/factories/ListingItemFactory';
-import * as listingItemTemplateBasic from '../testdata/listingitemtemplate/listingItemTemplateBasic.json';
-import * as listingItemCategoryWithRelated from '../testdata/category/listingItemCategoryWithRelated.json';
+import * as listingItemTemplateBasic from '../../testdata/listingitemtemplate/listingItemTemplateBasic.json';
+import * as listingItemCategoryWithRelated from '../../testdata/category/listingItemCategoryWithRelated.json';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
+import {ImageProcessing} from "../../../src/core/helpers/ImageProcessing";
 
 
 describe('ListingItemMessageProcessor', () => {
@@ -26,19 +26,17 @@ describe('ListingItemMessageProcessor', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
-    let listingItemService: ListingItemService;
     let marketService: MarketService;
     let listingItemMessageProcessor: ListingItemMessageProcessor;
     let listingItemFactory: ListingItemFactory;
 
-    // let listingItemTemplates;
+    let defaultMarket;
 
     // tslint:disable:max-line-length
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         listingItemMessageProcessor = app.IoC.getNamed<ListingItemMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.ListingItemMessageProcessor);
         listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.ListingItemFactory);
@@ -46,37 +44,16 @@ describe('ListingItemMessageProcessor', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-/*
-        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
+        const defaultMarketModel = await marketService.getDefault();
+        defaultMarket = defaultMarketModel.toJSON();
 
-        listingItemTemplates = await testDataService.generate<ListingItemTemplate>({
-            model: CreatableModel.LISTINGITEMTEMPLATE,  // what to generate
-            amount: 1,                                  // how many to generate
-            withRelated: true,                          // return model
-            generateParams: generateListingItemTemplateParams   // what kind of data to generate
-        } as TestDataGenerateRequest);
-*/
     });
     // tslint:enable:max-line-length
-
-    afterAll(async () => {
-        //
-    });
 
     const expectListingItemFromMessage = (result: resources.ListingItem, message: ListingItemMessage) => {
 
         expect(result.id).not.toBeNull();
         expect(result.hash).toBe(message.hash);
-        expect(result.hash).toBe(ObjectHash.getHash(message));
 
         // fields from message that we dont want to see
         expect(result).not.toHaveProperty('information');
@@ -159,8 +136,12 @@ describe('ListingItemMessageProcessor', () => {
         // first create the message
         const message = await listingItemFactory.getMessage(listingItemTemplateBasic, listingItemCategoryWithRelated);
 
+        // log.debug('message: ', JSON.stringify(message, null, 2));
+
         // then run the processor
-        const createdListingItem = await listingItemMessageProcessor.process(message);
+        const createdListingItem = await listingItemMessageProcessor.process(message, defaultMarket.address);
+        log.debug('createdListingItem: ', JSON.stringify(createdListingItem, null, 2));
+
         const result = createdListingItem.toJSON();
 
         // test that we have correctly converted the message

@@ -52,20 +52,31 @@ export class ItemImageService {
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
-        const itemImageDataOriginal: ItemImageDataCreateRequest = body.data;
+        const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
         delete body.data;
 
         // if the request body was valid we will create the itemImage
         const itemImage = await this.itemImageRepo.create(body);
+        const protocols = Object.keys(ImageDataProtocolType)
+            .map(key => ({key, value: ImageDataProtocolType[key]}));
 
-        if ( _.isEmpty(itemImageDataOriginal.protocol) && !ImageDataProtocolType[itemImageDataOriginal.protocol] ) {
+        const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
+            return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
+        });
+
+        const usedImageProtocol = _.find(protocols, (protocol) => {
+            return protocol.value === itemImageDataOriginal.protocol;
+        });
+
+        if (_.isEmpty(itemImageDataOriginal.protocol) || !usedImageProtocol) {
             this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
-            throw new MessageException('Invalid protocol.');
+            throw new MessageException('Invalid image protocol.');
         }
 
+
         // TODO: THIS
-        /* if ( !_.isEmpty(itemImageDataOriginal.encoding) && !?????[itemImageDataOriginal.encoding] ) {
-            this.log.warn(`Invalid encoding <${itemImageDataOriginal.encoding}> encountered.`);
+        /* if ( !_.isEmpty(itemImageDatas.encoding) && !?????[itemImageDatas.encoding] ) {
+            this.log.warn(`Invalid encoding <${itemImageDatas.encoding}> encountered.`);
             throw new NotFoundException('Invalid encoding.');
         } */
 
