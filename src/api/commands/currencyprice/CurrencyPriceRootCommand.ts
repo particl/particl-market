@@ -43,8 +43,8 @@ export class CurrencyPriceRootCommand extends BaseCommand implements RpcCommandI
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<CurrencyPrice>> {
         const fromCurrency = data.params.shift().toUpperCase();
         // throw exception if fromCurrency is not a PART or toCurrencies has length 0
-        if (fromCurrency !== 'PART' || data.params.length < 1 ) {
-            throw new MessageException('Invalid params');
+        if (fromCurrency.toUpperCase() !== 'PART' || data.params.length < 1 ) {
+           throw new MessageException('Invalid params');
         } else {
             // convert params to uppercase
             const toCurrencies: string[] = [];

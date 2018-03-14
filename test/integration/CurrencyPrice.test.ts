@@ -139,7 +139,7 @@ describe('CurrencyPrice', () => {
 
     });
 
-    test('Should get currency price from db', async () => {
+    test('Should get currency price from db passing currencies in UPPER case', async () => {
         const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['INR', 'USD']);
         expect(currencyPriceModel[0].from).toBe(createdPARTINRCurrencyPrice.from);
         expect(currencyPriceModel[0].to).toBe(createdPARTINRCurrencyPrice.to);
@@ -154,7 +154,7 @@ describe('CurrencyPrice', () => {
         createdPARTINRCurrencyPrice = currencyPriceModel;
     });
 
-    test('Should get updated currency price', async () => {
+    test('Should get updated currency price passing currencies in UPPER case', async () => {
         const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['INR', 'USD']);
         expect(currencyPriceModel[0].from).toBe('PART');
         expect(currencyPriceModel[0].to).toBe('INR');
@@ -169,6 +169,53 @@ describe('CurrencyPrice', () => {
         expect(createdPARTINRCurrencyPrice[1].createdAt).toBe(currencyPriceModel[1].createdAt);
 
         createdPARTINRCurrencyPrice = currencyPriceModel[1];
+    });
+
+    test('Should get currency price from db passing currencies in LOWER case', async () => {
+        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['inr', 'usd']);
+        expect(currencyPriceModel[0].from).toBe(createdPARTINRCurrencyPrice.from);
+        expect(currencyPriceModel[0].to).toBe(createdPARTINRCurrencyPrice.to);
+        expect(currencyPriceModel[0].updatedAt).toBe(createdPARTINRCurrencyPrice.updatedAt);
+        expect(currencyPriceModel[0].price).toBe(createdPARTINRCurrencyPrice.price);
+        expect(currencyPriceModel[0].createdAt).toBe(createdPARTINRCurrencyPrice.createdAt);
+
+        expect(currencyPriceModel[1].to).toBe('USD');
+        expect(currencyPriceModel[1]['from']).toBe('PART');
+
+        process.env.CHASING_COINS_API_DELAY = 0;
+        createdPARTINRCurrencyPrice = currencyPriceModel;
+    });
+
+    test('Should get updated currency price passing currencies in LOWER case', async () => {
+        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['inr', 'usd']);
+        expect(currencyPriceModel[0].from).toBe('PART');
+        expect(currencyPriceModel[0].to).toBe('INR');
+        expect(currencyPriceModel[0].updatedAt).toBeGreaterThan(createdPARTINRCurrencyPrice[0].updatedAt);
+        expect(createdPARTINRCurrencyPrice[0].id).toBe(currencyPriceModel[0].id);
+        expect(createdPARTINRCurrencyPrice[0].createdAt).toBe(currencyPriceModel[0].createdAt);
+
+        expect(createdPARTINRCurrencyPrice[1].id).toBe(currencyPriceModel[1].id);
+        expect(currencyPriceModel[1].to).toBe('USD');
+        expect(currencyPriceModel[1]['from']).toBe('PART');
+        expect(createdPARTINRCurrencyPrice[1].updatedAt).toBeLessThan(currencyPriceModel[1].updatedAt);
+        expect(createdPARTINRCurrencyPrice[1].createdAt).toBe(currencyPriceModel[1].createdAt);
+
+        createdPARTINRCurrencyPrice = currencyPriceModel[1];
+    });
+
+    test('Should get currency price from db passing one currency in LOWER case and one in UPPER case', async () => {
+        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['inr', 'usd']);
+        expect(currencyPriceModel[0].from).toBe(createdPARTINRCurrencyPrice.from);
+        expect(currencyPriceModel[0].to).toBe(createdPARTINRCurrencyPrice.to);
+        expect(currencyPriceModel[0].updatedAt).toBe(createdPARTINRCurrencyPrice.updatedAt);
+        expect(currencyPriceModel[0].price).toBe(createdPARTINRCurrencyPrice.price);
+        expect(currencyPriceModel[0].createdAt).toBe(createdPARTINRCurrencyPrice.createdAt);
+
+        expect(currencyPriceModel[1].to).toBe('USD');
+        expect(currencyPriceModel[1]['from']).toBe('PART');
+
+        process.env.CHASING_COINS_API_DELAY = 0;
+        createdPARTINRCurrencyPrice = currencyPriceModel;
     });
 
     test('Should search currency price by from PART and to USD currency', async () => {
