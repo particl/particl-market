@@ -16,7 +16,6 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/par
 import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
-import {ImageProcessing} from "../../../src/core/helpers/ImageProcessing";
 
 
 describe('ListingItemMessageProcessor', () => {

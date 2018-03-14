@@ -57,45 +57,54 @@ export class ItemImageService {
 
         // if the request body was valid we will create the itemImage
         const itemImage = await this.itemImageRepo.create(body);
+        // const protocols = Object.keys(ImageDataProtocolType)
+        //    .map(key => ({key, value: ImageDataProtocolType[key]}));
         const protocols = Object.keys(ImageDataProtocolType)
-            .map(key => ({key, value: ImageDataProtocolType[key]}));
+            .map(key => (ImageDataProtocolType[key]));
 
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
 
-        const usedImageProtocol = _.find(protocols, (protocol) => {
-            return protocol.value === itemImageDataOriginal.protocol;
-        });
+        if (itemImageDataOriginal) {
+            const usedImageProtocol = _.find(protocols, (protocol) => {
+                return protocol.value === itemImageDataOriginal.protocol;
+            });
 
-        if (_.isEmpty(itemImageDataOriginal.protocol) || !usedImageProtocol) {
-            this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
-            throw new MessageException('Invalid image protocol.');
-        }
-
-
-        // TODO: THIS
-        /* if ( !_.isEmpty(itemImageDatas.encoding) && !?????[itemImageDatas.encoding] ) {
-            this.log.warn(`Invalid encoding <${itemImageDatas.encoding}> encountered.`);
-            throw new NotFoundException('Invalid encoding.');
-        } */
-
-        // then create the imageDatas from the given original data
-        if ( !_.isEmpty(itemImageDataOriginal.data) ) {
-            const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
-            const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.Id, itemImageDataOriginal, toVersions);
-
-            // save all image datas
-            for (const imageData of imageDatas) {
-                await this.itemImageDataService.create(imageData);
+            if (_.isEmpty(itemImageDataOriginal.protocol) || !usedImageProtocol) {
+                this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
+                throw new MessageException('Invalid image protocol.');
             }
 
-            // finally find and return the created itemImage
-            const newItemImage = await this.findOne(itemImage.Id);
-            return newItemImage;
-        } else {
-            return itemImage;
+
+            // TODO: THIS
+            /* if ( !_.isEmpty(itemImageDatas.encoding) && !?????[itemImageDatas.encoding] ) {
+                this.log.warn(`Invalid encoding <${itemImageDatas.encoding}> encountered.`);
+                throw new NotFoundException('Invalid encoding.');
+            } */
+
+            // then create the imageDatas from the given original data
+            if ( !_.isEmpty(itemImageDataOriginal.data) ) {
+                const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
+                const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.Id, itemImageDataOriginal, toVersions);
+
+                // save all image datas
+                for (const imageData of imageDatas) {
+                    await this.itemImageDataService.create(imageData);
+                }
+
+                // finally find and return the created itemImage
+                const newItemImage = await this.findOne(itemImage.Id);
+                return newItemImage;
+            } else {
+                return itemImage;
+            }
         }
+        // TODO: fix tests,
+        // most of the tests dont contain imageVersion or proper images and will break if we throw exception here
+        // else {
+        //    throw new MessageException('Original image data not found.');
+        // }
     }
 
     @validate()

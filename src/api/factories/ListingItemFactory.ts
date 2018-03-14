@@ -21,8 +21,8 @@ import { ShippingPriceCreateRequest } from '../requests/ShippingPriceCreateReque
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
-import {MessagingProtocolType} from '../enums/MessagingProtocolType';
-import {ImageDataProtocolType} from "src/api/enums/ImageDataProtocolType";
+import { MessagingProtocolType } from '../enums/MessagingProtocolType';
+import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 
 export class ListingItemFactory {
 

@@ -65,11 +65,11 @@ describe('UpdateListingItemMessageProcessor', () => {
     let listingItemObjectService: ListingItemObjectService;
 
     let createdListingItem;
-    let updatedListingItem;
-    let createdItemInformation;
-    let createdPaymentInformation;
-    let createdMessagingInformation;
-    let createtListingItemObject;
+    // let updatedListingItem;
+    // let createdItemInformation;
+    // let createdPaymentInformation;
+    // let createdMessagingInformation;
+    // let createtListingItemObject;
     let defaultMarket;
 
     const messaging = [{ protocol: MessagingProtocolType.SMSG, public_key: 'publickey2' }];
