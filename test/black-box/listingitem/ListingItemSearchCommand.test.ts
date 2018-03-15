@@ -134,8 +134,8 @@ describe('ListingItemSearchCommand', () => {
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(createdListingItem1.hash);
-        expect(result[1].hash).toBe(createdListingItem2.hash);
+        expect(result[0].hash).toBe(createdListingItem2.hash);
+        expect(result[1].hash).toBe(createdListingItem1.hash);
     });
 
     test('Should get ALL ListingItems when profileid is empty, since default is ALL', async () => {
@@ -146,8 +146,8 @@ describe('ListingItemSearchCommand', () => {
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(createdListingItem1.hash);
-        expect(result[1].hash).toBe(createdListingItem2.hash);
+        expect(result[0].hash).toBe(createdListingItem2.hash);
+        expect(result[1].hash).toBe(createdListingItem1.hash);
     });
 
     test('Should get ALL ListingItems with default type = ALL ', async () => {
@@ -158,12 +158,12 @@ describe('ListingItemSearchCommand', () => {
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(createdListingItem1.hash);
-        expect(result[1].hash).toBe(createdListingItem2.hash);
+        expect(result[0].hash).toBe(createdListingItem2.hash);
+        expect(result[1].hash).toBe(createdListingItem1.hash);
     });
 
 
-    test('Should get all ListingItems with default type = ALL and default profileId = ALL', async () => {
+    test('Should get ALL ListingItems with default type = ALL and default profileId = ALL', async () => {
         // get all listing items
         const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
             pageLimit, order, category, '', '', minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
@@ -171,8 +171,8 @@ describe('ListingItemSearchCommand', () => {
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(createdListingItem1.hash);
-        expect(result[1].hash).toBe(createdListingItem2.hash);
+        expect(result[0].hash).toBe(createdListingItem2.hash);
+        expect(result[1].hash).toBe(createdListingItem1.hash);
     });
 
     test('Should fail to search ListingItems with invalid profile Id', async () => {
@@ -185,7 +185,7 @@ describe('ListingItemSearchCommand', () => {
         expect(getDataRes.error.error.message).toBe('Value needs to be number | OWN | ALL. you could pass * as all too');
     });
 
-    test('Should get all ListingItems, profileid = *', async () => {
+    test('Should get ALL ListingItems, profileid = *', async () => {
         // get all listing items
         const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
             pageLimit, order, category, type, '*', minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
@@ -193,8 +193,8 @@ describe('ListingItemSearchCommand', () => {
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(2);
-        expect(result[0].hash).toBe(createdListingItem1.hash);
-        expect(result[1].hash).toBe(createdListingItem2.hash);
+        expect(result[0].hash).toBe(createdListingItem2.hash);
+        expect(result[1].hash).toBe(createdListingItem1.hash);
     });
 
     test('Should search ListingItems by profileId = id', async () => {
@@ -231,7 +231,7 @@ describe('ListingItemSearchCommand', () => {
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].hash).toBe(createdListingItem2.hash);
+        expect(result[0].hash).toBe(createdListingItem1.hash);
     });
 
     test('Should return empty ListingItems array if invalid pagination', async () => {
@@ -261,7 +261,7 @@ describe('ListingItemSearchCommand', () => {
     });
 
     test('Should search ListingItems by category id', async () => {
-        category = listingItemCreateRequestBasic2.itemInformation.itemCategory.id;
+        category = createdListingItem1.ItemInformation.ItemCategory.id;
         const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
             pageLimit, order, category, type, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
 
@@ -269,13 +269,13 @@ describe('ListingItemSearchCommand', () => {
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(2);
-        const categoryRes = result[0].ItemInformation.ItemCategory;
-        expect(categoryId).toBe(categoryRes.id);
+        expect(result[0].ItemInformation.ItemCategory.id).toBe(category);
+        expect(result[0].ItemInformation.ItemCategory.id).toBe(category);
     });
 
-    test('Should search listing items by searchString = ItemInformation title', async () => {
+    test('Should search ListingItems by searchString = ItemInformation title', async () => {
         // set search term
-        searchString = testData.itemInformation.title;
+        searchString = createdListingItem1.ItemInformation.title;
         const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
             pageLimit, order, category, type, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
 
@@ -283,16 +283,16 @@ describe('ListingItemSearchCommand', () => {
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(testData.itemInformation.title).toBe(result[0].ItemInformation.title);
+        expect(result[0].ItemInformation.title).toBe(searchString);
     });
 
-    test('Should return two listing items searched by listing item price', async () => {
+    test('Should return two ListingItems when searching by price', async () => {
         // set profile id
         category = '';
         searchString = '';
         profileId = 'ALL';
-        minPrice = 0;
-        maxPrice = 4;
+        minPrice = 65;
+        maxPrice = 80;
         const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
             pageLimit, order, category, type, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
 
@@ -302,12 +302,12 @@ describe('ListingItemSearchCommand', () => {
         expect(result.length).toBe(2);
     });
 
-    test('Should return one listing items searched by listing item price', async () => {
+    test('Should return one ListingItem when searching by price', async () => {
         category = '';
         searchString = '';
         profileId = 'ALL';
-        minPrice = 1;
-        maxPrice = 4;
+        minPrice = 75;
+        maxPrice = 80;
         const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
             pageLimit, order, category, type, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
 
@@ -317,7 +317,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result.length).toBe(1);
     });
 
-    test('Should return empty listing items searched by listing item invalid price range', async () => {
+    test('Should return no ListingItems swhen searching using invalid price range', async () => {
         category = '';
         searchString = '';
         profileId = 'ALL';
@@ -332,12 +332,12 @@ describe('ListingItemSearchCommand', () => {
         expect(result.length).toBe(0);
     });
 
-    test('Should return listing item without related', async () => {
+    test('Should return ListingItems without related', async () => {
         category = '';
         searchString = '';
         profileId = 'ALL';
-        minPrice = 0;
-        maxPrice = 5;
+        minPrice = 1;
+        maxPrice = 101;
         country = '';
         shippingDestination = '';
         withRelated = false;
@@ -356,13 +356,13 @@ describe('ListingItemSearchCommand', () => {
         expect(result.Market).toBeUndefined();
     });
 
-    test('Should search listing item by item location', async () => {
+    test('Should search ListingItems by item location', async () => {
         category = '';
         searchString = '';
         profileId = 'ALL';
         minPrice = 0;
         maxPrice = 5;
-        country = 'South Africa';
+        country = 'FINLAND';
         shippingDestination = '';
         withRelated = true;
         const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
@@ -383,7 +383,7 @@ describe('ListingItemSearchCommand', () => {
         minPrice = 0;
         maxPrice = 5;
         country = '';
-        shippingDestination = 'United Kingdom';
+        shippingDestination = 'FINLAND';
         withRelated = true;
         const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
             pageLimit, order, category, type, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
@@ -397,7 +397,7 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should search listing item by shipping Destination, min-max price and SearchString = information title', async () => {
         category = '';
-        searchString = testData.itemInformation.title;
+        searchString = createdListingItem1.itemInformation.title;
         profileId = 'ALL';
         minPrice = 0;
         maxPrice = 5;
@@ -411,7 +411,7 @@ describe('ListingItemSearchCommand', () => {
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(testData.itemInformation.title).toBe(result[0].ItemInformation.title);
+        expect(result[0].ItemInformation.title).toBe(createdListingItem1.ItemInformation.title);
         expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(shippingDestination);
     });
 

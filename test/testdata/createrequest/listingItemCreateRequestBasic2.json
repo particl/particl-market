@@ -1,7 +1,7 @@
 {
     "hash": "hash1",
     "itemInformation": {
-        "title": "Small Soft Gloves",
+        "title": "Different Soft Gloves",
         "shortDescription": "Ergonomic Tuna",
         "longDescription": "really long description.",
         "itemCategory": {
@@ -10,7 +10,7 @@
             "description": ""
         },
         "itemLocation": {
-            "region": "CAPE VERDE",
+            "region": "SOUTH AFRICA",
             "address": "92656 Morar Turnpike",
             "locationMarker": {
                 "markerTitle": "saepe",
@@ -23,7 +23,7 @@
             "country": "MOROCCO",
             "shippingAvailability": "DOES_NOT_SHIP"
         }, {
-            "country": "PANAMA",
+            "country": "SOUTH AFRICA",
             "shippingAvailability": "SHIPS"
         }, {
             "country": "ARMENIA",
@@ -87,7 +87,7 @@
         },
         "itemPrice": {
             "currency": "PARTICL",
-            "basePrice": 76.31903702293027,
+            "basePrice": 66.31903702293027,
             "shippingPrice": {
                 "domestic": 2.13268661244928,
                 "international": 8.76915941696489
