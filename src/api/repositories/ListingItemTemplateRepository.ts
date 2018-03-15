@@ -44,6 +44,7 @@ export class ListingItemTemplateRepository {
             const listingItemTemplateCreated = await listingItemTemplate.save();
             return this.ListingItemTemplateModel.fetchById(listingItemTemplateCreated.id);
         } catch (error) {
+            this.log.error('error: ', error);
             throw new DatabaseException('Could not create the listingItemTemplate!', error);
         }
     }

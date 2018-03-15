@@ -9,8 +9,9 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplatePostRequest } from '../../requests/ListingItemTemplatePostRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import {MarketplaceMessageInterface} from '../../messages/MarketplaceMessageInterface';
 
-export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<ListingItem> {
+export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<MarketplaceMessageInterface> {
 
     public log: LoggerType;
 
@@ -33,9 +34,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<MarketplaceMessageInterface> {
 
-        const response = this.listingItemService.post({
+        const response = await this.listingItemService.post({
             listingItemTemplateId: data.params[0],
             marketId: data.params[1] || undefined
         } as ListingItemTemplatePostRequest);
