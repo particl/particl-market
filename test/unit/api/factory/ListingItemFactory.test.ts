@@ -33,7 +33,7 @@ describe('ListingItemFactory', () => {
         expect(message).not.toHaveProperty('MessagingInformation');
         expect(message).not.toHaveProperty('ListingItemObjects');
         expect(message).not.toHaveProperty('Profile');
-        expect(message).not.toHaveProperty('ListingItem');
+        expect(message).not.toHaveProperty('ListingItems');
 
         // message.information
         expect(message.information).toBeDefined();

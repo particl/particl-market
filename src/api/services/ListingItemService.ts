@@ -143,6 +143,7 @@ export class ListingItemService {
             paymentInformation.listing_item_id = listingItem.Id;
             await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
         }
+
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_id = listingItem.Id;
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);

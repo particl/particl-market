@@ -66,7 +66,7 @@ export class EscrowService {
         // check listingItem by listingItemTemplateId
         const listingItemTemplateId = body.listingItemTemplateId;
         const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
-        if (listingItemTemplate.ListingItem.length === 0) {
+        if (listingItemTemplate.ListingItems.length === 0) {
             // creates an Escrow related to PaymentInformation related to ListingItemTemplate
             const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
             if (paymentInformation === null) {
@@ -110,7 +110,7 @@ export class EscrowService {
         const listingItemTemplateId = body.listingItemTemplateId;
         const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
         let escrowId;
-        if (listingItemTemplate.ListingItem.length === 0) {
+        if (listingItemTemplate.ListingItems.length === 0) {
             // creates an Escrow related to PaymentInformation related to ListingItemTemplate
             const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
             if (paymentInformation === null) {
@@ -164,7 +164,7 @@ export class EscrowService {
         // check listingItem by listingItemTemplateId
         const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
         let escrowId;
-        if (listingItemTemplate.ListingItem.length === 0) {
+        if (listingItemTemplate.ListingItems.length === 0) {
             // creates an Escrow related to PaymentInformation related to ListingItemTemplate
             const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
             if (paymentInformation === null) {

@@ -171,14 +171,12 @@ export class ItemInformationService {
 
         // find related record and delete it
         let itemImages = updatedItemInformation.related('ItemImages').toJSON() || [];
-        this.log.debug('original itemimages:', JSON.stringify(itemImages, null, 2));
         for (const itemImage of itemImages) {
             await this.itemImageService.destroy(itemImage.id);
         }
 
         // recreate related data
         itemImages = body.itemImages || [];
-        this.log.debug('new itemimages:', JSON.stringify(itemImages, null, 2));
         for (const itemImage of itemImages) {
             itemImage.item_information_id = id;
             await this.itemImageService.create(itemImage);

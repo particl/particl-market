@@ -311,8 +311,9 @@ describe('ListingItem', () => {
                 );
             }
         }
-
     };
+
+    // TODO: missing search tests
 
     // -------------------------------
     // TESTS
