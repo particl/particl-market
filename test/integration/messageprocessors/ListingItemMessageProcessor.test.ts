@@ -143,7 +143,7 @@ describe('ListingItemMessageProcessor', () => {
 
         // then run the processor
         const createdListingItem = await listingItemMessageProcessor.process(message, defaultMarket.address);
-        log.debug('createdListingItem: ', JSON.stringify(createdListingItem, null, 2));
+        // log.debug('createdListingItem: ', JSON.stringify(createdListingItem, null, 2));
 
         const result = createdListingItem.toJSON();
 

@@ -98,49 +98,68 @@ export class ItemImageService {
             } else {
                 return itemImage;
             }
+        } else {
+            throw new MessageException('Original image data not found.');
         }
-        // TODO: fix tests,
-        // most of the tests dont contain imageVersion or proper images and will break if we throw exception here
-        // else {
-        //    throw new MessageException('Original image data not found.');
-        // }
     }
 
     @validate()
     public async update(id: number, @request(ItemImageUpdateRequest) data: ItemImageUpdateRequest): Promise<ItemImage> {
 
         const body = JSON.parse(JSON.stringify(data));
-        const itemImageDataOriginal: ItemImageDataCreateRequest = body.data;
+
+        // extract and remove related models from request
+        const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
+        delete body.data;
 
         // find the existing one without related
         const itemImage = await this.findOne(id, false);
 
-        // set new values
-        itemImage.Hash = body.hash;
+        const protocols = Object.keys(ImageDataProtocolType)
+            .map(key => (ImageDataProtocolType[key]));
 
-        // update itemImage record
-        const updatedItemImage = await this.itemImageRepo.update(id, itemImage.toJSON());
+        const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
+            return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
+        });
 
-        // find and remove old related ItemImageDatas
-        const oldImageDatas = updatedItemImage.related('ItemImageDatas').toJSON();
-        for (const imageData of oldImageDatas) {
-            await this.itemImageDataService.destroy(imageData.id);
-        }
+        if (itemImageDataOriginal) {
 
-        // then create new imageDatas from the given original data
-        if (!_.isEmpty(itemImageDataOriginal)) {
-            const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
-            const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.Id, itemImageDataOriginal, toVersions);
-
-            // create new image datas
-            for (const imageData of imageDatas) {
-                await this.itemImageDataService.create(imageData);
+            if (_.isEmpty(itemImageDataOriginal.protocol) || protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
+                this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
+                throw new MessageException('Invalid image protocol.');
             }
-        }
 
-        // finally find and return the updated itemImage
-        const newItemImage = await this.findOne(id);
-        return newItemImage;
+            // set new values
+            itemImage.Hash = body.hash;
+
+            // update itemImage record
+            const updatedItemImage = await this.itemImageRepo.update(id, itemImage.toJSON());
+
+            // this.log.debug('updatedItemImage', JSON.stringify(updatedItemImage, null, 2));
+            // find and remove old related ItemImageDatas
+            const oldImageDatas = updatedItemImage.related('ItemImageDatas').toJSON();
+            for (const imageData of oldImageDatas) {
+                await this.itemImageDataService.destroy(imageData.id);
+            }
+
+            // then create new imageDatas from the given original data
+            if (!_.isEmpty(itemImageDataOriginal)) {
+                const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
+                const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.Id, itemImageDataOriginal, toVersions);
+
+                // create new image datas
+                for (const imageData of imageDatas) {
+                    const createdImageData = await this.itemImageDataService.create(imageData);
+                    this.log.debug('createdImageData: ', createdImageData.id);
+                }
+            }
+
+            // finally find and return the updated itemImage
+            const newItemImage = await this.findOne(id);
+            return newItemImage;
+        } else {
+            throw new MessageException('Original image data not found.');
+        }
     }
 
     public async destroy(id: number): Promise<void> {

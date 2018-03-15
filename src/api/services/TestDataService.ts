@@ -223,7 +223,7 @@ export class TestDataService {
         ];
 
         for (const table of tablesToClean) {
-            this.log.debug('cleaning table: ', table);
+            // this.log.debug('cleaning table: ', table);
             await Database.knex.select().from(table).del();
         }
         return;

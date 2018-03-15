@@ -51,7 +51,7 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
 
         // create ListingItem
         const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, rootCategory);
-        this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
+        // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
         const listingItem = await this.listingItemService.create(listingItemCreateRequest);
 
