@@ -1,13 +1,12 @@
 import { inject, named } from 'inversify';
 import * as _ from 'lodash';
-import { message, validate } from '../../core/api/Validate';
+// import { message, validate } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
+
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { ListingItemService } from '../services/ListingItemService';
-import { ListingItem } from '../models/ListingItem';
-import { ItemCategory } from '../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ItemCategoryFactory } from '../factories/ItemCategoryFactory';
@@ -25,7 +24,6 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) public listingItemFactory: ListingItemFactory,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) public itemCategoryFactory: ItemCategoryFactory,
-        @inject(Types.Factory) @named(Targets.Factory.MessagingInformationFactory) public messagingInformationFactory: MessagingInformationFactory,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
@@ -35,9 +33,11 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async process( @message(ListingItemMessage) listingItemMessage: ListingItemMessageInterface, marketAddress: string): Promise<ListingItem> {
-
+    // @validate()
+    public async process( /*@message(ListingItemMessage)*/
+                          listingItemMessage: ListingItemMessageInterface,
+                          marketAddress: string): Promise<resources.ListingItem> {
+        /*
         // get market
         const marketModel = await this.marketService.findByAddress(marketAddress);
         const market = marketModel.toJSON();
@@ -62,9 +62,12 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
 
         // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
         return listingItem;
+        */
+        return {} as resources.ListingItem;
     }
 
     /**
+     * TODO: move to service
      * create categories from array and will return last category <ItemCategory> Model
      *
      * @param categoryArray : string[]
@@ -104,6 +107,7 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
     }
 
     /**
+     * TODO: move to service
      * return the ChildCategory having the given key or name
      *
      * @param {"resources".ItemCategory} rootCategory

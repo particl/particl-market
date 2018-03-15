@@ -11,6 +11,7 @@ import { MarketService } from '../services/MarketService';
 import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
 import { ListingItemMessageProcessor } from './ListingItemMessageProcessor';
 import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
+import {UpdateListingItemMessageProcessor} from './UpdateListingItemMessageProcessor';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -21,6 +22,8 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     // tslint:disable:max-line-length
     constructor(
+        // @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ListingItemMessageProcessor) private listingItemMessageProcessor: ListingItemMessageProcessor,
+        // @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.UpdateListingItemMessageProcessor) private updateListingItemMessageProcessor: UpdateListingItemMessageProcessor,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService,
