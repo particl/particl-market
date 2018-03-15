@@ -8,5 +8,6 @@
 
 export const Core = {
     Events: 'Events',
-    Logger: 'Logger'
+    Logger: 'Logger',
+    CliIo: 'CliIo'
 };

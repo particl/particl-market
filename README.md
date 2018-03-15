@@ -22,7 +22,7 @@ And finally install Docker
 
 
 ### Step 2: Set up the Project
-Fork this project.
+Fork this project. 
 
 Then copy the `.env.example` file and rename it to `.env`. In this file you can edit your database connection information among other stuff, but everything should really work out of the box.
 

@@ -1,4 +1,5 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -40,13 +41,17 @@ export class CurrencyPriceRootCommand extends BaseCommand implements RpcCommandI
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<CurrencyPrice>> {
-        const fromCurrency = data.params.shift();
+        const fromCurrency = data.params.shift().toUpperCase();
         // throw exception if fromCurrency is not a PART or toCurrencies has length 0
         if (fromCurrency !== 'PART' || data.params.length < 1 ) {
-           throw new MessageException('Invalid params');
+            throw new MessageException('Invalid params');
         } else {
-           // return the currency prices
-           return await this.currencyPriceService.getCurrencyPrices(fromCurrency, data.params);
+            // convert params to uppercase
+            const toCurrencies: string[] = [];
+            for (const param of data.params) {
+                toCurrencies.push(param.toUpperCase());
+            }
+            return await this.currencyPriceService.getCurrencyPrices(fromCurrency, toCurrencies);
         }
     }
 
@@ -58,5 +63,9 @@ export class CurrencyPriceRootCommand extends BaseCommand implements RpcCommandI
 
     public description(): string {
         return 'Command to convert currencies.';
+    }
+
+    public example(): any {
+        return 'currencyprice PART EUR USD';
     }
 }

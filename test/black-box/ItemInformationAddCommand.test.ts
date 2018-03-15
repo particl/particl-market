@@ -3,7 +3,7 @@ import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
-describe('/ItemInformationCreateCommand', () => {
+describe('/ItemInformationAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ITEMINFORMATION_ROOT.commandName;
     const subCommand = Commands.ITEMINFORMATION_ADD.commandName;

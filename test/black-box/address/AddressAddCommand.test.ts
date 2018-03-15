@@ -3,13 +3,15 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
 
-describe('AddressCreateCommand', () => {
+describe('AddressAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ADDRESS_ROOT.commandName;
-    const subCommand = Commands.ADDRESS_ADD.commandName;
+    const addressCommand = Commands.ADDRESS_ROOT.commandName;
+    const addCommand = Commands.ADDRESS_ADD.commandName;
     let defaultProfileId;
 
     const testData = {
+        firstName: 'Johnny',
+        lastName: 'Depp',
         title: 'Work',
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
@@ -27,16 +29,21 @@ describe('AddressCreateCommand', () => {
         defaultProfileId = defaultProfile.id;
     });
 
-    test('Should create a new address by RPC', async () => {
+    test('Should create a new address for profile', async () => {
 
-        const res = await rpc(method, [subCommand,
+        const res = await rpc(addressCommand, [addCommand,
             defaultProfileId,
+            testData.firstName,
+            testData.lastName,
             testData.title,
             testData.addressLine1, testData.addressLine2,
             testData.city, testData.state, testData.country, testData.zipCode]);
         res.expectJson();
         res.expectStatusCode(200);
+
         const result: any = res.getBody()['result'];
+        expect(result.firstName).toBe(testData.firstName);
+        expect(result.lastName).toBe(testData.lastName);
         expect(result.title).toBe(testData.title);
         expect(result.addressLine1).toBe(testData.addressLine1);
         expect(result.addressLine2).toBe(testData.addressLine2);
@@ -47,15 +54,18 @@ describe('AddressCreateCommand', () => {
     });
 
     test('Should fail because we want to create an empty address without required fields', async () => {
-        const res = await rpc(method, [subCommand, testData.title, testData.addressLine1, testData.addressLine2, testData.city,
+        const res = await rpc(addressCommand, [addCommand, testData.firstName,
+            testData.lastName, testData.title, testData.addressLine1, testData.addressLine2, testData.city,
             testData.state, testData.country, 'test']);
         res.expectJson();
         res.expectStatusCode(404);
     });
 
     test('Should fail to create address because state is null', async () => {
-        const res = await rpc(method, [subCommand,
+        const res = await rpc(addressCommand, [addCommand,
             defaultProfileId,
+            testData.firstName,
+            testData.lastName,
             testData.title,
             testData.addressLine1, testData.addressLine2,
             testData.city, null, testData.country, testData.zipCode]);
@@ -64,8 +74,10 @@ describe('AddressCreateCommand', () => {
     });
 
     test('Should fail to create address because state is undefined', async () => {
-        const res = await rpc(method, [subCommand,
+        const res = await rpc(addressCommand, [addCommand,
             defaultProfileId,
+            testData.firstName,
+            testData.lastName,
             testData.title,
             testData.addressLine1, testData.addressLine2,
             testData.city, undefined, testData.country, testData.zipCode]);
@@ -75,14 +87,18 @@ describe('AddressCreateCommand', () => {
 
     test('Should create a new address with blank state by RPC', async () => {
 
-        const res = await rpc(method, [subCommand,
+        const res = await rpc(addressCommand, [addCommand,
             defaultProfileId,
+            testData.firstName,
+            testData.lastName,
             testData.title,
             testData.addressLine1, testData.addressLine2,
             testData.city, '', testData.country, testData.zipCode]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
+        expect(result.firstName).toBe(testData.firstName);
+        expect(result.lastName).toBe(testData.lastName);
         expect(result.title).toBe(testData.title);
         expect(result.addressLine1).toBe(testData.addressLine1);
         expect(result.addressLine2).toBe(testData.addressLine2);

@@ -8,22 +8,42 @@
 import * as packageInfo from '../../../package.json';
 
 
+export enum EnvironmentType {
+    ALL = 'ALL',
+    PRODUCTION = 'PRODUCTION',
+    TEST = 'TEST',
+    DEVELOPMENT = 'DEVELOPMENT',
+    DEFAULT = DEVELOPMENT
+}
+
 export class Environment {
 
     public static getNodeEnv(): string {
-        return process.env.NODE_ENV || 'development';
+        return process.env.NODE_ENV || EnvironmentType.DEFAULT.toString();
     }
 
     public static isTest(): boolean {
-        return this.getNodeEnv() === 'test';
+        const nodeEnv = this.getNodeEnv();
+        if ( nodeEnv ) {
+            return nodeEnv.toUpperCase() === EnvironmentType.TEST.toString();
+        }
+        return false;
     }
 
     public static isDevelopment(): boolean {
-        return this.getNodeEnv() === 'development';
+        const nodeEnv = this.getNodeEnv();
+        if ( nodeEnv ) {
+            return nodeEnv.toUpperCase() === EnvironmentType.DEVELOPMENT.toString();
+        }
+        return false;
     }
 
     public static isProduction(): boolean {
-        return this.getNodeEnv() === 'production';
+        const nodeEnv = this.getNodeEnv();
+        if ( nodeEnv ) {
+            return nodeEnv.toUpperCase() === EnvironmentType.PRODUCTION.toString();
+        }
+        return false;
     }
 
     public static getPkg(): any {

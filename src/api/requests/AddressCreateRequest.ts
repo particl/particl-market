@@ -9,9 +9,11 @@ export class AddressCreateRequest extends RequestBody {
 
     public title: string;
 
+    public firstName: string;
+    public lastName: string;
+
     @IsNotEmpty()
     public addressLine1: string;
-
     public addressLine2: string;
 
     @IsNotEmpty()

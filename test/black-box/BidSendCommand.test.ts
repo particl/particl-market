@@ -8,8 +8,8 @@ describe('BidSendCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
 
-    const method =  Commands.BID_ROOT.commandName;
-    const subMethod =  Commands.BID_SEND.commandName;
+    const bidCommand =  Commands.BID_ROOT.commandName;
+    const sendCommand =  Commands.BID_SEND.commandName;
 
     const testData = [
         'colour',
@@ -31,13 +31,13 @@ describe('BidSendCommand', () => {
         addressRes.expectStatusCode(200);
     });
 
-    test('Should send a bid by RPC', async () => {
+    test('Should send Bid for a ListingItem', async () => {
         // create listing item
         // TODO: Add address to bid...
         const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
         testData.unshift(listingItem[0].hash);
-        testData.unshift(subMethod);
-        const res: any = await rpc(method, testData);
+        testData.unshift(sendCommand);
+        const res: any = await rpc(bidCommand, testData);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

@@ -25,23 +25,26 @@ export class ShoppingCartItemListCommand extends BaseCommand implements RpcComma
 
     /**
      * data.params[]:
-     *  [0]: cartId
+     *  [0]: cartId, number
+     *  [1]: withRelated, boolean
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<ShoppingCartItems>>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ShoppingCartItems>> {
-        return this.shoppingCartItemsService.findListItemsByCartId(data.params[0]);
+        return this.shoppingCartItemsService.findListItemsByCartId(data.params[0], data.params[1]);
     }
 
     public usage(): string {
-        return this.getName() + ' <cartId> ';
+        return this.getName() + ' <cartId> [withRelated]';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <cartId>                 - The Id of the shopping cart whose listingItem we want. ';
+            + '    <cartId>                 - The Id of the shopping cart whose listingItem we want. \n '
+
+            + '    <withRelated>            - [optional] Boolean - Whether we want to include all sub objects. ';
     }
 
     public description(): string {
@@ -49,6 +52,6 @@ export class ShoppingCartItemListCommand extends BaseCommand implements RpcComma
     }
 
     public example(): string {
-        return 'cartitem ' + this.getName() + ' 1 ';
+        return 'cartitem ' + this.getName() + ' 1 ' + true;
     }
 }

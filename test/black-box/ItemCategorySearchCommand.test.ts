@@ -40,13 +40,13 @@ describe('ItemCategorySearchCommand', () => {
         expect(result.length).not.toBe(0);
     });
 
-    test('Should not get categories, if found by blank string', async () => {
+    test('Should fail to search item category because without searchString', async () => {
         //  find categories
         const res = await rpc(method, [subCommand]);
         res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.length).toBe(0);
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('SearchString can not be null');
     });
 
     test('Should not get any categories, if found by non-existing category name string', async () => {

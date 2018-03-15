@@ -1,7 +1,7 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { app } from '../../app';
+// import { app } from '../../app';
 
 export class RpcMiddleware implements interfaces.Middleware {
 

@@ -13,6 +13,8 @@ describe('ProfileUpdateCommand', () => {
         name: 'DEFAULT-PROFILE-TEST',
         address: 'DEFAULT-PROFILE-ADDRESS',
         shippingAddresses: [{
+            firstName: 'Johnny',
+            lastName: 'Depp',
             title: 'Title',
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
@@ -21,6 +23,8 @@ describe('ProfileUpdateCommand', () => {
             country: 'Sweden',
             zipCode: '85001'
         }, {
+            firstName: 'Robert',
+            lastName: 'Downey',
             title: 'Tite',
             addressLine1: 'Ad',
             addressLine2: 'ADD 222',

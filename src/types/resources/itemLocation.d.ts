@@ -6,6 +6,7 @@ declare module 'resources' {
         address: string;
         createdAt: Date;
         updatedAt: Date;
+        LocationMarker: LocationMarker;
     }
 
 }

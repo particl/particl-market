@@ -33,7 +33,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
      *  [5]: searchString, string, can be null
      *
      * @param data
-     * @returns {Promise<Profile>}
+     * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItemTemplate>> {

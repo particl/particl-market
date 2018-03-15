@@ -9,8 +9,8 @@ import { addressTestData } from './BidCommandCommon';
 describe('BidAcceptCommand', () => {
     const testUtil = new BlackBoxTestUtil();
 
-    const method =  Commands.BID_ROOT.commandName;
-    const subMethod = Commands.BID_ACCEPT.commandName;
+    const bidCommand =  Commands.BID_ROOT.commandName;
+    const acceptCommand = Commands.BID_ACCEPT.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -25,7 +25,7 @@ describe('BidAcceptCommand', () => {
         addressRes.expectStatusCode(200);
     });
 
-    test('Should accept a bid by RPC', async () => {
+    test('Should Accept a Bid for a ListingItem', async () => {
 
         // Ryno Hacks - This requires regtest
         const outputs = [{
@@ -51,13 +51,13 @@ describe('BidAcceptCommand', () => {
             listing_item_id: listingItem[0].id
         } as BidCreateRequest);
 
-        const res: any = await rpc(method, [subMethod, listingItem[0].hash]);
+        const res: any = await rpc(bidCommand, [acceptCommand, listingItem[0].hash]);
+
         res.expectJson();
 
         // TODO: Need to implements after broadcast functionality get done
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-
     });
 
 });

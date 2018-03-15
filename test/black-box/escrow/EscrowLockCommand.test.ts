@@ -16,6 +16,8 @@ describe('EscrowLockCommand', () => {
 
     const addressTestData = {
         title: 'Work',
+        firstName : 'James',
+        lastName : 'Hawk',
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
         city: 'Melbourne',
@@ -52,9 +54,12 @@ describe('EscrowLockCommand', () => {
         // create address
         const addressRes = await rpc(Commands.ADDRESS_ROOT.commandName, [Commands.ADDRESS_ADD.commandName,
             defaultProfile.id,
+            addressTestData.firstName,
+            addressTestData.lastName,
             addressTestData.title,
             addressTestData.addressLine1, addressTestData.addressLine2,
             addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
+
         addressRes.expectJson();
         addressRes.expectStatusCode(200);
         createdAddress = addressRes.getBody()['result'];
@@ -63,7 +68,6 @@ describe('EscrowLockCommand', () => {
 
     test('Should lock Escrow', async () => {
 
-/*
         const escrowLockTestData = {
             itemhash: createdListingItem.hash,
             nonce: 'TEST NONCE',
@@ -76,7 +80,6 @@ describe('EscrowLockCommand', () => {
         escrowLockRes.expectJson();
 
         escrowLockRes.expectStatusCode(404);
-*/
-    });
 
+    });
 });

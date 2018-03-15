@@ -5,6 +5,7 @@ declare module 'resources' {
         type: string;
         createdAt: Date;
         updatedAt: Date;
+        Ratio: EscrowRatio;
     }
 
 }

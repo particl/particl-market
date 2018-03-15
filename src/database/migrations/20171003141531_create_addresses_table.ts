@@ -6,6 +6,8 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('addresses', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
+            table.string('first_name').nullable();
+            table.string('last_name').nullable();
             table.string('title').nullable();
             table.string('address_line_1').notNullable();
             table.string('address_line_2').nullable();

@@ -14,7 +14,7 @@ import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 
-export class AddressCreateCommand extends BaseCommand implements RpcCommandInterface<Address> {
+export class AddressAddCommand extends BaseCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
 
     constructor(
@@ -28,13 +28,15 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
     /**
      * data.params[]:
      *  [0]: profileId
-     *  [1]: title
-     *  [2]: addressLine1
-     *  [3]: addressLine2
-     *  [4]: city
-     *  [5]: state
-     *  [6]: country/countryCode
-     *  [7]: zipCode
+     *  [1]: firstName
+     *  [2]: lastName
+     *  [3]: title
+     *  [4]: addressLine1
+     *  [5]: addressLine2
+     *  [6]: city
+     *  [7]: state
+     *  [8]: country/countryCode
+     *  [9]: zipCode
      *
      * @param data
      * @param rpcCommandFactory
@@ -46,35 +48,47 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
 
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
-        let countryCode: string = data.params[6];
+        let countryCode: string = data.params[8];
         countryCode = ShippingCountries.validate(this.log, countryCode);
+        this.log.debug('countryCode:', countryCode);
 
         // Validate ZIP code
-        const zipCodeStr = data.params[7];
+        const zipCodeStr = data.params[9];
         if (!ShippingZips.validate(countryCode, zipCodeStr)) {
             throw new NotFoundException('ZIP/postal-code, country code, combination not valid.');
         }
+        this.log.debug('zipCodeStr:', zipCodeStr);
 
-        return await this.addressService.create({
-            profile_id : data.params[0],
-            title : data.params[1],
-            addressLine1 : data.params[2],
-            addressLine2 : data.params[3],
-            city : data.params[4],
-            state : data.params[5],
-            country : countryCode,
-            zipCode : zipCodeStr
-        } as AddressCreateRequest);
+        const newAddress = {
+            profile_id: data.params[0],
+            firstName: data.params[1],
+            lastName: data.params[2],
+            title: data.params[3],
+            addressLine1: data.params[4],
+            addressLine2: data.params[5],
+            city: data.params[6],
+            state: data.params[7],
+            country: countryCode,
+            zipCode: zipCodeStr
+        } as AddressCreateRequest;
+
+        this.log.debug('newAddress:', newAddress);
+
+        return await this.addressService.create(newAddress);
     }
 
+    // tslint:disable:max-line-length
     public usage(): string {
-        return this.getName() + ' <profileId> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] ';
+        return this.getName() + ' <profileId> <firstName> <lastName> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] ';
     }
+    // tslint:enable:max-line-length
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <profileId>              - Numeric - The ID of the profile we want to associate \n'
             + '                                this address with. \n'
+            + '    <firstName>              - String - First Name of user. \n'
+            + '    <lastName>               - String - Last Name of user. \n'
             + '    <title>                  - String - A short identifier for the address. \n'
             + '    <addressLine1>           - String - The first line of the address. \n'
             + '    <addressLine2>           - String - The second line of the address. \n'
@@ -90,6 +104,6 @@ export class AddressCreateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public example(): string {
-        return 'address ' + this.getName() + ' 1 myLocation \'123 Fake St\' \'\' Springfield NT \'United States\' 90701';
+        return 'address ' + this.getName() + ' 1 \'Johnny\' \'Deep\' myLocation \'123 Fake St\' \'\' Springfield NT \'United States\' 90701';
     }
 }

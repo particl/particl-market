@@ -1,8 +1,8 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('ListingItemTemplatePostCommand', () => {
@@ -32,7 +32,7 @@ describe('ListingItemTemplatePostCommand', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            true    // generateListingItemObjects
         ]).toParamsArray();
 
         listingItemTemplace = await testUtil.generateData(
@@ -68,8 +68,8 @@ describe('ListingItemTemplatePostCommand', () => {
 
     });
 
+    /*
     test('Should post a item in to the market place without market id', async () => {
-        /*
         const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -78,23 +78,21 @@ describe('ListingItemTemplatePostCommand', () => {
         expect(result).toHaveProperty('PaymentInformation');
         expect(result).toHaveProperty('MessagingInformation');
         expect(result.id).toBe(listingItemTemplace[0].id);
-        */
+
     });
 
     test('Should fail to post a item in to the market place because of invalid listingItemTemplate id', async () => {
-        /*
         // post item with invalid listingItemTemplate id
         const res: any = await rpc(templateCommand, [templatePostCommand, 55]);
         res.expectJson();
         res.expectStatusCode(404);
-        */
     });
 
     test('Should have received posted listingitem', async () => {
         // asdf
         const test = 1;
     });
-
+    */
 
 
 });

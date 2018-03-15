@@ -11,7 +11,6 @@ import * as resources from 'resources';
 export class ItemCategoryFactory {
 
     public log: LoggerType;
-    private categoryArray: any;
     private isFound: boolean;
 
     constructor(
@@ -21,22 +20,15 @@ export class ItemCategoryFactory {
     }
 
     /**
+     * Converts a category to an array of category keys
+     * ['rootcatkey', 'subcatkey', ..., 'catkey']
      *
      * @param category : resources.ItemCategory
-     * @param rootCategoryWithRelated : ItemCategory
+     * @param rootCategoryWithRelated : resources.ItemCategory
      * @returns {Promise<string[]>}
      */
-    public async getArray(category: resources.ItemCategory, rootCategoryWithRelated: ItemCategory): Promise<string[]> {
-        const rootCategory: any = rootCategoryWithRelated;
-        this.categoryArray = [];
-        this.isFound = false;
-        if (rootCategory.id === category.parentItemCategoryId) { // rootcategory
-            this.categoryArray = [rootCategory.key];
-        } else {
-            await this.getInnerCategory(rootCategory, category.parentItemCategoryId);
-        }
-        this.categoryArray.push(category.key);
-        return this.categoryArray;
+    public async getArray(category: resources.ItemCategory): Promise<string[]> {
+        return await this.getArrayInner(category);
     }
 
     /**
@@ -53,29 +45,20 @@ export class ItemCategoryFactory {
     }
 
     /**
-     * check the category in whole tree and return array of key from root to matching category
      *
-     * @param theObject : ItemCategory
-     * @param findValue : number(parent_item_category_id)
+     * @param {"resources".ItemCategory} category
+     * @param {string[]} categoryArray
      * @returns {Promise<string[]>}
      */
-    private async getInnerCategory(theObject: ItemCategory, findValue: number): Promise<string[]> {
-        const childCategories: any = theObject.ChildItemCategories;
-        if (childCategories.length > 0) {
-            for (const childCategory of childCategories) {
-                if (!this.isFound) {
-                    this.categoryArray.push(theObject['key']);
-                }
-                if (childCategory.parentItemCategoryId === findValue) {
-                    this.isFound = true;
-                    break;
-                } else if (!this.isFound) {
-                    await this.getInnerCategory(childCategory, findValue);
-                }
-            }
-        } else {
-            this.categoryArray = [];
+    private async getArrayInner(category: resources.ItemCategory, categoryArray: string[] = []): Promise<string[]> {
+
+        // add category key to beginning of the array
+        categoryArray.unshift(category.key);
+
+        // if category has ParentItemCategory, add it's key to array
+        if (!_.isEmpty(category.ParentItemCategory)) {
+            return await this.getArrayInner(category.ParentItemCategory, categoryArray);
         }
-        return this.categoryArray as any;
+        return categoryArray;
     }
 }

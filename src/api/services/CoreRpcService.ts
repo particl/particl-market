@@ -34,7 +34,7 @@ export class CoreRpcService {
         return await this.call('getnewaddress');
     }
 
-    public async smsgImportPrivKey( privateKey: string, label: string = '' ): Promise<boolean> {
+    public async smsgImportPrivKey( privateKey: string, label: string = 'default market' ): Promise<boolean> {
         return await this.call('smsgimportprivkey', [privateKey, label]);
     }
 
@@ -50,8 +50,8 @@ export class CoreRpcService {
      */
     public async sendSmsgMessage(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<any> {
         this.log.debug('SEND SMSG, from: ' + profileAddress + ', to: ' + marketAddress);
-        // return await this.call('smsgsend', [profileAddress, marketAddress, JSON.stringify(message)]);
-        return '';
+        this.log.debug('SEND SMSG, message: ' + JSON.stringify(message, null, 2));
+        return await this.call('smsgsend', [profileAddress, marketAddress, JSON.stringify(message)]);
     }
 
     public async call(method: string, params: any[] = []): Promise<any> {
@@ -63,24 +63,21 @@ export class CoreRpcService {
             id
         });
 
-        this.log.debug('call: ' + method + ' ' + params );
-
         const url = this.getUrl();
         const options = this.getOptions();
 
-        // this.log.debug('CALL: ' + method + ' ' + params);
-        // this.log.debug('call url:', url);
-        // this.log.debug('call postData:', postData);
+        this.log.debug('call: ' + method + ' ' + params);
+        this.log.debug('call url:', url);
+        this.log.debug('call postData:', postData);
 
         return await WebRequest.post(url, options, postData)
             .then( response => {
 
-                // this.log.debug('response.headers: ', response.headers);
-                // this.log.debug('response.statusCode: ', response.statusCode);
-                // this.log.debug('response.statusMessage: ', response.statusMessage);
-                // this.log.debug('response.content: ', response.content);
-
                 if (response.statusCode !== 200) {
+                    this.log.debug('response.headers: ', response.headers);
+                    this.log.debug('response.statusCode: ', response.statusCode);
+                    this.log.debug('response.statusMessage: ', response.statusMessage);
+                    this.log.debug('response.content: ', response.content);
                     throw new HttpException(response.statusCode, response.statusMessage);
                 }
 

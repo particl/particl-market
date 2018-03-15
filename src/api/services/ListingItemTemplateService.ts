@@ -217,31 +217,24 @@ export class ListingItemTemplateService {
     }
 
     public async destroy(id: number): Promise<void> {
-
         const listingItemTemplate = await this.findOne(id);
-        const relatedCryptocurrencyAddress = listingItemTemplate
-            .related('PaymentInformation')
-            .toJSON();
-
-        await this.listingItemTemplateRepo.destroy(id);
-        // if we have cryptoaddress and it's not related to profile -> delete
-        if (!_.isEmpty(relatedCryptocurrencyAddress) && relatedCryptocurrencyAddress.profileId === null) {
-            await this.cryptocurrencyAddressService.destroy(relatedCryptocurrencyAddress.id);
+        if (!listingItemTemplate) {
+            throw new NotFoundException('Item listing does not exist. id = ' + id);
         }
-
+        await this.listingItemTemplateRepo.destroy(id);
     }
 
     // check if object is exist in a array
     private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
         return await _.find(objectArray, (object) => {
-            return ( object[fieldName] === value );
+            return (object[fieldName] === value);
         });
     }
 
     // find highest order number from listingItemObjects
     private async findHighestOrderNumber(listingItemObjects: string[]): Promise<any> {
         const highestOrder = await _.maxBy(listingItemObjects, (itemObject) => {
-          return itemObject['order'];
+            return itemObject['order'];
         });
         return highestOrder ? highestOrder['order'] : 0;
     }
