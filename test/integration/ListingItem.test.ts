@@ -27,7 +27,7 @@ import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCrea
 import { ListingItemUpdateRequest } from '../../src/api/requests/ListingItemUpdateRequest';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ItemInformationCreateRequest } from '../../src/api/requests/ItemInformationCreateRequest';
-import { PaymentInformationCreateRequest } from "../../src/api/requests/PaymentInformationCreateRequest";
+import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
 import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
 
