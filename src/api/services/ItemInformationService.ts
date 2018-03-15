@@ -122,6 +122,7 @@ export class ItemInformationService {
     public async update(id: number, @request(ItemInformationUpdateRequest) data: ItemInformationUpdateRequest): Promise<ItemInformation> {
 
         const body = JSON.parse(JSON.stringify(data));
+        // this.log.debug('updating ItemInformation, body: ', JSON.stringify(body, null, 2));
 
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
@@ -170,12 +171,14 @@ export class ItemInformationService {
 
         // find related record and delete it
         let itemImages = updatedItemInformation.related('ItemImages').toJSON() || [];
+        this.log.debug('original itemimages:', JSON.stringify(itemImages, null, 2));
         for (const itemImage of itemImages) {
             await this.itemImageService.destroy(itemImage.id);
         }
 
         // recreate related data
         itemImages = body.itemImages || [];
+        this.log.debug('new itemimages:', JSON.stringify(itemImages, null, 2));
         for (const itemImage of itemImages) {
             itemImage.item_information_id = id;
             await this.itemImageService.create(itemImage);

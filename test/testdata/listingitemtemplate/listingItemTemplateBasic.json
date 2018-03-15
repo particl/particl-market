@@ -7,7 +7,7 @@
     "ListingItemObjects": [],
     "PaymentInformation": {
         "id": 4,
-        "type": "FREE",
+        "type": "SALE",
         "listingItemId": null,
         "listingItemTemplateId": 4,
         "updatedAt": 1520294533385,
@@ -22,7 +22,7 @@
             "createdAt": 1520294533415,
             "CryptocurrencyAddress": {
                 "id": 4,
-                "type": "STEALTH",
+                "type": "NORMAL",
                 "address": "1OKRI3PXP0LTFABHIQA70DF5A5JL9M2F",
                 "profileId": null,
                 "updatedAt": 1520294533408,
@@ -45,8 +45,8 @@
             "createdAt": 1520294533393,
             "Ratio": {
                 "id": 4,
-                "buyer": 40,
-                "seller": 48,
+                "buyer": 100,
+                "seller": 100,
                 "escrowId": 4,
                 "updatedAt": 1520294533400,
                 "createdAt": 1520294533400

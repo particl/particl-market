@@ -3,19 +3,23 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Types, Core, Targets } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
 import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
+
+import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { TestDataService } from '../../../src/api/services/TestDataService';
+import { MarketService } from '../../../src/api/services/MarketService';
+
+import { ListingItemFactory } from '../../../src/api/factories/ListingItemFactory';
 
 import { ListingItemMessageProcessor } from '../../../src/api/messageprocessors/ListingItemMessageProcessor';
+
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
-import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
-import { MarketService } from '../../../src/api/services/MarketService';
-import { ListingItemFactory } from '../../../src/api/factories/ListingItemFactory';
+import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
+
 import * as listingItemTemplateBasic from '../../testdata/listingitemtemplate/listingItemTemplateBasic.json';
 import * as listingItemCategoryWithRelated from '../../testdata/category/listingItemCategoryWithRelated.json';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
-import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
 
 
 describe('ListingItemMessageProcessor', () => {

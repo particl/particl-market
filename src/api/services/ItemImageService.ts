@@ -1,4 +1,5 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -14,7 +15,6 @@ import { ImageTriplet } from '../../core/helpers/ImageTriplet';
 import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { ImageFactory } from '../factories/ImageFactory';
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
-import * as _ from 'lodash';
 import {MessageException} from '../exceptions/MessageException';
 import {CryptocurrencyAddressUpdateRequest} from '../requests/CryptocurrencyAddressUpdateRequest';
 import {CryptocurrencyAddressCreateRequest} from '../requests/CryptocurrencyAddressCreateRequest';
@@ -51,31 +51,29 @@ export class ItemImageService {
 
         const body = JSON.parse(JSON.stringify(data));
 
+        // this.log.debug('create image, body: ', JSON.stringify(body, null, 2));
+
         // extract and remove related models from request
         const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
         delete body.data;
 
         // if the request body was valid we will create the itemImage
         const itemImage = await this.itemImageRepo.create(body);
-        // const protocols = Object.keys(ImageDataProtocolType)
-        //    .map(key => ({key, value: ImageDataProtocolType[key]}));
+
         const protocols = Object.keys(ImageDataProtocolType)
             .map(key => (ImageDataProtocolType[key]));
+        // this.log.debug('protocols: ', protocols);
 
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
 
         if (itemImageDataOriginal) {
-            const usedImageProtocol = _.find(protocols, (protocol) => {
-                return protocol.value === itemImageDataOriginal.protocol;
-            });
 
-            if (_.isEmpty(itemImageDataOriginal.protocol) || !usedImageProtocol) {
+            if (_.isEmpty(itemImageDataOriginal.protocol) || protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
                 throw new MessageException('Invalid image protocol.');
             }
-
 
             // TODO: THIS
             /* if ( !_.isEmpty(itemImageDatas.encoding) && !?????[itemImageDatas.encoding] ) {
@@ -95,6 +93,7 @@ export class ItemImageService {
 
                 // finally find and return the created itemImage
                 const newItemImage = await this.findOne(itemImage.Id);
+                // this.log.debug('saved image:', JSON.stringify(newItemImage.toJSON(), null, 2));
                 return newItemImage;
             } else {
                 return itemImage;

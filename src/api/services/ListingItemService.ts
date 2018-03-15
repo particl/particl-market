@@ -118,6 +118,7 @@ export class ListingItemService {
     public async create( @request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
 
         const body = JSON.parse(JSON.stringify(data));
+        // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
@@ -167,6 +168,7 @@ export class ListingItemService {
     public async update(id: number, @request(ListingItemUpdateRequest) data: ListingItemUpdateRequest): Promise<ListingItem> {
 
         const body = JSON.parse(JSON.stringify(data));
+        // this.log.debug('updating ListingItem, body: ', JSON.stringify(body, null, 2));
 
         // find the existing one without related
         const listingItem = await this.findOne(id, false);
@@ -174,12 +176,13 @@ export class ListingItemService {
         // set new values
         listingItem.Hash = body.hash;
 
-        // update listingItem record
+        // and update the ListingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
 
-        // Item-information
+        // update related ItemInformation
+        // if the related one exists allready, then update. if it doesnt exist, create.
+        // and if the related one is missing, then remove.
         let itemInformation = updatedListingItem.related('ItemInformation').toJSON() as ItemInformationUpdateRequest;
-        // if the related one exists allready, then update. if it doesnt exist, create. and if the related one is missing, then remove.
         if (!_.isEmpty(body.itemInformation)) {
             if (!_.isEmpty(itemInformation)) {
                 const itemInformationId = itemInformation.id;
@@ -195,7 +198,9 @@ export class ListingItemService {
             await this.itemInformationService.destroy(itemInformation.id);
         }
 
-        // payment-information
+        // update related PaymentInformation
+        // if the related one exists allready, then update. if it doesnt exist, create.
+        // and if the related one is missing, then remove.
         let paymentInformation = updatedListingItem.related('PaymentInformation').toJSON() as PaymentInformationUpdateRequest;
 
         if (!_.isEmpty(body.paymentInformation)) {
@@ -213,22 +218,21 @@ export class ListingItemService {
             await this.paymentInformationService.destroy(paymentInformation.id);
         }
 
-        // find related record and delete it and recreate related data
-        const existintMessagingInformation = updatedListingItem.related('MessagingInformation').toJSON() || [];
-
+        // MessagingInformation
+        const existingMessagingInformations = updatedListingItem.related('MessagingInformation').toJSON() || [];
         const newMessagingInformation = body.messagingInformation || [];
 
         // delete MessagingInformation if not exist with new params
-        for (const msgInfo of existintMessagingInformation) {
+        for (const msgInfo of existingMessagingInformations) {
             if (!await this.checkExistingObject(newMessagingInformation, 'publicKey', msgInfo.publicKey)) {
                 await this.messagingInformationService.destroy(msgInfo.id);
             }
         }
 
-        // update or create messaging itemInformation
+        // update or create MessagingInformation
         for (const msgInfo of newMessagingInformation) {
             msgInfo.listing_item_id = id;
-            const message = await this.checkExistingObject(existintMessagingInformation, 'publicKey', msgInfo.publicKey);
+            const message = await this.checkExistingObject(existingMessagingInformations, 'publicKey', msgInfo.publicKey);
             if (message) {
                 message.protocol = msgInfo.protocol;
                 message.publicKey = msgInfo.publicKey;
@@ -277,20 +281,21 @@ export class ListingItemService {
      * @returns {Promise<void>}
      */
     public async destroy(id: number): Promise<void> {
-        const item = await this.findOne(id, true);
-        if (!item) {
+        const listingItemModel = await this.findOne(id, true);
+        if (!listingItemModel) {
             throw new NotFoundException('Item listing does not exist. id = ' + id);
         }
-        const paymentInfo = item.PaymentInformation();
-        if (paymentInfo) {
-            const itemPrice = paymentInfo.ItemPrice();
-            const cryptoAddress = itemPrice.CryptocurrencyAddress();
-            if (!cryptoAddress) {
-                throw new NotFoundException('Payment information without cryptographic address. PaymentInfo.id = ' + paymentInfo.id);
-            }
-            this.cryptocurrencyAddressService.destroy(cryptoAddress.Id);
-        }
+        const listingItem = listingItemModel.toJSON();
+        this.log.debug('delete listingItem:', listingItem.id);
+
         await this.listingItemRepo.destroy(id);
+
+        // remove related CryptocurrencyAddress if it exists
+        if (listingItem.PaymentInformation && listingItem.PaymentInformation.ItemPrice
+            && listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress) {
+            this.log.debug('delete listingItem cryptocurrencyaddress:', listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress.id);
+            await this.cryptocurrencyAddressService.destroy(listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress.id);
+        }
     }
 
     /**
@@ -328,7 +333,7 @@ export class ListingItemService {
             item: listingItemMessage
         } as MarketplaceMessageInterface;
 
-        return this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage);
+        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage);
     }
 
     /**
