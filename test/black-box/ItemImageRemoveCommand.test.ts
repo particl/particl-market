@@ -101,7 +101,7 @@ describe('ItemImageRemoveCommand', () => {
         testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
 
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-        const result: any = addListingItemTempRes;
+        let result: any = addListingItemTempRes;
         const newCreatedTemplateId = result.id;
 
         // add item image
@@ -113,7 +113,7 @@ describe('ItemImageRemoveCommand', () => {
         itemImageRes.expectStatusCode(200);
         createdItemImageIdNew = itemImageRes.getBody()['result'].id;
 
-        result: any = await rpc(imageCommand, [removeCommand, createdItemImageIdNew]);
+        result = await rpc(imageCommand, [removeCommand, createdItemImageIdNew]);
         result.expectJson();
         result.expectStatusCode(404);
         expect(result.error.error.message).toBe('Can\'t delete itemImage because the item has allready been posted!');
