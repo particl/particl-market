@@ -269,8 +269,6 @@ describe('ListingItemFactory', () => {
         // test message conversion
         expectMessageFromListingItem(createdListingItemMessage, listingItemTemplateBasic);
 
-        delete createdListingItemMessage.information.images;
-
     });
 
     // TODO: add tests checking the conversions using different data
