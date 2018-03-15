@@ -57,8 +57,8 @@ export class CurrencyPriceRootCommand extends BaseCommand implements RpcCommandI
 
     public help(): string {
         return this.getName() + ' <from> <to> [to...]) \n'
-            + '    <from>                   - String - Currency name from which you want to convert. \n'
-            + '    <to>                     - String - Currency name in which you want to convert. ';
+            + '    <from>                   - Currency name from which you want to convert. \n'
+            + '    <to>                     - Currency name in which you want to convert. ';
     }
 
     public description(): string {

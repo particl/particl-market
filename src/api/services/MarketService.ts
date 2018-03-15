@@ -25,7 +25,7 @@ export class MarketService {
         const market = await this.marketRepo.getDefault(withRelated);
         if (market === null) {
             this.log.warn(`Default Market was not found!`);
-            throw new NotFoundException('DEFAULT');
+            throw new NotFoundException(process.env.DEFAULT_MARKETPLACE_NAME);
         }
         return market;
     }
