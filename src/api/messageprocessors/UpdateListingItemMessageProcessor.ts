@@ -33,9 +33,8 @@ export class UpdateListingItemMessageProcessor implements MessageProcessorInterf
         this.log = new Logger(__filename);
     }
 
-    @validate()
-    public async process( @message(ListingItemMessage) listingItemMessage: ListingItemMessage, marketAddress: string): Promise<resources.ListingItem> {
-
+    public async process(listingItemMessage: ListingItemMessage, marketAddress: string): Promise<resources.ListingItem> {
+/*
         // get market
         const marketModel = await this.marketService.findByAddress(marketAddress);
         const market = marketModel.toJSON();
@@ -59,8 +58,9 @@ export class UpdateListingItemMessageProcessor implements MessageProcessorInterf
         this.eventEmitter.emit('cli', {
             message: 'update listing item message received ' + JSON.stringify(listingItem)
         });
-
         return listingItem.toJSON();
+*/
+        return {} as resources.ListingItem;
     }
 
     /**

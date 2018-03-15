@@ -38,6 +38,9 @@ import { ListingItemObjectService } from './ListingItemObjectService';
 import { FlaggedItemService } from './FlaggedItemService';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
+import { ListingItemMessage } from '../messages/ListingItemMessage';
+import * as resources from 'resources';
+import { EventEmitter } from 'events';
 
 export class ListingItemService {
 
@@ -56,8 +59,11 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+    ) {
         this.log = new Logger(__filename);
+        this.configureEventListeners();
     }
 
     public async findAll(): Promise<Bookshelf.Collection<ListingItem>> {
@@ -100,10 +106,8 @@ export class ListingItemService {
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */
     @validate()
-    public async search(
-        @request(ListingItemSearchParams) options: ListingItemSearchParams,
-        withRelated: boolean = true
-        ): Promise<Bookshelf.Collection<ListingItem>> {
+    public async search(@request(ListingItemSearchParams) options: ListingItemSearchParams,
+                        withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
         // if valid params
         // todo: check whether category is string or number, if string, try to find the Category by key
         return this.listingItemRepo.search(options, withRelated);
@@ -374,6 +378,44 @@ export class ListingItemService {
         */
     }
 
+    public async process(message: MarketplaceMessageInterface): Promise<resources.ListingItem> {
+        this.log.info('Received event ListingItemReceivedListener:', message);
+
+        /*
+        if (message.market && message.item) {
+            // get market
+            const marketModel = await this.marketService.findByAddress(message.market);
+            const market = marketModel.toJSON();
+
+            const listingItemMessage = message.item;
+            // create the new custom categories in case there are some
+            const itemCategory: resources.ItemCategory = await this.getOrCreateCategories(listingItemMessage.information.category);
+
+            // find the categories/get the root category with related
+            const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
+            const rootCategory = rootCategoryWithRelatedModel.toJSON();
+
+            // create ListingItem
+            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, rootCategory);
+            // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
+
+            // const listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
+            // const listingItem = listingItemModel.toJSON();
+            // emit the latest message event to cli
+            // this.eventEmitter.emit('cli', {
+            //    message: 'new ListingItem received: ' + JSON.stringify(listingItem)
+            // });
+
+            // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
+            return {} as resources.ListingItem; // listingItem;
+
+        } else {
+            throw new MessageException('Marketplace message missing market.');
+        }
+        */
+        return {} as resources.ListingItem;
+    }
+
     // check if ListingItem already Flagged
     public async isItemFlagged(listingItem: ListingItem): Promise<boolean> {
         const flaggedItem = listingItem.related('FlaggedItem').toJSON();
@@ -395,5 +437,11 @@ export class ListingItemService {
         return highestOrder ? highestOrder['order'] : 0;
     }
 
+    private configureEventListeners(): void {
+        this.eventEmitter.on('ListingItemReceivedEvent', async (event) => {
+            await this.process(event);
+        });
+
+    }
 
 }

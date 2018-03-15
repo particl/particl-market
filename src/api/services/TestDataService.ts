@@ -367,12 +367,13 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const item = {
                 hash: Faker.random.uuid(),
-                data: {
+                data: [{
                     dataId: Faker.internet.url(),
                     protocol: ImageDataProtocolType.LOCAL,
+                    imageVersion: 'ORIGINAL',
                     encoding: 'BASE64',
                     data: ImageProcessing.milkcatSmall
-                }
+                }]
             };
             items.push(item);
         }

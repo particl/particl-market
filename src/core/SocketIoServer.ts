@@ -2,7 +2,6 @@ import * as SocketIO from 'socket.io';
 import * as http from 'http';
 import { Logger } from './Logger';
 import { Core, Types } from '../constants';
-import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
 import { EventEmitter } from './api/events';
 import { IoC } from './IoC';
 
@@ -28,11 +27,6 @@ export class SocketIoServer {
         this.log.debug('Configuring SocketIoServer');
 
         io.set('transports', ['polling', 'websocket']);
-        io.set('pingInterval', 3000);
-        io.set('pingTimeout', 10000);
-        io.set('allowUpgrades', false);
-        io.set('upgrade', false);
-        io.set('cookie', false);
 
         // allow any user to authenticate.
         io.set('authorization', (handshake, callback) => {

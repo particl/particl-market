@@ -1,17 +1,20 @@
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
-import { CoreRpcService } from '../services/CoreRpcService';
+
 import { EventEmitter } from '../../core/api/events';
-import { SmsgService } from '../services/SmsgService';
 import { SmsgMessage } from '../messages/SmsgMessage';
+
+import { SmsgService } from '../services/SmsgService';
 import { MarketService } from '../services/MarketService';
+import { ListingItemService } from '../services/ListingItemService';
+import { CoreRpcService } from '../services/CoreRpcService';
+
+import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
-import { ListingItemMessageProcessor } from './ListingItemMessageProcessor';
 import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
-import {UpdateListingItemMessageProcessor} from './UpdateListingItemMessageProcessor';
+import { ActionMessageInterface } from '../messages/ActionMessageInterface';
+import {ListingItemReceivedListener} from '../listeners/ListingItemReceivedListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -22,8 +25,6 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     // tslint:disable:max-line-length
     constructor(
-        // @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ListingItemMessageProcessor) private listingItemMessageProcessor: ListingItemMessageProcessor,
-        // @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.UpdateListingItemMessageProcessor) private updateListingItemMessageProcessor: UpdateListingItemMessageProcessor,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService,
@@ -39,36 +40,33 @@ export class MessageProcessor implements MessageProcessorInterface {
 
         for (const message of messages) {
 
-            if (await this.isMessageForKnownMarket(message)) {
-                const parsed = this.parseJSONSafe(message.text);
-                if (parsed) {
-                    //
+            const marketModel = await this.marketService.findByAddress(message.to);
+            const market = marketModel.toJSON();
+
+            const parsed = await this.parseJSONSafe(message.text);
+            if (parsed) {
+                parsed.market = market.address;
+
+                if (parsed.item) {
+                    // ListingItemMessage
+                    this.eventEmitter.emit('ListingItemReceivedEvent', parsed);
+                    // this.eventEmitter.emit(ListingItemReceivedListener.Event, parsed);
+                } else if (parsed.mpaction) {
+                    // ActionMessage
+                    // todo: different events for bids and escrows
+                    // this.eventEmitter.emit('actions', {
+                    //    action: parsed.mpaction,
+                    //    market: market.address
+                    // });
+
+                } else {
+                    // json object, but not something that we're expecting
+                    this.log.error('received something unexpected: ', JSON.stringify(parsed, null, 2));
                 }
             }
-            // emit the latest message event to cli
-            this.eventEmitter.emit('cli', {
-                message
-            });
 
 
         }
-
-        /*
-        {
-          "messages": [
-            {
-              "msgid": "5ab6a55a00000000b03ef908a68357e38462045f4403cf219267a1ab",
-              "version": "0300",
-              "received": "2018-03-12T01:08:18+0200",
-              "sent": "2018-03-12T01:06:02+0200",
-              "from": "pgS7muLvK1DXsFMD56UySmqTryvnpnKvh6",
-              "to": "pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA",
-              "text": "hello"
-            }
-          ],
-          "result": "1"
-        }
-         */
     }
 
     public stop(): void {
@@ -128,12 +126,6 @@ export class MessageProcessor implements MessageProcessorInterface {
             this.log.error('parseJSONSafe, invalid JSON:', json);
         }
         return parsed;
-    }
-
-    private async isMessageForKnownMarket(message: SmsgMessage): Promise<boolean> {
-        const response = await this.marketService.findByAddress(message.to);
-        this.log.debug('got response:', response);
-        return response ? true : false;
     }
 
     private async isPaidMessage(message: SmsgMessage): Promise<boolean> {

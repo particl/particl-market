@@ -264,10 +264,13 @@ describe('ListingItemFactory', () => {
 
         createdListingItemMessage = await listingItemFactory.getMessage(listingItemTemplateBasic, listingItemCategoryWithRelated);
 
-        // console.log('message: ', JSON.stringify(message, null, 2));
+        // console.log('message: ', JSON.stringify(createdListingItemMessage, null, 2));
 
         // test message conversion
         expectMessageFromListingItem(createdListingItemMessage, listingItemTemplateBasic);
+
+        delete createdListingItemMessage.information.images;
+
     });
 
     // TODO: add tests checking the conversions using different data

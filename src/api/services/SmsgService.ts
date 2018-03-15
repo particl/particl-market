@@ -62,9 +62,10 @@ export class SmsgService {
 
         this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
         this.log.debug('smsgSend, message: ' + JSON.stringify(message, null, 2));
-
+        const paramStr = JSON.stringify(message) as string;
+        this.log.debug('smsgSend, paramStr: ' + paramStr);
         const response = await this.coreRpcService.call('smsgsend', [profileAddress, marketAddress,
-            JSON.stringify(message), paidMessage, daysRetention]);
+            paramStr, paidMessage, daysRetention]);
 
         this.log.debug('smsgSend, response: ' + JSON.stringify(response, null, 2));
         return response;

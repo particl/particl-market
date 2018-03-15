@@ -26,6 +26,8 @@ import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAdd
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
+import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import {CreatableModel} from '../../src/api/enums/CreatableModel';
 
 describe('TestDataService', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -305,6 +307,29 @@ describe('TestDataService', () => {
         expect(profile).toHaveLength(3);
     });
 
+    test('Should generate ListingItemTemplate using GenerateListingItemTemplateParams', async () => {
+        await testDataService.clean(true);
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        const listingItemTemplates = await testDataService.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            amount: 1,
+            withRelated: true,
+            generateParams: generateListingItemTemplateParams
+        } as TestDataGenerateRequest);
+
+    });
+
     test('Should throw error message when passed model is invalid for generate', async () => {
         expect.assertions(1);
         const model = 'testmodel';
@@ -337,6 +362,7 @@ describe('TestDataService', () => {
         const profiles = await profileService.findAll();
         expect(profiles).toHaveLength(1);
     });
+
 
     // TODO: test generate params
 

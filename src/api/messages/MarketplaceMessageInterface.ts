@@ -5,4 +5,5 @@ export interface MarketplaceMessageInterface {
     version: string;
     mpaction?: ActionMessageInterface;
     item?: ListingItemMessageInterface;
+    market?: string;
 }
