@@ -310,7 +310,7 @@ export class ListingItemService {
      * @returns {Promise<void>}
      */
     @validate()
-    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<void> {
+    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<MarketplaceMessageInterface> {
 
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId);
@@ -338,7 +338,9 @@ export class ListingItemService {
             item: listingItemMessage
         } as MarketplaceMessageInterface;
 
-        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage);
+        this.log.debug('post(), marketPlaceMessage: ', marketPlaceMessage);
+        // return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage);
+        return marketPlaceMessage;
     }
 
     /**

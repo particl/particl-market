@@ -62,11 +62,13 @@ export class ItemImageService {
 
         const protocols = Object.keys(ImageDataProtocolType)
             .map(key => (ImageDataProtocolType[key]));
-        // this.log.debug('protocols: ', protocols);
+        this.log.debug('protocols: ', protocols);
 
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
+
+        this.log.debug('itemImageDataOriginal: ', itemImageDataOriginal);
 
         if (itemImageDataOriginal) {
 

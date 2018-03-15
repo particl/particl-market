@@ -14,8 +14,8 @@ import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 describe('ItemImageRemoveCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ITEMIMAGE_ROOT.commandName;
-    const subCommand = Commands.ITEMIMAGE_REMOVE.commandName;
+    const imageCommand = Commands.ITEMIMAGE_ROOT.commandName;
+    const removeCommand = Commands.ITEMIMAGE_REMOVE.commandName;
 
     const keys = [
         'id', 'hash', 'updatedAt', 'createdAt'
@@ -80,7 +80,9 @@ describe('ItemImageRemoveCommand', () => {
         listingItemId = listingItems[0]['id'];
 
         // add item image
-        const addDataRes: any = await rpc(Commands.ITEMIMAGE_ROOT.commandName, [Commands.ITEMIMAGE_ADD.commandName, createdTemplateId, 'TEST-DATA-ID',
+        const addDataRes: any = await rpc(Commands.ITEMIMAGE_ROOT.commandName, [Commands.ITEMIMAGE_ADD.commandName,
+            createdTemplateId,
+            'TEST-DATA-ID',
             ImageDataProtocolType.LOCAL,
             'BASE64',
             ImageProcessing.milkcatSmall]);
@@ -92,6 +94,7 @@ describe('ItemImageRemoveCommand', () => {
     });
 
     test('Should fail to remove ItemImage because there is a ListingItem related to ItemInformation.', async () => {
+
         // set listing item id
         testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
         // set hash
@@ -109,23 +112,24 @@ describe('ItemImageRemoveCommand', () => {
         itemImageRes.expectJson();
         itemImageRes.expectStatusCode(200);
         createdItemImageIdNew = itemImageRes.getBody()['result'].id;
-        const addDataRes: any = await rpc(method, [subCommand, createdItemImageIdNew]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.message).toBe('Can\'t delete itemImage because the item has allready been posted!');
+
+        result: any = await rpc(imageCommand, [removeCommand, createdItemImageIdNew]);
+        result.expectJson();
+        result.expectStatusCode(404);
+        expect(result.error.error.message).toBe('Can\'t delete itemImage because the item has allready been posted!');
     });
 
     test('Should remove item images', async () => {
         // remove item image
-        const addDataRes: any = await rpc(method, [subCommand, createdItemImageId]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(200);
+        const result: any = await rpc(imageCommand, [removeCommand, createdItemImageId]);
+        result.expectJson();
+        result.expectStatusCode(200);
     });
 
     test('Should fail to remove itemImage because itemImage already been removed', async () => {
-        const addDataRes: any = await rpc(method, [subCommand, createdItemImageId]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
+        const result: any = await rpc(imageCommand, [removeCommand, createdItemImageId]);
+        result.expectJson();
+        result.expectStatusCode(404);
     });
 
 });

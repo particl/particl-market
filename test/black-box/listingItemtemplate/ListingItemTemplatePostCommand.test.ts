@@ -46,24 +46,17 @@ describe('ListingItemTemplatePostCommand', () => {
 
     test('Should post a ListingItem in to the default marketplace', async (done) => {
 
-        // fetch amount of listingitems, should be 0
+        const ffs = true;
+
         const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplates[0].id, defaultMarket.id]);
 
         res.expectJson();
         res.expectStatusCode(200);
         const result = res.getBody()['result'];
-        // expect(result).toHaveProperty('ItemInformation');
+        expect(result.version).toBe('0.0.1.0');
         // expect(result).toHaveProperty('PaymentInformation');
         // expect(result).toHaveProperty('MessagingInformation');
         // expect(result.id).toBe(listingItemTemplace[0].id);
-
-        setTimeout(() => {
-
-
-
-            done();
-        }, 10000);
-
 
     });
 
