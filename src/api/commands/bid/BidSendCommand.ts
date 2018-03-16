@@ -10,10 +10,11 @@ import { BidMessage } from '../../messages/BidMessage';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import { BidFactory } from '../../factories/BidFactory';
 import { Bid } from '../../models/Bid';
-import { MessageBroadcastService } from '../../services/MessageBroadcastService';
+import { SmsgService } from '../../services/SmsgService';
 import { BidMessageType } from '../../enums/BidMessageType';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MarketplaceMessageInterface } from '../../messages/MarketplaceMessageInterface';
 
 // Ryno changes
 import { CoreRpcService } from '../../services/CoreRpcService';
@@ -26,8 +27,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory
     ) {
         super(Commands.BID_SEND);
@@ -111,11 +111,17 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
             // End - Ryno Hacks
 
             // broadcast the message in to the network
-            const res = await this.messageBroadcastService.broadcast('', '', {
-                objects: bidData,
-                listing: listingItemHash,
-                action: BidMessageType.MPA_BID
-            } as BidMessage);
+            // TODO: add profile and market addresses
+            const marketPlaceMessage = {
+                version: process.env.MARKETPLACE_VERSION,
+                mpaction: {
+                    objects: bidData,
+                    listing: listingItemHash,
+                    action: BidMessageType.MPA_BID
+                }
+            } as MarketplaceMessageInterface;
+
+            await this.smsgService.smsgSend('', '', marketPlaceMessage);
 
             // TODO: We will change the return data once broadcast functionality will be implemented
             // TODO: We might potentially want to save the bid if we ever want to cancel it, but its an outgoing bid.

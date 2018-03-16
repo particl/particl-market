@@ -1,26 +1,29 @@
 import { LogMock } from '../../lib/LogMock';
-import { ListingItemFactory } from '../../../../src/api/factories/ListingItemFactory';
-import { ItemCategory, default as resources } from 'resources';
-import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
-
-import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMessage';
-
 import { ObjectHash } from '../../../../src/core/helpers/ObjectHash';
+import * as resources from 'resources';
 
-import * as listingItemTemplateBasic from '../../testdata/listingitemtemplate/listingItemTemplateBasic.json';
-import * as listingItemCategoryWithRelated from '../../testdata/category/listingItemCategoryWithRelated.json';
+import { ListingItemFactory } from '../../../../src/api/factories/ListingItemFactory';
+import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
+import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMessage';
+import { ListingItemCreateRequest } from '../../../../src/api/requests/ListingItemCreateRequest';
+
+import * as listingItemTemplateBasic from '../../../testdata/listingitemtemplate/listingItemTemplateBasic.json';
+import * as listingItemCategoryWithRelated from '../../../testdata/category/listingItemCategoryWithRelated.json';
+import * as listingItemCategoryRootWithRelated from '../../../testdata/category/listingItemCategoryRootWithRelated.json';
 
 describe('ListingItemFactory', () => {
 
     const itemCategoryFactory = new ItemCategoryFactory(LogMock);
     const listingItemFactory = new ListingItemFactory(LogMock, itemCategoryFactory);
 
+    let createdListingItemMessage: ListingItemMessage;
+
     beforeEach(() => {
         //
     });
 
     const expectMessageFromListingItem = (message: ListingItemMessage, testData: resources.ListingItemTemplate) => {
-        expect(message.hash).toBe(ObjectHash.getHash(testData));
+        expect(message.hash).toBe(testData.hash);
         expect(message).not.toHaveProperty('id');
         expect(message).not.toHaveProperty('profileId');
         expect(message).not.toHaveProperty('updatedAt');
@@ -30,7 +33,7 @@ describe('ListingItemFactory', () => {
         expect(message).not.toHaveProperty('MessagingInformation');
         expect(message).not.toHaveProperty('ListingItemObjects');
         expect(message).not.toHaveProperty('Profile');
-        expect(message).not.toHaveProperty('ListingItem');
+        expect(message).not.toHaveProperty('ListingItems');
 
         // message.information
         expect(message.information).toBeDefined();
@@ -92,6 +95,7 @@ describe('ListingItemFactory', () => {
         expect(message.information.images[0]).not.toHaveProperty('createdAt');
         expect(message.information.images[0]).not.toHaveProperty('ItemImageDatas');
         expect(message.information.images[0].hash).toBe(testData.ItemInformation.ItemImages[0].hash);
+        expect(message.information.images[0].data.length).toBe(1);
         expect(message.information.images[0].data[0].protocol).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].protocol);
         expect(message.information.images[0].data[0].encoding).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].encoding);
         expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
@@ -175,17 +179,110 @@ describe('ListingItemFactory', () => {
 
     };
 
-    test('Should get ListingItemMessage', async () => {
+    const expectListingItemFromMessage = (result: ListingItemCreateRequest, message: ListingItemMessage) => {
 
-        const message: ListingItemMessage = await listingItemFactory
-            .getMessage(listingItemTemplateBasic, listingItemCategoryWithRelated);
+        expect(result.hash).toBe(message.hash);
+
+        // fields from message that we dont want to see
+        expect(result).not.toHaveProperty('information');
+        expect(result).not.toHaveProperty('payment');
+        expect(result).not.toHaveProperty('messaging');
+        expect(result).not.toHaveProperty('objects');
+
+        // ItemInformation
+        expect(result.itemInformation.title).toBe(message.information.title);
+        expect(result.itemInformation.shortDescription).toBe(message.information.short_description);
+        expect(result.itemInformation.longDescription).toBe(message.information.long_description);
+
+        // ItemInformation.ItemCategory
+        expect(result.itemInformation.itemCategory.key).toBe(message.information.category[2]);
+        expect(result.itemInformation.itemCategory.parentItemCategoryId).not.toBeNull();
+
+        // ItemInformation.ItemLocation
+        expect(result.itemInformation.itemLocation.region).toBe(message.information.location.country);
+        expect(result.itemInformation.itemLocation.address).toBe(message.information.location.address);
+
+        // ItemInformation.ItemLocation.LocationMarker
+        expect(result.itemInformation.itemLocation.locationMarker.markerTitle).toBe(message.information.location.gps.marker_title);
+        expect(result.itemInformation.itemLocation.locationMarker.markerText).toBe(message.information.location.gps.marker_text);
+        expect(result.itemInformation.itemLocation.locationMarker.lat).toBe(message.information.location.gps.lat);
+        expect(result.itemInformation.itemLocation.locationMarker.lng).toBe(message.information.location.gps.lng);
+
+        // ItemInformation.ShippingDestinations
+        expect(result.itemInformation.shippingDestinations.length).toBe(2);
+        // todo: test the shipping destinations
+        // expect(message.information.shipping_destinations).toContain('-MOROCCO');
+        // expect(message.information.shipping_destinations).toContain('PANAMA');
+
+        // ItemInformation.ItemImages
+        expect(result.itemInformation.itemImages.length).toBe(5);
+        // todo: test the images
+        // expect(message.information.images[0].hash).toBe(testData.ItemInformation.ItemImages[0].hash);
+        // expect(message.information.images[0].data.length).toBe(1);
+        // expect(message.information.images[0].data[0].protocol).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].protocol);
+        // expect(message.information.images[0].data[0].encoding).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].encoding);
+        // expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
+
+        // PaymentInformation
+        expect(result.paymentInformation.type).toBe(message.payment.type);
+
+        // PaymentInformation.Escrow
+        expect(result.paymentInformation.escrow.type).toBe(message.payment.escrow.type);
+
+        // PaymentInformation.Escrow.Ratio
+        expect(result.paymentInformation.escrow.ratio.buyer).toBe(message.payment.escrow.ratio.buyer);
+        expect(result.paymentInformation.escrow.ratio.seller).toBe(message.payment.escrow.ratio.seller);
+
+        // PaymentInformation.ItemPrice
+        const itemPrice = result.paymentInformation.itemPrice;
+        expect(itemPrice.currency).toBe(message.payment.cryptocurrency[0].currency);
+        expect(itemPrice.basePrice).toBe(message.payment.cryptocurrency[0].base_price);
+
+        // PaymentInformation.ItemPrice.CryptocurrencyAddress
+        const cryptocurrencyAddress = result.paymentInformation.itemPrice.cryptocurrencyAddress;
+        expect(cryptocurrencyAddress.type).toBe(message.payment.cryptocurrency[0].address.type);
+        expect(cryptocurrencyAddress.address).toBe(message.payment.cryptocurrency[0].address.address);
+
+        // PaymentInformation.ItemPrice.ShippingPrice
+        const shippingPrice = result.paymentInformation.itemPrice.shippingPrice;
+        expect(shippingPrice.domestic).toBe(message.payment.cryptocurrency[0].shipping_price.domestic);
+        expect(shippingPrice.international).toBe(message.payment.cryptocurrency[0].shipping_price.international);
+
+        // MessagingInformation
+        expect(result.messagingInformation[0].protocol).toBe(message.messaging[0].protocol);
+        expect(result.messagingInformation[0].publicKey).toBe(message.messaging[0].public_key);
+
+        // listingitem-object
+        // TODO test listingitemobjects
+        // expect(result.ListingItemObjects[0].type).toBe(message.objects[0].type);
+        // expect(result.ListingItemObjects[0].description).toBe(message.objects[0].description);
+        // expect(result.ListingItemObjects[0].order).toBe(message.objects[0].order);
+    };
+
+
+    test('Should create ListingItemMessage', async () => {
+
+        createdListingItemMessage = await listingItemFactory.getMessage(listingItemTemplateBasic, listingItemCategoryWithRelated);
+
+        // console.log('message: ', JSON.stringify(createdListingItemMessage, null, 2));
+
+        // test message conversion
+        expectMessageFromListingItem(createdListingItemMessage, listingItemTemplateBasic);
+
+    });
+
+    // TODO: add tests checking the conversions using different data
+
+    test('should create ListingItemCreateRequest using the previously created ListingItemMessage', async () => {
+
+        const marketId = 1;
+        const listingItemCreateRequest: ListingItemCreateRequest =
+            await listingItemFactory.getModel(createdListingItemMessage, marketId, listingItemCategoryRootWithRelated);
 
         // console.log('message: ', JSON.stringify(message, null, 2));
 
         // test message conversion
-        expectMessageFromListingItem(message, listingItemTemplateBasic);
+        expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessage);
     });
-
-    // TODO: add tests checking the conversions using different data
 
 });

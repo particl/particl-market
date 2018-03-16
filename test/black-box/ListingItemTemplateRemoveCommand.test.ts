@@ -8,8 +8,8 @@ import { ListingItem, ListingItemTemplate } from 'resources';
 
 describe('ListingItemTemplateRemoveCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.TEMPLATE_ROOT.commandName;
-    const subCommand = Commands.TEMPLATE_REMOVE.commandName;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const removeCommand = Commands.TEMPLATE_REMOVE.commandName;
 
     let profile;
     let createdTemplateId;
@@ -41,7 +41,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        // add profile for testing
+
         profile = await testUtil.getDefaultProfile();
     });
 
@@ -53,16 +53,16 @@ describe('ListingItemTemplateRemoveCommand', () => {
             generateListingItemTemplateParams   // what kind of data to generate
         ) as ListingItemTemplate[];
 
-        createdTemplateId = listingitemtemplate[0]['id'];
-        // remove Listing Item Template
-        const result: any = await rpc(method, [subCommand, createdTemplateId]);
+        createdTemplateId = listingitemtemplate[0].id;
+
+        const result: any = await rpc(templateCommand, [removeCommand, createdTemplateId]);
         result.expectJson();
         result.expectStatusCode(200);
     });
 
     test('Should fail remove Listing Item Template because Listing Item Template already removed', async () => {
         // remove Listing item template
-        const result: any = await rpc(method, [subCommand, createdTemplateId]);
+        const result: any = await rpc(templateCommand, [removeCommand, createdTemplateId]);
         result.expectJson();
         result.expectStatusCode(404);
     });
@@ -88,9 +88,9 @@ describe('ListingItemTemplateRemoveCommand', () => {
         const addListingItem: any = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemData);
 
         // remove Listing item template
-        const result: any = await rpc(method, [subCommand, createdTemplateId]);
+        const result: any = await rpc(templateCommand, [removeCommand, createdTemplateId]);
         result.expectJson();
         result.expectStatusCode(404);
-        expect(result.error.error.message).toBe(`Listing-item-template related with listing-items can't be delete. id= ${createdTemplateId}`);
+        expect(result.error.error.message).toBe(`ListingItemTemplate has ListingItems so it can't be deleted. id=${createdTemplateId}`);
     });
 });

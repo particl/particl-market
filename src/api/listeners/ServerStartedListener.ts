@@ -25,7 +25,6 @@ export class ServerStartedListener implements interfaces.Listener {
     }
 
     /**
-     * TODO: Bookshelf doesn't support generating the db directly from the models, so we need to check if db exists and create it if not.
      *
      * @param payload
      * @returns {Promise<void>}

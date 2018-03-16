@@ -17,10 +17,11 @@ import { ListingItemTemplateRepository } from '../repositories/ListingItemTempla
 import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
 import { EscrowRatioService } from '../services/EscrowRatioService';
 import { AddressService } from '../services/AddressService';
-import { MessageBroadcastService } from '../services/MessageBroadcastService';
+import { SmsgService } from '../services/SmsgService';
 import { EscrowFactory } from '../factories/EscrowFactory';
 import { EscrowMessageInterface } from '../messages/EscrowMessageInterface';
 import { EscrowMessage } from '../messages/EscrowMessage';
+import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
 
 export class EscrowService {
 
@@ -33,7 +34,7 @@ export class EscrowService {
         @inject(Types.Repository) @named(Targets.Repository.PaymentInformationRepository) private paymentInfoRepo: PaymentInformationRepository,
         @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
         @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) private escrowFactory: EscrowFactory,
-        @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) private messageBroadcastService: MessageBroadcastService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -65,7 +66,7 @@ export class EscrowService {
         // check listingItem by listingItemTemplateId
         const listingItemTemplateId = body.listingItemTemplateId;
         const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
-        if (listingItemTemplate.ListingItem.length === 0) {
+        if (listingItemTemplate.ListingItems.length === 0) {
             // creates an Escrow related to PaymentInformation related to ListingItemTemplate
             const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
             if (paymentInformation === null) {
@@ -109,7 +110,7 @@ export class EscrowService {
         const listingItemTemplateId = body.listingItemTemplateId;
         const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
         let escrowId;
-        if (listingItemTemplate.ListingItem.length === 0) {
+        if (listingItemTemplate.ListingItems.length === 0) {
             // creates an Escrow related to PaymentInformation related to ListingItemTemplate
             const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
             if (paymentInformation === null) {
@@ -163,7 +164,7 @@ export class EscrowService {
         // check listingItem by listingItemTemplateId
         const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
         let escrowId;
-        if (listingItemTemplate.ListingItem.length === 0) {
+        if (listingItemTemplate.ListingItems.length === 0) {
             // creates an Escrow related to PaymentInformation related to ListingItemTemplate
             const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
             if (paymentInformation === null) {
@@ -203,9 +204,13 @@ export class EscrowService {
 
         // use escrowfactory to generate the lock message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: escrowActionMessage
+        } as MarketplaceMessageInterface;
 
         // TODO: add profile and market addresses
-        return await this.messageBroadcastService.broadcast('', '', escrowActionMessage);
+        return await this.smsgService.smsgSend('', '', marketPlaceMessage);
     }
 
     @validate()
@@ -218,8 +223,13 @@ export class EscrowService {
 
         // use escrowfactory to generate the refund message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: escrowActionMessage
+        } as MarketplaceMessageInterface;
+
         // TODO: add profile and market addresses
-        return await this.messageBroadcastService.broadcast('', '', escrowActionMessage);
+        return await this.smsgService.smsgSend('', '', marketPlaceMessage);
     }
 
     @validate()
@@ -232,8 +242,13 @@ export class EscrowService {
 
         // use escrowfactory to generate the release message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: escrowActionMessage
+        } as MarketplaceMessageInterface;
+
         // TODO: add profile and market addresses
-        return await this.messageBroadcastService.broadcast('', '', escrowActionMessage);
+        return await this.smsgService.smsgSend('', '', marketPlaceMessage);
     }
 
 }

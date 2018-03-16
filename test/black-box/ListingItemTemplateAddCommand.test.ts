@@ -33,7 +33,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(result).hasOwnProperty('PaymentInformation');
         expect(result).hasOwnProperty('MessagingInformation');
         expect(result).hasOwnProperty('ListingItemObjects');
-        expect(result).hasOwnProperty('ListingItem');
+        expect(result).hasOwnProperty('ListingItems');
     });
 
     test('Should create a new Listing Item Template by RPC with Profile + Item-information + Payment-information', async () => {
@@ -69,7 +69,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(result).hasOwnProperty('PaymentInformation');
         expect(result).hasOwnProperty('MessagingInformation');
         expect(result).hasOwnProperty('ListingItemObjects');
-        expect(result).hasOwnProperty('ListingItem');
+        expect(result).hasOwnProperty('ListingItems');
         expect(result.Profile.id).toBe(testData[1]);
         expect(result.ItemInformation.title).toBe(testData[2]);
         expect(result.ItemInformation.shortDescription).toBe(testData[3]);
@@ -110,7 +110,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(result).hasOwnProperty('PaymentInformation');
         expect(result).hasOwnProperty('MessagingInformation');
         expect(result).hasOwnProperty('ListingItemObjects');
-        expect(result).hasOwnProperty('ListingItem');
+        expect(result).hasOwnProperty('ListingItems');
         expect(result.Profile.id).toBe(testData[1]);
         expect(result.ItemInformation.title).toBe(testData[2]);
         expect(result.ItemInformation.shortDescription).toBe(testData[3]);
