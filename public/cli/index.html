@@ -100,16 +100,66 @@
     var term = $('#term').terminal(function(command, term) {
         command = command.trim();
         if (command !== '') {
-            var params = command.match(/\\?.|^$/g).reduce((p, c) => {
-                if(c === '\''){
-                    p.quote ^= 1;
-                }else if(!p.quote && c === ' '){
-                    p.a.push('');
-                }else{
-                    p.a[p.a.length-1] += c.replace(/\\(.)/,'$1');
+            var params = [];
+            {
+                var quoteSingle = 0;
+                var quoteDouble = 0;
+                var backslash = 0;
+                var param = "";
+                for(var i = 0; i < command.length; ++i){
+                    var c = command.charAt(i);
+                    if(c === ' '){
+                        if(!quoteSingle && !quoteDouble){
+                            if(params !== ""){ // Check for empty strings to trim and squeeze whitespace outside of quotes.
+                                params.push(param);
+                                param = "";
+                            }
+                        }
+                        else{
+                            param = param.concat(' ');
+                        }
+                    }else if(c === "\\"){
+                        backslash ^= 1; // XOR to account for double backslash.
+                    }else{
+                        if(c === '"'){
+                            if(backslash){
+                                param = param.concat(c);
+                            }else if(!quoteSingle){
+                                quoteDouble ^= 1;
+                                if(!quoteDouble){
+                                    params.push(param);
+                                    param = "";
+                                }
+                            }
+                            else{
+                                param = param.concat(c);
+                            }
+                        }else if(c === "'"){
+                            if(backslash){
+                                param = param.concat(c);
+                            }if(!quoteDouble){
+                                quoteSingle ^= 1;
+                                if(!quoteSingle){
+                                    params.push(param);
+                                    param = "";
+                                }
+                            }
+                            else{
+                                param = param.concat(c);
+                            }
+                        }
+                        else{
+                            param = param.concat(c);
+                        }
+                        backslash = 0;
+                    }
                 }
-                return  p;
-            }, {a: ['']}).a;
+                if(param !== ""){
+                    params.push(param);
+                    // param = ""; // No need to reset what we'll never use again
+                }
+            }
+
             var method = params.shift();
 
             var isANumber = /^-?\d+(.\d+)?$/;
