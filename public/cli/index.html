@@ -170,6 +170,7 @@
         prompt: '>> ',
         greetings: null,
         onResize: set_time,
+        wrap: false, // if set to false terminal will not wrap long lines
         onInit: function(term) {
             greetings(term);
             set_time;
