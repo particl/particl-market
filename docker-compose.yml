@@ -52,7 +52,7 @@ services:
       - TESTNET_PORT=51935
 
   particld1:
-    image: ludx/particl:master
+    image: ludx/particl:0.16
     volumes:
       - ./data/particl1:/root/.particl
     ports:
@@ -80,7 +80,7 @@ services:
       - CREATEDEFAULTMASTERKEY=true
 
   particld2:
-    image: ludx/particl:master
+    image: ludx/particl:0.16
     volumes:
       - ./data/particl2:/root/.particl
     ports:
