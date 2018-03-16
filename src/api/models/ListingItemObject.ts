@@ -3,6 +3,7 @@ import { Bookshelf } from '../../config/Database';
 import { ListingItem } from './ListingItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
 import { ListingItemObjectSearchParams } from '../requests/ListingItemObjectSearchParams';
+import { ListingItemObjectData } from './ListingItemObjectData';
 
 export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
 
@@ -11,7 +12,8 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
             return await ListingItemObject.where<ListingItemObject>({ id: value }).fetch({
                 withRelated: [
                     'ListingItem',
-                    'ListingItemTemplate'
+                    'ListingItemTemplate',
+                    'ListingItemObjectData'
                 ]
             });
         } else {
@@ -58,6 +60,10 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
 
     public ListingItemTemplate(): ListingItemTemplate {
         return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
+    }
+
+    public ListingItemObjectData(): Collection<ListingItemObjectData> {
+        return this.hasMany(ListingItemObjectData, 'listing_item_object_id', 'id');
     }
 
 }

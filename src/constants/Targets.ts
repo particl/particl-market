@@ -27,6 +27,7 @@ export const Targets = {
         ItemPrice: 'ItemPrice',
         ListingItem: 'ListingItem',
         ListingItemObject: 'ListingItemObject',
+        ListingItemObjectData: 'ListingItemObjectData',
         ListingItemTemplate: 'ListingItemTemplate',
         LocationMarker: 'LocationMarker',
         Market: 'Market',
@@ -56,6 +57,7 @@ export const Targets = {
         ItemInformationRepository: 'ItemInformationRepository',
         ItemLocationRepository: 'ItemLocationRepository',
         ItemPriceRepository: 'ItemPriceRepository',
+        ListingItemObjectDataRepository: 'ListingItemObjectDataRepository',
         ListingItemObjectRepository: 'ListingItemObjectRepository',
         ListingItemRepository: 'ListingItemRepository',
         ListingItemTemplateRepository: 'ListingItemTemplateRepository',
@@ -91,6 +93,7 @@ export const Targets = {
         ItemInformationService: 'ItemInformationService',
         ItemLocationService: 'ItemLocationService',
         ItemPriceService: 'ItemPriceService',
+        ListingItemObjectDataService: 'ListingItemObjectDataService',
         ListingItemObjectService: 'ListingItemObjectService',
         ListingItemService: 'ListingItemService',
         ListingItemTemplateService: 'ListingItemTemplateService',
@@ -130,6 +133,9 @@ export const Targets = {
         },
         Command: 'Command',
         CommandEnumType: 'CommandEnumType',
+        currencyprice: {
+            CurrencyPriceRootCommand: 'CurrencyPriceRootCommand'
+        },
         daemon: {
             DaemonRootCommand: 'DaemonRootCommand'
         },
@@ -141,10 +147,10 @@ export const Targets = {
         },
         escrow: {
             EscrowAddCommand: 'EscrowAddCommand',
-            EscrowRemoveCommand: 'EscrowRemoveCommand',
             EscrowLockCommand: 'EscrowLockCommand',
             EscrowRefundCommand: 'EscrowRefundCommand',
             EscrowReleaseCommand: 'EscrowReleaseCommand',
+            EscrowRemoveCommand: 'EscrowRemoveCommand',
             EscrowRootCommand: 'EscrowRootCommand',
             EscrowUpdateCommand: 'EscrowUpdateCommand'
         },
@@ -157,11 +163,11 @@ export const Targets = {
         HelpCommand: 'HelpCommand',
         itemcategory: {
             ItemCategoryAddCommand: 'ItemCategoryAddCommand',
-            ItemCategorySearchCommand: 'ItemCategorySearchCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
             ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
             ItemCategoryRootCommand: 'ItemCategoryRootCommand',
+            ItemCategorySearchCommand: 'ItemCategorySearchCommand',
             ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
         },
         itemimage: {
@@ -183,16 +189,17 @@ export const Targets = {
             ItemLocationUpdateCommand: 'ItemLocationUpdateCommand'
         },
         listingitem: {
+            ListingItemFlagCommand: 'ListingItemFlagCommand',
             ListingItemGetCommand: 'ListingItemGetCommand',
             ListingItemRootCommand: 'ListingItemRootCommand',
             ListingItemSearchCommand: 'ListingItemSearchCommand',
-            ListingItemUpdateCommand: 'ListingItemUpdateCommand',
-            ListingItemFlagCommand: 'ListingItemFlagCommand'
+            ListingItemUpdateCommand: 'ListingItemUpdateCommand'
         },
         listingitemobject: {
             ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
             ListingItemObjectSearchCommand: 'ListingItemObjectSearchCommand'
         },
+        ListingItemObjectDataCommand: 'ListingItemObjectDataCommand',
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
@@ -219,9 +226,9 @@ export const Targets = {
         },
         profile: {
             ProfileAddCommand: 'ProfileAddCommand',
-            ProfileRemoveCommand: 'ProfileRemoveCommand',
             ProfileGetCommand: 'ProfileGetCommand',
             ProfileListCommand: 'ProfileListCommand',
+            ProfileRemoveCommand: 'ProfileRemoveCommand',
             ProfileRootCommand: 'ProfileRootCommand',
             ProfileUpdateCommand: 'ProfileUpdateCommand'
         },
@@ -246,9 +253,6 @@ export const Targets = {
             ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
-        },
-        currencyprice: {
-            CurrencyPriceRootCommand: 'CurrencyPriceRootCommand'
         }
     },
     Factory:     {
@@ -273,9 +277,9 @@ export const Targets = {
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
+        MulterMiddleware: 'MulterMiddleware',
         PopulateUserMiddleware: 'PopulateUserMiddleware',
         RestApiMiddleware: 'RestApiMiddleware',
-        MulterMiddleware: 'MulterMiddleware',
         RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {
@@ -286,35 +290,8 @@ export const Targets = {
         }
     },
     Controller:     {
-        AddressController: 'AddressController',
-        BidController: 'BidController',
-        BidDataController: 'BidDataController',
-        CryptocurrencyAddressController: 'CryptocurrencyAddressController',
-        CurrencyPriceController: 'CurrencyPriceController',
-        EscrowController: 'EscrowController',
-        EscrowRatioController: 'EscrowRatioController',
-        FavoriteItemController: 'FavoriteItemController',
-        FlaggedItemController: 'FlaggedItemController',
-        ItemCategoryController: 'ItemCategoryController',
         ItemImageController: 'ItemImageController',
         ItemImageDataController: 'ItemImageDataController',
-        ItemInformationController: 'ItemInformationController',
-        ItemLocationController: 'ItemLocationController',
-        ItemPriceController: 'ItemPriceController',
-        ListingItemController: 'ListingItemController',
-        ListingItemObjectController: 'ListingItemObjectController',
-        ListingItemTemplateController: 'ListingItemTemplateController',
-        LocationMarkerController: 'LocationMarkerController',
-        MarketController: 'MarketController',
-        MessagingInformationController: 'MessagingInformationController',
-        PaymentInformationController: 'PaymentInformationController',
-        PriceTickerController: 'PriceTickerController',
-        ProfileController: 'ProfileController',
-        RpcController: 'RpcController',
-        ShippingDestinationController: 'ShippingDestinationController',
-        ShippingPriceController: 'ShippingPriceController',
-        ShoppingCartItemsController: 'ShoppingCartItemsController',
-        ShoppingCartsController: 'ShoppingCartsController',
-        UserController: 'UserController'
+        RpcController: 'RpcController'
     }
 };
