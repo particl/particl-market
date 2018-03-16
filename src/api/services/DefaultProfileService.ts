@@ -36,7 +36,6 @@ export class DefaultProfileService {
             this.log.debug('creating new default profile');
             newProfile = await this.profileService.create(profile);
             this.log.debug('created new default profile');
-
         } else {
             if (newProfile.Address === 'ERROR_NO_ADDRESS') {
                 this.log.debug('updating profile address');

@@ -22,7 +22,7 @@ And finally install Docker
 
 
 ### Step 2: Set up the Project
-Fork this project.
+Fork this project. 
 
 Then copy the `.env.example` file and rename it to `.env`. In this file you can edit your database connection information among other stuff, but everything should really work out of the box.
 
@@ -44,7 +44,7 @@ Go to the project dir and start your app with this npm script.
 npm run serve
 ```
 
-> This starts a local server using `nodemon`, which will watch for any file changes and will restart the sever according to these changes.
+> This starts a local server using `nodemon`, which will watch for any file changes and will restart the server according to these changes.
 > The server address will be displayed to you as `http://0.0.0.0:3000`.
 
 

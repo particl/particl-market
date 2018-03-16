@@ -6,8 +6,8 @@ import * as WebRequest from 'web-request';
 import { HttpException } from '../exceptions/HttpException';
 import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
-import {ItemMessageInterface} from '../messages/ItemMessageInterface';
-import {ActionMessageInterface} from '../messages/ActionMessageInterface';
+import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
+import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 
 let RPC_REQUEST_ID = 1;
 
@@ -34,27 +34,7 @@ export class CoreRpcService {
         return await this.call('getnewaddress');
     }
 
-    public async smsgImportPrivKey( privateKey: string, label: string = '' ): Promise<boolean> {
-        return await this.call('smsgimportprivkey', [privateKey, label]);
-    }
-
-    public async smsgInbox(params: any[] = []): Promise<any> {
-        const response = await this.call('smsginbox', params);
-        // this.log.debug('got response:', response);
-        return response;
-    }
-
-    /**
-     *
-     * @returns {Promise<any>}
-     */
-    public async sendSmsgMessage(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<any> {
-        this.log.debug('SEND SMSG, from: ' + profileAddress + ', to: ' + marketAddress);
-        // return await this.call('smsgsend', [profileAddress, marketAddress, JSON.stringify(message)]);
-        return '';
-    }
-
-    public async call(method: string, params: any[] = []): Promise<any> {
+    public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {
 
         const id = RPC_REQUEST_ID++;
         const postData = JSON.stringify({
@@ -63,24 +43,23 @@ export class CoreRpcService {
             id
         });
 
-        this.log.debug('call: ' + method + ' ' + params );
-
         const url = this.getUrl();
         const options = this.getOptions();
 
-        // this.log.debug('CALL: ' + method + ' ' + params);
+        if (logCall) {
+            this.log.debug('call: ' + method + ' ' + params);
+        }
         // this.log.debug('call url:', url);
         // this.log.debug('call postData:', postData);
 
         return await WebRequest.post(url, options, postData)
             .then( response => {
 
-                // this.log.debug('response.headers: ', response.headers);
-                // this.log.debug('response.statusCode: ', response.statusCode);
-                // this.log.debug('response.statusMessage: ', response.statusMessage);
-                // this.log.debug('response.content: ', response.content);
-
                 if (response.statusCode !== 200) {
+                    this.log.debug('response.headers: ', response.headers);
+                    this.log.debug('response.statusCode: ', response.statusCode);
+                    this.log.debug('response.statusMessage: ', response.statusMessage);
+                    this.log.debug('response.content: ', response.content);
                     throw new HttpException(response.statusCode, response.statusMessage);
                 }
 
@@ -123,23 +102,6 @@ export class CoreRpcService {
 
         // this.log.debug('initializing rpc with opts:', rpcOpts);
         return rpcOpts;
-    }
-
-    public async getNewAddressFromDaemon(): Promise<string> {
-        let newAddress;
-        await this.call('getnewaddress')
-            .then( async (res) => {
-                this.log.info('Successfully created new address for profile: ' + res);
-                newAddress = res;
-            })
-            .catch(reason => {
-                this.log.warn('Could not create new address for profile: ' + reason);
-                newAddress = 'ERROR_NO_ADDRESS';
-            });
-        if ( newAddress ) {
-            return newAddress;
-        }
-        throw new Error('Something has gone terribly wrong.');
     }
 
     private getUrl(): string {

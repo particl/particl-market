@@ -26,6 +26,8 @@ import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAdd
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
+import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import {CreatableModel} from '../../src/api/enums/CreatableModel';
 
 describe('TestDataService', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -59,7 +61,9 @@ describe('TestDataService', () => {
         // log.info('afterAll');
     });
 
-    test('Should find the default categories + profile + market after startup', async () => {
+    test('Should create default data if seed=true', async () => {
+        // clean removes all
+        await testDataService.clean(true);
         const categories = await itemCategoryService.findAll();
         expect(categories).toHaveLength(80);
 
@@ -70,8 +74,7 @@ describe('TestDataService', () => {
         expect(market).toHaveLength(1);
     });
 
-
-    test('Should not create default modals if seed=false', async () => {
+    test('Should not create default data if seed=false', async () => {
         // clean removes all
         await testDataService.clean(false);
         const categories = await itemCategoryService.findAll();
@@ -84,19 +87,13 @@ describe('TestDataService', () => {
         expect(market).toHaveLength(0);
     });
 
-    // test('Should skip cleanup of given table', async () => {
-    //     await listingItemService.create({hash: 'ASDF'});
-    //     await testDataService.clean(['listing_items']);
-
-    //     const listingItems = await listingItemService.findAll();
-    //     expect(listingItems).toHaveLength(1);
-    // });
-
-
     test('Should create test data as par model', async () => {
         await testDataService.clean();
         const model = 'listingitemtemplate';
         const defaultProfile = await profileService.getDefault();
+
+        // TODO: create tests to test creation of different model types
+        // TODO: move to file
         const listingItemTemplateData = {
             profile_id: defaultProfile.Id,
             hash: 'itemhash',
@@ -131,28 +128,31 @@ describe('TestDataService', () => {
                 }],
                 itemImages: [{
                     hash: 'imagehash4',
-                    data: {
+                    data: [{
                         dataId: null,
                         protocol: ImageDataProtocolType.LOCAL,
+                        imageVersion: 'ORIGINAL',
                         encoding: 'BASE64',
                         data: ImageProcessing.milkcat
-                    }
+                    }]
                 }, {
                     hash: 'imagehash5',
-                    data: {
+                    data: [{
                         dataId: null,
                         protocol: ImageDataProtocolType.LOCAL,
+                        imageVersion: 'ORIGINAL',
                         encoding: 'BASE64',
                         data: ImageProcessing.milkcatTall
-                    }
+                    }]
                 }, {
                     hash: 'imagehash6',
-                    data: {
+                    data: [{
                         dataId: null,
                         protocol: ImageDataProtocolType.LOCAL,
+                        imageVersion: 'ORIGINAL',
                         encoding: 'BASE64',
                         data: ImageProcessing.milkcatWide
-                    }
+                    }]
                 }]
             },
             paymentInformation: {
@@ -307,6 +307,29 @@ describe('TestDataService', () => {
         expect(profile).toHaveLength(3);
     });
 
+    test('Should generate ListingItemTemplate using GenerateListingItemTemplateParams', async () => {
+        await testDataService.clean(true);
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        const listingItemTemplates = await testDataService.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            amount: 1,
+            withRelated: true,
+            generateParams: generateListingItemTemplateParams
+        } as TestDataGenerateRequest);
+
+    });
+
     test('Should throw error message when passed model is invalid for generate', async () => {
         expect.assertions(1);
         const model = 'testmodel';
@@ -339,5 +362,8 @@ describe('TestDataService', () => {
         const profiles = await profileService.findAll();
         expect(profiles).toHaveLength(1);
     });
+
+
+    // TODO: test generate params
 
 });

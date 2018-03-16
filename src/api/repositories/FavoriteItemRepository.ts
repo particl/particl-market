@@ -37,6 +37,10 @@ export class FavoriteItemRepository {
       return this.FavoriteItemModel.search(options);
     }
 
+    public async findFavoritesByProfileId(profileId: number, withRelated: boolean): Promise<Bookshelf.Collection<FavoriteItem>> {
+        return this.FavoriteItemModel.findFavoritesByProfileId(profileId, withRelated);
+    }
+
     public async create(data: any): Promise<FavoriteItem> {
         const favoriteItem = this.FavoriteItemModel.forge<FavoriteItem>(data);
         try {

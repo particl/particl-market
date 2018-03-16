@@ -98,6 +98,7 @@
     keyboardeventKeyPolyfill.polyfill();
     var scanlines = $('.scanlines');
     var term = $('#term').terminal(function(command, term) {
+        command = command.trim();
         if (command !== '') {
             var params = command.match(/\\?.|^$/g).reduce((p, c) => {
                 if(c === '\''){
@@ -203,6 +204,77 @@
     }
 
 </script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
 
+    var reconnection = true,
+        reconnectionDelay = 5000;
+
+    function log(eventName, message) {
+        if (typeof message == 'object')
+            message = JSON.stringify(message);
+        var content = '[' + eventName + '] ' + (message ? message : '');
+        term.echo('socket.io: ' + content);
+    }
+
+    function connectClient() {
+        const socket = io('ws://' + window.location.href.split("/")[2], {
+            transports: ['polling', 'websocket'],
+            forceNew: false
+        });
+
+        socket
+            .on('connect', () => {
+                log('connect', 'connected');
+                onConnected(socket);
+            })
+            .on('connect_error', (err) => {
+                log('connect_error', err);
+            })
+            .on('connect_timeout', () => {
+                log('connect_timeout');
+            })
+            .on('reconnect', (attempt) => {
+                log('reconnect', 'Attempt #' + attempt);
+            })
+            .on('reconnecting', (attempt) => {
+                log('reconnecting', 'Attempt #' + attempt);
+            })
+            .on('reconnect_attempt', () => {
+                log('reconnect_attempt');
+                // on reconnection, reset the transports option, as the Websocket
+                // connection may have failed (caused by proxy, firewall, browser, ...)
+                socket.io.opts.transports = ['polling', 'websocket'];
+            })
+            .on('reconnect_error', (err) => {
+                log('reconnect_error', err);
+            })
+            .on('reconnect_failed', () => {
+                log('reconnect_failed');
+            })
+            .on('error', (err) => {
+                log('error', err);
+            })
+            .on('cli', (event) => {
+                log('cli', event.message);
+            })
+            .on('serverping', (data) => {
+                // log('serverping', data);
+                socket.emit('serverpong').emit('pong');
+            });
+    }
+
+    function onConnected(socket){
+
+        socket
+            .on('disconnect', function () {
+                // socket.disconnect();
+                term.echo('socket.io client disconnected!');
+            });
+
+    }
+
+    connectClient();
+</script>
 </body>
 </html>

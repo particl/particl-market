@@ -156,6 +156,7 @@ export class TestDataService {
      *  model - listingitemtemplate, listingitem or profile
      *  amount - amount of models to create
      *  withRelated - return full related model data or just id's, defaults to true
+     *  generateParams - boolean array from GenerateListingItemTemplateParams
      *
      * @returns {Promise<ListingItem>}
      */
@@ -228,7 +229,7 @@ export class TestDataService {
         ];
 
         for (const table of tablesToClean) {
-            this.log.debug('cleaning table: ', table);
+            // this.log.debug('cleaning table: ', table);
             await Database.knex.select().from(table).del();
         }
         return;
@@ -337,6 +338,8 @@ export class TestDataService {
         const addresses: any[] = [];
         for (let i = amount; i > 0; i--) {
             addresses.push({
+                firstName: Faker.name.firstName(),
+                lastName: Faker.name.lastName(),
                 title: Faker.company.companyName(),
                 addressLine1: Faker.address.streetAddress(),
                 addressLine2: Faker.address.secondaryAddress(),
@@ -397,12 +400,13 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const item = {
                 hash: Faker.random.uuid(),
-                data: {
+                data: [{
                     dataId: Faker.internet.url(),
                     protocol: ImageDataProtocolType.LOCAL,
+                    imageVersion: 'ORIGINAL',
                     encoding: 'BASE64',
                     data: ImageProcessing.milkcatSmall
-                }
+                }]
             };
             items.push(item);
         }

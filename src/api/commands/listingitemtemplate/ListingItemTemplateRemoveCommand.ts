@@ -5,8 +5,10 @@ import { Types, Core, Targets } from '../../../constants';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import * as _ from 'lodash';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ListingItemTemplateRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -24,10 +26,17 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
      * data.params[]:
      *  [0]: ListingItemTemplate.id
      * @param data
-     * @returns {Promise<Escrow>}
+     * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+        // check and find that listingItemTemplate is not related with any listingItem
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
+        const listingItemTemplate = listingItemTemplateModel.toJSON();
+
+        if (!_.isEmpty(listingItemTemplate.ListingItems)) {
+            throw new MessageException(`ListingItemTemplate has ListingItems so it can't be deleted. id=${data.params[0]}`);
+        }
         return this.listingItemTemplateService.destroy(data.params[0]);
     }
 

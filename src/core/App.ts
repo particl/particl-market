@@ -12,6 +12,8 @@ import { Types, Core } from '../constants';
 import { EventEmitter } from './api/events';
 import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
 import { Environment } from './helpers/Environment';
+import { SocketIoServer } from './SocketIoServer';
+
 
 export interface Configurable {
     configure(app: App): void;
@@ -21,6 +23,7 @@ export class App {
 
     private express: express.Application = express();
     private server: Server;
+    private socketIoServer: SocketIoServer;
     private inversifyExpressServer: InversifyExpressServer;
     private ioc: IoC = new IoC();
     private log: Logger = new Logger(__filename);
@@ -65,8 +68,7 @@ export class App {
     }
 
     /**
-     * TODO:
-     * - no rest api in prod
+     * ..called from app.ts
      *
      * @returns {Promise<EventEmitter>}
      */
@@ -93,8 +95,32 @@ export class App {
             this.express = this.bootstrapApp.bindInversifyExpressServer(this.express, this.inversifyExpressServer);
             this.bootstrapApp.setupCoreTools(this.express);
             this.log.info('Starting app...');
+
             this.server = new Server(this.bootstrapApp.startServer(this.express));
             this.server.use(this.express);
+
+            // create our socketioserver
+            this.socketIoServer = this.bootstrapApp.createSocketIoServer(this.server, this.ioc);
+
+            /*
+            const myIo = new SocketIoServer(this.server.httpServer, this.ioc);
+            const listenPort = Number(process.env.APP_PORT) + 2552;
+            this.log.info('Binding daemon CLI server to ' + listenPort);
+            myIo.listen(listenPort);
+            myIo.on('connection', (socket) => {
+                this.log.info('Particld socket.io server connected to CLI.');
+                myIo.emit('message', 'Connected');
+            });
+            myIo.on('error', (error) => {
+                this.log.error('Error with particld socket.io: ' + error);
+                myIo.emit('error', error);
+            });
+            setInterval(() => {
+                myIo.emit('message', 'ping');
+            }, 10000);
+
+            this.ioc.getCliIo().setIo(myIo);
+            */
         }
 
         this.log.info('App is ready!');

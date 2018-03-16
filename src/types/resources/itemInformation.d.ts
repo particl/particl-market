@@ -10,6 +10,7 @@ declare module 'resources' {
         ShippingDestinations: ShippingDestination[];
         ItemCategory: ItemCategory;
         ItemImages: ItemImage[];
+        ItemLocation: ItemLocation;
     }
 
 }

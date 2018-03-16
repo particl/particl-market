@@ -1,5 +1,5 @@
 
-export interface ItemMessageInterface {
+export interface ListingItemMessageInterface {
 
     // TODO: create classes
     hash: string;

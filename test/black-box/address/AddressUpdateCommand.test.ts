@@ -12,6 +12,8 @@ describe('AddressUpdateCommand', () => {
         name: 'TESTING-ADDRESS-PROFILE-NAME',
         address: 'TESTING-ADDRESS-PROFILE-ADDRESS',
         shippingAddresses: [{
+            firstName: 'Johnny',
+            lastName: 'Depp',
             title: 'Title',
             addressLine1: 'Add',
             addressLine2: 'ADD 22',
@@ -23,6 +25,8 @@ describe('AddressUpdateCommand', () => {
     };
 
     const testDataUpdated = {
+        firstName: 'Robert',
+        lastName: 'Downey',
         title: 'Work',
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',
@@ -46,8 +50,10 @@ describe('AddressUpdateCommand', () => {
         addressId = addDataRes.ShippingAddresses[0].id;
 
         // update address
-        const res = await rpc(method, [ subCommand,
+        const res = await rpc(method, [subCommand,
             addressId,
+            testDataUpdated.firstName,
+            testDataUpdated.lastName,
             testDataUpdated.title,
             testDataUpdated.addressLine1,
             testDataUpdated.addressLine2,
@@ -60,6 +66,8 @@ describe('AddressUpdateCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
+        expect(result.firstName).toBe(testDataUpdated.firstName);
+        expect(result.lastName).toBe(testDataUpdated.lastName);
         expect(result.title).toBe(testDataUpdated.title);
         expect(result.addressLine1).toBe(testDataUpdated.addressLine1);
         expect(result.addressLine2).toBe(testDataUpdated.addressLine2);
@@ -71,7 +79,8 @@ describe('AddressUpdateCommand', () => {
     });
 
     test('Should fail because we want to update without required fields', async () => {
-        const getDataRes = await rpc(method, [subCommand,
+        const getDataRes = await rpc(method, [subCommand, testDataUpdated.firstName,
+            testDataUpdated.lastName,
             testDataUpdated.title, testDataUpdated.addressLine1, testDataUpdated.addressLine2,
             testDataUpdated.city, testDataUpdated.state, testDataUpdated.country, 'test']);
         getDataRes.expectJson();
@@ -79,8 +88,10 @@ describe('AddressUpdateCommand', () => {
     });
 
     test('Should fail because we want to update with null state field', async () => {
-        const getDataRes = await rpc(method, [ subCommand,
+        const getDataRes = await rpc(method, [subCommand,
             addressId,
+            testDataUpdated.firstName,
+            testDataUpdated.lastName,
             testDataUpdated.title,
             testDataUpdated.addressLine1,
             testDataUpdated.addressLine2,
@@ -95,8 +106,10 @@ describe('AddressUpdateCommand', () => {
     });
 
     test('Should fail because we want to update with undefined state field', async () => {
-        const getDataRes = await rpc(method, [ subCommand,
+        const getDataRes = await rpc(method, [subCommand,
             addressId,
+            testDataUpdated.firstName,
+            testDataUpdated.lastName,
             testDataUpdated.title,
             testDataUpdated.addressLine1,
             testDataUpdated.addressLine2,
@@ -112,8 +125,10 @@ describe('AddressUpdateCommand', () => {
 
     test('Should update the address with blank state field', async () => {
         // update address
-        const res = await rpc(method, [ subCommand,
+        const res = await rpc(method, [subCommand,
             addressId,
+            testDataUpdated.firstName,
+            testDataUpdated.lastName,
             testDataUpdated.title,
             testDataUpdated.addressLine1,
             testDataUpdated.addressLine2,
@@ -126,6 +141,8 @@ describe('AddressUpdateCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
+        expect(result.firstName).toBe(testDataUpdated.firstName);
+        expect(result.lastName).toBe(testDataUpdated.lastName);
         expect(result.title).toBe(testDataUpdated.title);
         expect(result.addressLine1).toBe(testDataUpdated.addressLine1);
         expect(result.addressLine2).toBe(testDataUpdated.addressLine2);

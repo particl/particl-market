@@ -30,6 +30,8 @@ describe('Address', () => {
 
     const testData = {
         title: 'Title',
+        firstName: 'Robert',
+        lastName: 'Downey',
         addressLine1: 'Add',
         addressLine2: 'ADD 22',
         city: 'city',
@@ -40,6 +42,8 @@ describe('Address', () => {
     } as AddressCreateRequest;
 
     const testDataUpdated = {
+        firstName: 'Johnny',
+        lastName: 'Depp',
         title: 'Work',
         addressLine1: '123 6th St',
         addressLine2: 'Melbourne, FL 32904',

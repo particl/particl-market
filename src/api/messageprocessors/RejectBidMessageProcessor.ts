@@ -10,6 +10,7 @@ import { BidService } from '../services/BidService';
 import { BidFactory } from '../factories/BidFactory';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
+import { EventEmitter } from '../../core/api/events';
 
 export class RejectBidMessageProcessor implements MessageProcessorInterface {
 
@@ -19,6 +20,7 @@ export class RejectBidMessageProcessor implements MessageProcessorInterface {
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -42,6 +44,10 @@ export class RejectBidMessageProcessor implements MessageProcessorInterface {
         // find latest bid
         const latestBidModel = await this.bidService.getLatestBid(listingItem.id);
         const latestBid = latestBidModel.toJSON();
+
+        this.eventEmitter.emit('cli', {
+            message: 'reject bid message received ' + latestBid
+        });
 
         // get the BidCreateRequest and create the bid
         const bidMessage = await this.bidFactory.getModel(data, listingItem.id, latestBid);

@@ -47,17 +47,17 @@ export class ItemPriceService {
 
         const body = JSON.parse(JSON.stringify(data));
         const shippingPrice = body.shippingPrice || {};
-        const cryCurAddress = body.cryptocurrencyAddress || {};
+        const cryptocurrencyAddress = body.cryptocurrencyAddress || {};
 
         delete body.shippingPrice;
         delete body.cryptocurrencyAddress;
 
         // create related models, cryptocurrencyAddress
-        if (!_.isEmpty(cryCurAddress)) {
-            if (cryCurAddress.id) {
-                body.cryptocurrency_address_id = cryCurAddress.id;
+        if (!_.isEmpty(cryptocurrencyAddress)) {
+            if (cryptocurrencyAddress.id) {
+                body.cryptocurrency_address_id = cryptocurrencyAddress.id;
             } else {
-                const relatedCryAddress = await this.cryptocurrencyAddressService.create(cryCurAddress as CryptocurrencyAddressCreateRequest);
+                const relatedCryAddress = await this.cryptocurrencyAddressService.create(cryptocurrencyAddress as CryptocurrencyAddressCreateRequest);
                 body.cryptocurrency_address_id = relatedCryAddress.Id;
             }
         }

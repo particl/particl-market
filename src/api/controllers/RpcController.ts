@@ -14,7 +14,6 @@ import { Commands} from '../commands/CommandEnumType';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
-
 const authenticateMiddleware = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.AuthenticateMiddleware);
 
 let rpcIdCount = 0;
@@ -37,7 +36,7 @@ export class RpcController {
     public async handleRPC( @response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
 
         const rpcRequest = this.createRequest(body.method, body.params, body.id);
-        this.log.debug('controller.handleRPC() rpcRequest:', JSON.stringify(rpcRequest, null, 2));
+        this.log.debug('controller.handleRPC():', rpcRequest.method + ' ' + rpcRequest.params);
 
         // get the commandType for the method name
         const commandType = _.find(Commands.rootCommands, command => command.commandName === body.method);

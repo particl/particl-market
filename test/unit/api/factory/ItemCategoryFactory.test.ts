@@ -1,152 +1,49 @@
 import { LogMock } from '../../lib/LogMock';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
+import { ItemCategoryCreateRequest } from '../../../../src/api/requests/ItemCategoryCreateRequest';
+import * as listingItemCategoryWithRelated from '../../../testdata/category/listingItemCategoryWithRelated.json';
+import * as listingItemCategoryWithRelated5levels from '../../../testdata/category/listingItemCategoryWithRelated5levels.json';
+import * as listingItemCategoryRootWithRelated from '../../../testdata/category/listingItemCategoryRootWithRelated.json';
+import * as resources from 'resources';
 
 describe('ItemCategoryFactory', () => {
 
-    let req;
     let itemCategoryFactory;
-    const rootCategoryWithRelated = {
-        id: 1,
-        key: 'cat_ROOT',
-        name: 'ROOT',
-        parentCategoryId: null,
-        ChildItemCategories: [
-            {
-                id: 2,
-                key: 'cat_high_value',
-                name: 'High Value',
-                parentItemCategoryId: 1,
-                ChildItemCategories: [
-                    {
-                        id: 5,
-                        key: 'cat_high_business_corporate',
-                        name: 'Business Corporate 5',
-                        parentItemCategoryId: 2,
-                        ChildItemCategories: [
-                            {
-                                id: 8,
-                                key: 'cat_high_business_corporate_8',
-                                name: 'Business Corporate 8',
-                                parentItemCategoryId: 5,
-                                ChildItemCategories: [
-                                    {
-                                        id: 10,
-                                        key: 'cat_high_business_corporate_10',
-                                        name: 'Business Corporate 10',
-                                        parentItemCategoryId: 8,
-                                        ChildItemCategories: []
-                                    },
-                                    {
-                                        id: 11,
-                                        key: 'cat_high_business_corporate_11',
-                                        name: 'Business Corporate 11',
-                                        parentItemCategoryId: 8,
-                                        ChildItemCategories: []
-                                    }
-                                ]
-                            },
-                            {
-                                id: 9,
-                                key: 'cat_high_business_corporate_9',
-                                name: 'Business Corporate 9',
-                                parentItemCategoryId: 5,
-                                ChildItemCategories: []
-                            }
-                        ]
-                    }
-                ]
-            }, {
-                id: 3,
-                key: 'cat_high_value_3',
-                name: 'High Value 3',
-                parentItemCategoryId: 1,
-                ChildItemCategories: [
-                    {
-                        id: 6,
-                        key: 'cat_high_business_corporate_3',
-                        name: 'Business Corporate 3',
-                        parentItemCategoryId: 3,
-                        ChildItemCategories: []
-                    }
-                ]
-            }, {
-                id: 4,
-                key: 'cat_high_value_4',
-                name: 'High Value 4',
-                parentItemCategoryId: 1,
-                ChildItemCategories: [
-                    {
-                        id: 7,
-                        key: 'cat_high_business_corporate_4',
-                        name: 'Business Corporate 4',
-                        parentItemCategoryId: 4,
-                        ChildItemCategories: []
-                    }
-                ]
-            }
-        ]
-    };
 
     beforeEach(() => {
         itemCategoryFactory = new ItemCategoryFactory(LogMock);
     });
 
-    test('Should get the categoryCreateMessage from categoryFactory.getModal', () => {
-        req = {
-            name: 'categoryName',
-            parentItemCategoryId: 10
-        };
-        itemCategoryFactory.getModel(req.name, req.parentItemCategoryId).then((res, error) => {
-            expect(res.name).toBe(req.name);
-            expect(res.parent_item_category_id).toBe(req.parentItemCategoryId);
-        });
+    // getModel tests
+    test('Should get the ItemCategoryCreateRequest from itemCategoryFactory.getModel', async () => {
+        const categoryArray = ['cat_ROOT', 'cat_high_value', 'cat_high_business_corporate'];
+        const result: ItemCategoryCreateRequest = await itemCategoryFactory.getModel(categoryArray, listingItemCategoryRootWithRelated);
+        expect(result.name).toBe('Business / Corporate');
+        expect(result.key).toBe('cat_high_business_corporate');
+        expect(result.parent_item_category_id).toBe(962);
     });
 
-    // test getArray function
-    test('Should get the categoryArray when pass category', () => { // for length 2
-        const category = {
-            id: 4,
-            key: 'cat_high_value_4',
-            name: 'High Value 4',
-            parentItemCategoryId: 1
-        };
-        itemCategoryFactory.getArray(category, rootCategoryWithRelated).then((res, error) => {
-            expect(res).toHaveLength(2);
-            expect(res[0]).toBe(rootCategoryWithRelated.key);
-            expect(res[1]).toBe(category.key);
-        });
+    // getArray tests
+    // TODO: there's no test cases for duplicate category cases, and propably there's no functionality for validating those cases either
+    test('Should convert ListingItemCategory to categoryArray, 3 levels', async () => {
+        const result: string[] = await itemCategoryFactory.getArray(listingItemCategoryWithRelated);
+        expect(result).toHaveLength(3);
+        expect(result[2]).toBe(listingItemCategoryWithRelated.key);
+        expect(result[1]).toBe((listingItemCategoryWithRelated as resources.ListingItemCategory).ParentItemCategory.key);
+        expect(result[0]).toBe((listingItemCategoryWithRelated as resources.ListingItemCategory).ParentItemCategory.ParentItemCategory.key);
     });
 
-    test('Should get the categoryArray when pass category', () => { // for length 3
-        const category = {
-            id: 7,
-            key: 'cat_high_business_corporate_4',
-            name: 'Business Corporate 4',
-            parentItemCategoryId: 4
-        };
-        itemCategoryFactory.getArray(category, rootCategoryWithRelated).then((res, error) => {
-            expect(res).toHaveLength(3);
-            expect(res[0]).toBe(rootCategoryWithRelated.key);
-            expect(res[1]).toBe(rootCategoryWithRelated.ChildItemCategories[2].key);
-            expect(res[2]).toBe(category.key);
-        });
+    test('Should convert ListingItemCategory to categoryArray, 5 levels', async () => { // for length 3
+        const result: string[] = await itemCategoryFactory.getArray(listingItemCategoryWithRelated5levels);
+        const category = listingItemCategoryWithRelated5levels as resources.ListingItemCategory;
+        expect(result).toHaveLength(5);
+        expect(result[4]).toBe(category.key);
+        expect(result[3]).toBe(category.ParentItemCategory.key);
+        expect(result[2]).toBe(category.ParentItemCategory.ParentItemCategory.key);
+        expect(result[1]).toBe(category.ParentItemCategory.ParentItemCategory.ParentItemCategory.key);
+        expect(result[0]).toBe(category.ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory.key);
     });
 
-    test('Should get the categoryArray when pass category', () => { // for length 5
-        const category = {
-            id: 11,
-            key: 'cat_high_business_corporate_11',
-            name: 'Business Corporate',
-            parentItemCategoryId: 8
-        };
-        itemCategoryFactory.getArray(category, rootCategoryWithRelated).then((res, error) => {
-            expect(res).toHaveLength(5);
-            expect(res[0]).toBe(rootCategoryWithRelated.key);
-            expect(res[1]).toBe(rootCategoryWithRelated.ChildItemCategories[0].key);
-            expect(res[2]).toBe(rootCategoryWithRelated.ChildItemCategories[0].ChildItemCategories[0].key);
-            expect(res[3]).toBe(rootCategoryWithRelated.ChildItemCategories[0].ChildItemCategories[0].ChildItemCategories[0].key);
-            expect(res[4]).toBe(category.key);
-        });
-    });
+    // TODO: getArray to work with custom categories
 
 });
