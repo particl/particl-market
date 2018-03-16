@@ -33,15 +33,41 @@ export class ItemCategoryFactory {
 
     /**
      *
-     * @param categoryName : string
-     * @param parentId : number
-     * @returns {Promise<ItemCategoryCreateRequest>}
+     * @param {string[]} categoryArray
+     * @param {"resources".ItemCategory} rootCategory
+     * @returns {Promise<"resources".ItemCategory>}
      */
-    public async getModel(categoryName: string, parentId: number): Promise<ItemCategoryCreateRequest> {
+    public async getModel(categoryArray: string[], rootCategory: resources.ItemCategory): Promise<ItemCategoryCreateRequest> {
+        for (const categoryKeyOrName of categoryArray) {
+            rootCategory = await this.findCategory(rootCategory, categoryKeyOrName);
+        }
         return {
-            name: categoryName,
-            parent_item_category_id: parentId
+            parent_item_category_id: rootCategory.parentItemCategoryId,
+            key: rootCategory.key,
+            name: rootCategory.name,
+            description: rootCategory.description
         } as ItemCategoryCreateRequest;
+    }
+
+    /**
+     * return the ChildCategory having the given key or name
+     *
+     * @param {"resources".ItemCategory} rootCategory
+     * @param {string} keyOrName
+     * @returns {Promise<"resources".ItemCategory>}
+     */
+    private async findCategory(rootCategory: resources.ItemCategory, keyOrName: string): Promise<resources.ItemCategory> {
+
+        if (rootCategory.key === keyOrName) {
+            // root case
+            return rootCategory;
+        } else {
+            // search the children for a match
+            const childCategories = rootCategory.ChildItemCategories;
+            return _.find(childCategories, (childCategory) => {
+                return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);
+            });
+        }
     }
 
     /**

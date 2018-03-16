@@ -6,6 +6,7 @@ declare module 'resources' {
         protocol: string;
         encoding: string;
         data: string;
+        imageVersion: string;
         createdAt: Date;
         updatedAt: Date;
     }

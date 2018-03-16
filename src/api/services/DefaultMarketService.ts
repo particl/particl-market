@@ -6,7 +6,9 @@ import { Market } from '../models/Market';
 import { MarketService } from './MarketService';
 import { MarketCreateRequest } from '../requests/MarketCreateRequest';
 import { MarketUpdateRequest } from '../requests/MarketUpdateRequest';
-import {CoreRpcService} from './CoreRpcService';
+import { CoreRpcService } from './CoreRpcService';
+import { SmsgService } from './SmsgService';
+import { InternalServerException } from '../exceptions/InternalServerException';
 
 
 export class DefaultMarketService {
@@ -16,6 +18,7 @@ export class DefaultMarketService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -53,7 +56,27 @@ export class DefaultMarketService {
             this.log.debug('updated new default Market: ', JSON.stringify(newMarketModel, null, 2));
         }
         const newMarket = newMarketModel.toJSON();
-        await this.coreRpcService.smsgImportPrivKey(newMarket.privateKey);
+        // import market private key
+        await this.smsgService.smsgImportPrivKey(newMarket.privateKey);
+        // get market public key
+        const publicKey = await this.getPublicKeyForAddress(newMarket.address);
+        this.log.debug('default Market publicKey: ', publicKey);
+        // add market address
+        if (publicKey) {
+            await this.smsgService.smsgAddAddress(newMarket.address, publicKey);
+        } else {
+            throw new InternalServerException('Error while adding public key to db.');
+        }
         return newMarket;
+    }
+
+    private async getPublicKeyForAddress(address: string): Promise<string|null> {
+        const localKeys = await this.smsgService.smsgLocalKeys();
+        for (const smsgKey of localKeys.smsg_keys) {
+            if (smsgKey.address === address) {
+                return smsgKey.public_key;
+            }
+        }
+        return null;
     }
 }

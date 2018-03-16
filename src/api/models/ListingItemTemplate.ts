@@ -29,7 +29,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                     'PaymentInformation.ItemPrice.CryptocurrencyAddress',
                     'MessagingInformation', // TODO: should be MessagingInformations
                     'ListingItemObjects',
-                    'ListingItem',
+                    'ListingItems',
                     'Profile'
                 ]
             });
@@ -78,7 +78,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                     'PaymentInformation.ItemPrice.CryptocurrencyAddress',
                     'MessagingInformation',
                     'ListingItemObjects',
-                    'ListingItem',
+                    'ListingItems',
                     'Profile'
                 ]
             });
@@ -118,7 +118,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         return this.hasMany(ListingItemObject, 'listing_item_template_id', 'id');
     }
 
-    public ListingItem(): Collection<ListingItem> {
+    public ListingItems(): Collection<ListingItem> {
         return this.hasMany(ListingItem, 'listing_item_template_id', 'id');
     }
 
