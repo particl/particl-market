@@ -51,12 +51,12 @@ import { CryptocurrencyAddressService } from '../../src/api/services/Cryptocurre
 import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
 import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
 
-import * as listingItemCreateRequestBasic1 from '../testdata/listingitemcreaterequest/listingItemCreateRequestBasic1.json';
-import * as listingItemCreateRequestBasic2 from '../testdata/listingitemcreaterequest/listingItemCreateRequestBasic2.json';
-import * as listingItemUpdateRequestBasic1 from '../testdata/listingitemupdaterequest/listingItemUpdateRequestBasic1.json';
+import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
+import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
+import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
 
-import * as listingItemTemplateCreateRequestBasic1 from '../testdata/listingitemtemplatecreaterequest/listingItemTemplateCreateRequestBasic1.json';
-import * as listingItemTemplateCreateRequestBasic2 from '../testdata/listingitemtemplatecreaterequest/listingItemTemplateCreateRequestBasic2.json';
+import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
+import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
 
 import * as resources from 'resources';
 
