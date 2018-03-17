@@ -5,6 +5,8 @@
 
 export enum HashableObjectType {
 
-    LISTINGITEMMESSAGE = 'listingItemMessage'
+    LISTINGITEM = 'ListingItem',
+    LISTINGITEMTEMPLATE = 'ListingItemTemplate',
+    ITEMIMAGE = 'ItemImage'
 
 }

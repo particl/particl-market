@@ -6,7 +6,7 @@ export class ObjectHash {
     public static async getHash(obj: any, type?: HashableObjectType): Promise<string> {
         let revisedObj;
         switch (type) {
-            case 'listingItemMessage': {
+            case HashableObjectType.LISTINGITEM: {
                 const itemInformation = obj.ItemInformation;
                 const paymentInformation = obj.PaymentInformation;
                 const newObject = {

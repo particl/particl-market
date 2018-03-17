@@ -22,7 +22,7 @@ describe('ListingItemFactory', () => {
     });
 
     const expectMessageFromListingItem = async (message: ListingItemMessage, testData: resources.ListingItemTemplate) => {
-        const hash = await ObjectHash.getHash(testData, HashableObjectType.LISTINGITEMMESSAGE);
+        const hash = await ObjectHash.getHash(testData, HashableObjectType.LISTINGITEM);
         expect(message.hash).toBe(hash);
         expect(message).not.toHaveProperty('id');
         expect(message).not.toHaveProperty('profileId');
