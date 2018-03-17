@@ -35,7 +35,6 @@ export class ListingItemObjectData extends Bookshelf.Model<ListingItemObjectData
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
     public ListingItemObject(): ListingItemObject {
         return this.belongsTo(ListingItemObject, 'listing_item_object_id', 'id');
     }

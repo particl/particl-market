@@ -41,6 +41,12 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }
 
+    public get ObjectId(): string { return this.get('object_id'); }
+    public set ObjectId(value: string) { this.set('object_id', value); }
+
+    public get ForceInput(): string { return this.get('force_input'); }
+    public set ForceInput(value: string) { this.set('force_input', value); }
+
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
 

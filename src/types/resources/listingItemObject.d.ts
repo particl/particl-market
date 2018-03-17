@@ -5,8 +5,12 @@ declare module 'resources' {
         type: string;
         description: string;
         order: number;
+        forceInput: boolean;
+        objectId: string;
         createdAt: Date;
         updatedAt: Date;
+        ListingItemObjectData: ListingItemObjectData[];
+
     }
 
 }
