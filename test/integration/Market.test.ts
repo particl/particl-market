@@ -47,6 +47,19 @@ describe('Market', () => {
 
     });
 
+    // fetchByName
+    it('Should get default market', async () => {
+        const marketModel: Market = await marketService.getDefault();
+        const result = marketModel.toJSON();
+
+        // test the values
+        expect(result.name).toBe('DEFAULT');
+        expect(result.privateKey).toBeDefined();
+        expect(result.privateKey).not.toBeNull();
+        expect(result.address).toBeDefined();
+        expect(result.address).not.toBeNull();
+    });
+
     it('Should create a new market', async () => {
         const marketModel: Market = await marketService.create(testData);
         createdId = marketModel.Id;
@@ -90,8 +103,18 @@ describe('Market', () => {
     });
 
     test('Should update the market', async () => {
-        // testDataUpdated['related_id'] = 0;
         const marketModel: Market = await marketService.update(createdId, testDataUpdated);
+        const result = marketModel.toJSON();
+
+        // test the values
+        expect(result.name).toBe(testDataUpdated.name);
+        expect(result.privateKey).toBe(testDataUpdated.private_key);
+        expect(result.address).toBe(testDataUpdated.address);
+    });
+
+    // findByAddress
+    test('Should find market by address', async () => {
+        const marketModel: Market = await marketService.findByAddress(testDataUpdated.address);
         const result = marketModel.toJSON();
 
         // test the values

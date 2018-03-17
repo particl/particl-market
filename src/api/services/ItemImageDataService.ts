@@ -72,6 +72,9 @@ export class ItemImageDataService {
         if ( body.protocol ) {
             itemImageData.Protocol = body.protocol;
         }
+        if ( body.imageVersion ) {
+            itemImageData.ImageVersion = body.imageVersion;
+        }
         if ( body.encoding ) {
             itemImageData.Encoding = body.encoding;
         }
@@ -92,42 +95,6 @@ export class ItemImageDataService {
 
     public async destroy(id: number): Promise<void> {
         await this.itemImageDataRepo.destroy(id);
-    }
-
-    // TODO: REMOVE
-    @validate()
-    public async rpcFindAll( @request(RpcRequest) data: any): Promise<Bookshelf.Collection<ItemImageData>> {
-        return this.findAll();
-    }
-
-    @validate()
-    public async rpcFindOne( @request(RpcRequest) data: any): Promise<ItemImageData> {
-        return this.findOne(data.params[0]);
-    }
-
-    @validate()
-    public async rpcCreate( @request(RpcRequest) data: any): Promise<ItemImageData> {
-        return this.create({
-            dataId: data.params[0] || '',
-            protocol: data.params[1] || '',
-            encoding: data.params[2] || '',
-            data: data.params[3] || ''
-        } as ItemImageDataCreateRequest);
-    }
-
-    @validate()
-    public async rpcUpdate( @request(RpcRequest) data: any): Promise<ItemImageData> {
-        return this.update(data.params[0], {
-            dataId: data.params[1] || '',
-            protocol: data.params[2] || '',
-            encoding: data.params[3] || '',
-            data: data.params[4] || ''
-        } as ItemImageDataUpdateRequest);
-    }
-
-    @validate()
-    public async rpcDestroy( @request(RpcRequest) data: any): Promise<void> {
-        return this.destroy(data.params[0]);
     }
 
 }

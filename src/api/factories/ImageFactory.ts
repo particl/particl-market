@@ -6,7 +6,7 @@ import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { ImageVersion } from '../../core/helpers/ImageVersion';
 import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
-import { NotFoundException } from '../exceptions/NotFoundException';
+import { MessageException } from '../exceptions/MessageException';
 import * as _ from 'lodash';
 
 export class ImageFactory {
@@ -35,7 +35,7 @@ export class ImageFactory {
     ): Promise<ItemImageDataCreateRequest[]> {
 
         if ( !originalImageData.data ) {
-            throw new NotFoundException('image data was empty.');
+            throw new MessageException('image data was empty.');
         }
         let originalData: string;
         try {

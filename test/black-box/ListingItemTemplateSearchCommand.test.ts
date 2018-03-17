@@ -102,7 +102,7 @@ describe('/ListingItemTemplateSearchCommand', () => {
 
         expect(result).hasOwnProperty('ListingItemObjects');
 
-        expect(result).hasOwnProperty('ListingItem');
+        expect(result).hasOwnProperty('ListingItems');
     });
 
     test('Should get second item template by pagination', async () => {
@@ -128,7 +128,7 @@ describe('/ListingItemTemplateSearchCommand', () => {
 
         expect(result).hasOwnProperty('ListingItemObjects');
 
-        expect(result).hasOwnProperty('ListingItem');
+        expect(result).hasOwnProperty('ListingItems');
     });
 
     test('Should return empty listing item templates array if invalid pagination', async () => {

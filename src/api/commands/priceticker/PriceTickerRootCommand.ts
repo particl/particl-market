@@ -42,8 +42,12 @@ export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInt
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<PriceTicker>> {
         if (data.params.length > 0) {
-            let returnData: any = [];
-            returnData = await this.priceTickerService.getPriceTickers(data.params);
+            // convert params to uppercase
+            const currencies: string[] = [];
+            for (const param of data.params) {
+                currencies.push(param.toUpperCase());
+            }
+            const returnData: any = await this.priceTickerService.getPriceTickers(currencies);
             return returnData;
         } else {
             throw new MessageException('Currency can\'t be blank');
@@ -58,4 +62,9 @@ export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInt
     public description(): string {
         return 'Commands for managing PriceTicker.';
     }
+
+    public example(): any {
+        return 'priceticker PART BTC';
+    }
+
 }

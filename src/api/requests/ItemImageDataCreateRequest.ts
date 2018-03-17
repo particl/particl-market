@@ -13,8 +13,7 @@ export class ItemImageDataCreateRequest extends RequestBody {
     public dataId: string | null;
 
     @IsNotEmpty()
-    @IsEnum(ImageDataProtocolType)
-    public protocol: ImageDataProtocolType;
+    public protocol: string;
 
     @IsNotEmpty()
     public imageVersion: string;

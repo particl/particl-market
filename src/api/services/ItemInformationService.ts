@@ -122,6 +122,7 @@ export class ItemInformationService {
     public async update(id: number, @request(ItemInformationUpdateRequest) data: ItemInformationUpdateRequest): Promise<ItemInformation> {
 
         const body = JSON.parse(JSON.stringify(data));
+        // this.log.debug('updating ItemInformation, body: ', JSON.stringify(body, null, 2));
 
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
