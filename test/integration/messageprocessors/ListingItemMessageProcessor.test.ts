@@ -18,8 +18,8 @@ import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
 
-import * as listingItemTemplateBasic from '../../testdata/listingitemtemplate/listingItemTemplateBasic.json';
-import * as listingItemCategoryWithRelated from '../../testdata/category/listingItemCategoryWithRelated.json';
+import * as listingItemTemplateBasic from '../../testdata/model/listingItemTemplateBasic.json';
+import * as listingItemCategoryWithRelated from '../../testdata/model/listingItemCategoryWithRelated.json';
 
 
 describe('ListingItemMessageProcessor', () => {
