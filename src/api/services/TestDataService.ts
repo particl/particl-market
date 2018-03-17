@@ -57,7 +57,9 @@ import { CreatableModel } from '../enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../requests/params/GenerateListingItemTemplateParams';
 import { GenerateListingItemParams } from '../requests/params/GenerateListingItemParams';
 import { GenerateProfileParams } from '../requests/params/GenerateProfileParams';
+import { GenerateBidParams } from '../requests/params/GenerateBidParams';
 import {ImageProcessing} from '../../core/helpers/ImageProcessing';
+import { BidMessageType } from '../enums/BidMessageType';
 
 export class TestDataService {
 
@@ -173,6 +175,10 @@ export class TestDataService {
                 const generateParams = new GenerateProfileParams(body.generateParams);
                 return await this.generateProfiles(body.amount, body.withRelated, generateParams);
             }
+            case CreatableModel.BID: {
+                const generateParams = new GenerateBidParams(body.generateParams);
+                return await this.generateBids(body.amount, body.withRelated, generateParams);
+            }
             default: {
                 throw new MessageException('Not implemented');
             }
@@ -261,6 +267,33 @@ export class TestDataService {
         // this.log.debug('items: ', items);
 
         return await this.generateResponse(items, withRelated);
+    }
+
+    // -------------------
+    // bids
+    private async generateBids(amount: number, withRelated: boolean = true, generateParams: GenerateBidParams): Promise<any> {
+        const items: any[] = [];
+        for (let i = amount; i > 0; i--) {
+            const bid = await this.generateBidData(generateParams);
+            const savedBid = await this.bidService.create(bid);
+            items.push(savedBid);
+        }
+        return this.generateResponse(items, withRelated);
+    }
+
+    private async generateBidData(generateParams: GenerateBidParams): Promise<BidCreateRequest> {
+        //  listingItemId 1 is used if generateListingItem is set to false (default=true)
+        let listingItemId = 1; 
+        if (generateParams.generateListingItem) {
+            const listingGenerateParams = new GenerateListingItemParams();
+            let listings = await this.generateListingItems(1, true, listingGenerateParams);
+            listingItemId = listings[0].id;
+            this.log.debug(`generateBidData: generated new listing with id ${listingItemId}, continuing bid creation`);
+        }
+        return {
+            action: BidMessageType.MPA_BID,
+            listing_item_id: listingItemId  
+        } as BidCreateRequest;
     }
 
     // -------------------
