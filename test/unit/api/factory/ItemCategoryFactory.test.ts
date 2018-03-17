@@ -1,9 +1,9 @@
 import { LogMock } from '../../lib/LogMock';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
 import { ItemCategoryCreateRequest } from '../../../../src/api/requests/ItemCategoryCreateRequest';
-import * as listingItemCategoryWithRelated from '../../../testdata/category/listingItemCategoryWithRelated.json';
-import * as listingItemCategoryWithRelated5levels from '../../../testdata/category/listingItemCategoryWithRelated5levels.json';
-import * as listingItemCategoryRootWithRelated from '../../../testdata/category/listingItemCategoryRootWithRelated.json';
+import * as listingItemCategoryWithRelated from '../../../testdata/model/listingItemCategoryWithRelated.json';
+import * as listingItemCategoryWithRelated5levels from '../../../testdata/model/listingItemCategoryWithRelated5levels.json';
+import * as listingItemCategoryRootWithRelated from '../../../testdata/model/listingItemCategoryRootWithRelated.json';
 import * as resources from 'resources';
 
 describe('ItemCategoryFactory', () => {
