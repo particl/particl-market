@@ -2,7 +2,7 @@
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
-import { Environment } from 'src/core/helpers/Environment';
+import { Environment } from '../../core/helpers/Environment';
 
 import * as os from 'os';
 import * as path from 'path';
