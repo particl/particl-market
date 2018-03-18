@@ -8,6 +8,7 @@ import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
 import { ActionMessageInterface } from '../messages/ActionMessageInterface';
+import { CoreCookieService } from './CoreCookieService';
 
 let RPC_REQUEST_ID = 1;
 
@@ -18,12 +19,11 @@ export class CoreRpcService {
     private DEFAULT_MAINNET_PORT = 51735;
     private DEFAULT_TESTNET_PORT = 51935;
     private DEFAULT_HOSTNAME = 'localhost';
-    private DEFAULT_USER = 'test';
-    private DEFAULT_PASSWORD = 'test';
+    // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
 
-    constructor(@inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+    constructor(@inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+                @inject(Types.Service) @named(Targets.Service.CoreCookieService) private coreCookieService: CoreCookieService) {
         this.log = new Logger(__filename);
-
     }
 
     public async getNetworkInfo(): Promise<any> {
@@ -85,8 +85,8 @@ export class CoreRpcService {
     private getOptions(): any {
 
         const auth = {
-            user: (process.env.RPCUSER ? process.env.RPCUSER : this.DEFAULT_USER),
-            pass: (process.env.RPCPASSWORD ? process.env.RPCPASSWORD : this.DEFAULT_PASSWORD),
+            user: (process.env.RPCUSER ? process.env.RPCUSER : this.coreCookieService.getCoreRpcUsername()),
+            pass: (process.env.RPCPASSWORD ? process.env.RPCPASSWORD : this.coreCookieService.getCoreRpcPassword()),
             sendImmediately: false
         };
 
@@ -111,4 +111,5 @@ export class CoreRpcService {
             (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT));
         return 'http://' + host + ':' + port;
     }
+
 }

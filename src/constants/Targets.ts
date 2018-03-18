@@ -75,6 +75,7 @@ export const Targets = {
         AddressService: 'AddressService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
+        CoreCookieService: 'CoreCookieService',
         CoreRpcService: 'CoreRpcService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         CurrencyPriceService: 'CurrencyPriceService',
