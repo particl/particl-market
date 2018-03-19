@@ -16,9 +16,9 @@ describe('ShoppingCartClearCommand', () => {
     let listingItems;
 
     beforeAll(async () => {
-        await testUtil.cleanDb([]);
+        await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
-        defaultShoppingCart = defaultProfile.ShoppingCarts[0];
+        defaultShoppingCart = defaultProfile.ShoppingCart[0];
         listingItems = await testUtil.generateData('listingitem', 2);
     });
 

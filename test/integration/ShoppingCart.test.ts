@@ -7,21 +7,21 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
-import { ShoppingCarts } from '../../src/api/models/ShoppingCarts';
+import { ShoppingCart } from '../../src/api/models/ShoppingCart';
 
-import { ShoppingCartsService } from '../../src/api/services/ShoppingCartsService';
+import { ShoppingCartService } from '../../src/api/services/ShoppingCartService';
 import { ProfileService } from '../../src/api/services/ProfileService';
 
-import { ShoppingCartsCreateRequest } from '../../src/api/requests/ShoppingCartsCreateRequest';
-import { ShoppingCartsUpdateRequest } from '../../src/api/requests/ShoppingCartsUpdateRequest';
+import { ShoppingCartCreateRequest } from '../../src/api/requests/ShoppingCartCreateRequest';
+import { ShoppingCartUpdateRequest } from '../../src/api/requests/ShoppingCartUpdateRequest';
 
-describe('ShoppingCarts', () => {
+describe('ShoppingCart', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
-    let shoppingCartsService: ShoppingCartsService;
+    let shoppingCartService: ShoppingCartService;
     let profileService: ProfileService;
 
     let defaultProfile;
@@ -30,17 +30,17 @@ describe('ShoppingCarts', () => {
     const testData = {
         name: 'test shopping cart',
         profile_id: 0
-    } as ShoppingCartsCreateRequest;
+    } as ShoppingCartCreateRequest;
 
     const testDataUpdated = {
         name: 'Updated shopping cart'
-    } as ShoppingCartsUpdateRequest;
+    } as ShoppingCartUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        shoppingCartsService = app.IoC.getNamed<ShoppingCartsService>(Types.Service, Targets.Service.ShoppingCartsService);
+        shoppingCartService = app.IoC.getNamed<ShoppingCartService>(Types.Service, Targets.Service.ShoppingCartService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
 
         // clean up the db, first removes all data and then seeds the db with default data
@@ -54,11 +54,11 @@ describe('ShoppingCarts', () => {
     });
 
     test('Should list default shopping carts', async () => {
-        const shoppingCartsCollection = await shoppingCartsService.findAll();
-        const shoppingCarts = shoppingCartsCollection.toJSON();
-        expect(shoppingCarts.length).toBe(1);
+        const shoppingCartCollection = await shoppingCartService.findAll();
+        const shoppingCart = shoppingCartCollection.toJSON();
+        expect(shoppingCart.length).toBe(1);
 
-        const result = shoppingCarts[0];
+        const result = shoppingCart[0];
 
         // test the values
         expect(result.name).toBe('DEFAULT');
@@ -67,10 +67,10 @@ describe('ShoppingCarts', () => {
 
     test('Should create a new shopping cart', async () => {
         testData.profile_id = defaultProfile.id;
-        const shoppingCartsModel: ShoppingCarts = await shoppingCartsService.create(testData);
-        createdId = shoppingCartsModel.Id;
+        const shoppingCartModel: ShoppingCart = await shoppingCartService.create(testData);
+        createdId = shoppingCartModel.Id;
 
-        const result = shoppingCartsModel.toJSON();
+        const result = shoppingCartModel.toJSON();
 
         // test the values
         expect(result.name).toBe(testData.name);
@@ -79,14 +79,14 @@ describe('ShoppingCarts', () => {
 
     test('Should throw ValidationException because we want to create a empty shopping cart', async () => {
         expect.assertions(1);
-        await shoppingCartsService.create({}).catch(e =>
+        await shoppingCartService.create({}).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
     test('Should list shopping carts with our new create one', async () => {
-        const shoppingCartsCollection = await shoppingCartsService.findAll();
-        const shoppingCarts = shoppingCartsCollection.toJSON();
+        const shoppingCartCollection = await shoppingCartService.findAll();
+        const shoppingCarts = shoppingCartCollection.toJSON();
         expect(shoppingCarts.length).toBe(2); // includes default one
 
         const result = shoppingCarts[1];
@@ -97,8 +97,8 @@ describe('ShoppingCarts', () => {
     });
 
     test('Should return one shopping carts', async () => {
-        const shoppingCartsModel: ShoppingCarts = await shoppingCartsService.findOne(createdId);
-        const result = shoppingCartsModel.toJSON();
+        const shoppingCartModel: ShoppingCart = await shoppingCartService.findOne(createdId);
+        const result = shoppingCartModel.toJSON();
 
         // test the values
         expect(result.name).toBe(testData.name);
@@ -108,14 +108,14 @@ describe('ShoppingCarts', () => {
     /*
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
-        await shoppingCartsService.update(createdId, testDataUpdated).catch(e =>
+        await shoppingCartService.update(createdId, testDataUpdated).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
     */
 
     test('Should update the shopping carts', async () => {
-        const shoppingCartsModel: ShoppingCarts = await shoppingCartsService.update(createdId, testDataUpdated);
+        const shoppingCartsModel: ShoppingCart = await shoppingCartService.update(createdId, testDataUpdated);
         const result = shoppingCartsModel.toJSON();
 
         // test the values
@@ -125,8 +125,8 @@ describe('ShoppingCarts', () => {
 
     test('Should delete the shopping carts', async () => {
         expect.assertions(1);
-        await shoppingCartsService.destroy(createdId);
-        await shoppingCartsService.findOne(createdId).catch(e =>
+        await shoppingCartService.destroy(createdId);
+        await shoppingCartService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );
     });

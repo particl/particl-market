@@ -12,9 +12,9 @@ describe('ShoppingCartGetCommand', () => {
     let defaultProfile;
 
     beforeAll(async () => {
-        await testUtil.cleanDb([]);
+        await testUtil.cleanDb();
         defaultProfile = await testUtil.getDefaultProfile();
-        defaultShoppingCart = defaultProfile.ShoppingCarts[0];
+        defaultShoppingCart = defaultProfile.ShoppingCart[0];
     });
 
     test('Should get a default Shopping Cart', async () => {

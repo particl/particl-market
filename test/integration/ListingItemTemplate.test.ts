@@ -50,14 +50,14 @@ import { MessagingInformationCreateRequest } from '../../src/api/requests/Messag
 import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
 import { ItemInformationCreateRequest } from '../../src/api/requests/ItemInformationCreateRequest';
 
-import * as listingItemCreateRequestBasic1 from '../testdata/listingitemcreaterequest/listingItemCreateRequestBasic1.json';
-import * as listingItemCreateRequestBasic2 from '../testdata/listingitemcreaterequest/listingItemCreateRequestBasic2.json';
-import * as listingItemUpdateRequestBasic1 from '../testdata/listingitemupdaterequest/listingItemUpdateRequestBasic1.json';
+import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
+import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
+import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
 
-import * as listingItemTemplateCreateRequestBasic1 from '../testdata/listingitemtemplatecreaterequest/listingItemTemplateCreateRequestBasic1.json';
-import * as listingItemTemplateCreateRequestBasic2 from '../testdata/listingitemtemplatecreaterequest/listingItemTemplateCreateRequestBasic2.json';
-import * as listingItemTemplateCreateRequestBasic3 from '../testdata/listingitemtemplatecreaterequest/listingItemTemplateCreateRequestBasic3.json';
-import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/listingitemtemplateupdaterequest/listingItemTemplateUpdateRequestBasic1.json';
+import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
+import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
+import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
+import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
 
 import * as resources from 'resources';
 

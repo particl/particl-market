@@ -106,8 +106,9 @@ export class PriceTickerService {
      */
     public async getPriceTickers(currencies: string[]): Promise<PriceTicker[]> {
         const returnData: any = [];
-        for (const currency of currencies) { // ETH, BTC, XRP
+        for (let currency of currencies) { // ETH, BTC, XRP
             let priceTicker;
+            currency = currency.toUpperCase(); // convert to UPPERCASE
             const symbolData = await this.getOneBySymbol(currency);
             if (symbolData) {
                 // check and update

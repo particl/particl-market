@@ -65,7 +65,8 @@ export class CurrencyPriceService {
     public async getCurrencyPrices(fromCurrency: string, toCurrencies: string[]): Promise<Bookshelf.Collection<CurrencyPrice>> {
 
         const returnData: any = [];
-        for (const toCurrency of toCurrencies) {
+        for (let toCurrency of toCurrencies) {
+            toCurrency = toCurrency.toUpperCase();
             // check for valid currency
             if (SupportedCurrencies[toCurrency]) {
                 const currencyPriceModel: CurrencyPrice = await this.search({
