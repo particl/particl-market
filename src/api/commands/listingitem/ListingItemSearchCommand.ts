@@ -69,7 +69,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             shippingCountryCode = ShippingCountries.validate(this.log, data.params[9]);
         }
 
-        return this.listingItemService.search({
+        return await this.listingItemService.search({
             page: data.params[0] || 1,
             pageLimit: data.params[1] || 5, // default page limit 5
             order: data.params[2] || 'ASC',
