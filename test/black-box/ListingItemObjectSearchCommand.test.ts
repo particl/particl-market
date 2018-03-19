@@ -12,172 +12,51 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 
+import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
+import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
+import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
+
 describe('ListingItemObjectSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ITEMOBJECT_ROOT.commandName;
-    const addMakretMethod = Commands.MARKET_ADD.commandName;
-    const subCommand = Commands.ITEMOBJECT_SEARCH.commandName;
-    const marketRootMethod = Commands.MARKET_ROOT.commandName;
+    const itemObjectCommand = Commands.ITEMOBJECT_ROOT.commandName;
+    const searchCommand = Commands.ITEMOBJECT_SEARCH.commandName;
 
-    const testData = {
-        market_id: 0,
-        hash: '',
-        itemInformation: {
-            title: 'item title1',
-            shortDescription: 'item short desc1',
-            longDescription: 'item long desc1',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            },
-            itemLocation: {
-                region: 'South Africa',
-                address: 'asdf, asdf, asdf',
-                locationMarker: {
-                    markerTitle: 'Helsinki',
-                    markerText: 'Helsinki',
-                    lat: 12.1234,
-                    lng: 23.2314
-                }
-            },
-            shippingDestinations: [{
-                country: 'United Kingdom',
-                shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
-            }, {
-                country: 'China',
-                shippingAvailability: ShippingAvailability.SHIPS
-            }, {
-                country: 'South Africa',
-                shippingAvailability: ShippingAvailability.ASK
-            }],
-            itemImages: [{
-                hash: 'imagehash1',
-                data: {
-                    dataId: 'dataid1',
-                    protocol: ImageDataProtocolType.IPFS,
-                    encoding: null,
-                    data: null
-                }
-            }]
-        },
-        paymentInformation: {
-            type: PaymentType.SALE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 100,
-                    seller: 100
-                }
-            },
-            itemPrice: {
-                currency: Currency.BITCOIN,
-                basePrice: 0.0001,
-                shippingPrice: {
-                    domestic: 0.123,
-                    international: 1.234
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.NORMAL,
-                    address: '1234'
-                }
-            }
-        },
-        messagingInformation: [{
-            protocol: MessagingProtocolType.SMSG,
-            publicKey: 'publickey1'
-        }],
-        listingItemObjects: [{
-            type: ListingItemObjectType.CHECKBOX,
-            description: 'Test description checkbox',
-            order: 1,
-            searchable: true
-        }, {
-            type: ListingItemObjectType.TABLE,
-            description: 'Test description table',
-            order: 2
-        }, {
-            type: ListingItemObjectType.DROPDOWN,
-            description: 'Test description dropdown',
-            order: 7
-        }]
-    };
+    let defaultMarket;
 
-    const testDataTwo = {
-        market_id: 0,
-        hash: '',
-        itemInformation: {
-            title: 'title UPDATED',
-            shortDescription: 'item UPDATED',
-            longDescription: 'item UPDATED',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            },
-            itemLocation: {
-                region: 'Finland',
-                address: 'UPDATED',
-                locationMarker: {
-                    markerTitle: 'UPDATED',
-                    markerText: 'UPDATED',
-                    lat: 33.333,
-                    lng: 44.333
-                }
-            },
-            shippingDestinations: [{
-                country: 'EU',
-                shippingAvailability: ShippingAvailability.SHIPS
-            }],
-            itemImages: [{
-                hash: 'imagehash1 UPDATED',
-                data: {
-                    dataId: 'dataid1 UPDATED',
-                    protocol: ImageDataProtocolType.IPFS,
-                    encoding: null,
-                    data: null
-                }
-            }]
-        },
-        paymentInformation: {
-            type: PaymentType.FREE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 1,
-                    seller: 1
-                }
-            },
-            itemPrice: {
-                currency: Currency.PARTICL,
-                basePrice: 3.333,
-                shippingPrice: {
-                    domestic: 1.111,
-                    international: 2.222
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.STEALTH,
-                    address: 'UPDATED'
-                }
-            }
-        },
-        messagingInformation: [{
-            protocol: MessagingProtocolType.SMSG,
-            publicKey: 'publickey1 UPDATED'
-        }],
+    // TODO: use data from test/testdata/...
+    // listingitemobjects are being worked on and once done this should be moved to testdata
+    const testData = listingItemTemplateCreateRequestBasic1;
+    testData.listingItemObjects = [{
+        type: ListingItemObjectType.CHECKBOX,
+        description: 'Test description checkbox',
+        order: 1,
+        searchable: true
+    }, {
+        type: ListingItemObjectType.TABLE,
+        description: 'Test description table',
+        order: 2
+    }, {
+        type: ListingItemObjectType.DROPDOWN,
+        description: 'Test description dropdown',
+        order: 7
+    }];
 
-        listingItemObjects: [{
-            type: ListingItemObjectType.CHECKBOX,
-            description: 'Test description checkbox 2 CHECKBOX',
-            order: 1
-        }, {
-            type: ListingItemObjectType.TABLE,
-            description: 'Test description table 2',
-            order: 2
-        }, {
-            type: ListingItemObjectType.DROPDOWN,
-            description: 'Test description dropdown 2',
-            order: 7
-        }]
-    };
+    const testDataTwo = listingItemTemplateCreateRequestBasic2;
+    testDataTwo.listingItemObjects = [{
+        type: ListingItemObjectType.CHECKBOX,
+        description: 'Test description checkbox 2 CHECKBOX',
+        order: 1
+    }, {
+        type: ListingItemObjectType.TABLE,
+        description: 'Test description table 2',
+        order: 2
+    }, {
+        type: ListingItemObjectType.DROPDOWN,
+        description: 'Test description dropdown 2',
+        order: 7
+    }];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -185,27 +64,27 @@ describe('ListingItemObjectSearchCommand', () => {
         testData.hash = ObjectHash.getHash(testData);
         testDataTwo.hash = ObjectHash.getHash(testDataTwo);
 
-        // add market
-        const res = await rpc(marketRootMethod, [addMakretMethod, 'Test Market', 'privateKey', 'Market Address']);
-        const result: any = res.getBody()['result'];
-        testData.market_id = result.id;
-        testDataTwo.market_id = result.id;
+        defaultMarket = await testUtil.getDefaultMarket();
+
+        testData.market_id = defaultMarket.id;
+        testDataTwo.market_id = defaultMarket.id;
 
         // create listing item
         await testUtil.addData(CreatableModel.LISTINGITEM, testData);
         await testUtil.addData(CreatableModel.LISTINGITEM, testDataTwo);
+
     });
 
     test('Should fail to search listing item object for the null searchString', async () => {
         // search listing item objects
-        const getDataRes: any = await rpc(method, [subCommand]);
+        const getDataRes: any = await rpc(itemObjectCommand, [searchCommand]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(400);
     });
 
     test('Should search empty listing item object for the invalid string search', async () => {
         // search listing item objects
-        const getDataRes: any = await rpc(method, [subCommand, 'dapp']);
+        const getDataRes: any = await rpc(itemObjectCommand, [searchCommand, 'dapp']);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -214,7 +93,7 @@ describe('ListingItemObjectSearchCommand', () => {
 
     test('Should return 2 listing item object searched by listing item object type', async () => {
         // search listing item objects
-        const getDataRes: any = await rpc(method, [subCommand, ListingItemObjectType.CHECKBOX]);
+        const getDataRes: any = await rpc(itemObjectCommand, [searchCommand, ListingItemObjectType.CHECKBOX]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -225,7 +104,7 @@ describe('ListingItemObjectSearchCommand', () => {
 
     test('Should return all listing item object searched by Test text with type or description', async () => {
         // search listing item objects
-        const getDataRes: any = await rpc(method, [subCommand, 'Test']);
+        const getDataRes: any = await rpc(itemObjectCommand, [searchCommand, 'Test']);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -237,7 +116,7 @@ describe('ListingItemObjectSearchCommand', () => {
 
     test('Should return all listing item object matching with given search string in listing item object type or description', async () => {
         // search listing item objects
-        const getDataRes: any = await rpc(method, [subCommand, 'CHECKBOX']);
+        const getDataRes: any = await rpc(itemObjectCommand, [searchCommand, 'CHECKBOX']);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
