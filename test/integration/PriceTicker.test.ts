@@ -224,8 +224,37 @@ describe('PriceTicker', () => {
         expect(PriceTickerModel).toBeNull();
     });
 
-    test('Should get updated priceticker if timestamp is older', async () => {
+    test('Should get updated priceticker if timestamp is older passing currency in UPPER case', async () => {
         const currencies = ['ETH'];
+        const PriceTickerModel: any = await priceTickerService.getPriceTickers(currencies);
+        const result = PriceTickerModel[0];
+
+        // should be updated
+        expect(result.updatedAt).not.toBe(lastUpdated);
+        expect(result.updatedAt).toBeGreaterThan(result.createdAt);
+
+        expect(result.cryptoId).toBeDefined();
+        expect(result.cryptoName).toBeDefined();
+        expect(result.cryptoSymbol).toBeDefined();
+        expect(result.cryptoRank).toBeDefined();
+        expect(result.cryptoPriceUsd).toBeDefined();
+        expect(result.cryptoPriceBtc).toBeDefined();
+        expect(result.crypto24HVolumeUsd).toBeDefined();
+        expect(result.cryptoMarketCapUsd).toBeDefined();
+        expect(result.cryptoAvailableSupply).toBeDefined();
+        expect(result.cryptoTotalSupply).toBeDefined();
+        expect(result.cryptoMaxSupply).toBeDefined();
+        expect(result.cryptoPercentChange1H).toBeDefined();
+        expect(result.cryptoPercentChange24H).toBeDefined();
+        expect(result.cryptoPercentChange7D).toBeDefined();
+        expect(result.cryptoLastUpdated).toBeDefined();
+        expect(result.cryptoPriceEur).toBeDefined();
+        expect(result.crypto24HVolumeEur).toBeDefined();
+        expect(result.cryptoMarketCapEur).toBeDefined();
+    });
+
+    test('Should get updated priceticker if timestamp is older passing currency in LOWER case', async () => {
+        const currencies = ['eth'];
         const PriceTickerModel: any = await priceTickerService.getPriceTickers(currencies);
         const result = PriceTickerModel[0];
 
