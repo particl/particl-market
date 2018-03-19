@@ -283,16 +283,16 @@ export class TestDataService {
 
     private async generateBidData(generateParams: GenerateBidParams): Promise<BidCreateRequest> {
         //  listingItemId 1 is used if generateListingItem is set to false (default=true)
-        let listingItemId = 1; 
+        let listingItemId = 1;
         if (generateParams.generateListingItem) {
             const listingGenerateParams = new GenerateListingItemParams();
-            let listings = await this.generateListingItems(1, true, listingGenerateParams);
+            const listings = await this.generateListingItems(1, true, listingGenerateParams);
             listingItemId = listings[0].id;
             this.log.debug(`generateBidData: generated new listing with id ${listingItemId}, continuing bid creation`);
         }
         return {
             action: BidMessageType.MPA_BID,
-            listing_item_id: listingItemId  
+            listing_item_id: listingItemId
         } as BidCreateRequest;
     }
 
