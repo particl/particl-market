@@ -7,16 +7,16 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
-import { ShoppingCartItems } from '../../models/ShoppingCartItems';
-import { ShoppingCartItemsService } from '../../services/ShoppingCartItemsService';
+import { ShoppingCartItem } from '../../models/ShoppingCartItem';
+import { ShoppingCartItemService } from '../../services/ShoppingCartItemService';
 import { MessageException } from '../../exceptions/MessageException';
 
-export class ShoppingCartItemListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ShoppingCartItems>> {
+export class ShoppingCartItemListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ShoppingCartItem>> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ShoppingCartItemsService) private shoppingCartItemsService: ShoppingCartItemsService,
+        @inject(Types.Service) @named(Targets.Service.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.SHOPPINGCARTITEM_LIST);
@@ -26,14 +26,13 @@ export class ShoppingCartItemListCommand extends BaseCommand implements RpcComma
     /**
      * data.params[]:
      *  [0]: cartId, number
-     *  [1]: withRelated, boolean
      *
      * @param data
-     * @returns {Promise<Bookshelf.Collection<ShoppingCartItems>>}
+     * @returns {Promise<Bookshelf.Collection<ShoppingCartItem>>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ShoppingCartItems>> {
-        return this.shoppingCartItemsService.findListItemsByCartId(data.params[0], data.params[1]);
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ShoppingCartItem>> {
+        return this.shoppingCartItemService.findListItemsByCartId(data.params[0]);
     }
 
     public usage(): string {

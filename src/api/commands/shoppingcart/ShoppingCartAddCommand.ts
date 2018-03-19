@@ -6,16 +6,16 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
-import { ShoppingCartsCreateRequest } from '../../requests/ShoppingCartsCreateRequest';
-import { ShoppingCarts } from '../../models/ShoppingCarts';
-import { ShoppingCartsService } from '../../services/ShoppingCartsService';
+import { ShoppingCartCreateRequest } from '../../requests/ShoppingCartCreateRequest';
+import { ShoppingCart } from '../../models/ShoppingCart';
+import { ShoppingCartService } from '../../services/ShoppingCartService';
 
-export class ShoppingCartAddCommand extends BaseCommand implements RpcCommandInterface<ShoppingCarts> {
+export class ShoppingCartAddCommand extends BaseCommand implements RpcCommandInterface<ShoppingCart> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ShoppingCartsService) private shoppingCartsService: ShoppingCartsService,
+        @inject(Types.Service) @named(Targets.Service.ShoppingCartService) private shoppingCartService: ShoppingCartService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.SHOPPINGCART_ADD);
@@ -28,14 +28,14 @@ export class ShoppingCartAddCommand extends BaseCommand implements RpcCommandInt
      *  [1]: profileId
      *
      * @param data
-     * @returns {Promise<ShoppingCarts>}
+     * @returns {Promise<ShoppingCart>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCarts> {
-        return this.shoppingCartsService.create({
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCart> {
+        return this.shoppingCartService.create({
             name : data.params[0],
             profile_id : data.params[1]
-        } as ShoppingCartsCreateRequest);
+        } as ShoppingCartCreateRequest);
     }
 
     public usage(): string {

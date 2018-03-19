@@ -218,8 +218,8 @@ export class TestDataService {
             'favorite_items',
             'cryptocurrency_addresses',
             'profiles',
-            'shopping_carts',
-            'shopping_cart_items',
+            'shopping_cart',
+            'shopping_cart_item',
             'item_categories',
             'markets',
             'users',     // todo: not needed

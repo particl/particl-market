@@ -6,20 +6,22 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
-import { ShoppingCartItemsService } from '../../services/ShoppingCartItemsService';
+import { ShoppingCartItemCreateRequest } from '../../requests/ShoppingCartItemCreateRequest';
+import { ShoppingCartItem } from '../../models/ShoppingCartItem';
+import { ShoppingCartItemService } from '../../services/ShoppingCartItemService';
 import { ListingItemService } from '../../services/ListingItemService';
 import { MessageException } from '../../exceptions/MessageException';
 
-export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class ShoppingCartItemAddCommand extends BaseCommand implements RpcCommandInterface<ShoppingCartItem> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ShoppingCartItemsService) private shoppingCartItemsService: ShoppingCartItemsService,
+        @inject(Types.Service) @named(Targets.Service.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(Commands.SHOPPINGCARTITEM_REMOVE);
+        super(Commands.SHOPPINGCARTITEM_ADD);
         this.log = new Logger(__filename);
     }
 
@@ -29,10 +31,10 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
      *  [1]: itemId | hash
      *
      * @param data
-     * @returns {Promise<void>}
+     * @returns {Promise<ShoppingCartItem>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCartItem> {
         if (data.params[0] && data.params[1]) {
             // check if listingItem hash then get Id and pass as parameter
             let listingItemId = data.params[1];
@@ -40,14 +42,10 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
                 const listingItem = await this.listingItemService.findOneByHash(listingItemId);
                 listingItemId = listingItem.id;
             }
-            const isItemExistOnCart = await this.shoppingCartItemsService.findOneByListingItemOnCart(data.params[0], listingItemId);
-            if (isItemExistOnCart === null) {
-                this.log.warn(`listing item not exist on shopping cart`);
-                throw new MessageException(`listing item not exist on shopping cart`);
-            } else {
-                // delete
-                return this.shoppingCartItemsService.destroy(isItemExistOnCart.Id);
-            }
+            return this.shoppingCartItemService.create({
+                shopping_cart_id: data.params[0],
+                listing_item_id: listingItemId
+            } as ShoppingCartItemCreateRequest);
         } else {
             throw new MessageException('cartId and listingItemId can\'t be blank');
         }
@@ -60,12 +58,12 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <cartId>                 - The Id of the shopping cart we want to use. \n'
-            + '    <itemId>                 -  Id of the ListingItem we want to add to the cart. \n'
-            + '    <hash>                   -  Hash of the ListingItem we want to add to the cart. ';
+            + '    <itemId>                 - Id of the ListingItem we want to add to the cart. \n'
+            + '    <hash>                   - Hash of the ListingItem we want to add to the cart. ';
     }
 
     public description(): string {
-        return 'Remove lisging-item from shopping cart as per given listingitem Id and cart Id.';
+        return 'Add a new item into shopping cart as per given listingItem and cart.';
     }
 
     public example(): string {

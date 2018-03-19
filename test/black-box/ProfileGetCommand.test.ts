@@ -41,7 +41,7 @@ describe('/ProfileGetCommand', () => {
         expect(resultMain.CryptocurrencyAddresses).toBeDefined();
         expect(resultMain.FavoriteItems).toBeDefined();
         expect(resultMain.ShippingAddresses).toBeDefined();
-        expect(resultMain.ShoppingCarts).toBeDefined();
+        expect(resultMain.ShoppingCart).toBeDefined();
     });
 
     test('Should return one profile by Name', async () => {
@@ -56,7 +56,7 @@ describe('/ProfileGetCommand', () => {
         expect(resultMain.CryptocurrencyAddresses).toBeDefined();
         expect(resultMain.FavoriteItems).toBeDefined();
         expect(resultMain.ShippingAddresses).toBeDefined();
-        expect(resultMain.ShoppingCarts).toBeDefined();
+        expect(resultMain.ShoppingCart).toBeDefined();
     });
 
     test('Should return null profile by invalid Name', async () => {
