@@ -6,14 +6,15 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
-import { ShoppingCartsService } from '../../services/ShoppingCartsService';
+import { ShoppingCartService } from '../../services/ShoppingCartService';
+import { ShoppingCart } from '../../models/ShoppingCart';
 
-export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInterface<ShoppingCart> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ShoppingCartsService) private shoppingCartsService: ShoppingCartsService,
+        @inject(Types.Service) @named(Targets.Service.ShoppingCartService) private shoppingCartService: ShoppingCartService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.SHOPPINGCART_GET);
@@ -25,11 +26,11 @@ export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInt
      *  [0]: cartId
      *
      * @param data
-     * @returns {Promise<any>}
+     * @returns {Promise<ShoppingCart>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
-        return this.shoppingCartsService.findOne(data.params[0]);
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCart> {
+        return this.shoppingCartService.findOne(data.params[0]);
     }
 
     public usage(): string {

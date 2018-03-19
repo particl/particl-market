@@ -48,23 +48,25 @@ describe('ItemImage', () => {
     const testData = {
         // item_information_id
         // hash
-        data: {
+        data: [{
             dataId: null,
             protocol: ImageDataProtocolType.LOCAL,
+            imageVersion: 'ORIGINAL',
             encoding: 'BASE64',
             data: ImageProcessing.milkcatTall
-        }
+        }]
     } as ItemImageCreateRequest;
 
     const testDataUpdated = {
         // item_information_id,
         // hash,
-        data: {
+        data: [{
             dataId: null,
             protocol: ImageDataProtocolType.LOCAL,
+            imageVersion: 'ORIGINAL',
             encoding: 'BASE64',
             data: ImageProcessing.milkcat
-        }
+        }]
     } as ItemImageUpdateRequest;
 
 
@@ -125,9 +127,10 @@ describe('ItemImage', () => {
         const result = itemImageModel.toJSON();
 
         expect(result.hash).toBe(testData.hash);
-        expect(result.ItemImageDatas[0].dataId).toBe(testData.data.dataId);
-        expect(result.ItemImageDatas[0].protocol).toBe(testData.data.protocol);
-        expect(result.ItemImageDatas[0].encoding).toBe(testData.data.encoding);
+        expect(result.ItemImageDatas[0].dataId).toBe(testData.data[0].dataId);
+        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
+        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
+        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
         expect(result.ItemImageDatas.length).toBe(4);
 
         // TODO: When non-BASE64 resizing is implemented check image sizes.
@@ -153,9 +156,10 @@ describe('ItemImage', () => {
         const itemImageModel: ItemImage = await itemImageService.findOne(createdImageId);
         const result = itemImageModel.toJSON();
         expect(result.hash).toBe(testData.hash);
-        expect(result.ItemImageDatas[0].dataId).toBe(testData.data.dataId);
-        expect(result.ItemImageDatas[0].protocol).toBe(testData.data.protocol);
-        expect(result.ItemImageDatas[0].encoding).toBe(testData.data.encoding);
+        expect(result.ItemImageDatas[0].dataId).toBe(testData.data[0].dataId);
+        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
+        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
+        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
 
         // TODO: When non-BASE64 resizing is implemented check image sizes.
     });
@@ -167,7 +171,7 @@ describe('ItemImage', () => {
         );
     });
 
-    test('Should update the item image', async () => {
+    test('Should update the ItemImage', async () => {
         testDataUpdated.item_information_id = createdListingItem.ItemInformation.id;
         testDataUpdated.hash = await ObjectHash.getHash(testData);
 
@@ -175,9 +179,11 @@ describe('ItemImage', () => {
         const result = itemImageModel.toJSON();
 
         expect(result.hash).toBe(testDataUpdated.hash);
-        expect(result.ItemImageDatas[0].dataId).toBe(testDataUpdated.data.dataId);
-        expect(result.ItemImageDatas[0].protocol).toBe(testDataUpdated.data.protocol);
-        expect(result.ItemImageDatas[0].encoding).toBe(testDataUpdated.data.encoding);
+        expect(result.ItemImageDatas[0].dataId).toBe(testData.data[0].dataId);
+        expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
+        expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
+        expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
+
         expect(result.ItemImageDatas.length).toBe(4);
 
         // TODO: check images sizes

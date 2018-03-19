@@ -10,7 +10,7 @@ import { ProfileService } from '../../src/api/services/ProfileService';
 import { AddressService } from '../../src/api/services/AddressService';
 import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
 import { FavoriteItemService } from '../../src/api/services/FavoriteItemService';
-import { ShoppingCartsService } from '../../src/api/services/ShoppingCartsService';
+import { ShoppingCartService } from '../../src/api/services/ShoppingCartService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
@@ -39,7 +39,7 @@ describe('Profile', () => {
     let marketService: MarketService;
     let listingItemService: ListingItemService;
     let favoriteItemService: FavoriteItemService;
-    let shoppingCartsService: ShoppingCartsService;
+    let shoppingCartService: ShoppingCartService;
 
     let createdId;
     let createdListingItem;
@@ -85,7 +85,7 @@ describe('Profile', () => {
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
         favoriteItemService = app.IoC.getNamed<FavoriteItemService>(Types.Service, Targets.Service.FavoriteItemService);
-        shoppingCartsService = app.IoC.getNamed<ShoppingCartsService>(Types.Service, Targets.Service.ShoppingCartsService);
+        shoppingCartService = app.IoC.getNamed<ShoppingCartService>(Types.Service, Targets.Service.ShoppingCartService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -126,8 +126,8 @@ describe('Profile', () => {
         expect(result.ShippingAddresses).toHaveLength(2);
 
         // check for default ShoppingCart
-        expect(result.ShoppingCarts).toHaveLength(1);
-        expect(result.ShoppingCarts[0].name).toBe('DEFAULT');
+        expect(result.ShoppingCart).toHaveLength(1);
+        expect(result.ShoppingCart[0].name).toBe('DEFAULT');
     });
 
     test('Should list profiles with our new create one', async () => {
@@ -142,7 +142,7 @@ describe('Profile', () => {
         expect(result.ShippingAddresses).toBe(undefined);           // doesnt fetch related
         expect(result.CryptocurrencyAddresses).toBe(undefined);     // doesnt fetch related
         expect(result.FavoriteItems).toBe(undefined);               // doesnt fetch related
-        expect(result.ShoppingCarts).toBe(undefined);               // doesnt fetch related
+        expect(result.ShoppingCart).toBe(undefined);               // doesnt fetch related
     });
 
     test('Should return one profile', async () => {
@@ -154,7 +154,7 @@ describe('Profile', () => {
         expect(result.ShippingAddresses).toHaveLength(2);
         expect(result.CryptocurrencyAddresses).toHaveLength(0);
         expect(result.FavoriteItems).toHaveLength(0);
-        expect(result.ShoppingCarts).toHaveLength(1);
+        expect(result.ShoppingCart).toHaveLength(1);
     });
 
     // TODO: updating profile does not affect related models
@@ -165,7 +165,7 @@ describe('Profile', () => {
         expect(result.name).toBe(testDataUpdated.name);
         expect(result.address).toBe(testDataUpdated.address);
         expect(result.ShippingAddresses).toHaveLength(2);
-        expect(result.ShoppingCarts).toHaveLength(1);
+        expect(result.ShoppingCart).toHaveLength(1);
     });
 
     test('Should delete the profile', async () => {
@@ -191,9 +191,9 @@ describe('Profile', () => {
             expect(e).toEqual(new NotFoundException(addressId2));
         });
 
-        const shoppingCartId = result.ShoppingCarts[0].id;
+        const shoppingCartId = result.ShoppingCart[0].id;
         // make sure shoppingCart were also deleted
-        await shoppingCartsService.findOne(shoppingCartId).catch(e => {
+        await shoppingCartService.findOne(shoppingCartId).catch(e => {
             expect(e).toEqual(new NotFoundException(shoppingCartId));
         });
     });
@@ -212,7 +212,7 @@ describe('Profile', () => {
         expect(result.ShippingAddresses).not.toHaveLength(0);
         expect(result.CryptocurrencyAddresses).not.toHaveLength(0);
         expect(result.FavoriteItems).toHaveLength(0);
-        expect(result.ShoppingCarts).toHaveLength(1);
+        expect(result.ShoppingCart).toHaveLength(1);
 
         await profileService.destroy(result.id);
         await profileService.findOne(result.id).catch(e => {
@@ -229,9 +229,9 @@ describe('Profile', () => {
         await cryptocurAddService.findOne(firstCryptoCurrAddId).catch(e => {
             expect(e).toEqual(new NotFoundException(firstCryptoCurrAddId));
         });
-        const shoppingCartId = result.ShoppingCarts[0].id;
+        const shoppingCartId = result.ShoppingCart[0].id;
         // make sure shoppingCart were also deleted
-        await shoppingCartsService.findOne(shoppingCartId).catch(e => {
+        await shoppingCartService.findOne(shoppingCartId).catch(e => {
             expect(e).toEqual(new NotFoundException(shoppingCartId));
         });
 
@@ -259,7 +259,7 @@ describe('Profile', () => {
         expect(result.ShippingAddresses).not.toHaveLength(0);
         expect(result.CryptocurrencyAddresses).not.toHaveLength(0);
         expect(result.FavoriteItems).toHaveLength(1);
-        expect(result.ShoppingCarts).toHaveLength(1);
+        expect(result.ShoppingCart).toHaveLength(1);
 
         await profileService.destroy(result.id);
         await profileService.findOne(result.id).catch(e => {
@@ -284,9 +284,9 @@ describe('Profile', () => {
             expect(e).toEqual(new NotFoundException(favItemId));
         });
 
-        const shoppingCartId = result.ShoppingCarts[0].id;
+        const shoppingCartId = result.ShoppingCart[0].id;
         // make sure shoppingCart were also deleted
-        await shoppingCartsService.findOne(shoppingCartId).catch(e => {
+        await shoppingCartService.findOne(shoppingCartId).catch(e => {
             expect(e).toEqual(new NotFoundException(shoppingCartId));
         });
 

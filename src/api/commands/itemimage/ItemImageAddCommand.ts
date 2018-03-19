@@ -40,6 +40,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemImage> {
+
         // check listingItemTemplate id present in params
         if (!data.params[0]) {
             throw new MessageException('ListingItemTemplate id can not be null.');
@@ -50,16 +51,18 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         // find related itemInformation
         const itemInformation = listingItemTemplate.related('ItemInformation').toJSON();
 
+        // TODO: why the fuck is image hash created from iteminformation?
         // create item images
         return await this.itemImageService.create({
             item_information_id: itemInformation.id,
             hash: await ObjectHash.getHash(itemInformation),
-            data: {
+            data: [{
                 dataId: data.params[1],
                 protocol: data.params[2],
                 encoding: data.params[3],
-                data: data.params[4]
-            }
+                data: data.params[4],
+                imageVersion: 'ORIGINAL'
+            }]
         } as ItemImageCreateRequest);
     }
 

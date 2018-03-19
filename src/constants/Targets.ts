@@ -36,8 +36,8 @@ export const Targets = {
         Profile: 'Profile',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
-        ShoppingCartItems: 'ShoppingCartItems',
-        ShoppingCarts: 'ShoppingCarts',
+        ShoppingCartItem: 'ShoppingCartItem',
+        ShoppingCart: 'ShoppingCart',
         User: 'User'
     },
     Repository:     {
@@ -67,14 +67,15 @@ export const Targets = {
         ProfileRepository: 'ProfileRepository',
         ShippingDestinationRepository: 'ShippingDestinationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
-        ShoppingCartItemsRepository: 'ShoppingCartItemsRepository',
-        ShoppingCartsRepository: 'ShoppingCartsRepository',
+        ShoppingCartItemRepository: 'ShoppingCartItemRepository',
+        ShoppingCartRepository: 'ShoppingCartRepository',
         UserRepository: 'UserRepository'
     },
     Service:     {
         AddressService: 'AddressService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
+        CoreCookieService: 'CoreCookieService',
         CoreRpcService: 'CoreRpcService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
         CurrencyPriceService: 'CurrencyPriceService',
@@ -96,15 +97,15 @@ export const Targets = {
         ListingItemTemplateService: 'ListingItemTemplateService',
         LocationMarkerService: 'LocationMarkerService',
         MarketService: 'MarketService',
-        MessageBroadcastService: 'MessageBroadcastService',
+        SmsgService: 'SmsgService',
         MessagingInformationService: 'MessagingInformationService',
         PaymentInformationService: 'PaymentInformationService',
         PriceTickerService: 'PriceTickerService',
         ProfileService: 'ProfileService',
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
-        ShoppingCartItemsService: 'ShoppingCartItemsService',
-        ShoppingCartsService: 'ShoppingCartsService',
+        ShoppingCartItemService: 'ShoppingCartItemService',
+        ShoppingCartService: 'ShoppingCartService',
         TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
@@ -241,7 +242,7 @@ export const Targets = {
             ShoppingCartRootCommand: 'ShoppingCartRootCommand',
             ShoppingCartUpdateCommand: 'ShoppingCartUpdateCommand'
         },
-        shoppingcartitems: {
+        shoppingcartitem: {
             ShoppingCartItemAddCommand: 'ShoppingCartItemAddCommand',
             ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
@@ -280,6 +281,7 @@ export const Targets = {
     },
     Listener:     {
         ServerStartedListener: 'ServerStartedListener',
+        ListingItemReceivedListener: 'ListingItemReceivedListener',
         user: {
             UserAuthenticatedListener: 'UserAuthenticatedListener',
             UserCreatedListener: 'UserCreatedListener'
@@ -313,8 +315,8 @@ export const Targets = {
         RpcController: 'RpcController',
         ShippingDestinationController: 'ShippingDestinationController',
         ShippingPriceController: 'ShippingPriceController',
-        ShoppingCartItemsController: 'ShoppingCartItemsController',
-        ShoppingCartsController: 'ShoppingCartsController',
+        ShoppingCartItemController: 'ShoppingCartItemController',
+        ShoppingCartController: 'ShoppingCartController',
         UserController: 'UserController'
     }
 };

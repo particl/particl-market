@@ -2,7 +2,7 @@ import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { PaymentType } from '../../src/api/enums/PaymentType';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+// import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
@@ -10,17 +10,19 @@ import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 import {ItemImageDataUpdateRequest} from '../../src/api/requests/ItemImageDataUpdateRequest';
 import * as sharp from 'sharp';
+import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import {ListingItemTemplate} from '../../src/api/models/ListingItemTemplate';
 
 describe('ItemImageAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
 
-    const method = Commands.ITEMIMAGE_ROOT.commandName;
-    const subCommand = Commands.ITEMIMAGE_ADD.commandName;
+    const imageCommand = Commands.ITEMIMAGE_ROOT.commandName;
+    const addCommand = Commands.ITEMIMAGE_ADD.commandName;
 
     const keys = [
         'id', 'hash', 'updatedAt', 'createdAt'
     ];
-
+/*
     const testDataListingItemTemplate = {
         profile_id: 0,
         hash: '',
@@ -31,87 +33,93 @@ describe('ItemImageAddCommand', () => {
             type: PaymentType.SALE
         }
     } as ListingItemTemplateCreateRequest;
-
+*/
     const pageNumber = 1;
-    let createdTemplateId;
-    let createdItemInfoId;
-    let itemTemplateWithItemInfo;
+    let createdListingItemTemplateWithoutItemInformation;
+    let createdListingItemTemplate;
     let itemImages = [];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
         // profile
         const defaultProfile = await testUtil.getDefaultProfile();
-        testDataListingItemTemplate.profile_id = defaultProfile.id;
 
-        // set hash
-        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate);
+        let generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            false,   // generateItemInformation
+            false,   // generateShippingDestinations
+            false,   // generateItemImages
+            false,   // generatePaymentInformation
+            false,   // generateEscrow
+            false,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
 
-        // create item template
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        let listingItemTemplate = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as ListingItemTemplate[];
+        createdListingItemTemplateWithoutItemInformation = listingItemTemplate[0];
 
-        createdTemplateId = addListingItemTempRes.id;
-        createdItemInfoId = addListingItemTempRes.ItemInformation.id;
+        generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            false,   // generateShippingDestinations
+            true,   // generateItemImages
+            false,   // generatePaymentInformation
+            false,   // generateEscrow
+            false,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
 
-
-        // set itemInformation
-        testDataListingItemTemplate.itemInformation = {
-           title: 'item title1',
-           shortDescription: 'item short desc1',
-           longDescription: 'item long desc1',
-           itemCategory: {
-                key: 'cat_high_luxyry_items'
-           }
-        };
-
-        // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
-
-        // create item template
-        const listingItemTempWithItemInfoRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-        itemTemplateWithItemInfo = listingItemTempWithItemInfoRes;
-        createdItemInfoId = itemTemplateWithItemInfo.ItemInformation.id;
+        listingItemTemplate = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as ListingItemTemplate[];
+        createdListingItemTemplate = listingItemTemplate[0];
     });
 
-    test('Should fail to add item image because without listingItemTemplate id', async () => {
-        // add item image
-        const addDataRes: any = await rpc(method, [subCommand]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('ListingItemTemplate id can not be null.');
+    test('Should fail to add ItemImage because missing ListingItemTemplate.Id', async () => {
+        const result: any = await rpc(imageCommand, [addCommand]);
+        result.expectJson();
+        result.expectStatusCode(404);
+        expect(result.error.error.success).toBe(false);
+        expect(result.error.error.message).toBe('ListingItemTemplate id can not be null.');
     });
 
-    test('Should fail to add item image because given item template does not have item information', async () => {
+    test('Should fail to add ItemImage because given ListingItemTemplate does not have ItemInformation', async () => {
         // add item image
-        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
+        const addDataRes: any = await rpc(imageCommand, [addCommand, createdListingItemTemplateWithoutItemInformation.id]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(400);
         expect(addDataRes.error.error.success).toBe(false);
         expect(addDataRes.error.error.message).toBe('Request body is not valid');
     });
 
-    test('Should fail to add item image for Item information with blank ItemImageData', async () => {
+    test('Should fail to add ItemImage without ItemImageData', async () => {
         // add item image
-        const addDataRes: any = await rpc(method, [subCommand, itemTemplateWithItemInfo.id]);
+        const addDataRes: any = await rpc(imageCommand, [addCommand, createdListingItemTemplate.id]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
     });
 
-    // TODO: why does this return 400
-    test('Should failed to add item image because invalid ItemImageData protocol', async () => {
-        const addDataRes: any = await rpc(method,
-            [subCommand, itemTemplateWithItemInfo.id, 'TEST-DATA-ID', 'INVALID_PROTOCOL', 'BASE64', ImageProcessing.milkcat]);
+    test('Should fail to add ItemImage because invalid ItemImageData protocol', async () => {
+        const addDataRes: any = await rpc(imageCommand,
+            [addCommand, createdListingItemTemplate.id, 'TEST-DATA-ID', 'INVALID_PROTOCOL', 'BASE64', ImageProcessing.milkcat]);
         addDataRes.expectJson();
-        addDataRes.expectStatusCode(400);
-        expect(addDataRes.error.error.message).toBe('Request body is not valid');
+        addDataRes.expectStatusCode(404);
+        expect(addDataRes.error.error.message).toBe('Invalid image protocol.');
     });
 
-    test('Should add item image with ItemImageData', async () => {
+    test('Should add ItemImage with ItemImageData', async () => {
         // add item image
-        const addDataRes: any = await rpc(method, [
-            subCommand,
-            itemTemplateWithItemInfo.id,
+        const addDataRes: any = await rpc(imageCommand, [
+            addCommand,
+            createdListingItemTemplate.id,
             'TEST-DATA-ID',
             ImageDataProtocolType.LOCAL,
             'BASE64',
@@ -121,8 +129,6 @@ describe('ItemImageAddCommand', () => {
         addDataRes.expectStatusCode(200);
         addDataRes.expectDataRpc(keys);
         const result: any = addDataRes.getBody()['result'];
-        expect(result.itemInformationId).toBe(createdItemInfoId);
-
         itemImages = result.ItemImageDatas;
     });
 
@@ -219,7 +225,7 @@ describe('ItemImageAddCommand', () => {
 
         }
     });
-});
 
+});
 
 
