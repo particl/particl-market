@@ -12,7 +12,7 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 
-describe('/ListingItemObjectSearchCommand', () => {
+describe('ListingItemObjectSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const testUtil = new BlackBoxTestUtil();
