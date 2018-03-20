@@ -45,6 +45,7 @@ export class CoreCookieService {
     private getCookieLoop(): void {
         try {
             const cookie = this.getPathToCookie();
+            this.log.debug('cookie path: ', cookie);
 
             // we might not be running the particld locally so the cookie might not exists
             if (cookie) {
@@ -103,7 +104,6 @@ export class CoreCookieService {
 
           case 'darwin': {
             dir = path.join(homeDir, 'Library', 'Application Support', appName);
-            this.log.debug('cookie dir:', dir);
             break;
           }
 
