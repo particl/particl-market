@@ -10,7 +10,7 @@
             "description": ""
         },
         "itemLocation": {
-            "region": "SOUTH AFRICA",
+            "region": "ZA",
             "address": "92656 Morar Turnpike",
             "locationMarker": {
                 "markerTitle": "saepe",
@@ -20,13 +20,13 @@
             }
         },
         "shippingDestinations": [{
-            "country": "MOROCCO",
+            "country": "MA",
             "shippingAvailability": "DOES_NOT_SHIP"
         }, {
-            "country": "SOUTH AFRICA",
+            "country": "ZA",
             "shippingAvailability": "SHIPS"
         }, {
-            "country": "ARMENIA",
+            "country": "AM",
             "shippingAvailability": "UNKNOWN"
         }],
         "itemImages": [{

@@ -37,7 +37,7 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
         if (!_.isEmpty(listingItemTemplate.ListingItems)) {
             throw new MessageException(`ListingItemTemplate has ListingItems so it can't be deleted. id=${data.params[0]}`);
         }
-        return this.listingItemTemplateService.destroy(data.params[0]);
+        return await this.listingItemTemplateService.destroy(data.params[0]);
     }
 
     public usage(): string {

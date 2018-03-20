@@ -6,14 +6,14 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { BaseCommand } from '../BaseCommand';
 import { Commands } from '../CommandEnumType';
-import { ShoppingCartItemsService } from '../../services/ShoppingCartItemsService';
+import { ShoppingCartItemService } from '../../services/ShoppingCartItemService';
 
 export class ShoppingCartClearCommand extends BaseCommand implements RpcCommandInterface<void> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ShoppingCartItemsService) private shoppingCartItemsService: ShoppingCartItemsService,
+        @inject(Types.Service) @named(Targets.Service.ShoppingCartItemService) private shoppingCartItemService: ShoppingCartItemService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.SHOPPINGCART_CLEAR);
@@ -29,7 +29,7 @@ export class ShoppingCartClearCommand extends BaseCommand implements RpcCommandI
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
-        return this.shoppingCartItemsService.clearCart(data.params[0]);
+        return this.shoppingCartItemService.clearCart(data.params[0]);
     }
 
     public usage(): string {

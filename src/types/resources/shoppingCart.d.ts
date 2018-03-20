@@ -1,6 +1,6 @@
 declare module 'resources' {
 
-    interface ShoppingCarts {
+    interface ShoppingCart {
         id: number;
         createdAt: Date;
         updatedAt: Date;

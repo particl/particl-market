@@ -12,7 +12,7 @@ Install [Node.js and NPM](https://nodejs.org/en/download/)
 * on Linux (Ubuntu) use `curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -`<br/>
 `sudo apt-get install -y nodejs`
 
-Then install yarn globally
+Then install yarn globally 
 ```
 npm install yarn -g 
 ```

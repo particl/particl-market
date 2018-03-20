@@ -11,12 +11,12 @@ import { ProfileUpdateRequest } from '../requests/ProfileUpdateRequest';
 import { AddressService } from './AddressService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { CoreRpcService } from './CoreRpcService';
-import { ShoppingCartsService } from './ShoppingCartsService';
+import { ShoppingCartService } from './ShoppingCartService';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
 import { AddressUpdateRequest } from '../requests/AddressUpdateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { CryptocurrencyAddressUpdateRequest } from '../requests/CryptocurrencyAddressUpdateRequest';
-import { ShoppingCartsCreateRequest } from '../requests/ShoppingCartsCreateRequest';
+import { ShoppingCartCreateRequest } from '../requests/ShoppingCartCreateRequest';
 import {MessageException} from '../exceptions/MessageException';
 
 export class ProfileService {
@@ -26,7 +26,7 @@ export class ProfileService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
         @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
-        @inject(Types.Service) @named(Targets.Service.ShoppingCartsService) public shoppingCartsService: ShoppingCartsService,
+        @inject(Types.Service) @named(Targets.Service.ShoppingCartService) public shoppingCartService: ShoppingCartService,
         @inject(Types.Repository) @named(Targets.Repository.ProfileRepository) public profileRepo: ProfileRepository,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -93,7 +93,7 @@ export class ProfileService {
         };
 
         // create default shoppingCart
-        const defaultShoppingCart = await this.shoppingCartsService.create(shoppingCartData as ShoppingCartsCreateRequest);
+        const defaultShoppingCart = await this.shoppingCartService.create(shoppingCartData as ShoppingCartCreateRequest);
         // finally find and return the created profileId
         const newProfile = await this.findOne(profile.Id);
         return newProfile;

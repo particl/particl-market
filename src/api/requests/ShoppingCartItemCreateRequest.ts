@@ -2,11 +2,11 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 
 // tslint:disable:variable-name
-export class ShoppingCartsCreateRequest extends RequestBody {
+export class ShoppingCartItemCreateRequest extends RequestBody {
     @IsNotEmpty()
-    public name: string;
+    public shopping_cart_id: number;
 
     @IsNotEmpty()
-    public profile_id: number;
+    public listing_item_id: number;
 }
 // tslint:enable:variable-name

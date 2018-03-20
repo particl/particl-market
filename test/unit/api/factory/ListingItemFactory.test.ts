@@ -7,9 +7,9 @@ import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryF
 import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMessage';
 import { ListingItemCreateRequest } from '../../../../src/api/requests/ListingItemCreateRequest';
 
-import * as listingItemTemplateBasic from '../../../testdata/listingitemtemplate/listingItemTemplateBasic.json';
-import * as listingItemCategoryWithRelated from '../../../testdata/category/listingItemCategoryWithRelated.json';
-import * as listingItemCategoryRootWithRelated from '../../../testdata/category/listingItemCategoryRootWithRelated.json';
+import * as listingItemTemplateBasic from '../../../testdata/model/listingItemTemplateBasic.json';
+import * as listingItemCategoryWithRelated from '../../../testdata/model/listingItemCategoryWithRelated.json';
+import * as listingItemCategoryRootWithRelated from '../../../testdata/model/listingItemCategoryRootWithRelated.json';
 
 describe('ListingItemFactory', () => {
 
