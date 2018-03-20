@@ -10,7 +10,7 @@
             "description": ""
         },
         "itemLocation": {
-            "region": "CAPE VERDE",
+            "region": "CV",
             "address": "92656 Morar Turnpike",
             "locationMarker": {
                 "markerTitle": "saepe",
@@ -20,7 +20,7 @@
             }
         },
         "shippingDestinations": [{
-            "country": "FINLAND",
+            "country": "FI",
             "shippingAvailability": "SHIPS"
         }],
         "itemImages": [{

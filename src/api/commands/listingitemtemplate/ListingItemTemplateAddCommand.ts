@@ -83,7 +83,7 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
                 profile_id: data.params[0]
             };
         }
-        return this.listingItemTemplateService.create(body as ListingItemTemplateCreateRequest);
+        return await this.listingItemTemplateService.create(body as ListingItemTemplateCreateRequest);
     }
 
     public usage(): string {

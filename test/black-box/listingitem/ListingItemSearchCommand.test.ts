@@ -361,8 +361,8 @@ describe('ListingItemSearchCommand', () => {
         searchString = '';
         profileId = 'ALL';
         minPrice = 0;
-        maxPrice = 5;
-        country = 'FINLAND';
+        maxPrice = 100;
+        country = 'FI';
         shippingDestination = '';
         withRelated = true;
         const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
@@ -381,9 +381,9 @@ describe('ListingItemSearchCommand', () => {
         searchString = '';
         profileId = 'ALL';
         minPrice = 0;
-        maxPrice = 5;
+        maxPrice = 100;
         country = '';
-        shippingDestination = 'FINLAND';
+        shippingDestination = 'FI';
         withRelated = true;
         const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
             pageLimit, order, category, type, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
@@ -392,17 +392,17 @@ describe('ListingItemSearchCommand', () => {
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(shippingDestination);
+        expect(result[0].ItemInformation.ShippingDestinations[1].country).toBe(shippingDestination);
     });
 
     test('Should search listing item by shipping Destination, min-max price and SearchString = information title', async () => {
         category = '';
-        searchString = createdListingItem1.itemInformation.title;
+        searchString = createdListingItem1.ItemInformation.title;
         profileId = 'ALL';
         minPrice = 0;
-        maxPrice = 5;
+        maxPrice = 100;
         country = '';
-        shippingDestination = 'United Kingdom';
+        shippingDestination = 'MA';
         withRelated = true;
         const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
             pageLimit, order, category, type, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
@@ -411,8 +411,8 @@ describe('ListingItemSearchCommand', () => {
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
         expect(result.length).toBe(1);
-        expect(result[0].ItemInformation.title).toBe(createdListingItem1.ItemInformation.title);
         expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(shippingDestination);
+        expect(result[0].ItemInformation.title).toBe(createdListingItem1.ItemInformation.title);
     });
 
     test('Should search all listing item without any searching criteria', async () => {

@@ -12,6 +12,9 @@ import { CurrencyPrice } from '../../src/api/models/CurrencyPrice';
 import { CurrencyPriceService } from '../../src/api/services/CurrencyPriceService';
 import { CurrencyPriceParams } from '../../src/api/requests/CurrencyPriceParams';
 
+import * as createRequestCurrencyPricePARTINR from '../testdata/createrequest/currencyPricePARTINR.json';
+import * as updateRequestCurrencyPricePARTINR from '../testdata/updaterequest/currencyPricePARTINR.json';
+
 describe('CurrencyPrice', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -22,19 +25,8 @@ describe('CurrencyPrice', () => {
     let currencyPriceService: CurrencyPriceService;
 
     let createdId;
-    let createdPARTINRCurrencyPrice;
-
-    const testDataPARTINR = {
-        from: 'PART',
-        to: 'INR',
-        price: 10
-    };
-
-    const testDataPARTINRUpdated = {
-        from: 'PART',
-        to: 'INR',
-        price: 20
-    };
+    let createdCurrencyPricePARTINR;
+    let createdCurrencyPricePARTUSD;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -50,180 +42,155 @@ describe('CurrencyPrice', () => {
         //
     });
 
-    test('Should create a new currency price', async () => {
-        // testData['related_id'] = 0;
-        const currencyPriceModel: CurrencyPrice = await currencyPriceService.create(testDataPARTINR);
+    test('Should create a new CurrencyPrice', async () => {
+
+        const currencyPriceModel: CurrencyPrice = await currencyPriceService.create(createRequestCurrencyPricePARTINR);
         createdId = currencyPriceModel.Id;
 
         const result = currencyPriceModel.toJSON();
-        createdPARTINRCurrencyPrice = result;
-        // test the values
-        // expect(result.value).toBe(testData.value);
-        expect(result.from).toBe(testDataPARTINR.from);
-        expect(result.to).toBe(testDataPARTINR.to);
-        expect(result.price).toBe(testDataPARTINR.price);
+        createdCurrencyPricePARTINR = result;
+
+        expect(result.from).toBe(createRequestCurrencyPricePARTINR.from);
+        expect(result.to).toBe(createRequestCurrencyPricePARTINR.to);
+        expect(result.price).toBe(createRequestCurrencyPricePARTINR.price);
+        expect(result.createdAt).toBe(result.updatedAt);
     });
 
-    test('Should get currency price from db without updating the latest price from external service', async () => {
-        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['INR']);
+    test('Should get CurrencyPrice from db without updating the latest price from external service', async () => {
+        const currencyPrice = await currencyPriceService.getCurrencyPrices('PART', ['INR']);
+        const result = currencyPrice[0];
 
-        expect(currencyPriceModel[0].from).toBe(testDataPARTINR.from);
-        expect(currencyPriceModel[0].to).toBe(testDataPARTINR.to);
-        expect(currencyPriceModel[0].price).toBe(testDataPARTINR.price);
+        expect(result.from).toBe(createRequestCurrencyPricePARTINR.from);
+        expect(result.to).toBe(createRequestCurrencyPricePARTINR.to);
+        expect(result.price).toBe(createRequestCurrencyPricePARTINR.price);
+        expect(result.createdAt).toBe(result.updatedAt);
     });
 
-    test('Should throw ValidationException because we want to create a empty currency price', async () => {
+    test('Should throw ValidationException because we want to create a empty CurrencyPrice', async () => {
         expect.assertions(1);
         await currencyPriceService.create({}).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list currency prices containing the previously created one', async () => {
+    test('Should list CurrencyPrices containing the previously created one', async () => {
         const currencyPriceCollection = await currencyPriceService.findAll();
         const currencyPrice = currencyPriceCollection.toJSON();
         expect(currencyPrice.length).toBe(1);
-
         const result = currencyPrice[0];
 
-        // test the values
-        // expect(result.value).toBe(testData.value);
-        expect(result.from).toBe(createdPARTINRCurrencyPrice.from);
-        expect(result.to).toBe(createdPARTINRCurrencyPrice.to);
-        expect(result.price).toBe(createdPARTINRCurrencyPrice.price);
+        expect(result.from).toBe(createdCurrencyPricePARTINR.from);
+        expect(result.to).toBe(createdCurrencyPricePARTINR.to);
+        expect(result.price).toBe(createdCurrencyPricePARTINR.price);
     });
 
-    test('Should return the one created currency price', async () => {
+    test('Should return the one created CurrencyPrice', async () => {
         const currencyPriceModel: CurrencyPrice = await currencyPriceService.findOne(createdId);
         const result = currencyPriceModel.toJSON();
 
-        // test the values
-        // expect(result.value).toBe(testData.value);
-        expect(result.from).toBe(createdPARTINRCurrencyPrice.from);
-        expect(result.to).toBe(createdPARTINRCurrencyPrice.to);
-        expect(result.price).toBe(createdPARTINRCurrencyPrice.price);
+        expect(result.from).toBe(createdCurrencyPricePARTINR.from);
+        expect(result.to).toBe(createdCurrencyPricePARTINR.to);
+        expect(result.price).toBe(createdCurrencyPricePARTINR.price);
     });
 
-    test('Should update the currency price', async () => {
-        // testDataUpdated['related_id'] = 0;
-        const currencyPriceModel: CurrencyPrice = await currencyPriceService.update(createdId, testDataPARTINRUpdated);
+    test('Should update the CurrencyPrice', async () => {
+        const currencyPriceModel: CurrencyPrice = await currencyPriceService.update(createdId, updateRequestCurrencyPricePARTINR);
         const result = currencyPriceModel.toJSON();
 
-        // test the values
-        // expect(result.value).toBe(testDataUpdated.value);
-        expect(result.from).toBe(testDataPARTINRUpdated.from);
-        expect(result.to).toBe(testDataPARTINRUpdated.to);
-        expect(result.price).toBe(testDataPARTINRUpdated.price);
+        expect(result.from).toBe(updateRequestCurrencyPricePARTINR.from);
+        expect(result.to).toBe(updateRequestCurrencyPricePARTINR.to);
+        expect(result.price).toBe(updateRequestCurrencyPricePARTINR.price);
+        expect(result.createdAt).not.toBe(result.updatedAt);
     });
 
-    test('Should get currency price with updated price', async () => {
-        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['INR']);
-        expect(currencyPriceModel[0].from).toBe(createdPARTINRCurrencyPrice.from);
-        expect(currencyPriceModel[0].to).toBe(createdPARTINRCurrencyPrice.to);
-        expect(currencyPriceModel[0].updatedAt).toBeGreaterThan(createdPARTINRCurrencyPrice.updatedAt);
+    test('Should get CurrencyPrice with previously updated price', async () => {
+        log.debug('Should get CurrencyPrice with updated price');
+        const result = await currencyPriceService.getCurrencyPrices('PART', ['INR']);
+        log.debug('result:', result);
 
-        createdPARTINRCurrencyPrice = currencyPriceModel[0];
+        expect(result.length).toBe(1);
+
+        expect(result[0].from).toBe(updateRequestCurrencyPricePARTINR.from);
+        expect(result[0].to).toBe(updateRequestCurrencyPricePARTINR.to);
+        expect(result[0].price).toBe(updateRequestCurrencyPricePARTINR.price);
+        expect(result[0].updatedAt).toBeGreaterThan(result[0].createdAt);
+
+        createdCurrencyPricePARTINR = result[0];
     });
 
-    test('Should get currency price from db and another with updated price', async () => {
-        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['INR', 'USD']);
-        expect(currencyPriceModel[0].from).toBe(createdPARTINRCurrencyPrice.from);
-        expect(currencyPriceModel[0].to).toBe(createdPARTINRCurrencyPrice.to);
-        expect(currencyPriceModel[0].updatedAt).toBe(createdPARTINRCurrencyPrice.updatedAt);
-        expect(currencyPriceModel[0].id).toBe(createdPARTINRCurrencyPrice.id);
-        expect(currencyPriceModel[0].price).toBe(createdPARTINRCurrencyPrice.price);
+    test('Should get CurrencyPrice from db and another one with updated price', async () => {
+        const result = await currencyPriceService.getCurrencyPrices('PART', ['INR', 'USD']);
 
-        expect(currencyPriceModel[1].from).toBe('PART');
-        expect(currencyPriceModel[1].to).toBe('USD');
-        expect(currencyPriceModel[1].updatedAt).toBe(currencyPriceModel[1].createdAt);
+        expect(result[0].id).toBe(createdCurrencyPricePARTINR.id);
+        expect(result[0].from).toBe(createdCurrencyPricePARTINR.from);
+        expect(result[0].to).toBe(createdCurrencyPricePARTINR.to);
+        expect(result[0].price).toBe(createdCurrencyPricePARTINR.price);
+        expect(result[0].updatedAt).toBe(createdCurrencyPricePARTINR.updatedAt);
+        expect(result[0].updatedAt).toBeGreaterThan(result[0].createdAt);
+
+        expect(result[1].from).toBe('PART');
+        expect(result[1].to).toBe('USD');
+        expect(result[1].updatedAt).toBe(result[1].createdAt);
+
+        createdCurrencyPricePARTUSD = result[1];
+    });
+
+    test('Should get CurrencyPrice from db passing currencies in UPPER case', async () => {
+        const result = await currencyPriceService.getCurrencyPrices('PART', ['INR', 'USD']);
+        expect(result[0].from).toBe(createdCurrencyPricePARTINR.from);
+        expect(result[0].to).toBe(createdCurrencyPricePARTINR.to);
+        expect(result[0].price).toBe(createdCurrencyPricePARTINR.price);
+        expect(result[0].updatedAt).toBeGreaterThan(result[0].createdAt);
+
+        expect(result[1].from).toBe('PART');
+        expect(result[1].to).toBe('USD');
 
     });
 
-    test('Should get currency price from db passing currencies in UPPER case', async () => {
-        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['INR', 'USD']);
-        expect(currencyPriceModel[0].from).toBe(createdPARTINRCurrencyPrice.from);
-        expect(currencyPriceModel[0].to).toBe(createdPARTINRCurrencyPrice.to);
-        expect(currencyPriceModel[0].updatedAt).toBe(createdPARTINRCurrencyPrice.updatedAt);
-        expect(currencyPriceModel[0].price).toBe(createdPARTINRCurrencyPrice.price);
-        expect(currencyPriceModel[0].createdAt).toBe(createdPARTINRCurrencyPrice.createdAt);
+    test('Should get CurrencyPrice from db passing currencies in LOWER case', async () => {
+        const result = await currencyPriceService.getCurrencyPrices('PART', ['inr', 'usd']);
+        expect(result[0].from).toBe(createdCurrencyPricePARTINR.from);
+        expect(result[0].to).toBe(createdCurrencyPricePARTINR.to);
+        expect(result[0].price).toBe(createdCurrencyPricePARTINR.price);
+        expect(result[0].updatedAt).toBe(createdCurrencyPricePARTINR.updatedAt);
+        expect(result[0].createdAt).toBe(createdCurrencyPricePARTINR.createdAt);
 
-        expect(currencyPriceModel[1].to).toBe('USD');
-        expect(currencyPriceModel[1]['from']).toBe('PART');
+        expect(result[1].from).toBe('PART');
+        expect(result[1].to).toBe('USD');
 
+    });
+
+    test('Should get updated CurrencyPrice passing currencies in LOWER case', async () => {
         process.env.CHASING_COINS_API_DELAY = 0;
-        createdPARTINRCurrencyPrice = currencyPriceModel;
-    });
 
-    test('Should get updated currency price passing currencies in UPPER case', async () => {
-        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['INR', 'USD']);
-        expect(currencyPriceModel[0].from).toBe('PART');
-        expect(currencyPriceModel[0].to).toBe('INR');
-        expect(currencyPriceModel[0].updatedAt).toBeGreaterThan(createdPARTINRCurrencyPrice[0].updatedAt);
-        expect(createdPARTINRCurrencyPrice[0].id).toBe(currencyPriceModel[0].id);
-        expect(createdPARTINRCurrencyPrice[0].createdAt).toBe(currencyPriceModel[0].createdAt);
+        const result = await currencyPriceService.getCurrencyPrices('PART', ['inr', 'usd']);
+        expect(result[0].from).toBe('PART');
+        expect(result[0].to).toBe('INR');
+        expect(result[0].updatedAt).toBeGreaterThan(result[0].createdAt);
 
-        expect(createdPARTINRCurrencyPrice[1].id).toBe(currencyPriceModel[1].id);
-        expect(currencyPriceModel[1].to).toBe('USD');
-        expect(currencyPriceModel[1]['from']).toBe('PART');
-        expect(createdPARTINRCurrencyPrice[1].updatedAt).toBeLessThan(currencyPriceModel[1].updatedAt);
-        expect(createdPARTINRCurrencyPrice[1].createdAt).toBe(currencyPriceModel[1].createdAt);
-
-        createdPARTINRCurrencyPrice = currencyPriceModel[1];
-    });
-
-    test('Should get currency price from db passing currencies in LOWER case', async () => {
-        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['inr', 'usd']);
-        expect(currencyPriceModel[0].from).toBe(createdPARTINRCurrencyPrice.from);
-        expect(currencyPriceModel[0].to).toBe(createdPARTINRCurrencyPrice.to);
-        expect(currencyPriceModel[0].updatedAt).toBe(createdPARTINRCurrencyPrice.updatedAt);
-        expect(currencyPriceModel[0].price).toBe(createdPARTINRCurrencyPrice.price);
-        expect(currencyPriceModel[0].createdAt).toBe(createdPARTINRCurrencyPrice.createdAt);
-
-        expect(currencyPriceModel[1].to).toBe('USD');
-        expect(currencyPriceModel[1]['from']).toBe('PART');
-
-        process.env.CHASING_COINS_API_DELAY = 0;
-        createdPARTINRCurrencyPrice = currencyPriceModel;
-    });
-
-    test('Should get updated currency price passing currencies in LOWER case', async () => {
-        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['inr', 'usd']);
-        expect(currencyPriceModel[0].from).toBe('PART');
-        expect(currencyPriceModel[0].to).toBe('INR');
-        expect(currencyPriceModel[0].updatedAt).toBeGreaterThan(createdPARTINRCurrencyPrice[0].updatedAt);
-        expect(createdPARTINRCurrencyPrice[0].id).toBe(currencyPriceModel[0].id);
-        expect(createdPARTINRCurrencyPrice[0].createdAt).toBe(currencyPriceModel[0].createdAt);
-
-        expect(createdPARTINRCurrencyPrice[1].id).toBe(currencyPriceModel[1].id);
-        expect(currencyPriceModel[1].to).toBe('USD');
-        expect(currencyPriceModel[1]['from']).toBe('PART');
-        expect(createdPARTINRCurrencyPrice[1].updatedAt).toBeLessThan(currencyPriceModel[1].updatedAt);
-        expect(createdPARTINRCurrencyPrice[1].createdAt).toBe(currencyPriceModel[1].createdAt);
-
-        createdPARTINRCurrencyPrice = currencyPriceModel[1];
+        expect(result[1].from).toBe('PART');
+        expect(result[1].to).toBe('USD');
+        expect(result[1].updatedAt).toBeGreaterThan(result[1].createdAt);
     });
 
     test('Should get currency price from db passing one currency in LOWER case and one in UPPER case', async () => {
-        const currencyPriceModel = await currencyPriceService.getCurrencyPrices('PART', ['inr', 'usd']);
-        expect(currencyPriceModel[0].from).toBe(createdPARTINRCurrencyPrice.from);
-        expect(currencyPriceModel[0].to).toBe(createdPARTINRCurrencyPrice.to);
-        expect(currencyPriceModel[0].updatedAt).toBe(createdPARTINRCurrencyPrice.updatedAt);
-        expect(currencyPriceModel[0].price).toBe(createdPARTINRCurrencyPrice.price);
-        expect(currencyPriceModel[0].createdAt).toBe(createdPARTINRCurrencyPrice.createdAt);
+        const result = await currencyPriceService.getCurrencyPrices('PART', ['inr', 'USD']);
+        expect(result[0].from).toBe('PART');
+        expect(result[0].to).toBe('INR');
+        expect(result[0].updatedAt).toBeGreaterThan(result[0].createdAt);
 
-        expect(currencyPriceModel[1].to).toBe('USD');
-        expect(currencyPriceModel[1]['from']).toBe('PART');
+        expect(result[1].from).toBe('PART');
+        expect(result[1].to).toBe('USD');
+        expect(result[1].updatedAt).toBeGreaterThan(result[1].createdAt);
 
-        process.env.CHASING_COINS_API_DELAY = 0;
-        createdPARTINRCurrencyPrice = currencyPriceModel;
     });
 
     test('Should search currency price by from PART and to USD currency', async () => {
-        const currencyPriceModel = await currencyPriceService.search({from: 'PART', to: 'USD'} as CurrencyPriceParams);
-        expect(currencyPriceModel.From).toBe('PART');
-        expect(currencyPriceModel.To).toBe('USD');
-        expect(createdPARTINRCurrencyPrice.price).toBe(currencyPriceModel.Price);
-        expect(createdPARTINRCurrencyPrice.id).toBe(currencyPriceModel.id);
+        const result = await currencyPriceService.search({from: createdCurrencyPricePARTUSD.from, to: createdCurrencyPricePARTUSD.to} as CurrencyPriceParams);
+        expect(result.From).toBe(createdCurrencyPricePARTUSD.from);
+        expect(result.To).toBe(createdCurrencyPricePARTUSD.to);
+        expect(result.Price).toBe(createdCurrencyPricePARTUSD.price);
+        expect(result.Id).toBe(createdCurrencyPricePARTUSD.id);
     });
 
     test('Should return null search result because invalid from currency', async () => {
