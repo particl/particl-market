@@ -64,7 +64,7 @@ export class ListingItemTemplateService {
     @validate()
     public async search(
         @request(ListingItemTemplateSearchParams) options: ListingItemTemplateSearchParams): Promise<Bookshelf.Collection<ListingItemTemplate>> {
-        return this.listingItemTemplateRepo.search(options);
+        return await this.listingItemTemplateRepo.search(options);
     }
 
     @validate()

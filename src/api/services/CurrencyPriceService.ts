@@ -12,6 +12,7 @@ import { CurrencyPriceParams } from '../requests/CurrencyPriceParams';
 import * as Request from 'request';
 import { MessageException } from '../exceptions/MessageException';
 import { SupportedCurrencies } from '../enums/SupportedCurrencies';
+import * as resources from 'resources';
 
 export class CurrencyPriceService {
 
@@ -59,13 +60,14 @@ export class CurrencyPriceService {
      *
      * description: from argument must be PART for now and toCurrencies is an array of toCurrencies like [INR, USD, EUR, GBP].
      *
-     * @returns {Promise<Bookshelf.Collection<CurrencyPrice>>}
+     * @returns {Promise<CurrencyPrice[]>}
      */
 
-    public async getCurrencyPrices(fromCurrency: string, toCurrencies: string[]): Promise<Bookshelf.Collection<CurrencyPrice>> {
+    public async getCurrencyPrices(fromCurrency: string, toCurrencies: string[]): Promise<resources.CurrencyPrice[]> {
 
         const returnData: any = [];
-        for (const toCurrency of toCurrencies) {
+        for (let toCurrency of toCurrencies) {
+            toCurrency = toCurrency.toUpperCase();
             // check for valid currency
             if (SupportedCurrencies[toCurrency]) {
                 const currencyPriceModel: CurrencyPrice = await this.search({
@@ -114,7 +116,7 @@ export class CurrencyPriceService {
     }
 
     @validate()
-    public async create( @request(CurrencyPriceCreateRequest) body: any): Promise<CurrencyPrice> {
+    public async create( @request(CurrencyPriceCreateRequest) body: CurrencyPriceCreateRequest): Promise<CurrencyPrice> {
 
         // If the request body was valid we will create the currencyPrice
         const currencyPrice = await this.currencyPriceRepo.create(body);
@@ -125,7 +127,7 @@ export class CurrencyPriceService {
     }
 
     @validate()
-    public async update(id: number, @request(CurrencyPriceUpdateRequest) body: any): Promise<CurrencyPrice> {
+    public async update(id: number, @request(CurrencyPriceUpdateRequest) body: CurrencyPriceUpdateRequest): Promise<CurrencyPrice> {
 
         // find the existing one without related
         const currencyPrice = await this.findOne(id, false);

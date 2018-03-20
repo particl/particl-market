@@ -9,7 +9,7 @@ import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
 import { ListingItemSearchType } from '../../enums/ListingItemSearchType';
-
+import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
@@ -59,7 +59,17 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             throw new MessageException('Value needs to be number | OWN | ALL. you could pass * as all too');
         }
 
-        return this.listingItemService.search({
+        let countryCode: string | null = null;
+        if (data.params[8]) {
+            countryCode = ShippingCountries.validate(this.log, data.params[8]);
+        }
+
+        let shippingCountryCode: string | null = null;
+        if (data.params[9]) {
+            shippingCountryCode = ShippingCountries.validate(this.log, data.params[9]);
+        }
+
+        return await this.listingItemService.search({
             page: data.params[0] || 1,
             pageLimit: data.params[1] || 5, // default page limit 5
             order: data.params[2] || 'ASC',
@@ -68,8 +78,8 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             profileId,
             minPrice: data.params[6],
             maxPrice: data.params[7],
-            country: data.params[8],
-            shippingDestination: data.params[9],
+            country: countryCode,
+            shippingDestination: shippingCountryCode,
             searchString: data.params[10] || ''
         } as ListingItemSearchParams, data.params[11]);
     }

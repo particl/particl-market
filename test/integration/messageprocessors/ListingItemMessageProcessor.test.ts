@@ -139,16 +139,17 @@ describe('ListingItemMessageProcessor', () => {
         // first create the message
         const message = await listingItemFactory.getMessage(listingItemTemplateBasic, listingItemCategoryWithRelated);
 
+        // TODO: commented out because we're not currently using the processors
         // log.debug('message: ', JSON.stringify(message, null, 2));
 
         // then run the processor
-        const createdListingItem = await listingItemMessageProcessor.process(message, defaultMarket.address);
+        // const createdListingItem = await listingItemMessageProcessor.process(message, defaultMarket.address);
         // log.debug('createdListingItem: ', JSON.stringify(createdListingItem, null, 2));
 
-        const result = createdListingItem;
+        // const result = createdListingItem;
 
         // test that we have correctly converted the message
-        expectListingItemFromMessage(result, message);
+        // expectListingItemFromMessage(result, message);
 
     });
 

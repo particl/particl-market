@@ -37,7 +37,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItemTemplate>> {
-        return this.listingItemTemplateService.search({
+        return await this.listingItemTemplateService.search({
             page: data.params[0] || 1,
             pageLimit: data.params[1] || 5,
             order: data.params[2] || 'ASC',
