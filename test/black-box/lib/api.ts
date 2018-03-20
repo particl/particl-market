@@ -10,7 +10,7 @@ import * as FormData from 'form-data';
 
 export interface ApiOptions<T, T2> {
     body?: T;
-    formData?: T2,
+    formData?: T2;
     headers?: any;
     host?: string;
     port?: number;

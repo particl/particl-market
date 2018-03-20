@@ -1,3 +1,4 @@
+import { Collection } from 'bookshelf';
 import { inject, named } from 'inversify';
 import { controller, httpGet, httpPost, httpPut, httpDelete, response, requestBody, requestParam, request } from 'inversify-express-utils';
 import { Types, Core, Targets } from '../../constants';
@@ -10,9 +11,12 @@ import * as _ from 'lodash';
 import { Commands } from '../commands/CommandEnumType';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { ItemImageUpdateRequest } from '../requests/ItemImageUpdateRequest';
-import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { MessageException } from '../exceptions/MessageException';
-import * as fs from 'fs';
+import { ListingItemTemplate } from '../models/ListingItemTemplate';
+import { ItemImage } from '../models/ItemImage';
+import { ItemImageData } from '../models/ItemImageData';
+import { ItemInformation } from '../models/ItemInformation';
+
 
 // Get middlewares
 const restApi = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.AuthenticateMiddleware);
@@ -45,73 +49,20 @@ export class ItemImageController {
             }
         }
 
-        // this.log.debug('templateId: ' + templateId);
-        // this.log.debug('files: ', req.files);
-
-        const listingItemTemplate = await this.listingItemTemplateService.findOne(templateId);
+        const listItems: any[] = [];
+        const listingItemTemplate: ListingItemTemplate = await this.listingItemTemplateService.findOne(templateId);
         for ( const file of req.files ) {
-            if ( file.fieldname === 'image' ) {
-                const imageFile = file;
-
-                // Read the file data in
-                const dataStr = fs.readFileSync(imageFile.path, 'base64');
-                // this.log.error('dataStr = ' + dataStr);
-
-                // find listing item template
-                this.log.debug('imageFile.mimetype = ' + imageFile.mimetype);
-                // find related itemInformation
-
-                let retItemImage;
-                const itemInformation = await listingItemTemplate.related('ItemInformation').toJSON();
-                const itemImage = itemInformation.ItemImages[0];
-                if ( !itemImage ) {
-                    // Doesn't exist yet, create instead of update
-                    retItemImage = await this.itemImageService.create(
-                        {
-                            item_information_id: itemInformation.id,
-                            hash: ObjectHash.getHash(itemInformation),
-                            data: {
-                                protocol: ImageDataProtocolType.LOCAL,
-                                encoding: 'BASE64',
-                                data: dataStr,
-                                dataId: imageFile.path,
-                                originalMime: imageFile.mimetype,
-                                originalName: imageFile.originalname
-                            }
-                        } as ItemImageUpdateRequest);
-                } else {
-                    const itemImageId = itemImage.id;
-                    // this.log.debug('itemImage = ' + JSON.stringify(itemImage));
-                    this.log.debug('itemImageId = ' + itemImageId);
-
-                    // Update item images
-                    retItemImage = await this.itemImageService.update(
-                        itemImageId,
-                        {
-                            item_information_id: itemInformation.id,
-                            hash: ObjectHash.getHash(itemInformation),
-                            data: {
-                                protocol: ImageDataProtocolType.LOCAL,
-                                encoding: 'BASE64',
-                                data: dataStr,
-                                originalMime: imageFile.mimetype,
-                                originalName: imageFile.originalname
-                            }
-                        } as ItemImageUpdateRequest);
+            const tmpImage = await this.itemImageService.createFile(templateId, file, listingItemTemplate);
+            const imageDatas = tmpImage.ItemImageDatas;
+            for ( const i in imageDatas ) {
+                if ( i ) {
+                    const tmpImageData: any = imageDatas[i];
+                    tmpImageData.data = 'http://../../../item-image-data/' + tmpImageData.id;
+                    listItems.push(tmpImageData);
                 }
-                // Return url to image instead of image.
-                retItemImage = retItemImage.toJSON();
-                const retItemImages = retItemImage.ItemImageDatas;
-                for ( const i in retItemImages ) {
-                    if ( i ) {
-                        const retImage = retItemImages[i];
-                        retImage.data = 'http://../' + retImage.id;
-                    }
-                }
-                return retItemImage;
             }
         }
-        throw new MessageException('Was expecting an image file called "image".');
+        return listItems;
     }
 
     @httpGet('/:id/:imageVersion')
