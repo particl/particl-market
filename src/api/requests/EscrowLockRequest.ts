@@ -3,7 +3,7 @@ import { RequestBody } from '../../core/api/RequestBody';
 import { EscrowMessageType } from '../enums/EscrowMessageType';
 
 // tslint:disable:variable-name
-export class EscrowAcceptRequest extends RequestBody {
+export class EscrowLockRequest extends RequestBody {
 
     @IsNotEmpty()
     public listing: string;

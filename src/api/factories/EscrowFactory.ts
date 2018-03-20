@@ -3,7 +3,7 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { EscrowMessage } from '../messages/EscrowMessage';
-import { EscrowAcceptRequest } from '../requests/EscrowAcceptRequest';
+import { EscrowLockRequest } from '../requests/EscrowLockRequest';
 import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
 import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
 import { EscrowMessageType } from '../enums/EscrowMessageType';
@@ -11,12 +11,19 @@ import { MessageException } from '../exceptions/MessageException';
 import * as resources from 'resources';
 
 
+// Ryno
+import { Bid } from '../models/Bid';
+import { BidMessageType } from '../enums/BidMessageType';
+import { ListingItem } from '../models/ListingItem';
+import { CoreRpcService } from '../services/CoreRpcService';
+
 export class EscrowFactory {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService
     ) {
         this.log = new Logger(__filename);
     }
@@ -32,15 +39,14 @@ export class EscrowFactory {
      * @returns {EscrowMessage}
      */
     public async getMessage(
-        request: EscrowAcceptRequest | EscrowRefundRequest | EscrowReleaseRequest,
-        escrow?: resources.Escrow,
-        address?: resources.Address
+        request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest,
+        escrow?: resources.Escrow
     ): Promise<EscrowMessage> {
 
         switch (request.action) {
 
-            case EscrowMessageType.MPA_ACCEPT:
-                return await this.getAcceptMessage(request as EscrowAcceptRequest, escrow);
+            case EscrowMessageType.MPA_LOCK:
+                return await this.getLockMessage(request as EscrowLockRequest, escrow);
 
             case EscrowMessageType.MPA_RELEASE:
                 return await this.getReleaseMessage(request as EscrowReleaseRequest, escrow);
@@ -69,17 +75,17 @@ export class EscrowFactory {
     }
 
     /**
-     * creates the EscrowMessage for EscrowAcceptRequest
+     * creates the EscrowMessage for EscrowLockRequest
      *
      * @param lockRequest
      * @param escrow
      * @returns {EscrowMessage}
      */
-    private async getAcceptMessage(lockRequest: EscrowAcceptRequest, escrow?: resources.Escrow): Promise<EscrowMessage> {
+    private async getLockMessage(lockRequest: EscrowLockRequest, escrow?: resources.Escrow): Promise<EscrowMessage> {
 
-        this.checkEscrowActionValidity(EscrowMessageType.MPA_ACCEPT, escrow);
-        const rawTx = this.createRawTx(lockRequest, escrow);
-
+        this.checkEscrowActionValidity(EscrowMessageType.MPA_LOCK, escrow);
+        const rawTx = await this.createRawTx(lockRequest, escrow);
+        // TODO: Sign Raw Transaction
         return {
             action: lockRequest.action,
             listing: lockRequest.listing,
@@ -102,7 +108,7 @@ export class EscrowFactory {
     private async getReleaseMessage(releaseRequest: EscrowReleaseRequest, escrow?: resources.Escrow): Promise<EscrowMessage> {
 
         this.checkEscrowActionValidity(EscrowMessageType.MPA_RELEASE, escrow);
-        const rawTx = this.createRawTx(releaseRequest, escrow);
+        const rawTx = await this.createRawTx(releaseRequest, escrow);
 
         return {
             action: releaseRequest.action,
@@ -124,7 +130,7 @@ export class EscrowFactory {
     private async getRefundMessage(refundRequest: EscrowRefundRequest, escrow?: resources.Escrow): Promise<EscrowMessage> {
 
         this.checkEscrowActionValidity(EscrowMessageType.MPA_REFUND, escrow);
-        const rawTx = this.createRawTx(refundRequest, escrow);
+        const rawTx = await this.createRawTx(refundRequest, escrow);
 
         return {
             action: refundRequest.action,
@@ -162,7 +168,7 @@ export class EscrowFactory {
      * @param escrow
      * @returns {string}
      */
-    private createRawTx(request: EscrowAcceptRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow?: resources.Escrow): string {
+    private async createRawTx(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow?: resources.Escrow): Promise<string> {
         // MPA_RELEASE:
         // rawtx: 'The buyer sends the half signed rawtx which releases the escrow and paymeny.
         // The vendor then recreates the whole transaction (check ouputs, inputs, scriptsigs
@@ -175,7 +181,42 @@ export class EscrowFactory {
         // rawtx is indeed legitimate. The vendor then signs the rawtx and sends it to the buyer.
         // The vendor can decide to broadcast it himself.'
 
+
         // TODO: implement
+        const listing = await ListingItem.fetchByHash(request.listing);
+        let bid: Bid = listing.related('Bids').toJSON()[0];
+
+        if (bid) {
+            bid = (await Bid.fetchById(bid.id)).toJSON() as Bid;
+        }
+
+        if (!bid || bid.Action !== BidMessageType.MPA_ACCEPT) {
+            this.log.error('No valid information to finalize escrow');
+            throw new MessageException('No valid information to finalize escrow');
+        }
+
+        const bidData = bid.related('BidData').toJSON() as resources.BidData[];
+
+        for (let i = 0; i < bidData.length; i++) {
+            const entry = bidData[i] as resources.BidData;
+            if (entry.dataId === 'rawtx') {
+                const rawtx = entry.dataValue;
+                const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
+
+                if (!signed || signed.errors) {
+                    this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
+                    throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
+                }
+
+                if (!signed.complete) {
+                    this.log.error('Transaction should be complete at this stage.');
+                    throw new MessageException('Transaction should be complete at this stage');
+                }
+
+                return signed.hex;
+            }
+        }
+
         return 'todo: implement';
     }
 

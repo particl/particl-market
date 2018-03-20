@@ -7,14 +7,18 @@ import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { EscrowService } from '../../services/EscrowService';
 import { ListingItemService } from '../../services/ListingItemService';
-import { EscrowAcceptRequest } from '../../requests/EscrowAcceptRequest';
+import { EscrowLockRequest } from '../../requests/EscrowLockRequest';
 import { EscrowMessageType } from '../../enums/EscrowMessageType';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import * as _ from 'lodash';
 
-export class EscrowAcceptCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
+// Ryno
+import { Bid } from '../../models/Bid';
+import { BidMessageType } from '../../enums/BidMessageType';
+
+export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
     public log: LoggerType;
 
@@ -42,7 +46,17 @@ export class EscrowAcceptCommand extends BaseCommand implements RpcCommandInterf
 
         // fetch related escrow
         const paymentInformation = listingItem.related('PaymentInformation').toJSON();
-
+        // Ryno Hacks - TODO: Refactor
+        let bid: Bid = listingItem.related('Bids').toJSON()[0];
+        if (bid) {
+            bid = (await Bid.fetchById(bid.id)).toJSON() as Bid;
+        }
+/*
+        if (!bid || bid.Action !== BidMessageType.MPA_ACCEPT) {
+            this.log.error('No valid information to finalize escrow');
+            throw new MessageException('No valid information to finalize escrow');
+        }
+*/
         if (_.isEmpty(paymentInformation) || _.isEmpty(listingItem)) {
             throw new MessageException('PaymentInformation or ListingItem not found!');
         }
@@ -53,12 +67,12 @@ export class EscrowAcceptCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException('Escrow not found!');
         }
 
-        return this.escrowService.accept({
+        return this.escrowService.lock({
             listing: data.params[0],
             nonce: data.params[1],
             memo: data.params[2],
-            action: EscrowMessageType.MPA_ACCEPT
-        } as EscrowAcceptRequest, escrow as Escrow);
+            action: EscrowMessageType.MPA_LOCK
+        } as EscrowLockRequest, escrow as Escrow);
     }
 
     public usage(): string {

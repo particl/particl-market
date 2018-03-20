@@ -250,13 +250,21 @@ by [w3tech](https://github.com/w3tecch)
 
 ## Test Hacks
 ```
-rm -rf /tmp/particl_testing/node1 /tmp/particl_testing/node2
-mkdir -p /tmp/particl_testing/node1 /tmp/particl_testing/node2
-./particld -regtest -daemon -datadir=/tmp/particl_testing/node1
+rm -rf /tmp/particl_testing/node1 /tmp/particl_testing/node2  /tmp/particl_testing/node3
+mkdir -p /tmp/particl_testing/node1 /tmp/particl_testing/node2  /tmp/particl_testing/node3
+./particld  --regtest -daemon -datadir=/tmp/particl_testing/node1 -rpcuser=test -rpcpassword=test
 sleep 5
-./particl-cli -datadir=/tmp/particl_testing/node1 -regtest extkeyimportmaster 'abandon baby cabbage dad eager fabric gadget habit ice kangaroo lab absorb'
-./particl-cli -datadir=/tmp/particl_testing/node1 -regtest getnewaddress
-./particl-cli -datadir=/tmp/particl_testing/node1 -regtest sendtoaddress pX9N6S76ZtA5BfsiJmqBbjaEgLMHpt58it 1000
-./particl-cli -datadir=/tmp/particl_testing/node1 -regtest walletsettings stakelimit '{"height":10}'
+./particl-cli -regtest -rpcuser=test -rpcpassword=test extkeyimportmaster 'sección grito médula hecho pauta posada nueve ebrio bruto buceo baúl mitad'
 ./particld -regtest -daemon -datadir=/tmp/particl_testing/node2 -port=55555 -rpcport=51945 -connect=127.0.0.1
+sleep 5
+./particl-cli -datadir=/tmp/particl_testing/node2 -regtest extkeyimportmaster 'abandon baby cabbage dad eager fabric gadget habit ice kangaroo lab absorb'
+./particl-cli -datadir=/tmp/particl_testing/node2 -regtest getnewaddress
+./particl-cli -datadir=/tmp/particl_testing/node2 -regtest sendtoaddress poL2QwrQe5X8fUucMGJp7QVBuTNs683yGW 20000
+./particl-cli -datadir=/tmp/particl_testing/node2 -regtest walletsettings stakelimit '{"height":10}'
+./particld -regtest -daemon -datadir=/tmp/particl_testing/node3 -port=55556 -rpcport=51946 -connect=127.0.0.1
+```
+```
+./particl-cli -regtest -datadir=/tmp/particl_testing/node1 -rpcuser=test -rpcpassword=test stop
+./particl-cli -regtest -datadir=/tmp/particl_testing/node2 -rpcport=51945 stop
+./particl-cli -regtest -datadir=/tmp/particl_testing/node3 -rpcport=51946 stop
 ```

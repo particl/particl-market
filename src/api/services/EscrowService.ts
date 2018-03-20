@@ -12,7 +12,7 @@ import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../requests/EscrowUpdateRequest';
 import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
 import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
-import { EscrowAcceptRequest } from '../requests/EscrowAcceptRequest';
+import { EscrowLockRequest } from '../requests/EscrowLockRequest';
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
 import { EscrowRatioService } from '../services/EscrowRatioService';
@@ -76,9 +76,9 @@ export class EscrowService {
             body.payment_information_id = paymentInformation.Id;
         } else {
             this.log.warn(`Escrow cannot be created becuase Listing
-            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
+            Item has already been posted with listing-item-template-id ${listingItemTemplateId}`);
             throw new MessageException(`Escrow cannot be created becuase Listing
-            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
+            Item has already been posted with listing-item-template-id ${listingItemTemplateId}`);
         }
         delete body.listingItemTemplateId;
         return this.create(body);
@@ -187,7 +187,7 @@ export class EscrowService {
     }
 
     @validate()
-    public async accept(@request(EscrowAcceptRequest) escrowRequest: EscrowAcceptRequest, escrow: Escrow): Promise<void> {
+    public async lock(@request(EscrowLockRequest) escrowRequest: EscrowLockRequest, escrow: Escrow): Promise<void> {
 
         // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
         // resources.Escrow module not able to include here.

@@ -15,7 +15,7 @@ describe('EscrowFactory', () => {
     test('Should get EscrowLockMessage', async () => {
 
         const request = {
-            action: EscrowMessageType.MPA_ACCEPT,
+            action: EscrowMessageType.MPA_LOCK,
             listing: 'f08f3d6e',
             nonce: 'randomness',
             memo: 'Please deliver by 17 March 2017'

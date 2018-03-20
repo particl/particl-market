@@ -8,34 +8,26 @@ import { ListingItem, ListingItemTemplate } from 'resources';
 describe('EscrowLockCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ESCROW_ROOT.commandName;
-    const subCommand = Commands.ESCROW_LOCK.commandName;
+    const escrowCommand = Commands.ESCROW_ROOT.commandName;
+    const lockCommand = Commands.ESCROW_LOCK.commandName;
     let defaultProfile;
     let createdAddress;
     let createdListingItem;
 
-    const addressTestData = {
-        title: 'Work',
-        firstName : 'James',
-        lastName : 'Hawk',
-        addressLine1: '123 6th St',
-        addressLine2: 'Melbourne, FL 32904',
-        city: 'Melbourne',
-        state: 'Mel State',
-        country: 'Finland',
-        zipCode: '85001'
-    };
 
     beforeAll(async () => {
-        await testUtil.cleanDb();
+        try {
+            await testUtil.cleanDb();
+        } catch(e) {
 
+        }
         const generateListingItemParams = new GenerateListingItemParams([
-            false,   // generateItemInformation
-            false,   // generateShippingDestinations
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
             false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
             false,   // generateMessagingInformation
             false    // generateListingItemObjects
         ]).toParamsArray();
@@ -50,20 +42,6 @@ describe('EscrowLockCommand', () => {
 
         // get default profile
         defaultProfile = await testUtil.getDefaultProfile();
-
-        // create address
-        const addressRes = await rpc(Commands.ADDRESS_ROOT.commandName, [Commands.ADDRESS_ADD.commandName,
-            defaultProfile.id,
-            addressTestData.firstName,
-            addressTestData.lastName,
-            addressTestData.title,
-            addressTestData.addressLine1, addressTestData.addressLine2,
-            addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
-
-        addressRes.expectJson();
-        addressRes.expectStatusCode(200);
-        createdAddress = addressRes.getBody()['result'];
-
     });
 
     test('Should lock Escrow', async () => {
@@ -71,15 +49,14 @@ describe('EscrowLockCommand', () => {
         const escrowLockTestData = {
             itemhash: createdListingItem.hash,
             nonce: 'TEST NONCE',
-            addressId: createdAddress.id,
             memo: 'TEST MEMO'
         };
 
-        const escrowLockRes = await rpc(method, [subCommand,
-            createdListingItem.hash, escrowLockTestData.nonce, createdAddress.id, escrowLockTestData.memo]);
+        const escrowLockRes = await rpc('escrow', ['lock',
+            createdListingItem.hash, escrowLockTestData.nonce, escrowLockTestData.memo]);
         escrowLockRes.expectJson();
 
-        escrowLockRes.expectStatusCode(404);
+        escrowLockRes.expectStatusCode(200);
 
     });
 });

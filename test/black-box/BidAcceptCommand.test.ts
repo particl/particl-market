@@ -7,6 +7,7 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 import { addressTestData } from './BidCommandCommon';
 
 describe('BidAcceptCommand', () => {
+
     const testUtil = new BlackBoxTestUtil();
 
     const bidCommand =  Commands.BID_ROOT.commandName;
@@ -30,7 +31,7 @@ describe('BidAcceptCommand', () => {
         // Ryno Hacks - This requires regtest
         const outputs = [{
             txid: 'f89653c7208af2c76a3070d436229fb782acbd065bd5810307995b9982423ce7',
-            vout: 9,
+            vout: 8,
             amount: 10000
         }];
 

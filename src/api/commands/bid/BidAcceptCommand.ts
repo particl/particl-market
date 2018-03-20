@@ -96,10 +96,12 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
                     });
 
                     if (sum < basePrice) {
-                        throw new Error('You are too broke...');
+                        this.log.error('Not enough funds');
+                        throw new MessageException('You are too broke...');
                     }
                 } else {
-                    throw new Error(`ListingItem with the hash=${listingItem.Hash} does not have a price!`);
+                    this.log.error(`ListingItem with the hash=${listingItem.Hash} does not have a price!`);
+                    throw new MessageException(`ListingItem with the hash=${listingItem.Hash} does not have a price!`);
                 }
 
                 const addr = await this.coreRpcService.call('getnewaddress', ['_escrow']);
@@ -116,7 +118,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
                 const txout = {};
 
-                txout[escrow.address] = +(totalPrice * 3).toFixed(8); // TODO: Shipping... ;(
+                txout[escrow] = +(totalPrice * 3).toFixed(8); // TODO: Shipping... ;(
                 txout[changeAddr] = change;
 
                 const buyerChangeAddr = bid.BidData.find(kv => kv.dataId === 'changeAddr').dataValue; // TODO: Error handling - nice messagee..
@@ -137,13 +139,10 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
                     });
                     txout[buyerChangeAddr] = change;
                 } else {
-                    throw new Error('Buyer didn\'t supply outputs!'); // TODO: proper message for no outputs :P
+                    this.log.error('Buyer didn\'t supply outputs!');
+                    throw new MessageException('Buyer didn\'t supply outputs!'); // TODO: proper message for no outputs :P
                 }
 
-                console.log([
-                    outputs.concat(buyerOutputs),
-                    txout
-                ]);
                 const rawtx = await this.coreRpcService.call('createrawtransaction', [
                     outputs.concat(buyerOutputs),
                     txout
@@ -151,10 +150,26 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
                 // convert the bid data params as bid data key value pair
                 const listingItemHash = data.params.shift();
-                const bidData = this.setBidData(['pubkey', pubkey, 'rawtx', rawtx]);
+
+                // TODO: At this stage we need to store the unsigned transaction, as we will need user interaction to sign
+                // the transaction
+                const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
+
+                if (!signed || (signed.errors && signed.errors[0].error !== 'Operation not valid with the current stack size')) {
+                    this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
+                    throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
+                }
+
+                if (signed.complete) {
+                    this.log.error('Transaction should not be complete at this stage, will not send insecure message');
+                    throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
+                }
 
                 // TODO: This rawtx needs to be signed before it is broadcast...
-                // - when we move this logic into the correct place, we need to keep this in mind.
+                const bidData = this.setBidData(['pubkey', pubkey, 'rawtx', signed.hex]);
+                console.log(bidData);
+                // - Most likely the transaction building and signing will happen in a different command that takes place
+                // before this..
                 // End - Ryno Hacks
 
                 // broadcast the accepted bid message
@@ -163,6 +178,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
                     version: process.env.MARKETPLACE_VERSION,
                     mpaction: {
                         listing: data.params[0],
+                        objects: bidData,
                         action: BidMessageType.MPA_ACCEPT
                     }
                 } as MarketplaceMessageInterface;

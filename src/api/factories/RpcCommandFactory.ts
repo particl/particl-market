@@ -25,7 +25,7 @@ import { EscrowRootCommand } from '../commands/escrow/EscrowRootCommand';
 import { EscrowAddCommand } from '../commands/escrow/EscrowAddCommand';
 import { EscrowRemoveCommand } from '../commands/escrow/EscrowRemoveCommand';
 import { EscrowUpdateCommand } from '../commands/escrow/EscrowUpdateCommand';
-import { EscrowAcceptCommand } from '../commands/escrow/EscrowAcceptCommand';
+import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
 import { EscrowRefundCommand } from '../commands/escrow/EscrowRefundCommand';
 import { EscrowReleaseCommand } from '../commands/escrow/EscrowReleaseCommand';
 import { FavoriteRootCommand } from '../commands/favorite/FavoriteRootCommand';
@@ -140,7 +140,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowAddCommand) private escrowAddCommand: EscrowAddCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRemoveCommand) private escrowRemoveCommand: EscrowRemoveCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowUpdateCommand) private escrowUpdateCommand: EscrowUpdateCommand,
-        @inject(Types.Command) @named(Targets.Command.escrow.EscrowAcceptCommand) private escrowAcceptCommand: EscrowAcceptCommand,
+        @inject(Types.Command) @named(Targets.Command.escrow.EscrowLockCommand) private escrowLockCommand: EscrowLockCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRefundCommand) private escrowRefundCommand: EscrowRefundCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowReleaseCommand) private escrowReleaseCommand: EscrowReleaseCommand,
 
@@ -261,7 +261,7 @@ export class RpcCommandFactory {
         this.commands.push(escrowAddCommand);
         this.commands.push(escrowRemoveCommand);
         this.commands.push(escrowUpdateCommand);
-        this.commands.push(escrowAcceptCommand);
+        this.commands.push(escrowLockCommand);
         this.commands.push(escrowRefundCommand);
         this.commands.push(escrowReleaseCommand);
 
