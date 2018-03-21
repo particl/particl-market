@@ -1,4 +1,5 @@
 import { rpc, api } from '../lib/api';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -10,6 +11,8 @@ describe('ListingItemTemplatePostCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
+
+    const log: LoggerType = new LoggerType(__filename);
 
     let listingItemTemplates: ListingItemTemplate[];
     let defaultProfile;
@@ -42,10 +45,15 @@ describe('ListingItemTemplatePostCommand', () => {
             generateListingItemTemplateParams   // what kind of data to generate
         ) as ListingItemTemplate[];
 
+        log.debug('beforeAll');
+        console.log('beforeAll');
+
     });
 
     test('Should post a ListingItem in to the default marketplace', async (done) => {
 
+        log.debug('test');
+        console.log('test');
         const ffs = true;
 
         const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplates[0].id, defaultMarket.id]);
