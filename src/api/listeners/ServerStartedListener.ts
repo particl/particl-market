@@ -76,9 +76,8 @@ export class ServerStartedListener implements interfaces.Listener {
                 this.messageProcessor.schedulePoll();
                 this.interval = 10000;
             }
-            if (process.env.NODE_ENV !== 'test') {
-                this.log.info('connected to particld, checking again in ' + this.interval + 'ms.');
-            }
+
+            // this.log.info('connected to particld, checking again in ' + this.interval + 'ms.');
         } else {
 
             if (this.previousState !== isConnected) {

@@ -48,6 +48,7 @@ export class CoreRpcService {
 
         const id = RPC_REQUEST_ID++;
         const postData = JSON.stringify({
+            jsonrpc: '2.0',
             method,
             params,
             id
@@ -57,7 +58,7 @@ export class CoreRpcService {
         const options = this.getOptions();
 
         if (logCall) {
-            this.log.debug('call: ' + method + ' ' + params);
+            this.log.debug('call: ' + method + ' ' + params.toString().replace(',', ' '));
         }
         // this.log.debug('call url:', url);
         // this.log.debug('call postData:', postData);

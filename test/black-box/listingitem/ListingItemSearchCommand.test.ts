@@ -1,12 +1,5 @@
 import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
-import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
-import { EscrowType } from '../../../src/api/enums/EscrowType';
-import { Currency } from '../../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
-import { PaymentType } from '../../../src/api/enums/PaymentType';
-import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
@@ -21,7 +14,7 @@ import * as listingItemTemplateCreateRequestBasic1 from '../../testdata/createre
 import * as listingItemTemplateCreateRequestBasic2 from '../../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
 
 import * as resources from 'resources';
-import {ObjectHash} from '../../../src/core/helpers/ObjectHash';
+import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 
 describe('ListingItemSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
