@@ -50,7 +50,7 @@ export class SocketIoServer {
                 this.eventEmitter.removeListener('cli', () => {
                     this.log.debug('cli', event);
                 });
-            });
+            });//
 
             client.on('serverpong', (data) => {
                 this.log.debug('received pong from client');
