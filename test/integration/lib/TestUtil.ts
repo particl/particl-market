@@ -27,7 +27,7 @@ export class TestUtil {
     }
 
     private async isServerStarted(): boolean {
-        if (this.serverStartedListener.isAppReady === false) {
+        if (this.serverStartedListener.isStarted === false) {
             throw Error('Not started.');
         } else {
             this.log.debug('SERVER READY!');
