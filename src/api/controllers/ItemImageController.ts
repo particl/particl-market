@@ -1,22 +1,13 @@
-import { Collection } from 'bookshelf';
 import { inject, named } from 'inversify';
 import { controller, httpGet, httpPost, httpPut, httpDelete, response, requestBody, requestParam, request } from 'inversify-express-utils';
 import { Types, Core, Targets } from '../../constants';
 import { app } from '../../app';
 import { ItemImageService } from '../services/ItemImageService';
-import { ListingItemTemplateService } from '../services/ListingItemTemplateService';
+import { ItemImageHttpUploadService } from '../services/ItemImageHttpUploadService';
 import { Logger as LoggerType } from '../../core/Logger';
+import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
 import sharp = require('sharp');
 import * as _ from 'lodash';
-import { Commands } from '../commands/CommandEnumType';
-import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
-import { ItemImageUpdateRequest } from '../requests/ItemImageUpdateRequest';
-import { MessageException } from '../exceptions/MessageException';
-import { ListingItemTemplate } from '../models/ListingItemTemplate';
-import { ItemImage } from '../models/ItemImage';
-import { ItemImageData } from '../models/ItemImageData';
-import { ItemInformation } from '../models/ItemInformation';
-
 
 // Get middlewares
 const restApi = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.AuthenticateMiddleware);
@@ -29,40 +20,20 @@ export class ItemImageController {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageHttpUploadService) private itemImageHttpUploadService: ItemImageHttpUploadService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
     }
 
     @httpPost('/template/:templateId')
-    public async create( @response() res: myExpress.Response, @requestParam('templateId') templateIdStr: string,
+    public async create( @response() res: myExpress.Response, @requestParam('templateId') templateId: string,
                          @requestBody() body: any, @request() req: any): Promise<any> {
-        // check templateId is number
-        // also check listingItemTemplate id present in params
-        let templateId: number;
-        if (!templateIdStr) {
-            throw new MessageException('ListingItemTemplate id can not be null.');
-        } else {
-            templateId = parseInt(templateIdStr, 10);
-            if ( !templateId ) {
-                throw new MessageException('ListingItemTemplate id must be an integer.');
-            }
-        }
-
-        const listItems: any[] = [];
-        const listingItemTemplate: ListingItemTemplate = await this.listingItemTemplateService.findOne(templateId);
-        for ( const file of req.files ) {
-            const tmpImage = await this.itemImageService.createFile(templateId, file, listingItemTemplate);
-            const imageDatas = tmpImage.ItemImageDatas;
-            for ( const i in imageDatas ) {
-                if ( i ) {
-                    const tmpImageData: any = imageDatas[i];
-                    tmpImageData.data = 'http://../../../item-image-data/' + tmpImageData.id;
-                    listItems.push(tmpImageData);
-                }
-            }
-        }
-        return listItems;
+      return this.itemImageHttpUploadService.httpPostImageUpload(new ImagePostUploadRequest({
+              result: res,
+              id: templateId,
+              requestBody: body,
+              request: req
+          }));
     }
 
     @httpGet('/:id/:imageVersion')

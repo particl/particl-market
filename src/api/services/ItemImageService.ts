@@ -21,6 +21,7 @@ import {CryptocurrencyAddressCreateRequest} from '../requests/CryptocurrencyAddr
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
 import * as fs from 'fs';
 
 export class ItemImageService {
