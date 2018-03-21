@@ -59,6 +59,7 @@ export class IoC {
         await this.bindFactories();
         this.log.info('binding message processors');
         await this.bindMessageProcessors();
+        this.log.info('binding listeners');
         await this.bindListeners();
 
         if (!Environment.isTest()) {
@@ -141,6 +142,7 @@ export class IoC {
             this.container
                 .bind<any>(Types.Listener)
                 .to(value)
+                .inSingletonScope()
                 .whenTargetNamed(name);
 
             const listener: interfaces.Listener = this.container.getNamed<any>(Types.Listener, name);
