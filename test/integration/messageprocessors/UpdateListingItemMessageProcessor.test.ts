@@ -36,6 +36,7 @@ import { ShippingPriceService } from '../../../src/api/services/ShippingPriceSer
 import { CryptocurrencyAddressService } from '../../../src/api/services/CryptocurrencyAddressService';
 import { MessagingInformationService } from '../../../src/api/services/MessagingInformationService';
 import { ListingItemObjectService } from '../../../src/api/services/ListingItemObjectService';
+import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 
 describe('UpdateListingItemMessageProcessor', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -193,16 +194,17 @@ describe('UpdateListingItemMessageProcessor', () => {
 
 
         defaultMarket = await marketService.getDefault();
+        const hash = await ObjectHash.getHash(testData, HashableObjectType.LISTINGITEM);
         const result = await testDataService.create<ListingItem>({
             model: 'listingitem',
             data: {
                 market_id: defaultMarket.Id,
-                hash: await ObjectHash.getHash(testData)
+                hash
             } as any,
             withRelated: true
         } as TestDataCreateRequest);
         createdListingItem = result.toJSON();
-        testData.hash = await ObjectHash.getHash(testData);
+        testData.hash = hash;
     });
 
     afterAll(async () => {

@@ -9,6 +9,7 @@ import { Commands} from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { ListingItem, ListingItemTemplate } from 'resources';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 
 describe('MessagingInformationUpdateCommand', () => {
 
@@ -64,7 +65,7 @@ describe('MessagingInformationUpdateCommand', () => {
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         // get categories
         const categories = await rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_LIST.commandName]);
@@ -123,7 +124,7 @@ describe('MessagingInformationUpdateCommand', () => {
         testDataListingItemTemplate.messagingInformation[0].listingItemId = listingItemId;
 
         // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         // create new item template
         const listingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);

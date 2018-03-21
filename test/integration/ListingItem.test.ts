@@ -60,6 +60,7 @@ import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createreque
 
 import * as resources from 'resources';
 
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 
 describe('ListingItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -327,7 +328,7 @@ describe('ListingItem', () => {
 
     test('Should create a new ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic1));
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await ObjectHash.getHash(testDataToSave, HashableObjectType.LISTINGITEM);
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
@@ -368,7 +369,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await ObjectHash.getHash(testDataToSave, HashableObjectType.LISTINGITEM);
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
@@ -379,7 +380,8 @@ describe('ListingItem', () => {
 
     test('Should update previously created ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await ObjectHash.getHash(testDataToSave, HashableObjectType.LISTINGITEM);
+
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.update(createdListingItem2.id, testDataToSave);
@@ -405,7 +407,8 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await ObjectHash.getHash(testDataToSave, HashableObjectType.LISTINGITEM);
+
         testDataToSave.market_id = defaultMarket.Id;
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
@@ -429,7 +432,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await ObjectHash.getHash(testDataToSave, HashableObjectType.LISTINGITEM);
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
@@ -446,7 +449,7 @@ describe('ListingItem', () => {
 
     test('Should create ListingItem with relation to ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await ObjectHash.getHash(testDataToSave, HashableObjectType.LISTINGITEM);
 
         // create ListingItemTemplate
         const listingItemTemplateCreateRequest = {
@@ -481,7 +484,7 @@ describe('ListingItem', () => {
     test('Should update ListingItem correctly when removing data', async () => {
 
         const testDataToUpdate = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
-        testDataToUpdate.hash = ObjectHash.getHash(testDataToUpdate);
+        testDataToUpdate.hash = await ObjectHash.getHash(testDataToUpdate, HashableObjectType.LISTINGITEM);
         testDataToUpdate.market_id = defaultMarket.Id;
 
         // remove some data

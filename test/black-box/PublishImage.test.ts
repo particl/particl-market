@@ -7,6 +7,8 @@ import { PaymentType } from '../../src/api/enums/PaymentType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
+import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 
 describe('/publish-image', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -42,7 +44,7 @@ describe('/publish-image', () => {
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         // create item template
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);

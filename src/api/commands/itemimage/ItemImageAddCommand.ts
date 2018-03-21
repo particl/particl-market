@@ -9,10 +9,11 @@ import { ItemImage } from '../../models/ItemImage';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as crypto from 'crypto-js';
 import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { ObjectHash } from '../../../core/helpers/ObjectHash';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
+import { HashableObjectType } from '../../../api/enums/HashableObjectType';
 
 export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
@@ -55,7 +56,13 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         // create item images
         return await this.itemImageService.create({
             item_information_id: itemInformation.id,
-            hash: await ObjectHash.getHash(itemInformation),
+            hash: await ObjectHash.getHash({
+                dataId: data.params[1],
+                protocol: data.params[2],
+                encoding: data.params[3],
+                data: data.params[4],
+                imageVersion: 'ORIGINAL'
+            }, HashableObjectType.ITEMIMAGE),
             data: [{
                 dataId: data.params[1],
                 protocol: data.params[2],

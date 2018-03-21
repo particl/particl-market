@@ -6,6 +6,7 @@ import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 
 describe('EscrowAddCommand', () => {
 
@@ -41,7 +42,7 @@ describe('EscrowAddCommand', () => {
         testDataListingItemTemplate.profile_id = profileId;
 
         // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
 
@@ -64,7 +65,7 @@ describe('EscrowAddCommand', () => {
         delete testDataListingItemTemplate.itemInformation;
         delete testDataListingItemTemplate.paymentInformation;
 
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
         const createdTemplateId = addListingItemTempRes.id;

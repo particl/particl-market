@@ -20,7 +20,7 @@ import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType
 import { ItemImageCreateRequest } from '../../src/api/requests/ItemImageCreateRequest';
 import { ItemImageUpdateRequest } from '../../src/api/requests/ItemImageUpdateRequest';
 
-import { ImageProcessing, MEDIUM_IMAGE_SIZE, THUMBNAIL_IMAGE_SIZE } from '../../src/core/helpers/ImageProcessing';
+import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { ImageTriplet } from '../../src/core/helpers/ImageTriplet';
 
 import sharp = require('sharp');
@@ -29,7 +29,8 @@ import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerate
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import {ItemImageDataService} from '../../src/api/services/ItemImageDataService';
+import { ItemImageDataService } from '../../src/api/services/ItemImageDataService';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 
 describe('ItemImage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -44,6 +45,7 @@ describe('ItemImage', () => {
 
     let createdImageId;
     let createdListingItem;
+    let hash;
 
     const testData = {
         // item_information_id
@@ -101,6 +103,7 @@ describe('ItemImage', () => {
         } as TestDataGenerateRequest);
         createdListingItem = listingItems[0].toJSON();
 
+        hash = await ObjectHash.getHash(testData.data[0], HashableObjectType.ITEMIMAGE);
     });
 
     afterAll(async () => {
@@ -119,7 +122,7 @@ describe('ItemImage', () => {
 
         // add the required data to testData
         testData.item_information_id = createdListingItem.ItemInformation.id;
-        testData.hash = await ObjectHash.getHash(testData);
+        testData.hash = hash;
 
         // create
         const itemImageModel: ItemImage = await itemImageService.create(testData);
@@ -173,7 +176,7 @@ describe('ItemImage', () => {
 
     test('Should update the ItemImage', async () => {
         testDataUpdated.item_information_id = createdListingItem.ItemInformation.id;
-        testDataUpdated.hash = await ObjectHash.getHash(testData);
+        testDataUpdated.hash = await ObjectHash.getHash(testDataUpdated.data[0], HashableObjectType.ITEMIMAGE);
 
         const itemImageModel: ItemImage = await itemImageService.update(createdImageId, testDataUpdated);
         const result = itemImageModel.toJSON();

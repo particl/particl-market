@@ -7,6 +7,7 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { ListingItem, ListingItemTemplate } from 'resources';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 
 describe('/ItemLocationUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -59,8 +60,7 @@ describe('/ItemLocationUpdateCommand', () => {
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
-
+        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
         // create item template
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
         const result: any = addListingItemTempRes;
@@ -130,7 +130,7 @@ describe('/ItemLocationUpdateCommand', () => {
         testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
 
         // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         // create new item template
         const newListingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
