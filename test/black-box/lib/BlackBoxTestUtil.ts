@@ -3,13 +3,13 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as _ from 'lodash';
 import { Market, Profile } from 'resources';
+import { LoggerConfig } from '../../../src/config/LoggerConfig';
 
 export class BlackBoxTestUtil {
 
     constructor() {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
-        //
-    }
+        new LoggerConfig().configure();    }
 
     /**
      * clean the db, also seeds the default data
