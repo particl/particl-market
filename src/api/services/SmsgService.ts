@@ -29,7 +29,12 @@ export class SmsgService {
      * @returns {Promise<boolean>}
      */
     public async smsgImportPrivKey(privateKey: string, label: string = 'default market'): Promise<boolean> {
-        return await this.coreRpcService.call('smsgimportprivkey', [privateKey, label]);
+        return await this.coreRpcService.call('smsgimportprivkey', [privateKey, label])
+            .then(response => true)
+            .catch(error => {
+                this.log.error('smsgImportPrivKey failed: ', error);
+                return false;
+            });
     }
 
     /**
@@ -75,6 +80,22 @@ export class SmsgService {
      * List and manage keys.
      * ﻿﻿[whitelist|all|wallet|recv <+/-> <address>|anon <+/-> <address>]
      *
+     * response:
+     * ﻿{
+     * "wallet_keys": [
+     * ],
+     * "smsg_keys": [
+     *   {
+     *     "address": "pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA",
+     *     "public_key": "MkRjwngPvzX17eF6sjadwjgfjHmn3E9wVheSTi1UjecUNxxZtBFyVJLiWCrMUrm4FbpFW3ehg5HaWfxFd3xQnRzj",
+     *     "receive": "1",
+     *     "anon": "1",
+     *     "label": "default market"
+     *   }
+     * ],
+     * "result": "1"
+     * }
+     *
      * @returns {Promise<any>}
      */
     public async smsgLocalKeys(): Promise<any> {
@@ -91,14 +112,20 @@ export class SmsgService {
      * @param {string} publicKey
      * @returns {Promise<any>}
      */
-    public async smsgAddAddress(address: string, publicKey: string): Promise<any> {
-        const response = await this.coreRpcService.call('smsgaddaddress', [address, publicKey]);
-        this.log.debug('smsgAddAddress, response: ' + JSON.stringify(response, null, 2));
-        if (response.result === 'Public key added to db.'
-            || (response.result === 'Public key not added to db.' && response.reason === 'Public key exists in database')) {
-            return response;
-        } else {
-            throw new InternalServerException(response.result + ': ' + response.reason);
-        }
+    public async smsgAddAddress(address: string, publicKey: string): Promise<boolean> {
+        return await this.coreRpcService.call('smsgaddaddress', [address, publicKey])
+            .then(response => {
+                this.log.debug('smsgAddAddress, response: ' + JSON.stringify(response, null, 2));
+                if (response.result === 'Public key added to db.'
+                    || (response.result === 'Public key not added to db.' && response.reason === 'Public key exists in database')) {
+                    return true;
+                } else {
+                    return false;
+                }
+            })
+            .catch(error => {
+                this.log.error('smsgAddAddress failed: ', error);
+                return false;
+            });
     }
 }

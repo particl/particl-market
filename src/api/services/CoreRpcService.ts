@@ -21,13 +21,23 @@ export class CoreRpcService {
     private DEFAULT_HOSTNAME = 'localhost';
     // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
 
-    constructor(@inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-                @inject(Types.Service) @named(Targets.Service.CoreCookieService) private coreCookieService: CoreCookieService) {
+    constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.CoreCookieService) private coreCookieService: CoreCookieService
+    ) {
         this.log = new Logger(__filename);
     }
 
+    public async isConnected(): Promise<boolean> {
+        return await this.getNetworkInfo()
+            .then(response => true)
+            .catch(error => {
+                return false;
+            });
+    }
+
     public async getNetworkInfo(): Promise<any> {
-        return await this.call('getnetworkinfo');
+        return await this.call('getnetworkinfo', [], false);
     }
 
     public async getNewAddress(): Promise<any> {
