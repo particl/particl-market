@@ -29,6 +29,7 @@ describe('ListingItemSearchCommand', () => {
     let defaultProfile;
     let defaultMarket;
     let listingItemTemplates: resources.ListingItemTemplate[];
+    let postedTemplateId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -61,7 +62,8 @@ describe('ListingItemSearchCommand', () => {
     });
 
     test('Should post a ListingItem in to the default marketplace', async () => {
-        const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplates[0].id, defaultMarket.id]);
+        postedTemplateId = listingItemTemplates[0].id;
+        const res: any = await rpc(templateCommand, [templatePostCommand, postedTemplateId, defaultMarket.id]);
         res.expectJson();
         res.expectStatusCode(200);
 
