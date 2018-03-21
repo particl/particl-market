@@ -45,42 +45,47 @@ export class CoreCookieService {
     private getCookieLoop(): void {
         try {
             const cookie = this.getPathToCookie();
-            fs.access(cookie, (error) => {
-                if (!error) {
-                    // TODO: maybe add a silly level to the logger?
-                    // this.log.debug('cookie file exists!');
-                    fs.readFile(cookie, (err, data) => {
-                        if (err) {
-                            throw err;
-                        }
-                        // this.log.debug('cookie=', data.toString());
-                        const usernameAndPassword = data.toString().split(':', 2);
+            this.log.debug('cookie path: ', cookie);
 
-                        // set username and password to cookie values
-                        this.DEFAULT_CORE_USER = usernameAndPassword[0];
-                        this.DEFAULT_CORE_PASSWORD = usernameAndPassword[1];
-                    });
-                } else {
-                    // this.log.debug('cookie not found!', err);
-                }
-                return;
-            });
+            // we might not be running the particld locally so the cookie might not exists
+            if (cookie) {
+                fs.access(cookie, (error) => {
+                    if (!error) {
+                        // TODO: maybe add a silly level to the logger?
+                        // this.log.debug('cookie file exists!');
+                        fs.readFile(cookie, (err, data) => {
+                            if (err) {
+                                throw err;
+                            }
+                            // this.log.debug('cookie=', data.toString());
+                            const usernameAndPassword = data.toString().split(':', 2);
 
-            // grab the cookie every second
-            // cookie updates everytime that the daemon restarts
-            // so we need to keep on checking this due to
-            // wallet encryption procedure (will reboot the daemon)
-            const self = this;
-            setTimeout(() => {
-                self.getCookieLoop();
-            }, 1000);
+                            // set username and password to cookie values
+                            this.DEFAULT_CORE_USER = usernameAndPassword[0];
+                            this.DEFAULT_CORE_PASSWORD = usernameAndPassword[1];
+                        });
+                    } else {
+                        // this.log.debug('cookie not found!', err);
+                    }
+                    return;
+                });
+
+                // grab the cookie every second
+                // cookie updates everytime that the daemon restarts
+                // so we need to keep on checking this due to
+                // wallet encryption procedure (will reboot the daemon)
+                const self = this;
+                setTimeout(() => {
+                    self.getCookieLoop();
+                }, 1000);
+            }
 
         } catch ( ex ) {
             this.log.debug('cookie error: ', ex);
         }
     }
 
-    private getPathToCookie(): string {
+    private getPathToCookie(): string | null {
         // Use the stored path instead..
         if (this.PATH_TO_COOKIE) {
             return this.PATH_TO_COOKIE;
@@ -114,12 +119,14 @@ export class CoreCookieService {
         }
 
         // just check if it exist so it logs an error just in case
-        this.checkIfExists(dir);
+        if (this.checkIfExists(dir)) {
+            // return path to cookie
+            const cookiePath = path.join(dir, (Environment.isDevelopment() || Environment.isTest() ? 'testnet' : ''), '.cookie');
+            this.PATH_TO_COOKIE = cookiePath;
+            return cookiePath;
+        }
 
-        // return path to cookie
-        const cookiePath = path.join(dir, (Environment.isDevelopment() || Environment.isTest() ? 'testnet' : ''), '.cookie');
-        this.PATH_TO_COOKIE = cookiePath;
-        return cookiePath;
+        return null;
     }
 
     private checkIfExists(dir: string): boolean {
