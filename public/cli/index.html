@@ -308,7 +308,7 @@
             })
             .on('cli', (event) => {
                 log('cli', event.message);
-            })
+            }) //
             .on('serverping', (data) => {
                 // log('serverping', data);
                 socket.emit('serverpong');
