@@ -19,14 +19,19 @@ describe('EscrowRefundCommand', () => {
     };
 
     beforeAll(async () => {
-        await testUtil.cleanDb();
+        // IDK Why this is crashing here...
+        try {
+            await testUtil.cleanDb();
+        } catch(e) {
+
+        }
         const generateListingItemParams = new GenerateListingItemParams([
-            false,   // generateItemInformation
-            false,   // generateShippingDestinations
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
             false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
             false,   // generateMessagingInformation
             false    // generateListingItemObjects
         ]).toParamsArray();

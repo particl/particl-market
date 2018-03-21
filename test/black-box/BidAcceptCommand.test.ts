@@ -30,9 +30,9 @@ describe('BidAcceptCommand', () => {
 
         // Ryno Hacks - This requires regtest
         const outputs = [{
-            txid: 'f89653c7208af2c76a3070d436229fb782acbd065bd5810307995b9982423ce7',
-            vout: 8,
-            amount: 10000
+            txid: '91acbd9589197eb01e124dd4f176fb3f1e0bd220797d90819704a2c629bd705c',
+            vout: 0,
+            amount: 20000
         }];
 
         const pubkey = '02dcd01e1c1bde4d5f8eff82cde60017f81ac1c2888d04f47a31660004fe8d4bb7';
@@ -45,9 +45,11 @@ describe('BidAcceptCommand', () => {
         const bid = await testUtil.addData(CreatableModel.BID, {
             action: BidMessageType.MPA_BID,
             bidData: [
-                {id: 'pubkey', value: pubkey},
+                {id: 'pubkeys', value: [pubkey]},
                 {id: 'outputs', value: outputs},
                 {id: 'changeAddr', value: changeAddress},
+                {id: 'change', value: +(listingItem[0].PaymentInformation.ItemPrice.basePrice
+                    + listingItem[0].PaymentInformation.ItemPrice.ShippingPrice.international).toFixed(8) }
             ],
             listing_item_id: listingItem[0].id
         } as BidCreateRequest);

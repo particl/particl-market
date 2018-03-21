@@ -253,18 +253,22 @@ by [w3tech](https://github.com/w3tecch)
 rm -rf /tmp/particl_testing/node1 /tmp/particl_testing/node2  /tmp/particl_testing/node3
 mkdir -p /tmp/particl_testing/node1 /tmp/particl_testing/node2  /tmp/particl_testing/node3
 ./particld  --regtest -daemon -datadir=/tmp/particl_testing/node1 -rpcuser=test -rpcpassword=test
-sleep 5
-./particl-cli -regtest -rpcuser=test -rpcpassword=test extkeyimportmaster 'sección grito médula hecho pauta posada nueve ebrio bruto buceo baúl mitad'
-./particld -regtest -daemon -datadir=/tmp/particl_testing/node2 -port=55555 -rpcport=51945 -connect=127.0.0.1
-sleep 5
-./particl-cli -datadir=/tmp/particl_testing/node2 -regtest extkeyimportmaster 'abandon baby cabbage dad eager fabric gadget habit ice kangaroo lab absorb'
-./particl-cli -datadir=/tmp/particl_testing/node2 -regtest getnewaddress
-./particl-cli -datadir=/tmp/particl_testing/node2 -regtest sendtoaddress poL2QwrQe5X8fUucMGJp7QVBuTNs683yGW 20000
-./particl-cli -datadir=/tmp/particl_testing/node2 -regtest walletsettings stakelimit '{"height":10}'
+./particld -regtest -rpcuser=test -rpcpassword=test -daemon -datadir=/tmp/particl_testing/node2 -port=55555 -rpcport=51945 -connect=127.0.0.1
 ./particld -regtest -daemon -datadir=/tmp/particl_testing/node3 -port=55556 -rpcport=51946 -connect=127.0.0.1
+sleep 5
+./particl-cli -regtest -rpcuser=test -rpcpassword=test reservebalance true 100000
+./particl-cli -rpcuser=test -rpcpassword=test -regtest walletsettings stakelimit '{"height":0}'
+./particl-cli -rpcuser=test -rpcpassword=test -regtest extkeyimportmaster 'abandon baby cabbage dad eager fabric gadget habit ice kangaroo lab absorb'
+./particl-cli -rpcuser=test -rpcpassword=test -regtest getnewaddress
+./particl-cli -rpcuser=test -rpcpassword=test -regtest sendtypeto "part" "part" '[{"address":"pqZDE7YNWv5PJWidiaEG8tqfebkd6PNZDV", "amount":20000}]' "" "" 0 0 false '{"inputs":[{"tx":"f89653c7208af2c76a3070d436229fb782acbd065bd5810307995b9982423ce7","n":0},{"tx":"f89653c7208af2c76a3070d436229fb782acbd065bd5810307995b9982423ce7","n":1},{"tx":"f89653c7208af2c76a3070d436229fb782acbd065bd5810307995b9982423ce7","n":2}]}'
+./particl-cli -regtest -rpcuser=test -rpcpassword=test reservebalance false
+./particl-cli -rpcuser=test -rpcpassword=test -regtest walletsettings stakelimit '{"height":10}'
+./particl-cli -regtest -rpcuser=test -rpcpassword=test -rpcport=51945 extkeyimportmaster 'sección grito médula hecho pauta posada nueve ebrio bruto buceo baúl mitad'
+./particl-cli -regtest -rpcuser=test -rpcpassword=test -rpcport=51945 reservebalance true 20000
+
 ```
 ```
 ./particl-cli -regtest -datadir=/tmp/particl_testing/node1 -rpcuser=test -rpcpassword=test stop
-./particl-cli -regtest -datadir=/tmp/particl_testing/node2 -rpcport=51945 stop
+./particl-cli -regtest -datadir=/tmp/particl_testing/node2 -rpcuser=test -rpcpassword=test -rpcport=51945 stop
 ./particl-cli -regtest -datadir=/tmp/particl_testing/node3 -rpcport=51946 stop
 ```

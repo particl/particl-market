@@ -14,8 +14,9 @@ import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import * as _ from 'lodash';
 
+
 // Ryno
-import { Bid } from '../../models/Bid';
+import { Bid } from 'resources';
 import { BidMessageType } from '../../enums/BidMessageType';
 
 export class EscrowLockCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
@@ -47,16 +48,15 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         // fetch related escrow
         const paymentInformation = listingItem.related('PaymentInformation').toJSON();
         // Ryno Hacks - TODO: Refactor
-        let bid: Bid = listingItem.related('Bids').toJSON()[0];
-        if (bid) {
-            bid = (await Bid.fetchById(bid.id)).toJSON() as Bid;
-        }
-/*
-        if (!bid || bid.Action !== BidMessageType.MPA_ACCEPT) {
+        const bid: Bid = listingItem.related('Bids').toJSON()[0];
+
+        console.log('bid', bid);
+
+        if (!bid || bid.action !== BidMessageType.MPA_ACCEPT) {
             this.log.error('No valid information to finalize escrow');
             throw new MessageException('No valid information to finalize escrow');
         }
-*/
+
         if (_.isEmpty(paymentInformation) || _.isEmpty(listingItem)) {
             throw new MessageException('PaymentInformation or ListingItem not found!');
         }

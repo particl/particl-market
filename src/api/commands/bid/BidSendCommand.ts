@@ -88,7 +88,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
                         });
                     }
                     if (sum > (totalPrice * 2)) { // TODO: Ratio
-                        change = +(sum - (totalPrice * 2 - 0.0001)).toFixed(8); // TODO: Get actual fee...
+                        change = +(sum - (totalPrice * 2) - 0.0002).toFixed(8); // TODO: Get actual fee...
                         return true;
                     }
                     return false;
@@ -101,13 +101,13 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
                 throw new Error(`ListingItem with the hash=${listingItemHash} does not have a price!`);
             }
 
-            const addr = await this.coreRpcService.call('getnewaddress', ['_escrow']);
+            const addr = await this.coreRpcService.call('getaccountaddress', ['_escrow_pub_' + listingItem.Hash]);
             const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']);
             const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
 
             // convert the bid data params as bid data key value pair
             const bidData = this.setBidData(data.params.concat([
-                'outputs', outputs, 'pubkey', pubkey, 'changeAddr', changeAddr, 'change', change
+                'outputs', outputs, 'pubkeys', [pubkey], 'changeAddr', changeAddr, 'change', change
             ]));
             // End - Ryno Hacks
 

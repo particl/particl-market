@@ -20,6 +20,8 @@ import { MarketplaceMessageInterface } from '../../messages/MarketplaceMessageIn
 // Ryno changes
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { Output } from 'resources';
+declare function unescape(s: string): string;
+
 
 export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
@@ -53,6 +55,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
             throw new NotFoundException(data.params[0]);
         } else {
             // find related bid
+            // TODO: Make sure we have a listen item template, so we know it's our item
             // TODO: LATER WE WILL CHANGE IT FOR THE SINGLE BID
             let bid = listingItem.related('Bids').toJSON()[0];
             bid = (await Bid.fetchById(bid.id)).toJSON() as Bid;
@@ -88,8 +91,9 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
                                 amount: output.amount
                             });
                         }
+
                         if (sum > totalPrice) { // TODO: Ratio
-                            change = +(sum - (totalPrice - 0.0001)).toFixed(8); // TODO: Get actual fee...
+                            change = +(sum - totalPrice - 0.0001).toFixed(8); // TODO: Get actual fee...
                             return true;
                         }
                         return false;
@@ -104,16 +108,19 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
                     throw new MessageException(`ListingItem with the hash=${listingItem.Hash} does not have a price!`);
                 }
 
-                const addr = await this.coreRpcService.call('getnewaddress', ['_escrow']);
+                const addr = await this.coreRpcService.call('getaccountaddress', ['_escrow_pub_' + listingItem.Hash]);
                 const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']); // TODO: Proper change address?!?!
                 const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
+                let buyerPubkey = bid.BidData.find(kv => kv.dataId === 'pubkeys').dataValue;
+                buyerPubkey = buyerPubkey[0] === '[' ? JSON.parse(buyerPubkey)[0] : buyerPubkey;
+
+                console.log('buyerPubkey', buyerPubkey);
 
                 // Create Escrow address
-                // TODO: create raw transaction, sign transaction, booya
                 const escrow = (await this.coreRpcService.call('addmultisigaddress', [
                     2,
-                    [pubkey, bid.BidData.find(kv => kv.dataId === 'pubkey').dataValue],
-                    '_escrow_' // TODO: Something unique??
+                    [pubkey, buyerPubkey].sort(),
+                    '_escrow_' + listingItem.Hash  // TODO: Something unique??
                 ]));
 
                 const txout = {};
@@ -131,9 +138,9 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
                     buyerOutputs = JSON.parse(buyerOutputs.dataValue);
                     buyerOutputs.forEach(output => {
                         sum += output.amount;
-                        // TODO: Refactor reusable logic..
+                        // TODO: Refactor reusable logic. and verify / validate buyer change.
                         if (sum > totalPrice * 2) { // TODO: Ratio
-                            change = +(sum - (totalPrice * 2 - 0.0001)).toFixed(8); // TODO: Get actual fee...
+                            change = +(sum - (totalPrice * 2) - 0.0001).toFixed(8); // TODO: Get actual fee...
                             return;
                         }
                     });
@@ -142,6 +149,14 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
                     this.log.error('Buyer didn\'t supply outputs!');
                     throw new MessageException('Buyer didn\'t supply outputs!'); // TODO: proper message for no outputs :P
                 }
+
+                // TODO: Decide if we want this on the blockchain or not...
+                // TODO: Think about how to recover escrow information to finalize transactions should
+                // client pc / database crash..
+                /*
+                txout['data'] = unescape(encodeURIComponent(data.params[0]))
+                    .split('').map(v => v.charCodeAt(0).toString(16)).join('').substr(0, 80);
+                */
 
                 const rawtx = await this.coreRpcService.call('createrawtransaction', [
                     outputs.concat(buyerOutputs),
@@ -165,9 +180,10 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
                     throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
                 }
 
-                // TODO: This rawtx needs to be signed before it is broadcast...
-                const bidData = this.setBidData(['pubkey', pubkey, 'rawtx', signed.hex]);
-                console.log(bidData);
+                // TODO: We need to send a refund / release address
+                const releaseAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
+                const bidData = this.setBidData(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex, 'address', releaseAddr]);
+
                 // - Most likely the transaction building and signing will happen in a different command that takes place
                 // before this..
                 // End - Ryno Hacks
