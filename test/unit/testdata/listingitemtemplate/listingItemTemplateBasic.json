@@ -10,7 +10,7 @@
             "type": "TABLE",
             "description": "Product information",
             "listingItemTemplateId": 4,
-            "ListingItemObjectData": [
+            "ListingItemObjectDatas": [
                 {
                     "id": 1,
                     "key": "Screensize",
@@ -32,7 +32,7 @@
             "forceInput": true,
             "description": "Please select your colour",
             "listingItemTemplateId": 4,
-            "ListingItemObjectData": [
+            "ListingItemObjectDatas": [
                 {
                     "id": 3,
                     "key": "Black",

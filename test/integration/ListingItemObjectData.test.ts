@@ -6,7 +6,7 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { ListingItemObjectData } from '../../src/api/models/ListingItemObjectData';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
@@ -19,6 +19,9 @@ import { ListingItemTemplateService } from '../../src/api/services/ListingItemTe
 import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/ListingItemObjectDataUpdateRequest';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
+
+import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
+
 
 describe('ListingItemObjectData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -57,19 +60,13 @@ describe('ListingItemObjectData', () => {
         await testDataService.clean();
 
         const defaultProfile = await profileService.getDefault();
+        const templateData = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
+        templateData.hash = ObjectHash.getHash(templateData);
+        templateData.profile_id = defaultProfile.Id;
+
         const createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
             model: 'listingitemtemplate',
-            data: {
-                profile_id: defaultProfile.Id,
-                hash: 'itemhash',
-                listingItemObjects: [
-                    {
-                        type: ListingItemObjectType.DROPDOWN,
-                        description: 'where to store the dropdown data...',
-                        order: 0
-                    }
-                ]
-            },
+            data: templateData,
             withRelated: true
         } as TestDataCreateRequest);
         createdListingItemObject = createdListingItemTemplate.toJSON().ListingItemObjects[0];
@@ -112,9 +109,9 @@ describe('ListingItemObjectData', () => {
     test('Should list listing item object datas with our new create one', async () => {
         const listingItemObjectDataCollection = await listingItemObjectDataService.findAll();
         const listingItemObjectData = listingItemObjectDataCollection.toJSON();
-        expect(listingItemObjectData.length).toBe(1);
+        expect(listingItemObjectData.length).toBe(7); // 6 alredy exist
 
-        const result = listingItemObjectData[0];
+        const result = listingItemObjectData[6];
 
         // test the values
         expect(result.key).toBe(testData.key);

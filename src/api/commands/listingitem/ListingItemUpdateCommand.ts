@@ -34,7 +34,7 @@ export class ListingItemUpdateCommand extends BaseCommand implements RpcCommandI
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
 
-        return this.listingItemService.updatePostItem({
+        return await this.listingItemService.updatePostItem({
             hash: data.params[0],
             listingItemTemplateId: data.params[1] || undefined
         } as ListingItemUpdatePostRequest);

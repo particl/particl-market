@@ -12,9 +12,9 @@ describe('ShoppingCartUpdateCommand', () => {
     const shoppingCartName = 'New Shopping Cart';
 
     beforeAll(async () => {
-        await testUtil.cleanDb([]);
+        await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
-        defaultShoppingCart = defaultProfile.ShoppingCarts[0];
+        defaultShoppingCart = defaultProfile.ShoppingCart[0];
     });
 
     test('Should update Shopping Cart', async () => {

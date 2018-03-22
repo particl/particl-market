@@ -5,6 +5,8 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { MessageException } from '../exceptions/MessageException';
+
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { ItemInformationService } from './ItemInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
@@ -62,13 +64,12 @@ export class ListingItemTemplateService {
     @validate()
     public async search(
         @request(ListingItemTemplateSearchParams) options: ListingItemTemplateSearchParams): Promise<Bookshelf.Collection<ListingItemTemplate>> {
-        return this.listingItemTemplateRepo.search(options);
+        return await this.listingItemTemplateRepo.search(options);
     }
 
     @validate()
     public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest): Promise<ListingItemTemplate> {
 
-        // todo: add support for custom categories
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
@@ -84,6 +85,7 @@ export class ListingItemTemplateService {
         // If the request body was valid we will create the listingItemTemplate
         const listingItemTemplate: any = await this.listingItemTemplateRepo.create(body);
 
+        // create related models
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.Id;
             const result = await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
@@ -92,12 +94,12 @@ export class ListingItemTemplateService {
             paymentInformation.listing_item_template_id = listingItemTemplate.Id;
             const result = await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
         }
+
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_template_id = listingItemTemplate.Id;
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
         }
 
-        // create listingItemObjects
         for (const object of listingItemObjects) {
             object.listing_item_template_id = listingItemTemplate.Id;
             await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
@@ -217,11 +219,18 @@ export class ListingItemTemplateService {
     }
 
     public async destroy(id: number): Promise<void> {
-        const listingItemTemplate = await this.findOne(id);
-        if (!listingItemTemplate) {
-            throw new NotFoundException('Item listing does not exist. id = ' + id);
+        const listingItemTemplateModel = await this.findOne(id);
+        if (!listingItemTemplateModel) {
+            throw new NotFoundException('ListingItemTemplate does not exist. id = ' + id);
         }
-        await this.listingItemTemplateRepo.destroy(id);
+        const listingItemTemplate = listingItemTemplateModel.toJSON();
+        this.log.debug('delete listingItemTemplate:', listingItemTemplate.id);
+
+        if (_.isEmpty(listingItemTemplate.ListingItems)) {
+            await this.listingItemTemplateRepo.destroy(id);
+        } else {
+            throw new MessageException('ListingItemTemplate has ListingItems.');
+        }
     }
 
     // check if object is exist in a array

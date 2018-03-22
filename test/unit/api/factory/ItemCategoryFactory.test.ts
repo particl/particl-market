@@ -1,9 +1,9 @@
 import { LogMock } from '../../lib/LogMock';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
 import { ItemCategoryCreateRequest } from '../../../../src/api/requests/ItemCategoryCreateRequest';
-import * as listingItemCategoryWithRelated from '../../testdata/category/listingItemCategoryWithRelated.json';
-import * as listingItemCategoryWithRelated5levels from '../../testdata/category/listingItemCategoryWithRelated5levels.json';
-import * as listingItemCategoryRootWithRelated from '../../testdata/category/listingItemCategoryRootWithRelated.json';
+import * as listingItemCategoryWithRelated from '../../../testdata/model/listingItemCategoryWithRelated.json';
+import * as listingItemCategoryWithRelated5levels from '../../../testdata/model/listingItemCategoryWithRelated5levels.json';
+import * as listingItemCategoryRootWithRelated from '../../../testdata/model/listingItemCategoryRootWithRelated.json';
 import * as resources from 'resources';
 
 describe('ItemCategoryFactory', () => {
@@ -14,17 +14,17 @@ describe('ItemCategoryFactory', () => {
         itemCategoryFactory = new ItemCategoryFactory(LogMock);
     });
 
-    test('Should get the categoryCreateMessage from categoryFactory.getModal', async () => {
-        const categoryName = 'categoryName';
-        const parentItemCategoryId = 10;
-
-        const result: ItemCategoryCreateRequest = await itemCategoryFactory.getModel(categoryName, parentItemCategoryId);
-        expect(result.name).toBe(categoryName);
-        expect(result.parent_item_category_id).toBe(parentItemCategoryId);
+    // getModel tests
+    test('Should get the ItemCategoryCreateRequest from itemCategoryFactory.getModel', async () => {
+        const categoryArray = ['cat_ROOT', 'cat_high_value', 'cat_high_business_corporate'];
+        const result: ItemCategoryCreateRequest = await itemCategoryFactory.getModel(categoryArray, listingItemCategoryRootWithRelated);
+        expect(result.name).toBe('Business / Corporate');
+        expect(result.key).toBe('cat_high_business_corporate');
+        expect(result.parent_item_category_id).toBe(962);
     });
 
-    // TODO: no test cases for duplicate category cases, and propably no functionality testing those cases
-
+    // getArray tests
+    // TODO: there's no test cases for duplicate category cases, and propably there's no functionality for validating those cases either
     test('Should convert ListingItemCategory to categoryArray, 3 levels', async () => {
         const result: string[] = await itemCategoryFactory.getArray(listingItemCategoryWithRelated);
         expect(result).toHaveLength(3);

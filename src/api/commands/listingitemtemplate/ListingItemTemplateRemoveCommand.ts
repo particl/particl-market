@@ -31,12 +31,13 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         // check and find that listingItemTemplate is not related with any listingItem
-        const listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
-        const relatedListingItem = listingItemTemplate.related('ListingItem').toJSON();
-        if (!_.isEmpty(relatedListingItem)) {
-            throw new MessageException(`Listing-item-template related with listing-items can't be delete. id= ${data.params[0]}`);
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
+        const listingItemTemplate = listingItemTemplateModel.toJSON();
+
+        if (!_.isEmpty(listingItemTemplate.ListingItems)) {
+            throw new MessageException(`ListingItemTemplate has ListingItems so it can't be deleted. id=${data.params[0]}`);
         }
-        return this.listingItemTemplateService.destroy(data.params[0]);
+        return await this.listingItemTemplateService.destroy(data.params[0]);
     }
 
     public usage(): string {

@@ -12,7 +12,7 @@ Install [Node.js and NPM](https://nodejs.org/en/download/)
 * on Linux (Ubuntu) use `curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -`<br/>
 `sudo apt-get install -y nodejs`
 
-Then install yarn globally
+Then install yarn globally 
 ```
 npm install yarn -g 
 ```
@@ -44,7 +44,7 @@ Go to the project dir and start your app with this npm script.
 npm run serve
 ```
 
-> This starts a local server using `nodemon`, which will watch for any file changes and will restart the sever according to these changes.
+> This starts a local server using `nodemon`, which will watch for any file changes and will restart the server according to these changes.
 > The server address will be displayed to you as `http://0.0.0.0:3000`.
 
 

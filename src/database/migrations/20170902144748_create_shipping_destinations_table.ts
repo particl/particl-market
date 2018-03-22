@@ -6,7 +6,7 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('shipping_destinations', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('country').notNullable();
+            table.string('country', 3).notNullable();
             table.string('shipping_availability').notNullable();
 
             table.integer('item_information_id').unsigned().nullable();

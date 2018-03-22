@@ -37,21 +37,28 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Bid>> {
 
-        const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
+        // if hash is specified
+        if (data.params[0]) {
+            const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
 
-        return this.bidService.search({
-            listingItemId: listingItem.id,
-            action: data.params[1]
-        } as BidSearchParams);
+            return this.bidService.search({
+                listingItemId: listingItem.id,
+                action: data.params[1]
+            } as BidSearchParams);
+        } else {
+            // searching all bids
+            return this.bidService.findAll();
+        }
     }
 
+
     public usage(): string {
-        return this.getName() + ' <itemhash> [<status>] ';
+        return this.getName() + ' [<itemhash> [<status>]] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <itemhash>               - String - The hash of the item we want to search bids for. \n'
+            + '    <itemhash>               - [optional] String - The hash of the item we want to search bids for. \n'
             + '    <status>                 - [optional] ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL} - \n'
             + '                                The status of the bids we want to search for. ';
     }

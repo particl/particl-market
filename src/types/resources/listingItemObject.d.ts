@@ -9,7 +9,7 @@ declare module 'resources' {
         objectId: string;
         createdAt: Date;
         updatedAt: Date;
-        ListingItemObjectData: ListingItemObjectData[];
+        ListingItemObjectDatas: ListingItemObjectData[];
 
     }
 

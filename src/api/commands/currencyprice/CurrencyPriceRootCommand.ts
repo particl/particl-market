@@ -12,8 +12,9 @@ import { Commands } from '../CommandEnumType';
 import { CurrencyPriceService } from '../../services/CurrencyPriceService';
 import { MessageException } from '../../exceptions/MessageException';
 import { CurrencyPrice } from '../../models/CurrencyPrice';
+import * as resources from 'resources';
 
-export class CurrencyPriceRootCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<CurrencyPrice>> {
+export class CurrencyPriceRootCommand extends BaseCommand implements RpcCommandInterface<resources.CurrencyPrice[]> {
 
     public log: LoggerType;
 
@@ -36,15 +37,15 @@ export class CurrencyPriceRootCommand extends BaseCommand implements RpcCommandI
      *
      * @param data
      * @param rpcCommandFactory
-     * @returns {Promise<Bookshelf.Collection<CurrencyPrice>>}
+     * @returns {Promise<"resources".CurrencyPrice[]>}
      *
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<CurrencyPrice>> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<resources.CurrencyPrice[]> {
         const fromCurrency = data.params.shift().toUpperCase();
         // throw exception if fromCurrency is not a PART or toCurrencies has length 0
-        if (fromCurrency !== 'PART' || data.params.length < 1 ) {
-            throw new MessageException('Invalid params');
+        if (fromCurrency.toUpperCase() !== 'PART' || data.params.length < 1 ) {
+           throw new MessageException('Invalid params');
         } else {
             // convert params to uppercase
             const toCurrencies: string[] = [];
@@ -57,8 +58,8 @@ export class CurrencyPriceRootCommand extends BaseCommand implements RpcCommandI
 
     public help(): string {
         return this.getName() + ' <from> <to> [to...]) \n'
-            + '    <from>                   - String - Currency name from which you want to convert. \n'
-            + '    <to>                     - String - Currency name in which you want to convert. ';
+            + '    <from>                   - Currency name from which you want to convert. \n'
+            + '    <to>                     - Currency name in which you want to convert. ';
     }
 
     public description(): string {

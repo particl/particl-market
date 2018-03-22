@@ -57,7 +57,9 @@ import { CreatableModel } from '../enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../requests/params/GenerateListingItemTemplateParams';
 import { GenerateListingItemParams } from '../requests/params/GenerateListingItemParams';
 import { GenerateProfileParams } from '../requests/params/GenerateProfileParams';
+import { GenerateBidParams } from '../requests/params/GenerateBidParams';
 import {ImageProcessing} from '../../core/helpers/ImageProcessing';
+import { BidMessageType } from '../enums/BidMessageType';
 
 export class TestDataService {
 
@@ -154,6 +156,7 @@ export class TestDataService {
      *  model - listingitemtemplate, listingitem or profile
      *  amount - amount of models to create
      *  withRelated - return full related model data or just id's, defaults to true
+     *  generateParams - boolean array from GenerateListingItemTemplateParams
      *
      * @returns {Promise<ListingItem>}
      */
@@ -171,6 +174,10 @@ export class TestDataService {
             case CreatableModel.PROFILE: {
                 const generateParams = new GenerateProfileParams(body.generateParams);
                 return await this.generateProfiles(body.amount, body.withRelated, generateParams);
+            }
+            case CreatableModel.BID: {
+                const generateParams = new GenerateBidParams(body.generateParams);
+                return await this.generateBids(body.amount, body.withRelated, generateParams);
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -212,8 +219,8 @@ export class TestDataService {
             'favorite_items',
             'cryptocurrency_addresses',
             'profiles',
-            'shopping_carts',
-            'shopping_cart_items',
+            'shopping_cart',
+            'shopping_cart_item',
             'item_categories',
             'markets',
             'users',     // todo: not needed
@@ -223,7 +230,7 @@ export class TestDataService {
         ];
 
         for (const table of tablesToClean) {
-            this.log.debug('cleaning table: ', table);
+            // this.log.debug('cleaning table: ', table);
             await Database.knex.select().from(table).del();
         }
         return;
@@ -261,6 +268,33 @@ export class TestDataService {
         // this.log.debug('items: ', items);
 
         return await this.generateResponse(items, withRelated);
+    }
+
+    // -------------------
+    // bids
+    private async generateBids(amount: number, withRelated: boolean = true, generateParams: GenerateBidParams): Promise<any> {
+        const items: any[] = [];
+        for (let i = amount; i > 0; i--) {
+            const bid = await this.generateBidData(generateParams);
+            const savedBid = await this.bidService.create(bid);
+            items.push(savedBid);
+        }
+        return this.generateResponse(items, withRelated);
+    }
+
+    private async generateBidData(generateParams: GenerateBidParams): Promise<BidCreateRequest> {
+        //  listingItemId 1 is used if generateListingItem is set to false (default=true)
+        let listingItemId = 1;
+        if (generateParams.generateListingItem) {
+            const listingGenerateParams = new GenerateListingItemParams();
+            const listings = await this.generateListingItems(1, true, listingGenerateParams);
+            listingItemId = listings[0].id;
+            this.log.debug(`generateBidData: generated new listing with id ${listingItemId}, continuing bid creation`);
+        }
+        return {
+            action: BidMessageType.MPA_BID,
+            listing_item_id: listingItemId
+        } as BidCreateRequest;
     }
 
     // -------------------
@@ -313,7 +347,7 @@ export class TestDataService {
                 zipCode: Faker.address.zipCode(),
                 city: Faker.address.city(),
                 state: Faker.address.state(),
-                country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryList))
+                country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList))
             });
         }
         return addresses;
@@ -355,7 +389,7 @@ export class TestDataService {
         const items: any[] = [];
         for (let i = amount; i > 0; i--) {
             items.push({
-                country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryList)),
+                country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
                 shippingAvailability: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingAvailability))
             });
         }
@@ -367,12 +401,13 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const item = {
                 hash: Faker.random.uuid(),
-                data: {
+                data: [{
                     dataId: Faker.internet.url(),
                     protocol: ImageDataProtocolType.LOCAL,
+                    imageVersion: 'ORIGINAL',
                     encoding: 'BASE64',
                     data: ImageProcessing.milkcatSmall
-                }
+                }]
             };
             items.push(item);
         }
@@ -397,7 +432,7 @@ export class TestDataService {
                 key: this.randomCategoryKey()
             },
             itemLocation: {
-                region: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryList)),
+                region: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
                 address: Faker.address.streetAddress(),
                 locationMarker: {
                     markerTitle: Faker.lorem.word(),

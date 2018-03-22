@@ -28,18 +28,19 @@ import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplateP
 import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostRequest';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
-import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 
 import { ListingItemTemplateService } from './ListingItemTemplateService';
-import { MessageException } from '../exceptions/MessageException';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
-import { ListingItemMessage } from '../messages/ListingItemMessage';
-import { MessageBroadcastService } from './MessageBroadcastService';
+import { SmsgService } from './SmsgService';
 import { Market } from '../models/Market';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { FlaggedItemService } from './FlaggedItemService';
-import {NotImplementedException} from '../exceptions/NotImplementedException';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
+import { ListingItemMessage } from '../messages/ListingItemMessage';
+import * as resources from 'resources';
+import { EventEmitter } from 'events';
 
 export class ListingItemService {
 
@@ -54,12 +55,15 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
-        @inject(Types.Service) @named(Targets.Service.MessageBroadcastService) public messageBroadcastService: MessageBroadcastService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+    ) {
         this.log = new Logger(__filename);
+        this.configureEventListeners();
     }
 
     public async findAll(): Promise<Bookshelf.Collection<ListingItem>> {
@@ -102,10 +106,8 @@ export class ListingItemService {
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */
     @validate()
-    public async search(
-        @request(ListingItemSearchParams) options: ListingItemSearchParams,
-        withRelated: boolean = true
-        ): Promise<Bookshelf.Collection<ListingItem>> {
+    public async search(@request(ListingItemSearchParams) options: ListingItemSearchParams,
+                        withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
         // if valid params
         // todo: check whether category is string or number, if string, try to find the Category by key
         return this.listingItemRepo.search(options, withRelated);
@@ -120,6 +122,7 @@ export class ListingItemService {
     public async create( @request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
 
         const body = JSON.parse(JSON.stringify(data));
+        // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
@@ -144,6 +147,7 @@ export class ListingItemService {
             paymentInformation.listing_item_id = listingItem.Id;
             await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
         }
+
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_id = listingItem.Id;
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
@@ -169,6 +173,7 @@ export class ListingItemService {
     public async update(id: number, @request(ListingItemUpdateRequest) data: ListingItemUpdateRequest): Promise<ListingItem> {
 
         const body = JSON.parse(JSON.stringify(data));
+        // this.log.debug('updating ListingItem, body: ', JSON.stringify(body, null, 2));
 
         // find the existing one without related
         const listingItem = await this.findOne(id, false);
@@ -176,12 +181,13 @@ export class ListingItemService {
         // set new values
         listingItem.Hash = body.hash;
 
-        // update listingItem record
+        // and update the ListingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
 
-        // Item-information
+        // update related ItemInformation
+        // if the related one exists allready, then update. if it doesnt exist, create.
+        // and if the related one is missing, then remove.
         let itemInformation = updatedListingItem.related('ItemInformation').toJSON() as ItemInformationUpdateRequest;
-        // if the related one exists allready, then update. if it doesnt exist, create. and if the related one is missing, then remove.
         if (!_.isEmpty(body.itemInformation)) {
             if (!_.isEmpty(itemInformation)) {
                 const itemInformationId = itemInformation.id;
@@ -197,7 +203,9 @@ export class ListingItemService {
             await this.itemInformationService.destroy(itemInformation.id);
         }
 
-        // payment-information
+        // update related PaymentInformation
+        // if the related one exists allready, then update. if it doesnt exist, create.
+        // and if the related one is missing, then remove.
         let paymentInformation = updatedListingItem.related('PaymentInformation').toJSON() as PaymentInformationUpdateRequest;
 
         if (!_.isEmpty(body.paymentInformation)) {
@@ -215,22 +223,21 @@ export class ListingItemService {
             await this.paymentInformationService.destroy(paymentInformation.id);
         }
 
-        // find related record and delete it and recreate related data
-        const existintMessagingInformation = updatedListingItem.related('MessagingInformation').toJSON() || [];
-
+        // MessagingInformation
+        const existingMessagingInformations = updatedListingItem.related('MessagingInformation').toJSON() || [];
         const newMessagingInformation = body.messagingInformation || [];
 
         // delete MessagingInformation if not exist with new params
-        for (const msgInfo of existintMessagingInformation) {
+        for (const msgInfo of existingMessagingInformations) {
             if (!await this.checkExistingObject(newMessagingInformation, 'publicKey', msgInfo.publicKey)) {
                 await this.messagingInformationService.destroy(msgInfo.id);
             }
         }
 
-        // update or create messaging itemInformation
+        // update or create MessagingInformation
         for (const msgInfo of newMessagingInformation) {
             msgInfo.listing_item_id = id;
-            const message = await this.checkExistingObject(existintMessagingInformation, 'publicKey', msgInfo.publicKey);
+            const message = await this.checkExistingObject(existingMessagingInformations, 'publicKey', msgInfo.publicKey);
             if (message) {
                 message.protocol = msgInfo.protocol;
                 message.publicKey = msgInfo.publicKey;
@@ -279,20 +286,21 @@ export class ListingItemService {
      * @returns {Promise<void>}
      */
     public async destroy(id: number): Promise<void> {
-        const item = await this.findOne(id, true);
-        if (!item) {
+        const listingItemModel = await this.findOne(id, true);
+        if (!listingItemModel) {
             throw new NotFoundException('Item listing does not exist. id = ' + id);
         }
-        const paymentInfo = item.PaymentInformation();
-        if (paymentInfo) {
-            const itemPrice = paymentInfo.ItemPrice();
-            const cryptoAddress = itemPrice.CryptocurrencyAddress();
-            if (!cryptoAddress) {
-                throw new NotFoundException('Payment information without cryptographic address. PaymentInfo.id = ' + paymentInfo.id);
-            }
-            this.cryptocurrencyAddressService.destroy(cryptoAddress.Id);
-        }
+        const listingItem = listingItemModel.toJSON();
+        this.log.debug('delete listingItem:', listingItem.id);
+
         await this.listingItemRepo.destroy(id);
+
+        // remove related CryptocurrencyAddress if it exists
+        if (listingItem.PaymentInformation && listingItem.PaymentInformation.ItemPrice
+            && listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress) {
+            this.log.debug('delete listingItem cryptocurrencyaddress:', listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress.id);
+            await this.cryptocurrencyAddressService.destroy(listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress.id);
+        }
     }
 
     /**
@@ -302,7 +310,7 @@ export class ListingItemService {
      * @returns {Promise<void>}
      */
     @validate()
-    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<void> {
+    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<MarketplaceMessageInterface> {
 
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId);
@@ -318,19 +326,21 @@ export class ListingItemService {
             : await this.marketService.findOne(data.marketId);
         const market = marketModel.toJSON();
 
-        // create ListingItemMessage
-        // const rootCategoryWithRelated = await this.itemCategoryService.findRoot();
-        // const rootCategory = rootCategoryWithRelated.toJSON();
-        // this.log.debug('rootCategory: ', JSON.stringify(rootCategory, null, 2));
-
         // find itemCategory with related
         const itemCategoryModel = await this.itemCategoryService.findOneByKey(itemTemplate.ItemInformation.ItemCategory.key, true);
         const itemCategory = itemCategoryModel.toJSON();
-        this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
+        // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
-        const addItemMessage = await this.listingItemFactory.getMessage(itemTemplate, itemCategory);
+        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, itemCategory);
 
-        return this.messageBroadcastService.broadcast(profileAddress, market.address, addItemMessage as ListingItemMessage);
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            item: listingItemMessage
+        } as MarketplaceMessageInterface;
+
+        this.log.debug('post(), marketPlaceMessage: ', marketPlaceMessage);
+        // return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage);
+        return marketPlaceMessage;
     }
 
     /**
@@ -362,12 +372,50 @@ export class ListingItemService {
             updateItemMessage.hash = data.hash; // replace with param hash of listing-item
 
             // TODO: Need to update broadcast message return after broadcast functionality will be done.
-            this.messageBroadcastService.broadcast(profileAddress, market.address, updateItemMessage as ListingItemMessage);
+            this.smsgService.broadcast(profileAddress, market.address, updateItemMessage as ListingItemMessage);
         } else {
             this.log.warn(`No listingItem related with listing_item_template_id=${data.hash}!`);
             throw new MessageException(`No listingItem related with listing_item_template_id=${data.hash}!`);
         }
         */
+    }
+
+    public async process(message: MarketplaceMessageInterface): Promise<resources.ListingItem> {
+        this.log.info('Received event ListingItemReceivedListener:', message);
+
+        /*
+        if (message.market && message.item) {
+            // get market
+            const marketModel = await this.marketService.findByAddress(message.market);
+            const market = marketModel.toJSON();
+
+            const listingItemMessage = message.item;
+            // create the new custom categories in case there are some
+            const itemCategory: resources.ItemCategory = await this.getOrCreateCategories(listingItemMessage.information.category);
+
+            // find the categories/get the root category with related
+            const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
+            const rootCategory = rootCategoryWithRelatedModel.toJSON();
+
+            // create ListingItem
+            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, rootCategory);
+            // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
+
+            // const listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
+            // const listingItem = listingItemModel.toJSON();
+            // emit the latest message event to cli
+            // this.eventEmitter.emit('cli', {
+            //    message: 'new ListingItem received: ' + JSON.stringify(listingItem)
+            // });
+
+            // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
+            return {} as resources.ListingItem; // listingItem;
+
+        } else {
+            throw new MessageException('Marketplace message missing market.');
+        }
+        */
+        return {} as resources.ListingItem;
     }
 
     // check if ListingItem already Flagged
@@ -391,5 +439,11 @@ export class ListingItemService {
         return highestOrder ? highestOrder['order'] : 0;
     }
 
+    private configureEventListeners(): void {
+        this.eventEmitter.on('ListingItemReceivedEvent', async (event) => {
+            await this.process(event);
+        });
+
+    }
 
 }

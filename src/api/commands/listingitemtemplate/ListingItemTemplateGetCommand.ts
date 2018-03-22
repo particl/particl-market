@@ -30,7 +30,7 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
-        return this.listingItemTemplateService.findOne(data.params[0]);
+        return await this.listingItemTemplateService.findOne(data.params[0]);
     }
 
     public usage(): string {

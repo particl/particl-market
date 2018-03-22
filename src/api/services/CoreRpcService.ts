@@ -6,8 +6,9 @@ import * as WebRequest from 'web-request';
 import { HttpException } from '../exceptions/HttpException';
 import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
-import {ItemMessageInterface} from '../messages/ItemMessageInterface';
-import {ActionMessageInterface} from '../messages/ActionMessageInterface';
+import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
+import { ActionMessageInterface } from '../messages/ActionMessageInterface';
+import { CoreCookieService } from './CoreCookieService';
 
 let RPC_REQUEST_ID = 1;
 
@@ -18,12 +19,11 @@ export class CoreRpcService {
     private DEFAULT_MAINNET_PORT = 51735;
     private DEFAULT_TESTNET_PORT = 51935;
     private DEFAULT_HOSTNAME = 'localhost';
-    private DEFAULT_USER = 'test';
-    private DEFAULT_PASSWORD = 'test';
+    // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
 
-    constructor(@inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+    constructor(@inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+                @inject(Types.Service) @named(Targets.Service.CoreCookieService) private coreCookieService: CoreCookieService) {
         this.log = new Logger(__filename);
-
     }
 
     public async getNetworkInfo(): Promise<any> {
@@ -34,27 +34,7 @@ export class CoreRpcService {
         return await this.call('getnewaddress');
     }
 
-    public async smsgImportPrivKey( privateKey: string, label: string = 'default market' ): Promise<boolean> {
-        return await this.call('smsgimportprivkey', [privateKey, label]);
-    }
-
-    public async smsgInbox(params: any[] = []): Promise<any> {
-        const response = await this.call('smsginbox', params);
-        // this.log.debug('got response:', response);
-        return response;
-    }
-
-    /**
-     *
-     * @returns {Promise<any>}
-     */
-    public async sendSmsgMessage(profileAddress: string, marketAddress: string, message: ActionMessageInterface | ItemMessageInterface): Promise<any> {
-        this.log.debug('SEND SMSG, from: ' + profileAddress + ', to: ' + marketAddress);
-        this.log.debug('SEND SMSG, message: ' + JSON.stringify(message, null, 2));
-        return await this.call('smsgsend', [profileAddress, marketAddress, JSON.stringify(message)]);
-    }
-
-    public async call(method: string, params: any[] = []): Promise<any> {
+    public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {
 
         const id = RPC_REQUEST_ID++;
         const postData = JSON.stringify({
@@ -66,9 +46,11 @@ export class CoreRpcService {
         const url = this.getUrl();
         const options = this.getOptions();
 
-        this.log.debug('call: ' + method + ' ' + params);
-        this.log.debug('call url:', url);
-        this.log.debug('call postData:', postData);
+        if (logCall) {
+            this.log.debug('call: ' + method + ' ' + params);
+        }
+        // this.log.debug('call url:', url);
+        // this.log.debug('call postData:', postData);
 
         return await WebRequest.post(url, options, postData)
             .then( response => {
@@ -103,8 +85,8 @@ export class CoreRpcService {
     private getOptions(): any {
 
         const auth = {
-            user: (process.env.RPCUSER ? process.env.RPCUSER : this.DEFAULT_USER),
-            pass: (process.env.RPCPASSWORD ? process.env.RPCPASSWORD : this.DEFAULT_PASSWORD),
+            user: (process.env.RPCUSER ? process.env.RPCUSER : this.coreCookieService.getCoreRpcUsername()),
+            pass: (process.env.RPCPASSWORD ? process.env.RPCPASSWORD : this.coreCookieService.getCoreRpcPassword()),
             sendImmediately: false
         };
 
@@ -129,4 +111,5 @@ export class CoreRpcService {
             (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT));
         return 'http://' + host + ':' + port;
     }
+
 }

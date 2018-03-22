@@ -13,7 +13,7 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
                 withRelated: [
                     'ListingItem',
                     'ListingItemTemplate',
-                    'ListingItemObjectData'
+                    'ListingItemObjectDatas'
                 ]
             });
         } else {
@@ -68,7 +68,7 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
         return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
     }
 
-    public ListingItemObjectData(): Collection<ListingItemObjectData> {
+    public ListingItemObjectDatas(): Collection<ListingItemObjectData> {
         return this.hasMany(ListingItemObjectData, 'listing_item_object_id', 'id');
     }
 
