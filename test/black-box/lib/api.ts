@@ -6,9 +6,11 @@ import { Options } from 'request-promise';
 import { ApiResponseTest } from './ApiResponseTest';
 import { HttpException } from '../../../src/api/exceptions/HttpException';
 import { RequestError, StatusCodeError, TransformError } from 'request-promise/errors';
+import * as FormData from 'form-data';
 
-export interface ApiOptions<T> {
+export interface ApiOptions<T, T2> {
     body?: T;
+    formData?: T2;
     headers?: any;
     host?: string;
     port?: number;
@@ -39,17 +41,29 @@ export const api = async <T> ( method: string, path: string, options: ApiOptions
         uri,
         resolveWithFullResponse: true,
         headers: options.headers,
-        json: true,
-        body: options.body
+        json: true
     };
+
+    if ( options.formData ) {
+        o.formData = options.formData;
+    } else {
+        o.body = (options.body || {});
+    }
+
     let res;
     let error = null;
     try {
         res = await request(o);
     } catch (e) {
         error = e;
-        if (error.error.code) {
-            throw new HttpException(500, error.error.message);
+        if (error.error) {
+            if (error.error.code) {
+                throw new HttpException(500, error.error.message);
+            } else {
+                throw new HttpException(500, error.error + ', ' + JSON.stringify(error.error));
+            }
+        } else {
+            throw new HttpException(500, error);
         }
     }
     return new ApiResponseTest(error, res);
@@ -85,7 +99,6 @@ export const api = async <T> ( method: string, path: string, options: ApiOptions
 
 
 };
-
 
 export const rpc = async (method: string, params: any[] = []): any => {
     const body = { method, params, jsonrpc: '2.0' };
