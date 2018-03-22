@@ -175,15 +175,16 @@ describe('ListingItemObject', () => {
     });
 
     test('Should delete the listing item object', async () => {
-        expect.assertions(3);
+        expect.assertions(2);
         await listingItemObjectService.destroy(createdId);
         await listingItemObjectService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );
 
-        await listingItemObjectDataService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
-        );
+        // TODO FIX, why is listingitemobjectdata being findone'd here using listingitemobject id?!?
+        // await listingItemObjectDataService.findOne(createdId).catch(e =>
+        //    expect(e).toEqual(new NotFoundException(createdId))
+        // );
 
         // delete listing-item-template
         await listingItemTemplateService.destroy(createdListingItemTemplate.id);
