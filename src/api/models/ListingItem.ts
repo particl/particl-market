@@ -30,6 +30,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'PaymentInformation.ItemPrice.CryptocurrencyAddress',
         'MessagingInformation',
         'ListingItemObjects',
+        'ListingItemObjects.ListingItemObjectDatas',
         'Bids',
         'Market',
         'FlaggedItem',

@@ -102,17 +102,51 @@
         "protocol": "SMSG",
         "publicKey": "0f42547c-35d2-4cac-846b-9ebcc74942c9"
     }],
-    "listingItemObjects": [{
-        "type": "CHECKBOX",
-        "description": "Test Description",
-        "order": 1
-    }, {
-        "type": "TABLE",
-        "description": "Test Description",
-        "order": 2
-    }, {
-        "type": "DROPDOWN",
-        "description": "Test Description",
-        "order": 7
-    }]
+    "listingItemObjects": [
+        {
+            "type": "CHECKBOX",
+            "description": "Test Description",
+            "order": 1,
+            "listingItemObjectDatas": [
+                {
+                    "key": "Screensize",
+                    "value": "17.8 inch"
+                },
+                {
+                    "key": "Gpu",
+                    "value": "NVidia 950"
+                }
+            ]
+        },
+        {
+            "type": "TABLE",
+            "description": "Test Description",
+            "order": 2,
+            "listingItemObjectDatas": [
+                {
+                    "key": "Monitor",
+                    "value": "17.8 inch"
+                },
+                {
+                    "key": "Gpu",
+                    "value": "NVidia 750"
+                }
+            ]
+        },
+        {
+            "type": "DROPDOWN",
+            "description": "Test Description",
+            "order": 7,
+            "listingItemObjectDatas": [
+                {
+                    "key": "Black",
+                    "value": "#190425"
+                },
+                {
+                    "key": "Blue",
+                    "value": "#103584"
+                }
+            ]
+        }
+    ]
 }

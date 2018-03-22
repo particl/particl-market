@@ -19,18 +19,18 @@ export class ItemImageHttpUploadService {
         this.log = new Logger(__filename);
     }
 
-
+    // tslint:disable:max-line-length
     @validate()
-    public async httpPostImageUpload(@request(ImagePostUploadRequest) uploadRequest: ImagePostUploadRequest): Promise<any> {
+    public async httpPostImageUpload( @request(ImagePostUploadRequest) uploadRequest: ImagePostUploadRequest): Promise<any> {
         const listItems: any[] = [];
         const listingItemTemplate: ListingItemTemplate = await this.listingItemTemplateService.findOne(uploadRequest.id);
-        for ( const file of uploadRequest.request.files ) {
+        for (const file of uploadRequest.request.files) {
             const tmpImage = await this.itemImageService.createFile(uploadRequest.id, file, listingItemTemplate);
             const imageDatas = tmpImage.ItemImageDatas;
-            for ( const i in imageDatas ) {
-                if ( i ) {
+            for (const i in imageDatas) {
+                if (i) {
                     const tmpImageData: any = imageDatas[i];
-                    tmpImageData.data = process.env.APP_HOST + (process.env.APP_PORT ? ':' + process.env.APP_PORT: '') + '/api/item-image-data/' + tmpImageData.id;
+                    tmpImageData.data = process.env.APP_HOST + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '') + '/api/item-image-data/' + tmpImageData.id;
                     tmpImageData.dataId = tmpImageData.data;
                     tmpImageData.protocol = 'HTTP';
                     listItems.push(tmpImageData);
@@ -39,4 +39,5 @@ export class ItemImageHttpUploadService {
         }
         return listItems;
     }
+    // tslint:enable:max-line-length
 }
