@@ -43,6 +43,7 @@ export const api = async <T> ( method: string, path: string, options: ApiOptions
         headers: options.headers,
         json: true
     };
+
     if ( options.formData ) {
         o.formData = options.formData;
     } else {
@@ -66,27 +67,36 @@ export const api = async <T> ( method: string, path: string, options: ApiOptions
         }
     }
     return new ApiResponseTest(error, res);
-
     /*
-        await request(o)
-            .then(res => {
-                console.log('res:', res.body);
-                return new ApiResponseTest(null, res);
-            })
-            .catch(StatusCodeError, reason => {
-                console.log('error:', reason.error.statusCode + ': ' + reason.error.message);
-                return new ApiResponseTest(reason.error, null);
-            })
-            .catch(TransformError, reason => {
-                console.log(reason.cause.message); // => Transform failed!
-                return new ApiResponseTest(reason.error, null);
-            })
-            .catch(RequestError, reason => {
-                // The request failed due to technical reasons.
-                // reason.cause is the Error object Request would pass into a callback.
-                throw new HttpException(500, reason.error.message);
-            });
+        return await request(o)
+                .then(res => {
+                    console.log('res.body:', res.body);
+                    return new ApiResponseTest(null, res);
+                })
+                .catch(StatusCodeError, reason => {
+                    console.log('error:', reason.error.statusCode + ': ' + reason.error.message);
+                    return new ApiResponseTest(reason.error, null);
+                })
+                .catch(TransformError, reason => {
+                    console.log('error:', reason.cause.message);
+                    return new ApiResponseTest(reason.error, null);
+                })
+                .catch(RequestError, reason => {
+                    console.log('error:', reason);
+                    return new ApiResponseTest(reason.error, null);
+                    // The request failed due to technical reasons.
+                    // reason.cause is the Error object Request would pass into a callback.
+                    // throw new HttpException(500, reason.error.message);
+                })
+                .catch(reason => {
+                    console.log('error:', reason);
+                    return new ApiResponseTest(reason.error, null);
+                    // The request failed due to technical reasons.
+                    // reason.cause is the Error object Request would pass into a callback.
+                    // throw new HttpException(500, reason.error.message);
+                });
     */
+
 
 };
 
