@@ -29,7 +29,7 @@ import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerate
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import {ItemImageDataService} from '../../src/api/services/ItemImageDataService';
+import { ItemImageDataService } from '../../src/api/services/ItemImageDataService';
 
 describe('ItemImage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -126,8 +126,12 @@ describe('ItemImage', () => {
         createdImageId = itemImageModel.Id;
         const result = itemImageModel.toJSON();
 
+        const imageUrl = process.env.APP_HOST
+        + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
+        + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
+
         expect(result.hash).toBe(testData.hash);
-        expect(result.ItemImageDatas[0].dataId).toBe(testData.data[0].dataId);
+        expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
         expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
         expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
         expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
@@ -155,8 +159,13 @@ describe('ItemImage', () => {
     test('Should return one item image', async () => {
         const itemImageModel: ItemImage = await itemImageService.findOne(createdImageId);
         const result = itemImageModel.toJSON();
+
+        const imageUrl = process.env.APP_HOST
+            + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
+            + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
+
         expect(result.hash).toBe(testData.hash);
-        expect(result.ItemImageDatas[0].dataId).toBe(testData.data[0].dataId);
+        expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
         expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
         expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
         expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
@@ -178,8 +187,12 @@ describe('ItemImage', () => {
         const itemImageModel: ItemImage = await itemImageService.update(createdImageId, testDataUpdated);
         const result = itemImageModel.toJSON();
 
+        const imageUrl = process.env.APP_HOST
+            + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
+            + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
+
         expect(result.hash).toBe(testDataUpdated.hash);
-        expect(result.ItemImageDatas[0].dataId).toBe(testData.data[0].dataId);
+        expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
         expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
         expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
         expect(result.ItemImageDatas[0].encoding).toBe(testData.data[0].encoding);
