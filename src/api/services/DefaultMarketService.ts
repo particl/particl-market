@@ -56,27 +56,35 @@ export class DefaultMarketService {
             this.log.debug('updated new default Market: ', JSON.stringify(newMarketModel, null, 2));
         }
         const newMarket = newMarketModel.toJSON();
+
         // import market private key
-        await this.smsgService.smsgImportPrivKey(newMarket.privateKey);
-        // get market public key
-        const publicKey = await this.getPublicKeyForAddress(newMarket.address);
-        this.log.debug('default Market publicKey: ', publicKey);
-        // add market address
-        if (publicKey) {
-            await this.smsgService.smsgAddAddress(newMarket.address, publicKey);
+        if ( await this.smsgService.smsgImportPrivKey(newMarket.privateKey) ) {
+            // get market public key
+            const publicKey = await this.getPublicKeyForAddress(newMarket.address);
+            this.log.debug('default Market publicKey: ', publicKey);
+            // add market address
+            if (publicKey) {
+                await this.smsgService.smsgAddAddress(newMarket.address, publicKey);
+            } else {
+                throw new InternalServerException('Error while adding public key to db.');
+            }
         } else {
-            throw new InternalServerException('Error while adding public key to db.');
+            this.log.error('Error while importing market private key to db.');
+            // todo: throw exception, and do not allow market to run before its properly set up
         }
         return newMarket;
     }
 
     private async getPublicKeyForAddress(address: string): Promise<string|null> {
-        const localKeys = await this.smsgService.smsgLocalKeys();
-        for (const smsgKey of localKeys.smsg_keys) {
-            if (smsgKey.address === address) {
-                return smsgKey.public_key;
-            }
-        }
-        return null;
+        return await this.smsgService.smsgLocalKeys()
+            .then(localKeys => {
+                for (const smsgKey of localKeys.smsg_keys) {
+                    if (smsgKey.address === address) {
+                        return smsgKey.public_key;
+                    }
+                }
+                return null;
+            })
+            .catch(error => null);
     }
 }

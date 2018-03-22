@@ -22,6 +22,7 @@ import { EscrowFactory } from '../factories/EscrowFactory';
 import { EscrowMessageInterface } from '../messages/EscrowMessageInterface';
 import { EscrowMessage } from '../messages/EscrowMessage';
 import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
+import {SmsgSendResponse} from '../responses/SmsgSendResponse';
 
 export class EscrowService {
 
@@ -187,7 +188,7 @@ export class EscrowService {
     }
 
     @validate()
-    public async lock(@request(EscrowLockRequest) escrowRequest: EscrowLockRequest, escrow: Escrow): Promise<void> {
+    public async lock(@request(EscrowLockRequest) escrowRequest: EscrowLockRequest, escrow: Escrow): Promise<SmsgSendResponse> {
 
         // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
         // resources.Escrow module not able to include here.
@@ -214,7 +215,7 @@ export class EscrowService {
     }
 
     @validate()
-    public async refund(@request(EscrowRefundRequest) escrowRequest: EscrowRefundRequest, escrow: Escrow): Promise<void> {
+    public async refund(@request(EscrowRefundRequest) escrowRequest: EscrowRefundRequest, escrow: Escrow): Promise<SmsgSendResponse> {
 
         // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
         // resources.Escrow module not able to include here.
@@ -233,7 +234,7 @@ export class EscrowService {
     }
 
     @validate()
-    public async release(@request(EscrowReleaseRequest) escrowRequest: EscrowReleaseRequest, escrow: Escrow): Promise<void> {
+    public async release(@request(EscrowReleaseRequest) escrowRequest: EscrowReleaseRequest, escrow: Escrow): Promise<SmsgSendResponse> {
 
         // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
         // resources.Escrow module not able to include here.

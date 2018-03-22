@@ -57,6 +57,8 @@ export class ImageFactory {
             protocol: originalImageData.protocol,
             imageVersion: ImageVersions.ORIGINAL.propName,
             encoding: originalImageData.encoding,
+            originalMime: originalImageData.originalMime,
+            originalName: originalImageData.originalName,
             data: originalData
         } as ItemImageDataCreateRequest;
         imageDatas.push(imageDataForOriginal);
@@ -68,6 +70,8 @@ export class ImageFactory {
                 protocol: originalImageData.protocol,
                 imageVersion: version.propName,
                 encoding: originalImageData.encoding,
+                originalMime: originalImageData.originalMime,
+                originalName: originalImageData.originalName,
                 data: resizedDatas.get(version.propName)
             } as ItemImageDataCreateRequest;
             imageDatas.push(imageData);

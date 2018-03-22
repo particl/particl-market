@@ -37,8 +37,8 @@ export const Targets = {
         Profile: 'Profile',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
-        ShoppingCartItem: 'ShoppingCartItem',
         ShoppingCart: 'ShoppingCart',
+        ShoppingCartItem: 'ShoppingCartItem',
         User: 'User'
     },
     Repository:     {
@@ -90,6 +90,7 @@ export const Targets = {
         FlaggedItemService: 'FlaggedItemService',
         ItemCategoryService: 'ItemCategoryService',
         ItemImageDataService: 'ItemImageDataService',
+        ItemImageHttpUploadService: 'ItemImageHttpUploadService',
         ItemImageService: 'ItemImageService',
         ItemInformationService: 'ItemInformationService',
         ItemLocationService: 'ItemLocationService',
@@ -100,7 +101,6 @@ export const Targets = {
         ListingItemTemplateService: 'ListingItemTemplateService',
         LocationMarkerService: 'LocationMarkerService',
         MarketService: 'MarketService',
-        SmsgService: 'SmsgService',
         MessagingInformationService: 'MessagingInformationService',
         PaymentInformationService: 'PaymentInformationService',
         PriceTickerService: 'PriceTickerService',
@@ -109,6 +109,7 @@ export const Targets = {
         ShippingPriceService: 'ShippingPriceService',
         ShoppingCartItemService: 'ShoppingCartItemService',
         ShoppingCartService: 'ShoppingCartService',
+        SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
         UserService: 'UserService'
     },
@@ -284,8 +285,8 @@ export const Targets = {
         RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {
-        ServerStartedListener: 'ServerStartedListener',
         ListingItemReceivedListener: 'ListingItemReceivedListener',
+        ServerStartedListener: 'ServerStartedListener',
         user: {
             UserAuthenticatedListener: 'UserAuthenticatedListener',
             UserCreatedListener: 'UserCreatedListener'

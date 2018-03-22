@@ -14,7 +14,7 @@ import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
 import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
 import { ActionMessageInterface } from '../messages/ActionMessageInterface';
-import {ListingItemReceivedListener} from '../listeners/ListingItemReceivedListener';
+import { ListingItemReceivedListener } from '../listeners/ListingItemReceivedListener';
 
 export class MessageProcessor implements MessageProcessorInterface {
 

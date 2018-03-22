@@ -4,14 +4,14 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplatePostRequest } from '../../requests/ListingItemTemplatePostRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import {MarketplaceMessageInterface} from '../../messages/MarketplaceMessageInterface';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 
-export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<MarketplaceMessageInterface> {
+export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
 
@@ -34,7 +34,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<MarketplaceMessageInterface> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         const response = await this.listingItemService.post({
             listingItemTemplateId: data.params[0],
