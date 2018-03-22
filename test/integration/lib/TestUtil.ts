@@ -11,6 +11,7 @@ export class TestUtil {
     private timeout: any;
     private interval = 1000;
     private MAX_RETRIES = 10;
+    private serverStarted = false;
 
     constructor() {
         this.log = new LoggerType(__filename);
@@ -18,18 +19,18 @@ export class TestUtil {
 
     public async bootstrapAppContainer(app: any): boolean {
 
-        // const emitter =
-        await app.bootstrap();
+        const emitter = await app.bootstrap();
         this.serverStartedListener = app.IoC.getNamed<ServerStartedListener>(Types.Listener, Targets.Listener.ServerStartedListener);
 
-        // emitter.on(ServerStartedListener.ServerReadyEvent, () => {
-        //    this.serverStarted = true;
-        // });
+        emitter.on(ServerStartedListener.ServerReadyEvent, () => {
+            this.serverStarted = true;
+        });
         await this.waitForServerStarted();
     }
 
     private async isServerStarted(): boolean {
-        if (this.serverStartedListener.isStarted === false) {
+        // if (this.serverStartedListener.isStarted === false) {
+        if (this.serverStarted === false) {
             throw Error('Not started.');
         } else {
             this.log.debug('SERVER READY!');
@@ -47,8 +48,6 @@ export class TestUtil {
     }
 
     private async waitForServerStarted(): Promise<boolean> {
-
-        await this.waitFor(2000);
 
         for (let i = 0; i <= this.MAX_RETRIES; i++) {
             try {
