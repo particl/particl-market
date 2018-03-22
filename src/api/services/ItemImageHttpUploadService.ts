@@ -30,7 +30,9 @@ export class ItemImageHttpUploadService {
             for ( const i in imageDatas ) {
                 if ( i ) {
                     const tmpImageData: any = imageDatas[i];
-                    tmpImageData.data = 'http://../../../item-image-data/' + tmpImageData.id;
+                    tmpImageData.data = process.env.APP_HOST + (process.env.APP_PORT ? ':' + process.env.APP_PORT: '') + '/api/item-image-data/' + tmpImageData.id;
+                    tmpImageData.dataId = tmpImageData.data;
+                    tmpImageData.protocol = 'HTTP';
                     listItems.push(tmpImageData);
                 }
             }
