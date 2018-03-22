@@ -82,7 +82,7 @@ export class ImageFactory {
     public getImageUrl(itemImageId: number, version: string): string {
         return process.env.APP_HOST
             + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-            + '/api/' + itemImageId + '/' + version;
+            + '/api/item-images/' + itemImageId + '/' + version;
     }
 
 }
