@@ -6,6 +6,8 @@ import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ListingItemTemplateService } from '../services/ListingItemTemplateService';
 import { ItemImageService } from '../services/ItemImageService';
 import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
+import * as resources from 'resources';
+import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 
 export class ItemImageHttpUploadService {
 
@@ -21,22 +23,16 @@ export class ItemImageHttpUploadService {
 
 
     @validate()
-    public async httpPostImageUpload(@request(ImagePostUploadRequest) uploadRequest: ImagePostUploadRequest): Promise<any> {
-        const listItems: any[] = [];
+    public async httpPostImageUpload(@request(ImagePostUploadRequest) uploadRequest: ImagePostUploadRequest): Promise<resources.ItemImage[]> {
+
+        // TODO: ImagePostUploadRequest.id, should be names templateId and not just some random id
+        const createdItemImages: resources.ItemImage[] = [];
         const listingItemTemplate: ListingItemTemplate = await this.listingItemTemplateService.findOne(uploadRequest.id);
+
         for ( const file of uploadRequest.request.files ) {
-            const tmpImage = await this.itemImageService.createFile(uploadRequest.id, file, listingItemTemplate);
-            const imageDatas = tmpImage.ItemImageDatas;
-            for ( const i in imageDatas ) {
-                if ( i ) {
-                    const tmpImageData: any = imageDatas[i];
-                    tmpImageData.data = process.env.APP_HOST + (process.env.APP_PORT ? ':' + process.env.APP_PORT: '') + '/api/item-image-data/' + tmpImageData.id;
-                    tmpImageData.dataId = tmpImageData.data;
-                    tmpImageData.protocol = 'HTTP';
-                    listItems.push(tmpImageData);
-                }
-            }
+            const createdItemImage = await this.itemImageService.createFile(file, listingItemTemplate);
+            createdItemImages.push(createdItemImage.toJSON());
         }
-        return listItems;
+        return createdItemImages;
     }
 }

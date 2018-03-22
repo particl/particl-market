@@ -53,7 +53,7 @@ export class ImageFactory {
         // first create the original
         const imageDataForOriginal = {
             item_image_id: itemImageId,
-            dataId: originalImageData.dataId,
+            dataId: this.getImageUrl(itemImageId, ImageVersions.ORIGINAL.propName),
             protocol: originalImageData.protocol,
             imageVersion: ImageVersions.ORIGINAL.propName,
             encoding: originalImageData.encoding,
@@ -66,7 +66,7 @@ export class ImageFactory {
         for (const version of toVersions) {
             const imageData = {
                 item_image_id: itemImageId,
-                dataId: originalImageData.dataId,
+                dataId: this.getImageUrl(itemImageId, version.propName),
                 protocol: originalImageData.protocol,
                 imageVersion: version.propName,
                 encoding: originalImageData.encoding,
@@ -78,4 +78,11 @@ export class ImageFactory {
         }
         return imageDatas;
     }
+
+    public getImageUrl(itemImageId: number, version: string): string {
+        return process.env.APP_HOST
+            + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
+            + '/api/' + itemImageId + '/' + version;
+    }
+
 }

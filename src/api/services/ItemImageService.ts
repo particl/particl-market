@@ -54,7 +54,7 @@ export class ItemImageService {
      * create(), but get data from a local file instead.
      */
     @validate()
-    public async createFile(templateId: number,  imageFile: any, listingItemTemplate: ListingItemTemplate): Promise<ItemImage> {
+    public async createFile(imageFile: any, listingItemTemplate: ListingItemTemplate): Promise<ItemImage> {
         // Read the file data in
         const dataStr = fs.readFileSync(imageFile.path, 'base64');
         // this.log.error('dataStr = ' + dataStr);
@@ -67,17 +67,19 @@ export class ItemImageService {
         const itemInformation = await listingItemTemplate.related('ItemInformation').toJSON();
         const createArgs = {
             item_information_id: itemInformation.id,
+            // TODO: hash creation is wrong, using itemInformation data, and should propably be done in the service.create, just before saving
             hash: ObjectHash.getHash(itemInformation),
             data: [{
                 protocol: ImageDataProtocolType.LOCAL,
                 encoding: 'BASE64',
                 data: dataStr,
-                dataId: imageFile.fieldname,
-                imageVersion: 'ORIGINAL',
+                dataId: imageFile.fieldname, // replaced with local url in factory
+                imageVersion: ImageVersions.ORIGINAL.propName,
                 originalMime: imageFile.mimetype,
                 originalName: imageFile.originalname
             }]
-        } as ItemImageUpdateRequest;
+        } as ItemImageCreateRequest;
+
         this.log.debug(JSON.stringify(createArgs));
         retItemImage = await this.create(createArgs);
         retItemImage = retItemImage.toJSON();
