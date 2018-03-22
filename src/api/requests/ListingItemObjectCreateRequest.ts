@@ -18,5 +18,6 @@ export class ListingItemObjectCreateRequest extends RequestBody {
     @IsNotEmpty()
     public order: number;
 
+    public listingItemObjectDatas;
 }
 // tslint:enable:variable-name

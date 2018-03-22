@@ -27,6 +27,7 @@ export const Targets = {
         ItemPrice: 'ItemPrice',
         ListingItem: 'ListingItem',
         ListingItemObject: 'ListingItemObject',
+        ListingItemObjectData: 'ListingItemObjectData',
         ListingItemTemplate: 'ListingItemTemplate',
         LocationMarker: 'LocationMarker',
         Market: 'Market',
@@ -56,6 +57,7 @@ export const Targets = {
         ItemInformationRepository: 'ItemInformationRepository',
         ItemLocationRepository: 'ItemLocationRepository',
         ItemPriceRepository: 'ItemPriceRepository',
+        ListingItemObjectDataRepository: 'ListingItemObjectDataRepository',
         ListingItemObjectRepository: 'ListingItemObjectRepository',
         ListingItemRepository: 'ListingItemRepository',
         ListingItemTemplateRepository: 'ListingItemTemplateRepository',
@@ -93,6 +95,7 @@ export const Targets = {
         ItemInformationService: 'ItemInformationService',
         ItemLocationService: 'ItemLocationService',
         ItemPriceService: 'ItemPriceService',
+        ListingItemObjectDataService: 'ListingItemObjectDataService',
         ListingItemObjectService: 'ListingItemObjectService',
         ListingItemService: 'ListingItemService',
         ListingItemTemplateService: 'ListingItemTemplateService',
@@ -198,6 +201,7 @@ export const Targets = {
             ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
             ListingItemObjectSearchCommand: 'ListingItemObjectSearchCommand'
         },
+        ListingItemObjectDataCommand: 'ListingItemObjectDataCommand',
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',

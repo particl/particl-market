@@ -175,8 +175,56 @@ describe('ListingItemFactory', () => {
         expect(message.messaging[0].public_key).toBe(testData.MessagingInformation[0].publicKey);
 
         // message.objects
-        // TODO: test objects fields
+        expect(message.objects).toBeDefined();
+        expect(message.objects.length).toBe(2);
+        expect(message.objects[0]).not.toHaveProperty('updatedAt');
+        expect(message.objects[0]).not.toHaveProperty('createdAt');
+        expect(message.objects[0]).not.toHaveProperty('listingItemTemplateId');
+        // [0] for table : TABLE
+        expect(message.objects[0].type).toBe(testData.ListingItemObjects[0].type);
+        expect(message.objects[0]).not.toHaveProperty('id');
+        expect(message.objects[0].title).toBe(testData.ListingItemObjects[0].description);
 
+        expect(message.objects[0].table).toBeDefined();
+
+        expect(message.objects[0].table[0]).not.toHaveProperty('id');
+        expect(message.objects[0].table[0]).not.toHaveProperty('updatedAt');
+        expect(message.objects[0].table[0]).not.toHaveProperty('createdAt');
+        expect(message.objects[0].table[0]).not.toHaveProperty('listingItemObjectId');
+        expect(message.objects[0].table[0].key).toBe(testData.ListingItemObjects[0].ListingItemObjectDatas[0].key);
+        expect(message.objects[0].table[0].value).toBe(testData.ListingItemObjects[0].ListingItemObjectDatas[0].value);
+
+        expect(message.objects[0].table[1]).not.toHaveProperty('id');
+        expect(message.objects[0].table[1]).not.toHaveProperty('listingItemObjectId');
+        expect(message.objects[0].table[1]).not.toHaveProperty('updatedAt');
+        expect(message.objects[0].table[1]).not.toHaveProperty('createdAt');
+        expect(message.objects[0].table[1].key).toBe(testData.ListingItemObjects[0].ListingItemObjectDatas[1].key);
+        expect(message.objects[0].table[1].value).toBe(testData.ListingItemObjects[0].ListingItemObjectDatas[1].value);
+
+        // expect(message.objects[1]).not.toHaveProperty('id');
+        expect(message.objects[1]).not.toHaveProperty('updatedAt');
+        expect(message.objects[1]).not.toHaveProperty('createdAt');
+        expect(message.objects[1]).not.toHaveProperty('listingItemTemplateId');
+        // [1] for options : DROPDOWN
+        expect(message.objects[1].type).toBe(testData.ListingItemObjects[1].type);
+        expect(message.objects[1].title).toBe(testData.ListingItemObjects[1].description);
+        expect(message.objects[1].id).toBe(testData.ListingItemObjects[1].objectId);
+        expect(message.objects[1].force_input).toBe(testData.ListingItemObjects[1].forceInput);
+        expect(message.objects[1].options).toBeDefined();
+
+        expect(message.objects[1].options[0]).not.toHaveProperty('id');
+        expect(message.objects[1].options[0]).not.toHaveProperty('listingItemObjectId');
+        expect(message.objects[1].options[0]).not.toHaveProperty('updatedAt');
+        expect(message.objects[1].options[0]).not.toHaveProperty('createdAt');
+        expect(message.objects[1].options[0].name).toBe(testData.ListingItemObjects[1].ListingItemObjectDatas[0].key);
+        expect(message.objects[1].options[0].value).toBe(testData.ListingItemObjects[1].ListingItemObjectDatas[0].value);
+
+        expect(message.objects[1].options[1]).not.toHaveProperty('id');
+        expect(message.objects[1].options[1]).not.toHaveProperty('listingItemObjectId');
+        expect(message.objects[1].options[1]).not.toHaveProperty('updatedAt');
+        expect(message.objects[1].options[1]).not.toHaveProperty('createdAt');
+        expect(message.objects[1].options[1].name).toBe(testData.ListingItemObjects[1].ListingItemObjectDatas[1].key);
+        expect(message.objects[1].options[1].value).toBe(testData.ListingItemObjects[1].ListingItemObjectDatas[1].value);
     };
 
     const expectListingItemFromMessage = (result: ListingItemCreateRequest, message: ListingItemMessage) => {
