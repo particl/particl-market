@@ -269,8 +269,8 @@
     }
 
     function connectClient() {
-        const socket = io('ws://' + window.location.href.split("/")[2], {
-            transports: ['polling', 'websocket'],
+        var socket = io('ws://' + window.location.href.split("/")[2], {
+            transports: ['websocket'],
             forceNew: false
         });
 
@@ -295,7 +295,7 @@
                 log('reconnect_attempt');
                 // on reconnection, reset the transports option, as the Websocket
                 // connection may have failed (caused by proxy, firewall, browser, ...)
-                socket.io.opts.transports = ['polling', 'websocket'];
+                socket.io.opts.transports = ['websocket'];
             })
             .on('reconnect_error', (err) => {
                 log('reconnect_error', err);
@@ -311,7 +311,7 @@
             })
             .on('serverping', (data) => {
                 // log('serverping', data);
-                socket.emit('serverpong').emit('pong');
+                socket.emit('serverpong');
             });
     }
 
