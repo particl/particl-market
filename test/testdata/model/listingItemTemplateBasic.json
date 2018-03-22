@@ -4,7 +4,50 @@
     "profileId": 5,
     "updatedAt": 1520294532426,
     "createdAt": 1520294532426,
-    "ListingItemObjects": [],
+    "ListingItemObjects": [
+        {
+            "id": 1,
+            "type": "TABLE",
+            "description": "Product information",
+            "listingItemTemplateId": 4,
+            "ListingItemObjectDatas": [
+                {
+                    "id": 1,
+                    "key": "Screensize",
+                    "value": "17.8 inch",
+                    "listingItemObjectId": 1
+                },
+                {
+                    "id": 2,
+                    "key": "Gpu",
+                    "value": "NVidia 950",
+                    "listingItemObjectId": 1
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "type": "DROPDOWN",
+            "objectId": "color",
+            "forceInput": true,
+            "description": "Please select your colour",
+            "listingItemTemplateId": 4,
+            "ListingItemObjectDatas": [
+                {
+                    "id": 3,
+                    "key": "Black",
+                    "value": "#190425",
+                    "listingItemObjectId": 2
+                },
+                {
+                    "id": 4,
+                    "key": "Blue",
+                    "value": "#103584",
+                    "listingItemObjectId": 2
+                }
+            ]
+        }
+    ],
     "PaymentInformation": {
         "id": 4,
         "type": "SALE",

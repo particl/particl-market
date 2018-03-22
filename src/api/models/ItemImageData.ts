@@ -40,6 +40,12 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
+    public get OriginalMime(): string { return this.get('originalMime'); }
+    public set OriginalMime(value: string) { this.set('originalMime', value); }
+
+    public get OriginalName(): string { return this.get('originalName'); }
+    public set OriginalName(value: string) { this.set('originalName', value); }
+
     public ItemImage(): ItemImage {
         return this.belongsTo(ItemImage, 'item_image_id', 'id');
     }

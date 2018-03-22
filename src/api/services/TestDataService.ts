@@ -212,6 +212,7 @@ export class TestDataService {
             'payment_informations',
             'messaging_informations',
             'listing_item_objects',
+            'listing_item_object_datas',
             'listing_items',
             'listing_item_templates',
             'addresses',

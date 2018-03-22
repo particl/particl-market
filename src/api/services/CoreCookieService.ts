@@ -45,7 +45,6 @@ export class CoreCookieService {
     private getCookieLoop(): void {
         try {
             const cookie = this.getPathToCookie();
-            this.log.debug('cookie path: ', cookie);
 
             // we might not be running the particld locally so the cookie might not exists
             if (cookie) {

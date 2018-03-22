@@ -3,7 +3,9 @@ import { controller, httpGet, httpPost, httpPut, httpDelete, response, requestBo
 import { Types, Core, Targets } from '../../constants';
 import { app } from '../../app';
 import { ItemImageService } from '../services/ItemImageService';
+import { ItemImageHttpUploadService } from '../services/ItemImageHttpUploadService';
 import { Logger as LoggerType } from '../../core/Logger';
+import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
 import sharp = require('sharp');
 import * as _ from 'lodash';
 
@@ -18,46 +20,20 @@ export class ItemImageController {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
+        @inject(Types.Service) @named(Targets.Service.ItemImageHttpUploadService) private itemImageHttpUploadService: ItemImageHttpUploadService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
     }
 
-    @httpGet('/')
-    public async findAll( @response() res: myExpress.Response): Promise<any> {
-        const itemImages = await this.itemImageService.findAll();
-        this.log.debug('findAll: ', JSON.stringify(itemImages, null, 2));
-        return res.found(itemImages.toJSON());
-    }
-
-    @httpPost('/')
-    public async create( @response() res: myExpress.Response, @requestBody() body: any, @request() req: any): Promise<any> {
-
-        this.log.debug('files: ', req.files);
-//        const itemImage = await this.itemImageService.create(body);
-//        this.log.debug('create: ', JSON.stringify(itemImage, null, 2));
-//        return res.created(itemImage.toJSON());
-        return req.files[0];
-    }
-
-    @httpGet('/:id')
-    public async findOne( @response() res: myExpress.Response, @requestParam('id') id: string): Promise<any> {
-        const itemImage = await this.itemImageService.findOne(parseInt(id, 10));
-        this.log.debug('findOne: ', JSON.stringify(itemImage, null, 2));
-        return res.found(itemImage.toJSON());
-    }
-
-    @httpPut('/:id')
-    public async update( @response() res: myExpress.Response, @requestParam('id') id: string, @requestBody() body: any): Promise<any> {
-        const itemImage = await this.itemImageService.update(parseInt(id, 10), body);
-        this.log.debug('update: ', JSON.stringify(itemImage, null, 2));
-        return res.updated(itemImage.toJSON());
-    }
-
-    @httpDelete('/:id')
-    public async destroy( @response() res: myExpress.Response, @requestParam('id') id: string): Promise<any> {
-        await this.itemImageService.destroy(parseInt(id, 10));
-        this.log.debug('destroy: ', parseInt(id, 10));
-        return res.destroyed();
+    @httpPost('/template/:templateId')
+    public async create( @response() res: myExpress.Response, @requestParam('templateId') templateId: string,
+                         @requestBody() body: any, @request() req: any): Promise<any> {
+      return this.itemImageHttpUploadService.httpPostImageUpload(new ImagePostUploadRequest({
+              result: res,
+              id: templateId,
+              requestBody: body,
+              request: req
+          }));
     }
 
     @httpGet('/:id/:imageVersion')

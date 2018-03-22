@@ -19,6 +19,10 @@ import {MessageException} from '../exceptions/MessageException';
 import {CryptocurrencyAddressUpdateRequest} from '../requests/CryptocurrencyAddressUpdateRequest';
 import {CryptocurrencyAddressCreateRequest} from '../requests/CryptocurrencyAddressCreateRequest';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
+import { ListingItemTemplate } from '../models/ListingItemTemplate';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
+import * as fs from 'fs';
 
 export class ItemImageService {
 
@@ -46,6 +50,40 @@ export class ItemImageService {
         return itemImage;
     }
 
+    /*
+     * create(), but get data from a local file instead.
+     */
+    @validate()
+    public async createFile(templateId: number,  imageFile: any, listingItemTemplate: ListingItemTemplate): Promise<ItemImage> {
+        // Read the file data in
+        const dataStr = fs.readFileSync(imageFile.path, 'base64');
+        // this.log.error('dataStr = ' + dataStr);
+
+        // find listing item template
+        this.log.debug('imageFile.mimetype = ' + imageFile.mimetype);
+        // find related itemInformation
+
+        let retItemImage;
+        const itemInformation = await listingItemTemplate.related('ItemInformation').toJSON();
+        const createArgs = {
+            item_information_id: itemInformation.id,
+            hash: ObjectHash.getHash(itemInformation),
+            data: [{
+                protocol: ImageDataProtocolType.LOCAL,
+                encoding: 'BASE64',
+                data: dataStr,
+                dataId: imageFile.fieldname,
+                imageVersion: 'ORIGINAL',
+                originalMime: imageFile.mimetype,
+                originalName: imageFile.originalname
+            }]
+        } as ItemImageUpdateRequest;
+        this.log.debug(JSON.stringify(createArgs));
+        retItemImage = await this.create(createArgs);
+        retItemImage = retItemImage.toJSON();
+        return retItemImage;
+    }
+
     @validate()
     public async create( @request(ItemImageCreateRequest) data: ItemImageCreateRequest): Promise<ItemImage> {
 
@@ -62,7 +100,7 @@ export class ItemImageService {
 
         const protocols = Object.keys(ImageDataProtocolType)
             .map(key => (ImageDataProtocolType[key]));
-        // this.log.debug('protocols: ', protocols);
+        this.log.debug('protocols: ', protocols);
 
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
