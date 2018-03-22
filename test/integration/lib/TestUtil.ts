@@ -8,6 +8,9 @@ export class TestUtil {
 
     public log: LoggerType;
     private serverStartedListener: ServerStartedListener;
+    private timeout: any;
+    private interval = 1000;
+    private MAX_RETRIES = 5;
 
     constructor() {
         this.log = new LoggerType(__filename);
@@ -23,7 +26,6 @@ export class TestUtil {
         //    this.serverStarted = true;
         // });
         await this.waitForServerStarted();
-
     }
 
     private async isServerStarted(): boolean {
@@ -38,24 +40,24 @@ export class TestUtil {
     private waitFor(timeout: number): Promise<void> {
         this.log.debug('waiting for ' + timeout + 'ms');
         return new Promise((resolve) => {
-            setTimeout(() => {
+            this.timeout = setTimeout(() => {
                 resolve();
             }, timeout);
         });
     }
 
-    private async waitForServerStarted(): boolean {
+    private async waitForServerStarted(): Promise<boolean> {
 
-        const MAX_RETRIES = 20;
-        for (let i = 0; i <= MAX_RETRIES; i++) {
+        for (let i = 0; i <= this.MAX_RETRIES; i++) {
             try {
                 return await this.isServerStarted();
             } catch (err) {
-                const timeout = 1000;
-                await this.waitFor(timeout);
+                await this.waitFor(this.interval);
                 this.log.debug('error: ' + err.message);
             }
         }
+
+        this.serverStartedListener.stop();
     }
 }
 

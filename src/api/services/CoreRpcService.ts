@@ -61,7 +61,7 @@ export class CoreRpcService {
             this.log.debug('call: ' + method + ' ' + params.toString().replace(',', ' '));
         }
         // this.log.debug('call url:', url);
-        // this.log.debug('call postData:', postData);
+        this.log.debug('call postData:', postData);
 
         return await WebRequest.post(url, options, postData)
             .then( response => {

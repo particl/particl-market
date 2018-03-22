@@ -54,6 +54,13 @@ export class ServerStartedListener implements interfaces.Listener {
         );
     }
 
+    public stop(): void {
+        if (this.timeout) {
+            clearTimeout(this.timeout);
+            this.timeout = undefined;
+        }
+    }
+
     private async checkConnection(): Promise<boolean> {
         const isConnected = await this.coreRpcService.isConnected();
         if (isConnected) {
