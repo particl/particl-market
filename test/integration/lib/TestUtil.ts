@@ -10,7 +10,7 @@ export class TestUtil {
     private serverStartedListener: ServerStartedListener;
     private timeout: any;
     private interval = 1000;
-    private MAX_RETRIES = 5;
+    private MAX_RETRIES = 10;
 
     constructor() {
         this.log = new LoggerType(__filename);
@@ -40,13 +40,15 @@ export class TestUtil {
     private waitFor(timeout: number): Promise<void> {
         this.log.debug('waiting for ' + timeout + 'ms');
         return new Promise((resolve) => {
-            this.timeout = setTimeout(() => {
+            setTimeout(() => {
                 resolve();
             }, timeout);
         });
     }
 
     private async waitForServerStarted(): Promise<boolean> {
+
+        await this.waitFor(2000);
 
         for (let i = 0; i <= this.MAX_RETRIES; i++) {
             try {

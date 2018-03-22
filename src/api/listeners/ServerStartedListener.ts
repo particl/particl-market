@@ -21,6 +21,8 @@ export class ServerStartedListener implements interfaces.Listener {
     private timeout: any;
     private interval = 1000;
 
+    // TODO: this class needs to be refactored
+
     constructor(
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,

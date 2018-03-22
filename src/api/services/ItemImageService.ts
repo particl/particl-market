@@ -60,7 +60,7 @@ export class ItemImageService {
         // this.log.error('dataStr = ' + dataStr);
 
         // find listing item template
-        this.log.debug('imageFile.mimetype = ' + imageFile.mimetype);
+        // this.log.debug('imageFile.mimetype = ' + imageFile.mimetype);
         // find related itemInformation
 
         let retItemImage;
@@ -100,7 +100,7 @@ export class ItemImageService {
 
         const protocols = Object.keys(ImageDataProtocolType)
             .map(key => (ImageDataProtocolType[key]));
-        this.log.debug('protocols: ', protocols);
+        // this.log.debug('protocols: ', protocols);
 
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
