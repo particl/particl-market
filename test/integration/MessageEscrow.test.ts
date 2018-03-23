@@ -12,6 +12,7 @@ import { MessageEscrow } from '../../src/api/models/MessageEscrow';
 import { MessageEscrowService } from '../../src/api/services/MessageEscrowService';
 
 describe('MessageEscrow', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
@@ -22,13 +23,13 @@ describe('MessageEscrow', () => {
     let createdId;
 
     const testData = {
-        type: undefined, // TODO: Add test value
-        rawtx: undefined // TODO: Add test value
+        rawtx: 'rawtx',
+        type: 'refund'
     };
 
     const testDataUpdated = {
-        type: undefined, // TODO: Add test value
-        rawtx: undefined // TODO: Add test value
+        rawtx: 'rawtx_UPDATED',
+        type: 'refund_UPDATED'
     };
 
     beforeAll(async () => {
@@ -45,15 +46,14 @@ describe('MessageEscrow', () => {
         //
     });
 
-    /*
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
         await messageEscrowService.create(testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
-    */
 
+/*
     test('Should create a new message escrow', async () => {
         // testData['related_id'] = 0;
         const messageEscrowModel: MessageEscrow = await messageEscrowService.create(testData);
@@ -97,15 +97,6 @@ describe('MessageEscrow', () => {
         expect(result.rawtx).toBe(testData.rawtx);
     });
 
-    /*
-    test('Should throw ValidationException because there is no related_id', async () => {
-        expect.assertions(1);
-        await messageEscrowService.update(createdId, testDataUpdated).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-    */
-
     test('Should update the message escrow', async () => {
         // testDataUpdated['related_id'] = 0;
         const messageEscrowModel: MessageEscrow = await messageEscrowService.update(createdId, testDataUpdated);
@@ -124,5 +115,5 @@ describe('MessageEscrow', () => {
             expect(e).toEqual(new NotFoundException(createdId))
         );
     });
-
+*/
 });

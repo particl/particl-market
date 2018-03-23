@@ -35,18 +35,14 @@ export class MessageDataService {
     }
 
     @validate()
-    public async create( @request(MessageDataCreateRequest) body: any): Promise<MessageData> {
+    public async create( @request(MessageDataCreateRequest) data: any): Promise<MessageData> {
 
-        // TODO: extract and remove related models from request
-        // const messageDataRelated = body.related;
-        // delete body.related;
+        const body = JSON.parse(JSON.stringify(data));
+
+        this.log.debug('messagedata body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the messageData
         const messageData = await this.messageDataRepo.create(body);
-
-        // TODO: create related models
-        // messageDataRelated._id = messageData.Id;
-        // await this.messageDataRelatedService.create(messageDataRelated);
 
         // finally find and return the created messageData
         const newMessageData = await this.findOne(messageData.id);
@@ -70,13 +66,8 @@ export class MessageDataService {
         // update messageData record
         const updatedMessageData = await this.messageDataRepo.update(id, messageData.toJSON());
 
-        // TODO: find related record and update it
-
-        // TODO: finally find and return the updated messageData
-        // const newMessageData = await this.findOne(id);
-        // return newMessageData;
-
-        return updatedMessageData;
+        const newMessageData = await this.findOne(id);
+        return newMessageData;
     }
 
     public async destroy(id: number): Promise<void> {

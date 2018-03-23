@@ -12,6 +12,7 @@ import { MessageObject } from '../../src/api/models/MessageObject';
 import { MessageObjectService } from '../../src/api/services/MessageObjectService';
 
 describe('MessageObject', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
@@ -22,13 +23,13 @@ describe('MessageObject', () => {
     let createdId;
 
     const testData = {
-        dataId: undefined, // TODO: Add test value
-        dataValue: undefined // TODO: Add test value
+        dataId: 'colour',
+        dataValue: 'black'
     };
 
     const testDataUpdated = {
-        dataId: undefined, // TODO: Add test value
-        dataValue: undefined // TODO: Add test value
+        dataId: 'size',
+        dataValue: 'XL'
     };
 
     beforeAll(async () => {
@@ -39,21 +40,20 @@ describe('MessageObject', () => {
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean([]);
+
     });
 
     afterAll(async () => {
         //
     });
 
-    /*
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
         await messageObjectService.create(testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
-    */
-
+/*
     test('Should create a new message object', async () => {
         // testData['related_id'] = 0;
         const messageObjectModel: MessageObject = await messageObjectService.create(testData);
@@ -97,15 +97,6 @@ describe('MessageObject', () => {
         expect(result.dataValue).toBe(testData.dataValue);
     });
 
-    /*
-    test('Should throw ValidationException because there is no related_id', async () => {
-        expect.assertions(1);
-        await messageObjectService.update(createdId, testDataUpdated).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-    */
-
     test('Should update the message object', async () => {
         // testDataUpdated['related_id'] = 0;
         const messageObjectModel: MessageObject = await messageObjectService.update(createdId, testDataUpdated);
@@ -124,5 +115,5 @@ describe('MessageObject', () => {
             expect(e).toEqual(new NotFoundException(createdId))
         );
     });
-
+*/
 });

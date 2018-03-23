@@ -4,6 +4,7 @@ import { RequestBody } from '../../core/api/RequestBody';
 // tslint:disable:variable-name
 export class MessageObjectCreateRequest extends RequestBody {
 
+    @IsNotEmpty()
     public action_message_id: number;
 
     @IsNotEmpty()

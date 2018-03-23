@@ -1,4 +1,5 @@
 import { Bookshelf } from '../../config/Database';
+import { ActionMessage } from './ActionMessage';
 
 
 export class MessageObject extends Bookshelf.Model<MessageObject> {
@@ -21,11 +22,11 @@ export class MessageObject extends Bookshelf.Model<MessageObject> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get DataId(): string { return this.get('dataId'); }
-    public set DataId(value: string) { this.set('dataId', value); }
+    public get DataId(): string { return this.get('data_id'); }
+    public set DataId(value: string) { this.set('data_id', value); }
 
-    public get DataValue(): string { return this.get('dataValue'); }
-    public set DataValue(value: string) { this.set('dataValue', value); }
+    public get DataValue(): string { return this.get('data_value'); }
+    public set DataValue(value: string) { this.set('data_value', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
@@ -33,4 +34,7 @@ export class MessageObject extends Bookshelf.Model<MessageObject> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
+    public ActionMessage(): ActionMessage {
+        return this.belongsTo(ActionMessage, 'action_message_id', 'id');
+    }
 }

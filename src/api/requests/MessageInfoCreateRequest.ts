@@ -5,6 +5,9 @@ import { RequestBody } from '../../core/api/RequestBody';
 export class MessageInfoCreateRequest extends RequestBody {
 
     @IsNotEmpty()
+    public action_message_id: number;
+
+    @IsNotEmpty()
     public address: string;
 
     @IsNotEmpty()

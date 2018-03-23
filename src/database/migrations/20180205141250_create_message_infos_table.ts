@@ -6,6 +6,10 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('message_infos', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
+            table.integer('action_message_id').notNullable();
+            table.foreign('action_message_id').references('id')
+                .inTable('action_messages').onDelete('cascade');
+
             table.string('address').notNullable();
             table.string('memo').notNullable();
 

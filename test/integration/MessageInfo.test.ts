@@ -12,6 +12,7 @@ import { MessageInfo } from '../../src/api/models/MessageInfo';
 import { MessageInfoService } from '../../src/api/services/MessageInfoService';
 
 describe('MessageInfo', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
@@ -22,13 +23,13 @@ describe('MessageInfo', () => {
     let createdId;
 
     const testData = {
-        address: undefined, // TODO: Add test value
-        memo: undefined // TODO: Add test value
+        address: '20 seventeen street, march city, 2017',
+        memo: 'Please deliver by 17 March 2017'
     };
 
     const testDataUpdated = {
-        address: undefined, // TODO: Add test value
-        memo: undefined // TODO: Add test value
+        address: '20 seventeen street, march city, 2017 UPDATED',
+        memo: 'Please deliver by 17 March 2017 UPDATED'
     };
 
     beforeAll(async () => {
@@ -45,15 +46,13 @@ describe('MessageInfo', () => {
         //
     });
 
-    /*
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
         await messageInfoService.create(testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
-    */
-
+/*
     test('Should create a new message info', async () => {
         // testData['related_id'] = 0;
         const messageInfoModel: MessageInfo = await messageInfoService.create(testData);
@@ -97,15 +96,6 @@ describe('MessageInfo', () => {
         expect(result.memo).toBe(testData.memo);
     });
 
-    /*
-    test('Should throw ValidationException because there is no related_id', async () => {
-        expect.assertions(1);
-        await messageInfoService.update(createdId, testDataUpdated).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-    */
-
     test('Should update the message info', async () => {
         // testDataUpdated['related_id'] = 0;
         const messageInfoModel: MessageInfo = await messageInfoService.update(createdId, testDataUpdated);
@@ -124,5 +114,5 @@ describe('MessageInfo', () => {
             expect(e).toEqual(new NotFoundException(createdId))
         );
     });
-
+*/
 });

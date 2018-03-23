@@ -18,9 +18,6 @@ export class ActionMessageCreateRequest extends RequestBody {
     public accepted: boolean;
 
     public listing_item_id: number;
-    public message_info_id: number;
-    public message_escrow_id: number;
-    public message_data_id: number;
 
     public info: MessageInfoCreateRequest;
     public escrow: MessageEscrowCreateRequest;

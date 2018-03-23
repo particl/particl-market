@@ -12,6 +12,7 @@ import { MessageData } from '../../src/api/models/MessageData';
 import { MessageDataService } from '../../src/api/services/MessageDataService';
 
 describe('MessageData', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
@@ -22,21 +23,21 @@ describe('MessageData', () => {
     let createdId;
 
     const testData = {
-        msgid: undefined, // TODO: Add test value
-        version: undefined, // TODO: Add test value
-        received: undefined, // TODO: Add test value
-        sent: undefined, // TODO: Add test value
-        from: undefined, // TODO: Add test value
-        to: undefined // TODO: Add test value
+        msgid: 'fdd0b25a000000007188f0fc4cd57a37aa5a9ab26463510568e99d7d',
+        version: '0300',
+        received: new Date(),
+        sent: new Date(),
+        from: 'piyLdJcTzR72DsYh2j5wPWUUmwURfczTR3',
+        to: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA'
     };
 
     const testDataUpdated = {
-        msgid: undefined, // TODO: Add test value
-        version: undefined, // TODO: Add test value
-        received: undefined, // TODO: Add test value
-        sent: undefined, // TODO: Add test value
-        from: undefined, // TODO: Add test value
-        to: undefined // TODO: Add test value
+        msgid: 'fdd0b25a000000007188f0fc4cd57a37aa5a9ab26463510568e99d7d_UPDATED',
+        version: '0300_UPDATED',
+        received: new Date(),
+        sent: new Date(),
+        from: 'piyLdJcTzR72DsYh2j5wPWUUmwURfczTR3_UPDATED',
+        to: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA_UPDATED'
     };
 
     beforeAll(async () => {
@@ -53,15 +54,13 @@ describe('MessageData', () => {
         //
     });
 
-    /*
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
         await messageDataService.create(testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
-    */
-
+/*
     test('Should create a new message data', async () => {
         // testData['related_id'] = 0;
         const messageDataModel: MessageData = await messageDataService.create(testData);
@@ -117,15 +116,6 @@ describe('MessageData', () => {
         expect(result.to).toBe(testData.to);
     });
 
-    /*
-    test('Should throw ValidationException because there is no related_id', async () => {
-        expect.assertions(1);
-        await messageDataService.update(createdId, testDataUpdated).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-    */
-
     test('Should update the message data', async () => {
         // testDataUpdated['related_id'] = 0;
         const messageDataModel: MessageData = await messageDataService.update(createdId, testDataUpdated);
@@ -148,5 +138,5 @@ describe('MessageData', () => {
             expect(e).toEqual(new NotFoundException(createdId))
         );
     });
-
+*/
 });

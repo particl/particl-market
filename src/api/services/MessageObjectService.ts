@@ -8,6 +8,7 @@ import { MessageObjectRepository } from '../repositories/MessageObjectRepository
 import { MessageObject } from '../models/MessageObject';
 import { MessageObjectCreateRequest } from '../requests/MessageObjectCreateRequest';
 import { MessageObjectUpdateRequest } from '../requests/MessageObjectUpdateRequest';
+import {NotImplementedException} from '../exceptions/NotImplementedException';
 
 
 export class MessageObjectService {
@@ -35,18 +36,14 @@ export class MessageObjectService {
     }
 
     @validate()
-    public async create( @request(MessageObjectCreateRequest) body: any): Promise<MessageObject> {
+    public async create( @request(MessageObjectCreateRequest) data: any): Promise<MessageObject> {
 
-        // TODO: extract and remove related models from request
-        // const messageObjectRelated = body.related;
-        // delete body.related;
+        const body = JSON.parse(JSON.stringify(data));
+
+        this.log.debug('messageobject body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the messageObject
         const messageObject = await this.messageObjectRepo.create(body);
-
-        // TODO: create related models
-        // messageObjectRelated._id = messageObject.Id;
-        // await this.messageObjectRelatedService.create(messageObjectRelated);
 
         // finally find and return the created messageObject
         const newMessageObject = await this.findOne(messageObject.id);
@@ -66,13 +63,9 @@ export class MessageObjectService {
         // update messageObject record
         const updatedMessageObject = await this.messageObjectRepo.update(id, messageObject.toJSON());
 
-        // TODO: find related record and update it
+        const newMessageObject = await this.findOne(id);
+        return newMessageObject;
 
-        // TODO: finally find and return the updated messageObject
-        // const newMessageObject = await this.findOne(id);
-        // return newMessageObject;
-
-        return updatedMessageObject;
     }
 
     public async destroy(id: number): Promise<void> {

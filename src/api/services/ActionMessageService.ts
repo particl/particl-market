@@ -3,11 +3,19 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
+import * as _ from 'lodash';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { MessageException } from '../exceptions/MessageException';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
 import { ActionMessageRepository } from '../repositories/ActionMessageRepository';
 import { ActionMessage } from '../models/ActionMessage';
 import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
 import { ActionMessageUpdateRequest } from '../requests/ActionMessageUpdateRequest';
+import { MessageInfoService } from './MessageInfoService';
+import { MessageEscrowService } from './MessageEscrowService';
+import { MessageDataService } from './MessageDataService';
+import { MessageObjectService } from './MessageObjectService';
+
 
 
 export class ActionMessageService {
@@ -15,6 +23,10 @@ export class ActionMessageService {
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.MessageInfoService) private messageInfoService: MessageInfoService,
+        @inject(Types.Service) @named(Targets.Service.MessageEscrowService) private messageEscrowService: MessageEscrowService,
+        @inject(Types.Service) @named(Targets.Service.MessageDataService) private messageDataService: MessageDataService,
+        @inject(Types.Service) @named(Targets.Service.MessageObjectService) private messageObjectService: MessageObjectService,
         @inject(Types.Repository) @named(Targets.Repository.ActionMessageRepository) public actionMessageRepo: ActionMessageRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -35,18 +47,44 @@ export class ActionMessageService {
     }
 
     @validate()
-    public async create( @request(ActionMessageCreateRequest) body: any): Promise<ActionMessage> {
+    public async create( @request(ActionMessageCreateRequest) data: any): Promise<ActionMessage> {
 
-        // TODO: extract and remove related models from request
-        // const actionMessageRelated = body.related;
-        // delete body.related;
+        const body = JSON.parse(JSON.stringify(data));
+        // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
 
+        const messageInfoCreateRequest = body.info;
+        const messageEscrowCreateRequest = body.escrow;
+        const messageDataCreateRequest = body.data;
+        const actionMessageObjects = body.objects;
+
+        delete body.info;
+        delete body.escrow;
+        delete body.data;
+        delete body.objects;
+
+        if (_.isEmpty(messageInfoCreateRequest) || _.isEmpty(messageEscrowCreateRequest) || _.isEmpty(messageDataCreateRequest)) {
+            throw new MessageException('Could not create the ActionMessage, missing data!');
+        }
+
+        this.log.debug('actionmessage body:', JSON.stringify(body, null, 2));
         // If the request body was valid we will create the actionMessage
         const actionMessage = await this.actionMessageRepo.create(body);
 
-        // TODO: create related models
-        // actionMessageRelated._id = actionMessage.Id;
-        // await this.actionMessageRelatedService.create(actionMessageRelated);
+        this.log.debug(JSON.stringify(actionMessage.toJSON(), null, 2));
+        messageInfoCreateRequest.action_message_id = actionMessage.Id;
+        const messageInfo = await this.messageInfoService.create(messageInfoCreateRequest);
+
+        messageEscrowCreateRequest.action_message_id = actionMessage.Id;
+        const messageEscrow = await this.messageEscrowService.create(messageEscrowCreateRequest);
+
+        messageDataCreateRequest.action_message_id = actionMessage.Id;
+        const messageData = await this.messageDataService.create(messageDataCreateRequest);
+
+        // create messageobjects
+        for (const object of actionMessageObjects) {
+            object.action_message_id = actionMessage.Id;
+            await this.messageObjectService.create(object);
+        }
 
         // finally find and return the created actionMessage
         const newActionMessage = await this.findOne(actionMessage.id);
@@ -56,6 +94,8 @@ export class ActionMessageService {
     @validate()
     public async update(id: number, @request(ActionMessageUpdateRequest) body: any): Promise<ActionMessage> {
 
+        throw new NotImplementedException();
+/*
         // find the existing one without related
         const actionMessage = await this.findOne(id, false);
 
@@ -74,6 +114,7 @@ export class ActionMessageService {
         // return newActionMessage;
 
         return updatedActionMessage;
+*/
     }
 
     public async destroy(id: number): Promise<void> {

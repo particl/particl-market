@@ -32,6 +32,7 @@ export class MessageObjectRepository {
             const messageObjectCreated = await messageObject.save();
             return this.MessageObjectModel.fetchById(messageObjectCreated.id);
         } catch (error) {
+            this.log.debug('ERROR:', error);
             throw new DatabaseException('Could not create the messageObject!', error);
         }
     }

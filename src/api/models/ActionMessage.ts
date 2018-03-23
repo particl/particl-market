@@ -1,9 +1,9 @@
 import { Bookshelf } from '../../config/Database';
 import { Collection } from 'bookshelf';
-import {MessageObject} from './MessageObject';
-import {MessageInfo} from './MessageInfo';
-import {MessageEscrow} from './MessageEscrow';
-import {MessageData} from './MessageData';
+import { MessageObject } from './MessageObject';
+import { MessageInfo } from './MessageInfo';
+import { MessageEscrow } from './MessageEscrow';
+import { MessageData } from './MessageData';
 
 export class ActionMessage extends Bookshelf.Model<ActionMessage> {
 
@@ -50,15 +50,15 @@ export class ActionMessage extends Bookshelf.Model<ActionMessage> {
     }
 
     public MessageInfo(): MessageInfo {
-        return this.hasOne(MessageInfo, 'action_message_id', 'id');
+        return this.hasOne(MessageInfo);
     }
 
     public MessageEscrow(): MessageEscrow {
-        return this.hasOne(MessageEscrow, 'action_message_id', 'id');
+        return this.hasOne(MessageEscrow);
     }
 
     public MessageData(): MessageData {
-        return this.hasOne(MessageData, 'action_message_id', 'id');
+        return this.hasOne(MessageData);
     }
 
 }

@@ -8,6 +8,7 @@ import { MessageInfoRepository } from '../repositories/MessageInfoRepository';
 import { MessageInfo } from '../models/MessageInfo';
 import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
 import { MessageInfoUpdateRequest } from '../requests/MessageInfoUpdateRequest';
+import {NotImplementedException} from '../exceptions/NotImplementedException';
 
 
 export class MessageInfoService {
@@ -35,18 +36,14 @@ export class MessageInfoService {
     }
 
     @validate()
-    public async create( @request(MessageInfoCreateRequest) body: any): Promise<MessageInfo> {
+    public async create( @request(MessageInfoCreateRequest) data: any): Promise<MessageInfo> {
 
-        // TODO: extract and remove related models from request
-        // const messageInfoRelated = body.related;
-        // delete body.related;
+        const body = JSON.parse(JSON.stringify(data));
+
+        this.log.debug('messageinfo body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the messageInfo
         const messageInfo = await this.messageInfoRepo.create(body);
-
-        // TODO: create related models
-        // messageInfoRelated._id = messageInfo.Id;
-        // await this.messageInfoRelatedService.create(messageInfoRelated);
 
         // finally find and return the created messageInfo
         const newMessageInfo = await this.findOne(messageInfo.id);
@@ -66,13 +63,8 @@ export class MessageInfoService {
         // update messageInfo record
         const updatedMessageInfo = await this.messageInfoRepo.update(id, messageInfo.toJSON());
 
-        // TODO: find related record and update it
-
-        // TODO: finally find and return the updated messageInfo
-        // const newMessageInfo = await this.findOne(id);
-        // return newMessageInfo;
-
-        return updatedMessageInfo;
+        const newMessageInfo = await this.findOne(id);
+        return newMessageInfo;
     }
 
     public async destroy(id: number): Promise<void> {

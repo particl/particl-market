@@ -5,6 +5,9 @@ import { RequestBody } from '../../core/api/RequestBody';
 export class MessageEscrowCreateRequest extends RequestBody {
 
     @IsNotEmpty()
+    public action_message_id: number;
+
+    @IsNotEmpty()
     public type: string;
 
     @IsNotEmpty()

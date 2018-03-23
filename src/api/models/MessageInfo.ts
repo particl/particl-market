@@ -1,4 +1,5 @@
 import { Bookshelf } from '../../config/Database';
+import { ActionMessage } from './ActionMessage';
 
 
 export class MessageInfo extends Bookshelf.Model<MessageInfo> {
@@ -33,4 +34,7 @@ export class MessageInfo extends Bookshelf.Model<MessageInfo> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
+    public ActionMessage(): ActionMessage {
+        return this.belongsTo(ActionMessage, 'action_message_id', 'id');
+    }
 }

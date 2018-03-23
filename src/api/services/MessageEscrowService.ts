@@ -8,6 +8,7 @@ import { MessageEscrowRepository } from '../repositories/MessageEscrowRepository
 import { MessageEscrow } from '../models/MessageEscrow';
 import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
 import { MessageEscrowUpdateRequest } from '../requests/MessageEscrowUpdateRequest';
+import {NotImplementedException} from '../exceptions/NotImplementedException';
 
 
 export class MessageEscrowService {
@@ -35,18 +36,14 @@ export class MessageEscrowService {
     }
 
     @validate()
-    public async create( @request(MessageEscrowCreateRequest) body: any): Promise<MessageEscrow> {
+    public async create( @request(MessageEscrowCreateRequest) data: any): Promise<MessageEscrow> {
 
-        // TODO: extract and remove related models from request
-        // const messageEscrowRelated = body.related;
-        // delete body.related;
+        const body = JSON.parse(JSON.stringify(data));
+
+        this.log.debug('messageescrow body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the messageEscrow
         const messageEscrow = await this.messageEscrowRepo.create(body);
-
-        // TODO: create related models
-        // messageEscrowRelated._id = messageEscrow.Id;
-        // await this.messageEscrowRelatedService.create(messageEscrowRelated);
 
         // finally find and return the created messageEscrow
         const newMessageEscrow = await this.findOne(messageEscrow.id);
@@ -66,13 +63,8 @@ export class MessageEscrowService {
         // update messageEscrow record
         const updatedMessageEscrow = await this.messageEscrowRepo.update(id, messageEscrow.toJSON());
 
-        // TODO: find related record and update it
-
-        // TODO: finally find and return the updated messageEscrow
-        // const newMessageEscrow = await this.findOne(id);
-        // return newMessageEscrow;
-
-        return updatedMessageEscrow;
+        const newMessageEscrow = await this.findOne(id);
+        return newMessageEscrow;
     }
 
     public async destroy(id: number): Promise<void> {
