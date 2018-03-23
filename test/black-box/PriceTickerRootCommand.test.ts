@@ -13,7 +13,7 @@ describe('PriceTickerRootCommand', () => {
 
     let lastUpdated;
 
-    test('Should get priceticker by passing single currency (UPPER case)', async () => {
+    test('Should get PriceTicker by passing single currency (UPPER case)', async () => {
         const res = await rpc(method, ['ETH']);
         res.expectJson();
         res.expectStatusCode(200);
@@ -44,7 +44,7 @@ describe('PriceTickerRootCommand', () => {
         expect(data.updatedAt).toBe(data.createdAt);
     });
 
-    test('Should get priceticker by passing single currency (LOWER case)', async () => {
+    test('Should get PriceTicker by passing single currency (LOWER case)', async () => {
         const res = await rpc(method, ['xrp']);
         res.expectJson();
         res.expectStatusCode(200);
@@ -75,7 +75,7 @@ describe('PriceTickerRootCommand', () => {
         expect(data.updatedAt).toBe(data.createdAt);
     });
 
-    test('Should fail because we want try to priceticker without passing currency', async () => {
+    test('Should fail to fetch PriceTicker without passing currency', async () => {
         const res = await rpc(method, []);
         res.expectJson();
         res.expectStatusCode(404);
@@ -83,7 +83,7 @@ describe('PriceTickerRootCommand', () => {
         expect(res.error.error.message).toBe(`Currency can\'t be blank`);
     });
 
-    test('Should get two pricetickers by passing two currency ( UPPER + UPPER )', async () => {
+    test('Should get two PriceTickers by passing two currency ( UPPER + UPPER )', async () => {
         const res = await rpc(method, ['XRP', 'BTC']);
         res.expectJson();
         res.expectStatusCode(200);
@@ -131,7 +131,7 @@ describe('PriceTickerRootCommand', () => {
         expect(data2.cryptoMarketCapEur).toBeDefined();
     });
 
-    test('Should get two pricetickers by passing two currency(UPPER + LOWER)', async () => {
+    test('Should get two PriceTickers by passing two currency(UPPER + LOWER)', async () => {
         const res = await rpc(method, ['XRP', 'btc']);
         res.expectJson();
         res.expectStatusCode(200);
@@ -179,7 +179,7 @@ describe('PriceTickerRootCommand', () => {
         expect(data2.cryptoMarketCapEur).toBeDefined();
     });
 
-    test('Should get two pricetickers by passing two currency(LOWER + LOWER)', async () => {
+    test('Should get two PriceTickers by passing two currency(LOWER + LOWER)', async () => {
         const res = await rpc(method, ['xrp', 'btc']);
         res.expectJson();
         res.expectStatusCode(200);

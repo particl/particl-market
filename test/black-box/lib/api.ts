@@ -55,16 +55,18 @@ export const api = async <T> ( method: string, path: string, options: ApiOptions
     try {
         res = await request(o);
     } catch (e) {
+        console.log('ERROR: ', e);
         error = e;
-        if (error.error) {
+/*        if (error.error) {
             if (error.error.code) {
                 throw new HttpException(500, error.error.message);
             } else {
-                throw new HttpException(500, error.error + ', ' + JSON.stringify(error.error));
+                throw new HttpException(500, JSON.stringify(error.error) + ', ' + JSON.stringify(error.error));
             }
         } else {
             throw new HttpException(500, error);
         }
+        */
     }
     return new ApiResponseTest(error, res);
     /*
