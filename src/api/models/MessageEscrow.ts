@@ -3,14 +3,12 @@ import { Bookshelf } from '../../config/Database';
 
 export class MessageEscrow extends Bookshelf.Model<MessageEscrow> {
 
+    public static RELATIONS = [];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<MessageEscrow> {
         if (withRelated) {
             return await MessageEscrow.where<MessageEscrow>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'MessageEscrowRelated',
-                    // 'MessageEscrowRelated.Related'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await MessageEscrow.where<MessageEscrow>({ id: value }).fetch();
@@ -35,8 +33,4 @@ export class MessageEscrow extends Bookshelf.Model<MessageEscrow> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public MessageEscrowRelated(): MessageEscrowRelated {
-    //    return this.hasOne(MessageEscrowRelated);
-    // }
 }

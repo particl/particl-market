@@ -3,14 +3,12 @@ import { Bookshelf } from '../../config/Database';
 
 export class MessageObject extends Bookshelf.Model<MessageObject> {
 
+    public static RELATIONS = [];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<MessageObject> {
         if (withRelated) {
             return await MessageObject.where<MessageObject>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'MessageObjectRelated',
-                    // 'MessageObjectRelated.Related'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await MessageObject.where<MessageObject>({ id: value }).fetch();
@@ -35,8 +33,4 @@ export class MessageObject extends Bookshelf.Model<MessageObject> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public MessageObjectRelated(): MessageObjectRelated {
-    //    return this.hasOne(MessageObjectRelated);
-    // }
 }

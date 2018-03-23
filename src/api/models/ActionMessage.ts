@@ -1,16 +1,23 @@
 import { Bookshelf } from '../../config/Database';
-
+import { Collection } from 'bookshelf';
+import {MessageObject} from './MessageObject';
+import {MessageInfo} from './MessageInfo';
+import {MessageEscrow} from './MessageEscrow';
+import {MessageData} from './MessageData';
 
 export class ActionMessage extends Bookshelf.Model<ActionMessage> {
+
+    public static RELATIONS = [
+        'MessageObjects',
+        'MessageInfo',
+        'MessageEscrow',
+        'MessageData'
+    ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ActionMessage> {
         if (withRelated) {
             return await ActionMessage.where<ActionMessage>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'ActionMessageRelated',
-                    // 'ActionMessageRelated.Related'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await ActionMessage.where<ActionMessage>({ id: value }).fetch();
@@ -38,8 +45,20 @@ export class ActionMessage extends Bookshelf.Model<ActionMessage> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public ActionMessageRelated(): ActionMessageRelated {
-    //    return this.hasOne(ActionMessageRelated);
-    // }
+    public MessageObjects(): Collection<MessageObject> {
+        return this.hasMany(MessageObject, 'action_message_id', 'id');
+    }
+
+    public MessageInfo(): MessageInfo {
+        return this.hasOne(MessageInfo, 'action_message_id', 'id');
+    }
+
+    public MessageEscrow(): MessageEscrow {
+        return this.hasOne(MessageEscrow, 'action_message_id', 'id');
+    }
+
+    public MessageData(): MessageData {
+        return this.hasOne(MessageData, 'action_message_id', 'id');
+    }
+
 }
