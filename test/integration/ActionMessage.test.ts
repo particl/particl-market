@@ -10,8 +10,17 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ActionMessage } from '../../src/api/models/ActionMessage';
 
 import { ActionMessageService } from '../../src/api/services/ActionMessageService';
+import {ActionMessageCreateRequest} from "../../src/api/requests/ActionMessageCreateRequest";
+import {MessageInfoCreateRequest} from '../../src/api/requests/MessageInfoCreateRequest';
+import {MessageEscrowCreateRequest} from '../../src/api/requests/MessageEscrowCreateRequest';
+import {MessageDataCreateRequest} from '../../src/api/requests/MessageDataCreateRequest';
+import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
+import {CreatableModel} from '../../src/api/enums/CreatableModel';
+import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
+import {MessageObjectCreateRequest} from '../../src/api/requests/MessageObjectCreateRequest';
 
 describe('ActionMessage', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
@@ -19,19 +28,38 @@ describe('ActionMessage', () => {
     let testDataService: TestDataService;
     let actionMessageService: ActionMessageService;
 
-    let createdId;
-
+    // TODO: create test data
     const testData = {
-        action: undefined, // TODO: Add test value
-        nonce: undefined, // TODO: Add test value
-        accepted: undefined // TODO: Add test value
-    };
+        action: 'MPA_LOCK',
+        nonce: 'randomness',
+        accepted: true,
+        info: {
+            address: '20 seventeen street, march city, 2017',
+            memo: 'Please deliver by 17 March 2017'
+        } as MessageInfoCreateRequest,
+        escrow: {
+            rawtx: 'rawtx',
+            type: 'refund'
+        } as MessageEscrowCreateRequest,
+        data: {
+            msgid: 'fdd0b25a000000007188f0fc4cd57a37aa5a9ab26463510568e99d7d',
+            version: '0300',
+            received: new Date(),
+            sent: new Date(),
+            from: 'piyLdJcTzR72DsYh2j5wPWUUmwURfczTR3',
+            to: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA',
+        } as MessageDataCreateRequest,
+        objects: [{
+                dataId: 'colour',
+                dataValue: 'black'
+            } as MessageObjectCreateRequest, {
+                dataId: 'size',
+                dataValue: 'XL'
+            } as MessageObjectCreateRequest
+        ]
+    } as ActionMessageCreateRequest;
 
-    const testDataUpdated = {
-        action: undefined, // TODO: Add test value
-        nonce: undefined, // TODO: Add test value
-        accepted: undefined // TODO: Add test value
-    };
+    let createdListingItem;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -40,7 +68,28 @@ describe('ActionMessage', () => {
         actionMessageService = app.IoC.getNamed<ActionMessageService>(Types.Service, Targets.Service.ActionMessageService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
+
+        const generateParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        // create listingitem without ShippingDestinations and store its id for testing
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,  // what to generate
+            amount: 1,                          // how many to generate
+            withRelated: true,                  // return model
+            generateParams                      // what kind of data to generate
+        } as TestDataGenerateRequest);
+        createdListingItem = listingItems[0].toJSON();
+
     });
 
     afterAll(async () => {
@@ -57,19 +106,20 @@ describe('ActionMessage', () => {
     */
 
     test('Should create a new action message', async () => {
-        // testData['related_id'] = 0;
-        const actionMessageModel: ActionMessage = await actionMessageService.create(testData);
-        createdId = actionMessageModel.Id;
 
+        testData.listing_item_id = createdListingItem.id;
+
+        const actionMessageModel: ActionMessage = await actionMessageService.create(testData);
         const result = actionMessageModel.toJSON();
 
         // test the values
-        // expect(result.value).toBe(testData.value);
         expect(result.action).toBe(testData.action);
         expect(result.nonce).toBe(testData.nonce);
         expect(result.accepted).toBe(testData.accepted);
+
     });
 
+/*
     test('Should throw ValidationException because we want to create a empty action message', async () => {
         expect.assertions(1);
         await actionMessageService.create({}).catch(e =>
@@ -102,14 +152,12 @@ describe('ActionMessage', () => {
         expect(result.accepted).toBe(testData.accepted);
     });
 
-    /*
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
         await actionMessageService.update(createdId, testDataUpdated).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
-    */
 
     test('Should update the action message', async () => {
         // testDataUpdated['related_id'] = 0;
@@ -130,5 +178,6 @@ describe('ActionMessage', () => {
             expect(e).toEqual(new NotFoundException(createdId))
         );
     });
+*/
 
 });
