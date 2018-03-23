@@ -19,6 +19,8 @@ describe('ItemImageAddCommand', () => {
     const imageCommand = Commands.ITEMIMAGE_ROOT.commandName;
     const addCommand = Commands.ITEMIMAGE_ADD.commandName;
 
+    let createdImage;
+
     const keys = [
         'id', 'hash', 'updatedAt', 'createdAt'
     ];
@@ -129,12 +131,18 @@ describe('ItemImageAddCommand', () => {
         addDataRes.expectStatusCode(200);
         addDataRes.expectDataRpc(keys);
         const result: any = addDataRes.getBody()['result'];
+        createdImage = result;
         itemImages = result.ItemImageDatas;
+        // TODO: this test is just testing that the command response is 200, its not verifying that the itemimage was actually inserted
+
     });
 
     test('Should return valid LARGE image dimention', async () => {
         for ( const imageData of itemImages ) {
-            expect(imageData.dataId).toBe('TEST-DATA-ID');
+            const imageUrl = process.env.APP_HOST
+                + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
+                + '/api/item-images/' + createdImage.id + '/' + imageData.imageVersion;
+            expect(imageData.dataId).toBe(imageUrl);
             expect(imageData.protocol).toBe(ImageDataProtocolType.LOCAL);
             expect(imageData.encoding).toBe('BASE64');
 
@@ -168,7 +176,10 @@ describe('ItemImageAddCommand', () => {
 
     test('Should return valid MEDIUM image dimention', async () => {
         for ( const imageData of itemImages ) {
-            expect(imageData.dataId).toBe('TEST-DATA-ID');
+            const imageUrl = process.env.APP_HOST
+                + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
+                + '/api/item-images/' + createdImage.id + '/' + imageData.imageVersion;
+            expect(imageData.dataId).toBe(imageUrl);
             expect(imageData.protocol).toBe(ImageDataProtocolType.LOCAL);
             expect(imageData.encoding).toBe('BASE64');
 
@@ -198,7 +209,10 @@ describe('ItemImageAddCommand', () => {
 
     test('Should return valid THUMBNAIL image dimention', async () => {
         for ( const imageData of itemImages ) {
-            expect(imageData.dataId).toBe('TEST-DATA-ID');
+            const imageUrl = process.env.APP_HOST
+                + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
+                + '/api/item-images/' + createdImage.id + '/' + imageData.imageVersion;
+            expect(imageData.dataId).toBe(imageUrl);
             expect(imageData.protocol).toBe(ImageDataProtocolType.LOCAL);
             expect(imageData.encoding).toBe('BASE64');
 
