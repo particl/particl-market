@@ -35,6 +35,7 @@ describe('ListingItemObject', () => {
     let listingItemObjectDataService: ListingItemObjectDataService;
 
     let createdId;
+    let dataObjectId;
     let createdListingItemTemplate;
     let defaultProfile;
 
@@ -56,16 +57,6 @@ describe('ListingItemObject', () => {
         type: ListingItemObjectType.TABLE,
         description: 'table desc',
         order: 1
-        // listingItemObjectDatas: [
-        //     {
-        //         key: 'Screensize',
-        //         value: '17.8 inch'
-        //     },
-        //     {
-        //         key: 'gps',
-        //         value: 'NVIDIA 500'
-        //     }
-        // ]
     } as ListingItemObjectUpdateRequest;
 
     beforeAll(async () => {
@@ -110,8 +101,8 @@ describe('ListingItemObject', () => {
         const listingItemObjectModel: ListingItemObject = await listingItemObjectService.create(testData);
         // expect(listingItemObjectModel).toBe(123);
         createdId = listingItemObjectModel.Id;
-
         const result = listingItemObjectModel.toJSON();
+        dataObjectId = result.ListingItemObjectDatas[0].id;
 
         expect(result.type).toBe(testData.type);
         expect(result.description).toBe(testData.description);
@@ -175,16 +166,15 @@ describe('ListingItemObject', () => {
     });
 
     test('Should delete the listing item object', async () => {
-        expect.assertions(2);
+        expect.assertions(3);
         await listingItemObjectService.destroy(createdId);
         await listingItemObjectService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );
 
-        // TODO FIX, why is listingitemobjectdata being findone'd here using listingitemobject id?!?
-        // await listingItemObjectDataService.findOne(createdId).catch(e =>
-        //    expect(e).toEqual(new NotFoundException(createdId))
-        // );
+        await listingItemObjectDataService.findOne(dataObjectId).catch(e =>
+           expect(e).toEqual(new NotFoundException(dataObjectId))
+        );
 
         // delete listing-item-template
         await listingItemTemplateService.destroy(createdListingItemTemplate.id);
