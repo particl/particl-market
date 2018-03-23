@@ -10,6 +10,7 @@
 
 export const Targets = {
     Model:     {
+        ActionMessage: 'ActionMessage',
         Address: 'Address',
         Bid: 'Bid',
         BidData: 'BidData',
@@ -31,6 +32,10 @@ export const Targets = {
         ListingItemTemplate: 'ListingItemTemplate',
         LocationMarker: 'LocationMarker',
         Market: 'Market',
+        MessageData: 'MessageData',
+        MessageEscrow: 'MessageEscrow',
+        MessageInfo: 'MessageInfo',
+        MessageObject: 'MessageObject',
         MessagingInformation: 'MessagingInformation',
         PaymentInformation: 'PaymentInformation',
         PriceTicker: 'PriceTicker',
@@ -42,6 +47,7 @@ export const Targets = {
         User: 'User'
     },
     Repository:     {
+        ActionMessageRepository: 'ActionMessageRepository',
         AddressRepository: 'AddressRepository',
         BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
@@ -63,6 +69,10 @@ export const Targets = {
         ListingItemTemplateRepository: 'ListingItemTemplateRepository',
         LocationMarkerRepository: 'LocationMarkerRepository',
         MarketRepository: 'MarketRepository',
+        MessageDataRepository: 'MessageDataRepository',
+        MessageEscrowRepository: 'MessageEscrowRepository',
+        MessageInfoRepository: 'MessageInfoRepository',
+        MessageObjectRepository: 'MessageObjectRepository',
         MessagingInformationRepository: 'MessagingInformationRepository',
         PaymentInformationRepository: 'PaymentInformationRepository',
         PriceTickerRepository: 'PriceTickerRepository',
@@ -74,6 +84,7 @@ export const Targets = {
         UserRepository: 'UserRepository'
     },
     Service:     {
+        ActionMessageService: 'ActionMessageService',
         AddressService: 'AddressService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
@@ -101,6 +112,10 @@ export const Targets = {
         ListingItemTemplateService: 'ListingItemTemplateService',
         LocationMarkerService: 'LocationMarkerService',
         MarketService: 'MarketService',
+        MessageDataService: 'MessageDataService',
+        MessageEscrowService: 'MessageEscrowService',
+        MessageInfoService: 'MessageInfoService',
+        MessageObjectService: 'MessageObjectService',
         MessagingInformationService: 'MessagingInformationService',
         PaymentInformationService: 'PaymentInformationService',
         PriceTickerService: 'PriceTickerService',
@@ -114,6 +129,7 @@ export const Targets = {
         UserService: 'UserService'
     },
     Command:     {
+        ActionMessageCommand: 'ActionMessageCommand',
         address: {
             AddressAddCommand: 'AddressAddCommand',
             AddressListCommand: 'AddressListCommand',
@@ -201,7 +217,6 @@ export const Targets = {
             ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
             ListingItemObjectSearchCommand: 'ListingItemObjectSearchCommand'
         },
-        ListingItemObjectDataCommand: 'ListingItemObjectDataCommand',
         listingitemtemplate: {
             ListingItemTemplateAddCommand: 'ListingItemTemplateAddCommand',
             ListingItemTemplateGetCommand: 'ListingItemTemplateGetCommand',
@@ -215,6 +230,10 @@ export const Targets = {
             MarketListCommand: 'MarketListCommand',
             MarketRootCommand: 'MarketRootCommand'
         },
+        MessageDataCommand: 'MessageDataCommand',
+        MessageEscrowCommand: 'MessageEscrowCommand',
+        MessageInfoCommand: 'MessageInfoCommand',
+        MessageObjectCommand: 'MessageObjectCommand',
         messaginginformation: {
             MessagingInformationRootCommand: 'MessagingInformationRootCommand',
             MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
@@ -294,7 +313,6 @@ export const Targets = {
     },
     Controller:     {
         ItemImageController: 'ItemImageController',
-        ItemImageDataController: 'ItemImageDataController',
         RpcController: 'RpcController'
     }
 };
