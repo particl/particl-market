@@ -6,8 +6,6 @@ import * as WebRequest from 'web-request';
 import { HttpException } from '../exceptions/HttpException';
 import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
-import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { CoreCookieService } from './CoreCookieService';
 
 let RPC_REQUEST_ID = 1;

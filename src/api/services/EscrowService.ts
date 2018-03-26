@@ -22,9 +22,6 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 
 import { EscrowFactory } from '../factories/EscrowFactory';
 
-import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
-import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
-
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { EscrowRatioService } from '../services/EscrowRatioService';
@@ -37,16 +34,12 @@ export class EscrowService {
 
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) public escrowFactory: EscrowFactory,
-        @inject(Types.Service) @named(Targets.Service.EscrowRatioService) public escrowRatioService: EscrowRatioService,
-        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-
+        @inject(Types.Repository) @named(Targets.Repository.EscrowRepository) public escrowRepo: EscrowRepository,
         // @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         // @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
-        @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
-        @inject(Types.Repository) @named(Targets.Repository.PaymentInformationRepository) public paymentInfoRepo: PaymentInformationRepository,
-
-        @inject(Types.Repository) @named(Targets.Repository.EscrowRepository) public escrowRepo: EscrowRepository,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.EscrowRatioService) public escrowRatioService: EscrowRatioService,
+        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
