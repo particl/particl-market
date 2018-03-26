@@ -10,6 +10,7 @@ import { ItemCategory } from '../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
 import { ItemCategoryUpdateRequest } from '../requests/ItemCategoryUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
+import * as resources from 'resources';
 
 
 export class ItemCategoryService {
@@ -92,5 +93,65 @@ export class ItemCategoryService {
 
     public async destroy(id: number): Promise<void> {
         await this.itemCategoryRepo.destroy(id);
+    }
+
+    /**
+     * create categories from array and will return last category <ItemCategory> Model
+     *
+     * @param categoryArray : string[]
+     * @returns {Promise<ItemCategory>}
+     */
+    private async getOrCreateCategories(categoryArray: string[]): Promise<resources.ItemCategory> {
+
+        const rootCategoryWithRelatedModel: any = await this.findRoot();
+        let rootCategoryToSearchFrom = rootCategoryWithRelatedModel.toJSON();
+
+        for (const categoryKeyOrName of categoryArray) { // [cat0, cat1, cat2, cat3, cat4]
+
+            let existingCategory = await this.findCategory(rootCategoryToSearchFrom, categoryKeyOrName);
+
+            if (!existingCategory) {
+
+                // category did not exist, so we need to create it
+                const categoryCreateRequest = {
+                    name: categoryKeyOrName,
+                    parent_item_category_id: rootCategoryToSearchFrom.id
+                } as ItemCategoryCreateRequest;
+
+                // create and assign it as existingCategoru
+                const newCategory = await this.create(categoryCreateRequest);
+                existingCategory = newCategory.toJSON();
+
+            } else {
+                // category exists, fetch it
+                const existingCategoryModel = await this.findOneByKey(categoryKeyOrName);
+                existingCategory = existingCategoryModel.toJSON();
+            }
+            rootCategoryToSearchFrom = existingCategory;
+        }
+
+        // return the last category
+        return rootCategoryToSearchFrom;
+    }
+
+    /**
+     * return the ChildCategory having the given key or name
+     *
+     * @param {"resources".ItemCategory} rootCategory
+     * @param {string} keyOrName
+     * @returns {Promise<"resources".ItemCategory>}
+     */
+    private async findCategory(rootCategory: resources.ItemCategory, keyOrName: string): Promise<resources.ItemCategory> {
+
+        if (rootCategory.key === keyOrName) {
+            // root case
+            return rootCategory;
+        } else {
+            // search the children for a match
+            const childCategories = rootCategory.ChildItemCategories;
+            return _.find(childCategories, (childCategory) => {
+                return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);
+            });
+        }
     }
 }

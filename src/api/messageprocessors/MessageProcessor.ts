@@ -4,17 +4,15 @@ import { Types, Core, Targets } from '../../constants';
 
 import { EventEmitter } from '../../core/api/events';
 import { SmsgMessage } from '../messages/SmsgMessage';
-
 import { SmsgService } from '../services/SmsgService';
-import { MarketService } from '../services/MarketService';
-import { ListingItemService } from '../services/ListingItemService';
-import { CoreRpcService } from '../services/CoreRpcService';
 
 import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
-import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
-import { ListingItemReceivedListener } from '../listeners/ListingItemReceivedListener';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ListingItemService } from '../services/ListingItemService';
+import {ActionMessageInterface} from '../messages/ActionMessageInterface';
+import {BidMessageType} from '../enums/BidMessageType';
+import {EscrowMessageType} from '../enums/EscrowMessageType';
+import {InternalServerException} from '../exceptions/InternalServerException';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -23,11 +21,11 @@ export class MessageProcessor implements MessageProcessorInterface {
     private timeout: any;
     private interval = 3000;
 
+    // TODO: injecting listingItemService causes Error: knex: Required configuration option 'client' is missing.
     // tslint:disable:max-line-length
     constructor(
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
+        // @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
     ) {
@@ -35,37 +33,41 @@ export class MessageProcessor implements MessageProcessorInterface {
     }
     // tslint:enable:max-line-length
 
+    /**
+     * main messageprocessor, ...
+     *
+     * @param {SmsgMessage[]} messages
+     * @returns {Promise<void>}
+     */
     public async process(messages: SmsgMessage[]): Promise<void> {
         this.log.debug('poll(), new messages:', JSON.stringify(messages, null, 2));
 
         for (const message of messages) {
-
-            const marketModel = await this.marketService.findByAddress(message.to);
-            const market = marketModel.toJSON();
-
-            const parsed = await this.parseJSONSafe(message.text);
+            const parsed: MarketplaceMessage | null = await this.parseJSONSafe(message.text);
             if (parsed) {
-                parsed.market = market.address;
+                parsed.market = message.to;
 
                 if (parsed.item) {
-                    // ListingItemMessage
+                    // ListingItemMessage, listingitemservice listens for this event
                     this.eventEmitter.emit('ListingItemReceivedEvent', parsed);
-                    // this.eventEmitter.emit(ListingItemReceivedListener.Event, parsed);
+                    this.eventEmitter.emit('cli', {
+                        message: 'ListingItemReceivedEvent',
+                        data: parsed
+                    });
                 } else if (parsed.mpaction) {
                     // ActionMessage
-                    // todo: different events for bids and escrows
-                    // this.eventEmitter.emit('actions', {
-                    //    action: parsed.mpaction,
-                    //    market: market.address
-                    // });
+                    const eventType = this.getEventType(parsed.mpaction);
+                    this.eventEmitter.emit(eventType + 'ReceivedEvent', parsed);
+                    this.eventEmitter.emit('cli', {
+                        message: eventType + 'ReceivedEvent',
+                        data: parsed
+                    });
 
                 } else {
                     // json object, but not something that we're expecting
                     this.log.error('received something unexpected: ', JSON.stringify(parsed, null, 2));
                 }
             }
-
-
         }
     }
 
@@ -80,9 +82,6 @@ export class MessageProcessor implements MessageProcessorInterface {
         this.timeout = setTimeout(
             async () => {
                 await this.poll();
-                /* this.eventEmitter.emit('cli', {
-                    message: 'message from messageprocessor to the cli'
-                }); */
                 this.schedulePoll();
             },
             this.interval
@@ -118,7 +117,7 @@ export class MessageProcessor implements MessageProcessorInterface {
         return response;
     }
 
-    private async parseJSONSafe(json: string): Promise<MarketplaceMessageInterface|null> {
+    private async parseJSONSafe(json: string): Promise<MarketplaceMessage|null> {
         let parsed = null;
         try {
             parsed = JSON.parse(json);
@@ -128,7 +127,26 @@ export class MessageProcessor implements MessageProcessorInterface {
         return parsed;
     }
 
-    private async isPaidMessage(message: SmsgMessage): Promise<boolean> {
-        return message.version === '0300';
+    private async getEventType(message: ActionMessageInterface): Promise<string> {
+        switch (message.action) {
+            case EscrowMessageType.MPA_LOCK:
+                return 'LockEscrow';
+            case EscrowMessageType.MPA_REQUEST_REFUND:
+                return 'RequestRefundEscrow';
+            case EscrowMessageType.MPA_REFUND:
+                return 'RefundEscrow';
+            case EscrowMessageType.MPA_RELEASE:
+                return 'LockEscrow';
+            case BidMessageType.MPA_BID:
+                return 'Bid';
+            case BidMessageType.MPA_ACCEPT:
+                return 'AcceptBid';
+            case BidMessageType.MPA_REJECT:
+                return 'RejectBid';
+            case BidMessageType.MPA_CANCEL:
+                return 'CancelBid';
+            default:
+                throw new InternalServerException('Unknown action message.');
+        }
     }
 }

@@ -129,7 +129,6 @@ export const Targets = {
         UserService: 'UserService'
     },
     Command:     {
-        ActionMessageCommand: 'ActionMessageCommand',
         address: {
             AddressAddCommand: 'AddressAddCommand',
             AddressListCommand: 'AddressListCommand',
@@ -230,10 +229,6 @@ export const Targets = {
             MarketListCommand: 'MarketListCommand',
             MarketRootCommand: 'MarketRootCommand'
         },
-        MessageDataCommand: 'MessageDataCommand',
-        MessageEscrowCommand: 'MessageEscrowCommand',
-        MessageInfoCommand: 'MessageInfoCommand',
-        MessageObjectCommand: 'MessageObjectCommand',
         messaginginformation: {
             MessagingInformationRootCommand: 'MessagingInformationRootCommand',
             MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
@@ -286,15 +281,17 @@ export const Targets = {
         RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {
-        AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
-        BidMessageProcessor: 'BidMessageProcessor',
-        CancelBidMessageProcessor: 'CancelBidMessageProcessor',
-        ListingItemMessageProcessor: 'ListingItemMessageProcessor',
+        deprecated: {
+            AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
+            BidMessageProcessor: 'BidMessageProcessor',
+            CancelBidMessageProcessor: 'CancelBidMessageProcessor',
+            ListingItemMessageProcessor: 'ListingItemMessageProcessor',
+            RejectBidMessageProcessor: 'RejectBidMessageProcessor',
+            TestMessageProcessor: 'TestMessageProcessor',
+            UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
+        },
         MessageProcessor: 'MessageProcessor',
-        MessageProcessorInterface: 'MessageProcessorInterface',
-        RejectBidMessageProcessor: 'RejectBidMessageProcessor',
-        TestMessageProcessor: 'TestMessageProcessor',
-        UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
+        MessageProcessorInterface: 'MessageProcessorInterface'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
@@ -304,7 +301,6 @@ export const Targets = {
         RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {
-        ListingItemReceivedListener: 'ListingItemReceivedListener',
         ServerStartedListener: 'ServerStartedListener',
         user: {
             UserAuthenticatedListener: 'UserAuthenticatedListener',

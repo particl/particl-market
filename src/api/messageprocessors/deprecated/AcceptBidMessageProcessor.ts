@@ -1,18 +1,17 @@
 import { inject, named } from 'inversify';
-import { message, validate } from '../../core/api/Validate';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
-import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { BidMessage } from '../messages/BidMessage';
-import { Bid } from '../models/Bid';
-import { ListingItemService } from '../services/ListingItemService';
-import { BidService } from '../services/BidService';
-import { BidFactory } from '../factories/BidFactory';
-import { NotFoundException } from '../exceptions/NotFoundException';
-import { BidCreateRequest } from '../requests/BidCreateRequest';
-import { EventEmitter } from '../../core/api/events';
+import { message, validate } from '../../../core/api/Validate';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Types, Core, Targets } from '../../../constants';
+import { MessageProcessorInterface } from '../MessageProcessorInterface';
+import { BidMessage } from '../../messages/BidMessage';
+import { Bid } from '../../models/Bid';
+import { ListingItemService } from '../../services/ListingItemService';
+import { BidService } from '../../services/BidService';
+import { BidFactory } from '../../factories/BidFactory';
+import { BidCreateRequest } from '../../requests/BidCreateRequest';
+import { EventEmitter } from '../../../core/api/events';
 
-export class RejectBidMessageProcessor implements MessageProcessorInterface {
+export class AcceptBidMessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
 
@@ -27,7 +26,7 @@ export class RejectBidMessageProcessor implements MessageProcessorInterface {
     }
 
     /**
-     * Process BidMessage of type MPA-REJECT
+     * Process BidMessage of type MPA-ACCEPT
      *
      * message:
      *  action: action of the BidMessage
@@ -37,6 +36,7 @@ export class RejectBidMessageProcessor implements MessageProcessorInterface {
      */
     @validate()
     public async process(@message(BidMessage) data: BidMessage): Promise<Bid> {
+
         // find listingItem by hash, the service will throw Exception if not
         const listingItemModel = await this.listingItemService.findOneByHash(data.listing);
         const listingItem = listingItemModel.toJSON();
@@ -45,13 +45,13 @@ export class RejectBidMessageProcessor implements MessageProcessorInterface {
         const latestBidModel = await this.bidService.getLatestBid(listingItem.id);
         const latestBid = latestBidModel.toJSON();
 
-        this.eventEmitter.emit('cli', {
-            message: 'reject bid message received ' + latestBid
-        });
-
         // get the BidCreateRequest and create the bid
         const bidMessage = await this.bidFactory.getModel(data, listingItem.id, latestBid);
+
+        this.eventEmitter.emit('cli', {
+            message: 'accept bid message received ' + JSON.stringify(bidMessage)
+        });
+
         return await this.bidService.create(bidMessage as BidCreateRequest);
     }
-
 }

@@ -41,8 +41,10 @@ import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInter
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import * as resources from 'resources';
 import { EventEmitter } from 'events';
-import {MarketplaceMessage} from '../messages/MarketplaceMessage';
-import {SmsgSendResponse} from '../responses/SmsgSendResponse';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import { MessageException } from '../exceptions/MessageException';
+import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
 
 export class ListingItemService {
 
@@ -381,10 +383,15 @@ export class ListingItemService {
         */
     }
 
-    public async process(message: MarketplaceMessageInterface): Promise<resources.ListingItem> {
+    /**
+     * processes newly received ListingItemMessage
+     *
+     * @param {MarketplaceMessageInterface} message
+     * @returns {Promise<"resources".ListingItem>}
+     */
+    public async process(message: MarketplaceMessage): Promise<resources.ListingItem> {
         this.log.info('Received event ListingItemReceivedListener:', message);
 
-        /*
         if (message.market && message.item) {
             // get market
             const marketModel = await this.marketService.findByAddress(message.market);
@@ -402,27 +409,87 @@ export class ListingItemService {
             const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, rootCategory);
             // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
-            // const listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
-            // const listingItem = listingItemModel.toJSON();
+            const listingItemModel = await this.create(listingItemCreateRequest);
+            const listingItem = listingItemModel.toJSON();
+
             // emit the latest message event to cli
             // this.eventEmitter.emit('cli', {
             //    message: 'new ListingItem received: ' + JSON.stringify(listingItem)
             // });
 
             // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
-            return {} as resources.ListingItem; // listingItem;
+            return listingItem;
 
         } else {
             throw new MessageException('Marketplace message missing market.');
         }
-        */
-        return {} as resources.ListingItem;
     }
 
     // check if ListingItem already Flagged
     public async isItemFlagged(listingItem: ListingItem): Promise<boolean> {
         const flaggedItem = listingItem.related('FlaggedItem').toJSON();
         return _.size(flaggedItem) !== 0;
+    }
+
+
+    /**
+     * create categories from array and will return last category <ItemCategory> Model
+     *
+     * @param categoryArray : string[]
+     * @returns {Promise<ItemCategory>}
+     */
+    private async getOrCreateCategories(categoryArray: string[]): Promise<resources.ItemCategory> {
+
+        const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
+        let rootCategoryToSearchFrom = rootCategoryWithRelatedModel.toJSON();
+
+        for (const categoryKeyOrName of categoryArray) { // [cat0, cat1, cat2, cat3, cat4]
+
+            let existingCategory = await this.findCategory(rootCategoryToSearchFrom, categoryKeyOrName);
+
+            if (!existingCategory) {
+
+                // category did not exist, so we need to create it
+                const categoryCreateRequest = {
+                    name: categoryKeyOrName,
+                    parent_item_category_id: rootCategoryToSearchFrom.id
+                } as ItemCategoryCreateRequest;
+
+                // create and assign it as existingCategoru
+                const newCategory = await this.itemCategoryService.create(categoryCreateRequest);
+                existingCategory = newCategory.toJSON();
+
+            } else {
+                // category exists, fetch it
+                const existingCategoryModel = await this.itemCategoryService.findOneByKey(categoryKeyOrName);
+                existingCategory = existingCategoryModel.toJSON();
+            }
+            rootCategoryToSearchFrom = existingCategory;
+        }
+
+        // return the last catego
+        return rootCategoryToSearchFrom;
+    }
+
+    /**
+     * return the ChildCategory having the given key or name
+     *
+     * @param {"resources".ItemCategory} rootCategory
+     * @param {string} keyOrName
+     * @returns {Promise<"resources".ItemCategory>}
+     */
+    private async findCategory(rootCategory: resources.ItemCategory, keyOrName: string): Promise<resources.ItemCategory> {
+
+        if (rootCategory.key === keyOrName) {
+            // root case
+            return rootCategory;
+        } else {
+            // search the children for a match
+            const childCategories = rootCategory.ChildItemCategories;
+            return _.find(childCategories, (childCategory) => {
+                return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);
+            });
+        }
     }
 
     // check if object is exist in a array
