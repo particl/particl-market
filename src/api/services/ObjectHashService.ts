@@ -2,6 +2,7 @@ import * as crypto from 'crypto-js';
 import { inject, named } from 'inversify';
 import { HashableObjectType } from '../../api/enums/HashableObjectType';
 import { ListingItemFactory } from '../../api/factories/ListingItemFactory';
+import { ImageFactory } from '../../api/factories/ImageFactory';
 import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
 
@@ -11,6 +12,7 @@ export class ObjectHashService {
 
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) public listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.ImageFactory) public imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
