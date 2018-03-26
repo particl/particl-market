@@ -6,36 +6,47 @@ import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { MessageException } from '../exceptions/MessageException';
-import { EscrowRepository } from '../repositories/EscrowRepository';
+
 import { Escrow } from '../models/Escrow';
+import { EscrowRepository } from '../repositories/EscrowRepository';
+
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../requests/EscrowUpdateRequest';
 import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
 import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
 import { EscrowLockRequest } from '../requests/EscrowLockRequest';
+
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+
+import { EscrowFactory } from '../factories/EscrowFactory';
+
 import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
 import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
+
+import { ListingItemTemplateService } from './ListingItemTemplateService';
+import { PaymentInformationService } from './PaymentInformationService';
 import { EscrowRatioService } from '../services/EscrowRatioService';
 import { AddressService } from '../services/AddressService';
 import { SmsgService } from '../services/SmsgService';
-import { EscrowFactory } from '../factories/EscrowFactory';
-import { EscrowMessageInterface } from '../messages/EscrowMessageInterface';
-import { EscrowMessage } from '../messages/EscrowMessage';
-import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
-import {SmsgSendResponse} from '../responses/SmsgSendResponse';
 
 export class EscrowService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.EscrowRatioService) private escrowratioService: EscrowRatioService,
-        @inject(Types.Repository) @named(Targets.Repository.EscrowRepository) public escrowRepo: EscrowRepository,
+        @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) public escrowFactory: EscrowFactory,
+        @inject(Types.Service) @named(Targets.Service.EscrowRatioService) public escrowRatioService: EscrowRatioService,
+        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+
+        // @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
+        // @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
-        @inject(Types.Repository) @named(Targets.Repository.PaymentInformationRepository) private paymentInfoRepo: PaymentInformationRepository,
-        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
-        @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) private escrowFactory: EscrowFactory,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
+        @inject(Types.Repository) @named(Targets.Repository.PaymentInformationRepository) public paymentInfoRepo: PaymentInformationRepository,
+
+        @inject(Types.Repository) @named(Targets.Repository.EscrowRepository) public escrowRepo: EscrowRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -63,28 +74,6 @@ export class EscrowService {
         return escrow;
     }
 
-    public async createCheckByListingItem(body: any): Promise<Escrow> {
-        // check listingItem by listingItemTemplateId
-        const listingItemTemplateId = body.listingItemTemplateId;
-        const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
-        if (listingItemTemplate.ListingItems.length === 0) {
-            // creates an Escrow related to PaymentInformation related to ListingItemTemplate
-            const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
-            if (paymentInformation === null) {
-                this.log.warn(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
-                throw new MessageException(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
-            }
-            body.payment_information_id = paymentInformation.Id;
-        } else {
-            this.log.warn(`Escrow cannot be created becuase Listing
-            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
-            throw new MessageException(`Escrow cannot be created becuase Listing
-            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
-        }
-        delete body.listingItemTemplateId;
-        return this.create(body);
-    }
-
     @validate()
     public async create( @request(EscrowCreateRequest) data: EscrowCreateRequest): Promise<Escrow> {
 
@@ -99,7 +88,7 @@ export class EscrowService {
         // create related models, escrowRatio
         if (!_.isEmpty(escrowRatio)) {
             escrowRatio.escrow_id = escrow.Id;
-            await this.escrowratioService.create(escrowRatio);
+            await this.escrowRatioService.create(escrowRatio);
         }
 
         // finally find and return the created escrow
@@ -149,12 +138,12 @@ export class EscrowService {
         let relatedRatio = updatedEscrow.related('Ratio').toJSON();
 
         // delete it
-        await this.escrowratioService.destroy(relatedRatio.id);
+        await this.escrowRatioService.destroy(relatedRatio.id);
 
         // and create new related data
         relatedRatio = body.ratio;
         relatedRatio.escrow_id = id;
-        await this.escrowratioService.create(relatedRatio);
+        await this.escrowRatioService.create(relatedRatio);
 
         // finally find and return the updated escrow
         const newEscrow = await this.findOne(id);
@@ -208,7 +197,7 @@ export class EscrowService {
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: escrowActionMessage
-        } as MarketplaceMessageInterface;
+        } as MarketplaceMessage;
 
         // TODO: add profile and market addresses
         return await this.smsgService.smsgSend('', '', marketPlaceMessage);
@@ -227,7 +216,7 @@ export class EscrowService {
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: escrowActionMessage
-        } as MarketplaceMessageInterface;
+        } as MarketplaceMessage;
 
         // TODO: add profile and market addresses
         return await this.smsgService.smsgSend('', '', marketPlaceMessage);
@@ -246,7 +235,7 @@ export class EscrowService {
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: escrowActionMessage
-        } as MarketplaceMessageInterface;
+        } as MarketplaceMessage;
 
         // TODO: add profile and market addresses
         return await this.smsgService.smsgSend('', '', marketPlaceMessage);
