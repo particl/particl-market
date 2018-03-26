@@ -31,9 +31,6 @@ export class BidService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.ActionMessageFactory) private actionMessageFactory: ActionMessageFactory,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Repository) @named(Targets.Repository.BidRepository) public bidRepo: BidRepository,
         @inject(Types.Service) @named(Targets.Service.BidDataService) public bidDataService: BidDataService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
@@ -142,7 +139,7 @@ export class BidService {
         this.log.info('Received event:', event);
 
         // first save it
-        const actionMessageModel = await this.saveActionMessage(event);
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
         const actionMessage = actionMessageModel.toJSON();
 
         // TODO: do whatever else needs to be done
@@ -161,7 +158,7 @@ export class BidService {
         this.log.info('Received event:', event);
 
         // first save it
-        const actionMessageModel = await this.saveActionMessage(event);
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
         const actionMessage = actionMessageModel.toJSON();
 
         // TODO: do whatever else needs to be done
@@ -180,7 +177,7 @@ export class BidService {
         this.log.info('Received event:', event);
 
         // first save it
-        const actionMessageModel = await this.saveActionMessage(event);
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
         const actionMessage = actionMessageModel.toJSON();
 
         // TODO: do whatever else needs to be done
@@ -199,7 +196,7 @@ export class BidService {
         this.log.info('Received event:', event);
 
         // first save it
-        const actionMessageModel = await this.saveActionMessage(event);
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
         const actionMessage = actionMessageModel.toJSON();
 
         // TODO: do whatever else needs to be done
@@ -222,36 +219,6 @@ export class BidService {
         });
     }
 
-    /**
-     * save the received ActionMessage to the database
-     *
-     * @param {MarketplaceEvent} event
-     * @returns {Promise<ActionMessage>}
-     */
-    private async saveActionMessage(event: MarketplaceEvent): Promise<ActionMessage> {
 
-        const message = event.marketplaceMessage;
-
-        if (message.market && message.mpaction) {
-            // get market
-            const marketModel = await this.marketService.findByAddress(message.market);
-            const market = marketModel.toJSON();
-
-            // find the ListingItem
-            const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.listing);
-            const listingItem = listingItemModel.toJSON();
-
-            // create ActionMessage
-            const actionMessageCreateRequest = await this.actionMessageFactory.getModel(message.mpaction, listingItem.id, event.smsgMessage);
-            this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
-
-            const actionMessageModel = await this.actionMessageService.create(actionMessageCreateRequest);
-            const actionMessage = actionMessageModel.toJSON();
-
-            return actionMessage;
-        } else {
-            throw new MessageException('Marketplace message missing market.');
-        }
-    }
 
 }
