@@ -95,31 +95,6 @@ export class EscrowService {
         return await this.findOne(escrow.Id);
     }
 
-    public async updateCheckByListingItem(body: any): Promise<Escrow> {
-        // check listingItem by listingItemTemplateId
-        const listingItemTemplateId = body.listingItemTemplateId;
-        const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
-        let escrowId;
-        if (listingItemTemplate.ListingItems.length === 0) {
-            // creates an Escrow related to PaymentInformation related to ListingItemTemplate
-            const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
-            if (paymentInformation === null) {
-                this.log.warn(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
-                throw new MessageException(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
-            }
-            const escrow = await this.findOneByPaymentInformation(paymentInformation.Id, false);
-            escrowId = escrow.Id;
-            body.payment_information_id = paymentInformation.Id;
-        } else {
-            this.log.warn(`Escrow cannot be updated becuase Listing
-            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
-            throw new MessageException(`Escrow cannot be updated becuase Listing
-            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
-        }
-        delete body.listingItemTemplateId;
-        return this.update(escrowId, body);
-    }
-
     @validate()
     public async update(id: number, @request(EscrowUpdateRequest) data: EscrowUpdateRequest): Promise<Escrow> {
 
@@ -148,28 +123,6 @@ export class EscrowService {
         // finally find and return the updated escrow
         const newEscrow = await this.findOne(id);
         return newEscrow;
-    }
-
-    public async destroyCheckByListingItem(listingItemTemplateId: any): Promise<void> {
-        // check listingItem by listingItemTemplateId
-        const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
-        let escrowId;
-        if (listingItemTemplate.ListingItems.length === 0) {
-            // creates an Escrow related to PaymentInformation related to ListingItemTemplate
-            const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
-            if (paymentInformation === null) {
-                this.log.warn(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
-                throw new MessageException(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
-            }
-            const escrow = await this.findOneByPaymentInformation(paymentInformation.Id, false);
-            escrowId = escrow.Id;
-        } else {
-            this.log.warn(`Escrow cannot be updated becuase Listing
-            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
-            throw new MessageException(`Escrow cannot be updated becuase Listing
-            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
-        }
-        return this.destroy(escrowId);
     }
 
     public async destroy(id: number): Promise<void> {
