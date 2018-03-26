@@ -15,10 +15,15 @@ import { ImageTriplet } from '../../core/helpers/ImageTriplet';
 import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { ImageFactory } from '../factories/ImageFactory';
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
-import {MessageException} from '../exceptions/MessageException';
-import {CryptocurrencyAddressUpdateRequest} from '../requests/CryptocurrencyAddressUpdateRequest';
-import {CryptocurrencyAddressCreateRequest} from '../requests/CryptocurrencyAddressCreateRequest';
+import { MessageException } from '../exceptions/MessageException';
+import { CryptocurrencyAddressUpdateRequest } from '../requests/CryptocurrencyAddressUpdateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
+import { ListingItemTemplate } from '../models/ListingItemTemplate';
+import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
+import { HashableObjectType } from '../../api/enums/HashableObjectType';
+import * as fs from 'fs';
+import { ObjectHashService } from './ObjectHashService';
 
 export class ItemImageService {
 
@@ -26,6 +31,7 @@ export class ItemImageService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
+        @inject(Types.Service) @named(Targets.Service.ObjectHashService) public objectHashService: ObjectHashService,
         @inject(Types.Repository) @named(Targets.Repository.ItemImageRepository) public itemImageRepo: ItemImageRepository,
         @inject(Types.Factory) @named(Targets.Factory.ImageFactory) public imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -44,6 +50,48 @@ export class ItemImageService {
             throw new NotFoundException(id);
         }
         return itemImage;
+    }
+
+    /*
+     * create(), but get data from a local file instead.
+     */
+    @validate()
+    public async createFile(imageFile: any, listingItemTemplate: ListingItemTemplate): Promise<ItemImage> {
+        // Read the file data in
+        const dataStr = fs.readFileSync(imageFile.path, 'base64');
+        // this.log.error('dataStr = ' + dataStr);
+
+        // find listing item template
+        // this.log.debug('imageFile.mimetype = ' + imageFile.mimetype);
+        // find related itemInformation
+
+        let retItemImage;
+        const itemInformation = await listingItemTemplate.related('ItemInformation').toJSON();
+        const createArgs = {
+            item_information_id: itemInformation.id,
+            // TODO: hash creation is wrong, using itemInformation data, and should propably be done in the service.create, just before saving
+            hash: await this.objectHashService.getHash({
+                dataId: imageFile.fieldname,
+                protocol: ImageDataProtocolType.LOCAL,
+                encoding: 'BASE64',
+                data: dataStr,
+                imageVersion: ImageVersions.ORIGINAL.propName
+            }, HashableObjectType.ITEMIMAGE),
+            data: [{
+                protocol: ImageDataProtocolType.LOCAL,
+                encoding: 'BASE64',
+                data: dataStr,
+                dataId: imageFile.fieldname, // replaced with local url in factory
+                imageVersion: ImageVersions.ORIGINAL.propName,
+                originalMime: imageFile.mimetype,
+                originalName: imageFile.originalname
+            }]
+        } as ItemImageCreateRequest;
+
+        this.log.debug(JSON.stringify(createArgs));
+        retItemImage = await this.create(createArgs);
+        retItemImage = retItemImage.toJSON();
+        return retItemImage;
     }
 
     @validate()
@@ -72,7 +120,7 @@ export class ItemImageService {
 
         if (itemImageDataOriginal) {
 
-            if (_.isEmpty(itemImageDataOriginal.protocol) || protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
+            if (_.isEmpty(itemImageDataOriginal.protocol) ||  protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
                 throw new MessageException('Invalid image protocol.');
             }
@@ -84,7 +132,7 @@ export class ItemImageService {
             } */
 
             // then create the imageDatas from the given original data
-            if ( !_.isEmpty(itemImageDataOriginal.data) ) {
+            if (!_.isEmpty(itemImageDataOriginal.data)) {
                 const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
                 const imageDatas: ItemImageDataCreateRequest[] = await this.imageFactory.getImageDatas(itemImage.Id, itemImageDataOriginal, toVersions);
 

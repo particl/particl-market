@@ -26,7 +26,7 @@ export class SocketIoServer {
     private configure(io: SocketIO): SocketIO {
         this.log.debug('Configuring SocketIoServer');
 
-        io.set('transports', ['polling', 'websocket']);
+        io.set('transports', ['websocket']);
 
         // allow any user to authenticate.
         io.set('authorization', (handshake, callback) => {
@@ -47,7 +47,9 @@ export class SocketIoServer {
             client.on('disconnect', (event) => {
                 delete this.clients[client.id];
                 this.log.debug('socket.io: ' + client.id + ' disconnected');
-                this.eventEmitter.removeAllListeners('cli');
+                this.eventEmitter.removeListener('cli', () => {
+                    this.log.debug('cli', event);
+                });
             });
 
             client.on('serverpong', (data) => {

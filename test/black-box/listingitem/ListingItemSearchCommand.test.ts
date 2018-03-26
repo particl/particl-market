@@ -1,12 +1,5 @@
 import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
-import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
-import { EscrowType } from '../../../src/api/enums/EscrowType';
-import { Currency } from '../../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
-import { PaymentType } from '../../../src/api/enums/PaymentType';
-import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';

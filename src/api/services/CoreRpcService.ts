@@ -21,13 +21,23 @@ export class CoreRpcService {
     private DEFAULT_HOSTNAME = 'localhost';
     // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
 
-    constructor(@inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-                @inject(Types.Service) @named(Targets.Service.CoreCookieService) private coreCookieService: CoreCookieService) {
+    constructor(
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.CoreCookieService) private coreCookieService: CoreCookieService
+    ) {
         this.log = new Logger(__filename);
     }
 
+    public async isConnected(): Promise<boolean> {
+        return await this.getNetworkInfo()
+            .then(response => true)
+            .catch(error => {
+                return false;
+            });
+    }
+
     public async getNetworkInfo(): Promise<any> {
-        return await this.call('getnetworkinfo');
+        return await this.call('getnetworkinfo', [], false);
     }
 
     public async getNewAddress(): Promise<any> {
@@ -38,6 +48,7 @@ export class CoreRpcService {
 
         const id = RPC_REQUEST_ID++;
         const postData = JSON.stringify({
+            jsonrpc: '2.0',
             method,
             params,
             id
@@ -47,10 +58,10 @@ export class CoreRpcService {
         const options = this.getOptions();
 
         if (logCall) {
-            this.log.debug('call: ' + method + ' ' + params);
+            this.log.debug('call: ' + method + ' ' + params.toString().replace(',', ' '));
         }
         // this.log.debug('call url:', url);
-        // this.log.debug('call postData:', postData);
+        this.log.debug('call postData:', postData);
 
         return await WebRequest.post(url, options, postData)
             .then( response => {

@@ -11,6 +11,8 @@ import * as _ from 'lodash';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { RpcRequest } from '../requests/RpcRequest';
 import { Commands} from '../commands/CommandEnumType';
+import { ServerStartedListener } from '../listeners/ServerStartedListener';
+import { MessageException } from '../exceptions/MessageException';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -23,7 +25,6 @@ export class RpcController {
     private log: LoggerType;
     private VERSION = '2.0';
     private MAX_INT32 = 2147483647;
-    // private commands: CommandEnumType = new CommandEnumType();
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -47,6 +48,7 @@ export class RpcController {
         } else {
             throw new NotFoundException('Unknown command: ' + body.method + '\n');
         }
+
     }
 
     private createRequest(method: string, params?: any, id?: string | number): RpcRequest {

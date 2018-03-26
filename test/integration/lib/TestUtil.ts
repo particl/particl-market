@@ -1,11 +1,16 @@
 
 import { Logger as LoggerType} from '../../../src/core/Logger';
+import { Types, Core, Targets } from '../../../src/constants';
 import { EventEmitter } from '../../../src/core/api/events';
 import { ServerStartedListener } from '../../../src/api/listeners/ServerStartedListener';
 
 export class TestUtil {
 
     public log: LoggerType;
+    private serverStartedListener: ServerStartedListener;
+    private timeout: any;
+    private interval = 1000;
+    private MAX_RETRIES = 10;
     private serverStarted = false;
 
     constructor() {
@@ -15,14 +20,16 @@ export class TestUtil {
     public async bootstrapAppContainer(app: any): boolean {
 
         const emitter = await app.bootstrap();
+        this.serverStartedListener = app.IoC.getNamed<ServerStartedListener>(Types.Listener, Targets.Listener.ServerStartedListener);
+
         emitter.on(ServerStartedListener.ServerReadyEvent, () => {
             this.serverStarted = true;
         });
         await this.waitForServerStarted();
-
     }
 
     private async isServerStarted(): boolean {
+        // if (this.serverStartedListener.isStarted === false) {
         if (this.serverStarted === false) {
             throw Error('Not started.');
         } else {
@@ -40,17 +47,18 @@ export class TestUtil {
         });
     }
 
-    private async waitForServerStarted(): boolean {
-        const MAX_RETRIES = 20;
-        for (let i = 0; i <= MAX_RETRIES; i++) {
+    private async waitForServerStarted(): Promise<boolean> {
+
+        for (let i = 0; i <= this.MAX_RETRIES; i++) {
             try {
                 return await this.isServerStarted();
             } catch (err) {
-                const timeout = 1000;
-                await this.waitFor(timeout);
+                await this.waitFor(this.interval);
                 this.log.debug('error: ' + err.message);
             }
         }
+
+        this.serverStartedListener.stop();
     }
 }
 

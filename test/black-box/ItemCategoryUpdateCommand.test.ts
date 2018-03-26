@@ -3,7 +3,7 @@ import * as crypto from 'crypto-js';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { ObjectHashService } from '../../src/api/services/ObjectHashService';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 
 describe('ItemCategoryUpdateCommand', () => {
@@ -110,7 +110,7 @@ describe('ItemCategoryUpdateCommand', () => {
                 }
             }
         };
-        listingitemData.hash = await ObjectHash.getHash(listingitemData, HashableObjectType.LISTINGITEM);
+        listingitemData.hash = await this.ObjectHashService.getHash(listingitemData, HashableObjectType.LISTINGITEM);
         const listingItems = await testUtil.addData(CreatableModel.LISTINGITEM, listingitemData);
         const res = await rpc(method, [subCommand, categoryData.id, categoryData.name, categoryData.description, parentCategory.id]);
         res.expectJson();

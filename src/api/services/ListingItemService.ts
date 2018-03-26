@@ -41,6 +41,8 @@ import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInter
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import * as resources from 'resources';
 import { EventEmitter } from 'events';
+import {MarketplaceMessage} from '../messages/MarketplaceMessage';
+import {SmsgSendResponse} from '../responses/SmsgSendResponse';
 
 export class ListingItemService {
 
@@ -310,7 +312,7 @@ export class ListingItemService {
      * @returns {Promise<void>}
      */
     @validate()
-    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<MarketplaceMessageInterface> {
+    public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<SmsgSendResponse> {
 
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId);
@@ -336,11 +338,10 @@ export class ListingItemService {
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             item: listingItemMessage
-        } as MarketplaceMessageInterface;
+        } as MarketplaceMessage;
 
         this.log.debug('post(), marketPlaceMessage: ', marketPlaceMessage);
-        // return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage);
-        return marketPlaceMessage;
+        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage);
     }
 
     /**

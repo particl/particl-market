@@ -4,15 +4,13 @@ import { HashableObjectType } from '../../api/enums/HashableObjectType';
 import { ListingItemFactory } from '../../api/factories/ListingItemFactory';
 import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
-import { ItemCategoryService } from '../../api/services/ItemCategoryService';
 
-export class ObjectHash {
+export class ObjectHashService {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) public listingItemFactory: ListingItemFactory,
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -24,8 +22,8 @@ export class ObjectHash {
             case HashableObjectType.LISTINGITEM:
             case HashableObjectType.LISTINGITEMTEMPLATE: {
                 const templateOrItem = objectToHash;
-                const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
-                const templateOrItemCategoryWithRelated = rootCategoryWithRelatedModel.toJSON();
+                const templateOrItemCategoryWithRelated: any = templateOrItem.ItemInformation.ItemCategory;
+
                 hashableObject = await this.listingItemFactory.getMessage(templateOrItem, templateOrItemCategoryWithRelated);
                 delete hashableObject.hash;
                 break;

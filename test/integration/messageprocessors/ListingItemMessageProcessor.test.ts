@@ -4,7 +4,6 @@ import { Types, Core, Targets } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
 import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
 
-// import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
 

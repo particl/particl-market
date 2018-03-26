@@ -1,7 +1,7 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import * as sharp from 'sharp';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { ObjectHashService } from '../../src/api/services/ObjectHashService';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
@@ -9,6 +9,7 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
+import { MessageException } from '../../src/api/exceptions/MessageException';
 
 describe('/publish-image', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -44,7 +45,7 @@ describe('/publish-image', () => {
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // set hash
-        testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        testDataListingItemTemplate.hash = await this.ObjectHashService.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         // create item template
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
@@ -94,5 +95,96 @@ describe('/publish-image', () => {
         res.expectStatusCode(404);
         expect(res.error).not.toBeNull();
         expect(res.res).toBeUndefined();
+    });
+
+    test('POST  /item-images/template/:id        Should publish an item image', async () => {
+        expect.assertions(35); // 3 [basic expects] + 4 [image types] * 8 [expects in the loop]
+
+        const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
+        const res: any = await api('POST', `/api/item-images/template/${createdTemplateId}`, {
+            headers: {
+                'Authorization': auth,
+                'Content-Type': 'multipart/form-data'
+            },
+            formData: {
+                image: {
+                    options: {
+                        filename: 'image.jpg',
+                        contentType: 'image/jpeg'
+                    },
+                    value: Buffer.from(ImageProcessing.milkcatSmall, 'base64')
+                }
+            }
+        });
+
+        res.expectStatusCode(200);
+        expect(res.error).toBe(null);
+        expect(res.res).toBeDefined();
+
+        // For each created image fetch it and check everything matches
+        //  (except the image data itself because that's modified during the storage process and therefore difficult to validate)
+        for ( const i in res.res.body ) {
+            if ( i ) {
+                const img = res.res.body[i];
+                const imageRes = await api('GET', `/api/item-image-data/${img.id}`);
+                expect(imageRes.res.body.data.id).toBe(img.id);
+                expect(imageRes.res.body.data.protocol).toBe(img.protocol);
+                expect(imageRes.res.body.data.encoding).toBe(img.encoding);
+                expect(imageRes.res.body.data.imageVersion).toBe(img.imageVersion);
+                expect(imageRes.res.body.data.itemImageId).toBe(img.itemImageId);
+                expect(imageRes.res.body.data.createdAt).toBe(img.createdAt);
+                expect(imageRes.res.body.data.originalMime).toBe(img.originalMime);
+                expect(imageRes.res.body.data.originalName).toBe(img.originalName);
+            }
+        }
+    });
+
+    test('POST  /item-images/template/:id        Should publish an item image', async () => {
+        expect.assertions(67); // 3 [basic expects] + 4 [image types] * 8 [expects in the loop]
+
+        const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
+        const res: any = await api('POST', `/api/item-images/template/${createdTemplateId}`, {
+            headers: {
+                'Authorization': auth,
+                'Content-Type': 'multipart/form-data'
+            },
+            formData: {
+                imageW: {
+                    options: {
+                        filename: 'imageW.jpg',
+                        contentType: 'image/jpeg'
+                    },
+                    value: Buffer.from(ImageProcessing.milkcatWide, 'base64')
+                },
+                imageT: {
+                    options: {
+                        filename: 'imageT.jpg',
+                        contentType: 'image/jpeg'
+                    },
+                    value: Buffer.from(ImageProcessing.milkcatTall, 'base64')
+                }
+            }
+        });
+
+        res.expectStatusCode(200);
+        expect(res.error).toBe(null);
+        expect(res.res).toBeDefined();
+
+        // For each created image fetch it and check everything matches
+        //  (except the image data itself because that's modified during the storage process and therefore difficult to validate)
+        for ( const i in res.res.body ) {
+            if ( i ) {
+                const img = res.res.body[i];
+                const imageRes = await api('GET', `/api/item-image-data/${img.id}`);
+                expect(imageRes.res.body.data.id).toBe(img.id);
+                expect(imageRes.res.body.data.protocol).toBe(img.protocol);
+                expect(imageRes.res.body.data.encoding).toBe(img.encoding);
+                expect(imageRes.res.body.data.imageVersion).toBe(img.imageVersion);
+                expect(imageRes.res.body.data.itemImageId).toBe(img.itemImageId);
+                expect(imageRes.res.body.data.createdAt).toBe(img.createdAt);
+                expect(imageRes.res.body.data.originalMime).toBe(img.originalMime);
+                expect(imageRes.res.body.data.originalName).toBe(img.originalName);
+            }
+        }
     });
 });

@@ -53,10 +53,12 @@ export class ImageFactory {
         // first create the original
         const imageDataForOriginal = {
             item_image_id: itemImageId,
-            dataId: originalImageData.dataId,
+            dataId: this.getImageUrl(itemImageId, ImageVersions.ORIGINAL.propName),
             protocol: originalImageData.protocol,
             imageVersion: ImageVersions.ORIGINAL.propName,
             encoding: originalImageData.encoding,
+            originalMime: originalImageData.originalMime,
+            originalName: originalImageData.originalName,
             data: originalData
         } as ItemImageDataCreateRequest;
         imageDatas.push(imageDataForOriginal);
@@ -64,14 +66,23 @@ export class ImageFactory {
         for (const version of toVersions) {
             const imageData = {
                 item_image_id: itemImageId,
-                dataId: originalImageData.dataId,
+                dataId: this.getImageUrl(itemImageId, version.propName),
                 protocol: originalImageData.protocol,
                 imageVersion: version.propName,
                 encoding: originalImageData.encoding,
+                originalMime: originalImageData.originalMime,
+                originalName: originalImageData.originalName,
                 data: resizedDatas.get(version.propName)
             } as ItemImageDataCreateRequest;
             imageDatas.push(imageData);
         }
         return imageDatas;
     }
+
+    public getImageUrl(itemImageId: number, version: string): string {
+        return process.env.APP_HOST
+            + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
+            + '/api/item-images/' + itemImageId + '/' + version;
+    }
+
 }

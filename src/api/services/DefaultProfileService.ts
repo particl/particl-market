@@ -26,7 +26,7 @@ export class DefaultProfileService {
 
         const newProfile = await this.insertOrUpdateProfile(defaultProfile);
 
-        this.log.debug('default profile: ', newProfile.toJSON());
+        this.log.debug('default Profile: ', JSON.stringify(newProfile.toJSON(), null, 2));
         return;
     }
 
@@ -38,10 +38,10 @@ export class DefaultProfileService {
             this.log.debug('created new default profile');
         } else {
             if (newProfile.Address === 'ERROR_NO_ADDRESS') {
-                this.log.debug('updating profile address');
-                profile.address = await this.coreRpcService.getNewAddress();
+                this.log.debug('updating default profile');
+                profile.address = await this.profileService.getNewAddress();
+                newProfile = await this.profileService.update(newProfile.Id, profile);
             }
-            newProfile = await this.profileService.update(newProfile.Id, profile);
         }
         return newProfile;
     }
