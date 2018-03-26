@@ -51,15 +51,15 @@ export class MessageProcessor implements MessageProcessorInterface {
                     // ListingItemMessage, listingitemservice listens for this event
                     this.eventEmitter.emit(Events.ListingItemReceivedEvent, parsed);
                     this.eventEmitter.emit(Events.Cli, {
-                        message: 'ListingItemReceivedEvent',
+                        message: Events.ListingItemReceivedEvent,
                         data: parsed
                     });
                 } else if (parsed.mpaction) {
                     // ActionMessage
-                    const eventType = this.getEventType(parsed.mpaction);
-                    this.eventEmitter.emit(eventType + 'ReceivedEvent', parsed);
+                    const eventType = await this.getActionEventType(parsed.mpaction);
+                    this.eventEmitter.emit(eventType, parsed);
                     this.eventEmitter.emit(Events.Cli, {
-                        message: eventType + 'ReceivedEvent',
+                        message: eventType,
                         data: parsed
                     });
 
@@ -127,7 +127,7 @@ export class MessageProcessor implements MessageProcessorInterface {
         return parsed;
     }
 
-    private async getEventType(message: ActionMessageInterface): Promise<string> {
+    private async getActionEventType(message: ActionMessageInterface): Promise<string> {
         switch (message.action) {
             case EscrowMessageType.MPA_LOCK:
                 return Events.LockEscrowReceivedEvent;
