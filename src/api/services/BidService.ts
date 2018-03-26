@@ -3,27 +3,25 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
+import * as resources from 'resources';
+
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { ValidationException } from '../exceptions/ValidationException';
+
 import { BidRepository } from '../repositories/BidRepository';
+
 import { Bid } from '../models/Bid';
+import { ActionMessage } from '../models/ActionMessage';
+
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
-
 import { BidSearchParams } from '../requests/BidSearchParams';
-import { BidMessageType } from '../enums/BidMessageType';
-import { BidDataService } from './BidDataService';
-import { ValidationException } from '../exceptions/ValidationException';
-import { EventEmitter } from 'events';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import * as resources from 'resources';
-import { MarketService } from './MarketService';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
-import { MessageException } from '../exceptions/MessageException';
-import { ActionMessageFactory } from '../factories/ActionMessageFactory';
-import { ListingItemService } from './ListingItemService';
+
+import { EventEmitter } from 'events';
+import { BidDataService } from './BidDataService';
 import { ActionMessageService } from './ActionMessageService';
-import {ActionMessage} from '../models/ActionMessage';
 
 
 export class BidService {
@@ -68,9 +66,7 @@ export class BidService {
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     @validate()
-    public async search(
-        @request(BidSearchParams) options: BidSearchParams,
-        withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+    public async search(@request(BidSearchParams) options: BidSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
         return this.bidRepo.search(options, withRelated);
     }
 
@@ -80,7 +76,7 @@ export class BidService {
     }
 
     @validate()
-    public async create( @request(BidCreateRequest) data: BidCreateRequest): Promise<Bid> {
+    public async create(@request(BidCreateRequest) data: BidCreateRequest): Promise<Bid> {
 
         const body = JSON.parse(JSON.stringify(data));
 
