@@ -101,14 +101,14 @@ export class ItemCategoryService {
      * @param categoryArray : string[]
      * @returns {Promise<ItemCategory>}
      */
-    private async getOrCreateCategories(categoryArray: string[]): Promise<resources.ItemCategory> {
+    public async createCategoriesFromArray(categoryArray: string[]): Promise<resources.ItemCategory> {
 
         const rootCategoryWithRelatedModel: any = await this.findRoot();
         let rootCategoryToSearchFrom = rootCategoryWithRelatedModel.toJSON();
 
         for (const categoryKeyOrName of categoryArray) { // [cat0, cat1, cat2, cat3, cat4]
 
-            let existingCategory = await this.findCategory(rootCategoryToSearchFrom, categoryKeyOrName);
+            let existingCategory = await this.findChildCategoryByKeyOrName(rootCategoryToSearchFrom, categoryKeyOrName);
 
             if (!existingCategory) {
 
@@ -141,7 +141,7 @@ export class ItemCategoryService {
      * @param {string} keyOrName
      * @returns {Promise<"resources".ItemCategory>}
      */
-    private async findCategory(rootCategory: resources.ItemCategory, keyOrName: string): Promise<resources.ItemCategory> {
+    public async findChildCategoryByKeyOrName(rootCategory: resources.ItemCategory, keyOrName: string): Promise<resources.ItemCategory> {
 
         if (rootCategory.key === keyOrName) {
             // root case

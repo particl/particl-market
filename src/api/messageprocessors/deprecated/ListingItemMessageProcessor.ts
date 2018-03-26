@@ -1,18 +1,18 @@
 import { inject, named } from 'inversify';
 import * as _ from 'lodash';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Types, Core, Targets } from '../../../constants';
 
-import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { ListingItemFactory } from '../factories/ListingItemFactory';
-import { ListingItemService } from '../services/ListingItemService';
-import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
-import { ItemCategoryFactory } from '../factories/ItemCategoryFactory';
-import { ItemCategoryService } from '../services/ItemCategoryService';
-import { EventEmitter } from '../../core/api/events';
+import { MessageProcessorInterface } from '../MessageProcessorInterface';
+import { ListingItemFactory } from '../../factories/ListingItemFactory';
+import { ListingItemService } from '../../services/ListingItemService';
+import { ItemCategoryCreateRequest } from '../../requests/ItemCategoryCreateRequest';
+import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
+import { ItemCategoryService } from '../../services/ItemCategoryService';
+import { EventEmitter } from '../../../core/api/events';
 import * as resources from 'resources';
-import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
-import { ListingItemMessage } from '../messages/ListingItemMessage';
+import { ListingItemMessageInterface } from '../../messages/ListingItemMessageInterface';
+import { ListingItemMessage } from '../../messages/ListingItemMessage';
 
 export class ListingItemMessageProcessor implements MessageProcessorInterface {
 
@@ -41,7 +41,7 @@ export class ListingItemMessageProcessor implements MessageProcessorInterface {
         const market = marketModel.toJSON();
 
         // create the new custom categories in case there are some
-        const itemCategory: resources.ItemCategory = await this.getOrCreateCategories(listingItemMessage.information.category);
+        const itemCategory: resources.ItemCategory = await this.createCategoriesFromArray(listingItemMessage.information.category);
 
         // find the categories/get the root category with related
         const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();

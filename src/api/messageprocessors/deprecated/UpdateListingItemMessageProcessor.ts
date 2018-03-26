@@ -40,7 +40,7 @@ export class UpdateListingItemMessageProcessor implements MessageProcessorInterf
         const market = marketModel.toJSON();
 
         // create the new custom categories in case there are some
-        const itemCategory: resources.ItemCategory = await this.getOrCreateCategories(listingItemMessage.information.category);
+        const itemCategory: resources.ItemCategory = await this.createCategoriesFromArray(listingItemMessage.information.category);
 
         // find the categories/get the root category with related
         const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
