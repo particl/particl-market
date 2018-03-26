@@ -45,6 +45,7 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { MessageException } from '../exceptions/MessageException';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
+import {MarketplaceEvent} from '../messages/MarketplaceEvent';
 
 export class ListingItemService {
 
@@ -384,13 +385,15 @@ export class ListingItemService {
     }
 
     /**
-     * processes newly received ListingItemMessage
+     * processes received ListingItemMessage
      *
-     * @param {MarketplaceMessageInterface} message
+     * @param {MarketplaceEvent} event
      * @returns {Promise<"resources".ListingItem>}
      */
-    public async process(message: MarketplaceMessage): Promise<resources.ListingItem> {
-        this.log.info('Received event:', message);
+    public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<resources.ListingItem> {
+
+        this.log.info('Received event:', event);
+        const message = event.marketplaceMessage;
 
         if (message.market && message.item) {
             // get market
@@ -447,8 +450,8 @@ export class ListingItemService {
     }
 
     private configureEventListeners(): void {
-        this.eventEmitter.on('ListingItemReceivedEvent', async (event) => {
-            await this.process(event);
+        this.eventEmitter.on(Events.ListingItemReceivedEvent, async (event) => {
+            await this.processListingItemReceivedEvent(event);
         });
 
     }

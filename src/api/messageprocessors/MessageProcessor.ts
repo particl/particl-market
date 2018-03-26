@@ -13,6 +13,7 @@ import {ActionMessageInterface} from '../messages/ActionMessageInterface';
 import {BidMessageType} from '../enums/BidMessageType';
 import {EscrowMessageType} from '../enums/EscrowMessageType';
 import {InternalServerException} from '../exceptions/InternalServerException';
+import {MarketplaceEvent} from '../messages/MarketplaceEvent';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -44,20 +45,29 @@ export class MessageProcessor implements MessageProcessorInterface {
 
         for (const message of messages) {
             const parsed: MarketplaceMessage | null = await this.parseJSONSafe(message.text);
+            delete message.text;
+
             if (parsed) {
                 parsed.market = message.to;
 
                 if (parsed.item) {
                     // ListingItemMessage, listingitemservice listens for this event
-                    this.eventEmitter.emit(Events.ListingItemReceivedEvent, parsed);
+                    this.eventEmitter.emit(Events.ListingItemReceivedEvent, {
+                        smsgMessage: message,
+                        marketplaceMessage: parsed
+                    } as MarketplaceEvent);
                     this.eventEmitter.emit(Events.Cli, {
                         message: Events.ListingItemReceivedEvent,
                         data: parsed
                     });
+
                 } else if (parsed.mpaction) {
                     // ActionMessage
                     const eventType = await this.getActionEventType(parsed.mpaction);
-                    this.eventEmitter.emit(eventType, parsed);
+                    this.eventEmitter.emit(eventType, {
+                        smsgMessage: message,
+                        marketplaceMessage: parsed
+                    });
                     this.eventEmitter.emit(Events.Cli, {
                         message: eventType,
                         data: parsed

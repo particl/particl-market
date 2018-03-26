@@ -272,6 +272,7 @@ export const Targets = {
         }
     },
     Factory:     {
+        ActionMessageFactory: 'ActionMessageFactory',
         BidFactory: 'BidFactory',
         EscrowFactory: 'EscrowFactory',
         ImageFactory: 'ImageFactory',
