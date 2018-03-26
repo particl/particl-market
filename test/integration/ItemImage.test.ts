@@ -105,7 +105,7 @@ describe('ItemImage', () => {
         } as TestDataGenerateRequest);
         createdListingItem = listingItems[0].toJSON();
 
-        hash = await this.ObjectHashService.getHash(testData.data[0], HashableObjectType.ITEMIMAGE);
+        hash = await objectHashService.getHash(testData.data[0], HashableObjectType.DEFAULT);
     });
 
     afterAll(async () => {
@@ -187,7 +187,7 @@ describe('ItemImage', () => {
 
     test('Should update the ItemImage', async () => {
         testDataUpdated.item_information_id = createdListingItem.ItemInformation.id;
-        testDataUpdated.hash = await this.ObjectHashService.getHash(testDataUpdated.data[0], HashableObjectType.ITEMIMAGE);
+        testDataUpdated.hash = await objectHashService.getHash(testDataUpdated.data[0], HashableObjectType.DEFAULT);
 
         const itemImageModel: ItemImage = await itemImageService.update(createdImageId, testDataUpdated);
         const result = itemImageModel.toJSON();

@@ -347,7 +347,7 @@ describe('ListingItem', () => {
 
     test('Should create a new ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic1));
-        testDataToSave.hash = await this.objectHashService.getHash(testDataToSave, HashableObjectType.LISTINGITEM);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
@@ -388,7 +388,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = await this.objectHashService.getHash(testDataToSave, HashableObjectType.LISTINGITEM);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
@@ -399,7 +399,7 @@ describe('ListingItem', () => {
 
     test('Should update previously created ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
-        testDataToSave.hash = await this.objectHashService.getHash(testDataToSave, HashableObjectType.LISTINGITEM);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
 
         testDataToSave.market_id = defaultMarket.Id;
 
@@ -426,7 +426,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = await this.objectHashService.getHash(testDataToSave, HashableObjectType.LISTINGITEM);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
 
         testDataToSave.market_id = defaultMarket.Id;
 
@@ -451,7 +451,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = await this.objectHashService.getHash(testDataToSave, HashableObjectType.LISTINGITEM);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
@@ -468,7 +468,7 @@ describe('ListingItem', () => {
 
     test('Should create ListingItem with relation to ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        testDataToSave.hash = await this.objectHashService.getHash(testDataToSave, HashableObjectType.LISTINGITEM);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
 
         // create ListingItemTemplate
         const listingItemTemplateCreateRequest = {
@@ -503,7 +503,7 @@ describe('ListingItem', () => {
     test('Should update ListingItem correctly when removing data', async () => {
 
         const testDataToUpdate = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
-        testDataToUpdate.hash = await this.objectHashService.getHash(testDataToUpdate, HashableObjectType.LISTINGITEM);
+        testDataToUpdate.hash = await objectHashService.getHash(testDataToUpdate, HashableObjectType.DEFAULT);
         testDataToUpdate.market_id = defaultMarket.Id;
 
         // remove some data

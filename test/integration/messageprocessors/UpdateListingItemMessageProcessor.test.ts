@@ -196,7 +196,7 @@ describe('UpdateListingItemMessageProcessor', () => {
 
 
         defaultMarket = await marketService.getDefault();
-        const hash = await this.objectHashService.getHash(testData, HashableObjectType.LISTINGITEM);
+        const hash = await objectHashService.getHash(testData, HashableObjectType.DEFAULT);
         const result = await testDataService.create<ListingItem>({
             model: 'listingitem',
             data: {

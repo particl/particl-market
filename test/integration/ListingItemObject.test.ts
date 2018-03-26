@@ -22,6 +22,7 @@ import { ListingItemObjectUpdateRequest } from '../../src/api/requests/ListingIt
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 
 import { ObjectHashService } from '../../src/api/services/ObjectHashService';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 
 describe('ListingItemObject', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -84,7 +85,7 @@ describe('ListingItemObject', () => {
 
         defaultProfile = await profileService.getDefault();
         const templateData = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        templateData.hash = await this.objectHashService.getHash(templateData);
+        templateData.hash = await objectHashService.getHash(templateData, HashableObjectType.DEFAULT);
         templateData.profile_id = defaultProfile.Id;
 
         createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({

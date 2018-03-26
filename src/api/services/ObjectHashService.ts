@@ -39,6 +39,9 @@ export class ObjectHashService {
                 };
                 break;
             }
+            case HashableObjectType.DEFAULT: {
+                hashableObject = objectToHash;
+            }
         }
         return crypto.SHA256(JSON.stringify(hashableObject).split('').sort().toString()).toString();
     }

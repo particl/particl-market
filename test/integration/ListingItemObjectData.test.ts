@@ -65,7 +65,7 @@ describe('ListingItemObjectData', () => {
 
         const defaultProfile = await profileService.getDefault();
         const templateData = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        templateData.hash = await this.objectHashService.getHash(templateData, HashableObjectType.LISTINGITEMTEMPLATE);
+        templateData.hash = await objectHashService.getHash(templateData, HashableObjectType.DEFAULT);
         templateData.profile_id = defaultProfile.Id;
 
         const createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
