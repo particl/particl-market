@@ -497,7 +497,6 @@ export class TestDataService {
         const numToGenerate = _.random(1, 5);
         for (let i = 0; i < numToGenerate; ++i) {
             const listingItemObject = {
-                // TODO: Do we need to fill in ids and such?
                 // id: 0,
                 type: Faker.random.arrayElement(Object.getOwnPropertyNames(ListingItemObjectType)),
                 description: Faker.lorem.paragraph(),
@@ -507,13 +506,13 @@ export class TestDataService {
                 searchable: Faker.random.boolean(),
                 // listingItemId: 0,
                 // listingItemTemplateId: 0,
-                updatedAt: 0,
-                createdAt: _.random(1451606400, 1519862400) // Between 01/01/2016 00:00:00 &  01/03/2018 00:00:00 inclusive
+                updatedAt: new Date(0),
+                createdAt: new Date(_.random(1451606400, new Date().getTime())) // Between 01/01/2016 00:00:00 & now inclusive
             };
             if (_.random(0, 1)) {
-                listingItemObject.updatedAt = listingItemObject.createdAt;
+                listingItemObject.updatedAt = new Date(listingItemObject.createdAt);
             } else {
-                listingItemObject.updatedAt = listingItemObject.createdAt + _.random(1, 10000);
+                listingItemObject.updatedAt = new Date(listingItemObject.createdAt.getTime() + _.random(1, 10000));
             }
             listingItemObjects.push(listingItemObject);
         }
