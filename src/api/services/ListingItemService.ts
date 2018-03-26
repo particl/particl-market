@@ -2,7 +2,7 @@ import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
+import { Types, Core, Targets, Events } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ListingItemRepository } from '../repositories/ListingItemRepository';
@@ -390,7 +390,7 @@ export class ListingItemService {
      * @returns {Promise<"resources".ListingItem>}
      */
     public async process(message: MarketplaceMessage): Promise<resources.ListingItem> {
-        this.log.info('Received event ListingItemReceivedListener:', message);
+        this.log.info('Received event:', message);
 
         if (message.market && message.item) {
             // get market

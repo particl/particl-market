@@ -1,6 +1,6 @@
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
+import { Types, Core, Targets, Events } from '../../constants';
 
 import { EventEmitter } from '../../core/api/events';
 import { SmsgMessage } from '../messages/SmsgMessage';
@@ -49,8 +49,8 @@ export class MessageProcessor implements MessageProcessorInterface {
 
                 if (parsed.item) {
                     // ListingItemMessage, listingitemservice listens for this event
-                    this.eventEmitter.emit('ListingItemReceivedEvent', parsed);
-                    this.eventEmitter.emit('cli', {
+                    this.eventEmitter.emit(Events.ListingItemReceivedEvent, parsed);
+                    this.eventEmitter.emit(Events.Cli, {
                         message: 'ListingItemReceivedEvent',
                         data: parsed
                     });
@@ -58,7 +58,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                     // ActionMessage
                     const eventType = this.getEventType(parsed.mpaction);
                     this.eventEmitter.emit(eventType + 'ReceivedEvent', parsed);
-                    this.eventEmitter.emit('cli', {
+                    this.eventEmitter.emit(Events.Cli, {
                         message: eventType + 'ReceivedEvent',
                         data: parsed
                     });
@@ -130,21 +130,21 @@ export class MessageProcessor implements MessageProcessorInterface {
     private async getEventType(message: ActionMessageInterface): Promise<string> {
         switch (message.action) {
             case EscrowMessageType.MPA_LOCK:
-                return 'LockEscrow';
+                return Events.LockEscrowReceivedEvent;
             case EscrowMessageType.MPA_REQUEST_REFUND:
-                return 'RequestRefundEscrow';
+                return Events.RequestRefundEscrowReceivedEvent;
             case EscrowMessageType.MPA_REFUND:
-                return 'RefundEscrow';
+                return Events.RefundEscrowReceivedEvent;
             case EscrowMessageType.MPA_RELEASE:
-                return 'LockEscrow';
+                return Events.ReleaseEscrowReceivedEvent;
             case BidMessageType.MPA_BID:
-                return 'Bid';
+                return Events.BidReceivedEvent;
             case BidMessageType.MPA_ACCEPT:
-                return 'AcceptBid';
+                return Events.AcceptBidReceivedEvent;
             case BidMessageType.MPA_REJECT:
-                return 'RejectBid';
+                return Events.RejectBidReceivedEvent;
             case BidMessageType.MPA_CANCEL:
-                return 'CancelBid';
+                return Events.CancelBidReceivedEvent;
             default:
                 throw new InternalServerException('Unknown action message.');
         }
