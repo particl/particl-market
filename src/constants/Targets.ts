@@ -86,6 +86,7 @@ export const Targets = {
     Service:     {
         ActionMessageService: 'ActionMessageService',
         AddressService: 'AddressService',
+        BidActionService: 'BidActionService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
         CoreCookieService: 'CoreCookieService',
@@ -95,6 +96,8 @@ export const Targets = {
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
+        EscrowActionService: 'EscrowActionService',
+        EscrowActionServiceService: 'EscrowActionServiceService',
         EscrowRatioService: 'EscrowRatioService',
         EscrowService: 'EscrowService',
         FavoriteItemService: 'FavoriteItemService',

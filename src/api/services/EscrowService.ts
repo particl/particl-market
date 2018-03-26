@@ -22,8 +22,6 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 
 import { EscrowFactory } from '../factories/EscrowFactory';
 
-import { ListingItemTemplateService } from './ListingItemTemplateService';
-import { PaymentInformationService } from './PaymentInformationService';
 import { EscrowRatioService } from '../services/EscrowRatioService';
 import { AddressService } from '../services/AddressService';
 import { SmsgService } from '../services/SmsgService';
@@ -35,8 +33,6 @@ export class EscrowService {
     constructor(
         @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) public escrowFactory: EscrowFactory,
         @inject(Types.Repository) @named(Targets.Repository.EscrowRepository) public escrowRepo: EscrowRepository,
-        // @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        // @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.EscrowRatioService) public escrowRatioService: EscrowRatioService,
         @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
