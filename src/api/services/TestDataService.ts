@@ -60,6 +60,8 @@ import { GenerateProfileParams } from '../requests/params/GenerateProfileParams'
 import { GenerateBidParams } from '../requests/params/GenerateBidParams';
 import {ImageProcessing} from '../../core/helpers/ImageProcessing';
 import { BidMessageType } from '../enums/BidMessageType';
+import { SearchOrder } from '../enums/SearchOrder';
+import { ListingItemObjectType } from '../enums/ListingItemObjectType';
 
 export class TestDataService {
 
@@ -490,12 +492,40 @@ export class TestDataService {
         return messagingInformation;
     }
 
+    private generateListingItemObjectsData(): any {
+        const listingItemObjects: any = [];
+        const numToGenerate = _.random(1, 5);
+        for (let i = 0; i < numToGenerate; ++i) {
+            const listingItemObject = {
+                // TODO: Do we need to fill in ids and such?
+                // id: 0,
+                type: Faker.random.arrayElement(Object.getOwnPropertyNames(ListingItemObjectType)),
+                description: Faker.lorem.paragraph(),
+                order: Faker.random.arrayElement(Object.getOwnPropertyNames(SearchOrder)),
+                // objectId: 0,
+                forceInput: Faker.random.boolean(),
+                searchable: Faker.random.boolean(),
+                // listingItemId: 0,
+                // listingItemTemplateId: 0,
+                updatedAt: 0,
+                createdAt: _.random(1451606400, 1519862400) // Between 01/01/2016 00:00:00 &  01/03/2018 00:00:00 inclusive
+            };
+            if (_.random(0, 1)) {
+                listingItemObject.updatedAt = listingItemObject.createdAt;
+            } else {
+                listingItemObject.updatedAt = listingItemObject.createdAt + _.random(1, 10000);
+            }
+            listingItemObjects.push(listingItemObject);
+        }
+        return listingItemObjects;
+    }
+
     private async generateListingItemTemplateData(generateParams: GenerateListingItemTemplateParams): Promise<ListingItemTemplateCreateRequest> {
         const itemInformation = generateParams.generateItemInformation ? this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? this.generatePaymentInformationData(generateParams) : {};
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
         // TODO: generate listingitemobjects
-        const listingItemObjects = generateParams.generateListingItemObjects ? [] : [];
+        const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData() : [];
 
         const defaultProfile = await this.profileService.getDefault();
 
@@ -507,6 +537,7 @@ export class TestDataService {
             listingItemObjects,
             profile_id: defaultProfile.Id
         } as ListingItemTemplateCreateRequest;
+        this.log.error(JSON.stringify(listingItemTemplate, null, 2));
         return listingItemTemplate;
     }
 
