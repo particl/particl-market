@@ -65,15 +65,6 @@ export class EscrowService {
         return escrow;
     }
 
-    public async findOneByPaymentInformation(id: number, withRelated: boolean = true): Promise<Escrow> {
-        const escrow = await this.escrowRepo.findOneByPaymentInformation(id, withRelated);
-        if (escrow === null) {
-            this.log.warn(`Escrow with the id=${id} was not found!`);
-            throw new NotFoundException(id);
-        }
-        return escrow;
-    }
-
     @validate()
     public async create( @request(EscrowCreateRequest) data: EscrowCreateRequest): Promise<Escrow> {
 
