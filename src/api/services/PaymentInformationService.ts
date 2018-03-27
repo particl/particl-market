@@ -19,8 +19,8 @@ export class PaymentInformationService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ItemPriceService) private itemPriceService: ItemPriceService,
-        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
+        @inject(Types.Service) @named(Targets.Service.ItemPriceService) public itemPriceService: ItemPriceService,
+        @inject(Types.Service) @named(Targets.Service.EscrowService) public escrowService: EscrowService,
         @inject(Types.Repository) @named(Targets.Repository.PaymentInformationRepository) public paymentInformationRepo: PaymentInformationRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -73,15 +73,6 @@ export class PaymentInformationService {
 
         // finally find and return the created paymentInformation
         return await this.findOne(paymentInformation.Id);
-    }
-
-    public async updateByListingId(@request(PaymentInformationUpdateRequest) body: PaymentInformationUpdateRequest): Promise<PaymentInformation> {
-        const paymentInformation = await this.paymentInformationRepo.findOneByListingItemTemplateId(body.listing_item_template_id);
-        if (paymentInformation === null) {
-            this.log.warn(`PaymentInformation with the listing_item_template_id=${body.listing_item_template_id} was not found!`);
-            throw new MessageException(`PaymentInformation with the listing_item_template_id=${body.listing_item_template_id} was not found!`);
-        }
-        return this.update(paymentInformation.id, body);
     }
 
     @validate()

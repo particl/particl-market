@@ -10,6 +10,7 @@
 
 export const Targets = {
     Model:     {
+        ActionMessage: 'ActionMessage',
         Address: 'Address',
         Bid: 'Bid',
         BidData: 'BidData',
@@ -27,20 +28,26 @@ export const Targets = {
         ItemPrice: 'ItemPrice',
         ListingItem: 'ListingItem',
         ListingItemObject: 'ListingItemObject',
+        ListingItemObjectData: 'ListingItemObjectData',
         ListingItemTemplate: 'ListingItemTemplate',
         LocationMarker: 'LocationMarker',
         Market: 'Market',
+        MessageData: 'MessageData',
+        MessageEscrow: 'MessageEscrow',
+        MessageInfo: 'MessageInfo',
+        MessageObject: 'MessageObject',
         MessagingInformation: 'MessagingInformation',
         PaymentInformation: 'PaymentInformation',
         PriceTicker: 'PriceTicker',
         Profile: 'Profile',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
-        ShoppingCartItem: 'ShoppingCartItem',
         ShoppingCart: 'ShoppingCart',
+        ShoppingCartItem: 'ShoppingCartItem',
         User: 'User'
     },
     Repository:     {
+        ActionMessageRepository: 'ActionMessageRepository',
         AddressRepository: 'AddressRepository',
         BidDataRepository: 'BidDataRepository',
         BidRepository: 'BidRepository',
@@ -56,11 +63,16 @@ export const Targets = {
         ItemInformationRepository: 'ItemInformationRepository',
         ItemLocationRepository: 'ItemLocationRepository',
         ItemPriceRepository: 'ItemPriceRepository',
+        ListingItemObjectDataRepository: 'ListingItemObjectDataRepository',
         ListingItemObjectRepository: 'ListingItemObjectRepository',
         ListingItemRepository: 'ListingItemRepository',
         ListingItemTemplateRepository: 'ListingItemTemplateRepository',
         LocationMarkerRepository: 'LocationMarkerRepository',
         MarketRepository: 'MarketRepository',
+        MessageDataRepository: 'MessageDataRepository',
+        MessageEscrowRepository: 'MessageEscrowRepository',
+        MessageInfoRepository: 'MessageInfoRepository',
+        MessageObjectRepository: 'MessageObjectRepository',
         MessagingInformationRepository: 'MessagingInformationRepository',
         PaymentInformationRepository: 'PaymentInformationRepository',
         PriceTickerRepository: 'PriceTickerRepository',
@@ -72,7 +84,9 @@ export const Targets = {
         UserRepository: 'UserRepository'
     },
     Service:     {
+        ActionMessageService: 'ActionMessageService',
         AddressService: 'AddressService',
+        BidActionService: 'BidActionService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
         CoreCookieService: 'CoreCookieService',
@@ -82,22 +96,29 @@ export const Targets = {
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
+        EscrowActionService: 'EscrowActionService',
         EscrowRatioService: 'EscrowRatioService',
         EscrowService: 'EscrowService',
         FavoriteItemService: 'FavoriteItemService',
         FlaggedItemService: 'FlaggedItemService',
         ItemCategoryService: 'ItemCategoryService',
         ItemImageDataService: 'ItemImageDataService',
+        ItemImageHttpUploadService: 'ItemImageHttpUploadService',
         ItemImageService: 'ItemImageService',
         ItemInformationService: 'ItemInformationService',
         ItemLocationService: 'ItemLocationService',
         ItemPriceService: 'ItemPriceService',
+        ListingItemActionService: 'ListingItemActionService',
+        ListingItemObjectDataService: 'ListingItemObjectDataService',
         ListingItemObjectService: 'ListingItemObjectService',
         ListingItemService: 'ListingItemService',
         ListingItemTemplateService: 'ListingItemTemplateService',
         LocationMarkerService: 'LocationMarkerService',
         MarketService: 'MarketService',
-        SmsgService: 'SmsgService',
+        MessageDataService: 'MessageDataService',
+        MessageEscrowService: 'MessageEscrowService',
+        MessageInfoService: 'MessageInfoService',
+        MessageObjectService: 'MessageObjectService',
         MessagingInformationService: 'MessagingInformationService',
         PaymentInformationService: 'PaymentInformationService',
         PriceTickerService: 'PriceTickerService',
@@ -106,8 +127,10 @@ export const Targets = {
         ShippingPriceService: 'ShippingPriceService',
         ShoppingCartItemService: 'ShoppingCartItemService',
         ShoppingCartService: 'ShoppingCartService',
+        SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
-        UserService: 'UserService'
+        UserService: 'UserService',
+        ObjectHashService: 'ObjectHashService'
     },
     Command:     {
         address: {
@@ -131,6 +154,9 @@ export const Targets = {
         },
         Command: 'Command',
         CommandEnumType: 'CommandEnumType',
+        currencyprice: {
+            CurrencyPriceRootCommand: 'CurrencyPriceRootCommand'
+        },
         daemon: {
             DaemonRootCommand: 'DaemonRootCommand'
         },
@@ -142,10 +168,10 @@ export const Targets = {
         },
         escrow: {
             EscrowAddCommand: 'EscrowAddCommand',
-            EscrowRemoveCommand: 'EscrowRemoveCommand',
             EscrowLockCommand: 'EscrowLockCommand',
             EscrowRefundCommand: 'EscrowRefundCommand',
             EscrowReleaseCommand: 'EscrowReleaseCommand',
+            EscrowRemoveCommand: 'EscrowRemoveCommand',
             EscrowRootCommand: 'EscrowRootCommand',
             EscrowUpdateCommand: 'EscrowUpdateCommand'
         },
@@ -158,11 +184,11 @@ export const Targets = {
         HelpCommand: 'HelpCommand',
         itemcategory: {
             ItemCategoryAddCommand: 'ItemCategoryAddCommand',
-            ItemCategorySearchCommand: 'ItemCategorySearchCommand',
             ItemCategoryGetCommand: 'ItemCategoryGetCommand',
             ItemCategoryListCommand: 'ItemCategoryListCommand',
             ItemCategoryRemoveCommand: 'ItemCategoryRemoveCommand',
             ItemCategoryRootCommand: 'ItemCategoryRootCommand',
+            ItemCategorySearchCommand: 'ItemCategorySearchCommand',
             ItemCategoryUpdateCommand: 'ItemCategoryUpdateCommand'
         },
         itemimage: {
@@ -184,11 +210,11 @@ export const Targets = {
             ItemLocationUpdateCommand: 'ItemLocationUpdateCommand'
         },
         listingitem: {
+            ListingItemFlagCommand: 'ListingItemFlagCommand',
             ListingItemGetCommand: 'ListingItemGetCommand',
             ListingItemRootCommand: 'ListingItemRootCommand',
             ListingItemSearchCommand: 'ListingItemSearchCommand',
-            ListingItemUpdateCommand: 'ListingItemUpdateCommand',
-            ListingItemFlagCommand: 'ListingItemFlagCommand'
+            ListingItemUpdateCommand: 'ListingItemUpdateCommand'
         },
         listingitemobject: {
             ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
@@ -220,9 +246,9 @@ export const Targets = {
         },
         profile: {
             ProfileAddCommand: 'ProfileAddCommand',
-            ProfileRemoveCommand: 'ProfileRemoveCommand',
             ProfileGetCommand: 'ProfileGetCommand',
             ProfileListCommand: 'ProfileListCommand',
+            ProfileRemoveCommand: 'ProfileRemoveCommand',
             ProfileRootCommand: 'ProfileRootCommand',
             ProfileUpdateCommand: 'ProfileUpdateCommand'
         },
@@ -247,12 +273,10 @@ export const Targets = {
             ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
-        },
-        currencyprice: {
-            CurrencyPriceRootCommand: 'CurrencyPriceRootCommand'
         }
     },
     Factory:     {
+        ActionMessageFactory: 'ActionMessageFactory',
         BidFactory: 'BidFactory',
         EscrowFactory: 'EscrowFactory',
         ImageFactory: 'ImageFactory',
@@ -262,61 +286,34 @@ export const Targets = {
         RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {
-        AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
-        BidMessageProcessor: 'BidMessageProcessor',
-        CancelBidMessageProcessor: 'CancelBidMessageProcessor',
-        ListingItemMessageProcessor: 'ListingItemMessageProcessor',
+        deprecated: {
+            AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
+            BidMessageProcessor: 'BidMessageProcessor',
+            CancelBidMessageProcessor: 'CancelBidMessageProcessor',
+            ListingItemMessageProcessor: 'ListingItemMessageProcessor',
+            RejectBidMessageProcessor: 'RejectBidMessageProcessor',
+            TestMessageProcessor: 'TestMessageProcessor',
+            UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
+        },
         MessageProcessor: 'MessageProcessor',
-        MessageProcessorInterface: 'MessageProcessorInterface',
-        RejectBidMessageProcessor: 'RejectBidMessageProcessor',
-        TestMessageProcessor: 'TestMessageProcessor',
-        UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
+        MessageProcessorInterface: 'MessageProcessorInterface'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
+        MulterMiddleware: 'MulterMiddleware',
         PopulateUserMiddleware: 'PopulateUserMiddleware',
         RestApiMiddleware: 'RestApiMiddleware',
-        MulterMiddleware: 'MulterMiddleware',
         RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {
         ServerStartedListener: 'ServerStartedListener',
-        ListingItemReceivedListener: 'ListingItemReceivedListener',
         user: {
             UserAuthenticatedListener: 'UserAuthenticatedListener',
             UserCreatedListener: 'UserCreatedListener'
         }
     },
     Controller:     {
-        AddressController: 'AddressController',
-        BidController: 'BidController',
-        BidDataController: 'BidDataController',
-        CryptocurrencyAddressController: 'CryptocurrencyAddressController',
-        CurrencyPriceController: 'CurrencyPriceController',
-        EscrowController: 'EscrowController',
-        EscrowRatioController: 'EscrowRatioController',
-        FavoriteItemController: 'FavoriteItemController',
-        FlaggedItemController: 'FlaggedItemController',
-        ItemCategoryController: 'ItemCategoryController',
         ItemImageController: 'ItemImageController',
-        ItemImageDataController: 'ItemImageDataController',
-        ItemInformationController: 'ItemInformationController',
-        ItemLocationController: 'ItemLocationController',
-        ItemPriceController: 'ItemPriceController',
-        ListingItemController: 'ListingItemController',
-        ListingItemObjectController: 'ListingItemObjectController',
-        ListingItemTemplateController: 'ListingItemTemplateController',
-        LocationMarkerController: 'LocationMarkerController',
-        MarketController: 'MarketController',
-        MessagingInformationController: 'MessagingInformationController',
-        PaymentInformationController: 'PaymentInformationController',
-        PriceTickerController: 'PriceTickerController',
-        ProfileController: 'ProfileController',
-        RpcController: 'RpcController',
-        ShippingDestinationController: 'ShippingDestinationController',
-        ShippingPriceController: 'ShippingPriceController',
-        ShoppingCartItemController: 'ShoppingCartItemController',
-        ShoppingCartController: 'ShoppingCartController',
-        UserController: 'UserController'
+        RpcController: 'RpcController'
     }
 };

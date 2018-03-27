@@ -5,7 +5,6 @@ import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ItemCategoryFactory } from './ItemCategoryFactory';
 import * as resources from 'resources';
-import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { ShippingAvailability } from '../enums/ShippingAvailability';
 import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
@@ -377,10 +376,60 @@ export class ListingItemFactory {
         return messageArray;
     }
 
-    // TODO: objects fields
+    // objects fields
     private async getMessageObjects(listingItemObjects: resources.ListingItemObject[]): Promise<any> {
-        return [];
+        const objectArray: object[] = [];
+        listingItemObjects.forEach(async (value) => {
+            const objectValue = await this.getObjectArray(value);
+            objectArray.push(objectValue);
+        });
+        return objectArray;
     }
 
+    private async getObjectArray(value: resources.ListingItemObject): Promise<any> {
+        // check Table and Dropdown
+        if (value.type === 'TABLE') {
+            return {
+                type: 'TABLE',
+                title: value.description,
+                table: await this.getObjectDataTable(value.ListingItemObjectDatas)
+            };
+        } else if (value.type === 'DROPDOWN') {
+            return {
+                type: 'DROPDOWN',
+                id: value.objectId,
+                title: value.description,
+                force_input: value.forceInput,
+                options: await this.getObjectDataOptions(value.ListingItemObjectDatas)
+            };
+        }
+    }
+
+    private async getObjectDataTable(objectDatas: resources.ListingItemObjectData[]): Promise<any> {
+        const objectDataArray: object[] = [];
+        objectDatas.forEach((objectValue) => {
+            objectDataArray.push({
+                key: objectValue.key,
+                value: objectValue.value
+            });
+        });
+        return objectDataArray;
+    }
+
+    private async getObjectDataOptions(objectDatas: resources.ListingItemObjectData[]): Promise<any> {
+        const objectDataArray: object[] = [];
+        objectDatas.forEach( async (objectValue) => {
+            objectDataArray.push({
+                name: objectValue.key,
+                value: objectValue.value
+                // todo
+                // add_to_price: [
+                //     50000000,
+                //     300000000
+                // ]
+            });
+        });
+        return objectDataArray;
+    }
 
 }

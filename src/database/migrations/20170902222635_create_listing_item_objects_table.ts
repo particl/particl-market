@@ -7,8 +7,12 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('type').notNullable();
-            table.text('description').notNullable();
+            table.text('description').notNullable(); // title
             table.integer('order').notNullable();
+
+            table.text('object_id').nullable();
+            table.boolean('force_input').defaultTo(false);
+
             table.boolean('searchable').defaultTo(false);
 
             table.integer('listing_item_id').unsigned().nullable();

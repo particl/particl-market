@@ -3,18 +3,21 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
+
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { ValidationException } from '../exceptions/ValidationException';
+
 import { BidRepository } from '../repositories/BidRepository';
+
 import { Bid } from '../models/Bid';
+
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
-
 import { BidSearchParams } from '../requests/BidSearchParams';
-import { BidMessageType } from '../enums/BidMessageType';
-import { BidDataService } from './BidDataService';
-import { ValidationException } from '../exceptions/ValidationException';
 
+import { EventEmitter } from 'events';
+import { BidDataService } from './BidDataService';
 
 export class BidService {
 
@@ -23,6 +26,7 @@ export class BidService {
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.BidRepository) public bidRepo: BidRepository,
         @inject(Types.Service) @named(Targets.Service.BidDataService) public bidDataService: BidDataService,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -55,9 +59,7 @@ export class BidService {
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     @validate()
-    public async search(
-        @request(BidSearchParams) options: BidSearchParams,
-        withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+    public async search(@request(BidSearchParams) options: BidSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
         return this.bidRepo.search(options, withRelated);
     }
 
@@ -67,7 +69,7 @@ export class BidService {
     }
 
     @validate()
-    public async create( @request(BidCreateRequest) data: BidCreateRequest): Promise<Bid> {
+    public async create(@request(BidCreateRequest) data: BidCreateRequest): Promise<Bid> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -118,4 +120,5 @@ export class BidService {
     public async destroy(id: number): Promise<void> {
         await this.bidRepo.destroy(id);
     }
+
 }

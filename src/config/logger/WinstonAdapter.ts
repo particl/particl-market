@@ -21,7 +21,7 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
             transports: [
                 new winston.transports.Console({
                     level: process.env.LOG_LEVEL,
-                    timestamp: Environment.isProduction(),
+                    timestamp: true,
                     handleExceptions: Environment.isProduction(),
                     json: Environment.isProduction(),
                     colorize: !Environment.isProduction()

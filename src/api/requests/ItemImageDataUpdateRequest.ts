@@ -24,5 +24,10 @@ export class ItemImageDataUpdateRequest extends RequestBody {
     // @IsNotEmpty()
     public data: string | null;
 
+    // @IsNotEmpty()
+    public originalMime: string | null;
+
+    // @IsNotEmpty()
+    public originalName: string | null;
 }
 // tslint:enable:variable-name

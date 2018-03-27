@@ -13,14 +13,30 @@ describe('BidFactory', () => {
     });
 
     // TODO: these tests do not check all the valid state changes yet.
-    // TODO: also they do not take in to account from who the latest bid is from/check if the latestBid was from correct person
+    // TODO: also they do not take in to account from who the latest bid is from/check if the latestBid was
+    // from correct person
+
+    test('Should create BidMessages correctly', async () => {
+        const message = await bidFactory.getMessage(BidMessageType.MPA_ACCEPT, 'itemhash', [{
+            id: 'iidee',
+            value: 'value'
+        }]);
+
+        expect(message.action).toBe(BidMessageType.MPA_ACCEPT.toString());
+        expect(message.item).toBe('itemhash');
+        expect(message.objects).toEqual([{
+            id: 'iidee',
+            value: 'value'
+        }]);
+
+    });
 
     test('Should convert BidMessage, action: MPA_BID to BidCreateRequest', async () => {
 
         const listingItemId = 1;
         const bidMessage = {
             action: BidMessageType.MPA_BID,
-            listing: 'f08f3d6e',
+            item: 'f08f3d6e',
             objects: [{
                 id: 'colour',
                 value: 'black'
@@ -39,7 +55,7 @@ describe('BidFactory', () => {
         const listingItemId = 1;
         const bidMessage = {
             action: BidMessageType.MPA_BID,
-            listing: 'f08f3d6e',
+            item: 'f08f3d6e',
             objects: [{
                 id: 'colour',
                 value: 'black'
@@ -64,7 +80,7 @@ describe('BidFactory', () => {
         const listingItemId: number = undefined;
         const bidMessage = {
             action: BidMessageType.MPA_BID,
-            listing: 'f08f3d6e'
+            item: 'f08f3d6e'
         } as BidMessage;
 
         await bidFactory.getModel(bidMessage, listingItemId).catch(e =>
@@ -88,7 +104,7 @@ describe('BidFactory', () => {
         const listingItemId = 1;
         const bidMessage = {
             action: BidMessageType.MPA_ACCEPT,
-            listing: 'f08f3d6e'
+            item: 'f08f3d6e'
         } as BidMessage;
 
         const bidCreateRequest = await bidFactory.getModel(bidMessage, listingItemId, latestBid);
@@ -101,7 +117,7 @@ describe('BidFactory', () => {
 
         const bidMessage = {
             action: BidMessageType.MPA_BID,
-            listing: 'f08f3d6e'
+            item: 'f08f3d6e'
         } as BidMessage;
 
         const listingItemId = 1;
@@ -139,7 +155,7 @@ describe('BidFactory', () => {
 
         const bidMessage = {
             action: BidMessageType.MPA_REJECT,
-            listing: 'f08f3d6e'
+            item: 'f08f3d6e'
         } as BidMessage;
 
         const listingItemId = 1;
@@ -170,7 +186,7 @@ describe('BidFactory', () => {
 
         const bidMessage = {
             action: BidMessageType.MPA_CANCEL,
-            listing: 'f08f3d6e'
+            item: 'f08f3d6e'
         } as BidMessage;
 
         const listingItemId = 1;

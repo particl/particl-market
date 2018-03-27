@@ -14,13 +14,13 @@ import { SmsgService } from '../../services/SmsgService';
 import { BidMessageType } from '../../enums/BidMessageType';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MarketplaceMessageInterface } from '../../messages/MarketplaceMessageInterface';
-
-// Ryno changes
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
+import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
+import { BidActionService } from '../../services/BidActionService';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { Output } from 'resources';
 
-export class BidSendCommand extends BaseCommand implements RpcCommandInterface<Bid> {
+export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
 
@@ -29,14 +29,15 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory
+        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
+        @inject(Types.Service) @named(Targets.Service.BidActionService) private bidActionService: BidActionService
     ) {
         super(Commands.BID_SEND);
         this.log = new Logger(__filename);
     }
 
     /**
-     * TODO: Check works
+     * Posts a Bid to the network
      *
      * data.params[]:
      * [0]: itemhash, string
@@ -51,9 +52,11 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
      * @returns {Promise<Bookshelf<void>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<Bid> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
+
         // find listingItem by hash
-        const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
+        const listingItemModel = await this.listingItemService.findOneByHash(data.params[0]);
+        const listingItem = listingItemModel.toJSON();
 
         // if listingItem not found
         if (listingItem === null) {
@@ -63,6 +66,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
             // get listing item hash it is in first argument in the data.params
             const listingItemHash = data.params.shift();
 
+            // TODO: move this stuff to service
             // TODO: Ryno Hacks - Refactor code below...
             // Get unspent
             const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
@@ -106,27 +110,13 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
             const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
 
             // convert the bid data params as bid data key value pair
-            const bidData = this.setBidData(data.params.concat([
+
+            const bidData = this.getBidData(data.params.concat([
                 'outputs', outputs, 'pubkeys', [pubkey], 'changeAddr', changeAddr, 'change', change
             ]));
             // End - Ryno Hacks
 
-            // broadcast the message in to the network
-            // TODO: add profile and market addresses
-            const marketPlaceMessage = {
-                version: process.env.MARKETPLACE_VERSION,
-                mpaction: {
-                    objects: bidData,
-                    listing: listingItemHash,
-                    action: BidMessageType.MPA_BID
-                }
-            } as MarketplaceMessageInterface;
-
-            await this.smsgService.smsgSend('', '', marketPlaceMessage);
-
-            // TODO: We will change the return data once broadcast functionality will be implemented
-            // TODO: We might potentially want to save the bid if we ever want to cancel it, but its an outgoing bid.
-            return data;
+            return this.bidActionService.send(listingItem, bidData);
         }
     }
 
@@ -159,7 +149,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<B
      * [3]: value, string
      * ..........
      */
-    private setBidData(data: string[]): string[] {
+    private getBidData(data: string[]): string[] {
         const bidData = [] as any;
 
         // convert the bid data params as bid data key value pair

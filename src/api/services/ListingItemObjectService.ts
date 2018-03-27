@@ -8,15 +8,19 @@ import { ValidationException } from '../exceptions/ValidationException';
 import { ListingItemObjectRepository } from '../repositories/ListingItemObjectRepository';
 import { ListingItemObject } from '../models/ListingItemObject';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
+import { ListingItemObjectDataCreateRequest } from '../requests/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
 import { RpcRequest } from '../requests/RpcRequest';
 import { ListingItemObjectSearchParams } from '../requests/ListingItemObjectSearchParams';
+
+import { ListingItemObjectDataService } from './ListingItemObjectDataService';
 
 export class ListingItemObjectService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.ListingItemObjectDataService) private listingItemObjectDataService: ListingItemObjectDataService,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemObjectRepository) public listingItemObjectRepo: ListingItemObjectRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -50,15 +54,25 @@ export class ListingItemObjectService {
     }
 
     @validate()
-    public async create( @request(ListingItemObjectCreateRequest) body: any): Promise<ListingItemObject> {
+    public async create( @request(ListingItemObjectCreateRequest) data: ListingItemObjectCreateRequest): Promise<ListingItemObject> {
 
+        const body = JSON.parse(JSON.stringify(data));
         // todo: could this be annotated in ListingItemObjectCreateRequest?
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
 
+        // extract and remove related models from request
+        const listingItemObjectDatas = body.listingItemObjectDatas || [];
+        delete body.listingItemObjectDatas;
+
         // If the request body was valid we will create the listingItemObject
         const listingItemObject = await this.listingItemObjectRepo.create(body);
+
+        for (const objectData of listingItemObjectDatas) {
+            objectData.listing_item_object_id = listingItemObject.Id;
+            await this.listingItemObjectDataService.create(objectData as ListingItemObjectDataCreateRequest);
+        }
 
         // finally find and return the created listingItemObject
         const newListingItemObject = await this.findOne(listingItemObject.id);
@@ -66,7 +80,9 @@ export class ListingItemObjectService {
     }
 
     @validate()
-    public async update(id: number, @request(ListingItemObjectUpdateRequest) body: any): Promise<ListingItemObject> {
+    public async update(id: number, @request(ListingItemObjectUpdateRequest) data: ListingItemObjectUpdateRequest): Promise<ListingItemObject> {
+
+        const body = JSON.parse(JSON.stringify(data));
 
         // todo: could this be annotated in ListingItemObjectUpdateRequest?
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
@@ -80,6 +96,9 @@ export class ListingItemObjectService {
         listingItemObject.Type = body.type;
         listingItemObject.Description = body.description;
         listingItemObject.Order = body.order;
+
+        // TODO : Update listingItemObjectData
+
 
         // update listingItemObject record
         const updatedListingItemObject = await this.listingItemObjectRepo.update(id, listingItemObject.toJSON());

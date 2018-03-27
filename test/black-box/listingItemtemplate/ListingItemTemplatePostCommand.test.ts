@@ -4,33 +4,39 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { ListingItem, ListingItemTemplate } from 'resources';
 
-describe('ListingItemTemplatePostCommand', () => {
+import * as listingItemCreateRequestBasic1 from '../../testdata/createrequest/listingItemCreateRequestBasic1.json';
+import * as listingItemCreateRequestBasic2 from '../../testdata/createrequest/listingItemCreateRequestBasic2.json';
+import * as listingItemCreateRequestBasic3 from '../../testdata/createrequest/listingItemCreateRequestBasic3.json';
+
+import * as listingItemUpdateRequestBasic1 from '../../testdata/pdaterequest/listingItemUpdateRequestBasic1.json';
+
+import * as listingItemTemplateCreateRequestBasic1 from '../../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
+import * as listingItemTemplateCreateRequestBasic2 from '../../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
+
+import * as resources from 'resources';
+
+describe('ListingItemSearchCommand', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
 
     const testUtil = new BlackBoxTestUtil();
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
-    const log: LoggerType = new LoggerType(__filename);
-
-    let listingItemTemplates: ListingItemTemplate[];
     let defaultProfile;
     let defaultMarket;
+    let listingItemTemplates: resources.ListingItemTemplate[];
+    let postedTemplateId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // fetch default profile
-        defaultProfile = await testUtil.getDefaultProfile();
-
-        // fetch default market
-        defaultMarket = await testUtil.getDefaultMarket();
-
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
-            true,   // generateItemImages
+            false,   // generateItemImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
@@ -38,61 +44,34 @@ describe('ListingItemTemplatePostCommand', () => {
             true    // generateListingItemObjects
         ]).toParamsArray();
 
+        // get default profile
+        defaultProfile = await testUtil.getDefaultProfile();
+
+        // fetch default market
+        defaultMarket = await testUtil.getDefaultMarket();
+
+        // generate listingItemTemplate
         listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
-            true,                    // return model
+            true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
-        ) as ListingItemTemplate[];
-
-        log.debug('beforeAll');
-        console.log('beforeAll');
+        ) as resources.ListingItemTemplates[];
 
     });
 
-    test('Should post a ListingItem in to the default marketplace', async (done) => {
-
-        log.debug('test');
-        console.log('test');
-        const ffs = true;
-
-        const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplates[0].id, defaultMarket.id]);
-
+    test('Should post a ListingItem in to the default marketplace', async () => {
+        postedTemplateId = listingItemTemplates[0].id;
+        const res: any = await rpc(templateCommand, [templatePostCommand, postedTemplateId, defaultMarket.id]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result = res.getBody()['result'];
-        expect(result.version).toBe('0.0.1.0');
-        // expect(result).toHaveProperty('PaymentInformation');
-        // expect(result).toHaveProperty('MessagingInformation');
-        // expect(result.id).toBe(listingItemTemplace[0].id);
 
+        const result: any = res.getBody()['result'];
+        expect(result.result).toBe('Sent.');
+        expect(result.txid).toBeDefined();
+        expect(result.fee).toBeGreaterThan(0);
     });
 
-    /*
-    test('Should post a item in to the market place without market id', async () => {
-        const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplace[0].id]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result = res.getBody()['result'];
-        expect(result).toHaveProperty('ItemInformation');
-        expect(result).toHaveProperty('PaymentInformation');
-        expect(result).toHaveProperty('MessagingInformation');
-        expect(result.id).toBe(listingItemTemplace[0].id);
-
-    });
-
-    test('Should fail to post a item in to the market place because of invalid listingItemTemplate id', async () => {
-        // post item with invalid listingItemTemplate id
-        const res: any = await rpc(templateCommand, [templatePostCommand, 55]);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('Should have received posted listingitem', async () => {
-        // asdf
-        const test = 1;
-    });
-    */
 
 
 });
