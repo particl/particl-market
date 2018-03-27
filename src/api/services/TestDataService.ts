@@ -373,7 +373,7 @@ export class TestDataService {
         const paymentInformation = generateParams.generatePaymentInformation ? this.generatePaymentInformationData(generateParams) : {};
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
         // TODO: generate listingitemobjects
-        const listingItemObjects = generateParams.generateListingItemObjects ? [] : [];
+        const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData() : [];
 
         const listingItem = {
             hash: Faker.random.uuid(),
@@ -492,10 +492,16 @@ export class TestDataService {
         return messagingInformation;
     }
 
+    // TODO: generate listingItemObjectDatas too
     private generateListingItemObjectsData(): any {
         const listingItemObjects: any = [];
         const numToGenerate = _.random(1, 5);
         for (let i = 0; i < numToGenerate; ++i) {
+            let listingItemObjectDatas: any = [];
+            const numToGenerate2 = _.random(1, 5);
+            for (let j = 0; j < numToGenerate2; ++j) {
+                listingItemObjectDatas.push(this.generateListingItemObjectsDataData());
+            }
             const listingItemObject = {
                 // id: 0,
                 type: Faker.random.arrayElement(Object.getOwnPropertyNames(ListingItemObjectType)),
@@ -506,6 +512,7 @@ export class TestDataService {
                 searchable: Faker.random.boolean(),
                 // listingItemId: 0,
                 // listingItemTemplateId: 0,
+                listingItemObjectDatas: listingItemObjectDatas,
                 updatedAt: new Date(0),
                 createdAt: new Date(_.random(1451606400, new Date().getTime())) // Between 01/01/2016 00:00:00 & now inclusive
             };
@@ -517,6 +524,21 @@ export class TestDataService {
             listingItemObjects.push(listingItemObject);
         }
         return listingItemObjects;
+    }
+
+    private generateListingItemObjectsDataData(): any {
+        const listingItemData = {
+            key: Faker.random.word(),
+            value: Faker.random.words(),
+            updatedAt: new Date(0),
+            createdAt: new Date(_.random(1451606400, new Date().getTime())) // Between 01/01/2016 00:00:00 & now inclusive
+        };
+        if (_.random(0, 1)) {
+            listingItemData.updatedAt = new Date(listingItemData.createdAt);
+        } else {
+            listingItemData.updatedAt = new Date(listingItemData.createdAt.getTime() + _.random(1, 10000));
+        }
+        return listingItemData;
     }
 
     private async generateListingItemTemplateData(generateParams: GenerateListingItemTemplateParams): Promise<ListingItemTemplateCreateRequest> {
