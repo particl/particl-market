@@ -90,7 +90,6 @@ export class ItemImageService {
 
         this.log.debug(JSON.stringify(createArgs));
         retItemImage = await this.create(createArgs);
-        retItemImage = retItemImage.toJSON();
         return retItemImage;
     }
 
