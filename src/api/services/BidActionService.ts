@@ -299,7 +299,7 @@ export class BidActionService {
             const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);
             const market = marketModel.toJSON();
 
-            // create the bid accept message
+            // create the bid cancel message
             const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_CANCEL, listingItem.hash);
 
             const marketPlaceMessage = {
@@ -317,7 +317,41 @@ export class BidActionService {
         }
     }
 
+    /**
+     * Reject a Bid
+     *
+     * @param {"resources".ListingItem} listingItem
+     * @param {"resources".Bid} bid
+     * @returns {Promise<SmsgSendResponse>}
+     */
+    public async reject( listingItem: resources.ListingItem, bid: resources.Bid ): Promise<SmsgSendResponse> {
 
+        if (bid.action === BidMessageType.MPA_BID) {
+            // fetch the profile
+            const profileModel = await this.profileService.getDefault();
+            const profile = profileModel.toJSON();
+
+            // fetch the market
+            const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);
+            const market = marketModel.toJSON();
+
+            // create the bid reject message
+            const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_REJECT, listingItem.hash);
+
+            const marketPlaceMessage = {
+                version: process.env.MARKETPLACE_VERSION,
+                mpaction: bidMessage
+            } as MarketplaceMessage;
+
+            this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
+
+            // broadcast the cancel bid message
+            return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage);
+        } else {
+            this.log.error(`Bid can not be rejected because it was already been ${bid.action}`);
+            throw new MessageException(`Bid can not be rejected because it was already been ${bid.action}`);
+        }
+    }
 
     /**
      * process received BidMessage
