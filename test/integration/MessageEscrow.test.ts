@@ -20,7 +20,7 @@ describe('MessageEscrow', () => {
     let testDataService: TestDataService;
     let messageEscrowService: MessageEscrowService;
 
-    let createdId;
+    // let createdId;
 
     const testData = {
         rawtx: 'rawtx',
@@ -39,7 +39,7 @@ describe('MessageEscrow', () => {
         messageEscrowService = app.IoC.getNamed<MessageEscrowService>(Types.Service, Targets.Service.MessageEscrowService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
     });
 
     afterAll(async () => {

@@ -20,7 +20,7 @@ describe('MessageObject', () => {
     let testDataService: TestDataService;
     let messageObjectService: MessageObjectService;
 
-    let createdId;
+    // let createdId;
 
     const testData = {
         dataId: 'colour',
@@ -39,7 +39,7 @@ describe('MessageObject', () => {
         messageObjectService = app.IoC.getNamed<MessageObjectService>(Types.Service, Targets.Service.MessageObjectService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
 
     });
 

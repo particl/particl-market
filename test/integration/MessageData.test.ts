@@ -20,7 +20,7 @@ describe('MessageData', () => {
     let testDataService: TestDataService;
     let messageDataService: MessageDataService;
 
-    let createdId;
+    // let createdId;
 
     const testData = {
         msgid: 'fdd0b25a000000007188f0fc4cd57a37aa5a9ab26463510568e99d7d',
@@ -47,7 +47,7 @@ describe('MessageData', () => {
         messageDataService = app.IoC.getNamed<MessageDataService>(Types.Service, Targets.Service.MessageDataService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
     });
 
     afterAll(async () => {

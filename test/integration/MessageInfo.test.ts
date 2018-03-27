@@ -20,7 +20,7 @@ describe('MessageInfo', () => {
     let testDataService: TestDataService;
     let messageInfoService: MessageInfoService;
 
-    let createdId;
+    // let createdId;
 
     const testData = {
         address: '20 seventeen street, march city, 2017',
@@ -39,7 +39,7 @@ describe('MessageInfo', () => {
         messageInfoService = app.IoC.getNamed<MessageInfoService>(Types.Service, Targets.Service.MessageInfoService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
     });
 
     afterAll(async () => {
