@@ -1,17 +1,17 @@
 import { inject, named } from 'inversify';
-import { message, validate } from '../../core/api/Validate';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
-import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { BidMessage } from '../messages/BidMessage';
-import { Bid } from '../models/Bid';
-import { ListingItemService } from '../services/ListingItemService';
-import { BidService } from '../services/BidService';
-import { BidFactory } from '../factories/BidFactory';
-import { BidCreateRequest } from '../requests/BidCreateRequest';
-import { EventEmitter } from '../../core/api/events';
+import {message, validate} from '../../../core/api/Validate';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Types, Core, Targets } from '../../../constants';
+import { MessageProcessorInterface } from '../MessageProcessorInterface';
+import { BidFactory } from '../../factories/BidFactory';
+import { Bid } from '../../models/Bid';
+import { BidMessage } from '../../messages/BidMessage';
+import { BidService } from '../../services/BidService';
+import { ListingItemService } from '../../services/ListingItemService';
+import { NotFoundException } from '../../exceptions/NotFoundException';
+import { EventEmitter } from '../../../core/api/events';
 
-export class AcceptBidMessageProcessor implements MessageProcessorInterface {
+export class BidMessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
 
@@ -26,7 +26,7 @@ export class AcceptBidMessageProcessor implements MessageProcessorInterface {
     }
 
     /**
-     * Process BidMessage of type MPA-ACCEPT
+     * Process BidMessage of type MPA-BID
      *
      * message:
      *  action: action of the BidMessage
@@ -41,17 +41,16 @@ export class AcceptBidMessageProcessor implements MessageProcessorInterface {
         const listingItemModel = await this.listingItemService.findOneByHash(data.listing);
         const listingItem = listingItemModel.toJSON();
 
-        // find latest bid
-        const latestBidModel = await this.bidService.getLatestBid(listingItem.id);
-        const latestBid = latestBidModel.toJSON();
+        this.log.debug('process, listingItem: ', listingItem);
 
         // get the BidCreateRequest and create the bid
-        const bidMessage = await this.bidFactory.getModel(data, listingItem.id, latestBid);
+        const bidCreateRequest = await this.bidFactory.getModel(data, listingItem.id);
+        this.log.debug('process, bidCreateRequest: ', bidCreateRequest);
 
         this.eventEmitter.emit('cli', {
-            message: 'accept bid message received ' + JSON.stringify(bidMessage)
+            message: 'bid message received ' + JSON.stringify(bidCreateRequest)
         });
 
-        return await this.bidService.create(bidMessage as BidCreateRequest);
+        return await this.bidService.create(bidCreateRequest);
     }
 }

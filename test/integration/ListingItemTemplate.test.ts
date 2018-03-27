@@ -21,7 +21,6 @@ import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
@@ -61,6 +60,8 @@ import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createreque
 import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
 
 import * as resources from 'resources';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
+import { ObjectHashService } from '../../src/api/services/ObjectHashService';
 
 describe('ListingItemTemplate', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -89,6 +90,7 @@ describe('ListingItemTemplate', () => {
     let marketService: MarketService;
     let listingItemObjectService: ListingItemObjectService;
     let listingItemObjectDataService: ListingItemObjectDataService;
+    let objectHashService: ObjectHashService;
 
     let createdListingItemTemplate1;
     let createdListingItemTemplate2;
@@ -125,6 +127,7 @@ describe('ListingItemTemplate', () => {
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
         listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.ListingItemObjectDataService);
+        objectHashService = app.IoC.getNamed<ObjectHashService>(Types.Service, Targets.Service.ObjectHashService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -375,7 +378,7 @@ describe('ListingItemTemplate', () => {
 
     test('Should create a new ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.profile_id = defaultProfile.Id;
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
@@ -411,7 +414,7 @@ describe('ListingItemTemplate', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.profile_id = defaultProfile.Id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
@@ -422,7 +425,8 @@ describe('ListingItemTemplate', () => {
 
     test('Should update previously created ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.profile_id = defaultProfile.Id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.update(createdListingItemTemplate2.id, testDataToSave);
@@ -445,7 +449,7 @@ describe('ListingItemTemplate', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.profile_id = defaultProfile.Id;
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
@@ -469,7 +473,7 @@ describe('ListingItemTemplate', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.profile_id = defaultProfile.Id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
@@ -486,7 +490,7 @@ describe('ListingItemTemplate', () => {
 
     test('Should create ListingItem with relation to ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic3));
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
 
         // create ListingItemTemplate
         const listingItemTemplateCreateRequest = {
@@ -523,7 +527,8 @@ describe('ListingItemTemplate', () => {
     test('Should update ListingItemTemplate correctly when removing data', async () => {
 
         const testDataToUpdate = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
-        testDataToUpdate.hash = ObjectHash.getHash(testDataToUpdate);
+        testDataToUpdate.hash = await objectHashService.getHash(testDataToUpdate, HashableObjectType.DEFAULT);
+
         testDataToUpdate.profile_id = defaultProfile.Id;
 
         // remove some data

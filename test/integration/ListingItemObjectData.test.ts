@@ -6,7 +6,6 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { ListingItemObjectData } from '../../src/api/models/ListingItemObjectData';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
@@ -15,6 +14,9 @@ import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType
 import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
+import { ObjectHashService } from '../../src/api/services/ObjectHashService';
 
 import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/ListingItemObjectDataUpdateRequest';
@@ -32,6 +34,7 @@ describe('ListingItemObjectData', () => {
     let listingItemObjectDataService: ListingItemObjectDataService;
     let profileService: ProfileService;
     let listingItemTemplateService: ListingItemTemplateService;
+    let objectHashService: ObjectHashService;
 
     let createdId;
     let createdListingItemObject;
@@ -55,13 +58,14 @@ describe('ListingItemObjectData', () => {
         listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.ListingItemObjectDataService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
+        objectHashService = app.IoC.getNamed<ObjectHashService>(Types.Service, Targets.Service.ObjectHashService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
         const defaultProfile = await profileService.getDefault();
         const templateData = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        templateData.hash = ObjectHash.getHash(templateData);
+        templateData.hash = await objectHashService.getHash(templateData, HashableObjectType.DEFAULT);
         templateData.profile_id = defaultProfile.Id;
 
         const createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({

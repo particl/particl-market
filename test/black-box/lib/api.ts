@@ -55,7 +55,7 @@ export const api = async <T> ( method: string, path: string, options: ApiOptions
     try {
         res = await request(o);
     } catch (e) {
-        console.log('ERROR: ', e);
+        //  console.log('ERROR: ', e);
         error = e;
 /*        if (error.error) {
             if (error.error.code) {
