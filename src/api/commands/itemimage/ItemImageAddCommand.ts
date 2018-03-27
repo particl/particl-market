@@ -9,10 +9,11 @@ import { ItemImage } from '../../models/ItemImage';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import * as crypto from 'crypto-js';
 import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
-import { Commands} from '../CommandEnumType';
+import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { ObjectHash } from '../../../core/helpers/ObjectHash';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
+import { HashableObjectType } from '../../../api/enums/HashableObjectType';
+import { ObjectHashService } from '../../services/ObjectHashService';
 
 export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
@@ -21,7 +22,8 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
+        @inject(Types.Service) @named(Targets.Service.ObjectHashService) private objectHashService: ObjectHashService
     ) {
         super(Commands.ITEMIMAGE_ADD);
         this.log = new Logger(__filename);
@@ -55,7 +57,13 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
         // create item images
         return await this.itemImageService.create({
             item_information_id: itemInformation.id,
-            hash: ObjectHash.getHash(itemInformation),
+            hash: await this.objectHashService.getHash({
+                dataId: data.params[1],
+                protocol: data.params[2],
+                encoding: data.params[3],
+                data: data.params[4],
+                imageVersion: 'ORIGINAL'
+            }, HashableObjectType.ITEMIMAGE),
             data: [{
                 dataId: data.params[1],
                 protocol: data.params[2],

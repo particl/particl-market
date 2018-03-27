@@ -2,7 +2,6 @@ import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { PaymentType } from '../../src/api/enums/PaymentType';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
@@ -241,6 +240,5 @@ describe('ItemImageAddCommand', () => {
     });
 
 });
-
 
 

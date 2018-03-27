@@ -2,7 +2,6 @@ import { rpc, api } from '../lib/api';
 import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/ListingItemTemplateCreateRequest';
-import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
