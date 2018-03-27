@@ -1,20 +1,20 @@
 import { inject, named } from 'inversify';
 import * as _ from 'lodash';
-import { message, validate } from '../../core/api/Validate';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
-import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { ListingItemFactory } from '../factories/ListingItemFactory';
-import { ListingItemService } from '../services/ListingItemService';
-import { ItemCategory } from '../models/ItemCategory';
-import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
-import { ListingItemUpdateRequest } from '../requests/ListingItemUpdateRequest';
-import { ItemCategoryFactory } from '../factories/ItemCategoryFactory';
-import { MessagingInformationFactory } from '../factories/MessagingInformationFactory';
-import { ItemCategoryService } from '../services/ItemCategoryService';
-import { MarketService } from '../services/MarketService';
-import { ListingItemMessage } from '../messages/ListingItemMessage';
-import { EventEmitter } from '../../core/api/events';
+import { message, validate } from '../../../core/api/Validate';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Types, Core, Targets } from '../../../constants';
+import { MessageProcessorInterface } from '../MessageProcessorInterface';
+import { ListingItemFactory } from '../../factories/ListingItemFactory';
+import { ListingItemService } from '../../services/ListingItemService';
+import { ItemCategory } from '../../models/ItemCategory';
+import { ItemCategoryCreateRequest } from '../../requests/ItemCategoryCreateRequest';
+import { ListingItemUpdateRequest } from '../../requests/ListingItemUpdateRequest';
+import { ItemCategoryFactory } from '../../factories/ItemCategoryFactory';
+import { MessagingInformationFactory } from '../../factories/MessagingInformationFactory';
+import { ItemCategoryService } from '../../services/ItemCategoryService';
+import { MarketService } from '../../services/MarketService';
+import { ListingItemMessage } from '../../messages/ListingItemMessage';
+import { EventEmitter } from '../../../core/api/events';
 import * as resources from 'resources';
 
 export class UpdateListingItemMessageProcessor implements MessageProcessorInterface {
@@ -40,7 +40,7 @@ export class UpdateListingItemMessageProcessor implements MessageProcessorInterf
         const market = marketModel.toJSON();
 
         // create the new custom categories in case there are some
-        const itemCategory: resources.ItemCategory = await this.getOrCreateCategories(listingItemMessage.information.category);
+        const itemCategory: resources.ItemCategory = await this.createCategoriesFromArray(listingItemMessage.information.category);
 
         // find the categories/get the root category with related
         const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();

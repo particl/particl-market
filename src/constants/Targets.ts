@@ -86,6 +86,7 @@ export const Targets = {
     Service:     {
         ActionMessageService: 'ActionMessageService',
         AddressService: 'AddressService',
+        BidActionService: 'BidActionService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
         CoreCookieService: 'CoreCookieService',
@@ -95,6 +96,7 @@ export const Targets = {
         DefaultItemCategoryService: 'DefaultItemCategoryService',
         DefaultMarketService: 'DefaultMarketService',
         DefaultProfileService: 'DefaultProfileService',
+        EscrowActionService: 'EscrowActionService',
         EscrowRatioService: 'EscrowRatioService',
         EscrowService: 'EscrowService',
         FavoriteItemService: 'FavoriteItemService',
@@ -106,6 +108,7 @@ export const Targets = {
         ItemInformationService: 'ItemInformationService',
         ItemLocationService: 'ItemLocationService',
         ItemPriceService: 'ItemPriceService',
+        ListingItemActionService: 'ListingItemActionService',
         ListingItemObjectDataService: 'ListingItemObjectDataService',
         ListingItemObjectService: 'ListingItemObjectService',
         ListingItemService: 'ListingItemService',
@@ -130,7 +133,6 @@ export const Targets = {
         ObjectHashService: 'ObjectHashService'
     },
     Command:     {
-        ActionMessageCommand: 'ActionMessageCommand',
         address: {
             AddressAddCommand: 'AddressAddCommand',
             AddressListCommand: 'AddressListCommand',
@@ -231,10 +233,6 @@ export const Targets = {
             MarketListCommand: 'MarketListCommand',
             MarketRootCommand: 'MarketRootCommand'
         },
-        MessageDataCommand: 'MessageDataCommand',
-        MessageEscrowCommand: 'MessageEscrowCommand',
-        MessageInfoCommand: 'MessageInfoCommand',
-        MessageObjectCommand: 'MessageObjectCommand',
         messaginginformation: {
             MessagingInformationRootCommand: 'MessagingInformationRootCommand',
             MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
@@ -278,6 +276,7 @@ export const Targets = {
         }
     },
     Factory:     {
+        ActionMessageFactory: 'ActionMessageFactory',
         BidFactory: 'BidFactory',
         EscrowFactory: 'EscrowFactory',
         ImageFactory: 'ImageFactory',
@@ -287,15 +286,17 @@ export const Targets = {
         RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {
-        AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
-        BidMessageProcessor: 'BidMessageProcessor',
-        CancelBidMessageProcessor: 'CancelBidMessageProcessor',
-        ListingItemMessageProcessor: 'ListingItemMessageProcessor',
+        deprecated: {
+            AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
+            BidMessageProcessor: 'BidMessageProcessor',
+            CancelBidMessageProcessor: 'CancelBidMessageProcessor',
+            ListingItemMessageProcessor: 'ListingItemMessageProcessor',
+            RejectBidMessageProcessor: 'RejectBidMessageProcessor',
+            TestMessageProcessor: 'TestMessageProcessor',
+            UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
+        },
         MessageProcessor: 'MessageProcessor',
-        MessageProcessorInterface: 'MessageProcessorInterface',
-        RejectBidMessageProcessor: 'RejectBidMessageProcessor',
-        TestMessageProcessor: 'TestMessageProcessor',
-        UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
+        MessageProcessorInterface: 'MessageProcessorInterface'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
@@ -305,7 +306,6 @@ export const Targets = {
         RpcMiddleware: 'RpcMiddleware'
     },
     Listener:     {
-        ListingItemReceivedListener: 'ListingItemReceivedListener',
         ServerStartedListener: 'ServerStartedListener',
         user: {
             UserAuthenticatedListener: 'UserAuthenticatedListener',

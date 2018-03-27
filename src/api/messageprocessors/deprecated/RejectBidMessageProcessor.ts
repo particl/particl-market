@@ -1,17 +1,18 @@
 import { inject, named } from 'inversify';
-import { message, validate } from '../../core/api/Validate';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
-import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { BidMessage } from '../messages/BidMessage';
-import { Bid } from '../models/Bid';
-import { ListingItemService } from '../services/ListingItemService';
-import { BidService } from '../services/BidService';
-import { BidFactory } from '../factories/BidFactory';
-import { BidCreateRequest } from '../requests/BidCreateRequest';
-import { EventEmitter } from '../../core/api/events';
+import { message, validate } from '../../../core/api/Validate';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Types, Core, Targets } from '../../../constants';
+import { MessageProcessorInterface } from '../MessageProcessorInterface';
+import { BidMessage } from '../../messages/BidMessage';
+import { Bid } from '../../models/Bid';
+import { ListingItemService } from '../../services/ListingItemService';
+import { BidService } from '../../services/BidService';
+import { BidFactory } from '../../factories/BidFactory';
+import { NotFoundException } from '../../exceptions/NotFoundException';
+import { BidCreateRequest } from '../../requests/BidCreateRequest';
+import { EventEmitter } from '../../../core/api/events';
 
-export class CancelBidMessageProcessor implements MessageProcessorInterface {
+export class RejectBidMessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
 
@@ -26,9 +27,9 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
     }
 
     /**
-     * Process BidMessage of type MPA-CANCEL
+     * Process BidMessage of type MPA-REJECT
      *
-     * data:
+     * message:
      *  action: action of the BidMessage
      *  listing: item hash
      *
@@ -36,7 +37,6 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
      */
     @validate()
     public async process(@message(BidMessage) data: BidMessage): Promise<Bid> {
-
         // find listingItem by hash, the service will throw Exception if not
         const listingItemModel = await this.listingItemService.findOneByHash(data.listing);
         const listingItem = listingItemModel.toJSON();
@@ -46,7 +46,7 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
         const latestBid = latestBidModel.toJSON();
 
         this.eventEmitter.emit('cli', {
-            message: 'cancel bid message received ' + latestBid
+            message: 'reject bid message received ' + latestBid
         });
 
         // get the BidCreateRequest and create the bid
