@@ -1,4 +1,3 @@
-import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -6,15 +5,8 @@ import { Types, Core, Targets } from '../../../constants';
 import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { BidMessage } from '../../messages/BidMessage';
-import { NotFoundException } from '../../exceptions/NotFoundException';
-import { BidFactory } from '../../factories/BidFactory';
-import { Bid } from '../../models/Bid';
-import { SmsgService } from '../../services/SmsgService';
-import { BidMessageType } from '../../enums/BidMessageType';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidActionService } from '../../services/BidActionService';
 
@@ -56,13 +48,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         const listingItemModel = await this.listingItemService.findOneByHash(listingItemHash);
         const listingItem = listingItemModel.toJSON();
 
-        // if listingItem not found
-        if (listingItem === null) {
-            this.log.warn(`ListingItem with the hash=${data.params[0]} was not found!`);
-            throw new NotFoundException(data.params[0]);
-        } else {
-            return this.bidActionService.send(listingItem, data.params);
-        }
+        return this.bidActionService.send(listingItem, data.params);
     }
 
     public usage(): string {
