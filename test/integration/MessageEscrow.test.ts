@@ -20,7 +20,7 @@ describe('MessageEscrow', () => {
     let testDataService: TestDataService;
     let messageEscrowService: MessageEscrowService;
 
-    let createdId;
+    // let createdId;
 
     const testData = {
         rawtx: 'rawtx',

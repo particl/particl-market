@@ -20,7 +20,7 @@ describe('MessageInfo', () => {
     let testDataService: TestDataService;
     let messageInfoService: MessageInfoService;
 
-    let createdId;
+    // let createdId;
 
     const testData = {
         address: '20 seventeen street, march city, 2017',

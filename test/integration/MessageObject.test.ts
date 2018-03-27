@@ -20,7 +20,7 @@ describe('MessageObject', () => {
     let testDataService: TestDataService;
     let messageObjectService: MessageObjectService;
 
-    let createdId;
+    // let createdId;
 
     const testData = {
         dataId: 'colour',

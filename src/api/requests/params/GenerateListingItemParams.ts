@@ -26,6 +26,9 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
     public generateEscrow = true;
     public generateItemPrice = true;
 
+    // GenerateListingItemObjectParamsInterface
+    public generateObjectDatas = true;
+
     /**
      * generateParams[]:
      * [0]: generateItemInformation
@@ -36,6 +39,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
      * [5]: generateItemPrice
      * [6]: generateMessagingInformation
      * [7]: generateListingItemObjects
+     * [8]: generateObjectDatas
      *
      * @param generateParams
      */
@@ -53,6 +57,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.generateMessagingInformation   = generateParams[6] ? true : false;
 
             this.generateListingItemObjects     = generateParams[7] ? true : false;
+            this.generateObjectDatas            = generateParams[8] ? true : false;
         }
     }
 
@@ -65,7 +70,8 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.generateEscrow,
             this.generateItemPrice,
             this.generateMessagingInformation,
-            this.generateListingItemObjects
+            this.generateListingItemObjects,
+            this.generateObjectDatas
         ];
     }
 
