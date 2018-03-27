@@ -15,6 +15,10 @@ import { MarketService } from './MarketService';
 import { BidFactory } from '../factories/BidFactory';
 import { BidMessageType } from '../enums/BidMessageType';
 import { SmsgService } from './SmsgService';
+import { CoreRpcService } from './CoreRpcService';
+
+import { Output } from 'resources';
+import {MessageException} from '../exceptions/MessageException';
 
 export class BidActionService {
 
@@ -26,6 +30,7 @@ export class BidActionService {
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.BidService) public bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -40,7 +45,53 @@ export class BidActionService {
      * @param data
      * @returns {Promise<void>}
      */
-    public async send( listingItem: resources.ListingItem, bidData: any[] ): Promise<SmsgSendResponse> {
+    public async send( listingItem: resources.ListingItem, params: any[] ): Promise<SmsgSendResponse> {
+
+        // Get unspent
+        const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
+        const outputs: Output[] = [];
+        const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
+        const basePrice = listingItemPrice.basePrice;
+        const shippingPriceMax = Math.max(
+            listingItemPrice.ShippingPrice.international,
+            listingItemPrice.ShippingPrice.domestic);
+        const totalPrice = basePrice + shippingPriceMax;
+
+        let sum = 0;
+        let change = 0;
+
+        if (basePrice) {
+            unspent.find(output => {
+                if (output.spendable && output.solvable) {
+                    sum += output.amount;
+                    outputs.push({
+                        txid: output.txid,
+                        vout: output.vout,
+                        amount: output.amount
+                    });
+                }
+                if (sum > (totalPrice * 2)) { // TODO: Ratio
+                    change = +(sum - (totalPrice * 2) - 0.0002).toFixed(8); // TODO: Get actual fee...
+                    return true;
+                }
+                return false;
+            });
+
+            if (sum < basePrice) {
+                throw new MessageException('You are too broke...');
+            }
+        } else {
+            throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
+        }
+
+        const addr = await this.coreRpcService.call('getaccountaddress', ['_escrow_pub_' + listingItem.hash]);
+        const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']);
+        const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
+
+        // convert the bid data params as bid data key value pair
+        const bidData = this.getBidData(params.concat([
+            'outputs', outputs, 'pubkeys', [pubkey], 'changeAddr', changeAddr, 'change', change
+        ]));
 
         // fetch the profile
         const profileModel = await this.profileService.getDefault();
@@ -152,6 +203,24 @@ export class BidActionService {
         this.eventEmitter.on(Events.RejectBidReceivedEvent, async (event) => {
             await this.processRejectBidReceivedEvent(event);
         });
+    }
+
+    /**
+     * data[]:
+     * [0]: id, string
+     * [1]: value, string
+     * [2]: id, string
+     * [3]: value, string
+     * ..........
+     */
+    private getBidData(data: string[]): string[] {
+        const bidData = [] as any;
+
+        // convert the bid data params as bid data key value pair
+        for ( let i = 0; i < data.length; i += 2 ) {
+            bidData.push({id: data[i], value: data[i + 1]});
+        }
+        return bidData;
     }
 
 }
