@@ -61,6 +61,8 @@ import { GenerateProfileParams } from '../requests/params/GenerateProfileParams'
 import { GenerateBidParams } from '../requests/params/GenerateBidParams';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { BidMessageType } from '../enums/BidMessageType';
+import { SearchOrder } from '../enums/SearchOrder';
+import { ListingItemObjectType } from '../enums/ListingItemObjectType';
 
 export class TestDataService {
 
@@ -371,7 +373,6 @@ export class TestDataService {
         const itemInformation = generateParams.generateItemInformation ? this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? this.generatePaymentInformationData(generateParams) : {};
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
-        // TODO: generate listingitemobjects
         const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
 
         const listingItem = {
@@ -521,7 +522,6 @@ export class TestDataService {
         const itemInformation = generateParams.generateItemInformation ? this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? this.generatePaymentInformationData(generateParams) : {};
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
-        // TODO: generate listingitemobjects
         const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
 
         const defaultProfile = await this.profileService.getDefault();
@@ -534,6 +534,7 @@ export class TestDataService {
             listingItemObjects,
             profile_id: defaultProfile.Id
         } as ListingItemTemplateCreateRequest;
+        // this.log.error(JSON.stringify(listingItemTemplate, null, 2));
         return listingItemTemplate;
     }
 

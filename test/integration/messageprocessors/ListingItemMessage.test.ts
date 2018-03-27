@@ -2,27 +2,24 @@ import { app } from '../../../src/app';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Types, Core, Targets } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
+
 import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
 
-import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
+import { ListingItemActionService } from '../../../src/api/services/ListingItemActionService';
 
 import { ListingItemFactory } from '../../../src/api/factories/ListingItemFactory';
 
-import { ListingItemMessageProcessor } from '../../../src/api/messageprocessors/ListingItemMessageProcessor';
-
-import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
-import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
 
-import * as listingItemTemplateBasic from '../../testdata/model/listingItemTemplateBasic.json';
-import * as listingItemCategoryWithRelated from '../../testdata/model/listingItemCategoryWithRelated.json';
+import * as listingItemSmsg1 from '../../testdata/message/smsgMessageWithListingItemMessage1.json';
+import * as listingItemSmsg2 from '../../testdata/message/smsgMessageWithListingItemMessage2.json';
+import * as listingItemSmsg3 from '../../testdata/message/smsgMessageWithListingItemMessage3.json';
+import * as resources from 'resources';
 
 
-describe('ListingItemMessageProcessor', () => {
+describe('ListingItemMessage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
@@ -30,8 +27,8 @@ describe('ListingItemMessageProcessor', () => {
 
     let testDataService: TestDataService;
     let marketService: MarketService;
-    let listingItemMessageProcessor: ListingItemMessageProcessor;
     let listingItemFactory: ListingItemFactory;
+    let listingItemActionService: ListingItemActionService;
 
     let defaultMarket;
 
@@ -41,8 +38,9 @@ describe('ListingItemMessageProcessor', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        listingItemMessageProcessor = app.IoC.getNamed<ListingItemMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.ListingItemMessageProcessor);
         listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.ListingItemFactory);
+
+        listingItemActionService = app.IoC.getNamed<ListingItemActionService>(Types.Service, Targets.Service.ListingItemActionService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -84,13 +82,13 @@ describe('ListingItemMessageProcessor', () => {
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(message.information.location.gps.lng);
 
         // ItemInformation.ShippingDestinations
-        expect(result.ItemInformation.ShippingDestinations.length).toBe(2);
+        expect(result.ItemInformation.ShippingDestinations.length).toBe(message.information.shipping_destinations.length);
         // todo: test the shipping destinations
         // expect(message.information.shipping_destinations).toContain('-MOROCCO');
         // expect(message.information.shipping_destinations).toContain('PANAMA');
 
         // ItemInformation.ItemImages
-        expect(result.ItemInformation.ItemImages.length).toBe(5);
+        expect(result.ItemInformation.ItemImages.length).toBe(message.information.images.length);
         // todo: test the images
         // expect(message.information.images[0].hash).toBe(testData.ItemInformation.ItemImages[0].hash);
         // expect(message.information.images[0].data.length).toBe(1);
@@ -134,22 +132,21 @@ describe('ListingItemMessageProcessor', () => {
         // expect(result.ListingItemObjects[0].order).toBe(message.objects[0].order);
     };
 
-    test('Should create a ListingItem from ListingItemMessage', async () => {
+    test('Should process MarketplaceEvent containing ListingItemMessage', async () => {
 
-        // first create the message
-        const message = await listingItemFactory.getMessage(listingItemTemplateBasic, listingItemCategoryWithRelated);
+        const marketplaceMessage = JSON.parse(listingItemSmsg1.text);
+        marketplaceMessage.market = listingItemSmsg1.to;
 
-        // TODO: commented out because we're not currently using the processors
-        // log.debug('message: ', JSON.stringify(message, null, 2));
+        const result = await listingItemActionService.processListingItemReceivedEvent({
+            smsgMessage: listingItemSmsg1,
+            marketplaceMessage
+        });
 
-        // then run the processor
-        // const createdListingItem = await listingItemMessageProcessor.process(message, defaultMarket.address);
-        // log.debug('createdListingItem: ', JSON.stringify(createdListingItem, null, 2));
-
-        // const result = createdListingItem;
-
-        // test that we have correctly converted the message
-        // expectListingItemFromMessage(result, message);
+        // log.debug('result: ', JSON.stringify(result, null, 2));
+        log.debug('listingItemMessage: ', JSON.stringify(marketplaceMessage.item, null, 2));
+        log.debug('result.hash: ', JSON.stringify(result.hash, null, 2));
+        log.debug('listingItemMessage.hash: ', JSON.stringify(marketplaceMessage.item.hash, null, 2));
+        expectListingItemFromMessage(result, marketplaceMessage.item);
 
     });
 

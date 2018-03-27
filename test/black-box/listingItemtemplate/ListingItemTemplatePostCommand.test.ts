@@ -15,7 +15,6 @@ import * as listingItemTemplateCreateRequestBasic1 from '../../testdata/createre
 import * as listingItemTemplateCreateRequestBasic2 from '../../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
 
 import * as resources from 'resources';
-import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 
 describe('ListingItemSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

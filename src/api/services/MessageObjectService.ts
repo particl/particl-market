@@ -36,7 +36,7 @@ export class MessageObjectService {
     }
 
     @validate()
-    public async create( @request(MessageObjectCreateRequest) data: any): Promise<MessageObject> {
+    public async create( @request(MessageObjectCreateRequest) data: MessageObjectCreateRequest): Promise<MessageObject> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -51,7 +51,7 @@ export class MessageObjectService {
     }
 
     @validate()
-    public async update(id: number, @request(MessageObjectUpdateRequest) body: any): Promise<MessageObject> {
+    public async update(id: number, @request(MessageObjectUpdateRequest) body: MessageObjectUpdateRequest): Promise<MessageObject> {
 
         // find the existing one without related
         const messageObject = await this.findOne(id, false);

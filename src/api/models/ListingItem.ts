@@ -17,6 +17,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public static RELATIONS = [
         'ItemInformation',
         'ItemInformation.ItemCategory',
+        'ItemInformation.ItemCategory.ParentItemCategory',
+        'ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory',
+        'ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+        'ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
         'ItemInformation.ItemLocation',
         'ItemInformation.ItemLocation.LocationMarker',
         'ItemInformation.ItemImages',

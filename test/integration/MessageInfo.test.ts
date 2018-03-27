@@ -48,7 +48,7 @@ describe('MessageInfo', () => {
 
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
-        await messageInfoService.create(testData).catch(e =>
+        await messageInfoService.create({}).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
