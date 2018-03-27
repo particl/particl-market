@@ -16,7 +16,7 @@ describe('BidFactory', () => {
     // TODO: also they do not take in to account from who the latest bid is from/check if the latestBid was
     // from correct person
 
-    test('Should create BidMessages correcly', async () => {
+    test('Should create BidMessages correctly', async () => {
         const message = await bidFactory.getMessage(BidMessageType.MPA_ACCEPT, 'itemhash', [{
             id: 'iidee',
             value: 'value'

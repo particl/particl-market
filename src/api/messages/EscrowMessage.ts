@@ -8,7 +8,7 @@ export class EscrowMessage implements EscrowMessageInterface {
     public action: EscrowMessageType;
 
     @IsNotEmpty()
-    public listing: string;    // using listing instead of item
+    public item: string;    // using listing instead of item
 
     @IsNotEmpty()
     public escrow: any;
