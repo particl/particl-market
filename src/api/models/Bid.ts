@@ -10,7 +10,7 @@ export class Bid extends Bookshelf.Model<Bid> {
         if (withRelated) {
             return await Bid.where<Bid>({ id: value }).fetch({
                 withRelated: [
-                'BidData'
+                    'BidDatas'
                 ]
             });
         } else {
@@ -33,8 +33,8 @@ export class Bid extends Bookshelf.Model<Bid> {
         if (withRelated) {
             return await bidCollection.fetchAll({
                 withRelated: [
-                  'ListingItem',
-                  'BidData'
+                    'ListingItem',
+                    'BidDatas'
                 ]
             });
         } else {
@@ -65,7 +65,7 @@ export class Bid extends Bookshelf.Model<Bid> {
        return this.belongsTo(ListingItem, 'listing_item_id', 'id');
     }
 
-    public BidData(): Collection<BidData> {
+    public BidDatas(): Collection<BidData> {
        return this.hasMany(BidData, 'bid_id', 'id');
     }
 }

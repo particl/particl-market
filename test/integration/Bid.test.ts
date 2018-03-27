@@ -127,7 +127,7 @@ describe('Bid', () => {
         // test the values
         expect(result.action).toBe(testData.action);
         expect(result.listingItemId).toBe(testData.listing_item_id);
-        expect(result.BidData.length).toBe(2);
+        expect(result.BidDatas.length).toBe(2);
     });
 
     test('Should throw ValidationException because there is no listing_item_id', async () => {

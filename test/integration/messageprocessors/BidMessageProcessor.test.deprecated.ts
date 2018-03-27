@@ -162,9 +162,9 @@ describe('BidMessageProcessor', () => {
         // test the values
         expect(result.action).toBe(testBidData.action);
         expect(result.listingItemId).toBe(createdListingItem.Id);
-        expect(result.BidData.length).toBe(1);
-        expect(result.BidData[0].dataId).toBe(testBidData.objects[0].id);
-        expect(result.BidData[0].dataValue).toBe(testBidData.objects[0].value);
+        expect(result.BidDatas.length).toBe(1);
+        expect(result.BidDatas[0].dataId).toBe(testBidData.objects[0].id);
+        expect(result.BidDatas[0].dataValue).toBe(testBidData.objects[0].value);
     });
 
 });

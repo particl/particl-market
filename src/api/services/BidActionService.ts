@@ -22,6 +22,7 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { BidMessageType } from '../enums/BidMessageType';
 import { Output } from 'resources';
 import { BidMessage } from '../messages/BidMessage';
+declare function unescape(s: string): string;
 
 export class BidActionService {
 
@@ -46,8 +47,9 @@ export class BidActionService {
     /**
      * Posts a Bid to the network
      *
-     * @param data
-     * @returns {Promise<void>}
+     * @param {"resources".ListingItem} listingItem
+     * @param {any[]} params
+     * @returns {Promise<SmsgSendResponse>}
      */
     public async send( listingItem: resources.ListingItem, params: any[] ): Promise<SmsgSendResponse> {
 
@@ -119,35 +121,24 @@ export class BidActionService {
         return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage);
     }
 
-
     /**
      * Accept a bid
      *
-     * @param data
-     * @returns {Promise<void>}
+     * @param {"resources".ListingItem} listingItem
+     * @param {"resources".Bid} bid
+     * @returns {Promise<SmsgSendResponse>}
      */
-/*
-    public async accept( listingItem: resources.ListingItem, params: any[] ): Promise<SmsgSendResponse> {
-        // MOVED FROM COMMAND
+    public async accept( listingItem: resources.ListingItem, bid: resources.Bid ): Promise<SmsgSendResponse> {
 
-        // find related bid
-        // TODO: LATER WE WILL CHANGE IT FOR THE SINGLE BID
-        let bid = listingItem.related('Bids').toJSON()[0];
-        bid = (await Bid.fetchById(bid.id)).toJSON() as Bid;
-
-        // if bid not found for the given listing item hash
-        if (!bid) {
-            this.log.warn(`Bid with the listing Item hash=${data.params[0]} was not found!`);
-            throw new MessageException(`Bid not found for the listing item hash ${data.params[0]}`);
-
-        } else if (bid.action === BidMessageType.MPA_BID) {
+        // last bids action needs to be MPA_BID
+        if (bid.action === BidMessageType.MPA_BID) {
 
             // TODO: Ryno Hacks - Refactor code below...
             // This is a copy and paste - hacks hacks hacks ;(
             // Get unspent
             const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
             const outputs: Output[] = [];
-            const listingItemPrice = listingItem.toJSON().PaymentInformation.ItemPrice;
+            const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
             const basePrice = listingItemPrice.basePrice;
             const shippingPriceMax = Math.max(
                 listingItemPrice.ShippingPrice.international,
@@ -179,23 +170,24 @@ export class BidActionService {
                     throw new MessageException('You are too broke...');
                 }
             } else {
-                this.log.error(`ListingItem with the hash=${listingItem.Hash} does not have a price!`);
-                throw new MessageException(`ListingItem with the hash=${listingItem.Hash} does not have a price!`);
+                this.log.error(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
+                throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
             }
 
-            const addr = await this.coreRpcService.call('getaccountaddress', ['_escrow_pub_' + listingItem.Hash]);
+            const addr = await this.coreRpcService.call('getaccountaddress', ['_escrow_pub_' + listingItem.hash]);
             const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']); // TODO: Proper change address?!?!
             const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
-            let buyerPubkey = bid.BidData.find(kv => kv.dataId === 'pubkeys').dataValue;
+
+            let buyerPubkey = this.getValueFromBidDatas('pubkeys', bid.BidDatas);
             buyerPubkey = buyerPubkey[0] === '[' ? JSON.parse(buyerPubkey)[0] : buyerPubkey;
 
-            console.log('buyerPubkey', buyerPubkey);
+            this.log.debug('buyerPubkey', buyerPubkey);
 
             // Create Escrow address
             const escrow = (await this.coreRpcService.call('addmultisigaddress', [
                 2,
                 [pubkey, buyerPubkey].sort(),
-                '_escrow_' + listingItem.Hash  // TODO: Something unique??
+                '_escrow_' + listingItem.hash  // TODO: Something unique??
             ]));
 
             const txout = {};
@@ -203,8 +195,8 @@ export class BidActionService {
             txout[escrow] = +(totalPrice * 3).toFixed(8); // TODO: Shipping... ;(
             txout[changeAddr] = change;
 
-            const buyerChangeAddr = bid.BidData.find(kv => kv.dataId === 'changeAddr').dataValue; // TODO: Error handling - nice messagee..
-            let buyerOutputs = bid.BidData.find(kv => kv.dataId === 'outputs');
+            const buyerChangeAddr = this.getValueFromBidDatas('changeAddr', bid.BidDatas); // TODO: Error handling - nice messagee..
+            let buyerOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
 
             // TODO: Verify that buyers outputs are unspent?? :/
             if (buyerOutputs) {
@@ -239,9 +231,6 @@ export class BidActionService {
                 txout
             ]);
 
-            // convert the bid data params as bid data key value pair
-            const listingItemHash = data.params.shift();
-
             // TODO: At this stage we need to store the unsigned transaction, as we will need user interaction to sign
             // the transaction
             const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
@@ -258,55 +247,40 @@ export class BidActionService {
 
             // TODO: We need to send a refund / release address
             const releaseAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
-            const bidData = this.setBidData(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex, 'address', releaseAddr]);
+            const bidData = this.getBidData(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex, 'address', releaseAddr]);
 
             // - Most likely the transaction building and signing will happen in a different command that takes place
             // before this..
             // End - Ryno Hacks
 
-            // broadcast the accepted bid message
-            // TODO: add profile and market addresses
+
+            // fetch the profile
+            const profileModel = await this.profileService.getDefault();
+            const profile = profileModel.toJSON();
+
+            // fetch the market
+            const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);
+            const market = marketModel.toJSON();
+
+            // create the bid accept message
+            const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidData);
+
             const marketPlaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,
-                mpaction: {
-                    listing: data.params[0],
-                    objects: bidData,
-                    action: BidMessageType.MPA_ACCEPT
-                }
+                mpaction: bidMessage
             } as MarketplaceMessage;
 
-            await this.smsgService.smsgSend('', '', marketPlaceMessage);
+            this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
-            // TODO: We will change the return data once broadcast functionality will be implemented
-            return bid;
-
+            // broadcast the accepted bid message
+            return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage);
         } else {
             this.log.warn(`Bid can not be accepted because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be accepted because it was already been ${bid.action}`);
         }
-        // MOVED FROM COMMAND - END
 
-        // fetch the profile
-        const profileModel = await this.profileService.getDefault();
-        const profile = profileModel.toJSON();
-
-        // fetch the market
-        const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);
-        const market = marketModel.toJSON();
-
-        const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidData);
-
-        const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: bidMessage
-        } as MarketplaceMessage;
-
-        this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
-
-        // broadcast the message in to the network
-        return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage);
     }
-*/
+
     /**
      * process received BidMessage
      *
@@ -428,4 +402,19 @@ export class BidActionService {
         return bidData;
     }
 
+    /**
+     *
+     * @param {string} key
+     * @param {"resources".BidData[]} bidDatas
+     * @returns {any}
+     */
+    private getValueFromBidDatas(key: string, bidDatas: resources.BidData[]): any {
+        const value = bidDatas.find(kv => kv.dataId === key);
+        if ( value ) {
+            return value.dataValue;
+        } else {
+            this.log.error('Missing BidData value for key: ' + key);
+            throw new MessageException('Missing BidData value for key: ' + key);
+        }
+    }
 }

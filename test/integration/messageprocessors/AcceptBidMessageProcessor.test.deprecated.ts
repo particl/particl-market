@@ -117,7 +117,7 @@ describe('AcceptBidMessageProcessor', () => {
         // test the values
         expect(result.action).toBe(BidMessageType.MPA_ACCEPT);
         expect(result.listingItemId).toBe(createdListingItem.id);
-        expect(result.BidData.length).toBe(0);
+        expect(result.BidDatas.length).toBe(0);
     });
 
     test('Should return two bids with latest one created with Accept action for the given listing item', async () => {

@@ -3,6 +3,8 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
+import * as resources from 'resources';
+
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidFactory } from '../../factories/BidFactory';
@@ -14,8 +16,6 @@ import { BaseCommand } from '../BaseCommand';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { BidActionService } from '../../services/BidActionService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-declare function unescape(s: string): string;
-
 
 export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -36,14 +36,19 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      * [0]: itemhash, string
+     * [1]: bidId
+     *
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
+        const itemHash = data.params[0];
+        const bidId = data.params[1];
+
         // find listingItem by hash
-        const listingItemModel = await this.listingItemService.findOneByHash(data.params[0]);
+        const listingItemModel = await this.listingItemService.findOneByHash(itemHash);
         const listingItem = listingItemModel.toJSON();
 
         // make sure we have a ListingItemTemplate, so we know it's our item
@@ -51,7 +56,16 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('Not your item.');
         }
 
-        return {} as SmsgSendResponse; // this.bidActionService.accept(listingItem);
+        const bids: resources.Bid[] = listingItem.Bids;
+        const bidToAccept = _.find(bids, (bid) => {
+            return bid.id === bidId;
+        });
+
+        if (!bidToAccept) {
+            throw new MessageException('Bid not found.');
+        }
+
+        return this.bidActionService.accept(listingItem, bidToAccept);
     }
 
     public usage(): string {

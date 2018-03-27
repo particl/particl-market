@@ -23,7 +23,7 @@ import { BidUpdateRequest } from '../../src/api/requests/BidUpdateRequest';
 import { BidDataCreateRequest } from '../../src/api/requests/BidDataCreateRequest';
 import { BidDataUpdateRequest } from '../../src/api/requests/BidDataUpdateRequest';
 
-describe('BidData', () => {
+describe('BidDatas', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);

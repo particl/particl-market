@@ -6,11 +6,7 @@ export class BidData extends Bookshelf.Model<BidData> {
     public static async fetchById(value: number, withRelated: boolean = true): Promise<BidData> {
         if (withRelated) {
             return await BidData.where<BidData>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'BidDataRelated',
-                    // 'BidDataRelated.Related'
-                ]
+                withRelated: []
             });
         } else {
             return await BidData.where<BidData>({ id: value }).fetch();

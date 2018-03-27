@@ -184,7 +184,7 @@ export class EscrowFactory {
         const listing = await ListingItem.fetchByHash(request.listing);
 
         const bid: resources.Bid = listing.related('Bids').toJSON()[0];
-        const bidData = (await Bid.fetchById(bid.id)).related('BidData').toJSON() as resources.BidData[];
+        const bidData = (await Bid.fetchById(bid.id)).related('BidDatas').toJSON() as resources.BidData[];
 
         let sellerAddress: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'address');
         let rawtx: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'rawtx');
