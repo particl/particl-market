@@ -2,6 +2,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
+import * as _ from 'lodash';
 import { PaymentInformationService } from '../../services/PaymentInformationService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { PaymentInformationUpdateRequest } from '../../requests/PaymentInformationUpdateRequest';
@@ -10,6 +11,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class PaymentInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<PaymentInformation> {
 
@@ -17,6 +20,7 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService
     ) {
         super(Commands.PAYMENTINFORMATION_UPDATE);
@@ -38,7 +42,18 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<PaymentInformation> {
-        return this.paymentInformationService.updateByListingId({
+
+        // get the template
+        const listingItemTemplateId = data.params[0];
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
+        const listingItemTemplate = listingItemTemplateModel.toJSON();
+
+        // template allready has listingitems so for now, it cannot be modified
+        if (_.isEmpty(listingItemTemplate.PaymentInformation)) {
+            throw new MessageException(`PaymentInformation for the ListingItemTemplate was not found!`);
+        }
+
+        return this.paymentInformationService.update(listingItemTemplate.PaymentInformation.id, {
             listing_item_template_id : data.params[0],
             type: data.params[1],
             itemPrice: {

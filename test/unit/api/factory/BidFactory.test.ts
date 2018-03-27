@@ -13,7 +13,8 @@ describe('BidFactory', () => {
     });
 
     // TODO: these tests do not check all the valid state changes yet.
-    // TODO: also they do not take in to account from who the latest bid is from/check if the latestBid was from correct person
+    // TODO: also they do not take in to account from who the latest bid is from/check if the latestBid was
+    // from correct person
 
     test('Should convert BidMessage, action: MPA_BID to BidCreateRequest', async () => {
 

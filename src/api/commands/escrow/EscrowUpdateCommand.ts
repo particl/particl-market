@@ -8,6 +8,9 @@ import { Escrow } from '../../models/Escrow';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
+import { EscrowUpdateRequest } from '../../requests/EscrowUpdateRequest';
+import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 
 export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -15,6 +18,7 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService
     ) {
         super(Commands.ESCROW_UPDATE);
@@ -32,14 +36,26 @@ export class EscrowUpdateCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Escrow> {
-        return this.escrowService.updateCheckByListingItem({
-            listingItemTemplateId: data.params[0],
+
+        // get the template
+        const listingItemTemplateId = data.params[0];
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
+        const listingItemTemplate = listingItemTemplateModel.toJSON();
+
+        // template allready has listingitems so for now, it cannot be modified
+        if (listingItemTemplate.ListingItems.length > 0) {
+            throw new MessageException(`Escrow cannot be updated because ListingItems allready exist for the ListingItemTemplate.`);
+        }
+
+        // creates an Escrow related to PaymentInformation related to ListingItemTemplate
+        return this.escrowService.update(listingItemTemplate.PaymentInformation.Escrow.id, {
+            payment_information_id: listingItemTemplate.PaymentInformation.id,
             type: data.params[1],
             ratio: {
                 buyer: data.params[2],
                 seller: data.params[3]
             }
-        });
+        } as EscrowUpdateRequest);
     }
 
     public usage(): string {

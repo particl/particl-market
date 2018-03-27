@@ -20,7 +20,7 @@ describe('MessageEscrow', () => {
     let testDataService: TestDataService;
     let messageEscrowService: MessageEscrowService;
 
-    let createdId;
+    // let createdId;
 
     const testData = {
         rawtx: 'rawtx',
@@ -48,7 +48,7 @@ describe('MessageEscrow', () => {
 
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
-        await messageEscrowService.create(testData).catch(e =>
+        await messageEscrowService.create({}).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });

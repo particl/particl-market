@@ -22,10 +22,6 @@ export class PaymentInformation extends Bookshelf.Model<PaymentInformation> {
         }
     }
 
-    public static async fetchByListingItemTemplateId(value: number): Promise<PaymentInformation> {
-        return await PaymentInformation.where<PaymentInformation>({ listing_item_template_id: value }).fetch();
-    }
-
     public get tableName(): string { return 'payment_informations'; }
     public get hasTimestamps(): boolean { return true; }
 
