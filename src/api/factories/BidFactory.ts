@@ -19,6 +19,24 @@ export class BidFactory {
     }
 
     /**
+     *
+     * @param {BidMessageType} bidMessageType
+     * @param {string} itemHash
+     * @param {any[]} idValuePairObjects { id: 'objectid', value: 'objectvalue' }
+     * @returns {Promise<BidMessage>}
+     */
+    public async getMessage(bidMessageType: BidMessageType, itemHash: string, idValuePairObjects?: any[]): Promise<BidMessage> {
+
+        const message = {
+            action: bidMessageType.toString(),
+            item: itemHash,
+            objects: idValuePairObjects
+        } as BidMessage;
+
+        return message;
+    }
+
+    /**
      * create a BidCreateRequest
      *
      * @param bidMessage

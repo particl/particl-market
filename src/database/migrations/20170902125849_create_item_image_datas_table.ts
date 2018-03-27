@@ -19,6 +19,9 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
+
+            table.string('original_mime'); // .notNullable();
+            table.string('original_name'); // .notNullable();
         })
     ]);
 };

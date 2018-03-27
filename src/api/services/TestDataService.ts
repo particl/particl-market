@@ -12,6 +12,7 @@ import { ShippingCountries } from '../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../enums/ShippingAvailability';
 import { MessagingProtocolType } from '../enums/MessagingProtocolType';
 import { CryptocurrencyAddressType } from '../enums/CryptocurrencyAddressType';
+import { ListingItemObjectType } from '../enums/ListingItemObjectType';
 import { Currency } from '../enums/Currency';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { PaymentType } from '../enums/PaymentType';
@@ -58,8 +59,10 @@ import { GenerateListingItemTemplateParams } from '../requests/params/GenerateLi
 import { GenerateListingItemParams } from '../requests/params/GenerateListingItemParams';
 import { GenerateProfileParams } from '../requests/params/GenerateProfileParams';
 import { GenerateBidParams } from '../requests/params/GenerateBidParams';
-import {ImageProcessing} from '../../core/helpers/ImageProcessing';
+import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { BidMessageType } from '../enums/BidMessageType';
+import { SearchOrder } from '../enums/SearchOrder';
+import { ListingItemObjectType } from '../enums/ListingItemObjectType';
 
 export class TestDataService {
 
@@ -212,6 +215,7 @@ export class TestDataService {
             'payment_informations',
             'messaging_informations',
             'listing_item_objects',
+            'listing_item_object_datas',
             'listing_items',
             'listing_item_templates',
             'addresses',
@@ -369,8 +373,7 @@ export class TestDataService {
         const itemInformation = generateParams.generateItemInformation ? this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? this.generatePaymentInformationData(generateParams) : {};
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
-        // TODO: generate listingitemobjects
-        const listingItemObjects = generateParams.generateListingItemObjects ? [] : [];
+        const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
 
         const listingItem = {
             hash: Faker.random.uuid(),
@@ -489,12 +492,37 @@ export class TestDataService {
         return messagingInformation;
     }
 
+    // listingitemobjects
+    private generateListingItemObjectsData(generateParams: GenerateListingItemTemplateParams): any {
+        const listingItemObjectDatas = generateParams.generateObjectDatas
+            ? this.generateObjectDataData(_.random(1, 5))
+            : [];
+
+        const listingItemObjects = [{
+            type: Faker.random.arrayElement(Object.getOwnPropertyNames(ListingItemObjectType)),
+            description: Faker.lorem.paragraph(),
+            order: Faker.random.number(),
+            listingItemObjectDatas
+        }];
+        return listingItemObjects;
+    }
+
+    private generateObjectDataData(amount: number): any[] {
+        const object: any[] = [];
+        for (let i = amount; i > 0; i--) {
+            object.push({
+                key: Faker.lorem.slug(),
+                value: Faker.lorem.word()
+            });
+        }
+        return object;
+    }
+
     private async generateListingItemTemplateData(generateParams: GenerateListingItemTemplateParams): Promise<ListingItemTemplateCreateRequest> {
         const itemInformation = generateParams.generateItemInformation ? this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? this.generatePaymentInformationData(generateParams) : {};
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
-        // TODO: generate listingitemobjects
-        const listingItemObjects = generateParams.generateListingItemObjects ? [] : [];
+        const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
 
         const defaultProfile = await this.profileService.getDefault();
 
@@ -506,6 +534,7 @@ export class TestDataService {
             listingItemObjects,
             profile_id: defaultProfile.Id
         } as ListingItemTemplateCreateRequest;
+        // this.log.error(JSON.stringify(listingItemTemplate, null, 2));
         return listingItemTemplate;
     }
 

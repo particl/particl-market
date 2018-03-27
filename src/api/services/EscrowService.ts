@@ -6,35 +6,36 @@ import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { MessageException } from '../exceptions/MessageException';
-import { EscrowRepository } from '../repositories/EscrowRepository';
+
 import { Escrow } from '../models/Escrow';
+import { EscrowRepository } from '../repositories/EscrowRepository';
+
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../requests/EscrowUpdateRequest';
 import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
 import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
 import { EscrowLockRequest } from '../requests/EscrowLockRequest';
-import { ListingItemTemplateRepository } from '../repositories/ListingItemTemplateRepository';
-import { PaymentInformationRepository } from '../repositories/PaymentInformationRepository';
+
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+
+import { EscrowFactory } from '../factories/EscrowFactory';
+
 import { EscrowRatioService } from '../services/EscrowRatioService';
 import { AddressService } from '../services/AddressService';
 import { SmsgService } from '../services/SmsgService';
-import { EscrowFactory } from '../factories/EscrowFactory';
-import { EscrowMessageInterface } from '../messages/EscrowMessageInterface';
-import { EscrowMessage } from '../messages/EscrowMessage';
-import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
 
 export class EscrowService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.EscrowRatioService) private escrowratioService: EscrowRatioService,
+        @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) public escrowFactory: EscrowFactory,
         @inject(Types.Repository) @named(Targets.Repository.EscrowRepository) public escrowRepo: EscrowRepository,
-        @inject(Types.Repository) @named(Targets.Repository.ListingItemTemplateRepository) public listingItemTemplateRepo: ListingItemTemplateRepository,
-        @inject(Types.Repository) @named(Targets.Repository.PaymentInformationRepository) private paymentInfoRepo: PaymentInformationRepository,
-        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
-        @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) private escrowFactory: EscrowFactory,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.EscrowRatioService) public escrowRatioService: EscrowRatioService,
+        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -53,37 +54,6 @@ export class EscrowService {
         return escrow;
     }
 
-    public async findOneByPaymentInformation(id: number, withRelated: boolean = true): Promise<Escrow> {
-        const escrow = await this.escrowRepo.findOneByPaymentInformation(id, withRelated);
-        if (escrow === null) {
-            this.log.warn(`Escrow with the id=${id} was not found!`);
-            throw new NotFoundException(id);
-        }
-        return escrow;
-    }
-
-    public async createCheckByListingItem(body: any): Promise<Escrow> {
-        // check listingItem by listingItemTemplateId
-        const listingItemTemplateId = body.listingItemTemplateId;
-        const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
-        if (listingItemTemplate.ListingItems.length === 0) {
-            // creates an Escrow related to PaymentInformation related to ListingItemTemplate
-            const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
-            if (paymentInformation === null) {
-                this.log.warn(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
-                throw new MessageException(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
-            }
-            body.payment_information_id = paymentInformation.Id;
-        } else {
-            this.log.warn(`Escrow cannot be created becuase Listing
-            Item has already been posted with listing-item-template-id ${listingItemTemplateId}`);
-            throw new MessageException(`Escrow cannot be created becuase Listing
-            Item has already been posted with listing-item-template-id ${listingItemTemplateId}`);
-        }
-        delete body.listingItemTemplateId;
-        return this.create(body);
-    }
-
     @validate()
     public async create( @request(EscrowCreateRequest) data: EscrowCreateRequest): Promise<Escrow> {
 
@@ -98,36 +68,11 @@ export class EscrowService {
         // create related models, escrowRatio
         if (!_.isEmpty(escrowRatio)) {
             escrowRatio.escrow_id = escrow.Id;
-            await this.escrowratioService.create(escrowRatio);
+            await this.escrowRatioService.create(escrowRatio);
         }
 
         // finally find and return the created escrow
         return await this.findOne(escrow.Id);
-    }
-
-    public async updateCheckByListingItem(body: any): Promise<Escrow> {
-        // check listingItem by listingItemTemplateId
-        const listingItemTemplateId = body.listingItemTemplateId;
-        const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
-        let escrowId;
-        if (listingItemTemplate.ListingItems.length === 0) {
-            // creates an Escrow related to PaymentInformation related to ListingItemTemplate
-            const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
-            if (paymentInformation === null) {
-                this.log.warn(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
-                throw new MessageException(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
-            }
-            const escrow = await this.findOneByPaymentInformation(paymentInformation.Id, false);
-            escrowId = escrow.Id;
-            body.payment_information_id = paymentInformation.Id;
-        } else {
-            this.log.warn(`Escrow cannot be updated becuase Listing
-            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
-            throw new MessageException(`Escrow cannot be updated becuase Listing
-            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
-        }
-        delete body.listingItemTemplateId;
-        return this.update(escrowId, body);
     }
 
     @validate()
@@ -148,38 +93,16 @@ export class EscrowService {
         let relatedRatio = updatedEscrow.related('Ratio').toJSON();
 
         // delete it
-        await this.escrowratioService.destroy(relatedRatio.id);
+        await this.escrowRatioService.destroy(relatedRatio.id);
 
         // and create new related data
         relatedRatio = body.ratio;
         relatedRatio.escrow_id = id;
-        await this.escrowratioService.create(relatedRatio);
+        await this.escrowRatioService.create(relatedRatio);
 
         // finally find and return the updated escrow
         const newEscrow = await this.findOne(id);
         return newEscrow;
-    }
-
-    public async destroyCheckByListingItem(listingItemTemplateId: any): Promise<void> {
-        // check listingItem by listingItemTemplateId
-        const listingItemTemplate = await this.listingItemTemplateRepo.findOne(listingItemTemplateId);
-        let escrowId;
-        if (listingItemTemplate.ListingItems.length === 0) {
-            // creates an Escrow related to PaymentInformation related to ListingItemTemplate
-            const paymentInformation = await this.paymentInfoRepo.findOneByListingItemTemplateId(listingItemTemplateId);
-            if (paymentInformation === null) {
-                this.log.warn(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
-                throw new MessageException(`PaymentInformation with the listing_item_template_id=${listingItemTemplateId} was not found!`);
-            }
-            const escrow = await this.findOneByPaymentInformation(paymentInformation.Id, false);
-            escrowId = escrow.Id;
-        } else {
-            this.log.warn(`Escrow cannot be updated becuase Listing
-            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
-            throw new MessageException(`Escrow cannot be updated becuase Listing
-            Item has allready been posted with listing-item-template-id ${listingItemTemplateId}`);
-        }
-        return this.destroy(escrowId);
     }
 
     public async destroy(id: number): Promise<void> {
@@ -187,7 +110,7 @@ export class EscrowService {
     }
 
     @validate()
-    public async lock(@request(EscrowLockRequest) escrowRequest: EscrowLockRequest, escrow: Escrow): Promise<void> {
+    public async lock(@request(EscrowLockRequest) escrowRequest: EscrowLockRequest, escrow: Escrow): Promise<SmsgSendResponse> {
 
         // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
         // resources.Escrow module not able to include here.
@@ -207,14 +130,14 @@ export class EscrowService {
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: escrowActionMessage
-        } as MarketplaceMessageInterface;
+        } as MarketplaceMessage;
 
         // TODO: add profile and market addresses
         return await this.smsgService.smsgSend('', '', marketPlaceMessage);
     }
 
     @validate()
-    public async refund(@request(EscrowRefundRequest) escrowRequest: EscrowRefundRequest, escrow: Escrow): Promise<void> {
+    public async refund(@request(EscrowRefundRequest) escrowRequest: EscrowRefundRequest, escrow: Escrow): Promise<SmsgSendResponse> {
 
         // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
         // resources.Escrow module not able to include here.
@@ -226,14 +149,14 @@ export class EscrowService {
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: escrowActionMessage
-        } as MarketplaceMessageInterface;
+        } as MarketplaceMessage;
 
         // TODO: add profile and market addresses
         return await this.smsgService.smsgSend('', '', marketPlaceMessage);
     }
 
     @validate()
-    public async release(@request(EscrowReleaseRequest) escrowRequest: EscrowReleaseRequest, escrow: Escrow): Promise<void> {
+    public async release(@request(EscrowReleaseRequest) escrowRequest: EscrowReleaseRequest, escrow: Escrow): Promise<SmsgSendResponse> {
 
         // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
         // resources.Escrow module not able to include here.
@@ -245,7 +168,7 @@ export class EscrowService {
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: escrowActionMessage
-        } as MarketplaceMessageInterface;
+        } as MarketplaceMessage;
 
         // TODO: add profile and market addresses
         return await this.smsgService.smsgSend('', '', marketPlaceMessage);

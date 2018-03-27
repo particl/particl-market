@@ -21,7 +21,6 @@ import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
@@ -41,6 +40,7 @@ import { MessagingInformationService } from '../../src/api/services/MessagingInf
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
+import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
 
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ListingItemTemplateUpdateRequest } from '../../src/api/requests/ListingItemTemplateUpdateRequest';
@@ -60,6 +60,8 @@ import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createreque
 import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
 
 import * as resources from 'resources';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
+import { ObjectHashService } from '../../src/api/services/ObjectHashService';
 
 describe('ListingItemTemplate', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -87,6 +89,8 @@ describe('ListingItemTemplate', () => {
     let listingItemService: ListingItemService;
     let marketService: MarketService;
     let listingItemObjectService: ListingItemObjectService;
+    let listingItemObjectDataService: ListingItemObjectDataService;
+    let objectHashService: ObjectHashService;
 
     let createdListingItemTemplate1;
     let createdListingItemTemplate2;
@@ -122,6 +126,8 @@ describe('ListingItemTemplate', () => {
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
+        listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.ListingItemObjectDataService);
+        objectHashService = app.IoC.getNamed<ObjectHashService>(Types.Service, Targets.Service.ObjectHashService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -229,6 +235,12 @@ describe('ListingItemTemplate', () => {
         expect(results[0].type).toBe(createRequest[0].type);
         expect(results[0].description).toBe(createRequest[0].description);
         expect(results[0].order).toBe(createRequest[0].order);
+        expect(results[0].objectId).toBeDefined();
+        expect(results[0].forceInput).toBeDefined();
+
+        const objectDataResults = results[0].ListingItemObjectDatas;
+        expect(objectDataResults[0].key).toBe(createRequest[0].listingItemObjectDatas[0].key);
+        expect(objectDataResults[0].value).toBe(createRequest[0].listingItemObjectDatas[0].value);
     };
 
     const expectListingItemTemplateWasDeleted = async (item: resources.ListingItemTemplate) => {
@@ -336,6 +348,15 @@ describe('ListingItemTemplate', () => {
         if (!_.isEmpty(item.ListingItemObjects)) {
             for (const listingItemObject of item.ListingItemObjects) {
                 const listintItemObjectId = listingItemObject.id;
+                // ListingItemObjectDatas
+                const listintItemObjectDatas = listingItemObject.ListingItemObjectDatas;
+                if (!_.isEmpty(listintItemObjectDatas)) {
+                    for (const listintItemObjectData of listintItemObjectDatas) {
+                        await listingItemObjectDataService.findOne(listintItemObjectData.id, false).catch(e =>
+                            expect(e).toEqual(new NotFoundException(listintItemObjectData.id))
+                        );
+                    }
+                }
                 await listingItemObjectService.findOne(listintItemObjectId, false).catch(e =>
                     expect(e).toEqual(new NotFoundException(listintItemObjectId))
                 );
@@ -357,7 +378,7 @@ describe('ListingItemTemplate', () => {
 
     test('Should create a new ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.profile_id = defaultProfile.Id;
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
@@ -393,7 +414,7 @@ describe('ListingItemTemplate', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.profile_id = defaultProfile.Id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
@@ -404,7 +425,8 @@ describe('ListingItemTemplate', () => {
 
     test('Should update previously created ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.profile_id = defaultProfile.Id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.update(createdListingItemTemplate2.id, testDataToSave);
@@ -414,7 +436,7 @@ describe('ListingItemTemplate', () => {
     });
 
     test('Should delete the previously updated ListingItemTemplate', async () => {
-        expect.assertions(16);
+        expect.assertions(21);
         await listingItemTemplateService.destroy(updatedListingItemTemplate1.id);
         await expectListingItemTemplateWasDeleted(updatedListingItemTemplate1);
     });
@@ -427,7 +449,7 @@ describe('ListingItemTemplate', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.profile_id = defaultProfile.Id;
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
@@ -451,7 +473,7 @@ describe('ListingItemTemplate', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.profile_id = defaultProfile.Id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
@@ -468,7 +490,7 @@ describe('ListingItemTemplate', () => {
 
     test('Should create ListingItem with relation to ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic3));
-        testDataToSave.hash = ObjectHash.getHash(testDataToSave);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
 
         // create ListingItemTemplate
         const listingItemTemplateCreateRequest = {
@@ -505,7 +527,8 @@ describe('ListingItemTemplate', () => {
     test('Should update ListingItemTemplate correctly when removing data', async () => {
 
         const testDataToUpdate = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
-        testDataToUpdate.hash = ObjectHash.getHash(testDataToUpdate);
+        testDataToUpdate.hash = await objectHashService.getHash(testDataToUpdate, HashableObjectType.DEFAULT);
+
         testDataToUpdate.profile_id = defaultProfile.Id;
 
         // remove some data

@@ -1,20 +1,19 @@
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
+import { Types, Core, Targets, Events } from '../../constants';
 
 import { EventEmitter } from '../../core/api/events';
 import { SmsgMessage } from '../messages/SmsgMessage';
-
 import { SmsgService } from '../services/SmsgService';
-import { MarketService } from '../services/MarketService';
-import { ListingItemService } from '../services/ListingItemService';
-import { CoreRpcService } from '../services/CoreRpcService';
 
 import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
-import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
-import { ListingItemReceivedListener } from '../listeners/ListingItemReceivedListener';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { ListingItemService } from '../services/ListingItemService';
+import {ActionMessageInterface} from '../messages/ActionMessageInterface';
+import {BidMessageType} from '../enums/BidMessageType';
+import {EscrowMessageType} from '../enums/EscrowMessageType';
+import {InternalServerException} from '../exceptions/InternalServerException';
+import {MarketplaceEvent} from '../messages/MarketplaceEvent';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -23,11 +22,11 @@ export class MessageProcessor implements MessageProcessorInterface {
     private timeout: any;
     private interval = 3000;
 
+    // TODO: injecting listingItemService causes Error: knex: Required configuration option 'client' is missing.
     // tslint:disable:max-line-length
     constructor(
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
+        // @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
     ) {
@@ -35,37 +34,50 @@ export class MessageProcessor implements MessageProcessorInterface {
     }
     // tslint:enable:max-line-length
 
+    /**
+     * main messageprocessor, ...
+     *
+     * @param {SmsgMessage[]} messages
+     * @returns {Promise<void>}
+     */
     public async process(messages: SmsgMessage[]): Promise<void> {
         this.log.debug('poll(), new messages:', JSON.stringify(messages, null, 2));
 
         for (const message of messages) {
+            const parsed: MarketplaceMessage | null = await this.parseJSONSafe(message.text);
+            delete message.text;
 
-            const marketModel = await this.marketService.findByAddress(message.to);
-            const market = marketModel.toJSON();
-
-            const parsed = await this.parseJSONSafe(message.text);
             if (parsed) {
-                parsed.market = market.address;
+                parsed.market = message.to;
 
                 if (parsed.item) {
-                    // ListingItemMessage
-                    this.eventEmitter.emit('ListingItemReceivedEvent', parsed);
-                    // this.eventEmitter.emit(ListingItemReceivedListener.Event, parsed);
+                    // ListingItemMessage, listingitemservice listens for this event
+                    this.eventEmitter.emit(Events.ListingItemReceivedEvent, {
+                        smsgMessage: message,
+                        marketplaceMessage: parsed
+                    } as MarketplaceEvent);
+                    this.eventEmitter.emit(Events.Cli, {
+                        message: Events.ListingItemReceivedEvent,
+                        data: parsed
+                    });
+
                 } else if (parsed.mpaction) {
                     // ActionMessage
-                    // todo: different events for bids and escrows
-                    // this.eventEmitter.emit('actions', {
-                    //    action: parsed.mpaction,
-                    //    market: market.address
-                    // });
+                    const eventType = await this.getActionEventType(parsed.mpaction);
+                    this.eventEmitter.emit(eventType, {
+                        smsgMessage: message,
+                        marketplaceMessage: parsed
+                    });
+                    this.eventEmitter.emit(Events.Cli, {
+                        message: eventType,
+                        data: parsed
+                    });
 
                 } else {
                     // json object, but not something that we're expecting
                     this.log.error('received something unexpected: ', JSON.stringify(parsed, null, 2));
                 }
             }
-
-
         }
     }
 
@@ -80,9 +92,6 @@ export class MessageProcessor implements MessageProcessorInterface {
         this.timeout = setTimeout(
             async () => {
                 await this.poll();
-                /* this.eventEmitter.emit('cli', {
-                    message: 'message from messageprocessor to the cli'
-                }); */
                 this.schedulePoll();
             },
             this.interval
@@ -118,7 +127,7 @@ export class MessageProcessor implements MessageProcessorInterface {
         return response;
     }
 
-    private async parseJSONSafe(json: string): Promise<MarketplaceMessageInterface|null> {
+    private async parseJSONSafe(json: string): Promise<MarketplaceMessage|null> {
         let parsed = null;
         try {
             parsed = JSON.parse(json);
@@ -128,7 +137,26 @@ export class MessageProcessor implements MessageProcessorInterface {
         return parsed;
     }
 
-    private async isPaidMessage(message: SmsgMessage): Promise<boolean> {
-        return message.version === '0300';
+    private async getActionEventType(message: ActionMessageInterface): Promise<string> {
+        switch (message.action) {
+            case EscrowMessageType.MPA_LOCK:
+                return Events.LockEscrowReceivedEvent;
+            case EscrowMessageType.MPA_REQUEST_REFUND:
+                return Events.RequestRefundEscrowReceivedEvent;
+            case EscrowMessageType.MPA_REFUND:
+                return Events.RefundEscrowReceivedEvent;
+            case EscrowMessageType.MPA_RELEASE:
+                return Events.ReleaseEscrowReceivedEvent;
+            case BidMessageType.MPA_BID:
+                return Events.BidReceivedEvent;
+            case BidMessageType.MPA_ACCEPT:
+                return Events.AcceptBidReceivedEvent;
+            case BidMessageType.MPA_REJECT:
+                return Events.RejectBidReceivedEvent;
+            case BidMessageType.MPA_CANCEL:
+                return Events.CancelBidReceivedEvent;
+            default:
+                throw new InternalServerException('Unknown action message.');
+        }
     }
 }

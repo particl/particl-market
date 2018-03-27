@@ -26,10 +26,6 @@ export class PaymentInformationRepository {
         return this.PaymentInformationModel.fetchById(id, withRelated);
     }
 
-    public async findOneByListingItemTemplateId(id: number): Promise<PaymentInformation> {
-        return this.PaymentInformationModel.fetchByListingItemTemplateId(id);
-    }
-
     public async create(data: any): Promise<PaymentInformation> {
         const paymentInformation = this.PaymentInformationModel.forge<PaymentInformation>(data);
         try {

@@ -3,6 +3,7 @@ import { Bookshelf } from '../../config/Database';
 import { ListingItem } from './ListingItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
 import { ListingItemObjectSearchParams } from '../requests/ListingItemObjectSearchParams';
+import { ListingItemObjectData } from './ListingItemObjectData';
 
 export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
 
@@ -11,7 +12,8 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
             return await ListingItemObject.where<ListingItemObject>({ id: value }).fetch({
                 withRelated: [
                     'ListingItem',
-                    'ListingItemTemplate'
+                    'ListingItemTemplate',
+                    'ListingItemObjectDatas'
                 ]
             });
         } else {
@@ -39,6 +41,12 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }
 
+    public get ObjectId(): string { return this.get('object_id'); }
+    public set ObjectId(value: string) { this.set('object_id', value); }
+
+    public get ForceInput(): string { return this.get('force_input'); }
+    public set ForceInput(value: string) { this.set('force_input', value); }
+
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
 
@@ -58,6 +66,10 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
 
     public ListingItemTemplate(): ListingItemTemplate {
         return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
+    }
+
+    public ListingItemObjectDatas(): Collection<ListingItemObjectData> {
+        return this.hasMany(ListingItemObjectData, 'listing_item_object_id', 'id');
     }
 
 }

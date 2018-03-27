@@ -42,39 +42,72 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemLocation> {
-        const listingItemTemplateId = data.params[0];
-        if (data.params[1]) {
-            // If countryCode is country, convert to countryCode.
-            // If countryCode is country code, validate, and possibly throw error.
-            let countryCode: string = data.params[1];
-            countryCode = ShippingCountries.validate(this.log, countryCode);
+        try {
+            const listingItemTemplateId = data.params[0];
+            let countryCode: string;
+            if (data.params[1]) {
+                // If countryCode is country, convert to countryCode.
+                // If countryCode is country code, validate, and possibly throw error.
+                countryCode = data.params[1];
+                countryCode = ShippingCountries.validate(this.log, countryCode);
+            } else {
+                throw new MessageException('Country code can\'t be blank.');
+            }
 
             const itemInformation = await this.getItemInformation(listingItemTemplateId);
+
+            let address = null;
+            let locationMarker: any = null;
+            // NOTE: Following arg error handling may be heavier than we need, but you never know when the impossible might happen.
+            if (data.params[2]) {
+                address = data.params[2];
+            }
+            if (data.params[3] && data.params[4] && data.params[5] && data.params[6]) { // True if all are def
+                if (!address) { // True if all are def but not address
+                    // true if address wasn't set and all the GPS fields are set.
+                    throw new MessageException('Address must be set if the GPS fields are set.');
+                }
+                locationMarker = {
+                    markerTitle: data.params[3],
+                    markerText: data.params[4],
+                    lat: data.params[5],
+                    lng: data.params[6]
+                };
+            } else if (data.params[3] || data.params[4] || data.params[5] || data.params[6]) { // True if some, but not all, are def
+                if (!address) {
+                    // True if address was not set and some of params[3] ... params[6] were def and others were not
+                    throw new MessageException('Address must be set if the GPS fields are set, and either all or none of the GPS fields must be set.');
+                } else {
+                    // True if some of params[3] ... params[6] were def and others were not
+                    throw new MessageException('Either all or none of the GPS fields must be set.');
+                }
+            }
 
             // ItemLocation cannot be created if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
             if (itemInformation.listingItemId) {
                 throw new MessageException('ItemLocation cannot be updated because the item has allready been posted!');
             } else {
-                return this.itemLocationService.create({
+                const itemLocation = {
                     item_information_id: itemInformation.id,
-                    region: countryCode,
-                    address: data.params[2],
-                    locationMarker: {
-                        markerTitle: data.params[3],
-                        markerText: data.params[4],
-                        lat: data.params[5],
-                        lng: data.params[6]
+                    region: countryCode
+                } as ItemLocationCreateRequest;
+                if (address) {
+                    itemLocation.address = address;
+                    if (locationMarker) {
+                        itemLocation.locationMarker = locationMarker;
                     }
-                } as ItemLocationCreateRequest);
+                }
+                return this.itemLocationService.create(itemLocation);
             }
-        } else {
-            throw new MessageException('Country code can\'t be blank.');
+        } catch (ex) {
+            this.log.error(ex);
+            throw ex;
         }
     }
 
     public usage(): string {
-        return this.getName() + ' <listingItemTemplateId> <region> <address> <gpsMarkerTitle> <gpsMarkerDescription> <gpsMarkerLatitude>'
-            + ' <gpsMarkerLongitude> ';
+        return this.getName() + ' <listingItemTemplateId> <region> [<address> [<gpsMarkerTitle> <gpsMarkerDescription> <gpsMarkerLatitude>'
+            + ' <gpsMarkerLongitude>]] ';
     }
 
     public help(): string {

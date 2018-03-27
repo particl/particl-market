@@ -21,6 +21,8 @@ export class ServerStartedListener implements interfaces.Listener {
     private timeout: any;
     private interval = 1000;
 
+    // TODO: this class needs to be refactored
+
     constructor(
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
@@ -54,6 +56,13 @@ export class ServerStartedListener implements interfaces.Listener {
         );
     }
 
+    public stop(): void {
+        if (this.timeout) {
+            clearTimeout(this.timeout);
+            this.timeout = undefined;
+        }
+    }
+
     private async checkConnection(): Promise<boolean> {
         const isConnected = await this.coreRpcService.isConnected();
         if (isConnected) {
@@ -76,9 +85,8 @@ export class ServerStartedListener implements interfaces.Listener {
                 this.messageProcessor.schedulePoll();
                 this.interval = 10000;
             }
-            if (process.env.NODE_ENV !== 'test') {
-                this.log.info('connected to particld, checking again in ' + this.interval + 'ms.');
-            }
+
+            // this.log.info('connected to particld, checking again in ' + this.interval + 'ms.');
         } else {
 
             if (this.previousState !== isConnected) {

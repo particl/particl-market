@@ -1,12 +1,5 @@
 import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
-import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
-import { EscrowType } from '../../../src/api/enums/EscrowType';
-import { Currency } from '../../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
-import { PaymentType } from '../../../src/api/enums/PaymentType';
-import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
@@ -22,6 +15,7 @@ import * as listingItemTemplateCreateRequestBasic2 from '../../testdata/createre
 
 import * as resources from 'resources';
 import {ObjectHash} from '../../../src/core/helpers/ObjectHash';
+import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 
 describe('ListingItemSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -77,7 +71,7 @@ describe('ListingItemSearchCommand', () => {
 
         // create first listing item
         listingItemCreateRequestBasic1.market_id = customMarket.id;
-        listingItemCreateRequestBasic1.hash = ObjectHash.getHash(listingItemCreateRequestBasic1);
+        listingItemCreateRequestBasic1.hash = await ObjectHash.getHash(listingItemCreateRequestBasic1, HashableObjectType.LISTINGITEM);
         createdListingItem1 = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
 
         // generate listingItemTemplate
@@ -91,7 +85,7 @@ describe('ListingItemSearchCommand', () => {
         // create second listing item
         listingItemCreateRequestBasic2.market_id = customMarket.id;
         listingItemCreateRequestBasic2.listing_item_template_id = listingItemTemplates[0].id;
-        listingItemCreateRequestBasic2.hash = ObjectHash.getHash(listingItemCreateRequestBasic2);
+        listingItemCreateRequestBasic2.hash = await ObjectHash.getHash(listingItemCreateRequestBasic2, HashableObjectType.LISTINGITEM);
 
         createdListingItem2 = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic2);
 

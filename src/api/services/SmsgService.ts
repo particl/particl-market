@@ -2,8 +2,8 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { CoreRpcService } from './CoreRpcService';
-import { InternalServerException } from '../exceptions/InternalServerException';
 import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 
 export class SmsgService {
 
@@ -55,6 +55,17 @@ export class SmsgService {
     /**
      * ﻿Send an encrypted message from address to another
      *
+     * response:
+     * {
+     * "result": "Sent.",
+     * "txid": "756be1d7b7ebcac344792bd2f050b75240ec7bc0c47d706adde8f87bec260c22",
+     * "fee": 0.002554
+     * }
+     * {
+     * "result": "Send failed.",
+     * "error": "Message is too long, 5392 > 4096"
+     * }
+     *
      * @param {string} profileAddress
      * @param {string} marketAddress
      * @param {MarketplaceMessageInterface} message
@@ -63,14 +74,15 @@ export class SmsgService {
      * @returns {Promise<any>}
      */
     public async smsgSend(profileAddress: string, marketAddress: string, message: MarketplaceMessageInterface,
-                          paidMessage: boolean = true, daysRetention: number = process.env.PAID_MESSAGE_RETENTION_DAYS): Promise<any> {
+                          paidMessage: boolean = true,
+                          daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)): Promise<SmsgSendResponse> {
 
         this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
-        this.log.debug('smsgSend, message: ' + JSON.stringify(message, null, 2));
-        const paramStr = JSON.stringify(message) as string;
-        this.log.debug('smsgSend, paramStr: ' + paramStr);
-        const response = await this.coreRpcService.call('smsgsend', [profileAddress, marketAddress,
-            paramStr, paidMessage, daysRetention]);
+        // this.log.debug('smsgSend, message: ' + JSON.stringify(message, null, 2));
+        // const messageStr = JSON.stringify(message);
+        // this.log.debug('smsgSend, messageStr: ' + JSON.stringify(message));
+        const params: any[] = [profileAddress, marketAddress, JSON.stringify(message), paidMessage, daysRetention];
+        const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params);
 
         this.log.debug('smsgSend, response: ' + JSON.stringify(response, null, 2));
         return response;
