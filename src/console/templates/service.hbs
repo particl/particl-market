@@ -21,7 +21,8 @@ export class {{name.capitalize}}Service {
 
     public log: LoggerType;
 
-    {{#if isResourceTemplate}}constructor(
+{{#if isResourceTemplate}}
+    constructor(
         @inject(Types.Repository) @named(Targets.Repository.{{name.capitalize}}Repository) public {{name.camelCase}}Repo: {{name.capitalize}}Repository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -42,7 +43,7 @@ export class {{name.capitalize}}Service {
     }
 
     @validate()
-    public async create( @request({{name.capitalize}}CreateRequest) body: any): Promise<{{name.capitalize}}> {
+    public async create( @request({{name.capitalize}}CreateRequest) body: {{name.capitalize}}CreateRequest): Promise<{{name.capitalize}}> {
 
         // TODO: extract and remove related models from request
         // const {{name.camelCase}}Related = body.related;
@@ -61,7 +62,7 @@ export class {{name.capitalize}}Service {
     }
 
     @validate()
-    public async update(id: number, @request({{name.capitalize}}UpdateRequest) body: any): Promise<{{name.capitalize}}> {
+    public async update(id: number, @request({{name.capitalize}}UpdateRequest) body: {{name.capitalize}}UpdateRequest): Promise<{{name.capitalize}}> {
 
         // find the existing one without related
         const {{name.camelCase}} = await this.findOne(id, false);
@@ -79,9 +80,6 @@ export class {{name.capitalize}}Service {
         // update {{name.camelCase}} record
         const updated{{name.capitalize}} = await this.{{name.camelCase}}Repo.update(id, {{name.camelCase}}.toJSON());
 
-        // TODO: find related record and update it
-
-        // TODO: finally find and return the updated {{name.camelCase}}
         // const new{{name.capitalize}} = await this.findOne(id);
         // return new{{name.capitalize}};
 
@@ -91,12 +89,12 @@ export class {{name.capitalize}}Service {
     public async destroy(id: number): Promise<void> {
         await this.{{name.camelCase}}Repo.destroy(id);
     }
-    {{else}}
+{{else}}
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
-    {{/if}}
+{{/if}}
 
 }

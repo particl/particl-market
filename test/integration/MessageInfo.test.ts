@@ -20,7 +20,7 @@ describe('MessageInfo', () => {
     let testDataService: TestDataService;
     let messageInfoService: MessageInfoService;
 
-    let createdId;
+    // let createdId;
 
     const testData = {
         address: '20 seventeen street, march city, 2017',
@@ -48,7 +48,7 @@ describe('MessageInfo', () => {
 
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
-        await messageInfoService.create(testData).catch(e =>
+        await messageInfoService.create({}).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
