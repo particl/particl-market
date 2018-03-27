@@ -88,7 +88,7 @@ export class EscrowFactory {
         // TODO: Sign Raw Transaction at right place, and we don't actually need a message here with shorter flow
         return {
             action: lockRequest.action,
-            listing: lockRequest.listing,
+            item: lockRequest.listing,
             nonce: lockRequest.nonce,
             info: {
                 memo: lockRequest.memo
@@ -112,7 +112,7 @@ export class EscrowFactory {
 
         return {
             action: releaseRequest.action,
-            listing: releaseRequest.listing,
+            item: releaseRequest.listing,
             memo: releaseRequest.memo,
             escrow: {
                 type: 'release',
@@ -134,7 +134,7 @@ export class EscrowFactory {
 
         return {
             action: refundRequest.action,
-            listing: refundRequest.listing,
+            item: refundRequest.listing,
             accepted: refundRequest.accepted,
             memo: refundRequest.memo,
             escrow: {

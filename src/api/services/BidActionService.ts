@@ -126,9 +126,8 @@ export class BidActionService {
      * @param data
      * @returns {Promise<void>}
      */
-
+/*
     public async accept( listingItem: resources.ListingItem, params: any[] ): Promise<SmsgSendResponse> {
-
         // MOVED FROM COMMAND
 
         // find related bid
@@ -229,10 +228,11 @@ export class BidActionService {
             // TODO: Decide if we want this on the blockchain or not...
             // TODO: Think about how to recover escrow information to finalize transactions should
             // client pc / database crash..
-            /*
-            txout['data'] = unescape(encodeURIComponent(data.params[0]))
-                .split('').map(v => v.charCodeAt(0).toString(16)).join('').substr(0, 80);
-            */
+
+            //
+            // txout['data'] = unescape(encodeURIComponent(data.params[0]))
+            //    .split('').map(v => v.charCodeAt(0).toString(16)).join('').substr(0, 80);
+            //
 
             const rawtx = await this.coreRpcService.call('createrawtransaction', [
                 outputs.concat(buyerOutputs),

@@ -51,7 +51,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('Not your item.');
         }
 
-        return this.bidActionService.accept(listingItem);
+        return {} as SmsgSendResponse; // this.bidActionService.accept(listingItem);
     }
 
     public usage(): string {
