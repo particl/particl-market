@@ -62,7 +62,6 @@ import { GenerateBidParams } from '../requests/params/GenerateBidParams';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { BidMessageType } from '../enums/BidMessageType';
 import { SearchOrder } from '../enums/SearchOrder';
-import { ListingItemObjectType } from '../enums/ListingItemObjectType';
 
 export class TestDataService {
 

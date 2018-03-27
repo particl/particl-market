@@ -11,6 +11,7 @@ import { Bid } from './Bid';
 import { FlaggedItem } from './FlaggedItem';
 import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
+import {ActionMessage} from './ActionMessage';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -35,6 +36,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'MessagingInformation',
         'ListingItemObjects',
         'ListingItemObjects.ListingItemObjectDatas',
+        'ActionMessages',
         'Bids',
         'Market',
         'FlaggedItem',
@@ -189,4 +191,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         return this.hasMany(ShoppingCartItem, 'listing_item_id', 'id');
     }
 
+    public ActionMessages(): Collection<ActionMessage> {
+        return this.hasMany(ActionMessage, 'listing_item_id', 'id');
+    }
 }

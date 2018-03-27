@@ -9,6 +9,9 @@ declare module 'resources' {
         PaymentInformation: PaymentInformation;
         MessagingInformation: MessagingInformation[];
         ListingItemObjects: ListingItemObject[];
+        Market: Market;
+        Bids: Bid[];
+        ActionMessages: ActionMessage[];
     }
 
 }
