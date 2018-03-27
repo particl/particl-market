@@ -318,7 +318,8 @@ describe('TestDataService', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+            true,   // generateListingItemObjects
+            true    // generateObjectDatas
         ]).toParamsArray();
 
         const listingItemTemplates = await testDataService.generate({
