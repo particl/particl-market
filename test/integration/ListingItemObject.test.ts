@@ -8,7 +8,6 @@ import { ListingItemTemplateService } from '../../src/api/services/ListingItemTe
 import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
 import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
 
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
@@ -22,6 +21,9 @@ import { ListingItemObjectUpdateRequest } from '../../src/api/requests/ListingIt
 
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 
+import { ObjectHashService } from '../../src/api/services/ObjectHashService';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
+
 describe('ListingItemObject', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -33,8 +35,10 @@ describe('ListingItemObject', () => {
     let profileService: ProfileService;
     let listingItemTemplateService: ListingItemTemplateService;
     let listingItemObjectDataService: ListingItemObjectDataService;
+    let objectHashService: ObjectHashService;
 
     let createdId;
+    let dataObjectId;
     let createdListingItemTemplate;
     let defaultProfile;
 
@@ -56,16 +60,6 @@ describe('ListingItemObject', () => {
         type: ListingItemObjectType.TABLE,
         description: 'table desc',
         order: 1
-        // listingItemObjectDatas: [
-        //     {
-        //         key: 'Screensize',
-        //         value: '17.8 inch'
-        //     },
-        //     {
-        //         key: 'gps',
-        //         value: 'NVIDIA 500'
-        //     }
-        // ]
     } as ListingItemObjectUpdateRequest;
 
     beforeAll(async () => {
@@ -76,13 +70,13 @@ describe('ListingItemObject', () => {
         listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.ListingItemObjectDataService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
-
+        objectHashService = app.IoC.getNamed<ObjectHashService>(Types.Service, Targets.Service.ObjectHashService);
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
         defaultProfile = await profileService.getDefault();
         const templateData = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        templateData.hash = ObjectHash.getHash(templateData);
+        templateData.hash = await objectHashService.getHash(templateData, HashableObjectType.DEFAULT);
         templateData.profile_id = defaultProfile.Id;
 
         createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
@@ -110,8 +104,8 @@ describe('ListingItemObject', () => {
         const listingItemObjectModel: ListingItemObject = await listingItemObjectService.create(testData);
         // expect(listingItemObjectModel).toBe(123);
         createdId = listingItemObjectModel.Id;
-
         const result = listingItemObjectModel.toJSON();
+        dataObjectId = result.ListingItemObjectDatas[0].id;
 
         expect(result.type).toBe(testData.type);
         expect(result.description).toBe(testData.description);
@@ -175,16 +169,15 @@ describe('ListingItemObject', () => {
     });
 
     test('Should delete the listing item object', async () => {
-        expect.assertions(2);
+        expect.assertions(3);
         await listingItemObjectService.destroy(createdId);
         await listingItemObjectService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );
 
-        // TODO FIX, why is listingitemobjectdata being findone'd here using listingitemobject id?!?
-        // await listingItemObjectDataService.findOne(createdId).catch(e =>
-        //    expect(e).toEqual(new NotFoundException(createdId))
-        // );
+        await listingItemObjectDataService.findOne(dataObjectId).catch(e =>
+           expect(e).toEqual(new NotFoundException(dataObjectId))
+        );
 
         // delete listing-item-template
         await listingItemTemplateService.destroy(createdListingItemTemplate.id);

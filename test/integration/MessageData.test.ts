@@ -20,7 +20,7 @@ describe('MessageData', () => {
     let testDataService: TestDataService;
     let messageDataService: MessageDataService;
 
-    let createdId;
+    // let createdId;
 
     const testData = {
         msgid: 'fdd0b25a000000007188f0fc4cd57a37aa5a9ab26463510568e99d7d',
@@ -56,7 +56,7 @@ describe('MessageData', () => {
 
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
-        await messageDataService.create(testData).catch(e =>
+        await messageDataService.create({}).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });

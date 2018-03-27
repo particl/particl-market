@@ -2,7 +2,7 @@ import { rpc, api } from './lib/api';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { ObjectHashService } from '../../src/api/services/ObjectHashService';
 import { ItemImageAddCommand } from '../../src/api/commands/itemimage/ItemImageAddCommand';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
@@ -10,6 +10,7 @@ import { GenerateListingItemParams } from '../../src/api/requests/params/Generat
 import { ListingItemTemplate } from 'resources';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 
 describe('ItemImageRemoveCommand', () => {
 
@@ -61,7 +62,7 @@ describe('ItemImageRemoveCommand', () => {
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+        testDataListingItemTemplate.hash = await this.ObjectHashService.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         // create item template
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
@@ -98,7 +99,7 @@ describe('ItemImageRemoveCommand', () => {
         // set listing item id
         testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
         // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate);
+        testDataListingItemTemplate.hash = await this.ObjectHashService.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
         let result: any = addListingItemTempRes;

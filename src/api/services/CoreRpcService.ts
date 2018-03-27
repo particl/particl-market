@@ -6,8 +6,6 @@ import * as WebRequest from 'web-request';
 import { HttpException } from '../exceptions/HttpException';
 import { JsonRpc2Response } from '../../core/api/jsonrpc';
 import { InternalServerException } from '../exceptions/InternalServerException';
-import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { CoreCookieService } from './CoreCookieService';
 
 let RPC_REQUEST_ID = 1;
@@ -61,7 +59,7 @@ export class CoreRpcService {
             this.log.debug('call: ' + method + ' ' + params.toString().replace(',', ' '));
         }
         // this.log.debug('call url:', url);
-        this.log.debug('call postData:', postData);
+        // this.log.debug('call postData:', postData);
 
         return await WebRequest.post(url, options, postData)
             .then( response => {

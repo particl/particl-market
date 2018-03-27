@@ -7,6 +7,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
+import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 
 export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -14,6 +16,7 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService
     ) {
         super(Commands.ESCROW_REMOVE);
@@ -28,7 +31,18 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        return this.escrowService.destroyCheckByListingItem(data.params[0]);
+
+        // get the template
+        const listingItemTemplateId = data.params[0];
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
+        const listingItemTemplate = listingItemTemplateModel.toJSON();
+
+        // template allready has listingitems so for now, it cannot be modified
+        if (listingItemTemplate.ListingItems.length > 0) {
+            throw new MessageException(`Escrow cannot be deleted because ListingItems allready exist for the ListingItemTemplate.`);
+        }
+
+        return this.escrowService.destroy(data.params[0]);
     }
 
     public usage(): string {
