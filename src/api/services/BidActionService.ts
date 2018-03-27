@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
@@ -122,7 +123,7 @@ export class BidActionService {
     }
 
     /**
-     * Accept a bid
+     * Accept a Bid
      *
      * @param {"resources".ListingItem} listingItem
      * @param {"resources".Bid} bid
@@ -275,11 +276,48 @@ export class BidActionService {
             // broadcast the accepted bid message
             return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage);
         } else {
-            this.log.warn(`Bid can not be accepted because it was already been ${bid.action}`);
+            this.log.error(`Bid can not be accepted because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be accepted because it was already been ${bid.action}`);
         }
-
     }
+
+    /**
+     * Cancel a Bid
+     *
+     * @param {"resources".ListingItem} listingItem
+     * @param {"resources".Bid} bid
+     * @returns {Promise<SmsgSendResponse>}
+     */
+    public async cancel( listingItem: resources.ListingItem, bid: resources.Bid ): Promise<SmsgSendResponse> {
+
+        if (bid.action === BidMessageType.MPA_BID) {
+            // fetch the profile
+            const profileModel = await this.profileService.getDefault();
+            const profile = profileModel.toJSON();
+
+            // fetch the market
+            const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);
+            const market = marketModel.toJSON();
+
+            // create the bid accept message
+            const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_CANCEL, listingItem.hash);
+
+            const marketPlaceMessage = {
+                version: process.env.MARKETPLACE_VERSION,
+                mpaction: bidMessage
+            } as MarketplaceMessage;
+
+            this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
+
+            // broadcast the cancel bid message
+            return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage);
+        } else {
+            this.log.error(`Bid can not be cancelled because it was already been ${bid.action}`);
+            throw new MessageException(`Bid can not be cancelled because it was already been ${bid.action}`);
+        }
+    }
+
+
 
     /**
      * process received BidMessage

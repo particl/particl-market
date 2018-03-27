@@ -1,10 +1,12 @@
-import { IsNotEmpty } from 'class-validator';
-import { EscrowMessageInterface } from './EscrowMessageInterface';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 import { EscrowMessageType } from '../enums/EscrowMessageType';
+import { ActionMessageInterface } from './ActionMessageInterface';
+import { MessageBody } from '../../core/api/MessageBody';
 
-export class EscrowMessage implements EscrowMessageInterface {
+export class EscrowMessage extends MessageBody implements ActionMessageInterface {
 
     @IsNotEmpty()
+    @IsEnum(EscrowMessageType)
     public action: EscrowMessageType;
 
     @IsNotEmpty()
@@ -18,7 +20,4 @@ export class EscrowMessage implements EscrowMessageInterface {
     public info?: any;
     public accepted?: boolean;
 
-    constructor() {
-        //
-    }
 }

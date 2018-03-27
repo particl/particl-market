@@ -7,13 +7,10 @@ import * as resources from 'resources';
 
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { BidFactory } from '../../factories/BidFactory';
 import { ListingItemService } from '../../services/ListingItemService';
-import { SmsgService } from '../../services/SmsgService';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { CoreRpcService } from '../../services/CoreRpcService';
 import { BidActionService } from '../../services/BidActionService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 
@@ -24,10 +21,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.BidActionService) private bidActionService: BidActionService,
-        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory
+        @inject(Types.Service) @named(Targets.Service.BidActionService) private bidActionService: BidActionService
     ) {
         super(Commands.BID_ACCEPT);
         this.log = new Logger(__filename);
@@ -56,6 +50,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('Not your item.');
         }
 
+        // find the bid
         const bids: resources.Bid[] = listingItem.Bids;
         const bidToAccept = _.find(bids, (bid) => {
             return bid.id === bidId;

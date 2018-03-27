@@ -15,7 +15,7 @@ import { BidMessageType } from '../../enums/BidMessageType';
 import { Bid } from '../../models/Bid';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MarketplaceMessageInterface } from '../../messages/MarketplaceMessageInterface';
+import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 
 export class BidRejectCommand extends BaseCommand implements RpcCommandInterface<Bid> {
 
@@ -67,7 +67,7 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
                         item: data.params[0],
                         action: BidMessageType.MPA_REJECT
                     }
-                } as MarketplaceMessageInterface;
+                } as MarketplaceMessage;
 
                 await this.smsgService.smsgSend('', '', marketPlaceMessage);
 

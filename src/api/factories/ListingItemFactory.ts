@@ -6,7 +6,6 @@ import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ItemCategoryFactory } from './ItemCategoryFactory';
 import * as resources from 'resources';
 import { ShippingAvailability } from '../enums/ShippingAvailability';
-import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
 import { LocationMarkerCreateRequest } from '../requests/LocationMarkerCreateRequest';
 import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
@@ -65,7 +64,7 @@ export class ListingItemFactory {
      * @param data
      * @returns {ListingItemCreateRequest}
      */
-    public async getModel(listingItemMessage: ListingItemMessageInterface, marketId: number,
+    public async getModel(listingItemMessage: ListingItemMessage, marketId: number,
                           rootCategory: resources.ItemCategory): Promise<ListingItemCreateRequest> {
 
         const itemInformation = await this.getModelItemInformation(listingItemMessage.information, rootCategory);

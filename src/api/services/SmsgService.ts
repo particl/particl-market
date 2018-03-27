@@ -2,7 +2,7 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { CoreRpcService } from './CoreRpcService';
-import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 
 export class SmsgService {
@@ -68,12 +68,12 @@ export class SmsgService {
      *
      * @param {string} profileAddress
      * @param {string} marketAddress
-     * @param {MarketplaceMessageInterface} message
+     * @param {MarketplaceMessage} message
      * @param {boolean} paidMessage
      * @param {number} daysRetention
      * @returns {Promise<any>}
      */
-    public async smsgSend(profileAddress: string, marketAddress: string, message: MarketplaceMessageInterface,
+    public async smsgSend(profileAddress: string, marketAddress: string, message: MarketplaceMessage,
                           paidMessage: boolean = true,
                           daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)): Promise<SmsgSendResponse> {
 
