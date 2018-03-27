@@ -3,6 +3,6 @@ import { BidMessageType } from '../enums/BidMessageType';
 
 export interface ActionMessageInterface {
     action: EscrowMessageType | BidMessageType;
-    listing: string;
+    item: string;
     objects?: any;
 }

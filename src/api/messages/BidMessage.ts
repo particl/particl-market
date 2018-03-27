@@ -10,7 +10,7 @@ export class BidMessage extends MessageBody implements ActionMessageInterface {
     public action: BidMessageType;
 
     @IsNotEmpty()
-    public listing: string;
+    public item: string;
 
     // todo: objects
     public objects?: any;
