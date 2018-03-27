@@ -88,7 +88,7 @@ describe('ListingItemMessage', () => {
         // expect(message.information.shipping_destinations).toContain('PANAMA');
 
         // ItemInformation.ItemImages
-        expect(result.ItemInformation.ItemImages.length).toBe(5);
+        expect(result.ItemInformation.ItemImages.length).toBe(message.information.images.length);
         // todo: test the images
         // expect(message.information.images[0].hash).toBe(testData.ItemInformation.ItemImages[0].hash);
         // expect(message.information.images[0].data.length).toBe(1);
