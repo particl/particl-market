@@ -558,7 +558,7 @@ export class TestDataService {
             listingItemObjects,
             profile_id: defaultProfile.Id
         } as ListingItemTemplateCreateRequest;
-        this.log.error(JSON.stringify(listingItemTemplate, null, 2));
+        // this.log.error(JSON.stringify(listingItemTemplate, null, 2));
         return listingItemTemplate;
     }
 
