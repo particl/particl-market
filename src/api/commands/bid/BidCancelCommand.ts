@@ -64,7 +64,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
                 const marketPlaceMessage = {
                     version: process.env.MARKETPLACE_VERSION,
                     mpaction: {
-                        listing: data.params[0],
+                        item: data.params[0],
                         action: BidMessageType.MPA_CANCEL
                     }
                 } as MarketplaceMessageInterface;

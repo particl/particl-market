@@ -31,14 +31,14 @@ export class RejectBidMessageProcessor implements MessageProcessorInterface {
      *
      * message:
      *  action: action of the BidMessage
-     *  listing: item hash
+     *  item: item hash
      *
      * @returns {Promise<Bid>}
      */
     @validate()
     public async process(@message(BidMessage) data: BidMessage): Promise<Bid> {
         // find listingItem by hash, the service will throw Exception if not
-        const listingItemModel = await this.listingItemService.findOneByHash(data.listing);
+        const listingItemModel = await this.listingItemService.findOneByHash(data.item);
         const listingItem = listingItemModel.toJSON();
 
         // find latest bid
