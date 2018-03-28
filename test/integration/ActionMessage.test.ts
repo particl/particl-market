@@ -107,14 +107,35 @@ describe('ActionMessage', () => {
         //
     });
 
-    /*
-    test('Should throw ValidationException because there is no related_id', async () => {
+    test('Should not create a new action message without info', async () => {
         expect.assertions(1);
-        await actionMessageService.create(testData).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
+        const testData1 = JSON.parse(JSON.stringify(testData));
+
+        delete testData1.info;
+        await actionMessageService.create(testData1).catch(e =>
+            expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []))
         );
     });
-    */
+
+    test('Should not create a new action message without escrow', async () => {
+        expect.assertions(1);
+        const testData1 = JSON.parse(JSON.stringify(testData));
+
+        delete testData1.escrow;
+        await actionMessageService.create(testData1).catch(e =>
+            expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []))
+        );
+    });
+
+    test('Should not create a new action message without data', async () => {
+        expect.assertions(1);
+        const testData1 = JSON.parse(JSON.stringify(testData));
+
+        delete testData1.data;
+        await actionMessageService.create(testData1).catch(e =>
+            expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []))
+        );
+    });
 
     test('Should create a new action message', async () => {
 
@@ -264,7 +285,7 @@ describe('ActionMessage', () => {
         });
     */
     test('Should delete the action message', async () => {
-        expect.assertions(4);
+        expect.assertions(5);
         await actionMessageService.destroy(createdActionMessage.id);
         await actionMessageService.findOne(createdActionMessage.id).catch(e =>
             expect(e).toEqual(new NotFoundException(createdActionMessage.id))
@@ -280,9 +301,82 @@ describe('ActionMessage', () => {
             expect(e).toEqual(new NotFoundException(createdActionMessage.MessageEscrow.id))
         );
 
+        // MessageData
+        await messageDataService.findOne(createdActionMessage.MessageData.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdActionMessage.MessageData.id))
+        );
+
         // MessageObjects
         await messageDataService.findOne(createdActionMessage.MessageObjects[0].id).catch(e =>
             expect(e).toEqual(new NotFoundException(createdActionMessage.MessageObjects[0].id))
         );
     });
+
+
+    test('Should create a new action message with empty objects', async () => {
+        expect.assertions(30);
+
+        testData.listing_item_id = createdListingItem.id;
+        testData.objects = [];
+        const actionMessageModel: ActionMessage = await actionMessageService.create(testData);
+        const result = actionMessageModel.toJSON();
+        createdActionMessage = result;
+        // test the values
+        expect(result.action).toBe(testData.action);
+        expect(result.nonce).toBe(testData.nonce);
+        expect(Boolean(Number(result.accepted))).toBe(testData.accepted); // TODO: fix, boolean received as number
+        expect(result.createdAt).toBeDefined();
+        expect(result.updatedAt).toBeDefined();
+        expect(result.listingItemId).toBe(createdListingItem.id);
+
+        // MessageData
+        expect(result.MessageData.actionMessageId).toBe(createdActionMessage.id);
+        expect(result.MessageData.createdAt).toBeDefined();
+        expect(result.MessageData.updatedAt).toBeDefined();
+        expect(result.MessageData.from).toBe(testData.data.from);
+        expect(result.MessageData.msgid).toBe(testData.data.msgid);
+        expect(result.MessageData.received).toBeDefined();
+        expect(result.MessageData.sent).toBeDefined();
+        expect(result.MessageData.to).toBe(testData.data.to);
+        expect(result.MessageData.version).toBe(testData.data.version);
+
+        // MessageEscrow
+        expect(result.MessageEscrow.actionMessageId).toBe(createdActionMessage.id);
+        expect(result.MessageEscrow.createdAt).toBeDefined();
+        expect(result.MessageEscrow.updatedAt).toBeDefined();
+        expect(result.MessageEscrow.rawtx).toBe(testData.escrow.rawtx);
+        expect(result.MessageEscrow.type).toBe(testData.escrow.type);
+
+        // MessageInfo
+        expect(result.MessageInfo.actionMessageId).toBe(createdActionMessage.id);
+        expect(result.MessageInfo.createdAt).toBeDefined();
+        expect(result.MessageInfo.updatedAt).toBeDefined();
+        expect(result.MessageInfo.address).toBe(testData.info.address);
+        expect(result.MessageInfo.memo).toBe(testData.info.memo);
+
+        // MessageObjects
+        expect(result.MessageObjects).toHaveLength(0);
+
+        // delete
+        await actionMessageService.destroy(createdActionMessage.id);
+        await actionMessageService.findOne(createdActionMessage.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdActionMessage.id))
+        );
+
+        // MessageInfo
+        await messageInfoService.findOne(createdActionMessage.MessageInfo.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdActionMessage.MessageInfo.id))
+        );
+
+        // MessageEscrow
+        await messageEscrowService.findOne(createdActionMessage.MessageEscrow.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdActionMessage.MessageEscrow.id))
+        );
+
+        // MessageData
+        await messageDataService.findOne(createdActionMessage.MessageData.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdActionMessage.MessageData.id))
+        );
+    });
+
 });
