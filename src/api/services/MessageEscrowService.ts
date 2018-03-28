@@ -36,7 +36,7 @@ export class MessageEscrowService {
     }
 
     @validate()
-    public async create( @request(MessageEscrowCreateRequest) data: any): Promise<MessageEscrow> {
+    public async create( @request(MessageEscrowCreateRequest) data: MessageEscrowCreateRequest): Promise<MessageEscrow> {
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -51,7 +51,7 @@ export class MessageEscrowService {
     }
 
     @validate()
-    public async update(id: number, @request(MessageEscrowUpdateRequest) body: any): Promise<MessageEscrow> {
+    public async update(id: number, @request(MessageEscrowUpdateRequest) body: MessageEscrowUpdateRequest): Promise<MessageEscrow> {
 
         // find the existing one without related
         const messageEscrow = await this.findOne(id, false);
