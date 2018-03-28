@@ -114,7 +114,7 @@ export class ActionMessageService {
             const market = marketModel.toJSON();
 
             // find the ListingItem
-            const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.listing);
+            const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
             const listingItem = listingItemModel.toJSON();
 
             // create ActionMessage
