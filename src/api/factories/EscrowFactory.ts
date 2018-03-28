@@ -84,7 +84,7 @@ export class EscrowFactory {
 
         return {
             action: lockRequest.action,
-            item: lockRequest.listing,
+            item: lockRequest.item,
             nonce: lockRequest.nonce,
             info: {
                 address: addressOneLiner,
@@ -109,7 +109,7 @@ export class EscrowFactory {
 
         return {
             action: releaseRequest.action,
-            item: releaseRequest.listing,
+            item: releaseRequest.item,
             memo: releaseRequest.memo,
             escrow: {
                 type: 'release',
@@ -131,7 +131,7 @@ export class EscrowFactory {
 
         return {
             action: refundRequest.action,
-            item: refundRequest.listing,
+            item: refundRequest.item,
             accepted: refundRequest.accepted,
             memo: refundRequest.memo,
             escrow: {

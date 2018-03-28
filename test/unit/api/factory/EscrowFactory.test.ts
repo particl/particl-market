@@ -16,7 +16,7 @@ describe('EscrowFactory', () => {
 
         const request = {
             action: EscrowMessageType.MPA_LOCK,
-            listing: 'f08f3d6e',
+            item: 'f08f3d6e',
             nonce: 'randomness',
             memo: 'Please deliver by 17 March 2017'
         };
@@ -42,7 +42,7 @@ describe('EscrowFactory', () => {
         const escrowMessage: EscrowMessage = await escrowFactory.getMessage(request, escrow, address);
 
         expect(escrowMessage.action).toBe(request.action);
-        expect(escrowMessage.listing).toBe(request.listing);
+        expect(escrowMessage.item).toBe(request.item);
         expect(escrowMessage.nonce).toBe(request.nonce);
         // todo: fix when zip is added
         expect(escrowMessage.info.address).toBe(address.addressLine1 + ', ' + address.addressLine2 + ', ' + address.zipCode + ', ' +
@@ -57,7 +57,7 @@ describe('EscrowFactory', () => {
 
         const request = {
             action: EscrowMessageType.MPA_REFUND,
-            listing: 'f08f3d6e',
+            item: 'f08f3d6e',
             accepted: true,
             memo: 'Here is a refund, greetings vendor'
         };
@@ -73,7 +73,7 @@ describe('EscrowFactory', () => {
         const escrowMessage: EscrowMessage = await escrowFactory.getMessage(request, escrow, null);
 
         expect(escrowMessage.action).toBe(request.action);
-        expect(escrowMessage.listing).toBe(request.listing);
+        expect(escrowMessage.item).toBe(request.item);
         expect(escrowMessage.accepted).toBe(request.accepted);
         expect(escrowMessage.memo).toBe(request.memo);
         expect(escrowMessage.escrow.rawtx).not.toBeNull();
@@ -85,7 +85,7 @@ describe('EscrowFactory', () => {
 
         const request = {
             action: EscrowMessageType.MPA_RELEASE,
-            listing: 'f08f3d6e',
+            item: 'f08f3d6e',
             memo: 'Release the funds, greetings buyer'
         };
 
@@ -100,7 +100,7 @@ describe('EscrowFactory', () => {
         const escrowMessage: EscrowMessage = await escrowFactory.getMessage(request, escrow, null);
 
         expect(escrowMessage.action).toBe(request.action);
-        expect(escrowMessage.listing).toBe(request.listing);
+        expect(escrowMessage.item).toBe(request.item);
         expect(escrowMessage.memo).toBe(request.memo);
         expect(escrowMessage.escrow.rawtx).not.toBeNull();
         expect(escrowMessage.escrow.type).toBe('release');
