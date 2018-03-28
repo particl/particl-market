@@ -355,6 +355,8 @@ export class BidActionService {
 
     /**
      * process received BidMessage
+     * - save ActionMessage
+     * - create Bid
      *
      * @param {MarketplaceMessageInterface} message
      * @returns {Promise<"resources".ActionMessage>}
@@ -367,7 +369,6 @@ export class BidActionService {
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
         const actionMessage = actionMessageModel.toJSON();
 
-        // create a bid
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
 
         if (bidMessage) {
@@ -375,7 +376,11 @@ export class BidActionService {
             const listingItemModel = await this.listingItemService.findOneByHash(bidMessage.item);
             const listingItem = listingItemModel.toJSON();
 
+            // create a bid
             const bidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id);
+            const createdBid = this.bidService.create(bidCreateRequest);
+
+            this.log.debug('createdBid:', createdBid);
             // TODO: do whatever else needs to be done
 
             return actionMessage;
