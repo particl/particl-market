@@ -30,8 +30,8 @@ describe('BidAcceptCommand', () => {
 
         // Ryno Hacks - This requires regtest
         const outputs = [{
-            txid: '91acbd9589197eb01e124dd4f176fb3f1e0bd220797d90819704a2c629bd705c',
-            vout: 0,
+            txid: 'e3fd6c39588c5e9fc5cd2d0626f21735936f8ab07c6b7f535618614f2ca989a8',
+            vout: 1,
             amount: 20000
         }];
 
@@ -39,22 +39,24 @@ describe('BidAcceptCommand', () => {
         const changeAddress = 'pYTjD9CRepFvh1YvVfowY2J14DK9ayrvrr';
 
         // create listing item
+        // TODO: Create listing item template, so that we know it belongs to us
         const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
 
         // create bid
         const bid = await testUtil.addData(CreatableModel.BID, {
             action: BidMessageType.MPA_BID,
-            bidData: [
-                {id: 'pubkeys', value: [pubkey]},
-                {id: 'outputs', value: outputs},
-                {id: 'changeAddr', value: changeAddress},
-                {id: 'change', value: +(listingItem[0].PaymentInformation.ItemPrice.basePrice
+            bidDatas: [
+                {dataId: 'pubkeys', dataValue: [pubkey]},
+                {dataId: 'outputs', dataValue: outputs},
+                {dataId: 'changeAddr', dataValue: changeAddress},
+                {dataId: 'change', dataValue: +(listingItem[0].PaymentInformation.ItemPrice.basePrice
                     + listingItem[0].PaymentInformation.ItemPrice.ShippingPrice.international).toFixed(8) }
             ],
-            listing_item_id: listingItem[0].id
+            listing_item_id: listingItem[0].id,
+            bidder: 'Anything'
         } as BidCreateRequest);
 
-        const res: any = await rpc(bidCommand, [acceptCommand, listingItem[0].hash]);
+        const res: any = await rpc(bidCommand, [acceptCommand, listingItem[0].hash, bid.id]);
 
         res.expectJson();
 

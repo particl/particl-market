@@ -92,7 +92,7 @@ export class BidService {
         const bidDatas = body.bidDatas || [];
         delete body.bidDatas;
 
-        this.log.debug('body: ', JSON.stringify(body, null, 2));
+        this.log.debug('body:', JSON.stringify(body, null, 2));
         // If the request body was valid we will create the bid
         const bid = await this.bidRepo.create(body);
 

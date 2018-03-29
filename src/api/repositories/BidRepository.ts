@@ -48,6 +48,7 @@ export class BidRepository {
             const bidCreated = await bid.save();
             return this.BidModel.fetchById(bidCreated.id);
         } catch (error) {
+            this.log.error('Could not creat the bid!', error);
             throw new DatabaseException('Could not create the bid!', error);
         }
     }

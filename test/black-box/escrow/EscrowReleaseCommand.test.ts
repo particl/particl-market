@@ -20,6 +20,7 @@ describe('EscrowReleaseCommand', () => {
         itemhash: '',
         memo: 'TEST MEMO'
     };
+
     beforeAll(async () => {
         // IDK Why this is crashing here...
         try {

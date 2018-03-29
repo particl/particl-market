@@ -50,8 +50,6 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         // Ryno Hacks - TODO: Refactor
         const bid: Bid = listingItem.related('Bids').toJSON()[0];
 
-        console.log('bid', bid);
-
         if (!bid || bid.action !== BidMessageType.MPA_ACCEPT) {
             this.log.error('No valid information to finalize escrow');
             throw new MessageException('No valid information to finalize escrow');
@@ -68,7 +66,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         }
 
         return this.escrowService.lock({
-            listing: data.params[0],
+            item: data.params[0],
             nonce: data.params[1],
             memo: data.params[2],
             action: EscrowMessageType.MPA_LOCK

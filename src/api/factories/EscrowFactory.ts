@@ -88,7 +88,7 @@ export class EscrowFactory {
         // TODO: Sign Raw Transaction at right place, and we don't actually need a message here with shorter flow
         return {
             action: lockRequest.action,
-            item: lockRequest.listing,
+            item: lockRequest.item,
             nonce: lockRequest.nonce,
             info: {
                 memo: lockRequest.memo
@@ -112,7 +112,7 @@ export class EscrowFactory {
 
         return {
             action: releaseRequest.action,
-            item: releaseRequest.listing,
+            item: releaseRequest.item,
             memo: releaseRequest.memo,
             escrow: {
                 type: 'release',
@@ -134,7 +134,7 @@ export class EscrowFactory {
 
         return {
             action: refundRequest.action,
-            item: refundRequest.listing,
+            item: refundRequest.item,
             accepted: refundRequest.accepted,
             memo: refundRequest.memo,
             escrow: {
@@ -181,7 +181,7 @@ export class EscrowFactory {
         // rawtx is indeed legitimate. The vendor then signs the rawtx and sends it to the buyer.
         // The vendor can decide to broadcast it himself.'
 
-        const listing = await ListingItem.fetchByHash(request.listing);
+        const listing = await ListingItem.fetchByHash(request.item);
 
         const bid: resources.Bid = listing.related('Bids').toJSON()[0];
         const bidData = (await Bid.fetchById(bid.id)).related('BidDatas').toJSON() as resources.BidData[];
@@ -191,6 +191,7 @@ export class EscrowFactory {
         let pubkeys: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'pubkeys');
         const isMine = !!listing.toJSON().listingItemTemplateId;
 
+        this.log.debug('Request:', request, 'Bid Action', bid.action);
 
         if (!bid || bid.action !== (isMine ? EscrowMessageType.MPA_RELEASE : BidMessageType.MPA_ACCEPT) // Not sure how to get escrow messages...
             || bidData.length === 0 || !rawtx || !pubkeys || !sellerAddress) {
@@ -206,14 +207,14 @@ export class EscrowFactory {
             // TODO: Verify that the transaction has the correct values! Very important!!! TODO TODO TODO
             const signed = await this.coreRpcService.call('signrawtransaction', [signrawtx]);
 
-            if (!signed || signed.errors && (!complete && signed.errors[0].error !== 'Operation not valid with the current stack size')) {
+            if (!signed || signed.errors && (!complete && signed.errors[0].error !== 'Operation not valid with the current stack size' || complete)) {
                 this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
                 throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
             }
 
             if (complete) {
                 if (!signed.complete) {
-                    this.log.error('Transaction should be complete at this stage.');
+                    this.log.error('Transaction should be complete at this stage.', signed);
                     throw new MessageException('Transaction should be complete at this stage');
                 }
             } else if (signed.complete) {
@@ -232,7 +233,7 @@ export class EscrowFactory {
                 const escrowAddr = (await this.coreRpcService.call('addmultisigaddress', [
                     2,
                     pubkeys,
-                    '_escrow_' + request.listing
+                    '_escrow_' + request.item
                 ]));
 
                 // TODO: This requires user interaction, so should be elsewhere possibly?
