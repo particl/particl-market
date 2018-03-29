@@ -28,6 +28,10 @@ export class Bid extends Bookshelf.Model<Bid> {
                     qb.where('bids.action', '=', options.action);
                 }
 
+                if (options.bidder && typeof options.bidder === 'string') {
+                    qb.where('bids.bidder', '=', options.bidder);
+                }
+
             }).orderBy('bids.created_at', 'ASC');
 
         if (withRelated) {
@@ -42,8 +46,8 @@ export class Bid extends Bookshelf.Model<Bid> {
         }
     }
 
-    public static async getLatestBid(listingItemId: number): Promise<Bid> {
-        return await Bid.where<Bid>({ listing_item_id: listingItemId }).orderBy('created_at', 'DESC').fetch();
+    public static async getLatestBid(listingItemId: number, bidder: string): Promise<Bid> {
+        return await Bid.where<Bid>({ listing_item_id: listingItemId, bidder }).orderBy('created_at', 'DESC').fetch();
     }
 
     public get tableName(): string { return 'bids'; }
@@ -54,6 +58,9 @@ export class Bid extends Bookshelf.Model<Bid> {
 
     public get Action(): string { return this.get('action'); }
     public set Action(value: string) { this.set('action', value); }
+
+    public get Bidder(): string { return this.get('bidder'); }
+    public set Bidder(value: string) { this.set('bidder', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

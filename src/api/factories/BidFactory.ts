@@ -39,15 +39,21 @@ export class BidFactory {
     /**
      * create a BidCreateRequest
      *
-     * @param bidMessage
-     * @param listingItemId
-     * @param latestBid
+     * @param {BidMessage} bidMessage
+     * @param {number} listingItemId
+     * @param {string} bidder
+     * @param {"resources".Bid} latestBid
      * @returns {Promise<BidCreateRequest>}
      */
-    public async getModel(bidMessage: BidMessage, listingItemId: number, latestBid?: resources.Bid): Promise<BidCreateRequest> {
+    public async getModel(bidMessage: BidMessage, listingItemId: number, bidder: string, latestBid?: resources.Bid): Promise<BidCreateRequest> {
 
         if (!listingItemId) {
             throw new MessageException('Invalid listingItemId.');
+        }
+
+        // todo: implement part address validator and validate
+        if (!bidder && typeof bidder !== 'string') {
+            throw new MessageException('Invalid bidder.');
         }
 
         // check that the bidAction is valid, throw if not
@@ -62,10 +68,13 @@ export class BidFactory {
             });
 
             // create and return the request that can be used to create the bid
-            const bidCreateRequest = new BidCreateRequest();
-            bidCreateRequest.listing_item_id = listingItemId;
-            bidCreateRequest.action = bidMessage.action;
-            bidCreateRequest.bidData = bidData;
+            const bidCreateRequest = {
+                listing_item_id: listingItemId,
+                action: bidMessage.action,
+                bidder,
+                bidData
+            } as BidCreateRequest;
+
             return bidCreateRequest;
 
         } else {

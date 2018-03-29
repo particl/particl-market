@@ -6,6 +6,7 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('bids', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
             table.string('action').notNullable();
+            table.string('bidder').notNullable();
 
             table.integer('listing_item_id').unsigned().notNullable();
             table.foreign('listing_item_id').references('id')

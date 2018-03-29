@@ -13,6 +13,7 @@ export class BidSearchParams extends RequestBody {
     public listingItemId: number;
 
 
+    public bidder: string;
     public listingItemHash: string;
 
 }

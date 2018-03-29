@@ -22,6 +22,9 @@ import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { BidUpdateRequest } from '../../src/api/requests/BidUpdateRequest';
 import { BidDataCreateRequest } from '../../src/api/requests/BidDataCreateRequest';
 import { BidDataUpdateRequest } from '../../src/api/requests/BidDataUpdateRequest';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 
 describe('BidDatas', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -57,6 +60,7 @@ describe('BidDatas', () => {
 
     const testBidData = {
         action: BidMessageType.MPA_BID,
+        bidder: 'bidderaddress',
         listing_item_id: null
     } as BidCreateRequest;
 
@@ -65,31 +69,43 @@ describe('BidDatas', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.BidDataService);
-
-        // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean();
-
         bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.BidDataService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
 
+        // clean up the db, first removes all data and then seeds the db with default data
+        await testDataService.clean();
+
         // get default market
         let defaultMarket = await marketService.getDefault();
         defaultMarket = defaultMarket.toJSON();
-        listingItemTestData.market_id = defaultMarket.id;
-        // create listing item
-        createdListingItem = await testDataService.create<ListingItem>({
-            model: 'listingitem',
-            data: listingItemTestData as any,
-            withRelated: true
-        } as TestDataCreateRequest);
+
+        const generateParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        // create listingitem without images and store its id for testing
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,  // what to generate
+            amount: 1,                          // how many to generate
+            withRelated: true,                  // return model
+            generateParams                      // what kind of data to generate
+        } as TestDataGenerateRequest);
+        createdListingItem = listingItems[0].toJSON();
 
         // create bid
         testBidData.listing_item_id = createdListingItem.id;
         createdBid = await testDataService.create<ListingItem>({
-            model: 'bid',
-            data: testBidData as any,
+            model: CreatableModel.BID,
+            data: testBidData as BidCreateRequest, // TODO: create a class for all createrequests to extend from
             withRelated: true
         } as TestDataCreateRequest);
     });
@@ -111,7 +127,7 @@ describe('BidDatas', () => {
         // set bid id
         testData.bid_id = createdBid.id;
 
-        const bidDataModel: BidData = await bidDataService.create(testData as BidDataCreateRequest);
+        const bidDataModel: BidData = await bidDataService.create(testData);
         createdId = bidDataModel.Id;
         const result = bidDataModel.toJSON();
         // test the values

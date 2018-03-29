@@ -22,6 +22,9 @@ import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequ
 import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';
 import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { BidUpdateRequest } from '../../src/api/requests/BidUpdateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 
 describe('Bid', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -41,7 +44,8 @@ describe('Bid', () => {
     const testData = {
         action: BidMessageType.MPA_BID,
         listing_item_id: null,
-        bidData: [{
+        bidder: 'bidderaddress',
+        bidDatas: [{
             dataId: 'COLOR',
             dataValue: 'RED'
         }, {
@@ -52,6 +56,7 @@ describe('Bid', () => {
 
     const testDataUpdated = {
         action: BidMessageType.MPA_CANCEL,
+        bidder: 'bidderaddress',
         listing_item_id: null
     } as BidUpdateRequest;
 
@@ -71,14 +76,25 @@ describe('Bid', () => {
         let defaultMarket = await marketService.getDefault();
         defaultMarket = defaultMarket.toJSON();
 
-        createdListingItem = await testDataService.create<ListingItem>({
-            model: 'listingitem',
-            data: {
-                market_id: defaultMarket.id,
-                hash: 'itemhash'
-            } as any,
-            withRelated: true
-        } as TestDataCreateRequest);
+        const generateParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        // create listingitem without images and store its id for testing
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,  // what to generate
+            amount: 1,                          // how many to generate
+            withRelated: true,                  // return model
+            generateParams                      // what kind of data to generate
+        } as TestDataGenerateRequest);
+        createdListingItem = listingItems[0].toJSON();
     });
 
     afterAll(async () => {
@@ -87,7 +103,7 @@ describe('Bid', () => {
 
     test('Should throw ValidationException because listing_item_id is null', async () => {
         expect.assertions(1);
-        await bidService.create(testData as BidCreateRequest).catch(e =>
+        await bidService.create(testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -96,11 +112,13 @@ describe('Bid', () => {
         // set listing item id with bid
         testData.listing_item_id = createdListingItem.id;
 
-        const bidModel: Bid = await bidService.create(testData as BidCreateRequest);
+        log.debug('testData:', testData);
+        const bidModel: Bid = await bidService.create(testData);
         createdBidId = bidModel.Id;
         const result = bidModel.toJSON();
         // test the values
         expect(result.action).toBe(testData.action);
+        expect(result.bidder).toBe(testData.bidder);
         expect(result.listingItemId).toBe(testData.listing_item_id);
     });
 
@@ -118,7 +136,8 @@ describe('Bid', () => {
         const result = bid[0];
         // test the values
         expect(result.action).toBe(testData.action);
-        expect(result.listingItemId).toBe(testData.listing_item_id);
+        expect(result.bidder).toBe(testData.bidder);
+        expect(result.listingItemId).toBe(testData.listing_item_id); // TODO: why is there listingItemId?
     });
 
     test('Should return one bid', async () => {
@@ -126,6 +145,7 @@ describe('Bid', () => {
         const result = bidModel.toJSON();
         // test the values
         expect(result.action).toBe(testData.action);
+        expect(result.bidder).toBe(testData.bidder);
         expect(result.listingItemId).toBe(testData.listing_item_id);
         expect(result.BidDatas.length).toBe(2);
     });
@@ -145,6 +165,7 @@ describe('Bid', () => {
         const result = bidModel.toJSON();
         // test the values
         expect(result.action).toBe(testDataUpdated.action);
+        expect(result.bidder).toBe(testDataUpdated.bidder);
         expect(result.listingItemId).toBe(testDataUpdated.listing_item_id);
     });
 

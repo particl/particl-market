@@ -6,7 +6,7 @@ import { EscrowMessageType } from '../enums/EscrowMessageType';
 export class EscrowLockRequest extends RequestBody {
 
     @IsNotEmpty()
-    public listing: string;
+    public item: string;
 
     @IsNotEmpty()
     public nonce: string;

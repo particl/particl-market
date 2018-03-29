@@ -4,11 +4,15 @@ import { BidMessageType } from '../enums/BidMessageType';
 
 // tslint:disable:variable-name
 export class BidUpdateRequest extends RequestBody {
-  @IsNotEmpty()
-  public listing_item_id: number;
+    @IsNotEmpty()
+    public listing_item_id: number;
 
-  @IsEnum(BidMessageType)
-  @IsNotEmpty()
-  public action: BidMessageType;
+    @IsEnum(BidMessageType)
+    @IsNotEmpty()
+    public action: BidMessageType;
+
+    @IsNotEmpty()
+    public bidder: string;
+
 }
 // tslint:enable:variable-name

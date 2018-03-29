@@ -37,8 +37,9 @@ export class BidRepository {
         return this.BidModel.search(options, withRelated);
     }
 
-    public async getLatestBid(listingItemId: number): Promise<Bid> {
-        return this.BidModel.getLatestBid(listingItemId);
+    // todo: add orderby option to BidSearchParams and get rid of this
+    public async getLatestBid(listingItemId: number, bidder: string): Promise<Bid> {
+        return this.BidModel.getLatestBid(listingItemId, bidder);
     }
 
     public async create(data: any): Promise<Bid> {

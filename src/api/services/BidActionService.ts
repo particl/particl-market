@@ -370,6 +370,7 @@ export class BidActionService {
         const actionMessage = actionMessageModel.toJSON();
 
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
+        const bidder = event.smsgMessage.from;
 
         if (bidMessage) {
             // find listingItem by hash
@@ -377,7 +378,7 @@ export class BidActionService {
             const listingItem = listingItemModel.toJSON();
 
             // create a bid
-            const bidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id);
+            const bidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder);
             const createdBid = this.bidService.create(bidCreateRequest);
 
             this.log.debug('createdBid:', createdBid);
@@ -391,6 +392,8 @@ export class BidActionService {
 
     /**
      * process received AcceptBidMessage
+     * - save ActionMessage
+     * - update Bid
      *
      * @param {MarketplaceMessageInterface} message
      * @returns {Promise<"resources".ActionMessage>}
@@ -403,9 +406,28 @@ export class BidActionService {
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
         const actionMessage = actionMessageModel.toJSON();
 
-        // TODO: do whatever else needs to be done
+        const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
+        const bidder = event.smsgMessage.from;
 
-        return actionMessage;
+        if (bidMessage) {
+            // find listingItem by hash
+            const listingItemModel = await this.listingItemService.findOneByHash(bidMessage.item);
+            const listingItem = listingItemModel.toJSON();
+
+            // find the Bid
+            const bid = listingItem.Bids[0];
+
+            // create a bid
+            const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, bid);
+            const createdBid = this.bidService.create(bidUpdateRequest);
+
+            this.log.debug('createdBid:', createdBid);
+            // TODO: do whatever else needs to be done
+
+            return actionMessage;
+        } else {
+            throw new MessageException('Missing BidMessage');
+        }
     }
 
     /**

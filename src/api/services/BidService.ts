@@ -64,8 +64,8 @@ export class BidService {
     }
 
     @validate()
-    public async getLatestBid(listingItemId: number): Promise<Bid> {
-        return await this.bidRepo.getLatestBid(listingItemId);
+    public async getLatestBid(listingItemId: number, bidder: string): Promise<Bid> {
+        return await this.bidRepo.getLatestBid(listingItemId, bidder);
     }
 
     @validate()
@@ -78,20 +78,24 @@ export class BidService {
             throw new ValidationException('Request body is not valid', ['listing_item_id missing']);
         }
 
-        const bidData = body.bidData || [];
-        delete body.bidData;
+        if (body.bidder == null) {
+            throw new ValidationException('Request body is not valid', ['bidder missing']);
+        }
 
-        this.log.debug('body: ', body);
+        const bidDatas = body.bidDatas || [];
+        delete body.bidDatas;
+
+        this.log.debug('body: ', JSON.stringify(body,null, 2));
         // If the request body was valid we will create the bid
         const bid = await this.bidRepo.create(body);
 
-        for (const dataToSave of bidData) {
+        for (const dataToSave of bidDatas) {
+            // todo: move to biddataservice
             dataToSave.bid_id = bid.Id;
-            dataToSave.dataValue = typeof dataToSave.value === 'string' ? dataToSave.value : JSON.stringify(dataToSave.value);
-            dataToSave.dataId = dataToSave.id;
-            delete dataToSave.id;
-            delete dataToSave.value;
-            await this.bidDataService.create(dataToSave as BidDataCreateRequest);
+            dataToSave.dataValue = typeof (dataToSave.dataValue) === 'string' ? dataToSave.dataValue : JSON.stringify(dataToSave.dataValue);
+
+            this.log.debug('dataToSave: ', JSON.stringify(dataToSave,null, 2));
+            await this.bidDataService.create(dataToSave);
         }
 
         // finally find and return the created bid
@@ -101,14 +105,13 @@ export class BidService {
 
     @validate()
     public async update(id: number, @request(BidUpdateRequest) body: BidUpdateRequest): Promise<Bid> {
-        // TODO: this doesnt work, FIX
+
         // find the existing one without related
         const bid = await this.findOne(id, false);
 
         // set new values
-        if (body.action) {
-            bid.Action = body.action;
-        }
+        bid.Action = body.action;
+        bid.Bidder = body.bidder;
 
         // update bid record
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());
