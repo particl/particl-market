@@ -25,6 +25,7 @@ import { BidUpdateRequest } from '../../src/api/requests/BidUpdateRequest';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import {BidSearchParams} from '../../src/api/requests/BidSearchParams';
 
 describe('Bid', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -108,6 +109,17 @@ describe('Bid', () => {
         );
     });
 
+    test('Should not return any Bids for listingItem.id and bidder', async () => {
+        const bidSearchParams = {
+            listingItemId: createdListingItem.id,
+            bidder: testData.bidder
+        } as BidSearchParams;
+
+        const bidCollection = await bidService.search(bidSearchParams);
+        const bids = bidCollection.toJSON();
+        expect(bids.length).toBe(0);
+    });
+
     test('Should create a new bid', async () => {
         // set listing item id with bid
         testData.listing_item_id = createdListingItem.id;
@@ -120,6 +132,37 @@ describe('Bid', () => {
         expect(result.action).toBe(testData.action);
         expect(result.bidder).toBe(testData.bidder);
         expect(result.listingItemId).toBe(testData.listing_item_id);
+    });
+
+    test('Should return one Bid for listingItem.id and bidder', async () => {
+        const bidSearchParams = {
+            listingItemId: createdListingItem.id,
+            bidder: testData.bidder
+        } as BidSearchParams;
+
+        const bidCollection = await bidService.search(bidSearchParams);
+        const bids = bidCollection.toJSON();
+        expect(bids.length).toBe(1);
+    });
+
+    test('Should return one Bid for listingItem.hash', async () => {
+        const bidSearchParams = {
+            listingItemHash: createdListingItem.hash
+        } as BidSearchParams;
+
+        const bidCollection = await bidService.search(bidSearchParams);
+        const bids = bidCollection.toJSON();
+        expect(bids.length).toBe(1);
+    });
+
+    test('Should return one Bid for bidder', async () => {
+        const bidSearchParams = {
+            bidder: testData.bidder
+        } as BidSearchParams;
+
+        const bidCollection = await bidService.search(bidSearchParams);
+        const bids = bidCollection.toJSON();
+        expect(bids.length).toBe(1);
     });
 
     test('Should throw ValidationException because we want to create a empty bid', async () => {

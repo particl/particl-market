@@ -22,13 +22,15 @@ export class Bid extends Bookshelf.Model<Bid> {
         const bidCollection = Bid.forge<Collection<Bid>>()
             .query( qb => {
 
-                qb.where('bids.listing_item_id', '=', options.listingItemId);
+                if (options.listingItemId) {
+                    qb.where('bids.listing_item_id', '=', options.listingItemId);
+                }
 
                 if (options.action && typeof options.action === 'string') {
                     qb.where('bids.action', '=', options.action);
                 }
 
-                if (options.bidder && typeof options.bidder === 'string') {
+                if (options.bidder) {
                     qb.where('bids.bidder', '=', options.bidder);
                 }
 

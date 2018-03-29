@@ -23,6 +23,8 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { BidMessageType } from '../enums/BidMessageType';
 import { Output } from 'resources';
 import { BidMessage } from '../messages/BidMessage';
+import { BidSearchParams } from '../requests/BidSearchParams';
+
 declare function unescape(s: string): string;
 
 export class BidActionService {
@@ -372,6 +374,16 @@ export class BidActionService {
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
 
+        // TODO: should someone be able to bid more than once?
+        const biddersExistingBidsForItem = await this.bidService.search({
+            listingItemHash: bidMessage.item,
+            bidder
+        } as BidSearchParams);
+
+        if (biddersExistingBidsForItem.length > 0) {
+            throw new MessageException('Bids allready exist for the ListingItem for the bidder.');
+        }
+
         if (bidMessage) {
             // find listingItem by hash
             const listingItemModel = await this.listingItemService.findOneByHash(bidMessage.item);
@@ -415,18 +427,24 @@ export class BidActionService {
             const listingItem = listingItemModel.toJSON();
 
             // find the Bid
-            const bid = listingItem.Bids[0];
+            const existingBid = _.find(listingItem.Bids,  (o: resources.Bid) => {
+                return o.action === BidMessageType.MPA_BID && o.bidder === bidder;
+            });
 
-            // create a bid
-            const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, bid);
-            const createdBid = this.bidService.create(bidUpdateRequest);
+            if (existingBid) {
+                // create a bid
+                const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, existingBid);
+                const updatedBid = this.bidService.update(existingBid.id, bidUpdateRequest);
 
-            this.log.debug('createdBid:', createdBid);
-            // TODO: do whatever else needs to be done
+                this.log.debug('updatedBid:', updatedBid);
+                // TODO: do whatever else needs to be done
 
-            return actionMessage;
+                return actionMessage;
+            } else {
+                throw new MessageException('There is no existing Bid to accept.');
+            }
         } else {
-            throw new MessageException('Missing BidMessage');
+            throw new MessageException('Missing BidMessage.');
         }
     }
 

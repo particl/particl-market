@@ -53,10 +53,14 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         }
     }
 
-    public static async fetchByHash(value: string): Promise<ListingItem> {
-        return await ListingItem.where<ListingItem>({ hash: value }).fetch({
-            withRelated: this.RELATIONS
-        });
+    public static async fetchByHash(value: string, withRelated: boolean = true): Promise<ListingItem> {
+        if (withRelated) {
+            return await ListingItem.where<ListingItem>({ hash: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ListingItem.where<ListingItem>({ hash: value }).fetch();
+        }
     }
 
     public static async fetchByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {

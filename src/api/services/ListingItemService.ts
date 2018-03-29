@@ -80,8 +80,8 @@ export class ListingItemService {
      * @param hash, hash of the listing Item.
      * @returns {Promise<ListingItem>}
      */
-    public async findOneByHash(hash: string): Promise<ListingItem> {
-        const listingItem = await this.listingItemRepo.findOneByHash(hash);
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItem> {
+        const listingItem = await this.listingItemRepo.findOneByHash(hash, withRelated);
         if (listingItem === null) {
             this.log.warn(`ListingItem with the hash=${hash} was not found!`);
             throw new NotFoundException(hash);
@@ -101,7 +101,7 @@ export class ListingItemService {
                         withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
         // if valid params
         // todo: check whether category is string or number, if string, try to find the Category by key
-        return this.listingItemRepo.search(options, withRelated);
+        return await this.listingItemRepo.search(options, withRelated);
     }
 
     /**

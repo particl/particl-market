@@ -36,8 +36,8 @@ export class ListingItemRepository {
      * @param hash
      * @returns {Promise<ListingItem>}
      */
-    public async findOneByHash(hash: string): Promise<ListingItem> {
-        return this.ListingItemModel.fetchByHash(hash);
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItem> {
+        return this.ListingItemModel.fetchByHash(hash, withRelated);
     }
 
     /**

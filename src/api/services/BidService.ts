@@ -18,6 +18,7 @@ import { BidSearchParams } from '../requests/BidSearchParams';
 
 import { EventEmitter } from 'events';
 import { BidDataService } from './BidDataService';
+import { ListingItemService } from './ListingItemService';
 
 export class BidService {
 
@@ -26,6 +27,7 @@ export class BidService {
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.BidRepository) public bidRepo: BidRepository,
         @inject(Types.Service) @named(Targets.Service.BidDataService) public bidDataService: BidDataService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -33,7 +35,7 @@ export class BidService {
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Bid>> {
-        return this.bidRepo.findAll();
+        return await this.bidRepo.findAll();
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Bid> {
@@ -46,10 +48,11 @@ export class BidService {
     }
 
     public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+        // TODO: this does not seem to be implemented, see repo/model
         const params = {
             listingItemHash: hash
         } as BidSearchParams;
-        return this.search(params);
+        return await this.search(params);
     }
 
     /**
@@ -60,7 +63,11 @@ export class BidService {
      */
     @validate()
     public async search(@request(BidSearchParams) options: BidSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
-        return this.bidRepo.search(options, withRelated);
+        if (options.listingItemHash) {
+            const foundListing = await this.listingItemService.findOneByHash(options.listingItemHash, false);
+            options.listingItemId = foundListing.Id;
+        }
+        return await this.bidRepo.search(options, withRelated);
     }
 
     @validate()
