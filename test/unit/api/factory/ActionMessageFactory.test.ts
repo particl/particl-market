@@ -16,7 +16,7 @@ describe('EscrowFactory', () => {
         actionMessageFactory = new ActionMessageFactory(LogMock);
     });
 
-    test('Should get EscrowLockMessage', async () => {
+    test('Test ActionMessageFactory.getModel()', async () => {
         const messages: ActionMessageInterface[] = [
             {
                 action: BidMessageType.MPA_BID,
