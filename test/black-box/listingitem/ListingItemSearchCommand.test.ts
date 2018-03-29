@@ -14,7 +14,7 @@ import * as listingItemTemplateCreateRequestBasic1 from '../../testdata/createre
 import * as listingItemTemplateCreateRequestBasic2 from '../../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
 
 import * as resources from 'resources';
-import {ObjectHash} from '../../../src/core/helpers/ObjectHash';
+import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 
 describe('ListingItemSearchCommand', () => {

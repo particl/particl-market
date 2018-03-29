@@ -2,17 +2,23 @@ import { app } from '../../../src/app';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Types, Core, Targets } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
-import { TestDataService } from '../../../src/api/services/TestDataService';
-import { MarketService } from '../../../src/api/services/MarketService';
+
 import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
 import { ValidationException } from '../../../src/api/exceptions/ValidationException';
-import { ListingItem } from '../../../src/api/models/ListingItem';
+
+import { TestDataService } from '../../../src/api/services/TestDataService';
+import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemService } from '../../../src/api/services/ListingItemService';
-import { BidMessageProcessor } from '../../../src/api/messageprocessors/BidMessageProcessor';
-import { BidMessageType } from '../../../src/api/enums/BidMessageType';
+
+import { ListingItem } from '../../../src/api/models/ListingItem';
 import { ListingItemCreateRequest } from '../../../src/api/requests/ListingItemCreateRequest';
 import { TestDataCreateRequest } from '../../../src/api/requests/TestDataCreateRequest';
+import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { BidMessage } from '../../../src/api/messages/BidMessage';
+
+import * as bidSmsg1 from '../../testdata/message/smsgMessageWithListingItemMessage1.json';
+import * as bidSmsg2 from '../../testdata/message/smsgMessageWithListingItemMessage2.json';
+import * as bidSmsg3 from '../../testdata/message/smsgMessageWithListingItemMessage3.json';
 import * as resources from 'resources';
 
 describe('BidMessageProcessor', () => {
