@@ -99,7 +99,6 @@ export class ListingItemObjectService {
         
         // update listingItemObjectDatas
         const listingItemObjectDatasOld = listingItemObject.ListingItemObjectDatas();
-
         for (const objectData of listingItemObjectDatasOld) {
             await this.listingItemObjectDataService.destroy(objectData.id);
         }

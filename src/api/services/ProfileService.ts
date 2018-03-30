@@ -131,6 +131,7 @@ export class ProfileService {
 
         // update profile
         const updatedProfile = await this.profileRepo.update(id, profile.toJSON());
+        
         this.log.debug('updatedProfile: ', updatedProfile.toJSON());
 
         // remove existing addresses
