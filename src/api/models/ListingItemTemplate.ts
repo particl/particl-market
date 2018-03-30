@@ -16,6 +16,10 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                 withRelated: [
                     'ItemInformation',
                     'ItemInformation.ItemCategory',
+                    'ItemInformation.ItemCategory.ParentItemCategory',
+                    'ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory',
+                    'ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+                    'ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
                     'ItemInformation.ItemLocation',
                     'ItemInformation.ItemLocation.LocationMarker',
                     'ItemInformation.ItemImages',

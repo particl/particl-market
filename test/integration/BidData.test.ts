@@ -25,6 +25,8 @@ import { BidDataUpdateRequest } from '../../src/api/requests/BidDataUpdateReques
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
+import { ProfileService } from '../../src/api/services/ProfileService';
 
 describe('BidDatas', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -36,8 +38,11 @@ describe('BidDatas', () => {
     let bidDataService: BidDataService;
     let bidService: BidService;
     let marketService: MarketService;
+    let profileService: ProfileService;
     let listingItemService: ListingItemService;
 
+    let defaultProfile;
+    let defaultMarket;
     let createdId;
     let createdListingItem;
     let createdBid;
@@ -53,15 +58,21 @@ describe('BidDatas', () => {
         dataValue: 'black'
     } as BidDataUpdateRequest;
 
-    const listingItemTestData = {
-        market_id: null,
-        hash: 'itemhash'
-    } as ListingItemCreateRequest;
-
     const testBidData = {
         action: BidMessageType.MPA_BID,
         bidder: 'bidderaddress',
-        listing_item_id: null
+        listing_item_id: null,
+        address: {
+        title: 'Title',
+            firstName: 'Robert',
+            lastName: 'Downey',
+            addressLine1: 'Add',
+            addressLine2: 'ADD 22',
+            city: 'city',
+            state: 'test state',
+            country: 'Finland',
+            zipCode: '85001',
+        } as AddressCreateRequest
     } as BidCreateRequest;
 
     beforeAll(async () => {
@@ -71,15 +82,20 @@ describe('BidDatas', () => {
         bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.BidDataService);
         bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
         bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.BidDataService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default market
-        let defaultMarket = await marketService.getDefault();
-        defaultMarket = defaultMarket.toJSON();
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        defaultProfile = defaultProfileModel.toJSON();
+
+        // get market
+        const defaultMarketModel = await marketService.getDefault();
+        defaultMarket = defaultMarketModel.toJSON();
 
         const generateParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -103,11 +119,11 @@ describe('BidDatas', () => {
 
         // create bid
         testBidData.listing_item_id = createdListingItem.id;
-        createdBid = await testDataService.create<ListingItem>({
-            model: CreatableModel.BID,
-            data: testBidData as BidCreateRequest, // TODO: create a class for all createrequests to extend from
-            withRelated: true
-        } as TestDataCreateRequest);
+        testBidData.bidder = defaultProfile.address;
+
+        const createdBidModel = await bidService.create(testBidData);
+        createdBid = createdBidModel.toJSON();
+
     });
 
     afterAll(async () => {
@@ -127,6 +143,7 @@ describe('BidDatas', () => {
         // set bid id
         testData.bid_id = createdBid.id;
 
+        log.debug('testData:', JSON.stringify(testData, null, 2));
         const bidDataModel: BidData = await bidDataService.create(testData);
         createdId = bidDataModel.Id;
         const result = bidDataModel.toJSON();

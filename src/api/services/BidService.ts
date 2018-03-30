@@ -3,6 +3,7 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
+import * as _ from 'lodash';
 
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ValidationException } from '../exceptions/ValidationException';
@@ -19,6 +20,9 @@ import { BidSearchParams } from '../requests/BidSearchParams';
 import { EventEmitter } from 'events';
 import { BidDataService } from './BidDataService';
 import { ListingItemService } from './ListingItemService';
+import { AddressService } from './AddressService';
+import { AddressType } from '../enums/AddressType';
+import { ProfileService } from './ProfileService';
 
 export class BidService {
 
@@ -28,6 +32,8 @@ export class BidService {
         @inject(Types.Repository) @named(Targets.Repository.BidRepository) public bidRepo: BidRepository,
         @inject(Types.Service) @named(Targets.Service.BidDataService) public bidDataService: BidDataService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -89,19 +95,52 @@ export class BidService {
             throw new ValidationException('Request body is not valid', ['bidder missing']);
         }
 
+        if (body.address == null) {
+            throw new ValidationException('Request body is not valid', ['address missing']);
+        }
+
+        const addressCreateRequest = body.address;
+        delete body.address;
+
+        // make sure the address type is correct
+        const listingItemModel = await this.listingItemService.findOne(body.listing_item_id);
+        const listingItem = listingItemModel.toJSON();
+        this.log.debug('listingItem.id: ', listingItem.id);
+
+        if (!_.isEmpty(listingItem.ListingItemTemplate)) { // local profile is selling
+            this.log.debug('listingItem has template: ', listingItem.ListingItemTemplate.id);
+            this.log.debug('listingItem template has profile: ', listingItem.ListingItemTemplate.Profile.id);
+            addressCreateRequest.type = AddressType.SHIPPING_BID;
+            addressCreateRequest.profile_id = listingItem.ListingItemTemplate.Profile.id;
+        } else { // local profile is buying
+            this.log.debug('listingItem has no template ');
+            const profileModel = await this.profileService.findOneByAddress(body.bidder);
+            const profile = profileModel.toJSON();
+            addressCreateRequest.type = AddressType.SHIPPING_OWN;
+            addressCreateRequest.profile_id = profile.id;
+        }
+
+        this.log.debug('address create request: ', JSON.stringify(addressCreateRequest, null, 2));
+        const addressModel = await this.addressService.create(addressCreateRequest);
+        const address = addressModel.toJSON();
+        this.log.debug('created address: ', JSON.stringify(address, null, 2));
+
+        // set the address_id for bid
+        body.address_id = address.id;
+
         const bidDatas = body.bidDatas || [];
         delete body.bidDatas;
 
-        this.log.debug('body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('body: ', JSON.stringify(body, null, 2));
         // If the request body was valid we will create the bid
         const bid = await this.bidRepo.create(body);
 
         for (const dataToSave of bidDatas) {
-            // todo: move to biddataservice
+            // todo: move to biddataservice?
             dataToSave.bid_id = bid.Id;
             dataToSave.dataValue = typeof (dataToSave.dataValue) === 'string' ? dataToSave.dataValue : JSON.stringify(dataToSave.dataValue);
 
-            this.log.debug('dataToSave: ', JSON.stringify(dataToSave, null, 2));
+            // this.log.debug('dataToSave: ', JSON.stringify(dataToSave, null, 2));
             await this.bidDataService.create(dataToSave);
         }
 

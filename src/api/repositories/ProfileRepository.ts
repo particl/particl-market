@@ -34,6 +34,10 @@ export class ProfileRepository {
         return this.ProfileModel.fetchByName(name, withRelated);
     }
 
+    public async findOneByAddress(name: string, withRelated: boolean = true): Promise<Profile> {
+        return this.ProfileModel.fetchByAddress(name, withRelated);
+    }
+
     public async create(data: any): Promise<Profile> {
         const profile = this.ProfileModel.forge<Profile>(data);
         try {

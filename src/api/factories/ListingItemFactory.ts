@@ -40,9 +40,9 @@ export class ListingItemFactory {
      * @param {'resources'.ItemCategory} listingItemCategory
      * @returns {Promise<ListingItemMessage>}
      */
-    public async getMessage(listingItemTemplate: resources.ListingItemTemplate, listingItemCategory: resources.ItemCategory): Promise<ListingItemMessage> {
+    public async getMessage(listingItemTemplate: resources.ListingItemTemplate): Promise<ListingItemMessage> {
 
-        const information = await this.getMessageInformation(listingItemTemplate.ItemInformation, listingItemCategory);
+        const information = await this.getMessageInformation(listingItemTemplate.ItemInformation);
         const payment = await this.getMessagePayment(listingItemTemplate.PaymentInformation);
         const messaging = await this.getMessageMessaging(listingItemTemplate.MessagingInformation);
         const objects = await this.getMessageObjects(listingItemTemplate.ListingItemObjects);
@@ -251,8 +251,8 @@ export class ListingItemFactory {
     // ---------------
     // MESSAGE
     // ---------------
-    private async getMessageInformation(itemInformation: resources.ItemInformation, listingItemCategory: resources.ItemCategory): Promise<any> {
-        const category = await this.itemCategoryFactory.getArray(listingItemCategory);
+    private async getMessageInformation(itemInformation: resources.ItemInformation): Promise<any> {
+        const category = await this.itemCategoryFactory.getArray(itemInformation.ItemCategory);
         const location = await this.getMessageInformationLocation(itemInformation.ItemLocation);
         const shippingDestinations = await this.getMessageInformationShippingDestinations(itemInformation.ShippingDestinations);
         const images = await this.getMessageInformationImages(itemInformation.ItemImages);

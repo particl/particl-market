@@ -2,20 +2,21 @@ import { IsNotEmpty, IsEnum } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { BidMessageType } from '../enums/BidMessageType';
 import {BidDataCreateRequest} from './BidDataCreateRequest';
+import {AddressCreateRequest} from './AddressCreateRequest';
 
 // tslint:disable:variable-name
 export class BidCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public listing_item_id: number;
+    public address_id: number;
 
     @IsEnum(BidMessageType)
     @IsNotEmpty()
     public action: BidMessageType;
 
-    // @IsNotEmpty()
-    // TODO: what is this?
-    public addressId: number;
+    @IsNotEmpty()
+    public address: AddressCreateRequest;
 
     @IsNotEmpty()
     public bidder: string;

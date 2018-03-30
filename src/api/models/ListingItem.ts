@@ -38,9 +38,11 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'ListingItemObjects.ListingItemObjectDatas',
         'ActionMessages',
         'Bids',
+        'Bids.BidDatas',
         'Market',
         'FlaggedItem',
-        'ListingItemTemplate'
+        'ListingItemTemplate',
+        'ListingItemTemplate.Profile'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {

@@ -13,6 +13,7 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { NotFoundException } from '../../exceptions/NotFoundException';
+import {AddressType} from '../../enums/AddressType';
 
 export class AddressAddCommand extends BaseCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
@@ -69,7 +70,8 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
             city: data.params[6],
             state: data.params[7],
             country: countryCode,
-            zipCode: zipCodeStr
+            zipCode: zipCodeStr,
+            type: AddressType.SHIPPING_OWN
         } as AddressCreateRequest;
 
         this.log.debug('newAddress:', newAddress);

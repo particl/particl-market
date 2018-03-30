@@ -293,9 +293,15 @@ export class TestDataService {
             listingItemId = listings[0].id;
             this.log.debug(`generateBidData: generated new listing with id ${listingItemId}, continuing bid creation`);
         }
+
+        const address = await this.generateAddressesData(1)[0];
+        const bidder = await this.generateCryptocurrencyAddressesData(1)[0];
+
         return {
             action: BidMessageType.MPA_BID,
-            listing_item_id: listingItemId
+            listing_item_id: listingItemId,
+            address,
+            bidder
         } as BidCreateRequest;
     }
 
@@ -341,6 +347,7 @@ export class TestDataService {
         const addresses: any[] = [];
         for (let i = amount; i > 0; i--) {
             addresses.push({
+                profile_id: 0,
                 firstName: Faker.name.firstName(),
                 lastName: Faker.name.lastName(),
                 title: Faker.company.companyName(),

@@ -378,7 +378,7 @@ describe('ListingItemTemplate', () => {
 
     test('Should create a new ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
+        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
         testDataToSave.profile_id = defaultProfile.Id;
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
@@ -402,6 +402,7 @@ describe('ListingItemTemplate', () => {
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.findOne(createdListingItemTemplate1.id);
         const result = listingItemTemplateModel.toJSON();
 
+        log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.hash).toBe(createdListingItemTemplate1.hash);
     });
 

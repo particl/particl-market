@@ -5,6 +5,9 @@ import { ListingItemFactory } from '../../api/factories/ListingItemFactory';
 import { ImageFactory } from '../../api/factories/ImageFactory';
 import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
+import { ListingItemMessage } from '../messages/ListingItemMessage';
+import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
+import { HashableListingItem } from '../../core/api/HashableListingItem';
 
 export class ObjectHashService {
 
@@ -18,18 +21,18 @@ export class ObjectHashService {
         this.log = new Logger(__filename);
     }
 
+    // TODO: any?
     public async getHash(objectToHash: any, type: HashableObjectType): Promise<string> {
         let hashableObject;
         switch (type) {
+            case HashableObjectType.LISTINGITEM_CREATEREQUEST:
+            case HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST:
             case HashableObjectType.LISTINGITEM:
             case HashableObjectType.LISTINGITEMTEMPLATE: {
-                const templateOrItem = objectToHash;
-                const templateOrItemCategoryWithRelated: any = templateOrItem.ItemInformation.ItemCategory;
-
-                hashableObject = await this.listingItemFactory.getMessage(templateOrItem, templateOrItemCategoryWithRelated);
-                delete hashableObject.hash;
+                hashableObject = new HashableListingItem(objectToHash);
                 break;
             }
+            case HashableObjectType.ITEMIMAGE_CREATEREQUEST:
             case HashableObjectType.ITEMIMAGE: {
                 // create the hash from ORIGINAL imageversion
                 const imageData = objectToHash.getOriginalImageVersionData();
@@ -47,4 +50,5 @@ export class ObjectHashService {
         }
         return crypto.SHA256(JSON.stringify(hashableObject).split('').sort().toString()).toString();
     }
+
 }

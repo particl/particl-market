@@ -4,44 +4,6 @@
     "profileId": 5,
     "updatedAt": 1520294532426,
     "createdAt": 1520294532426,
-    "ListingItemObjects": [
-        {
-            "id": 1,
-            "type": "TABLE",
-            "description": "Product information",
-            "listingItemTemplateId": 4,
-            "ListingItemObjectDatas": [
-                {
-                    "id": 1,
-                    "key": "Screensize",
-                    "value": "17.8 inch",
-                    "listingItemObjectId": 1
-                }
-            ]
-        },
-        {
-            "id": 2,
-            "type": "DROPDOWN",
-            "objectId": "color",
-            "forceInput": true,
-            "description": "Please select your colour",
-            "listingItemTemplateId": 4,
-            "ListingItemObjectDatas": [
-                {
-                    "id": 3,
-                    "key": "Black",
-                    "value": "#190425",
-                    "listingItemObjectId": 2
-                },
-                {
-                    "id": 4,
-                    "key": "Blue",
-                    "value": "#103584",
-                    "listingItemObjectId": 2
-                }
-            ]
-        }
-    ],
     "PaymentInformation": {
         "id": 4,
         "type": "FREE",
@@ -90,35 +52,87 @@
             }
         }
     },
-    "MessagingInformation": [
+    "ListingItemObjects": [
         {
-            "id": 4,
-            "protocol": "SMSG",
-            "publicKey": "0f42547c-35d2-4cac-846b-9ebcc74942c9",
-            "listingItemId": null,
+            "id": 1,
+            "type": "TABLE",
+            "description": "Product information",
             "listingItemTemplateId": 4,
-            "updatedAt": 1520294533453,
-            "createdAt": 1520294533453
+            "ListingItemObjectDatas": [
+                {
+                    "id": 1,
+                    "key": "Screensize",
+                    "value": "17.8 inch",
+                    "listingItemObjectId": 1
+                },
+                {
+                    "id": 2,
+                    "key": "Gpu",
+                    "value": "NVidia 950",
+                    "listingItemObjectId": 1
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "type": "DROPDOWN",
+            "objectId": "color",
+            "forceInput": true,
+            "description": "Please select your colour",
+            "listingItemTemplateId": 4,
+            "ListingItemObjectDatas": [
+                {
+                    "id": 3,
+                    "key": "Black",
+                    "value": "#190425",
+                    "listingItemObjectId": 2
+                },
+                {
+                    "id": 4,
+                    "key": "Blue",
+                    "value": "#103584",
+                    "listingItemObjectId": 2
+                }
+            ]
         }
     ],
     "ItemInformation": {
         "id": 4,
-        "title": "Small Gloves",
-        "shortDescription": "Tuna",
-        "longDescription": "Velit eum eaque sed. Est consequatur dolorem quia culpa omnis id temporibus beatae ducimus.",
+        "title": "Small Soft Gloves",
+        "shortDescription": "Ergonomic Tuna",
+        "longDescription": "Eaque placeat odit et voluptas nesciunt non in laboriosam. Qui quod deleniti suscipit voluptatem ducimus. Explicabo ipsa repellat vero quis tempore in aut distinctio et. Neque praesentium praesentium asperiores minima sed dolorem deserunt fuga nemo. Velit eum eaque sed. Est consequatur dolorem quia culpa omnis id temporibus beatae ducimus.",
         "itemCategoryId": 326,
         "listingItemId": null,
         "listingItemTemplateId": 4,
         "updatedAt": 1520294532464,
         "createdAt": 1520294532464,
         "ItemCategory": {
-            "id": 326,
+            "id": 1126,
             "key": "cat_high_luxyry_items",
             "name": "Luxury Items",
             "description": "",
-            "parentItemCategoryId": 322,
-            "updatedAt": 1520294530628,
-            "createdAt": 1520294530628
+            "parentItemCategoryId": 1122,
+            "updatedAt": 1522367920340,
+            "createdAt": 1522367920340,
+            "ParentItemCategory": {
+                "id": 1122,
+                "key": "cat_high_value",
+                "name": "High Value (10,000$+)",
+                "description": "",
+                "parentItemCategoryId": 1121,
+                "updatedAt": 1522367920304,
+                "createdAt": 1522367920304,
+                "ParentItemCategory": {
+                    "id": 1121,
+                    "key": "cat_ROOT",
+                    "name": "ROOT",
+                    "description": "root item category",
+                    "parentItemCategoryId": null,
+                    "updatedAt": 1522367920299,
+                    "createdAt": 1522367920299,
+                    "ParentItemCategory": {}
+                }
+            }
         },
         "ItemLocation": {
             "id": 4,
@@ -439,5 +453,16 @@
         "updatedAt": 1520294532302,
         "createdAt": 1520294532302
     },
-    "ListingItem": []
+    "ListingItem": [],
+    "MessagingInformation": [
+        {
+            "id": 4,
+            "protocol": "SMSG",
+            "publicKey": "0f42547c-35d2-4cac-846b-9ebcc74942c9",
+            "listingItemId": null,
+            "listingItemTemplateId": 4,
+            "updatedAt": 1520294533453,
+            "createdAt": 1520294533453
+        }
+    ]
 }

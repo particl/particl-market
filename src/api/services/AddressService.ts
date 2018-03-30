@@ -35,7 +35,6 @@ export class AddressService {
 
     @validate()
     public async create( @request(AddressCreateRequest) body: AddressCreateRequest): Promise<Address> {
-        // TODO: validate that the profile exists
 
         // If the request body was valid we will create the address
         const address = await this.addressRepo.create(body);

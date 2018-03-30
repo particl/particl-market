@@ -3,15 +3,19 @@ import { Collection } from 'bookshelf';
 import { ListingItem } from './ListingItem';
 import { BidData } from './BidData';
 import { BidSearchParams } from '../requests/BidSearchParams';
+import {Address} from './Address';
 
 export class Bid extends Bookshelf.Model<Bid> {
+
+    public static RELATIONS = [
+        'BidDatas',
+        'ShippingAddress'
+    ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Bid> {
         if (withRelated) {
             return await Bid.where<Bid>({ id: value }).fetch({
-                withRelated: [
-                    'BidDatas'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await Bid.where<Bid>({ id: value }).fetch();
@@ -38,10 +42,7 @@ export class Bid extends Bookshelf.Model<Bid> {
 
         if (withRelated) {
             return await bidCollection.fetchAll({
-                withRelated: [
-                    'ListingItem',
-                    'BidDatas'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await bidCollection.fetchAll();
@@ -77,4 +78,9 @@ export class Bid extends Bookshelf.Model<Bid> {
     public BidDatas(): Collection<BidData> {
        return this.hasMany(BidData, 'bid_id', 'id');
     }
+
+    public ShippingAddress(): Address {
+        return this.belongsTo(Address, 'address_id', 'id');
+    }
+
 }

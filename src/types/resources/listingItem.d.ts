@@ -12,6 +12,7 @@ declare module 'resources' {
         Market: Market;
         Bids: Bid[];
         ActionMessages: ActionMessage[];
+        ListingItemTemplate: ListingItemTemplate;
     }
 
 }

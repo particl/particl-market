@@ -9,6 +9,7 @@ declare module 'resources' {
                 PaymentInformation: PaymentInformation;
                 MessagingInformation: MessagingInformation[];
                 ListingItemObjects: ListingItemObject[];
+                Profile;
         }
 
 }
