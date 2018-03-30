@@ -7,6 +7,7 @@ import { NotFoundException } from '../exceptions/NotFoundException';
 import { ValidationException } from '../exceptions/ValidationException';
 import { ListingItemObjectRepository } from '../repositories/ListingItemObjectRepository';
 import { ListingItemObject } from '../models/ListingItemObject';
+import { ListingItemObjectData } from '../models/ListingItemObjectData';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../requests/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
@@ -99,8 +100,13 @@ export class ListingItemObjectService {
         
         // update listingItemObjectDatas
         const listingItemObjectDatasOld = listingItemObject.ListingItemObjectDatas();
-        for (const objectData of listingItemObjectDatasOld) {
-            await this.listingItemObjectDataService.destroy(objectData.id);
+        const objectDataIds: number[] = new Array();
+        listingItemObjectDatasOld.forEach((objectData: ListingItemObjectData): void {
+            objectDataIds.push(objectData.id);
+        });
+         
+        for (const objectDataId of objectDataIds) {
+            await this.listingItemObjectDataService.destroy(objectDataId);
         }
 
         const listingItemObjectDatas = body.listingItemObjectDatas;

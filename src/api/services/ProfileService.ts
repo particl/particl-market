@@ -131,12 +131,11 @@ export class ProfileService {
 
         // update profile
         const updatedProfile = await this.profileRepo.update(id, profile.toJSON());
-        
         this.log.debug('updatedProfile: ', updatedProfile.toJSON());
 
         // remove existing addresses
-        const addresses_to_delete = profile.toJSON().ShippingAddresses;
-        for (const address of addresses_to_delete) {
+        const addressesToDelete = profile.toJSON().ShippingAddresses;
+        for (const address of addressesToDelete) {
             await this.addressService.destroy(address.id);
         }
 
