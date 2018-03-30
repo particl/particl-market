@@ -1,21 +1,14 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { EscrowType } from '../../src/api/enums/EscrowType';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
-import { ObjectHashService } from '../../src/api/services/ObjectHashService';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
 import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
+import {ObjectHash} from '../../src/core/helpers/ObjectHash';
 
 describe('ListingItemObjectSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -62,8 +55,8 @@ describe('ListingItemObjectSearchCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
         // set hash
-        testData.hash = await this.ObjectHashService.getHash(testData, HashableObjectType.LISTINGITEM);
-        testDataTwo.hash = await this.ObjectHashService.getHash(testDataTwo, HashableObjectType.LISTINGITEM);
+        testData.hash = ObjectHash.getHash(testData, HashableObjectType.LISTINGITEM);
+        testDataTwo.hash = ObjectHash.getHash(testDataTwo, HashableObjectType.LISTINGITEM);
 
         defaultMarket = await testUtil.getDefaultMarket();
 

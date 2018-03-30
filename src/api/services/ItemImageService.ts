@@ -8,22 +8,20 @@ import { NotFoundException } from '../exceptions/NotFoundException';
 import { ItemImageRepository } from '../repositories/ItemImageRepository';
 import { ItemImage } from '../models/ItemImage';
 import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
+import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { ItemImageUpdateRequest } from '../requests/ItemImageUpdateRequest';
 import { ItemImageDataService } from './ItemImageDataService';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { ImageTriplet } from '../../core/helpers/ImageTriplet';
-import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { ImageFactory } from '../factories/ImageFactory';
 import { ImageVersions } from '../../core/helpers/ImageVersionEnumType';
 import { MessageException } from '../exceptions/MessageException';
-import { CryptocurrencyAddressUpdateRequest } from '../requests/CryptocurrencyAddressUpdateRequest';
-import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
 import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
 import { HashableObjectType } from '../../api/enums/HashableObjectType';
 import * as fs from 'fs';
-import { ObjectHashService } from './ObjectHashService';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
 
 export class ItemImageService {
 
@@ -31,7 +29,6 @@ export class ItemImageService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ItemImageDataService) public itemImageDataService: ItemImageDataService,
-        @inject(Types.Service) @named(Targets.Service.ObjectHashService) public objectHashService: ObjectHashService,
         @inject(Types.Repository) @named(Targets.Repository.ItemImageRepository) public itemImageRepo: ItemImageRepository,
         @inject(Types.Factory) @named(Targets.Factory.ImageFactory) public imageFactory: ImageFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -52,11 +49,17 @@ export class ItemImageService {
         return itemImage;
     }
 
-    /*
+    /**
      * create(), but get data from a local file instead.
+     *
+     * @param imageFile
+     * @param {ListingItemTemplate} listingItemTemplate
+     * @returns {Promise<ItemImage>}
      */
     @validate()
     public async createFile(imageFile: any, listingItemTemplate: ListingItemTemplate): Promise<ItemImage> {
+        // TODO: how am i supposed to know what imageFile contains? add type to it
+
         // Read the file data in
         const dataStr = fs.readFileSync(imageFile.path, 'base64');
         // this.log.error('dataStr = ' + dataStr);
@@ -65,32 +68,25 @@ export class ItemImageService {
         // this.log.debug('imageFile.mimetype = ' + imageFile.mimetype);
         // find related itemInformation
 
-        let retItemImage;
         const itemInformation = await listingItemTemplate.related('ItemInformation').toJSON();
-        const createArgs = {
+
+        const itemImageDataCreateRequest = {
+            protocol: ImageDataProtocolType.LOCAL,
+            encoding: 'BASE64',
+            data: dataStr,
+            dataId: imageFile.fieldname, // replaced with local url in factory
+            imageVersion: ImageVersions.ORIGINAL.propName,
+            originalMime: imageFile.mimetype,
+            originalName: imageFile.originalname
+        };
+
+        const itemImageCreateRequest = {
             item_information_id: itemInformation.id,
-            // TODO: hash creation is wrong, using itemInformation data, and should propably be done in the service.create, just before saving
-            hash: await this.objectHashService.getHash({
-                dataId: imageFile.fieldname,
-                protocol: ImageDataProtocolType.LOCAL,
-                encoding: 'BASE64',
-                data: dataStr,
-                imageVersion: ImageVersions.ORIGINAL.propName
-            }, HashableObjectType.ITEMIMAGE),
-            data: [{
-                protocol: ImageDataProtocolType.LOCAL,
-                encoding: 'BASE64',
-                data: dataStr,
-                dataId: imageFile.fieldname, // replaced with local url in factory
-                imageVersion: ImageVersions.ORIGINAL.propName,
-                originalMime: imageFile.mimetype,
-                originalName: imageFile.originalname
-            }]
+            data: [itemImageDataCreateRequest]
         } as ItemImageCreateRequest;
 
-        this.log.debug(JSON.stringify(createArgs));
-        retItemImage = await this.create(createArgs);
-        return retItemImage;
+        this.log.debug(JSON.stringify(itemImageCreateRequest));
+        return await this.create(itemImageCreateRequest);
     }
 
     @validate()
@@ -104,9 +100,6 @@ export class ItemImageService {
         const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
         delete body.data;
 
-        // if the request body was valid we will create the itemImage
-        const itemImage = await this.itemImageRepo.create(body);
-
         const protocols = Object.keys(ImageDataProtocolType)
             .map(key => (ImageDataProtocolType[key]));
         // this.log.debug('protocols: ', protocols);
@@ -114,8 +107,14 @@ export class ItemImageService {
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
-
         // this.log.debug('itemImageDataOriginal: ', itemImageDataOriginal);
+
+        // use the original image version to create a hash for the ItemImage
+        body.hash = ObjectHash.getHash(itemImageDataOriginal, HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
+
+        // if the request body was valid we will create the itemImage
+        const itemImage = await this.itemImageRepo.create(body);
+
 
         if (itemImageDataOriginal) {
 
@@ -170,6 +169,9 @@ export class ItemImageService {
         const itemImageDataOriginal = _.find(itemImageDatas, (imageData) => {
             return imageData.imageVersion === ImageVersions.ORIGINAL.propName;
         });
+
+        // use the original image version to create a hash for the ItemImage
+        body.hash = ObjectHash.getHash(itemImageDataOriginal, HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
 
         if (itemImageDataOriginal) {
 

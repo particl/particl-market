@@ -12,7 +12,6 @@ export class HashableListingItem {
     public basePrice: string;
     public paymentAddress: string;
     public messagingPublicKey: string;
-    public timestamp;
 
     constructor(input: any) {
         if (input) {
@@ -30,7 +29,6 @@ export class HashableListingItem {
             this.basePrice          = input.paymentInformation.itemPrice.basePrice;
             this.paymentAddress     = input.paymentInformation.itemPrice.cryptocurrencyAddress.address;
             this.messagingPublicKey = input.messagingInformation.publicKey;
-            this.timestamp          = new Date();
         }
     }
 

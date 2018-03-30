@@ -6,7 +6,9 @@ import { Currency } from '../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
-// TODO: use test data from the testdata folder
+// TODO: get rid of this, its not easily reusable because it cannot be find
+// for test data, use/create test data from the testdata folder so it can be
+// shared across tests or use testdataservice to generate testdata
 
 // Ryno hack
 export const testDataListingItemTemplate = {

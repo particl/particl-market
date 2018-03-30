@@ -1,15 +1,14 @@
 import { rpc, api } from './lib/api';
-import * as crypto from 'crypto-js';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
-import { ObjectHashService } from '../../src/api/services/ObjectHashService';
 import { Commands} from '../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { ListingItem, ListingItemTemplate } from 'resources';
+import { ListingItem } from 'resources';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 
 describe('MessagingInformationUpdateCommand', () => {
 
@@ -65,7 +64,7 @@ describe('MessagingInformationUpdateCommand', () => {
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // set hash
-        testDataListingItemTemplate.hash = await this.ObjectHashService.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         // get categories
         const categories = await rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_LIST.commandName]);
@@ -124,7 +123,7 @@ describe('MessagingInformationUpdateCommand', () => {
         testDataListingItemTemplate.messagingInformation[0].listingItemId = listingItemId;
 
         // set hash
-        testDataListingItemTemplate.hash = await this.ObjectHashService.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         // create new item template
         const listingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);

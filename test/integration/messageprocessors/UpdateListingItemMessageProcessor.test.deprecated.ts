@@ -36,7 +36,8 @@ import { CryptocurrencyAddressService } from '../../../src/api/services/Cryptocu
 import { MessagingInformationService } from '../../../src/api/services/MessagingInformationService';
 import { ListingItemObjectService } from '../../../src/api/services/ListingItemObjectService';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-import { ObjectHashService } from '../../../src/api/services/ObjectHashService';
+import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
 describe('UpdateListingItemMessageProcessor', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -64,7 +65,6 @@ describe('UpdateListingItemMessageProcessor', () => {
 
     let messagingInformationService: MessagingInformationService;
     let listingItemObjectService: ListingItemObjectService;
-    let objectHashService: ObjectHashService;
 
     let createdListingItem;
     // let updatedListingItem;
@@ -189,16 +189,15 @@ describe('UpdateListingItemMessageProcessor', () => {
 
         messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
         listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
-        objectHashService = app.IoC.getNamed<ObjectHashService>(Types.Service, Targets.Service.ObjectHashService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
 
         defaultMarket = await marketService.getDefault();
-        const hash = await objectHashService.getHash(testData, HashableObjectType.DEFAULT);
+        const hash = ObjectHash.getHash(testData, HashableObjectType.LISTINGITEM_CREATEREQUEST);
         const result = await testDataService.create<ListingItem>({
-            model: 'listingitem',
+            model: CreatableModel.LISTINGITEM,
             data: {
                 market_id: defaultMarket.Id,
                 hash

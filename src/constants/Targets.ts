@@ -129,8 +129,7 @@ export const Targets = {
         ShoppingCartService: 'ShoppingCartService',
         SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
-        UserService: 'UserService',
-        ObjectHashService: 'ObjectHashService'
+        UserService: 'UserService'
     },
     Command:     {
         address: {

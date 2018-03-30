@@ -3,10 +3,10 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { EscrowType } from '../../../src/api/enums/EscrowType';
 import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/ListingItemTemplateCreateRequest';
 import { PaymentType } from '../../../src/api/enums/PaymentType';
-import { ObjectHashService } from '../../../src/api/services/ObjectHashService';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
+import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 
 describe('EscrowAddCommand', () => {
 
@@ -42,7 +42,7 @@ describe('EscrowAddCommand', () => {
         testDataListingItemTemplate.profile_id = profileId;
 
         // set hash
-        testDataListingItemTemplate.hash = await this.ObjectHashService.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
 
@@ -65,7 +65,7 @@ describe('EscrowAddCommand', () => {
         delete testDataListingItemTemplate.itemInformation;
         delete testDataListingItemTemplate.paymentInformation;
 
-        testDataListingItemTemplate.hash = await this.ObjectHashService.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
         const createdTemplateId = addListingItemTempRes.id;

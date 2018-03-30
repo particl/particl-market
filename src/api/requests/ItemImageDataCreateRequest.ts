@@ -1,12 +1,10 @@
 import { ValidateIf, IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
-import {ImageVersion} from '../../core/helpers/ImageVersion';
 
 // tslint:disable:variable-name
 export class ItemImageDataCreateRequest extends RequestBody {
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public item_image_id: number;
 
     // @IsNotEmpty()

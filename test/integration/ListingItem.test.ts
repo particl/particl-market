@@ -6,31 +6,18 @@ import * as _ from 'lodash';
 import { TestUtil } from './lib/TestUtil';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
-import { MessageException } from '../../src/api/exceptions/MessageException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ListingItem } from '../../src/api/models/ListingItem';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { EscrowType } from '../../src/api/enums/EscrowType';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
-import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
-
-import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 
 import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';
-import { ListingItemUpdateRequest } from '../../src/api/requests/ListingItemUpdateRequest';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ItemInformationCreateRequest } from '../../src/api/requests/ItemInformationCreateRequest';
 import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
 import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
 
-import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
@@ -61,7 +48,7 @@ import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createreque
 import * as resources from 'resources';
 
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { ObjectHashService } from '../../src/api/services/ObjectHashService';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 
 describe('ListingItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -91,7 +78,6 @@ describe('ListingItem', () => {
     let messagingInformationService: MessagingInformationService;
     let listingItemObjectService: ListingItemObjectService;
     let listingItemObjectDataService: ListingItemObjectDataService;
-    let objectHashService: ObjectHashService;
 
     let createdListingItem1;
     let createdListingItem2;
@@ -125,7 +111,7 @@ describe('ListingItem', () => {
         messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
         listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
         listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.ListingItemObjectDataService);
-        objectHashService = app.IoC.getNamed<ObjectHashService>(Types.Service, Targets.Service.ObjectHashService);
+
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
@@ -347,7 +333,7 @@ describe('ListingItem', () => {
 
     test('Should create a new ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic1));
-        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
+        testDataToSave.hash = ObjectHash.getHash(testDataToSave, HashableObjectType.LISTINGITEM_CREATEREQUEST);
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
@@ -388,7 +374,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
+        testDataToSave.hash = ObjectHash.getHash(testDataToSave, HashableObjectType.LISTINGITEM_CREATEREQUEST);
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
@@ -399,7 +385,7 @@ describe('ListingItem', () => {
 
     test('Should update previously created ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
-        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
+        testDataToSave.hash = ObjectHash.getHash(testDataToSave, HashableObjectType.LISTINGITEM_CREATEREQUEST);
 
         testDataToSave.market_id = defaultMarket.Id;
 
@@ -426,7 +412,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
+        testDataToSave.hash = ObjectHash.getHash(testDataToSave, HashableObjectType.LISTINGITEM_CREATEREQUEST);
 
         testDataToSave.market_id = defaultMarket.Id;
 
@@ -451,7 +437,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
+        testDataToSave.hash = ObjectHash.getHash(testDataToSave, HashableObjectType.LISTINGITEM_CREATEREQUEST);
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
@@ -468,7 +454,7 @@ describe('ListingItem', () => {
 
     test('Should create ListingItem with relation to ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
+        testDataToSave.hash = ObjectHash.getHash(testDataToSave, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
 
         // create ListingItemTemplate
         const listingItemTemplateCreateRequest = {
@@ -503,7 +489,7 @@ describe('ListingItem', () => {
     test('Should update ListingItem correctly when removing data', async () => {
 
         const testDataToUpdate = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
-        testDataToUpdate.hash = await objectHashService.getHash(testDataToUpdate, HashableObjectType.DEFAULT);
+        testDataToUpdate.hash = ObjectHash.getHash(testDataToUpdate, HashableObjectType.LISTINGITEM_CREATEREQUEST);
         testDataToUpdate.market_id = defaultMarket.Id;
 
         // remove some data

@@ -7,7 +7,7 @@ export enum HashableObjectType {
 
     LISTINGITEM_CREATEREQUEST = 'ListingItemCreateRequest',
     LISTINGITEMTEMPLATE_CREATEREQUEST = 'ListingItemTemplateCreateRequest',
-    ITEMIMAGE_CREATEREQUEST = 'ItemImage',
+    ITEMIMAGEDATA_CREATEREQUEST = 'ItemImageDataCreateRequest',
 
     LISTINGITEM = 'ListingItem',
     LISTINGITEMTEMPLATE = 'ListingItemTemplate',

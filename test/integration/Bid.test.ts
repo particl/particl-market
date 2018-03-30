@@ -27,11 +27,10 @@ import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerate
 import { BidSearchParams } from '../../src/api/requests/BidSearchParams';
 import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
 import { ProfileService } from '../../src/api/services/ProfileService';
-import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 
 import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
-import { ObjectHashService } from '../../src/api/services/ObjectHashService';
-import {HashableObjectType} from '../../src/api/enums/HashableObjectType';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 
 describe('Bid', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -45,7 +44,6 @@ describe('Bid', () => {
     let profileService: ProfileService;
     let bidDataService: BidDataService;
     let listingItemService: ListingItemService;
-    let objectHashService: ObjectHashService;
 
     let defaultProfile;
     let defaultMarket;
@@ -94,7 +92,6 @@ describe('Bid', () => {
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
         bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.BidDataService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        objectHashService = app.IoC.getNamed<ObjectHashService>(Types.Service, Targets.Service.ObjectHashService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -130,7 +127,7 @@ describe('Bid', () => {
         // create listing item
         listingItemCreateRequestBasic1.market_id = defaultMarket.id;
         listingItemCreateRequestBasic1.listing_item_template_id = listingItemTemplates[0].id;
-        listingItemCreateRequestBasic1.hash = await objectHashService.getHash(listingItemCreateRequestBasic1,
+        listingItemCreateRequestBasic1.hash = ObjectHash.getHash(listingItemCreateRequestBasic1,
             HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
         const createdListingItemModel1 = await listingItemService.create(listingItemCreateRequestBasic1);
         createdListingItem1 = createdListingItemModel1.toJSON();
@@ -139,7 +136,7 @@ describe('Bid', () => {
 
         // create listing item
         delete listingItemCreateRequestBasic1.listing_item_template_id;
-        listingItemCreateRequestBasic1.hash = await objectHashService.getHash(listingItemCreateRequestBasic1,
+        listingItemCreateRequestBasic1.hash = ObjectHash.getHash(listingItemCreateRequestBasic1,
             HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
         const createdListingItemModel2 = await listingItemService.create(listingItemCreateRequestBasic1);
         createdListingItem2 = createdListingItemModel2.toJSON();

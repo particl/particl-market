@@ -28,6 +28,8 @@ import { MessagingInformationCreateRequest } from '../requests/MessagingInformat
 import { MessagingInformationUpdateRequest } from '../requests/MessagingInformationUpdateRequest';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
+import {ObjectHash} from '../../core/helpers/ObjectHash';
+import {HashableObjectType} from '../enums/HashableObjectType';
 
 export class ListingItemTemplateService {
 
@@ -75,6 +77,8 @@ export class ListingItemTemplateService {
 
         const body = JSON.parse(JSON.stringify(data));
 
+        body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
+
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
         delete body.itemInformation;
@@ -116,6 +120,8 @@ export class ListingItemTemplateService {
     @validate()
     public async update(id: number, @request(ListingItemTemplateUpdateRequest) data: ListingItemTemplateUpdateRequest): Promise<ListingItemTemplate> {
         const body = JSON.parse(JSON.stringify(data));
+
+        body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
 
         // find the existing one without related
         const listingItemTemplate = await this.findOne(id, false);

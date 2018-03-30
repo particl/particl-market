@@ -33,6 +33,8 @@ import { FlaggedItem } from '../models/FlaggedItem';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { FlaggedItemService } from './FlaggedItemService';
 import { EventEmitter } from 'events';
+import {ObjectHash} from '../../core/helpers/ObjectHash';
+import {HashableObjectType} from '../enums/HashableObjectType';
 
 export class ListingItemService {
 
@@ -115,6 +117,8 @@ export class ListingItemService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
 
+        body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEM_CREATEREQUEST);
+
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
         delete body.itemInformation;
@@ -165,6 +169,8 @@ export class ListingItemService {
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('updating ListingItem, body: ', JSON.stringify(body, null, 2));
+
+        body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEM_CREATEREQUEST);
 
         // find the existing one without related
         const listingItem = await this.findOne(id, false);
