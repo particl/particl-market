@@ -53,7 +53,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         }
 
         return this.escrowService.release({
-            listing: data.params[0],
+            item: data.params[0],
             memo: data.params[1],
             action: EscrowMessageType.MPA_RELEASE
         } as EscrowReleaseRequest, escrow as Escrow);

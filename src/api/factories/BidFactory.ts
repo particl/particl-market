@@ -7,6 +7,8 @@ import { BidMessageType } from '../enums/BidMessageType';
 import { MessageException } from '../exceptions/MessageException';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import * as resources from 'resources';
+import {AddressCreateRequest} from '../requests/AddressCreateRequest';
+import {BidDataCreateRequest} from '../requests/BidDataCreateRequest';
 
 export class BidFactory {
 
@@ -60,20 +62,30 @@ export class BidFactory {
         if (this.checkBidMessageActionValidity(bidMessage, latestBid)) {
 
             // it was, so create the bidData field
-            const bidData = _.map(bidMessage.objects, (value) => {
+            const bidDatas: BidDataCreateRequest[] = _.map(bidMessage.objects, (value) => {
                 return _.assign({}, {
                     dataId: value['id'],
                     dataValue: value['value']
-                });
+                } as BidDataCreateRequest);
             });
+
+            const firstName = this.getValueFromBidDatas('ship.firstName', bidDatas);
+            const lastName = this.getValueFromBidDatas('ship.lastName', bidDatas);
+            const addressLine1 = this.getValueFromBidDatas('ship.addressLine1', bidDatas);
+            const addressLine2 = this.getValueFromBidDatas('ship.addressLine2', bidDatas);
+            const city = this.getValueFromBidDatas('ship.city', bidDatas);
+            const state = this.getValueFromBidDatas('ship.state', bidDatas);
+            const zipCode = this.getValueFromBidDatas('ship.zipCode', bidDatas);
 
             // create and return the request that can be used to create the bid
             const bidCreateRequest = {
-                addressId: 0, // TODO: Proper address id
+                address: {
+                    firstName, lastName, addressLine1, addressLine2, city, state, zipCode
+                } as AddressCreateRequest,
                 listing_item_id: listingItemId,
                 action: bidMessage.action,
                 bidder,
-                bidDatas: bidData
+                bidDatas
             } as BidCreateRequest;
 
             return bidCreateRequest;
@@ -114,4 +126,19 @@ export class BidFactory {
         return false;
     }
 
+    /**
+     * todo: refactor duplicate code
+     * @param {string} key
+     * @param {"resources".BidData[]} bidDatas
+     * @returns {any}
+     */
+    private getValueFromBidDatas(key: string, bidDatas: BidDataCreateRequest[]): string {
+        const value = bidDatas.find(kv => kv.dataId === key);
+        if ( value ) {
+            return value.dataValue;
+        } else {
+            this.log.error('Missing BidData value for key: ' + key);
+            throw new MessageException('Missing BidData value for key: ' + key);
+        }
+    }
 }

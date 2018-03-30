@@ -36,7 +36,7 @@ export class AcceptBidMessageProcessor implements MessageProcessorInterface {
      */
     @validate()
     public async process(@message(BidMessage) data: BidMessage): Promise<Bid> {
-
+/*
         // find listingItem by hash, the service will throw Exception if not
         const listingItemModel = await this.listingItemService.findOneByHash(data.item);
         const listingItem = listingItemModel.toJSON();
@@ -53,5 +53,7 @@ export class AcceptBidMessageProcessor implements MessageProcessorInterface {
         });
 
         return await this.bidService.create(bidMessage as BidCreateRequest);
+*/
+        return {} as Bid;
     }
 }

@@ -1,7 +1,7 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
-import { Address } from '../models/Address';
-import { CryptocurrencyAddress } from '../models/CryptocurrencyAddress';
+import { AddressCreateRequest } from './AddressCreateRequest';
+import { CryptocurrencyAddressCreateRequest } from './CryptocurrencyAddressCreateRequest';
 
 // tslint:disable:variable-name
 export class ProfileCreateRequest extends RequestBody {
@@ -13,8 +13,8 @@ export class ProfileCreateRequest extends RequestBody {
     public address: string;         // profile address
 
     // related
-    public shippingAddresses: Address[];    // shipping addresses
-    public cryptocurrencyAddresses: CryptocurrencyAddress[];    // cryptocurrency addresses
+    public shippingAddresses: AddressCreateRequest[];    // shipping addresses
+    public cryptocurrencyAddresses: CryptocurrencyAddressCreateRequest[];    // cryptocurrency addresses
 
 }
 // tslint:enable:variable-name

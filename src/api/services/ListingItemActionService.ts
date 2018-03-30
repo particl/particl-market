@@ -83,7 +83,7 @@ export class ListingItemActionService {
         const itemCategory = itemCategoryModel.toJSON();
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
-        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, itemCategory);
+        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate);
 
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,

@@ -9,7 +9,6 @@ export class BidCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public listing_item_id: number;
-    public address_id: number;
 
     @IsEnum(BidMessageType)
     @IsNotEmpty()
@@ -17,6 +16,8 @@ export class BidCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public address: AddressCreateRequest;
+
+    public address_id: number;
 
     @IsNotEmpty()
     public bidder: string;

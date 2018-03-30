@@ -102,6 +102,7 @@ export class BidActionService {
         const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']);
         const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
 
+        // TODO: enums
         // convert the bid data params as bid data key value pair
         const bidData = this.getBidData(params.concat([
             'outputs', outputs, 'pubkeys', [pubkey], 'changeAddr', changeAddr, 'change', change
@@ -110,6 +111,19 @@ export class BidActionService {
         // fetch the profile
         const profileModel = await this.profileService.getDefault();
         const profile = profileModel.toJSON();
+
+        // add shipping address to bidData
+        if (_.isEmpty(profile.ShippingAddresses)) {
+            throw new MessageException('Profile is missing a shipping address.');
+        }
+
+        bidData.push({ id: 'ship.firstName', value: profile.ShippingAddresses[0].firstName });
+        bidData.push({ id: 'ship.lastName', value: profile.ShippingAddresses[0].lastName });
+        bidData.push({ id: 'ship.addressLine1', value: profile.ShippingAddresses[0].addressLine1 });
+        bidData.push({ id: 'ship.addressLine2', value: profile.ShippingAddresses[0].addressLine2 });
+        bidData.push({ id: 'ship.city', value: profile.ShippingAddresses[0].city });
+        bidData.push({ id: 'ship.state', value: profile.ShippingAddresses[0].state });
+        bidData.push({ id: 'ship.zipCode', value: profile.ShippingAddresses[0].zipCode });
 
         // fetch the market
         const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);
@@ -513,8 +527,8 @@ export class BidActionService {
      * [3]: value, string
      * ..........
      */
-    private getBidData(data: string[]): string[] {
-        const bidData = [] as any;
+    private getBidData(data: string[]): any[] {
+        const bidData: any[] = [];
 
         // convert the bid data params as bid data key value pair
         for ( let i = 0; i < data.length; i += 2 ) {

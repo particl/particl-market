@@ -62,6 +62,9 @@ import { GenerateBidParams } from '../requests/params/GenerateBidParams';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { BidMessageType } from '../enums/BidMessageType';
 import { SearchOrder } from '../enums/SearchOrder';
+import {AddressCreateRequest} from '../requests/AddressCreateRequest';
+import {CryptocurrencyAddressCreateRequest} from '../requests/CryptocurrencyAddressCreateRequest';
+import {BidDataCreateRequest} from '../requests/BidDataCreateRequest';
 
 export class TestDataService {
 
@@ -295,13 +298,15 @@ export class TestDataService {
         }
 
         const address = await this.generateAddressesData(1)[0];
-        const bidder = await this.generateCryptocurrencyAddressesData(1)[0];
+        const bidder = Faker.finance.bitcoinAddress();
+        const bidDatas: BidDataCreateRequest[] = [];
 
         return {
-            action: BidMessageType.MPA_BID,
             listing_item_id: listingItemId,
+            action: BidMessageType.MPA_BID,
             address,
-            bidder
+            bidder,
+            bidDatas
         } as BidCreateRequest;
     }
 
@@ -343,7 +348,7 @@ export class TestDataService {
         } as ProfileCreateRequest;
     }
 
-    private generateAddressesData(amount: number): Address[] {
+    private generateAddressesData(amount: number): AddressCreateRequest[] {
         const addresses: any[] = [];
         for (let i = amount; i > 0; i--) {
             addresses.push({
@@ -362,7 +367,7 @@ export class TestDataService {
         return addresses;
     }
 
-    private generateCryptocurrencyAddressesData(amount: number): CryptocurrencyAddress[] {
+    private generateCryptocurrencyAddressesData(amount: number): CryptocurrencyAddressCreateRequest[] {
         const cryptoAddresses: any[] = [];
         for (let i = amount; i > 0; i--) {
             cryptoAddresses.push({
