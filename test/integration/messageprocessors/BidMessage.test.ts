@@ -21,7 +21,7 @@ import * as bidSmsg2 from '../../testdata/message/smsgMessageWithListingItemMess
 import * as bidSmsg3 from '../../testdata/message/smsgMessageWithListingItemMessage3.json';
 import * as resources from 'resources';
 
-describe('BidMessageProcessor', () => {
+describe('BidMessage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);

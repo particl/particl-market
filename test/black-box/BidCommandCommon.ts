@@ -1,12 +1,14 @@
-import { ShippingAvailability } from "../../src/api/enums/ShippingAvailability";
-import { ImageDataProtocolType } from "../../src/api/enums/ImageDataProtocolType";
-import { PaymentType } from "../../src/api/enums/PaymentType";
-import { EscrowType } from "../../src/api/enums/EscrowType";
-import { Currency } from "../../src/api/enums/Currency";
-import { CryptocurrencyAddressType } from "../../src/api/enums/CryptocurrencyAddressType";
-import { MessagingProtocolType } from "../../src/api/enums/MessagingProtocolType";
+import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
+import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
+import { PaymentType } from '../../src/api/enums/PaymentType';
+import { EscrowType } from '../../src/api/enums/EscrowType';
+import { Currency } from '../../src/api/enums/Currency';
+import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
+import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
-   // Ryno hack
+// TODO: use test data from the testdata folder
+
+// Ryno hack
 export const testDataListingItemTemplate = {
     market_id: 0,
     hash: 'hash1',

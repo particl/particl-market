@@ -16,17 +16,12 @@ describe('EscrowReleaseCommand', () => {
     const releaseCommand = Commands.ESCROW_RELEASE.commandName;
     let createdListingItem;
 
-    const escrowLockTestData = {
-        itemhash: '',
-        memo: 'TEST MEMO'
-    };
-
-    beforeAll(async () => {
+    beforeAll( async () => {
         // IDK Why this is crashing here...
         try {
             await testUtil.cleanDb();
-        } catch(e) {
-
+        } catch (e) {
+            //
         }
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -57,6 +52,7 @@ describe('EscrowReleaseCommand', () => {
             memo: 'TEST MEMO'
         };
 
+// tslint:disable:max-line-length
         // create bid
         const bid = await testUtil.addData(CreatableModel.BID, {
             action: BidMessageType.MPA_ACCEPT,
@@ -71,6 +67,7 @@ describe('EscrowReleaseCommand', () => {
             ],
             listing_item_id: createdListingItem.id
         });
+// tslint:enable:max-line-length
 
         const escrowLockRes = await rpc(escrowCommand, [
             lockCommand,

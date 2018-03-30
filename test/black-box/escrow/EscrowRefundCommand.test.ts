@@ -18,12 +18,12 @@ describe('EscrowRefundCommand', () => {
         memo: 'TEST MEMO'
     };
 
-    beforeAll(async () => {
+    beforeAll( async () => {
         // IDK Why this is crashing here...
         try {
             await testUtil.cleanDb();
-        } catch(e) {
-
+        } catch (e) {
+            //
         }
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation

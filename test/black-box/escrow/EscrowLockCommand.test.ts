@@ -13,8 +13,8 @@ describe('EscrowLockCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const lockCommand = Commands.ESCROW_LOCK.commandName;
-    let defaultProfile;
-    let createdAddress;
+    // let defaultProfile;
+    // let createdAddress;
     let createdListingItem;
 
 
@@ -22,8 +22,8 @@ describe('EscrowLockCommand', () => {
         // IDK Why this is crashing here...
         try {
             await testUtil.cleanDb();
-        } catch(e) {
-
+        } catch (e) {
+            //
         }
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -73,6 +73,7 @@ describe('EscrowLockCommand', () => {
             memo: 'TEST MEMO'
         };
 
+// tslint:disable:max-line-length
         // create bid
         const bid = await testUtil.addData(CreatableModel.BID, {
             action: BidMessageType.MPA_ACCEPT,
@@ -88,6 +89,7 @@ describe('EscrowLockCommand', () => {
             bidder: 'Anything',
             listing_item_id: createdListingItem.id
         });
+// tslint:enable:max-line-length
 
         const escrowLockRes = await rpc(escrowCommand, [
             lockCommand,
