@@ -47,16 +47,18 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
         // make sure we have a ListingItemTemplate, so we know it's our item
         if (_.isEmpty(listingItem.ListingItemTemplate)) {
+            this.log.error('Not your item.'); // Added for Unit Tests
             throw new MessageException('Not your item.');
         }
 
         // find the bid
         const bids: resources.Bid[] = listingItem.Bids;
-        const bidToAccept = _.find(bids, (bid) => {
+        const bidToAccept = bids.find(bid => {
             return bid.id === bidId;
         });
 
         if (!bidToAccept) {
+            this.log.error('Bid not found.'); // Added for Unit Tests
             throw new MessageException('Bid not found.');
         }
 

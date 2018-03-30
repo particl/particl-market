@@ -69,10 +69,11 @@ export class BidFactory {
 
             // create and return the request that can be used to create the bid
             const bidCreateRequest = {
+                addressId: 0, // TODO: Proper address id
                 listing_item_id: listingItemId,
                 action: bidMessage.action,
                 bidder,
-                bidData
+                bidDatas: bidData
             } as BidCreateRequest;
 
             return bidCreateRequest;

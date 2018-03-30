@@ -91,7 +91,7 @@ describe('BidSendCommand', () => {
         // create listing item
         // TODO: Add address to bid...
 
-        const res: any = await rpc(bidCommand, [sendCommand, 'colour', 'black', 'size', 'xl']);
+        const res: any = await rpc(bidCommand, [sendCommand, createdListingItem1.hash, 'colour', 'black', 'size', 'xl']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

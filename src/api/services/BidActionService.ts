@@ -57,8 +57,12 @@ export class BidActionService {
     public async send( listingItem: resources.ListingItem, params: any[] ): Promise<SmsgSendResponse> {
 
         // TODO: some of this stuff could propably be moved to the factory
+        // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
         // Get unspent
         const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
+        if (!unspent || unspent.length === 0) {
+            throw new MessageException('No unspent outputs');
+        }
         const outputs: Output[] = [];
         const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
         const basePrice = listingItemPrice.basePrice;
