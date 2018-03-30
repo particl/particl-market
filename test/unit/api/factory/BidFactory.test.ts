@@ -38,21 +38,26 @@ describe('BidFactory', () => {
         const bidMessage = {
             action: BidMessageType.MPA_BID,
             item: 'f08f3d6e',
-            objects: [{
-                id: 'colour',
-                value: 'black'
-            }]
+            objects: [{ id: 'colour', value: 'black' },
+                { id: 'ship.firstName', value: 'asdf' },
+                { id: 'ship.lastName', value: 'asdf' },
+                { id: 'ship.addressLine1', value: 'asdf' },
+                { id: 'ship.addressLine2', value: '' },
+                { id: 'ship.city', value: 'Helsinki' },
+                { id: 'ship.state', value: '-' },
+                { id: 'ship.zipCode', value: '1234' }
+            ]
         } as BidMessage;
 
         const bidCreateRequest = await bidFactory.getModel(bidMessage, listingItemId, bidderAddress);
 
         expect(bidCreateRequest.action).toBe(bidMessage.action);
-        expect(bidCreateRequest.bidData.length).toBe(1);
-        expect(bidCreateRequest.bidData[0].dataId).toBe(bidMessage.objects[0].id);
-        expect(bidCreateRequest.bidData[0].dataValue).toBe(bidMessage.objects[0].value);
+        expect(bidCreateRequest.bidDatas.length).toBe(bidMessage.objects.length);
+        expect(bidCreateRequest.bidDatas[0].dataId).toBe(bidMessage.objects[0].id);
+        expect(bidCreateRequest.bidDatas[0].dataValue).toBe(bidMessage.objects[0].value);
     });
 
-    test('Should convert BidMessage, action: MPA_BID to BidCreateRequest with 2 bidData objects', async () => {
+    test('Should convert BidMessage, action: MPA_BID to BidCreateRequest with 9 bidData objects', async () => {
         const listingItemId = 1;
         const bidMessage = {
             action: BidMessageType.MPA_BID,
@@ -63,16 +68,23 @@ describe('BidFactory', () => {
             }, {
                 id: 'size',
                 value: 'xl'
-            }]
+            },
+                { id: 'ship.firstName', value: 'asdf' },
+                { id: 'ship.lastName', value: 'asdf' },
+                { id: 'ship.addressLine1', value: 'asdf' },
+                { id: 'ship.addressLine2', value: '' },
+                { id: 'ship.city', value: 'Helsinki' },
+                { id: 'ship.state', value: '-' },
+                { id: 'ship.zipCode', value: '1234' }]
         } as BidMessage;
 
         const bidCreateRequest = await bidFactory.getModel(bidMessage, listingItemId, bidderAddress);
         expect(bidCreateRequest.action).toBe(bidMessage.action);
-        expect(bidCreateRequest.bidData.length).toBe(2);
-        expect(bidCreateRequest.bidData[0].dataId).toBe(bidMessage.objects[0].id);
-        expect(bidCreateRequest.bidData[0].dataValue).toBe(bidMessage.objects[0].value);
-        expect(bidCreateRequest.bidData[1].dataId).toBe(bidMessage.objects[1].id);
-        expect(bidCreateRequest.bidData[1].dataValue).toBe(bidMessage.objects[1].value);
+        expect(bidCreateRequest.bidDatas.length).toBe(bidMessage.objects.length);
+        expect(bidCreateRequest.bidDatas[0].dataId).toBe(bidMessage.objects[0].id);
+        expect(bidCreateRequest.bidDatas[0].dataValue).toBe(bidMessage.objects[0].value);
+        expect(bidCreateRequest.bidDatas[1].dataId).toBe(bidMessage.objects[1].id);
+        expect(bidCreateRequest.bidDatas[1].dataValue).toBe(bidMessage.objects[1].value);
     });
 
     test('Should fail converting BidMessage, action: MPA_BID to BidCreateRequest with undefined listingItemId', async () => {
@@ -92,20 +104,21 @@ describe('BidFactory', () => {
 
     test('Should convert the BidMessage, action: MPA_ACCEPT to BidCreateRequest', async () => {
         const latestBid = {
-            listing_item_id: 1,
-            action: BidMessageType.MPA_BID,
-            bidData: [{
-                dataId: 'colour',
-                dataValue: 'black'
-            }, {
-                dataId: 'size',
-                dataValue: 'xl'
-            }]
+            action: BidMessageType.MPA_BID
         };
         const listingItemId = 1;
         const bidMessage = {
             action: BidMessageType.MPA_ACCEPT,
-            item: 'f08f3d6e'
+            item: 'f08f3d6e',
+            objects: [
+                { id: 'ship.firstName', value: 'asdf' },
+                { id: 'ship.lastName', value: 'asdf' },
+                { id: 'ship.addressLine1', value: 'asdf' },
+                { id: 'ship.addressLine2', value: '' },
+                { id: 'ship.city', value: 'Helsinki' },
+                { id: 'ship.state', value: '-' },
+                { id: 'ship.zipCode', value: '1234' }
+            ]
         } as BidMessage;
 
         const bidCreateRequest = await bidFactory.getModel(bidMessage, listingItemId, bidderAddress, latestBid);

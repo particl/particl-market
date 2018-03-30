@@ -9,9 +9,9 @@ import { ObjectHashService } from '../../src/api/services/ObjectHashService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
-import * as listingItemTemplateBasic1 from '../testdata/listingItemTemplate/listingItemTemplateBasic1';
-import * as listingItemTemplateBasic2 from '../testdata/listingItemTemplate/listingItemTemplateBasic2';
-import * as listingItemTemplateBasic3 from '../testdata/listingItemTemplate/listingItemTemplateBasic3';
+import * as listingItemTemplateBasic1 from '../testdata/model/listingItemTemplateBasic1';
+import * as listingItemTemplateBasic2 from '../testdata/model/listingItemTemplateBasic2';
+import * as listingItemTemplateBasic3 from '../testdata/model/listingItemTemplateBasic3';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 
 describe('ObjectHash', () => {

@@ -71,7 +71,7 @@ describe('BidDatas', () => {
             city: 'city',
             state: 'test state',
             country: 'Finland',
-            zipCode: '85001',
+            zipCode: '85001'
         } as AddressCreateRequest
     } as BidCreateRequest;
 
