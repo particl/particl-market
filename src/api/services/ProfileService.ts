@@ -133,17 +133,19 @@ export class ProfileService {
         const updatedProfile = await this.profileRepo.update(id, profile.toJSON());
         this.log.debug('updatedProfile: ', updatedProfile.toJSON());
 
+        // remove existing addresses
+        const addresses_to_delete = profile.toJSON().ShippingAddresses;
+        for (const address of addresses_to_delete) {
+            await this.addressService.destroy(address.id);
+        }
+
         // update related data
         const shippingAddresses = body.shippingAddresses || [];
 
-        // TODO does not remove the ones that exists
+        // add new addresses
         for (const address of shippingAddresses) {
-            if (address.profile_id) {
-                await this.addressService.update(address.id, address as AddressUpdateRequest);
-            } else {
-                address.profile_id = id;
-                await this.addressService.create(address as AddressCreateRequest);
-            }
+            address.profile_id = id;
+            await this.addressService.create(address as AddressCreateRequest);
         }
 
         const cryptocurrencyAddresses = body.cryptocurrencyAddresses || [];

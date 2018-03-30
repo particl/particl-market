@@ -89,16 +89,27 @@ export class ListingItemObjectService {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
 
-        // find the existing one without related
+        // find the existing one without relatedb
         const listingItemObject = await this.findOne(id, false);
 
         // set new values
         listingItemObject.Type = body.type;
         listingItemObject.Description = body.description;
         listingItemObject.Order = body.order;
+        
+        // update listingItemObjectDatas
+        const listingItemObjectDatasOld = listingItemObject.ListingItemObjectDatas();
 
-        // TODO : Update listingItemObjectData
+        for (const objectData of listingItemObjectDatasOld) {
+            await this.listingItemObjectDataService.destroy(objectData.id);
+        }
 
+        const listingItemObjectDatas = body.listingItemObjectDatas;
+
+        for (const objectData of listingItemObjectDatas) {
+            objectData.listing_item_object_id = listingItemObject.Id;
+            await this.listingItemObjectDataService.create(objectData as ListingItemObjectDataCreateRequest);
+        }
 
         // update listingItemObject record
         const updatedListingItemObject = await this.listingItemObjectRepo.update(id, listingItemObject.toJSON());
