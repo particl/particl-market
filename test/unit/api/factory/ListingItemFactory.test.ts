@@ -10,12 +10,21 @@ import * as listingItemTemplateBasic from '../../../testdata/model/listingItemTe
 import * as listingItemCategoryWithRelated from '../../../testdata/model/listingItemCategoryWithRelated.json';
 import * as listingItemCategoryRootWithRelated from '../../../testdata/model/listingItemCategoryRootWithRelated.json';
 
+import * as listingItemTemplateBasic1 from '../../../testdata/listingItemTemplate/listingItemTemplateBasic1.json';
+
+import * as listingItemTemplateBasic2 from '../../../testdata/listingItemTemplate/listingItemTemplateBasic2.json';
+
+import * as listingItemTemplateBasic3 from '../../../testdata/listingItemTemplate/listingItemTemplateBasic3.json';
+
 describe('ListingItemFactory', () => {
 
     const itemCategoryFactory = new ItemCategoryFactory(LogMock);
     const listingItemFactory = new ListingItemFactory(LogMock, itemCategoryFactory);
 
     let createdListingItemMessage: ListingItemMessage;
+    let createdListingItemMessage1: ListingItemMessage;
+    let createdListingItemMessage2: ListingItemMessage;
+    let createdListingItemMessage3: ListingItemMessage;
 
     beforeEach(() => {
         //
@@ -350,7 +359,6 @@ describe('ListingItemFactory', () => {
         expect(result.listingItemObjects[1].listingItemObjectDatas[1].value).toBe(message.objects[1]['options'][1].value);
     };
 
-
     test('Should create ListingItemMessage', async () => {
 
         createdListingItemMessage = await listingItemFactory.getMessage(listingItemTemplateBasic, listingItemCategoryWithRelated);
@@ -362,8 +370,6 @@ describe('ListingItemFactory', () => {
 
     });
 
-    // TODO: add tests checking the conversions using different data
-
     test('should create ListingItemCreateRequest using the previously created ListingItemMessage', async () => {
 
         const marketId = 1;
@@ -374,6 +380,77 @@ describe('ListingItemFactory', () => {
 
         // test message conversion
         expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessage);
+    });
+
+    test('Should create ListingItemMessage with listingItemTemplateBasic1 data', async () => {
+
+        createdListingItemMessage1 = await listingItemFactory.getMessage(listingItemTemplateBasic1, listingItemCategoryWithRelated);
+
+        // console.log('message: ', JSON.stringify(createdListingItemMessage1, null, 2));
+
+        // test message conversion
+        expectMessageFromListingItem(createdListingItemMessage1, listingItemTemplateBasic1);
+
+    });
+
+    test('should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic1', async () => {
+
+        const marketId = 1;
+        const listingItemCreateRequest: ListingItemCreateRequest =
+            await listingItemFactory.getModel(createdListingItemMessage1, marketId, listingItemCategoryRootWithRelated);
+
+        // console.log('message: ', JSON.stringify(listingItemCreateRequest, null, 2));
+
+        // test message conversion
+        expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessage1);
+    });
+
+
+    test('Should create ListingItemMessage with listingItemTemplateBasic2 data', async () => {
+
+        createdListingItemMessage2 = await listingItemFactory.getMessage(listingItemTemplateBasic2, listingItemCategoryWithRelated);
+
+        // console.log('message: ', JSON.stringify(createdListingItemMessage2, null, 2));
+
+        // test message conversion
+        expectMessageFromListingItem(createdListingItemMessage2, listingItemTemplateBasic2);
+
+    });
+
+    test('should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic2', async () => {
+
+        const marketId = 1;
+        const listingItemCreateRequest: ListingItemCreateRequest =
+            await listingItemFactory.getModel(createdListingItemMessage2, marketId, listingItemCategoryRootWithRelated);
+
+        // console.log('message: ', JSON.stringify(listingItemCreateRequest, null, 2));
+
+        // test message conversion
+        expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessage2);
+    });
+
+
+    test('Should create ListingItemMessage with listingItemTemplateBasic3 data', async () => {
+
+        createdListingItemMessage3 = await listingItemFactory.getMessage(listingItemTemplateBasic3, listingItemCategoryWithRelated);
+
+        // console.log('message: ', JSON.stringify(createdListingItemMessage3, null, 2));
+
+        // test message conversion
+        expectMessageFromListingItem(createdListingItemMessage3, listingItemTemplateBasic3);
+
+    });
+
+    test('should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic3', async () => {
+
+        const marketId = 1;
+        const listingItemCreateRequest: ListingItemCreateRequest =
+            await listingItemFactory.getModel(createdListingItemMessage3, marketId, listingItemCategoryRootWithRelated);
+
+        // console.log('message: ', JSON.stringify(listingItemCreateRequest, null, 2));
+
+        // test message conversion
+        expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessage3);
     });
 
 });
