@@ -183,7 +183,6 @@ export class ListingItemFactory {
     }
 
     private async getModelLocationMarker(gps: any): Promise<LocationMarkerCreateRequest> {
-
         const markerTitle = gps.marker_title;
         const markerText = gps.marker_text;
         const lat = gps.lat;
@@ -270,16 +269,27 @@ export class ListingItemFactory {
 
     private async getMessageInformationLocation(itemLocation: resources.ItemLocation): Promise<any> {
         const locationMarker: resources.LocationMarker = itemLocation.LocationMarker;
-        return {
-            country: itemLocation.region,
-            address: itemLocation.address,
-            gps: {
-                marker_title: locationMarker.markerTitle,
-                marker_text: locationMarker.markerText,
+        let informationLocation: any = {};
+        if (itemLocation.region) {
+            informationLocation.country = itemLocation.region;
+        }
+        if (itemLocation.address) {
+            informationLocation.address = itemLocation.address;
+        }
+        if (locationMarker) {
+            informationLocation.gps = {
                 lng: locationMarker.lng,
                 lat: locationMarker.lat
             }
-        };
+
+            if (locationMarker.markerTitle) {
+                informationLocation.gps.marker_title = locationMarker.markerTitle;
+            }
+            if (locationMarker.markerText) {
+                informationLocation.gps.marker_text = locationMarker.markerText;
+            }
+        }
+        return informationLocation;
     }
 
     private async getMessageInformationShippingDestinations(shippingDestinations: resources.ShippingDestination[]): Promise<string[]> {
