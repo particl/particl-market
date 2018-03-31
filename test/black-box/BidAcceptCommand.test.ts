@@ -23,7 +23,6 @@ describe('BidAcceptCommand', () => {
 
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
-    let createdListingItemTemplate: resources.ListingItemTemplate;
     let listingItem: resources.ListingItem;
     let createdBid: resources.Bid;
 
@@ -35,12 +34,12 @@ describe('BidAcceptCommand', () => {
 
         // create address
         const addressRes = await rpc(Commands.ADDRESS_ROOT.commandName, [Commands.ADDRESS_ADD.commandName,
-            (await testUtil.getDefaultProfile()).id,
+            defaultProfile.id,
             addressTestData.firstName, addressTestData.lastName, addressTestData.title,
             addressTestData.addressLine1, addressTestData.addressLine2,
             addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
 
-        // get default profile again
+        // get default profile again - to update
         defaultProfile = await testUtil.getDefaultProfile();
 
         // get default market
@@ -64,16 +63,17 @@ describe('BidAcceptCommand', () => {
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
-        createdListingItemTemplate = listingItemTemplates[0];
+
+        const createdListingItemTemplate = listingItemTemplates[0];
 
         // create listing item
         listingItemCreateRequestBasic1.market_id = defaultMarket.id;
-        listingItemCreateRequestBasic1.listing_item_template_id = listingItemTemplates[0].id;
+        listingItemCreateRequestBasic1.listing_item_template_id = createdListingItemTemplate.id;
 
         listingItem = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
 
-
         // Ryno Hacks - This requires regtest
+        // This needs to be updated whenever regtest allocations change
         const outputs = [{
             txid: 'e3fd6c39588c5e9fc5cd2d0626f21735936f8ab07c6b7f535618614f2ca989a8',
             vout: 1,
@@ -86,7 +86,7 @@ describe('BidAcceptCommand', () => {
         // create bid
         const bidCreateRequest = {
             action: BidMessageType.MPA_BID,
-            listing_item_id: listingItem[0].id,
+            listing_item_id: listingItem.id,
             bidder: 'bidderaddress',
             bidDatas: [
                 { dataId: 'COLOR', dataValue: 'RED' },
@@ -94,8 +94,8 @@ describe('BidAcceptCommand', () => {
                 { dataId: 'pubkeys', dataValue: [pubkey] },
                 { dataId: 'outputs', dataValue: outputs },
                 { dataId: 'changeAddr', dataValue: changeAddress },
-                { dataId: 'change', dataValue: +(listingItem[0].PaymentInformation.ItemPrice.basePrice
-                    + listingItem[0].PaymentInformation.ItemPrice.ShippingPrice.international).toFixed(8) }],
+                { dataId: 'change', dataValue: +(listingItem.PaymentInformation.ItemPrice.basePrice
+                    + listingItem.PaymentInformation.ItemPrice.ShippingPrice.international).toFixed(8) }],
             address: {
                 title: 'Title',
                 firstName: 'Robert',
@@ -114,7 +114,7 @@ describe('BidAcceptCommand', () => {
 
     test('Should Accept a Bid for a ListingItem', async () => {
 
-        const res: any = await rpc(bidCommand, [acceptCommand, listingItem[0].hash, createdBid.id]);
+        const res: any = await rpc(bidCommand, [acceptCommand, listingItem.hash, createdBid.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
