@@ -32,12 +32,11 @@ export class ObjectHashService {
             }
             case HashableObjectType.ITEMIMAGE: {
                 // create the hash from ORIGINAL imageversion
-                const imageData = objectToHash.getOriginalImageVersionData();
                 hashableObject = {
-                    protocol: imageData.protocol,
-                    encoding: imageData.encoding,
-                    data: imageData.data,
-                    id: imageData.dataId
+                    protocol: objectToHash.protocol,
+                    encoding: objectToHash.encoding,
+                    data: objectToHash.data,
+                    id: objectToHash.dataId
                 };
                 break;
             }
