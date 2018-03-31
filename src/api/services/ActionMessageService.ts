@@ -17,10 +17,10 @@ import { MessageDataService } from './MessageDataService';
 import { MessageObjectService } from './MessageObjectService';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { MarketService } from './MarketService';
-import { ListingItemService } from './ListingItemService';
 import { ActionMessageFactory } from '../factories/ActionMessageFactory';
-import {ListingItemAddMessage} from '../messages/ListingItemAddMessage';
-import {ListingItemMessageType} from '../enums/ListingItemMessageType';
+import { ListingItemAddMessage } from '../messages/ListingItemAddMessage';
+import { ListingItemMessageType } from '../enums/ListingItemMessageType';
+import * as resources from 'resources';
 
 export class ActionMessageService {
 
@@ -32,7 +32,6 @@ export class ActionMessageService {
         @inject(Types.Service) @named(Targets.Service.MessageDataService) private messageDataService: MessageDataService,
         @inject(Types.Service) @named(Targets.Service.MessageObjectService) private messageObjectService: MessageObjectService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Factory) @named(Targets.Factory.ActionMessageFactory) private actionMessageFactory: ActionMessageFactory,
         @inject(Types.Repository) @named(Targets.Repository.ActionMessageRepository) public actionMessageRepo: ActionMessageRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -57,7 +56,7 @@ export class ActionMessageService {
     public async create( @request(ActionMessageCreateRequest) data: any): Promise<ActionMessage> {
 
         const body = JSON.parse(JSON.stringify(data));
-        // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
+        this.log.debug('create ActionMessage, body: ', JSON.stringify(body, null, 2));
 
         const messageInfoCreateRequest = body.info;
         const messageEscrowCreateRequest = body.escrow;
@@ -74,12 +73,11 @@ export class ActionMessageService {
         //    throw new MessageException('Could not create the ActionMessage, missing data!');
         // }
 
-        this.log.debug('actionmessage createrequest:', JSON.stringify(body, null, 2));
         // If the request body was valid we will create the actionMessage
         let actionMessageModel = await this.actionMessageRepo.create(body);
         const actionMessage = actionMessageModel.toJSON();
 
-        // this.log.debug('actionMessage: ', JSON.stringify(actionMessage, null, 2));
+        this.log.debug('actionMessage: ', JSON.stringify(actionMessage, null, 2));
 
         if (!_.isEmpty(messageInfoCreateRequest)) {
             messageInfoCreateRequest.action_message_id = actionMessage.id;
@@ -95,17 +93,20 @@ export class ActionMessageService {
             // this.log.debug('messageEscrow: ', JSON.stringify(messageEscrow, null, 2));
         }
 
+        // this.log.debug('messageDataCreateRequest: ', JSON.stringify(messageDataCreateRequest, null, 2));
         messageDataCreateRequest.action_message_id = actionMessage.id;
         const messageDataModel = await this.messageDataService.create(messageDataCreateRequest);
         const messageData = messageDataModel.toJSON();
         // this.log.debug('messageData: ', JSON.stringify(messageData, null, 2));
 
         // create messageobjects
+
+        // this.log.debug('actionMessageObjects:', JSON.stringify(body, null, 2));
         for (const object of actionMessageObjects) {
             object.action_message_id = actionMessage.id;
             const messageObjectModel = await this.messageObjectService.create(object);
             const messageObject = messageObjectModel.toJSON();
-            // this.log.debug('messageObject: ', JSON.stringify(messageData, null, 2));
+            this.log.debug('messageObject: ', JSON.stringify(messageData, null, 2));
 
         }
 
@@ -121,7 +122,7 @@ export class ActionMessageService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<ActionMessage>}
      */
-    public async createFromMarketplaceEvent(event: MarketplaceEvent): Promise<ActionMessage> {
+    public async createFromMarketplaceEvent(event: MarketplaceEvent, listingItem: resources.ListingItem): Promise<ActionMessage> {
 
         const message = event.marketplaceMessage;
 
@@ -131,8 +132,8 @@ export class ActionMessageService {
             const market = marketModel.toJSON();
 
             // find the ListingItem
-            const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
-            const listingItem = listingItemModel.toJSON();
+            // const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+            // const listingItem = listingItemModel.toJSON();
 
             // create ActionMessage
             const actionMessageCreateRequest = await this.actionMessageFactory.getModel(message.mpaction, listingItem.id, event.smsgMessage);
@@ -147,8 +148,8 @@ export class ActionMessageService {
             const market = marketModel.toJSON();
 
             // find the ListingItem
-            const listingItemModel = await this.listingItemService.findOneByHash(message.item.hash);
-            const listingItem = listingItemModel.toJSON();
+            // const listingItemModel = await this.listingItemService.findOneByHash(message.item.hash);
+            // const listingItem = listingItemModel.toJSON();
 
             // TODO: hack
             const listingItemAddMessage = {

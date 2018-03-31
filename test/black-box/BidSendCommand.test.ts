@@ -47,42 +47,6 @@ describe('BidSendCommand', () => {
         listingItemCreateRequestBasic1.market_id = defaultMarket.id;
         createdListingItem1 = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
 
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
-
-        // generate listingItemTemplate
-        const listingItemTemplates = await testUtil.generateData(
-            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
-            1,                          // how many to generate
-            true,                       // return model
-            generateListingItemParams   // what kind of data to generate
-        ) as resources.ListingItemTemplates[];
-        createdListingItemTemplate = listingItemTemplates[0];
-
-        // create listing item for testing
-        const listingItems = await testUtil.generateData(
-            CreatableModel.LISTINGITEM,     // what to generate
-            1,                      // how many to generate
-            true,                // return model
-            generateListingItemParams           // what kind of data to generate
-        ) as resources.ListingItem[];
-        createdListingItem1 = listingItems[0];
-
-        // create second listing item
-        listingItemCreateRequestBasic2.market_id = defaultMarket.id;
-        listingItemCreateRequestBasic2.listing_item_template_id = listingItemTemplates[0].id;
-        listingItemCreateRequestBasic1.hash = 'hash-asdf2';
-
-        createdListingItem2 = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic2);
-
     });
 
     test('Should send Bid for a ListingItem', async () => {

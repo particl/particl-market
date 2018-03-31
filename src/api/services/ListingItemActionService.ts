@@ -165,8 +165,8 @@ export class ListingItemActionService {
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
             let listingItem = listingItemModel.toJSON();
 
-            // save actionmessage from this event
-            const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
+            // first save it
+            const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
             const actionMessage = actionMessageModel.toJSON();
             this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
 

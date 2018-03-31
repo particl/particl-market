@@ -398,15 +398,24 @@ export class BidActionService {
      * @returns {Promise<"resources".ActionMessage>}
      */
     public async processBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-
         this.log.info('Received event:', event);
-
-        // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
-        const actionMessage = actionMessageModel.toJSON();
 
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
+
+        // find the ListingItem
+        const message = event.marketplaceMessage;
+
+        if (!message.mpaction) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+
+        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItem = listingItemModel.toJSON();
+
+        // first save it
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+        const actionMessage = actionMessageModel.toJSON();
 
         // TODO: should someone be able to bid more than once?
         const biddersExistingBidsForItem = await this.bidService.search({
@@ -419,10 +428,6 @@ export class BidActionService {
         }
 
         if (bidMessage) {
-            // find listingItem by hash
-            const listingItemModel = await this.listingItemService.findOneByHash(bidMessage.item);
-            const listingItem = listingItemModel.toJSON();
-
             // create a bid
             const bidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder);
             const createdBid = this.bidService.create(bidCreateRequest);
@@ -448,17 +453,22 @@ export class BidActionService {
 
         this.log.info('Received event:', event);
 
-        // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
-        const actionMessage = actionMessageModel.toJSON();
-
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
 
+        // find the ListingItem
+        const message = event.marketplaceMessage;
+        if (!message.mpaction) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItem = listingItemModel.toJSON();
+
+        // first save it
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+        const actionMessage = actionMessageModel.toJSON();
+
         if (bidMessage) {
-            // find listingItem by hash
-            const listingItemModel = await this.listingItemService.findOneByHash(bidMessage.item);
-            const listingItem = listingItemModel.toJSON();
 
             // find the Bid
             const existingBid = _.find(listingItem.Bids, (o: resources.Bid) => {
@@ -492,8 +502,19 @@ export class BidActionService {
 
         this.log.info('Received event:', event);
 
+        const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
+        const bidder = event.smsgMessage.from;
+
+        // find the ListingItem
+        const message = event.marketplaceMessage;
+        if (!message.mpaction) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItem = listingItemModel.toJSON();
+
         // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
         // TODO: do whatever else needs to be done
@@ -511,8 +532,16 @@ export class BidActionService {
 
         this.log.info('Received event:', event);
 
+        // find the ListingItem
+        const message = event.marketplaceMessage;
+        if (!message.mpaction) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItem = listingItemModel.toJSON();
+
         // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
         // TODO: do whatever else needs to be done

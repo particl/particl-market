@@ -37,6 +37,7 @@ import { ItemInformationService } from './ItemInformationService';
 import { BidService } from './BidService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemImageService } from './ItemImageService';
+import { ActionMessageService } from './ActionMessageService';
 
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
@@ -62,10 +63,13 @@ import { GenerateBidParams } from '../requests/params/GenerateBidParams';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { BidMessageType } from '../enums/BidMessageType';
 import { SearchOrder } from '../enums/SearchOrder';
-import {AddressCreateRequest} from '../requests/AddressCreateRequest';
-import {CryptocurrencyAddressCreateRequest} from '../requests/CryptocurrencyAddressCreateRequest';
-import {BidDataCreateRequest} from '../requests/BidDataCreateRequest';
-import {AddressType} from '../enums/AddressType';
+import { AddressCreateRequest } from '../requests/AddressCreateRequest';
+import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
+import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
+import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
+import { AddressType } from '../enums/AddressType';
+import { ListingItemMessageType } from '../enums/ListingItemMessageType';
+import { ActionMessage } from '../models/ActionMessage';
 
 export class TestDataService {
 
@@ -86,6 +90,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
+        @inject(Types.Service) @named(Targets.Service.ActionMessageService) private actionMessageService: ActionMessageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -128,6 +133,9 @@ export class TestDataService {
             case CreatableModel.LISTINGITEM: {
                 return await this.listingItemService.create(body.data as ListingItemCreateRequest) as Bookshelf.Model<ListingItem>;
             }
+            case CreatableModel.ACTIONMESSAGE: {
+                return await this.actionMessageService.create(body.data as ActionMessageCreateRequest) as Bookshelf.Model<ActionMessage>;
+            }
             case CreatableModel.PROFILE: {
                 return await this.profileService.create(body.data as ProfileCreateRequest) as Bookshelf.Model<Profile>;
             }
@@ -141,7 +149,6 @@ export class TestDataService {
                 return await this.itemInformationService.create(body.data as ItemInformationCreateRequest) as Bookshelf.Model<ItemInformation>;
             }
             case CreatableModel.BID: {
-                this.log.debug('CREATE BID');
                 return await this.bidService.create(body.data as BidCreateRequest) as Bookshelf.Model<Bid>;
             }
             case CreatableModel.PAYMENTINFORMATION: {
@@ -268,6 +275,25 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const listingItem = await this.generateListingItemData(generateParams);
             // this.log.debug('listingItem: ', listingItem);
+
+            // TODO: hardocoded, fix
+            // add ActionMessage
+            listingItem.actionMessages = [{
+                action: ListingItemMessageType.MP_ITEM_ADD,
+                objects: [{
+                    id: 'seller',
+                    value: 'prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx'
+                }],
+                data: {
+                    msgid: 'fceabe5a000000002cc363a3bc350d6bca87b1977335deeba5a554f6',
+                    version: '0301',
+                    sent: '2018-03-31T03:57:16+0200',
+                    from: 'prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx',
+                    to: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA',
+                    text: '{}'
+                }
+            }];
+
             const savedListingItem = await this.listingItemService.create(listingItem);
             // this.log.debug('savedListingItem: ', savedListingItem.toJSON());
             items.push(savedListingItem);

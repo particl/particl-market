@@ -10,6 +10,7 @@ import { EscrowService } from './EscrowService';
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { PaymentInformationService } from './PaymentInformationService';
+import {MessageException} from '../exceptions/MessageException';
 
 export class EscrowActionService {
 
@@ -33,8 +34,16 @@ export class EscrowActionService {
 
         this.log.info('Received event:', event);
 
+        // find the ListingItem
+        const message = event.marketplaceMessage;
+        if (!message.mpaction) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItem = listingItemModel.toJSON();
+
         // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
         // TODO: do whatever else needs to be done
@@ -46,8 +55,16 @@ export class EscrowActionService {
 
         this.log.info('Received event:', event);
 
+        // find the ListingItem
+        const message = event.marketplaceMessage;
+        if (!message.mpaction) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItem = listingItemModel.toJSON();
+
         // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
         // TODO: do whatever else needs to be done
@@ -59,8 +76,16 @@ export class EscrowActionService {
 
         this.log.info('Received event:', event);
 
+        // find the ListingItem
+        const message = event.marketplaceMessage;
+        if (!message.mpaction) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItem = listingItemModel.toJSON();
+
         // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
         // TODO: do whatever else needs to be done
@@ -72,8 +97,16 @@ export class EscrowActionService {
 
         this.log.info('Received event:', event);
 
+        // find the ListingItem
+        const message = event.marketplaceMessage;
+        if (!message.mpaction) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItem = listingItemModel.toJSON();
+
         // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
         // TODO: do whatever else needs to be done

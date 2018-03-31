@@ -33,8 +33,9 @@ import { FlaggedItem } from '../models/FlaggedItem';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { FlaggedItemService } from './FlaggedItemService';
 import { EventEmitter } from 'events';
-import {ObjectHash} from '../../core/helpers/ObjectHash';
-import {HashableObjectType} from '../enums/HashableObjectType';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { HashableObjectType } from '../enums/HashableObjectType';
+import { ActionMessageService } from './ActionMessageService';
 
 export class ListingItemService {
 
@@ -51,6 +52,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -129,6 +131,9 @@ export class ListingItemService {
         const listingItemObjects = body.listingItemObjects || [];
         delete body.listingItemObjects;
 
+        const actionMessages = body.actionMessages || [];
+        delete body.actionMessages;
+
         // If the request body was valid we will create the listingItem
         const listingItem = await this.listingItemRepo.create(body);
 
@@ -152,6 +157,14 @@ export class ListingItemService {
         for (const object of listingItemObjects) {
             object.listing_item_id = listingItem.Id;
             await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
+        }
+
+        this.log.debug('create actionMessages:', JSON.stringify(actionMessages, null, 2));
+
+        // create actionMessages, only used to create testdata
+        for (const actionMessage of actionMessages) {
+            actionMessage.listing_item_id = listingItem.Id;
+            await this.actionMessageService.create(actionMessage);
         }
 
         // finally find and return the created listingItem
