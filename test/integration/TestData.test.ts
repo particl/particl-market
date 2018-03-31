@@ -26,8 +26,14 @@ import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAdd
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
 
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
-import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+
+import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
+import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
+import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
+import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
+
 
 describe('TestDataService', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -89,101 +95,17 @@ describe('TestDataService', () => {
 
     test('Should create test data as par model', async () => {
         await testDataService.clean();
-        const model = 'listingitemtemplate';
         const defaultProfile = await profileService.getDefault();
 
+        const listingItemTemplateData = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
+        listingItemTemplateData.profile_id = defaultProfile.Id;
+
         // TODO: create tests to test creation of different model types
-        // TODO: move to file
-        const listingItemTemplateData = {
-            profile_id: defaultProfile.Id,
-            itemInformation: {
-                title: 'item title1',
-                shortDescription: 'item short desc1',
-                longDescription: 'item long desc1',
-                itemCategory: {
-                    key: 'cat_high_luxyry_items',
-                    name: 'Luxury Items',
-                    description: ''
-                },
-                itemLocation: {
-                    region: 'South Africa',
-                    address: 'asdf, asdf, asdf',
-                    locationMarker: {
-                        markerTitle: 'Helsinki',
-                        markerText: 'Helsinki',
-                        lat: 12.1234,
-                        lng: 23.2314
-                    }
-                },
-                shippingDestinations: [{
-                    country: 'United Kingdom',
-                    shippingAvailability: ShippingAvailability.DOES_NOT_SHIP
-                }, {
-                    country: 'China',
-                    shippingAvailability: ShippingAvailability.SHIPS
-                }, {
-                    country: 'South Africa',
-                    shippingAvailability: ShippingAvailability.ASK
-                }],
-                itemImages: [{
-                    hash: 'imagehash4',
-                    data: [{
-                        dataId: null,
-                        protocol: ImageDataProtocolType.LOCAL,
-                        imageVersion: 'ORIGINAL',
-                        encoding: 'BASE64',
-                        data: ImageProcessing.milkcat
-                    }]
-                }, {
-                    hash: 'imagehash5',
-                    data: [{
-                        dataId: null,
-                        protocol: ImageDataProtocolType.LOCAL,
-                        imageVersion: 'ORIGINAL',
-                        encoding: 'BASE64',
-                        data: ImageProcessing.milkcatTall
-                    }]
-                }, {
-                    hash: 'imagehash6',
-                    data: [{
-                        dataId: null,
-                        protocol: ImageDataProtocolType.LOCAL,
-                        imageVersion: 'ORIGINAL',
-                        encoding: 'BASE64',
-                        data: ImageProcessing.milkcatWide
-                    }]
-                }]
-            },
-            paymentInformation: {
-                type: PaymentType.SALE,
-                escrow: {
-                    type: EscrowType.MAD,
-                    ratio: {
-                        buyer: 100,
-                        seller: 100
-                    }
-                },
-                itemPrice: {
-                    currency: Currency.BITCOIN,
-                    basePrice: 0.0001,
-                    shippingPrice: {
-                        domestic: 0.123,
-                        international: 1.234
-                    },
-                    cryptocurrencyAddress: {
-                        type: CryptocurrencyAddressType.NORMAL,
-                        address: '1234'
-                    }
-                }
-            },
-            messagingInformation: [{
-                protocol: MessagingProtocolType.SMSG,
-                publicKey: 'publickey1'
-            }]
-        };
+        // TODO: use test data files
+
         const createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
-            model,
-            data: listingItemTemplateData as any,
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            data: listingItemTemplateData as any, // TODO: as any?
             withRelated: true
         } as TestDataCreateRequest);
 
@@ -192,7 +114,7 @@ describe('TestDataService', () => {
         const listingItemTemplate = await listingItemTemplateService.findAll();
         expect(listingItemTemplate).toHaveLength(1);
 
-        expect(result.hash).toBe(listingItemTemplateData.hash);
+        expect(result.hash).not.toBeNull();
         expect(result.Profile.name).toBe(defaultProfile.Name);
 
         expect(result.ItemInformation.title).toBe(listingItemTemplateData.itemInformation.title);
@@ -207,7 +129,7 @@ describe('TestDataService', () => {
         expect(result.ItemInformation.ItemLocation.LocationMarker.lat).toBe(listingItemTemplateData.itemInformation.itemLocation.locationMarker.lat);
         expect(result.ItemInformation.ItemLocation.LocationMarker.lng).toBe(listingItemTemplateData.itemInformation.itemLocation.locationMarker.lng);
         expect(result.ItemInformation.ShippingDestinations).toHaveLength(3);
-        expect(result.ItemInformation.ItemImages).toHaveLength(3);
+        expect(result.ItemInformation.ItemImages).toHaveLength(5);
         expect(result.ItemInformation.listingItemId).toBe(null);
         expect(result.ItemInformation.listingItemTemplateId).toBe(result.id);
 
