@@ -88,14 +88,17 @@ export class BidService {
 
         // bid needs to be related to listing item
         if (body.listing_item_id == null) {
+            this.log.error('Request body is not valid, listing_item_id missing');
             throw new ValidationException('Request body is not valid', ['listing_item_id missing']);
         }
 
         if (body.bidder == null) {
+            this.log.error('Request body is not valid, bidder missing');
             throw new ValidationException('Request body is not valid', ['bidder missing']);
         }
 
         if (body.address == null) {
+            this.log.error('Request body is not valid, address missing');
             throw new ValidationException('Request body is not valid', ['address missing']);
         }
 

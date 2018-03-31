@@ -5,6 +5,14 @@ import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { addressTestData } from './BidCommandCommon';
+import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+
+import * as resources from 'resources';
+import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
+import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
+import * as listingItemCreateRequestBasic3 from '../testdata/createrequest/listingItemCreateRequestBasic3.json';
+import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
 
 describe('BidAcceptCommand', () => {
 
@@ -13,20 +21,57 @@ describe('BidAcceptCommand', () => {
     const bidCommand =  Commands.BID_ROOT.commandName;
     const acceptCommand = Commands.BID_ACCEPT.commandName;
 
+    let defaultMarket: resources.Market;
+    let defaultProfile: resources.Profile;
+    let createdListingItemTemplate: resources.ListingItemTemplate;
+    let listingItem: resources.ListingItem;
+    let createdBid: resources.Bid;
+
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        // get default profile
+        defaultProfile = await testUtil.getDefaultProfile();
 
         // create address
         const addressRes = await rpc(Commands.ADDRESS_ROOT.commandName, [Commands.ADDRESS_ADD.commandName,
             (await testUtil.getDefaultProfile()).id,
-            addressTestData.title,
+            addressTestData.firstName, addressTestData.lastName, addressTestData.title,
             addressTestData.addressLine1, addressTestData.addressLine2,
             addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
-        addressRes.expectJson();
-        addressRes.expectStatusCode(200);
-    });
 
-    test('Should Accept a Bid for a ListingItem', async () => {
+        // get default profile again
+        defaultProfile = await testUtil.getDefaultProfile();
+
+        // get default market
+        defaultMarket = await testUtil.getDefaultMarket();
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        // generate listingItemTemplate
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplates[];
+        createdListingItemTemplate = listingItemTemplates[0];
+
+        // create listing item
+        listingItemCreateRequestBasic1.market_id = defaultMarket.id;
+        listingItemCreateRequestBasic1.listing_item_template_id = listingItemTemplates[0].id;
+
+        listingItem = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
+
 
         // Ryno Hacks - This requires regtest
         const outputs = [{
@@ -38,29 +83,39 @@ describe('BidAcceptCommand', () => {
         const pubkey = '02dcd01e1c1bde4d5f8eff82cde60017f81ac1c2888d04f47a31660004fe8d4bb7';
         const changeAddress = 'pYTjD9CRepFvh1YvVfowY2J14DK9ayrvrr';
 
-        // create listing item
-        // TODO: Create listing item template, so that we know it belongs to us
-        const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
-
         // create bid
-        const bid = await testUtil.addData(CreatableModel.BID, {
+        const bidCreateRequest = {
             action: BidMessageType.MPA_BID,
-            bidDatas: [
-                {dataId: 'pubkeys', dataValue: [pubkey]},
-                {dataId: 'outputs', dataValue: outputs},
-                {dataId: 'changeAddr', dataValue: changeAddress},
-                {dataId: 'change', dataValue: +(listingItem[0].PaymentInformation.ItemPrice.basePrice
-                    + listingItem[0].PaymentInformation.ItemPrice.ShippingPrice.international).toFixed(8) }
-            ],
             listing_item_id: listingItem[0].id,
-            bidder: 'Anything'
-        } as BidCreateRequest);
+            bidder: 'bidderaddress',
+            bidDatas: [
+                { dataId: 'COLOR', dataValue: 'RED' },
+                { dataId: 'SIZE', dataValue: 'XL' },
+                { dataId: 'pubkeys', dataValue: [pubkey] },
+                { dataId: 'outputs', dataValue: outputs },
+                { dataId: 'changeAddr', dataValue: changeAddress },
+                { dataId: 'change', dataValue: +(listingItem[0].PaymentInformation.ItemPrice.basePrice
+                    + listingItem[0].PaymentInformation.ItemPrice.ShippingPrice.international).toFixed(8) }],
+            address: {
+                title: 'Title',
+                firstName: 'Robert',
+                lastName: 'Downey',
+                addressLine1: 'Add',
+                addressLine2: 'ADD 22',
+                city: 'city',
+                state: 'test state',
+                country: 'Finland',
+                zipCode: '85001'
+            } as AddressCreateRequest
+        } as BidCreateRequest;
 
-        const res: any = await rpc(bidCommand, [acceptCommand, listingItem[0].hash, bid.id]);
+        createdBid = await testUtil.addData(CreatableModel.BID, bidCreateRequest);
+    });
 
+    test('Should Accept a Bid for a ListingItem', async () => {
+
+        const res: any = await rpc(bidCommand, [acceptCommand, listingItem[0].hash, createdBid.id]);
         res.expectJson();
-
-        // TODO: Need to implements after broadcast functionality get done
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
     });

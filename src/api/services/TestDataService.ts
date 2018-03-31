@@ -141,6 +141,7 @@ export class TestDataService {
                 return await this.itemInformationService.create(body.data as ItemInformationCreateRequest) as Bookshelf.Model<ItemInformation>;
             }
             case CreatableModel.BID: {
+                this.log.debug('CREATE BID');
                 return await this.bidService.create(body.data as BidCreateRequest) as Bookshelf.Model<Bid>;
             }
             case CreatableModel.PAYMENTINFORMATION: {

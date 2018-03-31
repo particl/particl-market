@@ -38,6 +38,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
+        this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
         const itemHash = data.params[0];
         const bidId = data.params[1];
 

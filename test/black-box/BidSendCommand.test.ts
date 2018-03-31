@@ -33,8 +33,7 @@ describe('BidSendCommand', () => {
         // create address for default profile
         const addressRes = await rpc(Commands.ADDRESS_ROOT.commandName, [Commands.ADDRESS_ADD.commandName,
             defaultProfile.id,
-            addressTestData.firstName, addressTestData.lastName,
-            addressTestData.title,
+            addressTestData.firstName, addressTestData.lastName, addressTestData.title,
             addressTestData.addressLine1, addressTestData.addressLine2,
             addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
 
