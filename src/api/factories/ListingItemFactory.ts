@@ -21,6 +21,7 @@ import { MessagingInformationCreateRequest } from '../requests/MessagingInformat
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { MessagingProtocolType } from '../enums/MessagingProtocolType';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
+import {ItemLocationCreateRequest} from '../requests/ItemLocationCreateRequest';
 
 export class ListingItemFactory {
 
@@ -169,8 +170,8 @@ export class ListingItemFactory {
         } as ItemInformationCreateRequest;
     }
 
-    private async getModelLocation(location: any): Promise<any> {
-        let locationObject: any = {};
+    private async getModelLocation(location: any): Promise<ItemLocationCreateRequest> {
+        const locationObject: any = {};
         const region = location.country;
         const address = location.address;
 
@@ -180,23 +181,23 @@ export class ListingItemFactory {
         if (address) {
             locationObject.address = address;
         }
-        
+
         if (location.gps) {
             const locationMarker = await this.getModelLocationMarker(location.gps);
             locationObject.locationMarker = locationMarker;
-            
+
         }
-        
+
         return locationObject;
     }
 
     private async getModelLocationMarker(gps: any): Promise<LocationMarkerCreateRequest> {
         const lat: number = gps.lat;
         const lng: number = gps.lng;
-        let locationMarker: any = {
+        const locationMarker = {
             lat,
             lng
-        };
+        } as LocationMarkerCreateRequest;
 
         if (gps.marker_title) {
             locationMarker.markerTitle = gps.marker_title;
@@ -280,7 +281,7 @@ export class ListingItemFactory {
 
     private async getMessageInformationLocation(itemLocation: resources.ItemLocation): Promise<any> {
         const locationMarker: resources.LocationMarker = itemLocation.LocationMarker;
-        let informationLocation: any = {};
+        const informationLocation: any = {};
         if (itemLocation.region) {
             informationLocation.country = itemLocation.region;
         }
@@ -291,7 +292,7 @@ export class ListingItemFactory {
             informationLocation.gps = {
                 lng: locationMarker.lng,
                 lat: locationMarker.lat
-            }
+            };
 
             if (locationMarker.markerTitle) {
                 informationLocation.gps.marker_title = locationMarker.markerTitle;

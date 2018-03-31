@@ -95,7 +95,7 @@ export class EscrowFactory {
                 memo: lockRequest.memo
             },
             escrow: {
-                rawTx: rawTx
+                rawTx
             }
         } as EscrowMessage;
     }
