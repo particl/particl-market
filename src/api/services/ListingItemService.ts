@@ -34,6 +34,9 @@ import { ListingItemObjectService } from './ListingItemObjectService';
 import { FlaggedItemService } from './FlaggedItemService';
 import { EventEmitter } from 'events';
 
+import { ObjectHashService } from './ObjectHashService';
+import { HashableObjectType } from '../../api/enums/HashableObjectType';
+
 export class ListingItemService {
 
     public log: LoggerType;
@@ -49,6 +52,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.ObjectHashService) public objectHashService: ObjectHashService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -114,6 +118,10 @@ export class ListingItemService {
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
+
+        // hash
+        delete body.hash;
+        body.hash = this.objectHashService.getHash(body, HashableObjectType.DEFAULT);
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;

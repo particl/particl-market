@@ -29,6 +29,9 @@ import { MessagingInformationUpdateRequest } from '../requests/MessagingInformat
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
 
+import { ObjectHashService } from './ObjectHashService';
+import { HashableObjectType } from '../../api/enums/HashableObjectType';
+
 export class ListingItemTemplateService {
 
     public log: LoggerType;
@@ -40,6 +43,7 @@ export class ListingItemTemplateService {
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
+        @inject(Types.Service) @named(Targets.Service.ObjectHashService) public objectHashService: ObjectHashService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -74,6 +78,10 @@ export class ListingItemTemplateService {
     public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest): Promise<ListingItemTemplate> {
 
         const body = JSON.parse(JSON.stringify(data));
+
+        // hash
+        delete body.hash;
+        body.hash = this.objectHashService.getHash(body, HashableObjectType.DEFAULT);
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
