@@ -53,7 +53,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     }
 
     public usage(): string {
-        return this.getName() + ' <itemhash> [(<bidDataId>, <bidDataValue>), ...] ';
+        return this.getName() + ' <itemhash> <addressId> [(<bidDataId>, <bidDataValue>), ...] ';
     }
 
     public help(): string {

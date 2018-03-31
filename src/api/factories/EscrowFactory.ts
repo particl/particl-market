@@ -16,6 +16,7 @@ import { Bid } from '../models/Bid';
 import { BidMessageType } from '../enums/BidMessageType';
 import { ListingItem } from '../models/ListingItem';
 import { CoreRpcService } from '../services/CoreRpcService';
+import { ActionMessage } from '../models/ActionMessage';
 
 export class EscrowFactory {
 
@@ -94,7 +95,7 @@ export class EscrowFactory {
                 memo: lockRequest.memo
             },
             escrow: {
-                txid: rawTx
+                rawTx: rawTx
             }
         } as EscrowMessage;
     }
@@ -181,25 +182,9 @@ export class EscrowFactory {
         // rawtx is indeed legitimate. The vendor then signs the rawtx and sends it to the buyer.
         // The vendor can decide to broadcast it himself.'
 
-        const listing = await ListingItem.fetchByHash(request.item);
+        const listing = (await ListingItem.fetchByHash(request.item)).toJSON();
 
-        const bid: resources.Bid = listing.related('Bids').toJSON()[0];
-        const bidData = (await Bid.fetchById(bid.id)).related('BidDatas').toJSON() as resources.BidData[];
-
-        let sellerAddress: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'address');
-        let rawtx: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'rawtx');
-        let pubkeys: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'pubkeys');
-        const isMine = !!listing.toJSON().listingItemTemplateId;
-
-        this.log.debug('Request:', request, 'Bid Action', bid.action);
-
-        if (!bid || bid.action !== (isMine ? EscrowMessageType.MPA_RELEASE : BidMessageType.MPA_ACCEPT) // Not sure how to get escrow messages...
-            || bidData.length === 0 || !rawtx || !pubkeys || !sellerAddress) {
-            this.log.error('No valid information to finalize escrow');
-            throw new MessageException('No valid information to finalize escrow');
-        }
-        rawtx = rawtx.dataValue as string;
-        pubkeys = pubkeys.dataValue[0] === '[' ? JSON.parse(pubkeys.dataValue).sort() : pubkeys.dataValue;
+        const isMine = !!listing.listingItemTemplateId;
 
         const signTx = async (signrawtx, complete?) => {
 
@@ -225,8 +210,27 @@ export class EscrowFactory {
             return signed;
         };
 
+        const bid: resources.Bid = listing.Bids[0];
+        const bidData = (await Bid.fetchById(bid.id)).related('BidDatas').toJSON() as resources.BidData[];
+
+        let rawtx: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'rawtx');
+        let pubkeys: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'pubkeys');
+
+        if (!isMine &&
+            (!bid || bid.action !== BidMessageType.MPA_ACCEPT || bidData.length === 0 || !rawtx || !pubkeys)) {
+            this.log.error('Not enough valid information to finalize escrow');
+            throw new MessageException('Not enough valid information to finalize escrow');
+        }
+
+
         switch (request.action) {
             case EscrowMessageType.MPA_LOCK:
+                if (isMine) {
+                    throw new MessageException('Seller can\'t lock escrow.');
+                }
+
+                rawtx = rawtx ? rawtx.dataValue as string : '';
+                pubkeys = pubkeys ? pubkeys.dataValue[0] === '[' ? JSON.parse(pubkeys.dataValue).sort() : pubkeys.dataValue : [];
 
                 // Add Escrow address
                 // TODO: Way to recover escrow address should we lose it
@@ -241,30 +245,50 @@ export class EscrowFactory {
                 return await this.coreRpcService.call('sendrawtransaction', [(await signTx(rawtx, true)).hex]);
 
             case EscrowMessageType.MPA_RELEASE:
-                sellerAddress = sellerAddress.dataValue as string;
+                const release = listing.ActionMessages.find(actionMessage => actionMessage.action === EscrowMessageType.MPA_RELEASE);
+                // First check if someone has already called release...
+                if (release) {
+                    // TODO: URGENT: Make sure transaction is valid...
+                    return await this.coreRpcService.call('sendrawtransaction', [
+                        (await signTx(release.MessageObjects.find(object => object.dataId === 'rawtx'), true)).hex
+                    ]);
+                } else {
+                    if (isMine) {
+                        // TODO: Decide if seller can or can't initiate release..
+                        // If we decide to go that route, the seller would need the buyers release address from the beginning...
+                        throw new MessageException('Seller can\'t initiate escrow release.');
+                    }
+                    let sellerAddress: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'address');
+                    if (!sellerAddress) {
+                        this.log.error('Not enough valid information to finalize escrow');
+                        throw new MessageException('Not enough valid information to finalize escrow');
+                    }
 
-                const myAddress = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
-                const decoded = await this.coreRpcService.call('decoderawtransaction', [rawtx]);
-                const txid = decoded.txid;
-                const value = decoded.vout[0].value - 0.0001; // TODO: Proper TX Fee
+                    sellerAddress = sellerAddress.dataValue as string;
+                    const myAddress = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
+                    const decoded = await this.coreRpcService.call('decoderawtransaction', [rawtx]);
 
-                if (!txid) {
-                    this.log.error(`Transaction with not found with txid: ${txid}.`);
-                    throw new MessageException(`Transaction with not found with txid: ${txid}.`);
+                    const txid = decoded.txid;
+                    const value = decoded.vout[0].value - 0.0001; // TODO: Proper TX Fee
+
+                    if (!txid) {
+                        this.log.error(`Transaction with not found with txid: ${txid}.`);
+                        throw new MessageException(`Transaction with not found with txid: ${txid}.`);
+                    }
+
+                    const txout = {};
+
+                    txout[myAddress] = value / 3;
+                    txout[sellerAddress] = (value / 3) * 2;
+
+                    rawtx = await this.coreRpcService.call('createrawtransaction', [
+                        [{txid, vout: 0}], // TODO: Make sure this is the correct vout
+                        txout
+                    ]);
+
+                    // TODO: This requires user interaction, so should be elsewhere possibly?
+                    return (await signTx(rawtx)).hex;
                 }
-
-                const txout = {};
-
-                txout[myAddress] = value / 3;
-                txout[sellerAddress] = (value / 3) * 2;
-
-                rawtx = await this.coreRpcService.call('createrawtransaction', [
-                    [{txid, vout: 0}],
-                    txout
-                ]);
-
-                // TODO: This requires user interaction, so should be elsewhere possibly?
-                return (await signTx(rawtx)).hex;
 
             default:
                 return 'todo: implement';
