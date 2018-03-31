@@ -81,11 +81,13 @@ export const testDataListingItemTemplate = {
 
 export const addressTestData = {
     title: 'Work',
+    firstName: 'zfdg',
+    lastName: 'zxcv',
     addressLine1: '123 6th St',
-    addressLine2: 'Melbourne, FL 32904',
+    addressLine2: 'Melbourne FL 32904',
     city: 'Melbourne',
     state: 'Mel State',
-    country: 'Finland',
+    country: 'FI',
     zipCode: '85001'
 };
 // End - Ryno Hack

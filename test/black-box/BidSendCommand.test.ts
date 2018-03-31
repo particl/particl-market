@@ -2,6 +2,7 @@ import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
+import { addressTestData } from './BidCommandCommon';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 
 import * as resources from 'resources';
@@ -32,6 +33,7 @@ describe('BidSendCommand', () => {
         // create address for default profile
         const addressRes = await rpc(Commands.ADDRESS_ROOT.commandName, [Commands.ADDRESS_ADD.commandName,
             defaultProfile.id,
+            addressTestData.firstName, addressTestData.lastName,
             addressTestData.title,
             addressTestData.addressLine1, addressTestData.addressLine2,
             addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
@@ -44,7 +46,6 @@ describe('BidSendCommand', () => {
 
         // create a listing item to bid for
         listingItemCreateRequestBasic1.market_id = defaultMarket.id;
-        listingItemCreateRequestBasic1.hash = 'hash-asdf1';
         createdListingItem1 = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
 
         const generateListingItemParams = new GenerateListingItemParams([

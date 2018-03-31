@@ -47,6 +47,8 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
         this.log.debug('Attempting to create address');
 
+        this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
+
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
         let countryCode: string = data.params[8];
@@ -78,6 +80,8 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
 
         return await this.addressService.create(newAddress);
     }
+
+    // TODO: title should be after profileId
 
     // tslint:disable:max-line-length
     public usage(): string {
