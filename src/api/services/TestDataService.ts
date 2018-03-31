@@ -65,6 +65,7 @@ import { SearchOrder } from '../enums/SearchOrder';
 import {AddressCreateRequest} from '../requests/AddressCreateRequest';
 import {CryptocurrencyAddressCreateRequest} from '../requests/CryptocurrencyAddressCreateRequest';
 import {BidDataCreateRequest} from '../requests/BidDataCreateRequest';
+import {AddressType} from '../enums/AddressType';
 
 export class TestDataService {
 
@@ -361,7 +362,8 @@ export class TestDataService {
                 zipCode: Faker.address.zipCode(),
                 city: Faker.address.city(),
                 state: Faker.address.state(),
-                country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList))
+                country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
+                type: AddressType.SHIPPING_OWN
             });
         }
         return addresses;

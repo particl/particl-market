@@ -25,6 +25,8 @@ import { ProfileUpdateRequest } from '../../src/api/requests/ProfileUpdateReques
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { FavoriteItemCreateRequest } from '../../src/api/requests/FavoriteItemCreateRequest';
+import {AddressCreateRequest} from '../../src/api/requests/AddressCreateRequest';
+import {AddressType} from '../../src/api/enums/AddressType';
 
 describe('Profile', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -56,8 +58,9 @@ describe('Profile', () => {
             city: 'city',
             state: 'test state',
             country: 'Sweden',
-            zipCode: '85001'
-        }, {
+            zipCode: '85001',
+            type: AddressType.SHIPPING_OWN
+        } as AddressCreateRequest, {
             firstName: 'Johnny',
             lastName: 'Depp',
             title: 'Tite',
@@ -66,8 +69,9 @@ describe('Profile', () => {
             city: 'city',
             state: 'test state',
             country: 'Finland',
-            zipCode: '85001'
-        }] as any
+            zipCode: '85001',
+            type: AddressType.SHIPPING_OWN
+        } as AddressCreateRequest] as any
     } as ProfileCreateRequest;
 
     const testDataUpdated = {
@@ -199,6 +203,7 @@ describe('Profile', () => {
     });
 
     test('Should create a new profile with delivery addresses and cryptoaddresses', async () => {
+        // TODO: use CreateableModel everywhere
         const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
             model: 'profile',
             amount: 1,
