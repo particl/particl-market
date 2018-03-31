@@ -13,15 +13,11 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { Bid } from '../../src/api/models/Bid';
-import { ListingItem } from '../../src/api/models/ListingItem';
 
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
 
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';
 import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { BidUpdateRequest } from '../../src/api/requests/BidUpdateRequest';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { BidSearchParams } from '../../src/api/requests/BidSearchParams';
@@ -30,7 +26,9 @@ import { ProfileService } from '../../src/api/services/ProfileService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 
 import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
+import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
+import * as listingItemCreateRequestBasic3 from '../testdata/createrequest/listingItemCreateRequestBasic3.json';
+
 
 describe('Bid', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -53,6 +51,7 @@ describe('Bid', () => {
     let createdBid1;
     let createdBid2;
 
+    // TODO: move to file
     const testData = {
         action: BidMessageType.MPA_BID,
         listing_item_id: null,
@@ -127,18 +126,14 @@ describe('Bid', () => {
         // create listing item
         listingItemCreateRequestBasic1.market_id = defaultMarket.id;
         listingItemCreateRequestBasic1.listing_item_template_id = listingItemTemplates[0].id;
-        listingItemCreateRequestBasic1.hash = ObjectHash.getHash(listingItemCreateRequestBasic1,
-            HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
         const createdListingItemModel1 = await listingItemService.create(listingItemCreateRequestBasic1);
         createdListingItem1 = createdListingItemModel1.toJSON();
         log.debug('createdListingItem1: ', createdListingItem1.id);
         log.debug('createdListingItem1: ', createdListingItem1.hash);
 
         // create listing item
-        delete listingItemCreateRequestBasic1.listing_item_template_id;
-        listingItemCreateRequestBasic1.hash = ObjectHash.getHash(listingItemCreateRequestBasic1,
-            HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
-        const createdListingItemModel2 = await listingItemService.create(listingItemCreateRequestBasic1);
+        listingItemCreateRequestBasic2.market_id = defaultMarket.id;
+        const createdListingItemModel2 = await listingItemService.create(listingItemCreateRequestBasic2);
         createdListingItem2 = createdListingItemModel2.toJSON();
         log.debug('createdListingItem2: ', createdListingItem2.id);
         log.debug('createdListingItem2: ', createdListingItem2.hash);

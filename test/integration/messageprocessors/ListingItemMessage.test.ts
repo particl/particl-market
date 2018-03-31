@@ -52,7 +52,7 @@ describe('ListingItemMessage', () => {
     const expectListingItemFromMessage = (result: resources.ListingItem, message: ListingItemMessage) => {
 
         expect(result.id).not.toBeNull();
-        expect(result.hash).toBe(message.hash);
+        expect(result.hash).not.toBeNull();
 
         // fields from message that we dont want to see
         expect(result).not.toHaveProperty('information');
