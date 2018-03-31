@@ -170,30 +170,41 @@ export class ListingItemFactory {
     }
 
     private async getModelLocation(location: any): Promise<any> {
-
+        let locationObject: any = {};
         const region = location.country;
         const address = location.address;
-        const locationMarker = await this.getModelLocationMarker(location.gps);
 
-        return {
-            region,
-            address,
-            locationMarker
-        };
+        if (region) {
+            locationObject.set(region);
+        }
+        if (address) {
+            locationObject.set(address);
+        }
+        
+        if (location.gps) {
+            const locationMarker = await this.getModelLocationMarker(location.gps);
+            locationObject.set(locationMarker);
+            
+        }
+        
+        return locationObject;
     }
 
     private async getModelLocationMarker(gps: any): Promise<LocationMarkerCreateRequest> {
-        const markerTitle = gps.marker_title;
-        const markerText = gps.marker_text;
-        const lat = gps.lat;
-        const lng = gps.lng;
-
-        return {
-            markerTitle,
-            markerText,
+        const lat: number = gps.lat;
+        const lng: number = gps.lng;
+        let locationMarker: any = {
             lat,
             lng
-        } as LocationMarkerCreateRequest;
+        };
+
+        if (gps.marker_title) {
+            locationMarker.set(gps.marker_title);
+        }
+        if (gps.marker_text) {
+            locationMarker.set(gps.marker_text);
+        }
+        return locationMarker as LocationMarkerCreateRequest;
     }
 
     private async getModelShippingDestinations(shippingDestinations: string[]): Promise<resources.ShippingDestination[]> {
