@@ -19,6 +19,19 @@ describe('ObjectHash', () => {
         expect(listingItemTemplateHash).not.toBeNull();
     });
 
+    test('Should get hash for listingItemTemplate missing most of its data', async () => {
+        expect.assertions(1);
+
+        const testDataEmpty = JSON.parse(JSON.stringify(listingItemTemplateBasic1));
+        delete testDataEmpty.ItemInformation;
+        delete testDataEmpty.PaymentInformation;
+        delete testDataEmpty.MessagingInformation;
+        delete testDataEmpty.ListingItemObjects;
+
+        const listingItemTemplateHash = ObjectHash.getHash(testDataEmpty, HashableObjectType.LISTINGITEMTEMPLATE);
+        expect(listingItemTemplateHash).not.toBeNull();
+    });
+
     test('Should get hash for ItemImage', async () => {
         expect.assertions(1);
         const itemImageData = listingItemTemplateBasic1.ItemInformation.ItemImages[0].ItemImageDatas[0];

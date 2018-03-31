@@ -6,6 +6,7 @@ import { HashableItemImage } from './HashableItemImage';
 export class ObjectHash {
 
     public static getHash(objectToHash: any, type: HashableObjectType): string {
+
         let hashableObject;
         switch (type) {
             case HashableObjectType.LISTINGITEM_CREATEREQUEST:

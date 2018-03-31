@@ -1,8 +1,7 @@
 /**
- * core.api.HashableListingItem
+ * core.api.HashableItemImage
  *
  */
-// TODO: refactor
 export class HashableItemImage {
 
     public protocol: string;
@@ -12,7 +11,9 @@ export class HashableItemImage {
     public originalMime: string;
     public originalName: string;
 
-    constructor(input: any) {
+    constructor(hashThis: any) {
+        const input = JSON.parse(JSON.stringify(hashThis));
+
         if (input) {
             this.protocol       = input.protocol;
             this.imageVersion   = input.imageVersion;

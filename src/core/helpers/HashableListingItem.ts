@@ -8,20 +8,50 @@ export class HashableListingItem {
     public title: string;
     public shortDescription: string;
     public longDescription: string;
-
     public basePrice: string;
     public paymentAddress: string;
     public messagingPublicKey: string;
 
-    constructor(input: any) {
+    public nullItemTimestamp: Date;
+
+    constructor(hashThis: any) {
+        const input = JSON.parse(JSON.stringify(hashThis));
+
         if (input) {
-            if (!input.itemInformation) {
+            if (!input.itemInformation && !input.paymentInformation && !input.messagingInformation && !input.listingItemObjects) { // model
+                input.ItemInformation = input.ItemInformation
+                    ? input.ItemInformation : {};
+                input.PaymentInformation    = input.PaymentInformation
+                    ? input.PaymentInformation : {};
+                input.PaymentInformation.ItemPrice = input.PaymentInformation.ItemPrice
+                    ? input.PaymentInformation.ItemPrice : {};
+                input.PaymentInformation.ItemPrice.CryptocurrencyAddress = input.PaymentInformation.ItemPrice.CryptocurrencyAddress
+                    ? input.PaymentInformation.ItemPrice.CryptocurrencyAddress : {};
+                input.MessagingInformation  = input.MessagingInformation
+                    ? input.MessagingInformation : {};
+                input.ListingItemObjects    = input.ListingItemObjects
+                    ? input.ListingItemObjects : {};
+
                 input.itemInformation = input.ItemInformation;
                 input.paymentInformation = input.PaymentInformation;
                 input.paymentInformation.itemPrice = input.PaymentInformation.ItemPrice;
                 input.paymentInformation.itemPrice.cryptocurrencyAddress = input.PaymentInformation.ItemPrice.CryptocurrencyAddress;
                 input.messagingInformation = input.MessagingInformation;
                 input.listingItemObjects = input.ListingItemObjects;
+            } else {
+                input.itemInformation = input.itemInformation
+                    ? input.itemInformation : {};
+                input.paymentInformation    = input.paymentInformation
+                    ? input.paymentInformation : {};
+                input.paymentInformation.itemPrice = input.paymentInformation.itemPrice
+                    ? input.paymentInformation.itemPrice : {};
+                input.paymentInformation.itemPrice.cryptocurrencyAddress = input.paymentInformation.itemPrice.cryptocurrencyAddress
+                    ? input.paymentInformation.itemPrice.cryptocurrencyAddress : {};
+                input.messagingInformation  = input.messagingInformation
+                    ? input.messagingInformation : {};
+                input.listingItemObjects    = input.listingItemObjects
+                    ? input.listingItemObjects : {};
+
             }
             this.title              = input.itemInformation.title;
             this.shortDescription   = input.itemInformation.shortDescription;
@@ -29,6 +59,12 @@ export class HashableListingItem {
             this.basePrice          = input.paymentInformation.itemPrice.basePrice;
             this.paymentAddress     = input.paymentInformation.itemPrice.cryptocurrencyAddress.address;
             this.messagingPublicKey = input.messagingInformation.publicKey;
+
+            // hack: allow empty objects for now
+            if (!this.title && !this.shortDescription && !this.longDescription && !this.basePrice && !this.paymentAddress && !this.messagingPublicKey) {
+                this.nullItemTimestamp = new Date();
+            }
+
         }
     }
 
