@@ -170,31 +170,41 @@ export class ListingItemFactory {
     }
 
     private async getModelLocation(location: any): Promise<any> {
-
+        let locationObject: any = {};
         const region = location.country;
         const address = location.address;
-        const locationMarker = await this.getModelLocationMarker(location.gps);
 
-        return {
-            region,
-            address,
-            locationMarker
-        };
+        if (region) {
+            locationObject.region = region;
+        }
+        if (address) {
+            locationObject.address = address;
+        }
+        
+        if (location.gps) {
+            const locationMarker = await this.getModelLocationMarker(location.gps);
+            locationObject.locationMarker = locationMarker;
+            
+        }
+        
+        return locationObject;
     }
 
     private async getModelLocationMarker(gps: any): Promise<LocationMarkerCreateRequest> {
-
-        const markerTitle = gps.marker_title;
-        const markerText = gps.marker_text;
-        const lat = gps.lat;
-        const lng = gps.lng;
-
-        return {
-            markerTitle,
-            markerText,
+        const lat: number = gps.lat;
+        const lng: number = gps.lng;
+        let locationMarker: any = {
             lat,
             lng
-        } as LocationMarkerCreateRequest;
+        };
+
+        if (gps.marker_title) {
+            locationMarker.markerTitle = gps.marker_title;
+        }
+        if (gps.marker_text) {
+            locationMarker.markerText = gps.marker_text;
+        }
+        return locationMarker as LocationMarkerCreateRequest;
     }
 
     private async getModelShippingDestinations(shippingDestinations: string[]): Promise<resources.ShippingDestination[]> {
@@ -270,16 +280,27 @@ export class ListingItemFactory {
 
     private async getMessageInformationLocation(itemLocation: resources.ItemLocation): Promise<any> {
         const locationMarker: resources.LocationMarker = itemLocation.LocationMarker;
-        return {
-            country: itemLocation.region,
-            address: itemLocation.address,
-            gps: {
-                marker_title: locationMarker.markerTitle,
-                marker_text: locationMarker.markerText,
+        let informationLocation: any = {};
+        if (itemLocation.region) {
+            informationLocation.country = itemLocation.region;
+        }
+        if (itemLocation.address) {
+            informationLocation.address = itemLocation.address;
+        }
+        if (locationMarker) {
+            informationLocation.gps = {
                 lng: locationMarker.lng,
                 lat: locationMarker.lat
             }
-        };
+
+            if (locationMarker.markerTitle) {
+                informationLocation.gps.marker_title = locationMarker.markerTitle;
+            }
+            if (locationMarker.markerText) {
+                informationLocation.gps.marker_text = locationMarker.markerText;
+            }
+        }
+        return informationLocation;
     }
 
     private async getMessageInformationShippingDestinations(shippingDestinations: resources.ShippingDestination[]): Promise<string[]> {
