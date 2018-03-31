@@ -5,9 +5,9 @@
 
 export enum BidMessageType {
 
-    MPA_BID = 'MPA-BID',
-    MPA_ACCEPT = 'MPA-ACCEPT',
-    MPA_REJECT = 'MPA-REJECT',
-    MPA_CANCEL = 'MPA-CANCEL'
+    MPA_BID = 'MPA_BID',
+    MPA_ACCEPT = 'MPA_ACCEPT',
+    MPA_REJECT = 'MPA_REJECT',
+    MPA_CANCEL = 'MPA_CANCEL'
 
 }

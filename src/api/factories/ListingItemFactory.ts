@@ -5,7 +5,6 @@ import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ItemCategoryFactory } from './ItemCategoryFactory';
 import * as resources from 'resources';
-import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { ShippingAvailability } from '../enums/ShippingAvailability';
 import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';

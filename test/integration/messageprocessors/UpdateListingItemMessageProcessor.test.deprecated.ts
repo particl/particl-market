@@ -9,7 +9,6 @@ import { MarketService } from '../../../src/api/services/MarketService';
 
 import { UpdateListingItemMessageProcessor } from '../../../src/api/messageprocessors/UpdateListingItemMessageProcessor';
 import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
-import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { ListingItem } from '../../../src/api/models/ListingItem';
 import { TestDataCreateRequest } from '../../../src/api/requests/TestDataCreateRequest';
 import { PaymentType } from '../../../src/api/enums/PaymentType';
@@ -36,6 +35,8 @@ import { ShippingPriceService } from '../../../src/api/services/ShippingPriceSer
 import { CryptocurrencyAddressService } from '../../../src/api/services/CryptocurrencyAddressService';
 import { MessagingInformationService } from '../../../src/api/services/MessagingInformationService';
 import { ListingItemObjectService } from '../../../src/api/services/ListingItemObjectService';
+import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
+import { ObjectHashService } from '../../../src/api/services/ObjectHashService';
 
 describe('UpdateListingItemMessageProcessor', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -63,6 +64,7 @@ describe('UpdateListingItemMessageProcessor', () => {
 
     let messagingInformationService: MessagingInformationService;
     let listingItemObjectService: ListingItemObjectService;
+    let objectHashService: ObjectHashService;
 
     let createdListingItem;
     // let updatedListingItem;
@@ -187,22 +189,24 @@ describe('UpdateListingItemMessageProcessor', () => {
 
         messagingInformationService = app.IoC.getNamed<MessagingInformationService>(Types.Service, Targets.Service.MessagingInformationService);
         listingItemObjectService = app.IoC.getNamed<ListingItemObjectService>(Types.Service, Targets.Service.ListingItemObjectService);
+        objectHashService = app.IoC.getNamed<ObjectHashService>(Types.Service, Targets.Service.ObjectHashService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
 
         defaultMarket = await marketService.getDefault();
+        const hash = await objectHashService.getHash(testData, HashableObjectType.DEFAULT);
         const result = await testDataService.create<ListingItem>({
             model: 'listingitem',
             data: {
                 market_id: defaultMarket.Id,
-                hash: ObjectHash.getHash(testData)
+                hash
             } as any,
             withRelated: true
         } as TestDataCreateRequest);
         createdListingItem = result.toJSON();
-        testData.hash = ObjectHash.getHash(testData);
+        testData.hash = hash;
     });
 
     afterAll(async () => {

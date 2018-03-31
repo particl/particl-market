@@ -1,15 +1,15 @@
 import { inject, named } from 'inversify';
-import {message, validate} from '../../core/api/Validate';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets } from '../../constants';
-import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { BidFactory } from '../factories/BidFactory';
-import { Bid } from '../models/Bid';
-import { BidMessage } from '../messages/BidMessage';
-import { BidService } from '../services/BidService';
-import { ListingItemService } from '../services/ListingItemService';
-import { NotFoundException } from '../exceptions/NotFoundException';
-import { EventEmitter } from '../../core/api/events';
+import {message, validate} from '../../../core/api/Validate';
+import { Logger as LoggerType } from '../../../core/Logger';
+import { Types, Core, Targets } from '../../../constants';
+import { MessageProcessorInterface } from '../MessageProcessorInterface';
+import { BidFactory } from '../../factories/BidFactory';
+import { Bid } from '../../models/Bid';
+import { BidMessage } from '../../messages/BidMessage';
+import { BidService } from '../../services/BidService';
+import { ListingItemService } from '../../services/ListingItemService';
+import { NotFoundException } from '../../exceptions/NotFoundException';
+import { EventEmitter } from '../../../core/api/events';
 
 export class BidMessageProcessor implements MessageProcessorInterface {
 
@@ -30,7 +30,7 @@ export class BidMessageProcessor implements MessageProcessorInterface {
      *
      * message:
      *  action: action of the BidMessage
-     *  listing: item hash
+     *  item: item hash
      *
      * @returns {Promise<Bid>}
      */
@@ -38,7 +38,7 @@ export class BidMessageProcessor implements MessageProcessorInterface {
     public async process(@message(BidMessage) data: BidMessage): Promise<Bid> {
 
         // find listingItem by hash, the service will throw Exception if not
-        const listingItemModel = await this.listingItemService.findOneByHash(data.listing);
+        const listingItemModel = await this.listingItemService.findOneByHash(data.item);
         const listingItem = listingItemModel.toJSON();
 
         this.log.debug('process, listingItem: ', listingItem);

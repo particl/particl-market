@@ -11,12 +11,17 @@ import { Bid } from './Bid';
 import { FlaggedItem } from './FlaggedItem';
 import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
+import {ActionMessage} from './ActionMessage';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public static RELATIONS = [
         'ItemInformation',
         'ItemInformation.ItemCategory',
+        'ItemInformation.ItemCategory.ParentItemCategory',
+        'ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory',
+        'ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+        'ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
         'ItemInformation.ItemLocation',
         'ItemInformation.ItemLocation.LocationMarker',
         'ItemInformation.ItemImages',
@@ -31,6 +36,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'MessagingInformation',
         'ListingItemObjects',
         'ListingItemObjects.ListingItemObjectDatas',
+        'ActionMessages',
         'Bids',
         'Market',
         'FlaggedItem',
@@ -185,4 +191,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         return this.hasMany(ShoppingCartItem, 'listing_item_id', 'id');
     }
 
+    public ActionMessages(): Collection<ActionMessage> {
+        return this.hasMany(ActionMessage, 'listing_item_id', 'id');
+    }
 }

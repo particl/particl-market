@@ -56,7 +56,7 @@ export class EscrowRefundCommand extends BaseCommand implements RpcCommandInterf
         }
 
         return this.escrowService.refund({
-            listing: data.params[0],
+            item: data.params[0],
             accepted: data.params[1],
             memo: data.params[2],
             action: EscrowMessageType.MPA_REFUND

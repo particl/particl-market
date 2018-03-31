@@ -2,7 +2,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemService } from '../../services/ListingItemService';
+import { ListingItemActionService } from '../../services/ListingItemActionService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -17,7 +17,7 @@ export class ListingItemUpdateCommand extends BaseCommand implements RpcCommandI
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService
+        @inject(Types.Service) @named(Targets.Service.ListingItemActionService) public listingItemActionService: ListingItemActionService
     ) {
         super(Commands.ITEM_POST_UPDATE);
         this.log = new Logger(__filename);
@@ -34,7 +34,7 @@ export class ListingItemUpdateCommand extends BaseCommand implements RpcCommandI
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
 
-        return await this.listingItemService.updatePostItem({
+        return await this.listingItemActionService.updatePostItem({
             hash: data.params[0],
             listingItemTemplateId: data.params[1] || undefined
         } as ListingItemUpdatePostRequest);

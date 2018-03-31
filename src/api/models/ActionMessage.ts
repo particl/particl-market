@@ -4,10 +4,12 @@ import { MessageObject } from './MessageObject';
 import { MessageInfo } from './MessageInfo';
 import { MessageEscrow } from './MessageEscrow';
 import { MessageData } from './MessageData';
+import {ListingItem} from './ListingItem';
 
 export class ActionMessage extends Bookshelf.Model<ActionMessage> {
 
     public static RELATIONS = [
+        'ListingItem',
         'MessageObjects',
         'MessageInfo',
         'MessageEscrow',
@@ -61,4 +63,7 @@ export class ActionMessage extends Bookshelf.Model<ActionMessage> {
         return this.hasOne(MessageData);
     }
 
+    public ListingItem(): ListingItem {
+        return this.belongsTo(ListingItem, 'listing_item_id', 'id');
+    }
 }

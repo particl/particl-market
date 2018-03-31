@@ -109,7 +109,6 @@ describe('MessageData', () => {
         //
     });
 
-
     test('Should create a new message data', async () => {
         let actionMessageModel: ActionMessage = await actionMessageService.create(testDataActionMessage);
 

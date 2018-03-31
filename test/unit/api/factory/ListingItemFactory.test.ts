@@ -1,5 +1,4 @@
 import { LogMock } from '../../lib/LogMock';
-import { ObjectHash } from '../../../../src/core/helpers/ObjectHash';
 import * as resources from 'resources';
 
 import { ListingItemFactory } from '../../../../src/api/factories/ListingItemFactory';

@@ -55,7 +55,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         }
 
         return this.escrowService.lock({
-            listing: data.params[0],
+            item: data.params[0],
             nonce: data.params[1],
             addressId: data.params[2],
             memo: data.params[3],

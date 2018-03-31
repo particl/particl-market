@@ -15,6 +15,10 @@ import { MessageInfoService } from './MessageInfoService';
 import { MessageEscrowService } from './MessageEscrowService';
 import { MessageDataService } from './MessageDataService';
 import { MessageObjectService } from './MessageObjectService';
+import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { MarketService } from './MarketService';
+import { ListingItemService } from './ListingItemService';
+import { ActionMessageFactory } from '../factories/ActionMessageFactory';
 
 
 
@@ -27,6 +31,9 @@ export class ActionMessageService {
         @inject(Types.Service) @named(Targets.Service.MessageEscrowService) private messageEscrowService: MessageEscrowService,
         @inject(Types.Service) @named(Targets.Service.MessageDataService) private messageDataService: MessageDataService,
         @inject(Types.Service) @named(Targets.Service.MessageObjectService) private messageObjectService: MessageObjectService,
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Factory) @named(Targets.Factory.ActionMessageFactory) private actionMessageFactory: ActionMessageFactory,
         @inject(Types.Repository) @named(Targets.Repository.ActionMessageRepository) public actionMessageRepo: ActionMessageRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -89,6 +96,38 @@ export class ActionMessageService {
         // finally find and return the created actionMessage
         const newActionMessage = await this.findOne(actionMessage.id);
         return newActionMessage;
+    }
+
+    /**
+     * save the received ActionMessage to the database
+     *
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<ActionMessage>}
+     */
+    public async createFromMarketplaceEvent(event: MarketplaceEvent): Promise<ActionMessage> {
+
+        const message = event.marketplaceMessage;
+
+        if (message.market && message.mpaction) {
+            // get market
+            const marketModel = await this.marketService.findByAddress(message.market);
+            const market = marketModel.toJSON();
+
+            // find the ListingItem
+            const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+            const listingItem = listingItemModel.toJSON();
+
+            // create ActionMessage
+            const actionMessageCreateRequest = await this.actionMessageFactory.getModel(message.mpaction, listingItem.id, event.smsgMessage);
+            this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
+
+            const actionMessageModel = await this.create(actionMessageCreateRequest);
+            const actionMessage = actionMessageModel.toJSON();
+
+            return actionMessage;
+        } else {
+            throw new MessageException('Marketplace message missing market.');
+        }
     }
 
     @validate()

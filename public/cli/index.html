@@ -109,14 +109,13 @@
                 for(var i = 0; i < command.length; ++i){
                     var c = command.charAt(i);
                     if(c === ' '){
-                        if(!quoteSingle && !quoteDouble){
-                            if(params !== ""){ // Check for empty strings to trim and squeeze whitespace outside of quotes.
+                        if(quoteSingle || quoteDouble){
+                            param = param.concat(' ');
+                        }else{
+                            if(param !== ""){ // Check for empty strings to trim and squeeze whitespace outside of quotes.
                                 params.push(param);
                                 param = "";
                             }
-                        }
-                        else{
-                            param = param.concat(' ');
                         }
                     }else if(c === "\\"){
                         backslash ^= 1; // XOR to account for double backslash.
@@ -137,7 +136,7 @@
                         }else if(c === "'"){
                             if(backslash){
                                 param = param.concat(c);
-                            }if(!quoteDouble){
+                            }else if(!quoteDouble){
                                 quoteSingle ^= 1;
                                 if(!quoteSingle){
                                     params.push(param);

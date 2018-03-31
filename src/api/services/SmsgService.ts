@@ -2,9 +2,8 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { CoreRpcService } from './CoreRpcService';
-import { InternalServerException } from '../exceptions/InternalServerException';
 import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
-import {SmsgSendResponse} from '../responses/SmsgSendResponse';
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 
 export class SmsgService {
 
