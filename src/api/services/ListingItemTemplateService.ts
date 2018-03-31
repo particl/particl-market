@@ -81,7 +81,7 @@ export class ListingItemTemplateService {
 
         // hash
         delete body.hash;
-        body.hash = this.objectHashService.getHash(body, HashableObjectType.DEFAULT);
+        body.hash = await this.objectHashService.getHash(body, HashableObjectType.DEFAULT);
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;

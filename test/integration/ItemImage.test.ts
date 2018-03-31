@@ -46,11 +46,11 @@ describe('ItemImage', () => {
 
     let createdImageId;
     let createdListingItem;
-    let hash;
+    let createdHash;
 
     const testData = {
         // item_information_id
-        // hash
+        hash: 'itemImageHash',
         data: [{
             dataId: null,
             protocol: ImageDataProtocolType.LOCAL,
@@ -105,7 +105,7 @@ describe('ItemImage', () => {
         } as TestDataGenerateRequest);
         createdListingItem = listingItems[0].toJSON();
 
-        hash = await objectHashService.getHash(testData.data[0], HashableObjectType.DEFAULT);
+        // hash = await objectHashService.getHash(testData.data[0], HashableObjectType.DEFAULT);
     });
 
     afterAll(async () => {
@@ -124,7 +124,7 @@ describe('ItemImage', () => {
 
         // add the required data to testData
         testData.item_information_id = createdListingItem.ItemInformation.id;
-        testData.hash = hash;
+        // testData.hash = hash;
 
         // create
         const itemImageModel: ItemImage = await itemImageService.create(testData);
@@ -132,10 +132,13 @@ describe('ItemImage', () => {
         const result = itemImageModel.toJSON();
 
         const imageUrl = process.env.APP_HOST
-        + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
-        + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
+            + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
+            + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
 
-        expect(result.hash).toBe(testData.hash);
+        createdHash = result.hash;
+
+        expect(result.hash).toBeDefined();
+        expect(result.hash).not.toBe(testData.hash);
         expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
         expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
         expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
@@ -157,7 +160,9 @@ describe('ItemImage', () => {
         const itemImage = itemImageCollection.toJSON();
         expect(itemImage.length).toBe(1);
         const result = itemImage[0];
-        expect(result.hash).toBe(testData.hash);
+        expect(result.hash).toBeDefined();
+        expect(result.hash).not.toBe(testData.hash);
+        expect(result.hash).toBe(createdHash);
         expect(result.ItemImageDatas).toBe(undefined); // doesnt fetch related
     });
 
@@ -169,7 +174,9 @@ describe('ItemImage', () => {
             + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
             + '/api/item-images/' + createdImageId + '/' + testData.data[0].imageVersion;
 
-        expect(result.hash).toBe(testData.hash);
+        expect(result.hash).toBeDefined();
+        expect(result.hash).not.toBe(testData.hash);
+        expect(result.hash).toBe(createdHash);
         expect(result.ItemImageDatas[0].dataId).toBe(imageUrl);
         expect(result.ItemImageDatas[0].protocol).toBe(testData.data[0].protocol);
         expect(result.ItemImageDatas[0].imageVersion).toBe(testData.data[0].imageVersion);
@@ -187,7 +194,7 @@ describe('ItemImage', () => {
 
     test('Should update the ItemImage', async () => {
         testDataUpdated.item_information_id = createdListingItem.ItemInformation.id;
-        testDataUpdated.hash = await objectHashService.getHash(testDataUpdated.data[0], HashableObjectType.DEFAULT);
+        testDataUpdated.hash = 'updateImageHash';
 
         const itemImageModel: ItemImage = await itemImageService.update(createdImageId, testDataUpdated);
         const result = itemImageModel.toJSON();

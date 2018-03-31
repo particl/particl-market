@@ -102,7 +102,7 @@ export class ItemImageService {
 
         // hash
         delete body.hash;
-        body.hash = this.objectHashService.getHash(body, HashableObjectType.DEFAULT);
+        body.hash = await this.objectHashService.getHash(body, HashableObjectType.DEFAULT);
         // extract and remove related models from request
         const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
         delete body.data;

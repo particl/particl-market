@@ -136,7 +136,8 @@ describe('ListingItem', () => {
     const expectListingItemFromCreateRequest = (result: resources.ListingItem, createRequest: ListingItemCreateRequest) => {
 
         expect(result.id).not.toBeNull();
-        expect(result.hash).toBe(createRequest.hash);
+        expect(result.hash).toBeDefined();
+        // expect(result.hash).not.toBe(createRequest.hash);
         expect(result.Market.id).toBe(createRequest.market_id);
 
         if (!_.isEmpty(createRequest.itemInformation)) {
@@ -347,7 +348,7 @@ describe('ListingItem', () => {
 
     test('Should create a new ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic1));
-        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
+
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
@@ -388,7 +389,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
+        // testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
@@ -409,6 +410,7 @@ describe('ListingItem', () => {
         // log.debug('result.ItemInformation.ItemImages:', JSON.stringify(result.ItemInformation.ItemImages, null, 2));
         log.debug('updated ListingItem.id:', updatedListingItem1.id);
 
+        expect(updatedListingItem1.hash).toBe(testDataToSave.hash);
         expectListingItemFromCreateRequest(updatedListingItem1, testDataToSave);
     });
 
@@ -451,7 +453,7 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
+        // testDataToSave.hash = await objectHashService.getHash(testDataToSave, HashableObjectType.DEFAULT);
         testDataToSave.market_id = defaultMarket.Id;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
@@ -510,6 +512,7 @@ describe('ListingItem', () => {
         delete testDataToUpdate.listingItemObjects;
         let listingItemModel: ListingItem = await listingItemService.update(createdListingItem1.id, testDataToUpdate);
         updatedListingItem1 = listingItemModel.toJSON();
+        expect(updatedListingItem1.hash).toBe(testDataToUpdate.hash);
         expectListingItemFromCreateRequest(updatedListingItem1, testDataToUpdate);
 
         // remove some more data

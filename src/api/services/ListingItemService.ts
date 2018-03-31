@@ -117,11 +117,11 @@ export class ListingItemService {
     public async create( @request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
 
         const body = JSON.parse(JSON.stringify(data));
-        // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
-
+        
         // hash
         delete body.hash;
-        body.hash = this.objectHashService.getHash(body, HashableObjectType.DEFAULT);
+        body.hash = await this.objectHashService.getHash(body, HashableObjectType.DEFAULT);
+        this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
