@@ -217,7 +217,7 @@ describe('FavoriteItem', () => {
         expect(favItem.ListingItem.Market).toBeDefined();
         expect(favItem.ListingItem.MessagingInformation).toBeDefined();
         expect(favItem.ListingItem.PaymentInformation).toBeDefined();
-        expect(favItem.ListingItem.hash).toBe('itemhash');
+        expect(favItem.ListingItem.hash).not.toBeNull();
         expect(favItem.ListingItem.listingItemTemplateId).toBeNull();
         expect(favItem.ListingItem.marketId).toBe(defaultMarket.id);
         expect(favItem.Profile).toBeDefined();
