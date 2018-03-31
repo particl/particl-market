@@ -96,7 +96,6 @@ describe('TestDataService', () => {
         // TODO: move to file
         const listingItemTemplateData = {
             profile_id: defaultProfile.Id,
-            hash: 'itemhash',
             itemInformation: {
                 title: 'item title1',
                 shortDescription: 'item short desc1',
