@@ -216,8 +216,11 @@ export class ListingItemService {
                 paymentInformation.listing_item_id = id;
                 await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
             }
-        } else if (!_.isEmpty(paymentInformation)) {
-            await this.paymentInformationService.destroy(paymentInformation.id);
+        } else {
+            // empty paymentinfo create request
+            if (!_.isEmpty(paymentInformation)) {
+                await this.paymentInformationService.destroy(paymentInformation.id);
+            }
         }
 
         // MessagingInformation
