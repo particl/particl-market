@@ -11,10 +11,7 @@ export class ActionMessageCreateRequest extends RequestBody {
     @IsNotEmpty()
     public action: string;
 
-    @IsNotEmpty()
     public nonce: string;
-
-    @IsNotEmpty()
     public accepted: boolean;
 
     public listing_item_id: number;

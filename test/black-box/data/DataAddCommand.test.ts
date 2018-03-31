@@ -18,7 +18,7 @@ describe('DataAddCommand', () => {
         address: 'test-address'
     };
 
-    test('Should create test data for profile', async () => {
+    test('Should create test data for Profile', async () => {
         const res = await rpc(method, [subCommand, modelName, JSON.stringify(testProfileData)]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -27,5 +27,16 @@ describe('DataAddCommand', () => {
         expect(result.address).toBe(testProfileData.address);
     });
 
+/*
+TODO
+    test('Should create test data for ActionMessage', async () => {
+        const res = await rpc(method, [subCommand, modelName, JSON.stringify(testProfileData)]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        expect(result.name).toBe(testProfileData.name);
+        expect(result.address).toBe(testProfileData.address);
+    });
+*/
 
 });

@@ -5,6 +5,10 @@ declare module 'resources' {
         action: string;
         nonce: string;
         accepted: boolean;
+        MessageData: MessageData;
+        MessageInfo: MessageInfo;
+        MessageObjects: MessageObject[];
+        MessageEscrow: MessageEscrow;
         createdAt: Date;
         updatedAt: Date;
     }

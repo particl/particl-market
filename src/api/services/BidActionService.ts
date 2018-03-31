@@ -31,30 +31,28 @@ export class BidActionService {
 
     public log: LoggerType;
 
-    constructor(
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.BidService) public bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
-    ) {
+    constructor(@inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+                @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+                @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
+                @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
+                @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+                @inject(Types.Service) @named(Targets.Service.BidService) public bidService: BidService,
+                @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
+                @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
+                @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
+                @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
         this.configureEventListeners();
     }
 
     /**
-     * Posts a Bid to the network
+     * Posts a Bid to the seller
      *
      * @param {"resources".ListingItem} listingItem
      * @param {any[]} params
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async send( listingItem: resources.ListingItem, params: any[] ): Promise<SmsgSendResponse> {
+    public async send(listingItem: resources.ListingItem, params: any[]): Promise<SmsgSendResponse> {
 
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
@@ -122,13 +120,13 @@ export class BidActionService {
             throw new MessageException('Profile is missing a shipping address.');
         }
 
-        bidData.push({ id: 'ship.firstName', value: profile.ShippingAddresses[0].firstName });
-        bidData.push({ id: 'ship.lastName', value: profile.ShippingAddresses[0].lastName });
-        bidData.push({ id: 'ship.addressLine1', value: profile.ShippingAddresses[0].addressLine1 });
-        bidData.push({ id: 'ship.addressLine2', value: profile.ShippingAddresses[0].addressLine2 });
-        bidData.push({ id: 'ship.city', value: profile.ShippingAddresses[0].city });
-        bidData.push({ id: 'ship.state', value: profile.ShippingAddresses[0].state });
-        bidData.push({ id: 'ship.zipCode', value: profile.ShippingAddresses[0].zipCode });
+        bidData.push({id: 'ship.firstName', value: profile.ShippingAddresses[0].firstName});
+        bidData.push({id: 'ship.lastName', value: profile.ShippingAddresses[0].lastName});
+        bidData.push({id: 'ship.addressLine1', value: profile.ShippingAddresses[0].addressLine1});
+        bidData.push({id: 'ship.addressLine2', value: profile.ShippingAddresses[0].addressLine2});
+        bidData.push({id: 'ship.city', value: profile.ShippingAddresses[0].city});
+        bidData.push({id: 'ship.state', value: profile.ShippingAddresses[0].state});
+        bidData.push({id: 'ship.zipCode', value: profile.ShippingAddresses[0].zipCode});
 
         // fetch the market
         const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);
@@ -143,18 +141,20 @@ export class BidActionService {
 
         this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
+        const seller = this.getSeller(listingItem);
         // broadcast the message in to the network
-        return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage);
+        return await this.smsgService.smsgSend(profile.address, seller, marketPlaceMessage);
     }
 
     /**
      * Accept a Bid
+     * todo: add the bid as param, so we know whose bid we are accepting. now supports just one bidder.
      *
      * @param {"resources".ListingItem} listingItem
      * @param {"resources".Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async accept( listingItem: resources.ListingItem, bid: resources.Bid ): Promise<SmsgSendResponse> {
+    public async accept(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
 
         // last bids action needs to be MPA_BID
         if (bid.action === BidMessageType.MPA_BID) {
@@ -298,8 +298,11 @@ export class BidActionService {
 
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
+            // bid accept is sent to the buyer
+            const buyer = this.getBuyer(listingItem);
+
             // broadcast the accepted bid message
-            return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage);
+            return await this.smsgService.smsgSend(profile.address, buyer, marketPlaceMessage);
         } else {
             this.log.error(`Bid can not be accepted because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be accepted because it was already been ${bid.action}`);
@@ -313,7 +316,7 @@ export class BidActionService {
      * @param {"resources".Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async cancel( listingItem: resources.ListingItem, bid: resources.Bid ): Promise<SmsgSendResponse> {
+    public async cancel(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
 
         if (bid.action === BidMessageType.MPA_BID) {
             // fetch the profile
@@ -334,8 +337,11 @@ export class BidActionService {
 
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
+            // bid cancel should be sent to seller
+            const seller = this.getSeller(listingItem);
+
             // broadcast the cancel bid message
-            return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage);
+            return await this.smsgService.smsgSend(profile.address, seller, marketPlaceMessage);
         } else {
             this.log.error(`Bid can not be cancelled because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be cancelled because it was already been ${bid.action}`);
@@ -344,12 +350,13 @@ export class BidActionService {
 
     /**
      * Reject a Bid
+     * todo: add the bid as param, so we know whose bid we are rejecting. now supports just one bidder.
      *
      * @param {"resources".ListingItem} listingItem
      * @param {"resources".Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async reject( listingItem: resources.ListingItem, bid: resources.Bid ): Promise<SmsgSendResponse> {
+    public async reject(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
 
         if (bid.action === BidMessageType.MPA_BID) {
             // fetch the profile
@@ -370,8 +377,11 @@ export class BidActionService {
 
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
-            // broadcast the cancel bid message
-            return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage);
+            // bid reject should be sent to buyer
+            const buyer = this.getBuyer(listingItem);
+
+            // broadcast the reject bid message
+            return await this.smsgService.smsgSend(profile.address, buyer, marketPlaceMessage);
         } else {
             this.log.error(`Bid can not be rejected because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be rejected because it was already been ${bid.action}`);
@@ -450,7 +460,7 @@ export class BidActionService {
             const listingItem = listingItemModel.toJSON();
 
             // find the Bid
-            const existingBid = _.find(listingItem.Bids,  (o: resources.Bid) => {
+            const existingBid = _.find(listingItem.Bids, (o: resources.Bid) => {
                 return o.action === BidMessageType.MPA_BID && o.bidder === bidder;
             });
 
@@ -536,7 +546,7 @@ export class BidActionService {
         const bidData: any[] = [];
 
         // convert the bid data params as bid data key value pair
-        for ( let i = 0; i < data.length; i += 2 ) {
+        for (let i = 0; i < data.length; i += 2) {
             bidData.push({id: data[i], value: data[i + 1]});
         }
         return bidData;
@@ -550,11 +560,43 @@ export class BidActionService {
      */
     private getValueFromBidDatas(key: string, bidDatas: resources.BidData[]): any {
         const value = bidDatas.find(kv => kv.dataId === key);
-        if ( value ) {
+        if (value) {
             return value.dataValue;
         } else {
             this.log.error('Missing BidData value for key: ' + key);
             throw new MessageException('Missing BidData value for key: ' + key);
         }
+    }
+
+    /**
+     * get seller from listingitems MP_ITEM_ADD ActionMessage
+     * todo:  refactor
+     * @param {"resources".ListingItem} listingItem
+     * @returns {Promise<string>}
+     */
+    private getSeller(listingItem: resources.ListingItem): string {
+        for (const actionMessage of listingItem.ActionMessages) {
+            if (actionMessage.action === 'MP_ITEM_ADD') {
+                return actionMessage.MessageData.from;
+            }
+        }
+        throw new MessageException('Seller not found for ListingItem.');
+
+    }
+
+    /**
+     * get seller from listingitems MP_ITEM_ADD ActionMessage
+     * todo:  refactor
+     * @param {"resources".ListingItem} listingItem
+     * @returns {Promise<string>}
+     */
+    private getBuyer(listingItem: resources.ListingItem): string {
+        for (const actionMessage of listingItem.ActionMessages) {
+            if (actionMessage.action === 'MPA_BID') {
+                return actionMessage.MessageData.from;
+            }
+        }
+        throw new MessageException('Buyer not found for ListingItem.');
+
     }
 }

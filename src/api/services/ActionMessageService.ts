@@ -19,8 +19,8 @@ import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { MarketService } from './MarketService';
 import { ListingItemService } from './ListingItemService';
 import { ActionMessageFactory } from '../factories/ActionMessageFactory';
-
-
+import {ListingItemAddMessage} from '../messages/ListingItemAddMessage';
+import {ListingItemMessageType} from '../enums/ListingItemMessageType';
 
 export class ActionMessageService {
 
@@ -69,33 +69,50 @@ export class ActionMessageService {
         delete body.data;
         delete body.objects;
 
-        if (_.isEmpty(messageInfoCreateRequest) || _.isEmpty(messageEscrowCreateRequest) || _.isEmpty(messageDataCreateRequest)) {
-            throw new MessageException('Could not create the ActionMessage, missing data!');
+        // todo: fix, added listingitemmessage
+        // if (_.isEmpty(messageInfoCreateRequest) || _.isEmpty(messageEscrowCreateRequest) || _.isEmpty(messageDataCreateRequest)) {
+        //    throw new MessageException('Could not create the ActionMessage, missing data!');
+        // }
+
+        this.log.debug('actionmessage createrequest:', JSON.stringify(body, null, 2));
+        // If the request body was valid we will create the actionMessage
+        let actionMessageModel = await this.actionMessageRepo.create(body);
+        const actionMessage = actionMessageModel.toJSON();
+
+        // this.log.debug('actionMessage: ', JSON.stringify(actionMessage, null, 2));
+
+        if (!_.isEmpty(messageInfoCreateRequest)) {
+            messageInfoCreateRequest.action_message_id = actionMessage.id;
+            const messageInfoModel = await this.messageInfoService.create(messageInfoCreateRequest);
+            const messageInfo = messageInfoModel.toJSON();
+            // this.log.debug('messageInfo: ', JSON.stringify(messageInfo, null, 2));
         }
 
-        this.log.debug('actionmessage body:', JSON.stringify(body, null, 2));
-        // If the request body was valid we will create the actionMessage
-        const actionMessage = await this.actionMessageRepo.create(body);
+        if (!_.isEmpty(messageEscrowCreateRequest)) {
+            messageEscrowCreateRequest.action_message_id = actionMessage.id;
+            const messageEscrowModel = await this.messageEscrowService.create(messageEscrowCreateRequest);
+            const messageEscrow = messageEscrowModel.toJSON();
+            // this.log.debug('messageEscrow: ', JSON.stringify(messageEscrow, null, 2));
+        }
 
-        this.log.debug(JSON.stringify(actionMessage.toJSON(), null, 2));
-        messageInfoCreateRequest.action_message_id = actionMessage.Id;
-        const messageInfo = await this.messageInfoService.create(messageInfoCreateRequest);
-
-        messageEscrowCreateRequest.action_message_id = actionMessage.Id;
-        const messageEscrow = await this.messageEscrowService.create(messageEscrowCreateRequest);
-
-        messageDataCreateRequest.action_message_id = actionMessage.Id;
-        const messageData = await this.messageDataService.create(messageDataCreateRequest);
+        messageDataCreateRequest.action_message_id = actionMessage.id;
+        const messageDataModel = await this.messageDataService.create(messageDataCreateRequest);
+        const messageData = messageDataModel.toJSON();
+        // this.log.debug('messageData: ', JSON.stringify(messageData, null, 2));
 
         // create messageobjects
         for (const object of actionMessageObjects) {
-            object.action_message_id = actionMessage.Id;
-            await this.messageObjectService.create(object);
+            object.action_message_id = actionMessage.id;
+            const messageObjectModel = await this.messageObjectService.create(object);
+            const messageObject = messageObjectModel.toJSON();
+            // this.log.debug('messageObject: ', JSON.stringify(messageData, null, 2));
+
         }
 
-        // finally find and return the created actionMessage
-        const newActionMessage = await this.findOne(actionMessage.id);
-        return newActionMessage;
+        actionMessageModel = await this.findOne(actionMessage.id);
+        // actionMessage = actionMessageModel.toJSON();
+        // this.log.debug('actionMessageWithRelations: ', JSON.stringify(actionMessage, null, 2));
+        return actionMessageModel;
     }
 
     /**
@@ -108,7 +125,7 @@ export class ActionMessageService {
 
         const message = event.marketplaceMessage;
 
-        if (message.market && message.mpaction) {
+        if (message.market && message.mpaction) {   // ACTIONEVENT
             // get market
             const marketModel = await this.marketService.findByAddress(message.market);
             const market = marketModel.toJSON();
@@ -121,9 +138,33 @@ export class ActionMessageService {
             const actionMessageCreateRequest = await this.actionMessageFactory.getModel(message.mpaction, listingItem.id, event.smsgMessage);
             this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
 
-            const actionMessageModel = await this.create(actionMessageCreateRequest);
-            const actionMessage = actionMessageModel.toJSON();
+            const actionMessage = await this.create(actionMessageCreateRequest);
+            return actionMessage;
 
+        } else if (message.market && message.item) { // LISTINGITEM
+            // get market
+            const marketModel = await this.marketService.findByAddress(message.market);
+            const market = marketModel.toJSON();
+
+            // find the ListingItem
+            const listingItemModel = await this.listingItemService.findOneByHash(message.item.hash);
+            const listingItem = listingItemModel.toJSON();
+
+            // TODO: hack
+            const listingItemAddMessage = {
+                action: ListingItemMessageType.MP_ITEM_ADD,
+                item: listingItem.hash,
+                objects: [{
+                    id: 'seller',
+                    value: event.smsgMessage.from
+                }]
+            } as ListingItemAddMessage;
+
+            // create ActionMessage
+            const actionMessageCreateRequest = await this.actionMessageFactory.getModel(listingItemAddMessage, listingItem.id, event.smsgMessage);
+            this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
+
+            const actionMessage = await this.create(actionMessageCreateRequest);
             return actionMessage;
         } else {
             throw new MessageException('Marketplace message missing market.');

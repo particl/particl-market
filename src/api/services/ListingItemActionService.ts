@@ -30,6 +30,7 @@ import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { MessageException } from '../exceptions/MessageException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { ListingItemService } from './ListingItemService';
+import { ActionMessageService } from './ActionMessageService';
 
 export class ListingItemActionService {
 
@@ -47,6 +48,7 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -140,6 +142,7 @@ export class ListingItemActionService {
     public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<resources.ListingItem> {
 
         this.log.info('Received event:', event);
+
         const message = event.marketplaceMessage;
 
         if (message.market && message.item) {
@@ -159,8 +162,13 @@ export class ListingItemActionService {
             const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, rootCategory);
             // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
-            const listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
-            const listingItem = listingItemModel.toJSON();
+            let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
+            let listingItem = listingItemModel.toJSON();
+
+            // save actionmessage from this event
+            const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event);
+            const actionMessage = actionMessageModel.toJSON();
+            this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
 
             // emit the latest message event to cli
             // this.eventEmitter.emit('cli', {
@@ -168,6 +176,11 @@ export class ListingItemActionService {
             // });
 
             // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
+            listingItemModel = await this.listingItemService.findOne(listingItem.id);
+            listingItem = listingItemModel.toJSON();
+
+            this.log.debug('listingItem with actionMessage:', JSON.stringify(listingItem, null, 2));
+
             return listingItem;
 
         } else {
