@@ -200,14 +200,12 @@ export class BidActionService {
                 throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
             }
 
-            const addr = await this.coreRpcService.call('getaccountaddress', ['_escrow_pub_' + listingItem.hash]);
+            const addr = await this.coreRpcService.call('getnewaddress', ['_escrow_pub_' + listingItem.hash]);
             const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']); // TODO: Proper change address?!?!
             const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
 
             let buyerPubkey = this.getValueFromBidDatas('pubkeys', bid.BidDatas);
             buyerPubkey = buyerPubkey[0] === '[' ? JSON.parse(buyerPubkey)[0] : buyerPubkey;
-
-            this.log.debug('buyerPubkey', buyerPubkey);
 
             // Create Escrow address
             const escrow = (await this.coreRpcService.call('addmultisigaddress', [
@@ -218,7 +216,7 @@ export class BidActionService {
 
             const txout = {};
 
-            txout[escrow] = +(totalPrice * 3).toFixed(8); // TODO: Shipping... ;(
+            txout[escrow.address] = +(totalPrice * 3).toFixed(8); // TODO: Shipping... ;(
             txout[changeAddr] = change;
 
             const buyerChangeAddr = this.getValueFromBidDatas('changeAddr', bid.BidDatas); // TODO: Error handling - nice messagee..
@@ -228,7 +226,7 @@ export class BidActionService {
             if (buyerOutputs) {
                 sum = 0;
                 change = 0;
-                buyerOutputs = JSON.parse(buyerOutputs.dataValue);
+                buyerOutputs = JSON.parse(buyerOutputs);
                 buyerOutputs.forEach(output => {
                     sum += output.amount;
                     // TODO: Refactor reusable logic. and verify / validate buyer change.
@@ -252,6 +250,7 @@ export class BidActionService {
             //    .split('').map(v => v.charCodeAt(0).toString(16)).join('').substr(0, 80);
             //
 
+
             const rawtx = await this.coreRpcService.call('createrawtransaction', [
                 outputs.concat(buyerOutputs),
                 txout
@@ -261,7 +260,9 @@ export class BidActionService {
             // the transaction
             const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
 
-            if (!signed || (signed.errors && signed.errors[0].error !== 'Operation not valid with the current stack size')) {
+            if (!signed || (signed.errors && (
+                signed.errors[0].error !== 'Operation not valid with the current stack size' &&
+                signed.errors[0].error !== 'Unable to sign input, invalid stack size (possibly missing key)'))) {
                 this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
                 throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
             }
