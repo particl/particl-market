@@ -108,12 +108,17 @@ export class BidActionService {
             'outputs', outputs, 'pubkeys', [pubkey], 'changeAddr', changeAddr, 'change', change
         ]));
 
+        this.log.debug('bidData: ', JSON.stringify(bidData, null, 2));
+
         // fetch the profile
         const profileModel = await this.profileService.getDefault();
         const profile = profileModel.toJSON();
 
+        this.log.debug('bidder profile: ', JSON.stringify(profile, null, 2));
+
         // add shipping address to bidData
         if (_.isEmpty(profile.ShippingAddresses)) {
+            this.log.error('Profile is missing a shipping address.');
             throw new MessageException('Profile is missing a shipping address.');
         }
 
