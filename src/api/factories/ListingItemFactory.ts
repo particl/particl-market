@@ -175,15 +175,15 @@ export class ListingItemFactory {
         const address = location.address;
 
         if (region) {
-            locationObject.set(region);
+            locationObject.region = region;
         }
         if (address) {
-            locationObject.set(address);
+            locationObject.address = address;
         }
         
         if (location.gps) {
             const locationMarker = await this.getModelLocationMarker(location.gps);
-            locationObject.set(locationMarker);
+            locationObject.locationMarker = locationMarker;
             
         }
         
@@ -199,10 +199,10 @@ export class ListingItemFactory {
         };
 
         if (gps.marker_title) {
-            locationMarker.set(gps.marker_title);
+            locationMarker.markerTitle = gps.marker_title;
         }
         if (gps.marker_text) {
-            locationMarker.set(gps.marker_text);
+            locationMarker.markerText = gps.marker_text;
         }
         return locationMarker as LocationMarkerCreateRequest;
     }
