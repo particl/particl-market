@@ -18,7 +18,7 @@ describe('DataAddCommand', () => {
         address: 'test-address'
     };
 
-    const testActionMessage = {
+    let testActionMessage = {
         action: 'MP_ITEM_ADD',
         objects: [{
             dataId: 'seller',
@@ -45,6 +45,9 @@ describe('DataAddCommand', () => {
     });
 
     test('Should create test data for ActionMessage', async () => {
+
+        const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
+        testActionMessage.listing_item_id = listingItem[0].id;
 
         const res = await rpc(dataCommand, [addCommand, CreatableModel.ACTIONMESSAGE, JSON.stringify(testActionMessage)]);
         res.expectJson();
