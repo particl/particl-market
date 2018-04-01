@@ -1,9 +1,9 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
-import * as _ from 'lodash';
 
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ValidationException } from '../exceptions/ValidationException';
@@ -23,6 +23,7 @@ import { ListingItemService } from './ListingItemService';
 import { AddressService } from './AddressService';
 import { AddressType } from '../enums/AddressType';
 import { ProfileService } from './ProfileService';
+import {MessageException} from '../exceptions/MessageException';
 
 export class BidService {
 
@@ -85,6 +86,7 @@ export class BidService {
     public async create(@request(BidCreateRequest) data: BidCreateRequest): Promise<Bid> {
 
         const body = JSON.parse(JSON.stringify(data));
+        this.log.debug('BidCreateRequest:', JSON.stringify(body, null, 2));
 
         // bid needs to be related to listing item
         if (body.listing_item_id == null) {
@@ -105,10 +107,21 @@ export class BidService {
         const addressCreateRequest = body.address;
         delete body.address;
 
+        this.log.debug('body.listing_item_id: ', body.listing_item_id);
+/*
         // make sure the address type is correct
-        const listingItemModel = await this.listingItemService.findOne(body.listing_item_id);
+        const listingItemModel = await this.listingItemService.findOne(body.listing_item_id)
+            .then(value => {
+                this.log.debug('value: ', value);
+                return value;
+            })
+            .catch(reason => {
+                this.log.debug('reason: ', reason);
+                throw new MessageException('Did not find ListingItem for the Bid.');
+            });
+
         const listingItem = listingItemModel.toJSON();
-        this.log.debug('listingItem.id: ', listingItem.id);
+        this.log.debug('listingItem.id: ', listingItem);
 
         if (!_.isEmpty(listingItem.ListingItemTemplate)) { // local profile is selling
             this.log.debug('listingItem has template: ', listingItem.ListingItemTemplate.id);
@@ -122,7 +135,7 @@ export class BidService {
             addressCreateRequest.type = AddressType.SHIPPING_OWN;
             addressCreateRequest.profile_id = profile.id;
         }
-
+*/
         this.log.debug('address create request: ', JSON.stringify(addressCreateRequest, null, 2));
         const addressModel = await this.addressService.create(addressCreateRequest);
         const address = addressModel.toJSON();

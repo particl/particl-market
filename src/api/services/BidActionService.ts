@@ -24,6 +24,7 @@ import { BidMessageType } from '../enums/BidMessageType';
 import { Output } from 'resources';
 import { BidMessage } from '../messages/BidMessage';
 import { BidSearchParams } from '../requests/BidSearchParams';
+import {AddressType} from '../enums/AddressType';
 
 declare function unescape(s: string): string;
 
@@ -127,6 +128,7 @@ export class BidActionService {
         bidData.push({id: 'ship.city', value: profile.ShippingAddresses[0].city});
         bidData.push({id: 'ship.state', value: profile.ShippingAddresses[0].state});
         bidData.push({id: 'ship.zipCode', value: profile.ShippingAddresses[0].zipCode});
+        bidData.push({id: 'ship.country', value: profile.ShippingAddresses[0].country});
 
         // fetch the market
         const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);
@@ -398,12 +400,14 @@ export class BidActionService {
      * @returns {Promise<"resources".ActionMessage>}
      */
     public async processBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-        this.log.info('Received event:', event);
+        this.log.debug('Received event:', event);
+
+        // todo: fix
+        event.smsgMessage.received = new Date().toISOString();
 
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
 
-        // find the ListingItem
         const message = event.marketplaceMessage;
 
         if (!message.mpaction) {   // ACTIONEVENT
@@ -414,25 +418,47 @@ export class BidActionService {
         const listingItem = listingItemModel.toJSON();
 
         // first save it
+        this.log.debug('save actionmessage');
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
+        this.log.debug('search for existing bid');
         // TODO: should someone be able to bid more than once?
         const biddersExistingBidsForItem = await this.bidService.search({
             listingItemHash: bidMessage.item,
             bidder
         } as BidSearchParams);
 
-        if (biddersExistingBidsForItem.length > 0) {
+
+        if (biddersExistingBidsForItem && biddersExistingBidsForItem.length > 0) {
+            this.log.debug('biddersExistingBidsForItem:', biddersExistingBidsForItem.length);
             throw new MessageException('Bids allready exist for the ListingItem for the bidder.');
         }
-
         if (bidMessage) {
             // create a bid
             const bidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder);
-            const createdBid = this.bidService.create(bidCreateRequest);
 
-            this.log.debug('createdBid:', createdBid);
+            // make sure the bids address type is correct
+            this.log.debug('found listingItem.id: ', listingItem.id);
+
+            if (!_.isEmpty(listingItem.ListingItemTemplate)) { // local profile is selling
+                this.log.debug('listingItem has template: ', listingItem.ListingItemTemplate.id);
+                this.log.debug('listingItem template has profile: ', listingItem.ListingItemTemplate.Profile.id);
+                bidCreateRequest.address.type = AddressType.SHIPPING_BID;
+                bidCreateRequest.address.profile_id = listingItem.ListingItemTemplate.Profile.id;
+            } else { // local profile is buying
+                this.log.debug('listingItem has no template ');
+                this.log.debug('bidder: ', bidder);
+                const profileModel = await this.profileService.findOneByAddress(bidder);
+                const profile = profileModel.toJSON();
+                bidCreateRequest.address.type = AddressType.SHIPPING_OWN;
+                bidCreateRequest.address.profile_id = profile.id;
+            }
+
+
+            const createdBid = await this.bidService.create(bidCreateRequest);
+
+            this.log.debug('createdBid:', JSON.stringify(createdBid.toJSON(), null, 2));
             // TODO: do whatever else needs to be done
 
             return actionMessage;
@@ -474,6 +500,8 @@ export class BidActionService {
             const existingBid = _.find(listingItem.Bids, (o: resources.Bid) => {
                 return o.action === BidMessageType.MPA_BID && o.bidder === bidder;
             });
+
+            this.log.debug('existingBid:', existingBid);
 
             if (existingBid) {
                 // create a bid

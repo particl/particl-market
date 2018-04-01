@@ -9,6 +9,8 @@ import { ValidationException } from '../../../src/api/exceptions/ValidationExcep
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemService } from '../../../src/api/services/ListingItemService';
+import { BidService } from '../../../src/api/services/BidService';
+import { ProfileService } from '../../../src/api/services/ProfileService';
 
 import { ListingItem } from '../../../src/api/models/ListingItem';
 import { ListingItemCreateRequest } from '../../../src/api/requests/ListingItemCreateRequest';
@@ -16,10 +18,16 @@ import { TestDataCreateRequest } from '../../../src/api/requests/TestDataCreateR
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { BidMessage } from '../../../src/api/messages/BidMessage';
 
-import * as bidSmsg1 from '../../testdata/message/smsgMessageWithListingItemMessage1.json';
-import * as bidSmsg2 from '../../testdata/message/smsgMessageWithListingItemMessage2.json';
-import * as bidSmsg3 from '../../testdata/message/smsgMessageWithListingItemMessage3.json';
+import * as bidSmsg1 from '../../testdata/message/smsgMessageWithBidMessage1.json';
+
 import * as resources from 'resources';
+
+import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
+import { BidActionService } from '../../../src/api/services/BidActionService';
+import { MarketplaceMessage } from '../../../src/api/messages/MarketplaceMessage';
+
 
 describe('BidMessage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -33,12 +41,15 @@ describe('BidMessage', () => {
     } as ListingItemCreateRequest;
 
     let testDataService: TestDataService;
-    let bidMessageProcessor: BidMessageProcessor;
     let listingItemService: ListingItemService;
     let marketService: MarketService;
+    let bidService: BidService;
+    let profileService: ProfileService;
+    let bidActionService: BidActionService;
 
-    let createdBidId;
-    let createdListingItem;
+    let defaultMarket: resources.Market;
+    let defaultProfile: resources.Profile;
+    let createdListingItem: resources.ListingItem;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -46,22 +57,43 @@ describe('BidMessage', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
-        bidMessageProcessor = app.IoC.getNamed<BidMessageProcessor>(Types.MessageProcessor, Targets.MessageProcessor.BidMessageProcessor);
+        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        bidActionService = app.IoC.getNamed<BidActionService>(Types.Service, Targets.Service.BidActionService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        defaultProfile = defaultProfileModel.toJSON();
 
-        // listing-item
-        const defaultMarket = await marketService.getDefault();
-        createdListingItem = await testDataService.create<ListingItem>({
-            model: 'listingitem',
-            data: {
-                market_id: defaultMarket.Id,
-                hash: 'itemhash'
-            } as any,
-            withRelated: true
-        } as TestDataCreateRequest);
+        // get default market
+        const defaultMarketModel = await marketService.getDefault();
+        defaultMarket = defaultMarketModel.toJSON();
+
+        const generateParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        // create listingitem
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,  // what to generate
+            amount: 1,                          // how many to generate
+            withRelated: true,                  // return model
+            generateParams                      // what kind of data to generate
+        } as TestDataGenerateRequest);
+        createdListingItem = listingItems[0].toJSON();
+
+
 
     });
 
@@ -69,6 +101,28 @@ describe('BidMessage', () => {
         //
     });
 
+    test('Should process MarketplaceEvent containing BidMessage', async () => {
+
+        const marketplaceMessage: MarketplaceMessage = JSON.parse(bidSmsg1.text);
+        bidSmsg1.from = defaultProfile.address;
+        marketplaceMessage.mpaction.item = createdListingItem.hash;
+        log.debug('marketplaceMessage: ', JSON.stringify(marketplaceMessage, null, 2));
+        // marketplaceMessage.market = listingItemSmsg1.to;
+
+        const result = await bidActionService.processBidReceivedEvent({
+            smsgMessage: bidSmsg1,
+            marketplaceMessage
+        });
+
+        // log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('listingItemMessage: ', JSON.stringify(marketplaceMessage.item, null, 2));
+        // log.debug('result.hash: ', JSON.stringify(result.hash, null, 2));
+        // log.debug('listingItemMessage.hash: ', JSON.stringify(marketplaceMessage.item.hash, null, 2));
+        // expectListingItemFromMessage(result, marketplaceMessage.item);
+
+    });
+
+    /*
     test('Should throw ValidationException because no action', async () => {
         expect.assertions(1);
 
@@ -132,10 +186,7 @@ describe('BidMessage', () => {
         testBidData.listing = listing;
     });
 
-    /*
-     * Uncomment when there's some kind of bid action validation.
-     */
-    /* test('Should throw NotFoundException because invalid bid action', async () => {
+    test('Should throw NotFoundException because invalid bid action', async () => {
         expect.assertions(1);
         const action = testBidData.action;
         const invalidAction = 'SomeInvalidAction';
@@ -147,7 +198,7 @@ describe('BidMessage', () => {
         });
         testBidData.action = action;
     }); */
-
+/*
     test('Should create a new bid by bidMessage', async () => {
 
         const testBidData = {
@@ -172,6 +223,6 @@ describe('BidMessage', () => {
         expect(result.BidDatas[0].dataId).toBe(testBidData.objects[0].id);
         expect(result.BidDatas[0].dataValue).toBe(testBidData.objects[0].value);
     });
-
+*/
 });
 

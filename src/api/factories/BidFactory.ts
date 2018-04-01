@@ -76,11 +76,12 @@ export class BidFactory {
             const city = this.getValueFromBidDatas('ship.city', bidDatas);
             const state = this.getValueFromBidDatas('ship.state', bidDatas);
             const zipCode = this.getValueFromBidDatas('ship.zipCode', bidDatas);
+            const country = this.getValueFromBidDatas('ship.country', bidDatas);
 
             // create and return the request that can be used to create the bid
             const bidCreateRequest = {
                 address: {
-                    firstName, lastName, addressLine1, addressLine2, city, state, zipCode
+                    firstName, lastName, addressLine1, addressLine2, city, state, zipCode, country
                 } as AddressCreateRequest,
                 listing_item_id: listingItemId,
                 action: bidMessage.action,

@@ -56,7 +56,7 @@ export class ActionMessageService {
     public async create( @request(ActionMessageCreateRequest) data: any): Promise<ActionMessage> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('create ActionMessage, body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create ActionMessage, body: ', JSON.stringify(body, null, 2));
 
         const messageInfoCreateRequest = body.info;
         const messageEscrowCreateRequest = body.escrow;
@@ -75,29 +75,29 @@ export class ActionMessageService {
 
         // If the request body was valid we will create the actionMessage
         let actionMessageModel = await this.actionMessageRepo.create(body);
-        const actionMessage = actionMessageModel.toJSON();
+        let actionMessage = actionMessageModel.toJSON();
 
-        this.log.debug('actionMessage: ', JSON.stringify(actionMessage, null, 2));
+        // this.log.debug('created actionMessage: ', JSON.stringify(actionMessage, null, 2));
 
         if (!_.isEmpty(messageInfoCreateRequest)) {
             messageInfoCreateRequest.action_message_id = actionMessage.id;
             const messageInfoModel = await this.messageInfoService.create(messageInfoCreateRequest);
             const messageInfo = messageInfoModel.toJSON();
-            // this.log.debug('messageInfo: ', JSON.stringify(messageInfo, null, 2));
+            // this.log.debug('created messageInfo: ', JSON.stringify(messageInfo, null, 2));
         }
 
         if (!_.isEmpty(messageEscrowCreateRequest)) {
             messageEscrowCreateRequest.action_message_id = actionMessage.id;
             const messageEscrowModel = await this.messageEscrowService.create(messageEscrowCreateRequest);
             const messageEscrow = messageEscrowModel.toJSON();
-            // this.log.debug('messageEscrow: ', JSON.stringify(messageEscrow, null, 2));
+            // this.log.debug('created messageEscrow: ', JSON.stringify(messageEscrow, null, 2));
         }
 
         // this.log.debug('messageDataCreateRequest: ', JSON.stringify(messageDataCreateRequest, null, 2));
         messageDataCreateRequest.action_message_id = actionMessage.id;
         const messageDataModel = await this.messageDataService.create(messageDataCreateRequest);
         const messageData = messageDataModel.toJSON();
-        // this.log.debug('messageData: ', JSON.stringify(messageData, null, 2));
+        // this.log.debug('created messageData: ', JSON.stringify(messageData, null, 2));
 
         // create messageobjects
 
@@ -106,13 +106,13 @@ export class ActionMessageService {
             object.action_message_id = actionMessage.id;
             const messageObjectModel = await this.messageObjectService.create(object);
             const messageObject = messageObjectModel.toJSON();
-            this.log.debug('messageObject: ', JSON.stringify(messageData, null, 2));
+            // this.log.debug('created messageObject: ', JSON.stringify(messageObject, null, 2));
 
         }
 
         actionMessageModel = await this.findOne(actionMessage.id);
-        // actionMessage = actionMessageModel.toJSON();
-        // this.log.debug('actionMessageWithRelations: ', JSON.stringify(actionMessage, null, 2));
+        actionMessage = actionMessageModel.toJSON();
+        this.log.debug('created actionMessage: ', JSON.stringify(actionMessage, null, 2));
         return actionMessageModel;
     }
 
@@ -126,10 +126,10 @@ export class ActionMessageService {
 
         const message = event.marketplaceMessage;
 
-        if (message.market && message.mpaction) {   // ACTIONEVENT
+        if (/* message.market &&*/ message.mpaction) {   // ACTIONEVENT
             // get market
-            const marketModel = await this.marketService.findByAddress(message.market);
-            const market = marketModel.toJSON();
+            // const marketModel = await this.marketService.findByAddress(message.market);
+            // const market = marketModel.toJSON();
 
             // find the ListingItem
             // const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
@@ -142,10 +142,10 @@ export class ActionMessageService {
             const actionMessage = await this.create(actionMessageCreateRequest);
             return actionMessage;
 
-        } else if (message.market && message.item) { // LISTINGITEM
+        } else if (/* message.market &&*/ message.item) { // LISTINGITEM
             // get market
-            const marketModel = await this.marketService.findByAddress(message.market);
-            const market = marketModel.toJSON();
+            // const marketModel = await this.marketService.findByAddress(message.market);
+            // const market = marketModel.toJSON();
 
             // find the ListingItem
             // const listingItemModel = await this.listingItemService.findOneByHash(message.item.hash);
@@ -163,7 +163,7 @@ export class ActionMessageService {
 
             // create ActionMessage
             const actionMessageCreateRequest = await this.actionMessageFactory.getModel(listingItemAddMessage, listingItem.id, event.smsgMessage);
-            this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
+            // this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
 
             const actionMessage = await this.create(actionMessageCreateRequest);
             return actionMessage;

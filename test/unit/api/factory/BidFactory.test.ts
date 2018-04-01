@@ -38,14 +38,16 @@ describe('BidFactory', () => {
         const bidMessage = {
             action: BidMessageType.MPA_BID,
             item: 'f08f3d6e',
-            objects: [{ id: 'colour', value: 'black' },
+            objects: [
+                { id: 'colour', value: 'black' },
                 { id: 'ship.firstName', value: 'asdf' },
                 { id: 'ship.lastName', value: 'asdf' },
                 { id: 'ship.addressLine1', value: 'asdf' },
                 { id: 'ship.addressLine2', value: '' },
                 { id: 'ship.city', value: 'Helsinki' },
                 { id: 'ship.state', value: '-' },
-                { id: 'ship.zipCode', value: '1234' }
+                { id: 'ship.zipCode', value: '1234' },
+                { id: 'ship.country', value: 'FI' }
             ]
         } as BidMessage;
 
@@ -75,7 +77,9 @@ describe('BidFactory', () => {
                 { id: 'ship.addressLine2', value: '' },
                 { id: 'ship.city', value: 'Helsinki' },
                 { id: 'ship.state', value: '-' },
-                { id: 'ship.zipCode', value: '1234' }]
+                { id: 'ship.zipCode', value: '1234' },
+                { id: 'ship.country', value: 'FI' }
+            ]
         } as BidMessage;
 
         const bidCreateRequest = await bidFactory.getModel(bidMessage, listingItemId, bidderAddress);
@@ -117,7 +121,8 @@ describe('BidFactory', () => {
                 { id: 'ship.addressLine2', value: '' },
                 { id: 'ship.city', value: 'Helsinki' },
                 { id: 'ship.state', value: '-' },
-                { id: 'ship.zipCode', value: '1234' }
+                { id: 'ship.zipCode', value: '1234' },
+                { id: 'ship.country', value: 'FI' }
             ]
         } as BidMessage;
 

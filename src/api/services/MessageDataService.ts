@@ -39,7 +39,7 @@ export class MessageDataService {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        this.log.debug('messagedata body:', JSON.stringify(body, null, 2));
+        // this.log.debug('messagedata body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the messageData
         const messageData = await this.messageDataRepo.create(body);

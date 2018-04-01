@@ -37,7 +37,6 @@ describe('ListingItemMessage', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.ListingItemFactory);
-
         listingItemActionService = app.IoC.getNamed<ListingItemActionService>(Types.Service, Targets.Service.ListingItemActionService);
 
         // clean up the db, first removes all data and then seeds the db with default data
