@@ -276,21 +276,21 @@ export class TestDataService {
             const listingItem = await this.generateListingItemData(generateParams);
             // this.log.debug('listingItem: ', listingItem);
 
-            // TODO: hardocoded, fix
+            // TODO: hardcoded, fix
             // add ActionMessage
             listingItem.actionMessages = [{
                 action: ListingItemMessageType.MP_ITEM_ADD,
                 objects: [{
-                    id: 'seller',
-                    value: 'prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx'
+                    dataId: 'seller',
+                    dataValue: 'prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx'
                 }],
                 data: {
                     msgid: 'fceabe5a000000002cc363a3bc350d6bca87b1977335deeba5a554f6',
                     version: '0301',
+                    received: '2018-03-31T03:57:16+0200',
                     sent: '2018-03-31T03:57:16+0200',
                     from: 'prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx',
-                    to: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA',
-                    text: '{}'
+                    to: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA'
                 }
             }];
 
