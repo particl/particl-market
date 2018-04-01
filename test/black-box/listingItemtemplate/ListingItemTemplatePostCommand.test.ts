@@ -1,13 +1,13 @@
+// tslint:disable:max-line-length
 import { rpc, api } from '../lib/api';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-
 import * as listingItemTemplateCreateRequestWithoutLocationMarker from '../../testdata/createrequest/listingItemTemplateCreateRequestWithoutLocationMarker.json';
-
 import * as resources from 'resources';
+// tslint:enable:max-line-length
 
 describe('ListingItemSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

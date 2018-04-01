@@ -18,7 +18,7 @@ describe('DataAddCommand', () => {
         address: 'test-address'
     };
 
-    let testActionMessage = {
+    const testActionMessage = {
         action: 'MP_ITEM_ADD',
         objects: [{
             dataId: 'seller',

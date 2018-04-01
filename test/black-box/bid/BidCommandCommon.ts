@@ -1,10 +1,10 @@
-import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { EscrowType } from '../../src/api/enums/EscrowType';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
+import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
+import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
+import { PaymentType } from '../../../src/api/enums/PaymentType';
+import { EscrowType } from '../../../src/api/enums/EscrowType';
+import { Currency } from '../../../src/api/enums/Currency';
+import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
+import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
 
 // TODO: get rid of this, its not easily reusable because it cannot be find
 // for test data, use/create test data from the testdata folder so it can be

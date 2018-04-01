@@ -1,9 +1,9 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { BidMessageType } from '../../src/api/enums/BidMessageType';
-import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { Commands } from '../../src/api/commands/CommandEnumType';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { BidMessageType } from '../../../src/api/enums/BidMessageType';
+import { BidCreateRequest } from '../../../src/api/requests/BidCreateRequest';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
 
 describe('BidSearchCommand', () => {
     const testUtil = new BlackBoxTestUtil();

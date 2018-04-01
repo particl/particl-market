@@ -1,7 +1,7 @@
-import { rpc, api } from './lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { Commands } from '../../src/api/commands/CommandEnumType';
+import { rpc, api } from '../lib/api';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
 
 describe('BidRejectCommand', () => {
     const testUtil = new BlackBoxTestUtil();
