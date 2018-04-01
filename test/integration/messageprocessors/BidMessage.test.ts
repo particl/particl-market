@@ -101,7 +101,7 @@ describe('BidMessage', () => {
         //
     });
 
-    test('Should process MarketplaceEvent containing BidMessage', async () => {
+    test('Should process MarketplaceEvent containing send bid BidMessage', async () => {
 
         const marketplaceMessage: MarketplaceMessage = JSON.parse(bidSmsg1.text);
         bidSmsg1.from = defaultProfile.address;
@@ -114,13 +114,43 @@ describe('BidMessage', () => {
             marketplaceMessage
         });
 
-        // log.debug('result: ', JSON.stringify(result, null, 2));
+        log.debug('result: ', JSON.stringify(result, null, 2));
         // log.debug('listingItemMessage: ', JSON.stringify(marketplaceMessage.item, null, 2));
         // log.debug('result.hash: ', JSON.stringify(result.hash, null, 2));
         // log.debug('listingItemMessage.hash: ', JSON.stringify(marketplaceMessage.item.hash, null, 2));
+
+        // TODO: add more expects
+        expect(result.action).toBe(marketplaceMessage.mpaction.action);
+        //
         // expectListingItemFromMessage(result, marketplaceMessage.item);
 
     });
+/*
+    test('Should process MarketplaceEvent containing accept bid BidMessage', async () => {
+
+        const marketplaceMessage: MarketplaceMessage = JSON.parse(bidSmsg1.text);
+        bidSmsg1.from = defaultProfile.address;
+        marketplaceMessage.mpaction.item = createdListingItem.hash;
+        log.debug('marketplaceMessage: ', JSON.stringify(marketplaceMessage, null, 2));
+        // marketplaceMessage.market = listingItemSmsg1.to;
+
+        const result = await bidActionService.processBidReceivedEvent({
+            smsgMessage: bidSmsg1,
+            marketplaceMessage
+        });
+
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('listingItemMessage: ', JSON.stringify(marketplaceMessage.item, null, 2));
+        // log.debug('result.hash: ', JSON.stringify(result.hash, null, 2));
+        // log.debug('listingItemMessage.hash: ', JSON.stringify(marketplaceMessage.item.hash, null, 2));
+
+        // TODO: add more expects
+        expect(result.action).toBe(marketplaceMessage.mpaction.action);
+        //
+        // expectListingItemFromMessage(result, marketplaceMessage.item);
+
+    });
+*/
 
     /*
     test('Should throw ValidationException because no action', async () => {
