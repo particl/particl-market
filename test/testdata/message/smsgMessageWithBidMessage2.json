@@ -1,0 +1,8 @@
+﻿{
+    "msgid": "8208bd5a00000000f00647f5104ef4a6a94816392d976f417f9cfdef",
+    "version": "0300",
+    "sent": "2018-03-29T17:38:42+0200",
+    "from": "pd81wnw5YJCPx3djGoiKGJ8mFMJeTCjd7F",
+    "to": "pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA",
+    "text": "{\"version\":\"0.0.1.0\",\"mpaction\":{\"action\":\"MPA_BID\",\"item\":\"2d577818-6b09-45a6-b6ff-c3ddba8f2d8f\",\"objects\":[{\"id\":\"colour\",\"value\":\"black\"},{\"id\":\"colour\",\"value\":\"red\"},{\"id\":\"outputs\",\"value\":[{\"txid\":\"d172433c8f216f8f91517cd7d93cf52bd2fce7660fe2603bc46a942194ab6d00\",\"vout\":1,\"amount\":1916.32419473}]},{\"id\":\"pubkeys\",\"value\":[null]},{\"id\":\"changeAddr\",\"value\":\"pq8FqTE6o4yug6WncTqsWVc4FLQwbEEgSE\"},{\"id\":\"change\",\"value\":1883.63094691}]}}"
+}

@@ -91,7 +91,7 @@ describe('DataGenerateCommand', () => {
 
     });
 
-    test('Should generate one listing item with no related data', async () => {
+    test('Should generate one ListingItem with no related data', async () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             false,   // generateItemInformation
@@ -116,7 +116,7 @@ describe('DataGenerateCommand', () => {
 
     });
 
-    test('Should generate one listing item with ItemInformation', async () => {
+    test('Should generate one ListingItem with ItemInformation', async () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -144,7 +144,7 @@ describe('DataGenerateCommand', () => {
 
     });
 
-    test('Should generate one listing item with ItemInformation, ShippingDestinations and ItemImages', async () => {
+    test('Should generate one ListingItem with ItemInformation, ShippingDestinations and ItemImages', async () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -172,7 +172,7 @@ describe('DataGenerateCommand', () => {
 
     });
 
-    test('Should generate one listing item with ItemInformation, ShippingDestinations, ItemImages and PaymentInformation', async () => {
+    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages and PaymentInformation', async () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -200,7 +200,7 @@ describe('DataGenerateCommand', () => {
 
     });
 
-    test('Should generate one listing item with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation and Escrow', async () => {
+    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation and Escrow', async () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -229,7 +229,7 @@ describe('DataGenerateCommand', () => {
 
     });
 
-    test('Should generate one listing item with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow and ItemPrice', async () => {
+    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow and ItemPrice', async () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -259,7 +259,7 @@ describe('DataGenerateCommand', () => {
 
     });
 
-    test('Should generate one listing item with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow, ' +
+    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow, ' +
         'ItemPrice and MessagingInformation', async () => {
 
         const generateListingItemParams = new GenerateListingItemParams([
@@ -290,7 +290,7 @@ describe('DataGenerateCommand', () => {
 
     });
 
-    test('Should generate one listing item with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow, ' +
+    test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow, ' +
         'ItemPrice, MessagingInformation and ListingItemObjects', async () => {
         /*
 
@@ -322,6 +322,28 @@ describe('DataGenerateCommand', () => {
         expect(result[0].MessagingInformation).not.toHaveLength(0);
         expect(result[0].ListingItemObjects).not.toHaveLength(0);
         */
+    });
+
+    test('Should generate one ListingItem having ActionMessage', async () => {
+
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        const res = await rpc(method, [subCommand, CreatableModel.LISTINGITEM, 1, withRelated].concat(generateListingItemParams));
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result).toHaveLength(1);
+        expect(result[0].ActionMessages).not.toHaveLength(0);
     });
 
 });

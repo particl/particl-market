@@ -1,8 +1,9 @@
 import { rpc, api } from '../lib/api';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { addressTestData } from '../BidCommandCommon';
+import { addressTestData } from './BidCommandCommon';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 
 import * as resources from 'resources';
@@ -11,6 +12,9 @@ import * as listingItemCreateRequestBasic2 from '../../testdata/createrequest/li
 import * as listingItemCreateRequestBasic3 from '../../testdata/createrequest/listingItemCreateRequestBasic3.json';
 
 describe('BidSendCommand', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
 
     const testUtil = new BlackBoxTestUtil();
 
@@ -50,14 +54,13 @@ describe('BidSendCommand', () => {
     test('Should send Bid for a ListingItem', async () => {
 
         // create listing item
-        // TODO: Add address to bid...
-
         const res: any = await rpc(bidCommand, [sendCommand, createdListingItem1.hash, 'colour', 'black', 'size', 'xl']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
-        // TODO: Need to implements after broadcast functionality get done
+        log.debug('result', result);
+        expect(result.result).toBe('Sent.');
     });
 
 });
