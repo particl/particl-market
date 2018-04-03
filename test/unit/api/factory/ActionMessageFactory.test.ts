@@ -17,69 +17,122 @@ describe('EscrowFactory', () => {
     });
 
     test('Test ActionMessageFactory.getModel()', async () => {
-        const messages: ActionMessageInterface[] = [
-            {
-                action: BidMessageType.MPA_BID,
-                item: 'Some item 1',
-                objects: []
-            } as ActionMessageInterface,
-            {
-                action: EscrowMessageType.MPA_LOCK,
-                item: 'Some item 2',
-                escrow: {},
-                nonce: 'Nonce 1',
-                memo: 'Memo 1',
-                info: 'Info 1',
-                accepted: true
-            } as ActionMessageInterface
-        ];
-
-        const listingItemIds: number[] = [
-            0,
-            0
-        ];
-
-        const smsgMessages: SmsgMessage [] = [
-            {
-                msgid: 'a1',
-                version: 'b1',
-                received: 'c1',
-                sent: 'd1',
-                from: 'e1',
-                to: 'f1',
-                text: 'g1'
+        // TODO: Currently BidMessageType's and EscrowMessageType's have no real difference amongst themselves, but later we might want to check each individual type
+        const testData: any[] = [
+            { // Standard BidMessageType.MPA_BID
+                listingItemId: 0,
+                message: {
+                    action: BidMessageType.MPA_BID,
+                    item: 'Some A item 1',
+                    objects: []
+                } as BidMessage,
+                smsgMessage: {
+                    msgid: 'A.a1',
+                    version: 'A.b1',
+                    received: '2018-03-12T01:08:18+0200',
+                    sent: '2018-03-13T01:08:18+0200',
+                    from: 'A.e1',
+                    to: 'A.f1',
+                    text: 'A.g1'
+                } as SmsgMessage
             },
-            {
-                msgid: 'a2',
-                version: 'b2',
-                received: 'c2',
-                sent: 'd2',
-                from: 'e2',
-                to: 'f2',
-                text: 'g2'
+            { // Standard EscrowMessageType.MPA_LOCK
+                listingItemId: 0,
+                message: {
+                    action: EscrowMessageType.MPA_LOCK,
+                    item: 'Some B item 1',
+                    escrow: {
+                    },
+                    nonce: 'Nonce B.1',
+                    memo: 'Memo B.1',
+                    info: {
+                        memo: 'Memo B.1'
+                    },
+                    accepted: true
+                } as EscrowMessage,
+                smsgMessage: {
+                    msgid: 'B.a1',
+                    version: 'B.b1',
+                    received: '2018-03-12T01:08:18+0200',
+                    sent: '2018-03-13T01:08:18+0200',
+                    from: 'B.e1',
+                    to: 'B.f1',
+                    text: 'B.g1'
+                } as SmsgMessage
+            },
+            { // Standard EscrowMessageType.MPA_REFUND with no info
+                listingItemId: 0,
+                message: {
+                    action: EscrowMessageType.MPA_REFUND,
+                    item: 'Some B item 2',
+                    escrow: {
+                    },
+                    nonce: 'Nonce B.2',
+                    memo: 'Memo B.2',
+                    accepted: true
+                } as EscrowMessage,
+                smsgMessage: {
+                    msgid: 'B.a2',
+                    version: 'B.b2',
+                    received: '2018-03-12T01:08:18+0200',
+                    sent: '2018-03-13T01:08:18+0200',
+                    from: 'B.e2',
+                    to: 'B.f2',
+                    text: 'B.g2'
+                } as SmsgMessage
             }
         ];
 
-        expect.assertions(messages.length * 7);
+        expect.assertions(testData.length * (11 + 12));
 
-        for ( const i in messages ) {
+        for ( const i in testData ) {
             if ( i ) {
-                const returnedModel: ActionMessageCreateRequest = await actionMessageFactory.getModel(messages[i], listingItemIds[i], smsgMessages[i]);
-                expect(returnedModel.action).toBe(messages[i].action);
-                expect(returnedModel.listing_item_id).toBe(listingItemIds[i]);
-                const smsgMessageData = actionMessageFactory.getModelMessageData(smsgMessages[i]);
-                expect(returnedModel.data).toBe(smsgMessageData);
+                const listingItemId: number = testData[i].listingItemId;
+                const messageRaw: ActionMessageInterface = testData[i].message;
+                const smsgMessage: SmsgMessage = testData[i].smsgMessage;
 
-                switch (messages[i].action) {
+
+                const returnedModel: ActionMessageCreateRequest = await actionMessageFactory.getModel(
+                    messageRaw, listingItemId, smsgMessage);
+                const smsgMessageData = actionMessageFactory.getModelMessageData(smsgMessage);
+
+                expect(returnedModel).toBeDefined();
+                expect(returnedModel).not.toBeNull();
+
+                expect(returnedModel.action).toBeDefined();
+                expect(returnedModel.action).not.toBeNull();
+                expect(returnedModel.action).toBe(messageRaw.action);
+
+                expect(returnedModel.listing_item_id).toBeDefined();
+                expect(returnedModel.listing_item_id).not.toBeNull();
+                expect(returnedModel.listing_item_id).toBe(listingItemId);
+
+                expect(returnedModel.data).toBeDefined();
+                expect(returnedModel.data).not.toBeNull();
+                expect(returnedModel.data).toMatchObject(smsgMessageData);
+
+                switch (testData[i].message.action) {
                     case BidMessageType.MPA_BID:
                     case BidMessageType.MPA_ACCEPT:
                     case BidMessageType.MPA_REJECT:
                     case BidMessageType.MPA_CANCEL:
                     {
-                        const message = messages[i] as BidMessage;
+                        const message = messageRaw as BidMessage;
                         const smsgMessageObjects = actionMessageFactory.getModelMessageObjects(message);
-                        expect(returnedModel.objects).toBe(smsgMessageObjects);
+
+                        expect(returnedModel.objects).toBeDefined();
+                        expect(returnedModel.objects).not.toBeNull();
+                        expect(returnedModel.objects).toMatchObject(smsgMessageObjects);
+
                         expect(true).toBe(true); // Padding expects so we have a constant number of assertions pre iteration.
+                        expect(true).toBe(true);
+                        expect(true).toBe(true);
+
+                        expect(true).toBe(true);
+                        expect(true).toBe(true);
+                        expect(true).toBe(true);
+
+                        expect(true).toBe(true);
                         expect(true).toBe(true);
                         expect(true).toBe(true);
                         break;
@@ -89,10 +142,22 @@ describe('EscrowFactory', () => {
                     case EscrowMessageType.MPA_REFUND:
                     case EscrowMessageType.MPA_RELEASE:
                     {
-                        const message = messages[i] as EscrowMessage;
+                        const message = messageRaw as EscrowMessage;
+
+                        expect(returnedModel.nonce).toBeDefined();
+                        expect(returnedModel.nonce).not.toBeNull();
                         expect(returnedModel.nonce).toBe(message.nonce);
+
+                        expect(returnedModel.accepted).toBeDefined();
+                        expect(returnedModel.accepted).not.toBeNull();
                         expect(returnedModel.accepted).toBe(message.accepted);
+
+                        expect(returnedModel.info).toBeDefined();
+                        expect(returnedModel.info).not.toBeNull();
                         expect(returnedModel.info).toBe(message.info);
+
+                        expect(returnedModel.escrow).toBeDefined();
+                        expect(returnedModel.escrow).not.toBeNull();
                         expect(returnedModel.escrow).toBe(message.escrow);
                         break;
                     }
