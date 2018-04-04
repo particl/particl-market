@@ -40,6 +40,7 @@ import { ListingItemObjectDataService } from '../../src/api/services/ListingItem
 
 import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
 import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
+
 import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
 
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
@@ -82,8 +83,8 @@ describe('ListingItem', () => {
 
     let updatedListingItem1;
 
-    let defaultProfile;
-    let defaultMarket;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -112,8 +113,14 @@ describe('ListingItem', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        defaultProfile = await profileService.getDefault();
-        defaultMarket = await marketService.getDefault();
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        defaultProfile = defaultProfileModel.toJSON();
+
+        // get market
+        const defaultMarketModel = await marketService.getDefault();
+        defaultMarket = defaultMarketModel.toJSON();
+
     });
 
     const expectListingItemFromCreateRequest = (result: resources.ListingItem, createRequest: ListingItemCreateRequest) => {
@@ -330,7 +337,8 @@ describe('ListingItem', () => {
 
     test('Should create a new ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestBasic1));
-        testDataToSave.market_id = defaultMarket.Id;
+        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.seller = defaultProfile.address;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         createdListingItem1 = listingItemModel.toJSON();
@@ -369,7 +377,8 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.market_id = defaultMarket.Id;
+        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.seller = defaultProfile.address;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         createdListingItem2 = listingItemModel.toJSON();
@@ -380,7 +389,8 @@ describe('ListingItem', () => {
     test('Should update previously created ListingItem', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
 
-        testDataToSave.market_id = defaultMarket.Id;
+        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.seller = defaultProfile.address;
 
         const listingItemModel: ListingItem = await listingItemService.update(createdListingItem2.id, testDataToSave);
         updatedListingItem1 = listingItemModel.toJSON();
@@ -405,7 +415,8 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.market_id = defaultMarket.Id;
+        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.seller = defaultProfile.address;
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
@@ -428,7 +439,8 @@ describe('ListingItem', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.market_id = defaultMarket.Id;
+        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.seller = defaultProfile.address;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         createdListingItem2 = listingItemModel.toJSON();
@@ -447,7 +459,7 @@ describe('ListingItem', () => {
 
         // create ListingItemTemplate
         const listingItemTemplateCreateRequest = {
-            profile_id: defaultProfile.Id,
+            profile_id: defaultProfile.id,
             itemInformation: testDataToSave.itemInformation,
             paymentInformation: testDataToSave.paymentInformation,
             messagingInformation: testDataToSave.messagingInformation,
@@ -459,7 +471,8 @@ describe('ListingItem', () => {
 
         // create ListingItem with relation to ListingItemTemplate
         testDataToSave.listing_item_template_id = listingItemTemplate.Id;
-        testDataToSave.market_id = defaultMarket.Id;
+        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.seller = defaultProfile.address;
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         createdListingItem3 = listingItemModel.toJSON();
@@ -479,7 +492,8 @@ describe('ListingItem', () => {
     test('Should update ListingItem correctly when removing data', async () => {
 
         const testDataToUpdate = JSON.parse(JSON.stringify(listingItemUpdateRequestBasic1));
-        testDataToUpdate.market_id = defaultMarket.Id;
+        testDataToUpdate.market_id = defaultMarket.id;
+        testDataToSave.seller = defaultProfile.address;
 
         // remove some data
         delete testDataToUpdate.listingItemObjects;

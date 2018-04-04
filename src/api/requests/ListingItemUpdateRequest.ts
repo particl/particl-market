@@ -7,6 +7,9 @@ export class ListingItemUpdateRequest extends RequestBody {
     public hash: string;
 
     @IsNotEmpty()
+    public seller: string;
+
+    @IsNotEmpty()
     public market_id: number;
 
     public itemInformation;

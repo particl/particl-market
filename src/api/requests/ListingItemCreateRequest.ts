@@ -8,6 +8,9 @@ export class ListingItemCreateRequest extends RequestBody {
     public hash: string;
 
     @IsNotEmpty()
+    public seller: string;
+
+    @IsNotEmpty()
     public market_id: number;
 
     public listing_item_template_id: number;
