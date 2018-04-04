@@ -1,0 +1,23 @@
+{
+    "action": "MPA_BID",
+    "listing_item_id": 0,
+    "bidder": "bidderaddress",
+    "bidDatas": [{
+        "dataId": "COLOR",
+        "dataValue": "RED"
+    }, {
+        "dataId": "COLOR",
+        "dataValue": "GREEN"
+    }],
+    "address": {
+        "title": "Title",
+        "firstName": "Robert",
+        "lastName": "Downey",
+        "addressLine1": "addressline1",
+        "addressLine2": "addressline2",
+        "city": "Vaajakoski",
+        "state": "Keski-Suomi",
+        "country": "Finland",
+        "zipCode": "40800"
+    }
+}

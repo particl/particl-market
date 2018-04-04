@@ -29,6 +29,8 @@ import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listi
 import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
 import * as listingItemCreateRequestBasic3 from '../testdata/createrequest/listingItemCreateRequestBasic3.json';
 
+import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BID.json';
+
 
 describe('Bid', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -51,30 +53,7 @@ describe('Bid', () => {
     let createdBid1;
     let createdBid2;
 
-    // TODO: move to file
-    const testData = {
-        action: BidMessageType.MPA_BID,
-        listing_item_id: null,
-        bidder: 'bidderaddress',
-        bidDatas: [{
-            dataId: 'COLOR',
-            dataValue: 'RED'
-        }, {
-            dataId: 'COLOR',
-            dataValue: 'GREEN'
-        }],
-        address: {
-            title: 'Title',
-            firstName: 'Robert',
-            lastName: 'Downey',
-            addressLine1: 'Add',
-            addressLine2: 'ADD 22',
-            city: 'city',
-            state: 'test state',
-            country: 'Finland',
-            zipCode: '85001'
-        } as AddressCreateRequest
-    } as BidCreateRequest;
+    const testData: BidCreateRequest = bidCreateRequest1;
 
     const testDataUpdated = {
         action: BidMessageType.MPA_CANCEL,
@@ -131,7 +110,7 @@ describe('Bid', () => {
         log.debug('createdListingItem1: ', createdListingItem1.id);
         log.debug('createdListingItem1: ', createdListingItem1.hash);
 
-        // create listing item
+        // create another listing item
         listingItemCreateRequestBasic2.market_id = defaultMarket.id;
         const createdListingItemModel2 = await listingItemService.create(listingItemCreateRequestBasic2);
         createdListingItem2 = createdListingItemModel2.toJSON();

@@ -1,0 +1,15 @@
+{
+    "address_id": 0,
+    "hash": "WILLBESETWHENSAVED",
+    "buyer": "CHANGE",
+    "seller": "CHANGE",
+    "orderItems": [{
+        "listing_item_id": 0,
+        "bid_id": 0,
+        "status": "AWAITING_ESCROW",
+        "orderItemObjects": [{
+            "dataId": "testid",
+            "dataValue": "testdata"
+        }]
+    }]
+}
