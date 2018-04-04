@@ -99,6 +99,7 @@ describe('Profile', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
+        // create ListingItem
         const listingItems = await testDataService.generate({
             model: CreatableModel.LISTINGITEM,  // what to generate
             amount: 1,                          // how many to generate
