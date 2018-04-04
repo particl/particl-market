@@ -47,9 +47,6 @@ import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createreque
 
 import * as resources from 'resources';
 
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-
 describe('ListingItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
