@@ -30,6 +30,11 @@ export class EscrowActionService {
         this.configureEventListeners();
     }
 
+    /**
+     *
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<"resources".ActionMessage>}
+     */
     public async processLockEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
 
         this.log.info('Received event:', event);

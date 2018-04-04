@@ -245,9 +245,10 @@ export const Targets = {
             MessagingInformationRootCommand: 'MessagingInformationRootCommand',
             MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
         },
-        OrderCommand: 'OrderCommand',
-        OrderItemCommand: 'OrderItemCommand',
-        OrderItemObjectCommand: 'OrderItemObjectCommand',
+        order: {
+            OrderRootCommand: 'OrderRootCommand',
+            OrderSearchCommand: 'OrderSearchCommand'
+        },
         paymentinformation: {
             PaymentInformationRootCommand: 'PaymentInformationRootCommand',
             PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'

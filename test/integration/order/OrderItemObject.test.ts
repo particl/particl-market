@@ -1,15 +1,15 @@
-import { app } from '../../src/app';
-import { Logger as LoggerType } from '../../src/core/Logger';
-import { Types, Core, Targets } from '../../src/constants';
-import { TestUtil } from './lib/TestUtil';
-import { TestDataService } from '../../src/api/services/TestDataService';
+import { app } from '../../../src/app';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import { Types, Core, Targets } from '../../../src/constants';
+import { TestUtil } from '../lib/TestUtil';
+import { TestDataService } from '../../../src/api/services/TestDataService';
 
-import { ValidationException } from '../../src/api/exceptions/ValidationException';
-import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
+import { ValidationException } from '../../../src/api/exceptions/ValidationException';
+import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
 
-import { OrderItemObject } from '../../src/api/models/OrderItemObject';
+import { OrderItemObject } from '../../../src/api/models/OrderItemObject';
 
-import { OrderItemObjectService } from '../../src/api/services/OrderItemObjectService';
+import { OrderItemObjectService } from '../../../src/api/services/OrderItemObjectService';
 
 describe('OrderItemObject', () => {
 

@@ -19,6 +19,12 @@ export class MessagingInformationRootCommand extends BaseCommand implements RpcC
         this.log = new Logger(__filename);
     }
 
+    /**
+     *
+     * @param {RpcRequest} data
+     * @param {RpcCommandFactory} rpcCommandFactory
+     * @returns {Promise<any>}
+     */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
         return await this.executeNext(data, rpcCommandFactory);

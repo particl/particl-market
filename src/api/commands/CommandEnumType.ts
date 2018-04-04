@@ -31,7 +31,6 @@ export class CommandEnumType extends Enum<Command> {
     public ITEM_FLAG: Command           = new Command('itemflag', 'flag', false);
     public ITEM_ROOT: Command           = new Command('item', 'item', true,
         [this.ITEM_SEARCH, this.ITEM_GET, this.ITEM_POST_UPDATE, this.ITEM_FLAG], EnvironmentType.ALL);
-    // TODO: bids
 
     public ESCROW_ADD: Command      = new Command('escrowadd', 'add', false);
     public ESCROW_UPDATE: Command   = new Command('escrowupdate', 'update', false);

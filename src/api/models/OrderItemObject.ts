@@ -1,7 +1,6 @@
 import { Bookshelf } from '../../config/Database';
 import { OrderItem } from './OrderItem';
 
-
 export class OrderItemObject extends Bookshelf.Model<OrderItemObject> {
 
     public static RELATIONS = [
