@@ -40,8 +40,12 @@ export class CoreRpcService {
 
     public async getNewAddress(): Promise<any> {
         const response = await this.call('getnewaddress');
+
         // call﻿smsgaddlocaladdress, even though I'm not sure if its required
         await this.call('smsgaddlocaladdress', [response]);
+
+        // add address as receive address
+        await this.call('smsglocalkeys', ['recv', '+', response]);
         return response;
     }
 

@@ -76,7 +76,8 @@ import { OrderCreateRequest } from '../requests/OrderCreateRequest';
 import { OrderItemCreateRequest } from '../requests/OrderItemCreateRequest';
 import * as resources from 'resources';
 import { OrderStatus } from '../enums/OrderStatus';
-import {OrderItemObjectCreateRequest} from '../requests/OrderItemObjectCreateRequest';
+import { OrderItemObjectCreateRequest } from '../requests/OrderItemObjectCreateRequest';
+import { OrderService } from './OrderService';
 
 export class TestDataService {
 
@@ -286,13 +287,18 @@ export class TestDataService {
     private async generateListingItems(amount: number, withRelated: boolean = true, generateParams: GenerateListingItemParams): Promise<any> {
         const items: any[] = [];
         for (let i = amount; i > 0; i--) {
+
             const listingItem = await this.generateListingItemData(generateParams);
             // this.log.debug('listingItem: ', listingItem);
 
             // TODO: hardcoded, fix
+            // TODO: seller address should be configurable, either generated or default
+
             // set seller address as profiles address
             const sellerAddress = await this.coreRpcService.getNewAddress();
             const fromAddress = await this.coreRpcService.getNewAddress();
+
+            // seller address can also be found from ListingItem.seller
 
             // add ActionMessage
             listingItem.actionMessages = [{
@@ -479,7 +485,9 @@ export class TestDataService {
     }
 
     private async generateListingItemData(generateParams: GenerateListingItemParams): Promise<ListingItemCreateRequest> {
+
         const defaultMarket = await this.marketService.getDefault();
+        const seller = await this.coreRpcService.getNewAddress();
 
         const itemInformation = generateParams.generateItemInformation ? this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? this.generatePaymentInformationData(generateParams) : {};
@@ -488,6 +496,7 @@ export class TestDataService {
 
         const listingItem = {
             hash: Faker.random.uuid(),
+            seller,
             itemInformation,
             paymentInformation,
             messagingInformation,
