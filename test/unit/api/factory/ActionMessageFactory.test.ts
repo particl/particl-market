@@ -6,6 +6,7 @@ import { EscrowMessage } from '../../../../src/api/messages/EscrowMessage';
 import { BidMessage } from '../../../../src/api/messages/BidMessage';
 import { ActionMessageInterface } from '../../../../src/api/messages/ActionMessageInterface';
 import { ActionMessageCreateRequest } from '../../../../src/api/requests/ActionMessageCreateRequest';
+import { EscrowType } from '../../../../src/api/enums/EscrowType';
 import { LogMock } from '../../lib/LogMock';
 
 describe('EscrowFactory', () => {
@@ -17,22 +18,36 @@ describe('EscrowFactory', () => {
     });
 
     test('Test ActionMessageFactory.getModel()', async () => {
-        // TODO: Currently BidMessageType's and EscrowMessageType's have no real difference amongst themselves, but later we might want to check each individual type
+        // TODO: Currently BidMessageType's and EscrowMessageType's have no real difference amongst themselves,
+        //     but later we might want to check each individual type
+        /*
+            Ergonomic Frozen Shoes
+            Gorgeous Fresh Bike
+            Incredible Steel Chair
+            Incredible Concrete Towels
+            Generic Soft Car
+            Awesome Cotton Keyboard
+            Handmade Concrete Shirt
+            Awesome Steel Gloves
+            Ergonomic Wooden Chair
+            Sleek Steel Towels
+            Incredible Metal Tuna
+        */
         const testData: any[] = [
             { // Standard BidMessageType.MPA_BID
                 listingItemId: 0,
                 message: {
                     action: BidMessageType.MPA_BID,
-                    item: 'Some A item 1',
+                    item: 'Ergonomic Frozen Shoes',
                     objects: []
                 } as BidMessage,
                 smsgMessage: {
-                    msgid: 'A.a1',
-                    version: 'A.b1',
+                    msgid: 'fdd0b25a000000007188f0fc4cd57a37aa5a9ab26463510568e99d7d',
+                    version: '0300',
                     received: '2018-03-12T01:08:18+0200',
                     sent: '2018-03-13T01:08:18+0200',
-                    from: 'A.e1',
-                    to: 'A.f1',
+                    from: 'piyLdJcTzR72DsYh2j5wPWUUmwURfczTR3',
+                    to: 'PkE5U1Erz9bANXAxvHeiw6t14vDTP9EdNM',
                     text: 'A.g1'
                 } as SmsgMessage
             },
@@ -40,8 +55,13 @@ describe('EscrowFactory', () => {
                 listingItemId: 0,
                 message: {
                     action: EscrowMessageType.MPA_LOCK,
-                    item: 'Some B item 1',
+                    item: 'Gorgeous Fresh Bike',
                     escrow: {
+                        type: EscrowType.MAD,
+                        ratio: {
+                            buyer: 50,
+                            seller: 50
+                        }
                     },
                     nonce: 'Nonce B.1',
                     memo: 'Memo B.1',
@@ -51,12 +71,12 @@ describe('EscrowFactory', () => {
                     accepted: true
                 } as EscrowMessage,
                 smsgMessage: {
-                    msgid: 'B.a1',
-                    version: 'B.b1',
+                    msgid: 'fdd0b25a000000007188f0fc4cd57a37aa5a9ab26463510568e99d7d',
+                    version: '0300',
                     received: '2018-03-12T01:08:18+0200',
                     sent: '2018-03-13T01:08:18+0200',
-                    from: 'B.e1',
-                    to: 'B.f1',
+                    from: 'piyLdJcTzR72DsYh2j5wPWUUmwURfczTR3',
+                    to: 'PkE5U1Erz9bANXAxvHeiw6t14vDTP9EdNM',
                     text: 'B.g1'
                 } as SmsgMessage
             },
@@ -64,20 +84,25 @@ describe('EscrowFactory', () => {
                 listingItemId: 0,
                 message: {
                     action: EscrowMessageType.MPA_REFUND,
-                    item: 'Some B item 2',
+                    item: 'Incredible Steel Chair',
                     escrow: {
+                        type: EscrowType.MAD,
+                        ratio: {
+                            buyer: 50,
+                            seller: 50
+                        }
                     },
                     nonce: 'Nonce B.2',
                     memo: 'Memo B.2',
                     accepted: true
                 } as EscrowMessage,
                 smsgMessage: {
-                    msgid: 'B.a2',
-                    version: 'B.b2',
+                    msgid: 'fdd0b25a000000007188f0fc4cd57a37aa5a9ab26463510568e99d7d',
+                    version: '0300',
                     received: '2018-03-12T01:08:18+0200',
                     sent: '2018-03-13T01:08:18+0200',
-                    from: 'B.e2',
-                    to: 'B.f2',
+                    from: 'piyLdJcTzR72DsYh2j5wPWUUmwURfczTR3',
+                    to: 'PkE5U1Erz9bANXAxvHeiw6t14vDTP9EdNM',
                     text: 'B.g2'
                 } as SmsgMessage
             }
@@ -162,6 +187,83 @@ describe('EscrowFactory', () => {
                         break;
                     }
                 }
+            }
+        }
+    });
+
+    test('Negative test ActionMessageFactory.getModel()', async () => {
+        const testData: any[] = [
+            { // Standard BidMessageType.MPA_BID, missing message
+                listingItemId: 0,
+                smsgMessage: {
+                    msgid: 'fdd0b25a000000007188f0fc4cd57a37aa5a9ab26463510568e99d7d',
+                    version: '0300',
+                    received: '2018-03-12T01:08:18+0200',
+                    sent: '2018-03-13T01:08:18+0200',
+                    from: 'piyLdJcTzR72DsYh2j5wPWUUmwURfczTR3',
+                    to: 'PkE5U1Erz9bANXAxvHeiw6t14vDTP9EdNM',
+                    text: 'A.g1'
+                } as SmsgMessage
+            },
+            { // Standard BidMessageType.MPA_BID, missing smsgMessage
+                listingItemId: 0,
+                message: {
+                    action: BidMessageType.MPA_BID,
+                    item: 'Ergonomic Frozen Shoes',
+                    objects: []
+                } as BidMessage
+            },
+            { // Standard EscrowMessageType.MPA_LOCK, missing message
+                listingItemId: 0,
+                smsgMessage: {
+                    msgid: 'fdd0b25a000000007188f0fc4cd57a37aa5a9ab26463510568e99d7d',
+                    version: '0300',
+                    received: '2018-03-12T01:08:18+0200',
+                    sent: '2018-03-13T01:08:18+0200',
+                    from: 'piyLdJcTzR72DsYh2j5wPWUUmwURfczTR3',
+                    to: 'PkE5U1Erz9bANXAxvHeiw6t14vDTP9EdNM',
+                    text: 'B.g1'
+                } as SmsgMessage
+            },
+            { // Standard EscrowMessageType.MPA_LOCK, missing smsgMessage
+                listingItemId: 0,
+                message: {
+                    action: EscrowMessageType.MPA_LOCK,
+                    item: 'Gorgeous Fresh Bike',
+                    escrow: {
+                        type: EscrowType.MAD,
+                        ratio: {
+                            buyer: 50,
+                            seller: 50
+                        }
+                    },
+                    nonce: 'Nonce B.1',
+                    memo: 'Memo B.1',
+                    info: {
+                        memo: 'Memo B.1'
+                    },
+                    accepted: true
+                } as EscrowMessage
+            }
+        ];
+
+        expect.assertions(testData.length * (1 + 1));
+
+        for ( const i in testData ) {
+            if ( i ) {
+                const listingItemId: number = testData[i].listingItemId;
+                const messageRaw: ActionMessageInterface = testData[i].message;
+                const smsgMessage: SmsgMessage = testData[i].smsgMessage;
+
+                let returnedModel: ActionMessageCreateRequest;
+                try {
+                    returnedModel = await actionMessageFactory.getModel(
+                        messageRaw, listingItemId, smsgMessage);
+                } catch (ex) {
+                    expect(true).toBe(true);
+                }
+
+                expect(returnedModel).not.toBeDefined();
             }
         }
     });
