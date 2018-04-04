@@ -53,7 +53,7 @@ export class AddressService {
         address.LastName = body.lastName;
         address.AddressLine1 = body.addressLine1;
         address.AddressLine2 = body.addressLine2;
-        address.zipCode = body.zipCode;
+        address.ZipCode = body.zipCode;
         address.City = body.city;
         address.State = body.state;
         address.Country = body.country;

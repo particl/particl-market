@@ -68,11 +68,6 @@ export class ActionMessageService {
         delete body.data;
         delete body.objects;
 
-        // todo: fix, added listingitemmessage
-        // if (_.isEmpty(messageInfoCreateRequest) || _.isEmpty(messageEscrowCreateRequest) || _.isEmpty(messageDataCreateRequest)) {
-        //    throw new MessageException('Could not create the ActionMessage, missing data!');
-        // }
-
         // If the request body was valid we will create the actionMessage
         let actionMessageModel = await this.actionMessageRepo.create(body);
         let actionMessage = actionMessageModel.toJSON();

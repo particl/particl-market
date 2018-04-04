@@ -39,7 +39,10 @@ export class CoreRpcService {
     }
 
     public async getNewAddress(): Promise<any> {
-        return await this.call('getnewaddress');
+        const response = await this.call('getnewaddress');
+        // call﻿smsgaddlocaladdress, even though I'm not sure if its required
+        await this.call('smsgaddlocaladdress', [response]);
+        return response;
     }
 
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {

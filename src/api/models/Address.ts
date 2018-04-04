@@ -47,8 +47,11 @@ export class Address extends Bookshelf.Model<Address> {
     public get Country(): string { return this.get('country'); }
     public set Country(value: string) { this.set('country', value); }
 
-    public get zipCode(): string { return this.get('zip_code'); }
-    public set zipCode(value: string) { this.set('zip_code', value); }
+    public get ZipCode(): string { return this.get('zip_code'); }
+    public set ZipCode(value: string) { this.set('zip_code', value); }
+
+    public get Type(): string { return this.get('type'); }
+    public set Type(value: string) { this.set('type', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

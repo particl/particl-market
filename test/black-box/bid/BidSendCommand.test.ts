@@ -23,7 +23,7 @@ describe('BidSendCommand', () => {
 
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
-    let createdListingItem1: resources.ListingItem;
+    let createdListingItems: resources.ListingItem[];
 
     beforeAll(async () => {
 
@@ -46,15 +46,22 @@ describe('BidSendCommand', () => {
         defaultMarket = await testUtil.getDefaultMarket();
 
         // create a listing item to bid for
-        listingItemCreateRequestBasic1.market_id = defaultMarket.id;
-        createdListingItem1 = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
+        // listingItemCreateRequestBasic1.market_id = defaultMarket.id;
+        // createdListingItem1 = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
+
+        // generate a listing item to bid for
+        createdListingItems = await testUtil.generateData(CreatableModel.LISTINGITEM);
+        log.debug('createdListingItem1: ', createdListingItems[0].id);
 
     });
 
     test('Should send Bid for a ListingItem', async () => {
 
+        log.debug('createdListingItems[0].hash: ', createdListingItems[0].hash);
+        log.debug('createdListingItems[0].ActionMessages: ', JSON.stringify(createdListingItems[0].ActionMessages, null, 2));
+
         // create listing item
-        const res: any = await rpc(bidCommand, [sendCommand, createdListingItem1.hash, 'colour', 'black', 'size', 'xl']);
+        const res: any = await rpc(bidCommand, [sendCommand, createdListingItems[0].hash, 'colour', 'black', 'size', 'xl']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

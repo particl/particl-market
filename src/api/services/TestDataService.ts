@@ -70,6 +70,7 @@ import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 import { AddressType } from '../enums/AddressType';
 import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { ActionMessage } from '../models/ActionMessage';
+import { CoreRpcService } from './CoreRpcService';
 
 export class TestDataService {
 
@@ -91,6 +92,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) private actionMessageService: ActionMessageService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -277,20 +279,24 @@ export class TestDataService {
             // this.log.debug('listingItem: ', listingItem);
 
             // TODO: hardcoded, fix
+            // set seller address as profiles address
+            const sellerAddress = await this.coreRpcService.getNewAddress();
+            const fromAddress = await this.coreRpcService.getNewAddress();
+
             // add ActionMessage
             listingItem.actionMessages = [{
                 action: ListingItemMessageType.MP_ITEM_ADD,
                 objects: [{
                     dataId: 'seller',
-                    dataValue: 'prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx'
+                    dataValue: sellerAddress
                 }],
                 data: {
-                    msgid: 'fceabe5a000000002cc363a3bc350d6bca87b1977335deeba5a554f6',
-                    version: '0301',
-                    received: '2018-03-31T03:57:16+0200',
-                    sent: '2018-03-31T03:57:16+0200',
-                    from: 'prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx',
-                    to: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA'
+                    msgid: 'testdatanotsorandommsgidfromgenerateListingItems',
+                    version: '0300',
+                    received: new Date().toISOString(),
+                    sent: new Date().toISOString(),
+                    from: fromAddress,
+                    to: sellerAddress
                 }
             }];
 

@@ -121,6 +121,7 @@ export class BidActionService {
             throw new MessageException('Profile is missing a shipping address.');
         }
 
+        // store the shipping address in biddata
         bidData.push({id: 'ship.firstName', value: profile.ShippingAddresses[0].firstName});
         bidData.push({id: 'ship.lastName', value: profile.ShippingAddresses[0].lastName});
         bidData.push({id: 'ship.addressLine1', value: profile.ShippingAddresses[0].addressLine1});

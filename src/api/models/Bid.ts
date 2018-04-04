@@ -9,7 +9,8 @@ export class Bid extends Bookshelf.Model<Bid> {
 
     public static RELATIONS = [
         'BidDatas',
-        'ShippingAddress'
+        'ShippingAddress',
+        'ListingItem'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Bid> {

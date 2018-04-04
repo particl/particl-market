@@ -28,7 +28,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     /**
      *
      * data.params[]:
-     * [0]: hash, string
+     * [0]: ListingItem hash, string
      * [1]: status, [Optional] ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
      *
      * @param data
