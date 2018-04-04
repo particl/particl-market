@@ -1,16 +1,17 @@
 import { Bookshelf } from '../../config/Database';
+import { OrderItem } from './OrderItem';
 
 
 export class OrderItemObject extends Bookshelf.Model<OrderItemObject> {
 
+    public static RELATIONS = [
+        'OrderItem'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<OrderItemObject> {
         if (withRelated) {
             return await OrderItemObject.where<OrderItemObject>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'OrderItemObjectRelated',
-                    // 'OrderItemObjectRelated.Related'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await OrderItemObject.where<OrderItemObject>({ id: value }).fetch();
@@ -35,8 +36,8 @@ export class OrderItemObject extends Bookshelf.Model<OrderItemObject> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public OrderItemObjectRelated(): OrderItemObjectRelated {
-    //    return this.hasOne(OrderItemObjectRelated);
-    // }
+    public OrderItem(): OrderItem {
+        return this.belongsTo(OrderItem, 'order_item_id', 'id');
+    }
+
 }

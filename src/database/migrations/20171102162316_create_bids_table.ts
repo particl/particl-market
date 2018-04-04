@@ -16,6 +16,10 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('address_id').references('id')
                 .inTable('addresses');
 
+            table.integer('order_item_id').unsigned().nullable();
+            table.foreign('order_item_id').references('id')
+                .inTable('order_items');
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })

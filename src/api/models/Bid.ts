@@ -3,14 +3,19 @@ import { Collection } from 'bookshelf';
 import { ListingItem } from './ListingItem';
 import { BidData } from './BidData';
 import { BidSearchParams } from '../requests/BidSearchParams';
-import {Address} from './Address';
+import { Address } from './Address';
+import { OrderItem } from './OrderItem';
 
 export class Bid extends Bookshelf.Model<Bid> {
 
     public static RELATIONS = [
         'BidDatas',
         'ShippingAddress',
-        'ListingItem'
+        'ListingItem',
+        'OrderItem',
+        'OrderItem.OrderItemObjects',
+        'OrderItem.ListingItem',
+        'OrderItem.Order'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Bid> {
@@ -82,6 +87,10 @@ export class Bid extends Bookshelf.Model<Bid> {
 
     public ShippingAddress(): Address {
         return this.belongsTo(Address, 'address_id', 'id');
+    }
+
+    public OrderItem(): OrderItem {
+        return this.belongsTo(OrderItem, 'order_item_id', 'id');
     }
 
 }
