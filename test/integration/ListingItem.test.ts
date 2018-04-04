@@ -117,7 +117,7 @@ describe('ListingItem', () => {
         const defaultProfileModel = await profileService.getDefault();
         defaultProfile = defaultProfileModel.toJSON();
 
-        // get market
+        // get default market
         const defaultMarketModel = await marketService.getDefault();
         defaultMarket = defaultMarketModel.toJSON();
 

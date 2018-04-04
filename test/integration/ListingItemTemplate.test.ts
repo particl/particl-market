@@ -88,8 +88,8 @@ describe('ListingItemTemplate', () => {
 
     let updatedListingItemTemplate1;
 
-    let defaultProfile;
-    let defaultMarket;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -120,8 +120,13 @@ describe('ListingItemTemplate', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        defaultProfile = await profileService.getDefault();
-        defaultMarket = await marketService.getDefault();
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        defaultProfile = defaultProfileModel.toJSON();
+
+        // get default market
+        const defaultMarketModel = await marketService.getDefault();
+        defaultMarket = defaultMarketModel.toJSON();
     });
 
     const expectListingItemTemplateFromCreateRequest = (result: resources.ListingItemTemplate, createRequest: ListingItemTemplateCreateRequest) => {
@@ -365,7 +370,7 @@ describe('ListingItemTemplate', () => {
 
     test('Should create a new ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        testDataToSave.profile_id = defaultProfile.Id;
+        testDataToSave.profile_id = defaultProfile.id;
 
         // log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
@@ -400,7 +405,7 @@ describe('ListingItemTemplate', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.profile_id = defaultProfile.Id;
+        testDataToSave.profile_id = defaultProfile.id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
         createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
@@ -417,7 +422,7 @@ describe('ListingItemTemplate', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.profile_id = defaultProfile.Id;
+        testDataToSave.profile_id = defaultProfile.id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
         createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
@@ -427,7 +432,7 @@ describe('ListingItemTemplate', () => {
 
     test('Should update previously created ListingItemTemplate', async () => {
         const testDataToSave = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
-        testDataToSave.profile_id = defaultProfile.Id;
+        testDataToSave.profile_id = defaultProfile.id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.update(createdListingItemTemplate2.id, testDataToSave);
         updatedListingItemTemplate1 = listingItemTemplateModel.toJSON();
@@ -449,7 +454,7 @@ describe('ListingItemTemplate', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.profile_id = defaultProfile.Id;
+        testDataToSave.profile_id = defaultProfile.id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
         createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
@@ -470,7 +475,7 @@ describe('ListingItemTemplate', () => {
         delete testDataToSave.messagingInformation;
         delete testDataToSave.listingItemObjects;
 
-        testDataToSave.profile_id = defaultProfile.Id;
+        testDataToSave.profile_id = defaultProfile.id;
 
         const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
         createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
@@ -492,7 +497,7 @@ describe('ListingItemTemplate', () => {
 
         // create ListingItemTemplate
         const listingItemTemplateCreateRequest = {
-            profile_id: defaultProfile.Id,
+            profile_id: defaultProfile.id,
             itemInformation: testDataToSave.itemInformation,
             paymentInformation: testDataToSave.paymentInformation,
             messagingInformation: testDataToSave.messagingInformation,
@@ -505,7 +510,8 @@ describe('ListingItemTemplate', () => {
 
         // create ListingItem with relation to ListingItemTemplate
         testDataToSave.listing_item_template_id = listingItemTemplate.Id;
-        testDataToSave.market_id = defaultMarket.Id;
+        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.seller = defaultProfile.address;
 
         log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
@@ -527,7 +533,7 @@ describe('ListingItemTemplate', () => {
 
         const testDataToUpdate = JSON.parse(JSON.stringify(listingItemTemplateUpdateRequestBasic1));
 
-        testDataToUpdate.profile_id = defaultProfile.Id;
+        testDataToUpdate.profile_id = defaultProfile.id;
 
         // remove some data
         delete testDataToUpdate.listingItemObjects;

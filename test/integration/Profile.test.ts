@@ -27,6 +27,9 @@ import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerate
 import { FavoriteItemCreateRequest } from '../../src/api/requests/FavoriteItemCreateRequest';
 import {AddressCreateRequest} from '../../src/api/requests/AddressCreateRequest';
 import {AddressType} from '../../src/api/enums/AddressType';
+import {CreatableModel} from '../../src/api/enums/CreatableModel';
+import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
+import * as resources from 'resources';
 
 describe('Profile', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -44,8 +47,9 @@ describe('Profile', () => {
     let shoppingCartService: ShoppingCartService;
 
     let createdId;
-    let createdListingItem;
+    let createdListingItem: resources.ListingItem;
 
+    // TODO: move to file or generate
     const testData = {
         name: 'DEFAULT1',
         address: 'DEFAULT11-ADDRESS',
@@ -74,6 +78,7 @@ describe('Profile', () => {
         } as AddressCreateRequest] as any
     } as ProfileCreateRequest;
 
+    // TODO: move to file or generate
     const testDataUpdated = {
         name: 'DEFAULT2',
         address: 'DEFAULT12-ADDRESS'
@@ -94,18 +99,14 @@ describe('Profile', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // create market
-        let defaultMarket = await marketService.getDefault();
-        defaultMarket = defaultMarket.toJSON();
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,  // what to generate
+            amount: 1,                          // how many to generate
+            withRelated: true,                  // return model
+            generateParams: new GenerateListingItemParams().toParamsArray() // what kind of data to generate
+        } as TestDataGenerateRequest);
+        createdListingItem = listingItems[0].toJSON();
 
-        createdListingItem = await testDataService.create<ListingItem>({
-            model: 'listingitem',
-            data: {
-                market_id: defaultMarket.id,
-                hash: 'itemhash'
-            } as any,
-            withRelated: true
-        } as TestDataCreateRequest);
     });
 
     afterAll(async () => {

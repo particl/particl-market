@@ -486,14 +486,24 @@ export class TestDataService {
 
     private async generateListingItemData(generateParams: GenerateListingItemParams): Promise<ListingItemCreateRequest> {
 
-        const defaultMarket = await this.marketService.getDefault();
-        const seller = await this.coreRpcService.getNewAddress();
+        // get default profile
+        const defaultProfileModel = await this.profileService.getDefault();
+        const defaultProfile = defaultProfileModel.toJSON();
+
+        // get default market
+        const defaultMarketModel = await this.marketService.getDefault();
+        const defaultMarket = defaultMarketModel.toJSON();
+
+        // todo: parameterize, new address or default profile address
+        // const seller = await this.coreRpcService.getNewAddress();
+        const seller = defaultProfile.id;
 
         const itemInformation = generateParams.generateItemInformation ? this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? this.generatePaymentInformationData(generateParams) : {};
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
         const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
 
+        // todo: use ObjectHash
         const listingItem = {
             hash: Faker.random.uuid(),
             seller,
@@ -501,7 +511,7 @@ export class TestDataService {
             paymentInformation,
             messagingInformation,
             listingItemObjects,
-            market_id: defaultMarket.Id
+            market_id: defaultMarket.id
         } as ListingItemCreateRequest;
 
         return listingItem;
