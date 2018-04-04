@@ -61,6 +61,8 @@ export class OrderService {
 
         // set new values
         order.Hash = body.hash;
+        order.Buyer = body.buyer;
+        order.Seller = body.seller;
 
         // update order record
         const updatedOrder = await this.orderRepo.update(id, order.toJSON());

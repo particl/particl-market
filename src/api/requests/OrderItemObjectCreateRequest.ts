@@ -5,6 +5,9 @@ import { RequestBody } from '../../core/api/RequestBody';
 export class OrderItemObjectCreateRequest extends RequestBody {
 
     @IsNotEmpty()
+    public order_item_id: number;
+
+    @IsNotEmpty()
     public dataId: string;
 
     @IsNotEmpty()

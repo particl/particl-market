@@ -30,6 +30,12 @@ export class Order extends Bookshelf.Model<Order> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
+    public get Buyer(): string { return this.get('buyer'); }
+    public set Buyer(value: string) { this.set('buyer', value); }
+
+    public get Seller(): string { return this.get('seller'); }
+    public set Seller(value: string) { this.set('seller', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 

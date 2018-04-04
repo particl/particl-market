@@ -1,11 +1,11 @@
 import * as _ from 'lodash';
 
-export interface GenerateBidParamsInterface {
+export interface GenerateOrderParamsInterface {
     generateListingItem: boolean;
     toParamsArray(): boolean[];
 }
 
-export class GenerateBidParams implements GenerateBidParamsInterface {
+export class GenerateOrderParams implements GenerateOrderParamsInterface {
 
     // GenerateBidParamsInterface
     public generateListingItem = true;
@@ -18,7 +18,7 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
      */
     constructor(generateParams: boolean[] = []) {
 
-        // TODO: this is stupid, bids cannot be generated without listingitem
+        // TODO: this is stupid, bids cannot be generated without listingitem (and bid)
 
         // set params only if there are some -> by default all are true
         if (!_.isEmpty(generateParams) ) {

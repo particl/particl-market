@@ -71,6 +71,12 @@ import { AddressType } from '../enums/AddressType';
 import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { ActionMessage } from '../models/ActionMessage';
 import { CoreRpcService } from './CoreRpcService';
+import { GenerateOrderParams } from '../requests/params/GenerateOrderParams';
+import { OrderCreateRequest } from '../requests/OrderCreateRequest';
+import { OrderItemCreateRequest } from '../requests/OrderItemCreateRequest';
+import * as resources from 'resources';
+import { OrderStatus } from '../enums/OrderStatus';
+import {OrderItemObjectCreateRequest} from '../requests/OrderItemObjectCreateRequest';
 
 export class TestDataService {
 
@@ -89,6 +95,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.FavoriteItemService) private favoriteItemService: FavoriteItemService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) private actionMessageService: ActionMessageService,
@@ -194,6 +201,10 @@ export class TestDataService {
             case CreatableModel.BID: {
                 const generateParams = new GenerateBidParams(body.generateParams);
                 return await this.generateBids(body.amount, body.withRelated, generateParams);
+            }
+            case CreatableModel.ORDER: {
+                const generateParams = new GenerateOrderParams(body.generateParams);
+                return await this.generateOrders(body.amount, body.withRelated, generateParams);
             }
             default: {
                 throw new MessageException('Not implemented');
@@ -326,6 +337,9 @@ export class TestDataService {
         let listingItemId = 1;
         if (generateParams.generateListingItem) {
             const listingGenerateParams = new GenerateListingItemParams();
+
+            // TODO: these function names are confusing, refactor
+            // generateListingItems actually creates a listingItem vs generateBidData do not.
             const listings = await this.generateListingItems(1, true, listingGenerateParams);
             listingItemId = listings[0].id;
             this.log.debug(`generateBidData: generated new listing with id ${listingItemId}, continuing bid creation`);
@@ -342,6 +356,57 @@ export class TestDataService {
             bidder,
             bidDatas
         } as BidCreateRequest;
+    }
+
+    // -------------------
+    // orders
+    private async generateOrders(amount: number, withRelated: boolean = true, generateParams: GenerateOrderParams): Promise<any> {
+        const items: any[] = [];
+        for (let i = amount; i > 0; i--) {
+            const order = await this.generateOrderData(generateParams);
+            const savedOrder = await this.orderService.create(order);
+            items.push(savedOrder);
+        }
+        return this.generateResponse(items, withRelated);
+    }
+
+    private async generateOrderData(generateParams: GenerateOrderParams): Promise<OrderCreateRequest> {
+        // todo: add GenerateListingItemParams and GenerateBidParams inside generateOrderParams
+
+        const bidGenerateParams = new GenerateBidParams();
+
+        //  generate bid which will also create a ListingItem
+        const bids = await this.generateBids(1, true, bidGenerateParams);
+        const bidId = bids[0].id;
+        const listingItemId = bids[0].ListingItem.id;
+
+        this.log.debug(`generateOrderData: generated new listing with id ${listingItemId}, continuing order creation`);
+        this.log.debug(`generateOrderData: generated new bid with id ${bidId}, continuing order creation`);
+
+        // TODO: then generate order with some orderitems and orderitemobjects
+        const orderItemCreateRequest = await this.generateOrderItemData(bids[0]);
+        const hash = Faker.random.uuid();
+        const buyer = Faker.finance.bitcoinAddress();
+        const seller = Faker.finance.bitcoinAddress();
+
+        return {
+            address_id: listingItemId,
+            hash,
+            orderItems: [orderItemCreateRequest],
+            buyer,
+            seller
+        } as OrderCreateRequest;
+    }
+
+    private async generateOrderItemData(bid: resources.Bid): Promise<OrderItemCreateRequest> {
+        const orderItemObjects: OrderItemObjectCreateRequest[] = [];
+        return {
+            order_id: 0,
+            listing_item_id: bid.ListingItem.id,
+            bid_id: bid.id,
+            status: OrderStatus.AWAITING_ESCROW,
+            orderItemObjects
+        } as OrderItemCreateRequest;
     }
 
     // -------------------

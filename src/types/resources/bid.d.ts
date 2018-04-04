@@ -6,9 +6,12 @@ declare module 'resources' {
         id: number;
         bidder: string;
         action: BidMessageType;
-        BidDatas: BidData[];
         createdAt: Date;
         updatedAt: Date;
+        BidDatas: BidData[];
+        ListingItem: ListingItem;
+        ShippingAddress: Address;
+        OrderItem: OrderItem;
     }
 
 }
