@@ -3,14 +3,16 @@ import { Bookshelf } from '../../{{deepness}}config/Database';
 
 export class {{name.capitalize}} extends Bookshelf.Model<{{name.capitalize}}> {
 
+    public static RELATIONS = [
+        // TODO:
+        // '{{name.capitalize}}Related',
+        // '{{name.capitalize}}Related.Related'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<{{name.capitalize}}> {
         if (withRelated) {
             return await {{name.capitalize}}.where<{{name.capitalize}}>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // '{{name.capitalize}}Related',
-                    // '{{name.capitalize}}Related.Related'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await {{name.capitalize}}.where<{{name.capitalize}}>({ id: value }).fetch();
