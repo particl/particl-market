@@ -9,7 +9,7 @@ import { RpcCommandInterface } from './RpcCommandInterface';
 import { Commands } from './CommandEnumType';
 import { BaseCommand } from './BaseCommand';
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
-import { NotFoundException } from '../exceptions/NotFoundException';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
 
 export class {{name.capitalize}}Command extends BaseCommand implements RpcCommandInterface<{{name.capitalize}}> {
 
@@ -20,7 +20,6 @@ export class {{name.capitalize}}Command extends BaseCommand implements RpcComman
     ) {
         super(Commands.CHANGE_THIS);
         this.log = new Logger(__filename);
-        this.name = '{{name.capitalize}}'; // TODO: replace me with the command name
     }
 
     /**
@@ -31,8 +30,8 @@ export class {{name.capitalize}}Command extends BaseCommand implements RpcComman
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: any): Promise<{{name.capitalize}}> {
-        throw new NotFoundException();
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
+        throw new NotImplementedException();
         // root commands:
         // return await this.executeNext(data, rpcCommandFactory);
     }
@@ -43,5 +42,9 @@ export class {{name.capitalize}}Command extends BaseCommand implements RpcComman
 
     public description(): string {
         return 'Commands for managing {{name.capitalize}}Command.';
+    }
+
+    public example(): string {
+        return this.getName() + ' TODO: example';
     }
 }

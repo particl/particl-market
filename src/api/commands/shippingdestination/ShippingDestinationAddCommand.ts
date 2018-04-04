@@ -16,6 +16,7 @@ import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestina
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import {ListingItemTemplate, ShippingDestination as Destination} from 'resources';
+// TODO: ^^ import * from resources and then use like resources.Class to distinguish from the Model classes in code
 
 export class ShippingDestinationAddCommand extends BaseCommand implements RpcCommandInterface<ShippingDestination> {
 

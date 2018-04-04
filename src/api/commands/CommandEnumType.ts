@@ -143,6 +143,10 @@ export class CommandEnumType extends Enum<Command> {
     public ITEMOBJECT_ROOT: Command           = new Command('itemobject', 'itemobject', true,
         [this.ITEMOBJECT_SEARCH], EnvironmentType.ALL);
 
+    public ORDER_SEARCH: Command         = new Command('ordersearch', 'search', false);
+    public ORDER_ROOT: Command           = new Command('order', 'order', true,
+        [this.ORDER_SEARCH], EnvironmentType.ALL);
+
     public PRICETICKER_ROOT: Command           = new Command('priceticker', 'priceticker', true);
 
     public CURRENCYPRICE_ROOT: Command        = new Command('currencyprice', 'currencyprice', true);
