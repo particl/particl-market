@@ -1,16 +1,23 @@
+import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
-
+import { Order } from './Order';
+import { Bid } from './Bid';
+import { ListingItem } from './ListingItem';
+import {OrderItemObject} from './OrderItemObject';
 
 export class OrderItem extends Bookshelf.Model<OrderItem> {
+
+    public static RELATIONS = [
+        'Order',
+        'Bid',
+        'ListingItem',
+        'OrderItemObjects'
+    ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<OrderItem> {
         if (withRelated) {
             return await OrderItem.where<OrderItem>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'OrderItemRelated',
-                    // 'OrderItemRelated.Related'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await OrderItem.where<OrderItem>({ id: value }).fetch();
@@ -32,8 +39,20 @@ export class OrderItem extends Bookshelf.Model<OrderItem> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public OrderItemRelated(): OrderItemRelated {
-    //    return this.hasOne(OrderItemRelated);
-    // }
+    public Order(): Order {
+        return this.belongsTo(Order, 'order_id', 'id');
+    }
+
+    public Bid(): Bid {
+        return this.belongsTo(Bid, 'bid_id', 'id');
+    }
+
+    public ListingItem(): ListingItem {
+        return this.belongsTo(ListingItem, 'listing_item_id', 'id');
+    }
+
+    public OrderItemObjects(): Collection<OrderItemObject> {
+        return this.hasMany(OrderItemObject, 'order_item_id', 'id');
+    }
+
 }
