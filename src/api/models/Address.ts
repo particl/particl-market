@@ -1,4 +1,3 @@
-import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { Profile } from './Profile';
 

@@ -6,8 +6,11 @@ import { OrderStatus } from '../enums/OrderStatus';
 // tslint:disable:variable-name
 export class OrderItemCreateRequest extends RequestBody {
 
+    // @IsNotEmpty()
+    // public listing_item_id: number;
+
     @IsNotEmpty()
-    public listing_item_id: number;
+    public itemHash: string;
 
     @IsNotEmpty()
     public bid_id: number;

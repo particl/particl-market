@@ -35,18 +35,15 @@ export class OrderItemObjectService {
     }
 
     @validate()
-    public async create( @request(OrderItemObjectCreateRequest) body: OrderItemObjectCreateRequest): Promise<OrderItemObject> {
+    public async create( @request(OrderItemObjectCreateRequest) data: OrderItemObjectCreateRequest): Promise<OrderItemObject> {
 
-        // TODO: extract and remove related models from request
-        // const orderItemObjectRelated = body.related;
-        // delete body.related;
+        const body = JSON.parse(JSON.stringify(data));
+
+        this.log.debug('create OrderItemObject, body: ', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the orderItemObject
-        const orderItemObject = await this.orderItemObjectRepo.create(body);
-
-        // TODO: create related models
-        // orderItemObjectRelated._id = orderItemObject.Id;
-        // await this.orderItemObjectRelatedService.create(orderItemObjectRelated);
+        const orderItemObjectModel = await this.orderItemObjectRepo.create(body);
+        const orderItemObject = orderItemObjectModel.toJSON();
 
         // finally find and return the created orderItemObject
         const newOrderItemObject = await this.findOne(orderItemObject.id);
@@ -73,6 +70,7 @@ export class OrderItemObjectService {
     }
 
     public async destroy(id: number): Promise<void> {
+        this.log.debug('removing orderItemObject:', id);
         await this.orderItemObjectRepo.destroy(id);
     }
 

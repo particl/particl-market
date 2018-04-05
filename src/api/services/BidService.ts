@@ -21,9 +21,7 @@ import { EventEmitter } from 'events';
 import { BidDataService } from './BidDataService';
 import { ListingItemService } from './ListingItemService';
 import { AddressService } from './AddressService';
-import { AddressType } from '../enums/AddressType';
 import { ProfileService } from './ProfileService';
-import {MessageException} from '../exceptions/MessageException';
 
 export class BidService {
 
@@ -88,17 +86,19 @@ export class BidService {
         const body = JSON.parse(JSON.stringify(data));
         this.log.debug('BidCreateRequest:', JSON.stringify(body, null, 2));
 
-        // bid needs to be related to listing item
+        // bid needs is related to listing item
         if (body.listing_item_id == null) {
             this.log.error('Request body is not valid, listing_item_id missing');
             throw new ValidationException('Request body is not valid', ['listing_item_id missing']);
         }
 
+        // bid needs to have a bidder
         if (body.bidder == null) {
             this.log.error('Request body is not valid, bidder missing');
             throw new ValidationException('Request body is not valid', ['bidder missing']);
         }
 
+        // shipping address
         if (body.address == null) {
             this.log.error('Request body is not valid, address missing');
             throw new ValidationException('Request body is not valid', ['address missing']);

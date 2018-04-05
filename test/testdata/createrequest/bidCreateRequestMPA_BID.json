@@ -9,7 +9,7 @@
         "dataValue": "GREEN"
     }],
     "address": {
-        "title": "Title",
+        "title": "SHIPPING_ADDRESS_FOR_BID",
         "firstName": "Robert",
         "lastName": "Downey",
         "addressLine1": "addressline1",
@@ -18,6 +18,6 @@
         "state": "Keski-Suomi",
         "country": "FI",
         "zipCode": "40800",
-        "type": "SHIPPING_ORDER"
+        "type": "SHIPPING_BID"
     }
 }

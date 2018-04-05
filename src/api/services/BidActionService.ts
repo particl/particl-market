@@ -445,7 +445,7 @@ export class BidActionService {
             if (!_.isEmpty(listingItem.ListingItemTemplate)) { // local profile is selling
                 this.log.debug('listingItem has template: ', listingItem.ListingItemTemplate.id);
                 this.log.debug('listingItem template has profile: ', listingItem.ListingItemTemplate.Profile.id);
-                bidCreateRequest.address.type = AddressType.SHIPPING_ORDER;
+                bidCreateRequest.address.type = AddressType.SHIPPING_BID;
                 bidCreateRequest.address.profile_id = listingItem.ListingItemTemplate.Profile.id;
             } else { // local profile is buying
                 this.log.debug('listingItem has no template ');

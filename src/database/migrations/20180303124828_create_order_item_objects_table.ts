@@ -6,8 +6,12 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('order_item_objects', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.string('dataId').notNullable();
-            table.string('dataValue').notNullable();
+            table.string('data_id').notNullable();
+            table.string('data_value').notNullable();
+
+            table.integer('order_item_id').unsigned().notNullable();
+            table.foreign('order_item_id').references('id')
+                .inTable('order_items');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

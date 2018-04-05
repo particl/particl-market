@@ -12,6 +12,8 @@ export enum HashableObjectType {
     LISTINGITEM = 'ListingItem',
     LISTINGITEMTEMPLATE = 'ListingItemTemplate',
 
+    ORDER_CREATEREQUEST = 'Order',
+
     ITEMIMAGE = 'ItemImage',
     DEFAULT = 'Default'
 

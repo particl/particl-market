@@ -12,6 +12,7 @@ import { OrderItem } from '../../../src/api/models/OrderItem';
 import { OrderItemService } from '../../../src/api/services/OrderItemService';
 
 describe('OrderItem', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
