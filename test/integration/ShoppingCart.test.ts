@@ -14,9 +14,11 @@ import { ProfileService } from '../../src/api/services/ProfileService';
 
 import { ShoppingCartCreateRequest } from '../../src/api/requests/ShoppingCartCreateRequest';
 import { ShoppingCartUpdateRequest } from '../../src/api/requests/ShoppingCartUpdateRequest';
+import * as resources from 'resources';
 
 describe('ShoppingCart', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
 
@@ -24,7 +26,7 @@ describe('ShoppingCart', () => {
     let shoppingCartService: ShoppingCartService;
     let profileService: ProfileService;
 
-    let defaultProfile;
+    let defaultProfile: resources.Profile;
     let createdId;
 
     const testData = {
@@ -46,14 +48,17 @@ describe('ShoppingCart', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        defaultProfile = await profileService.getDefault();
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        defaultProfile = defaultProfileModel.toJSON();
+
     });
 
     afterAll(async () => {
         //
     });
 
-    test('Should list default shopping carts', async () => {
+    test('Should list default ShoppingCarts', async () => {
         const shoppingCartCollection = await shoppingCartService.findAll();
         const shoppingCart = shoppingCartCollection.toJSON();
         expect(shoppingCart.length).toBe(1);
@@ -65,7 +70,7 @@ describe('ShoppingCart', () => {
         expect(result.profileId).toBe(defaultProfile.id);
     });
 
-    test('Should create a new shopping cart', async () => {
+    test('Should create a new ShoppingCart', async () => {
         testData.profile_id = defaultProfile.id;
         const shoppingCartModel: ShoppingCart = await shoppingCartService.create(testData);
         createdId = shoppingCartModel.Id;
@@ -77,14 +82,14 @@ describe('ShoppingCart', () => {
         expect(result.profileId).toBe(testData.profile_id);
     });
 
-    test('Should throw ValidationException because we want to create a empty shopping cart', async () => {
+    test('Should throw ValidationException because we want to create a empty ShoppingCart', async () => {
         expect.assertions(1);
         await shoppingCartService.create({}).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list shopping carts with our new create one', async () => {
+    test('Should list ShoppingCarts with our new create one', async () => {
         const shoppingCartCollection = await shoppingCartService.findAll();
         const shoppingCarts = shoppingCartCollection.toJSON();
         expect(shoppingCarts.length).toBe(2); // includes default one
@@ -96,7 +101,7 @@ describe('ShoppingCart', () => {
         expect(result.profileId).toBe(testData.profile_id);
     });
 
-    test('Should return one shopping carts', async () => {
+    test('Should return one ShoppingCart', async () => {
         const shoppingCartModel: ShoppingCart = await shoppingCartService.findOne(createdId);
         const result = shoppingCartModel.toJSON();
 
@@ -114,7 +119,7 @@ describe('ShoppingCart', () => {
     });
     */
 
-    test('Should update the shopping carts', async () => {
+    test('Should update the ShoppingCart', async () => {
         const shoppingCartsModel: ShoppingCart = await shoppingCartService.update(createdId, testDataUpdated);
         const result = shoppingCartsModel.toJSON();
 
@@ -123,7 +128,7 @@ describe('ShoppingCart', () => {
         expect(result.profileId).toBe(testData.profile_id);
     });
 
-    test('Should delete the shopping carts', async () => {
+    test('Should delete the ShoppingCart', async () => {
         expect.assertions(1);
         await shoppingCartService.destroy(createdId);
         await shoppingCartService.findOne(createdId).catch(e =>

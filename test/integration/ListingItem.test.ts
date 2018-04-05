@@ -77,11 +77,11 @@ describe('ListingItem', () => {
     let listingItemObjectService: ListingItemObjectService;
     let listingItemObjectDataService: ListingItemObjectDataService;
 
-    let createdListingItem1;
-    let createdListingItem2;
-    let createdListingItem3;
+    let createdListingItem1: resources.ListingItem;
+    let createdListingItem2: resources.ListingItem;
+    let createdListingItem3: resources.ListingItem;
 
-    let updatedListingItem1;
+    let updatedListingItem1: resources.ListingItem;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
