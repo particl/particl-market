@@ -57,7 +57,9 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
         // find profile by id
         const profileId = data.params.shift();
-        const profile: any = await this.profileService.findOne(profileId);
+        let profile: any = await this.profileService.findOne(profileId);
+        profile = profile.toJSON();
+        // this.log.warn('profile = ' + JSON.stringify(profile));
 
         // if profile not found
         if (profile === null) {
@@ -67,7 +69,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
         // find address by id
         const addressId = data.params.shift();
-        const address = _.find(profile.ShippingAddresses, (addr: any) => {
+        let address: any = _.find(profile.ShippingAddresses, (addr: any) => {
             return addr.id === addressId;
         });
 
