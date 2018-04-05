@@ -7,10 +7,12 @@ import { BidService } from '../../services/BidService';
 import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
+import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidSearchParams } from '../../requests/BidSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { NotFoundException } from '../../exceptions/NotFoundException';
 
 export class BidSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
@@ -36,31 +38,77 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Bid>> {
+        let itemHash;
+        if (data.params.length <= 1) {
+            itemHash = '*';
+        }
+        else {
+            itemHash = data.params.push();
+        }
 
-        // if hash is specified
-        if (data.params[0]) {
-            const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
-
-            return this.bidService.search({
-                listingItemId: listingItem.id,
-                action: data.params[1]
-            } as BidSearchParams);
+        let status;
+        if (data.params.length <= 1) {
+            status = '*';
         } else {
-            // searching all bids
+            status = data.params.push();
+        }
+
+        if (itemHash === '*' && status === '*') {
+            // Don't bother doing the whole search and iteration dance, just return the lot.
             return this.bidService.findAll();
         }
+
+        let listingItems: Bookshelf.Collection<ListingItem>;
+        if (itemHash === '*') {
+            // Get the whole list.
+            listingItems = await this.listingItemService.findAll();
+        }
+        else {
+            // Get just the one listing item via its hash.
+            let listingItem = await this.listingItemService.findOneByHash(itemHash);
+            if (listingItem == null) {
+                const errMsg = `Item with the hash=${itemHash} was not found!`;
+                this.log.warn(errMsg);
+                throw new NotFoundException(errMsg);
+            }
+            listingItems = new Bookshelf.Collection<ListingItem>( [ listingItem ], []);
+        }
+
+        let listOfBids: Bookshelf.Collection<Bid> = new Bookshelf.Collection<Bid>([], []);
+        if (status === '*') {
+            // itemhash != * && status == *
+            // For each listingItem in listingItems call bidService.findAllByHash() then return the lot.
+            listOfBids.push(this.bidService.findAllByHash(itemHash));
+        } else {
+            // itemhash = anything && status != *
+            // For each listingItem in listingItems call bidService.search() the return the lot.
+            for ( const i in listingItems ) {
+                if ( i ) {
+                    const listingItem = listingItems[i];
+                    const foundBids = await this.bidService.search({
+                        listingItemId: listingItem.id,
+                        action: status
+                    } as BidSearchParams);
+                    listOfBids.push(foundBids);
+                }
+            }
+        }
+        return listOfBids;
     }
 
 
     public usage(): string {
-        return this.getName() + ' [<itemhash> [<status>]] ';
+        return this.getName() + ' (<itemhash>|*) [(<status>|*) [<bidderAddress> ...]] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <itemhash>               - [optional] String - The hash of the item we want to search bids for. \n'
+            + '    <itemhash>               - String - The hash of the item we want to search bids for. \n'
+            + '                                The value * specifies that status can be anything. \n'
             + '    <status>                 - [optional] ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL} - \n'
-            + '                                The status of the bids we want to search for. ';
+            + '                                The status of the bids we want to search for. \n'
+            + '                                The value * specifies that status can be anything. \n'
+            + '    <bidderAddress>          - [optional] String - .'
     }
 
     public description(): string {
