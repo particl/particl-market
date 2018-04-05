@@ -41,8 +41,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
         let itemHash;
         if (data.params.length <= 1) {
             itemHash = '*';
-        }
-        else {
+        } else {
             itemHash = data.params.push();
         }
 
@@ -62,19 +61,18 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
         if (itemHash === '*') {
             // Get the whole list.
             listingItems = await this.listingItemService.findAll();
-        }
-        else {
+        } else {
             // Get just the one listing item via its hash.
-            let listingItem = await this.listingItemService.findOneByHash(itemHash);
+            const listingItem = await this.listingItemService.findOneByHash(itemHash);
             if (listingItem == null) {
                 const errMsg = `Item with the hash=${itemHash} was not found!`;
                 this.log.warn(errMsg);
                 throw new NotFoundException(errMsg);
             }
-            listingItems = new Bookshelf.Collection<ListingItem>( [ listingItem ], []);
+            listingItems = new Bookshelf.Collection<ListingItem>([listingItem]);
         }
 
-        let listOfBids: Bookshelf.Collection<Bid> = new Bookshelf.Collection<Bid>([], []);
+        const listOfBids: Bookshelf.Collection<Bid> = new Bookshelf.Collection<Bid>();
         if (status === '*') {
             // itemhash != * && status == *
             // For each listingItem in listingItems call bidService.findAllByHash() then return the lot.
@@ -108,7 +106,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
             + '    <status>                 - [optional] ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL} - \n'
             + '                                The status of the bids we want to search for. \n'
             + '                                The value * specifies that status can be anything. \n'
-            + '    <bidderAddress>          - [optional] String - .'
+            + '    <bidderAddress>          - [optional] String - The address of the bidder we want to search bids for. ';
     }
 
     public description(): string {
