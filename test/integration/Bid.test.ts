@@ -27,7 +27,6 @@ import { GenerateListingItemTemplateParams } from '../../src/api/requests/params
 
 import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
 import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
-import * as listingItemCreateRequestBasic3 from '../testdata/createrequest/listingItemCreateRequestBasic3.json';
 
 import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BID.json';
 import * as resources from 'resources';

@@ -20,6 +20,10 @@ import { ItemInformation } from '../../src/api/models/ItemInformation';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ItemLocationCreateRequest } from '../../src/api/requests/ItemLocationCreateRequest';
 import { ItemLocationUpdateRequest } from '../../src/api/requests/ItemLocationUpdateRequest';
+import * as resources from 'resources';
+import { ProfileService } from '../../src/api/services/ProfileService';
+
+import * as listingItemCreateRequestWithoutItemLocation from '../testdata/createrequest/listingItemCreateRequestWithoutItemLocation.json';
 
 describe('ItemLocation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -30,13 +34,17 @@ describe('ItemLocation', () => {
     let testDataService: TestDataService;
     let itemLocationService: ItemLocationService;
     let marketService: MarketService;
+    let profileService: ProfileService;
     let listingItemService: ListingItemService;
     let itemInformationService: ItemInformationService;
     let locationMarkerService: LocationMarkerService;
 
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let createdListingItem: resources.ListingItem;
+
     let createdId;
     let itemInformation;
-    let createdListingItem;
 
     const testData = {
         item_information_id: null,
@@ -68,6 +76,7 @@ describe('ItemLocation', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         itemLocationService = app.IoC.getNamed<ItemLocationService>(Types.Service, Targets.Service.ItemLocationService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
         itemInformationService = app.IoC.getNamed<ItemInformationService>(Types.Service, Targets.Service.ItemInformationService);
         locationMarkerService = app.IoC.getNamed<LocationMarkerService>(Types.Service, Targets.Service.LocationMarkerService);
@@ -75,36 +84,23 @@ describe('ItemLocation', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        defaultProfile = defaultProfileModel.toJSON();
 
-        // create market
-        let defaultMarket = await marketService.getDefault();
-        defaultMarket = defaultMarket.toJSON();
+        // get market
+        const defaultMarketModel = await marketService.getDefault();
+        defaultMarket = defaultMarketModel.toJSON();
 
-        createdListingItem = await testDataService.create<ListingItem>({
-            model: 'listingitem',
-            data: {
-                market_id: defaultMarket.id,
-                hash: 'itemhash'
-            } as any,
-            withRelated: true
-        } as TestDataCreateRequest);
+        // create ListingItem without ItemLocation
+        listingItemCreateRequestWithoutItemLocation.market_id = defaultMarket.id;
+        listingItemCreateRequestWithoutItemLocation.seller = defaultProfile.address;
+        const createdListingItemModel1 = await listingItemService.create(listingItemCreateRequestWithoutItemLocation);
+        createdListingItem = createdListingItemModel1.toJSON();
+        log.debug('createdListingItem1: ', createdListingItem.id);
+        log.debug('createdListingItem1: ', createdListingItem.hash);
 
-        // create iteminformation
-        itemInformation = await testDataService.create<ItemInformation>({
-            model: 'iteminformation',
-            data: {
-                listing_item_id: createdListingItem.id,
-                title: 'TEST TITLE',
-                shortDescription: 'TEST SHORT DESCRIPTION',
-                longDescription: 'TEST LONG DESCRIPTION',
-                itemCategory: {
-                    key: 'cat_high_luxyry_items',
-                    name: 'Luxury Items',
-                    description: ''
-                }
-            } as any,
-                withRelated: true
-        } as TestDataCreateRequest);
+        itemInformation = createdListingItem.ItemInformation;
     });
 
 
@@ -119,7 +115,7 @@ describe('ItemLocation', () => {
         );
     });
 
-    test('Should create a new item location', async () => {
+    test('Should create a new ItemLocation', async () => {
         // set the itemInformation id
         testData.item_information_id = itemInformation.id;
 
@@ -136,14 +132,14 @@ describe('ItemLocation', () => {
         expect(result.LocationMarker.lng).toBe(testData.locationMarker.lng);
     });
 
-    test('Should throw ValidationException because we want to create a empty item location', async () => {
+    test('Should throw ValidationException because we want to create a empty ItemLocation', async () => {
         expect.assertions(1);
         await itemLocationService.create({} as ItemLocationCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list item locations with our new create one', async () => {
+    test('Should list ItemLocations with our new create one', async () => {
         const itemLocationCollection = await itemLocationService.findAll();
         const itemLocation = itemLocationCollection.toJSON();
         expect(itemLocation.length).toBe(1);
@@ -155,7 +151,7 @@ describe('ItemLocation', () => {
         expect(result.LocationMarker).toBe(undefined); // doesnt fetch related
     });
 
-    test('Should return one item location', async () => {
+    test('Should return one ItemLocation', async () => {
         const itemLocationModel: ItemLocation = await itemLocationService.findOne(createdId);
         const result = itemLocationModel.toJSON();
         expect(result.region).toBe(testData.region);
@@ -166,14 +162,14 @@ describe('ItemLocation', () => {
         expect(result.LocationMarker.lng).toBe(testData.locationMarker.lng);
     });
 
-    test('Should throw ValidationException because wer are trying to update with no item_information_id', async () => {
+    test('Should throw ValidationException because we are trying to update with no item_information_id', async () => {
         expect.assertions(1);
         await itemLocationService.update(createdId, testDataUpdated as ItemLocationUpdateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should update the item location', async () => {
+    test('Should update the ItemLocation', async () => {
         // set the itemInformation id
         testDataUpdated.item_information_id = itemInformation.id;
 
@@ -187,7 +183,7 @@ describe('ItemLocation', () => {
         expect(result.LocationMarker.lng).toBe(testDataUpdated.locationMarker.lng);
     });
 
-    test('Should delete the item location', async () => {
+    test('Should delete the ItemLocation', async () => {
         expect.assertions(3);
         // delete listing item
         await listingItemService.destroy(createdListingItem.id);
@@ -204,7 +200,7 @@ describe('ItemLocation', () => {
         );
     });
 
-    test('Should not have location markers because locationItem has been deleted', async () => {
+    test('Should not have LocationMarkers because ItemLocation has been deleted', async () => {
         const bidData = await locationMarkerService.findAll();
         expect(bidData.length).toBe(0);
     });

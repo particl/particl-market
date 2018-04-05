@@ -10,16 +10,6 @@
             "name": "Luxury Items",
             "description": ""
         },
-        "itemLocation": {
-            "region": "CV",
-            "address": "92656 Morar Turnpike",
-            "locationMarker": {
-                "markerTitle": "saepe",
-                "markerText": "Commodi ut ex.",
-                "lat": 12.1234,
-                "lng": 23.2314
-            }
-        },
         "shippingDestinations": [{
             "country": "MA",
             "shippingAvailability": "DOES_NOT_SHIP"

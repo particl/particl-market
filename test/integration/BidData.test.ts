@@ -28,7 +28,7 @@ import { GenerateListingItemParams } from '../../src/api/requests/params/Generat
 import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import * as resources from 'resources';
-import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BIDwithoutBidDatas.json';
+import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BIDWithoutBidDatas.json';
 
 describe('BidDatas', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

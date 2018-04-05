@@ -7,12 +7,9 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { addressTestData } from './BidCommandCommon';
 import { AddressCreateRequest } from '../../../src/api/requests/AddressCreateRequest';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 
 import * as resources from 'resources';
 import * as listingItemCreateRequestBasic1 from '../../testdata/createrequest/listingItemCreateRequestBasic1.json';
-import * as listingItemCreateRequestBasic2 from '../../testdata/createrequest/listingItemCreateRequestBasic2.json';
-import * as listingItemCreateRequestBasic3 from '../../testdata/createrequest/listingItemCreateRequestBasic3.json';
 
 describe('BidAcceptCommand', () => {
 

@@ -25,7 +25,6 @@ import { Bid } from '../../../src/api/models/Bid';
 
 import * as listingItemCreateRequestBasic1 from '../../testdata/createrequest/listingItemCreateRequestBasic1.json';
 import * as listingItemCreateRequestBasic2 from '../../testdata/createrequest/listingItemCreateRequestBasic2.json';
-import * as listingItemCreateRequestBasic3 from '../../testdata/createrequest/listingItemCreateRequestBasic3.json';
 
 import * as bidCreateRequest1 from '../../testdata/createrequest/bidCreateRequestMPA_BID.json';
 import * as orderCreateRequest1 from '../../testdata/createrequest/orderCreateRequest1.json';
