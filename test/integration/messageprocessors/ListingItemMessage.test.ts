@@ -12,8 +12,7 @@ import { ListingItemFactory } from '../../../src/api/factories/ListingItemFactor
 import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
 
 import * as listingItemSmsg1 from '../../testdata/message/smsgMessageWithListingItemMessage1.json';
-import * as listingItemSmsg2 from '../../testdata/message/smsgMessageWithListingItemMessage2.json';
-import * as listingItemSmsg3 from '../../testdata/message/smsgMessageWithListingItemMessage3.json';
+
 import * as resources from 'resources';
 
 

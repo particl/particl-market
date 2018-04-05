@@ -60,12 +60,14 @@ export class ListingItemFactory {
     }
 
     /**
-     * Creates a ListingItemCreateRequest from given data
      *
-     * @param data
-     * @returns {ListingItemCreateRequest}
+     * @param {ListingItemMessage} listingItemMessage
+     * @param {number} marketId
+     * @param {string} seller
+     * @param {"resources".ItemCategory} rootCategory
+     * @returns {Promise<ListingItemCreateRequest>}
      */
-    public async getModel(listingItemMessage: ListingItemMessage, marketId: number,
+    public async getModel(listingItemMessage: ListingItemMessage, marketId: number, seller: string,
                           rootCategory: resources.ItemCategory): Promise<ListingItemCreateRequest> {
 
         const itemInformation = await this.getModelItemInformation(listingItemMessage.information, rootCategory);
@@ -74,6 +76,7 @@ export class ListingItemFactory {
         const listingItemObjects = await this.getModelListingItemObjects(listingItemMessage.objects);
 
         return {
+            seller,
             hash: listingItemMessage.hash,
             market_id: marketId,
             itemInformation,

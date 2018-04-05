@@ -159,7 +159,8 @@ export class ListingItemActionService {
             const rootCategory = rootCategoryWithRelatedModel.toJSON();
 
             // create ListingItem
-            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, rootCategory);
+            const seller = event.smsgMessage.from;
+            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory);
             // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
