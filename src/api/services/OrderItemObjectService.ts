@@ -62,10 +62,6 @@ export class OrderItemObjectService {
 
         // update orderItemObject record
         const updatedOrderItemObject = await this.orderItemObjectRepo.update(id, orderItemObject.toJSON());
-
-        // const newOrderItemObject = await this.findOne(id);
-        // return newOrderItemObject;
-
         return updatedOrderItemObject;
     }
 

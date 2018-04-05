@@ -1,37 +1,37 @@
-import { app } from '../../../src/app';
-import { Logger as LoggerType } from '../../../src/core/Logger';
-import { Types, Core, Targets } from '../../../src/constants';
-import { TestUtil } from '../lib/TestUtil';
-import { TestDataService } from '../../../src/api/services/TestDataService';
+import { app } from '../../src/app';
+import { Logger as LoggerType } from '../../src/core/Logger';
+import { Types, Core, Targets } from '../../src/constants';
+import { TestUtil } from './lib/TestUtil';
+import { TestDataService } from '../../src/api/services/TestDataService';
 
-import { Order } from '../../../src/api/models/Order';
+import { Order } from '../../src/api/models/Order';
 
-import { OrderService } from '../../../src/api/services/OrderService';
-import { OrderCreateRequest } from '../../../src/api/requests/OrderCreateRequest';
+import { OrderService } from '../../src/api/services/OrderService';
+import { OrderCreateRequest } from '../../src/api/requests/OrderCreateRequest';
 
-import { ProfileService } from '../../../src/api/services/ProfileService';
-import { ListingItemService } from '../../../src/api/services/ListingItemService';
-import { MarketService } from '../../../src/api/services/MarketService';
-import { BidService } from '../../../src/api/services/BidService';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
-import { Bid } from '../../../src/api/models/Bid';
+import { ProfileService } from '../../src/api/services/ProfileService';
+import { ListingItemService } from '../../src/api/services/ListingItemService';
+import { MarketService } from '../../src/api/services/MarketService';
+import { BidService } from '../../src/api/services/BidService';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { Bid } from '../../src/api/models/Bid';
 
-import * as listingItemCreateRequestBasic1 from '../../testdata/createrequest/listingItemCreateRequestBasic1.json';
-import * as listingItemCreateRequestBasic2 from '../../testdata/createrequest/listingItemCreateRequestBasic2.json';
+import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
+import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
 
-import * as bidCreateRequest1 from '../../testdata/createrequest/bidCreateRequestMPA_BID.json';
-import * as orderCreateRequest1 from '../../testdata/createrequest/orderCreateRequest1.json';
+import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BID.json';
+import * as orderCreateRequest1 from '../testdata/createrequest/orderCreateRequest1.json';
 import * as resources from 'resources';
 
-import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
-import { AddressType } from '../../../src/api/enums/AddressType';
-import { AddressCreateRequest } from '../../../src/api/requests/AddressCreateRequest';
-import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
-import { ValidationException } from '../../../src/api/exceptions/ValidationException';
-import {NotFoundException} from '../../../src/api/exceptions/NotFoundException';
+import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
+import { AddressType } from '../../src/api/enums/AddressType';
+import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { ValidationException } from '../../src/api/exceptions/ValidationException';
+import {NotFoundException} from '../../src/api/exceptions/NotFoundException';
 
 
 describe('Order', () => {
