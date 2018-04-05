@@ -36,6 +36,8 @@ export class AddressService {
     @validate()
     public async create( @request(AddressCreateRequest) body: AddressCreateRequest): Promise<Address> {
 
+        // todo: should propably validate country here
+
         // If the request body was valid we will create the address
         const address = await this.addressRepo.create(body);
         // finally find and return the created addressId

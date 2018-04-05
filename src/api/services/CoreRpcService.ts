@@ -45,7 +45,9 @@ export class CoreRpcService {
         await this.call('smsgaddlocaladdress', [response]);
 
         // add address as receive address
-        await this.call('smsglocalkeys', ['recv', '+', response]);
+        const localKeyResponse = await this.call('smsglocalkeys', ['recv', '+', response]);
+        this.log.debug('localKeyResponse: ' + localKeyResponse);
+
         return response;
     }
 

@@ -112,7 +112,7 @@ export class SmsgService {
      */
     public async smsgLocalKeys(): Promise<any> {
         const response = await this.coreRpcService.call('smsglocalkeys');
-        this.log.debug('smsgLocalKeys, response: ' + JSON.stringify(response, null, 2));
+        // this.log.debug('smsgLocalKeys, response: ' + JSON.stringify(response, null, 2));
         return response;
     }
 

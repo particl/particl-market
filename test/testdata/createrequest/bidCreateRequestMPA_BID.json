@@ -1,6 +1,5 @@
 {
     "action": "MPA_BID",
-    "listing_item_id": 0,
     "bidder": "bidderaddress",
     "bidDatas": [{
         "dataId": "COLOR",
@@ -17,7 +16,8 @@
         "addressLine2": "addressline2",
         "city": "Vaajakoski",
         "state": "Keski-Suomi",
-        "country": "Finland",
-        "zipCode": "40800"
+        "country": "FI",
+        "zipCode": "40800",
+        "type": "SHIPPING_ORDER"
     }
 }

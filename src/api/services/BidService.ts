@@ -108,34 +108,7 @@ export class BidService {
         delete body.address;
 
         this.log.debug('body.listing_item_id: ', body.listing_item_id);
-/*
-        // make sure the address type is correct
-        const listingItemModel = await this.listingItemService.findOne(body.listing_item_id)
-            .then(value => {
-                this.log.debug('value: ', value);
-                return value;
-            })
-            .catch(reason => {
-                this.log.debug('reason: ', reason);
-                throw new MessageException('Did not find ListingItem for the Bid.');
-            });
 
-        const listingItem = listingItemModel.toJSON();
-        this.log.debug('listingItem.id: ', listingItem);
-
-        if (!_.isEmpty(listingItem.ListingItemTemplate)) { // local profile is selling
-            this.log.debug('listingItem has template: ', listingItem.ListingItemTemplate.id);
-            this.log.debug('listingItem template has profile: ', listingItem.ListingItemTemplate.Profile.id);
-            addressCreateRequest.type = AddressType.SHIPPING_BID;
-            addressCreateRequest.profile_id = listingItem.ListingItemTemplate.Profile.id;
-        } else { // local profile is buying
-            this.log.debug('listingItem has no template ');
-            const profileModel = await this.profileService.findOneByAddress(body.bidder);
-            const profile = profileModel.toJSON();
-            addressCreateRequest.type = AddressType.SHIPPING_OWN;
-            addressCreateRequest.profile_id = profile.id;
-        }
-*/
         this.log.debug('address create request: ', JSON.stringify(addressCreateRequest, null, 2));
         const addressModel = await this.addressService.create(addressCreateRequest);
         const address = addressModel.toJSON();
@@ -154,6 +127,7 @@ export class BidService {
         for (const dataToSave of bidDatas) {
             // todo: move to biddataservice?
             dataToSave.bid_id = bid.Id;
+            // todo: test with different types of dataValue
             dataToSave.dataValue = typeof (dataToSave.dataValue) === 'string' ? dataToSave.dataValue : JSON.stringify(dataToSave.dataValue);
 
             // this.log.debug('dataToSave: ', JSON.stringify(dataToSave, null, 2));

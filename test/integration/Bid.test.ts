@@ -30,6 +30,7 @@ import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listi
 import * as listingItemCreateRequestBasic3 from '../testdata/createrequest/listingItemCreateRequestBasic3.json';
 
 import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BID.json';
+import * as resources from 'resources';
 
 
 describe('Bid', () => {
@@ -45,13 +46,13 @@ describe('Bid', () => {
     let bidDataService: BidDataService;
     let listingItemService: ListingItemService;
 
-    let defaultProfile;
-    let defaultMarket;
-    let createdListingItem1;
-    let createdListingItem2;
-    let createdListingItemTemplate;
-    let createdBid1;
-    let createdBid2;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let createdListingItem1: resources.ListingItem;
+    let createdListingItem2: resources.ListingItem;
+    let createdListingItemTemplate: resources.ListingItemTemplate;
+    let createdBid1: resources.Bid;
+    let createdBid2: resources.Bid;
 
     const testData: BidCreateRequest = bidCreateRequest1;
 
@@ -83,16 +84,7 @@ describe('Bid', () => {
         defaultMarket = defaultMarketModel.toJSON();
 
         // generate template
-        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams().toParamsArray();
         const listingItemTemplates = await testDataService.generate({
             model: CreatableModel.LISTINGITEMTEMPLATE,  // what to generate
             amount: 1,                                  // how many to generate
@@ -104,6 +96,7 @@ describe('Bid', () => {
 
         // create listing item
         listingItemCreateRequestBasic1.market_id = defaultMarket.id;
+        listingItemCreateRequestBasic1.seller = defaultProfile.address;
         listingItemCreateRequestBasic1.listing_item_template_id = listingItemTemplates[0].id;
         const createdListingItemModel1 = await listingItemService.create(listingItemCreateRequestBasic1);
         createdListingItem1 = createdListingItemModel1.toJSON();
@@ -112,6 +105,7 @@ describe('Bid', () => {
 
         // create another listing item
         listingItemCreateRequestBasic2.market_id = defaultMarket.id;
+        listingItemCreateRequestBasic2.seller = defaultProfile.address;
         const createdListingItemModel2 = await listingItemService.create(listingItemCreateRequestBasic2);
         createdListingItem2 = createdListingItemModel2.toJSON();
         log.debug('createdListingItem2: ', createdListingItem2.id);
@@ -141,10 +135,11 @@ describe('Bid', () => {
         expect(bids.length).toBe(0);
     });
 
-    test('Should create a new bid for ListingItem that is being sold by local profile', async () => {
+    test('Should create a new Bid for ListingItem that is being sold by local Profile', async () => {
         // set listing item id with bid
         testData.listing_item_id = createdListingItem1.id;
         testData.bidder = createdListingItem1.ListingItemTemplate.Profile.address;
+        testData.address.profile_id = defaultProfile.id;
 
         log.debug('testData:', JSON.stringify(testData, null, 2));
         const bidModel: Bid = await bidService.create(testData);
@@ -155,15 +150,16 @@ describe('Bid', () => {
         // test the values
         expect(result.action).toBe(testData.action);
         expect(result.bidder).toBe(testData.bidder);
+        expect(result.ShippingAddress.type).toBe(testData.address.type);
     });
 
-    test('Should create a new bid for ListingItem that is being bought by local profile', async () => {
+    test('Should create a new Bid for ListingItem that is being bought by local Profile', async () => {
         // set listing item id with bid
         testData.listing_item_id = createdListingItem2.id;
         testData.bidder = defaultProfile.address;
+        testData.address.profile_id = defaultProfile.id;
 
         log.debug('testData:', JSON.stringify(testData, null, 2));
-
         const bidModel: Bid = await bidService.create(testData);
         createdBid2 = bidModel.toJSON();
         log.debug('createdBid2:', createdBid2);
@@ -205,14 +201,14 @@ describe('Bid', () => {
         expect(bids.length).toBe(2);
     });
 
-    test('Should throw ValidationException because we want to create a empty bid', async () => {
+    test('Should throw ValidationException because we want to create a empty Bid', async () => {
         expect.assertions(1);
         await bidService.create({} as BidCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list bids with our new create one', async () => {
+    test('Should list Bids with our new create one', async () => {
         const bidCollection = await bidService.findAll();
         const bid = bidCollection.toJSON();
         expect(bid.length).toBe(2);
@@ -222,7 +218,7 @@ describe('Bid', () => {
         expect(result.bidder).toBe(testData.bidder);
     });
 
-    test('Should return one bid', async () => {
+    test('Should return one Bid', async () => {
         const bidModel: Bid = await bidService.findOne(createdBid1.id, true);
         const result = bidModel.toJSON();
         // test the values
@@ -239,7 +235,7 @@ describe('Bid', () => {
         );
     });
 
-    test('Should update the bid', async () => {
+    test('Should update the Bid', async () => {
         testDataUpdated.listing_item_id = createdListingItem1.id;
         testDataUpdated.action = BidMessageType.MPA_CANCEL;
         const bidModel: Bid = await bidService.update(createdBid1.id, testDataUpdated as BidUpdateRequest);
@@ -249,7 +245,7 @@ describe('Bid', () => {
         expect(result.bidder).toBe(testDataUpdated.bidder);
     });
 
-    test('Should delete the first bid', async () => {
+    test('Should delete the first Bid', async () => {
         expect.assertions(1);
         await bidService.destroy(createdBid1.id);
         await bidService.findOne(createdBid1.id).catch(e =>
@@ -257,7 +253,7 @@ describe('Bid', () => {
         );
     });
 
-    test('Should delete the second bid', async () => {
+    test('Should delete the second Bid', async () => {
         expect.assertions(1);
         await bidService.destroy(createdBid2.id);
         await bidService.findOne(createdBid2.id).catch(e =>
@@ -265,7 +261,7 @@ describe('Bid', () => {
         );
     });
 
-    test('Should not have bid data because bid has been deleted', async () => {
+    test('Should not have BidData because bid has been deleted', async () => {
         const bidData = await bidDataService.findAll();
         expect(bidData.length).toBe(0);
     });
