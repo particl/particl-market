@@ -27,6 +27,8 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
 import { ProfileService } from '../../src/api/services/ProfileService';
+import * as resources from 'resources';
+import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BIDwithoutBidDatas.json';
 
 describe('BidDatas', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -41,11 +43,14 @@ describe('BidDatas', () => {
     let profileService: ProfileService;
     let listingItemService: ListingItemService;
 
-    let defaultProfile;
-    let defaultMarket;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let createdListingItem: resources.ListingItem;
+    let createdBid: resources.Bid;
+
     let createdId;
-    let createdListingItem;
-    let createdBid;
+
+    const testBid: BidCreateRequest = bidCreateRequest1;
 
     const testData = {
         bid_id: null,
@@ -58,22 +63,6 @@ describe('BidDatas', () => {
         dataValue: 'black'
     } as BidDataUpdateRequest;
 
-    const testBidData = {
-        action: BidMessageType.MPA_BID,
-        bidder: 'bidderaddress',
-        listing_item_id: null,
-        address: {
-        title: 'Title',
-            firstName: 'Robert',
-            lastName: 'Downey',
-            addressLine1: 'Add',
-            addressLine2: 'ADD 22',
-            city: 'city',
-            state: 'test state',
-            country: 'Finland',
-            zipCode: '85001'
-        } as AddressCreateRequest
-    } as BidCreateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -97,18 +86,8 @@ describe('BidDatas', () => {
         const defaultMarketModel = await marketService.getDefault();
         defaultMarket = defaultMarketModel.toJSON();
 
-        const generateParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
-
-        // create listingitem without images and store its id for testing
+        // create listingitem and store its id for testing
+        const generateParams = new GenerateListingItemParams().toParamsArray();
         const listingItems = await testDataService.generate({
             model: CreatableModel.LISTINGITEM,  // what to generate
             amount: 1,                          // how many to generate
@@ -118,10 +97,11 @@ describe('BidDatas', () => {
         createdListingItem = listingItems[0].toJSON();
 
         // create bid
-        testBidData.listing_item_id = createdListingItem.id;
-        testBidData.bidder = defaultProfile.address;
+        testBid.listing_item_id = createdListingItem.id;
+        testBid.bidder = defaultProfile.address;
+        testBid.address.profile_id = defaultProfile.id;
 
-        const createdBidModel = await bidService.create(testBidData);
+        const createdBidModel = await bidService.create(testBid);
         createdBid = createdBidModel.toJSON();
 
     });
@@ -139,7 +119,7 @@ describe('BidDatas', () => {
         );
     });
 
-    test('Should create a new bid data', async () => {
+    test('Should create a new BidData', async () => {
         // set bid id
         testData.bid_id = createdBid.id;
 
@@ -152,16 +132,18 @@ describe('BidDatas', () => {
         expect(result.dataValue).toBe(testDataUpdated.dataValue);
     });
 
-    test('Should throw ValidationException because we want to create a empty bid data', async () => {
+    test('Should throw ValidationException because we want to create an empty BidData', async () => {
         expect.assertions(1);
         await bidDataService.create({} as BidDataCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list bid datas with our new create one', async () => {
+    test('Should list BidDatas with our new create one', async () => {
         const bidDataCollection = await bidDataService.findAll();
         const bidData = bidDataCollection.toJSON();
+
+        log.debug('biddatas: ', JSON.stringify(bidData, null, 2));
         expect(bidData.length).toBe(1);
         const result = bidData[0];
 
