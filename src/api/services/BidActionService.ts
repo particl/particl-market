@@ -50,16 +50,19 @@ export class BidActionService {
      * Posts a Bid to the seller
      *
      * @param {"resources".ListingItem} listingItem
+     * @param {"resources".Address} listingItem
      * @param {any[]} params
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async send(listingItem: resources.ListingItem, params: any[]): Promise<SmsgSendResponse> {
+    public async send(listingItem: resources.ListingItem, profile: resources.Profile,
+                      shippingAddress: resources.Address, params: any[]): Promise<SmsgSendResponse> {
 
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
         // Get unspent
         const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
         if (!unspent || unspent.length === 0) {
+            this.log.warn('No unspent outputs');
             throw new MessageException('No unspent outputs');
         }
         const outputs: Output[] = [];
@@ -74,7 +77,7 @@ export class BidActionService {
         let change = 0;
 
         if (basePrice) {
-            unspent.find(output => {
+                unspent.find(output => {
                 if (output.spendable && output.solvable) {
                     sum += output.amount;
                     outputs.push({
@@ -91,9 +94,11 @@ export class BidActionService {
             });
 
             if (sum < basePrice) {
+                this.log.warn('You are too broke...');
                 throw new MessageException('You are too broke...');
             }
         } else {
+            this.log.warn(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
@@ -110,26 +115,26 @@ export class BidActionService {
         this.log.debug('bidData: ', JSON.stringify(bidData, null, 2));
 
         // fetch the profile
-        const profileModel = await this.profileService.getDefault();
-        const profile = profileModel.toJSON();
+        /*const profileModel = await this.profileService.getDefault();
+        const profile = profileModel.toJSON();*/
 
         this.log.debug('bidder profile: ', JSON.stringify(profile, null, 2));
 
         // add shipping address to bidData
-        if (_.isEmpty(profile.ShippingAddresses)) {
+        /* if (_.isEmpty(profile.ShippingAddresses)) {
             this.log.error('Profile is missing a shipping address.');
             throw new MessageException('Profile is missing a shipping address.');
-        }
+        } */
 
         // store the shipping address in biddata
-        bidData.push({id: 'ship.firstName', value: profile.ShippingAddresses[0].firstName});
-        bidData.push({id: 'ship.lastName', value: profile.ShippingAddresses[0].lastName});
-        bidData.push({id: 'ship.addressLine1', value: profile.ShippingAddresses[0].addressLine1});
-        bidData.push({id: 'ship.addressLine2', value: profile.ShippingAddresses[0].addressLine2});
-        bidData.push({id: 'ship.city', value: profile.ShippingAddresses[0].city});
-        bidData.push({id: 'ship.state', value: profile.ShippingAddresses[0].state});
-        bidData.push({id: 'ship.zipCode', value: profile.ShippingAddresses[0].zipCode});
-        bidData.push({id: 'ship.country', value: profile.ShippingAddresses[0].country});
+        bidData.push({id: 'ship.firstName', value: shippingAddress.firstName});
+        bidData.push({id: 'ship.lastName', value: shippingAddress.lastName});
+        bidData.push({id: 'ship.addressLine1', value: shippingAddress.addressLine1});
+        bidData.push({id: 'ship.addressLine2', value: shippingAddress.addressLine2});
+        bidData.push({id: 'ship.city', value: shippingAddress.city});
+        bidData.push({id: 'ship.state', value: shippingAddress.state});
+        bidData.push({id: 'ship.zipCode', value: shippingAddress.zipCode});
+        bidData.push({id: 'ship.country', value: shippingAddress.country});
 
         // fetch the market
         const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);

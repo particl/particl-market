@@ -10,6 +10,10 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { BidActionService } from '../../services/BidActionService';
+import { AddressService } from '../../services/AddressService';
+import { ProfileService } from '../../services/ProfileService';
+import { NotFoundException } from '../../exceptions/NotFoundException';
+import * as resources from 'resources';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -18,6 +22,8 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.AddressService) private addressService: AddressService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.BidActionService) private bidActionService: BidActionService
     ) {
         super(Commands.BID_SEND);
@@ -49,17 +55,40 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         const listingItemModel = await this.listingItemService.findOneByHash(listingItemHash);
         const listingItem = listingItemModel.toJSON();
 
-        return this.bidActionService.send(listingItem, data.params);
+        // find profile by id
+        const profileId = data.params.shift();
+        const profile: any = await this.profileService.findOne(profileId);
+
+        // if profile not found
+        if (profile === null) {
+            this.log.warn(`Profile with the id=${profileId} was not found!`);
+            throw new NotFoundException(profileId);
+        }
+
+        // find address by id
+        const addressId = data.params.shift();
+        const address = _.find(profile.ShippingAddresses, (addr: any) => {
+            return addr.id === addressId;
+        });
+
+        // if address not found
+        if (address === null) {
+            this.log.warn(`address with the id=${addressId} was not found!`);
+            throw new NotFoundException(addressId);
+        }
+
+        return this.bidActionService.send(listingItem, profile, address, data.params);
     }
 
     public usage(): string {
-        return this.getName() + ' <itemhash> <addressId> [(<bidDataId>, <bidDataValue>), ...] ';
+        return this.getName() + ' <itemhash> <profileId> <AddressId> [(<bidDataId>, <bidDataValue>), ...] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <itemhash>               - String - The hash of the item we want to send bids for. \n'
-            + '    <addressId>              - Numeric - The addressId of the related profile we want to use \n' // <--- TODO
+            + '    <profileId>              - Numeric - The id of the profile we want to associate with the bid. \n'
+            + '    <AddressId>              - Numeric - The id of the address we want to associated with the bid. \n'
             + '    <bidDataId>              - [optional] Numeric - The id of the bid we want to send. \n'
             + '    <bidDataValue>           - [optional] String - The value of the bid we want to send. ';
     }
