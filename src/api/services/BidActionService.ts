@@ -130,8 +130,8 @@ export class BidActionService {
         } */
 
         // store the shipping address in biddata
-        bidData.push({id: 'ship.firstName', value: shippingAddress.firstName});
-        bidData.push({id: 'ship.lastName', value: shippingAddress.lastName});
+        bidData.push({id: 'ship.firstName', value: shippingAddress.firstName ? shippingAddress.firstName : ''});
+        bidData.push({id: 'ship.lastName', value: shippingAddress.lastName ? shippingAddress.lastName : ''});
         bidData.push({id: 'ship.addressLine1', value: shippingAddress.addressLine1});
         bidData.push({id: 'ship.addressLine2', value: shippingAddress.addressLine2});
         bidData.push({id: 'ship.city', value: shippingAddress.city});
@@ -462,32 +462,6 @@ export class BidActionService {
         }
     }
 
-    private async createBid(bidMessage: BidMessage, listingItem: resources.ListingItem, bidder: string): Promise<resources.Bid> {
-        // create a bid
-        const bidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder);
-
-        // make sure the bids address type is correct
-        this.log.debug('found listingItem.id: ', listingItem.id);
-
-        if (!_.isEmpty(listingItem.ListingItemTemplate)) { // local profile is selling
-            this.log.debug('listingItem has template: ', listingItem.ListingItemTemplate.id);
-            this.log.debug('listingItem template has profile: ', listingItem.ListingItemTemplate.Profile.id);
-            bidCreateRequest.address.type = AddressType.SHIPPING_BID;
-            bidCreateRequest.address.profile_id = listingItem.ListingItemTemplate.Profile.id;
-        } else { // local profile is buying
-            this.log.debug('listingItem has no template ');
-            this.log.debug('bidder: ', bidder);
-            const profileModel = await this.profileService.findOneByAddress(bidder);
-            const profile = profileModel.toJSON();
-            bidCreateRequest.address.type = AddressType.SHIPPING_OWN;
-            bidCreateRequest.address.profile_id = profile.id;
-        }
-
-        const createdBidModel = await this.bidService.create(bidCreateRequest);
-        const createdBid = createdBidModel.toJSON();
-        return createdBid;
-    }
-
     /**
      * process received AcceptBidMessage
      * - save ActionMessage
@@ -596,6 +570,32 @@ export class BidActionService {
         // TODO: do whatever else needs to be done
 
         return actionMessage;
+    }
+
+    private async createBid(bidMessage: BidMessage, listingItem: resources.ListingItem, bidder: string): Promise<resources.Bid> {
+        // create a bid
+        const bidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder);
+
+        // make sure the bids address type is correct
+        this.log.debug('found listingItem.id: ', listingItem.id);
+
+        if (!_.isEmpty(listingItem.ListingItemTemplate)) { // local profile is selling
+            this.log.debug('listingItem has template: ', listingItem.ListingItemTemplate.id);
+            this.log.debug('listingItem template has profile: ', listingItem.ListingItemTemplate.Profile.id);
+            bidCreateRequest.address.type = AddressType.SHIPPING_BID;
+            bidCreateRequest.address.profile_id = listingItem.ListingItemTemplate.Profile.id;
+        } else { // local profile is buying
+            this.log.debug('listingItem has no template ');
+            this.log.debug('bidder: ', bidder);
+            const profileModel = await this.profileService.findOneByAddress(bidder);
+            const profile = profileModel.toJSON();
+            bidCreateRequest.address.type = AddressType.SHIPPING_OWN;
+            bidCreateRequest.address.profile_id = profile.id;
+        }
+
+        const createdBidModel = await this.bidService.create(bidCreateRequest);
+        const createdBid = createdBidModel.toJSON();
+        return createdBid;
     }
 
     private configureEventListeners(): void {
