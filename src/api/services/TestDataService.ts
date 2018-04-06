@@ -359,17 +359,25 @@ export class TestDataService {
             this.log.debug(`generateBidData: generated new listing with id ${listingItemId}, continuing bid creation`);
         }
 
-        const address = await this.generateAddressesData(1)[0];
+        const addresses = await this.generateAddressesData(1);
+        // this.log.debug('Generated addresses = ' + JSON.stringify(addresses, null, 2));
+        const address = addresses[0];
+
+        const defaultProfile = await this.profileService.getDefault();
+        address.profile_id = defaultProfile.Id;
+
         const bidder = Faker.finance.bitcoinAddress();
         const bidDatas: BidDataCreateRequest[] = [];
 
-        return {
+        const retval = {
             listing_item_id: listingItemId,
             action: BidMessageType.MPA_BID,
             address,
             bidder,
             bidDatas
         } as BidCreateRequest;
+        // this.log.debug('Generated bid = ' + JSON.stringify(retval, null, 2));
+        return retval;
     }
 
     // -------------------
@@ -429,7 +437,7 @@ export class TestDataService {
     private async generateProfiles(amount: number, withRelated: boolean = true, generateParams: GenerateProfileParams): Promise<any> {
         const items: any[] = [];
         for (let i = amount; i > 0; i--) {
-            const profile = this.generateProfileData(generateParams);
+            const profile = await this.generateProfileData(generateParams);
             const savedProfile = await this.profileService.create(profile);
             items.push(savedProfile);
         }
@@ -444,13 +452,14 @@ export class TestDataService {
         }
     }
 
-    private generateProfileData(generateParams: GenerateProfileParams): ProfileCreateRequest {
+    private async generateProfileData(generateParams: GenerateProfileParams): Promise<ProfileCreateRequest> {
         const name = 'TEST-' + Faker.name.firstName();
         const address = Faker.finance.bitcoinAddress();
 
         this.log.debug('generateParams.generateShippingAddresses: ', generateParams.generateShippingAddresses);
         this.log.debug('generateParams.generateCryptocurrencyAddresses: ', generateParams.generateCryptocurrencyAddresses);
-        const shippingAddresses = generateParams.generateShippingAddresses ? this.generateAddressesData(_.random(1, 5)) : [];
+        const profile = await this.generateAddressesData(_.random(1, 5));
+        const shippingAddresses = generateParams.generateShippingAddresses ? profile : [];
         const cryptocurrencyAddresses = generateParams.generateCryptocurrencyAddresses ? this.generateCryptocurrencyAddressesData(_.random(1, 5)) : [];
 
         return {
@@ -461,10 +470,11 @@ export class TestDataService {
         } as ProfileCreateRequest;
     }
 
-    private generateAddressesData(amount: number): AddressCreateRequest[] {
+    private async generateAddressesData(amount: number): Promise<AddressCreateRequest[]> {
         const addresses: any[] = [];
         for (let i = amount; i > 0; i--) {
             addresses.push({
+                profileId: 0,
                 firstName: Faker.name.firstName(),
                 lastName: Faker.name.lastName(),
                 title: Faker.company.companyName(),
