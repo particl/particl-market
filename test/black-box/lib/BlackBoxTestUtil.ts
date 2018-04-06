@@ -4,6 +4,7 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as _ from 'lodash';
 import { Market, Profile } from 'resources';
 import { LoggerConfig } from '../../../src/config/LoggerConfig';
+import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
 
 export class BlackBoxTestUtil {
 
@@ -65,7 +66,37 @@ export class BlackBoxTestUtil {
         const res: any = await rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT']);
         res.expectJson();
         res.expectStatusCode(200);
-        return res.getBody()['result'];
+
+        const defaultProfile = res.getBody()['result'];
+
+        if (_.isEmpty(defaultProfile.ShippingAddresses)) {
+
+            // if default profile doesnt have a shipping address, add it
+            const addCommandParams = [
+                Commands.ADDRESS_ADD.commandName,
+                defaultProfile.id,
+                addressCreateRequestSHIPPING_OWN.firstName,
+                addressCreateRequestSHIPPING_OWN.lastName,
+                addressCreateRequestSHIPPING_OWN.title,
+                addressCreateRequestSHIPPING_OWN.addressLine1,
+                addressCreateRequestSHIPPING_OWN.addressLine2,
+                addressCreateRequestSHIPPING_OWN.city,
+                addressCreateRequestSHIPPING_OWN.state,
+                addressCreateRequestSHIPPING_OWN.country,
+                addressCreateRequestSHIPPING_OWN.zipCode
+            ];
+
+            // create address for default profile
+            const addressRes: any = await rpc(Commands.ADDRESS_ROOT.commandName, addCommandParams);
+            addressRes.expectJson();
+            addressRes.expectStatusCode(200);
+
+            // get the updated profile
+            const res: any = await rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT']);
+            return res.getBody()['result'];
+        } else {
+            return defaultProfile;
+        }
     }
 
     /**

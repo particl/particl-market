@@ -1,0 +1,12 @@
+{
+    "title": "TEST DATA DEFAULT SHIPPING ADDRESS FOR DEFAULT PROFILE",
+    "firstName": "Albert",
+    "lastName": "Hoffman",
+    "addressLine1": "123 6th St",
+    "addressLine2": "Melbourne FL 32904",
+    "city": "Melbourne",
+    "state": "Mel State",
+    "country": "FI",
+    "zipCode": "85001",
+    "type": "SHIPPING_OWN"
+}

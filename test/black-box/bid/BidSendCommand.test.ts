@@ -28,27 +28,6 @@ describe('BidSendCommand', () => {
 
         await testUtil.cleanDb();
 
-        // get default profile
-        defaultProfile = await testUtil.getDefaultProfile();
-
-        const addCommandParams = [
-            Commands.ADDRESS_ADD.commandName,
-            defaultProfile.id,
-            addressTestData.firstName,
-            addressTestData.lastName,
-            addressTestData.title,
-            addressTestData.addressLine1,
-            addressTestData.addressLine2,
-            addressTestData.city,
-            addressTestData.state,
-            addressTestData.country,
-            addressTestData.zipCode
-        ];
-
-        // create address for default profile
-        const addressRes: any = await rpc(Commands.ADDRESS_ROOT.commandName, addCommandParams);
-        createdAddress = addressRes.getBody()['result'];
-
         // get default profile again
         defaultProfile = await testUtil.getDefaultProfile();
 

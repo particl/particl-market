@@ -79,15 +79,4 @@ export const testDataListingItemTemplate = {
     }]
 };
 
-export const addressTestData = {
-    title: 'Work',
-    firstName: 'David',
-    lastName: 'Hoffman',
-    addressLine1: '123 6th St',
-    addressLine2: 'Melbourne FL 32904',
-    city: 'Melbourne',
-    state: 'Mel State',
-    country: 'FI',
-    zipCode: '85001'
-};
 // End - Ryno Hack

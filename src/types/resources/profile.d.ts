@@ -6,6 +6,10 @@ declare module 'resources' {
         address: string;
         createdAt: Date;
         updatedAt: Date;
+        ShippingAddresses: Address[];
+        CryptocurrencyAddresses: CryptocurrencyAddress[];
+        FavoriteItems: FavoriteItem[];
+        ShoppingCart: ShoppingCart[];
     }
 
 }
