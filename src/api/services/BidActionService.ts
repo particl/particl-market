@@ -1,29 +1,29 @@
 import * as _ from 'lodash';
-import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
-import { Types, Core, Targets, Events } from '../../constants';
+import {inject, named} from 'inversify';
+import {Logger as LoggerType} from '../../core/Logger';
+import {Types, Core, Targets, Events} from '../../constants';
 import * as resources from 'resources';
-import { MessageException } from '../exceptions/MessageException';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import {MessageException} from '../exceptions/MessageException';
+import {MarketplaceEvent} from '../messages/MarketplaceEvent';
 
-import { EventEmitter } from 'events';
+import {EventEmitter} from 'events';
 
-import { ActionMessageService } from './ActionMessageService';
-import { BidService } from './BidService';
-import { ProfileService } from './ProfileService';
-import { MarketService } from './MarketService';
-import { BidFactory } from '../factories/BidFactory';
-import { SmsgService } from './SmsgService';
-import { CoreRpcService } from './CoreRpcService';
-import { ListingItemService } from './ListingItemService';
+import {ActionMessageService} from './ActionMessageService';
+import {BidService} from './BidService';
+import {ProfileService} from './ProfileService';
+import {MarketService} from './MarketService';
+import {BidFactory} from '../factories/BidFactory';
+import {SmsgService} from './SmsgService';
+import {CoreRpcService} from './CoreRpcService';
+import {ListingItemService} from './ListingItemService';
 
-import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { Market } from '../models/Market';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { BidMessageType } from '../enums/BidMessageType';
-import { Output } from 'resources';
-import { BidMessage } from '../messages/BidMessage';
-import { BidSearchParams } from '../requests/BidSearchParams';
+import {SmsgSendResponse} from '../responses/SmsgSendResponse';
+import {Market} from '../models/Market';
+import {MarketplaceMessage} from '../messages/MarketplaceMessage';
+import {BidMessageType} from '../enums/BidMessageType';
+import {Output} from 'resources';
+import {BidMessage} from '../messages/BidMessage';
+import {BidSearchParams} from '../requests/BidSearchParams';
 import {AddressType} from '../enums/AddressType';
 
 declare function unescape(s: string): string;
@@ -50,7 +50,8 @@ export class BidActionService {
      * Posts a Bid to the seller
      *
      * @param {"resources".ListingItem} listingItem
-     * @param {"resources".Address} listingItem
+     * @param {"resources".Profile} profile
+     * @param {"resources".Address} shippingAddress
      * @param {any[]} params
      * @returns {Promise<SmsgSendResponse>}
      */
@@ -77,7 +78,7 @@ export class BidActionService {
         let change = 0;
 
         if (basePrice) {
-                unspent.find(output => {
+            unspent.find(output => {
                 if (output.spendable && output.solvable) {
                     sum += output.amount;
                     outputs.push({
@@ -86,6 +87,7 @@ export class BidActionService {
                         amount: output.amount
                     });
                 }
+
                 if (sum > (totalPrice * 2)) { // TODO: Ratio
                     change = +(sum - (totalPrice * 2) - 0.0002).toFixed(8); // TODO: Get actual fee...
                     return true;
@@ -97,6 +99,7 @@ export class BidActionService {
                 this.log.warn('You are too broke...');
                 throw new MessageException('You are too broke...');
             }
+
         } else {
             this.log.warn(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
@@ -150,6 +153,11 @@ export class BidActionService {
         this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
         const seller = this.getSeller(listingItem);
+
+        // save bid locally
+        const createdBid = await this.createBid(bidMessage, listingItem, profile.address);
+        this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
+
         // broadcast the message in to the network
         return await this.smsgService.smsgSend(profile.address, seller, marketPlaceMessage);
     }
@@ -269,8 +277,8 @@ export class BidActionService {
             const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
 
             if (!signed || (signed.errors && (
-                signed.errors[0].error !== 'Operation not valid with the current stack size' &&
-                signed.errors[0].error !== 'Unable to sign input, invalid stack size (possibly missing key)'))) {
+                    signed.errors[0].error !== 'Operation not valid with the current stack size' &&
+                    signed.errors[0].error !== 'Unable to sign input, invalid stack size (possibly missing key)'))) {
                 this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
                 throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
             }
@@ -440,37 +448,44 @@ export class BidActionService {
             this.log.debug('biddersExistingBidsForItem:', biddersExistingBidsForItem.length);
             throw new MessageException('Bids allready exist for the ListingItem for the bidder.');
         }
+
         if (bidMessage) {
-            // create a bid
-            const bidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder);
 
-            // make sure the bids address type is correct
-            this.log.debug('found listingItem.id: ', listingItem.id);
+            const createdBid = await this.createBid(bidMessage, listingItem, bidder);
+            this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
 
-            if (!_.isEmpty(listingItem.ListingItemTemplate)) { // local profile is selling
-                this.log.debug('listingItem has template: ', listingItem.ListingItemTemplate.id);
-                this.log.debug('listingItem template has profile: ', listingItem.ListingItemTemplate.Profile.id);
-                bidCreateRequest.address.type = AddressType.SHIPPING_BID;
-                bidCreateRequest.address.profile_id = listingItem.ListingItemTemplate.Profile.id;
-            } else { // local profile is buying
-                this.log.debug('listingItem has no template ');
-                this.log.debug('bidder: ', bidder);
-                const profileModel = await this.profileService.findOneByAddress(bidder);
-                const profile = profileModel.toJSON();
-                bidCreateRequest.address.type = AddressType.SHIPPING_OWN;
-                bidCreateRequest.address.profile_id = profile.id;
-            }
-
-
-            const createdBid = await this.bidService.create(bidCreateRequest);
-
-            this.log.debug('createdBid:', JSON.stringify(createdBid.toJSON(), null, 2));
             // TODO: do whatever else needs to be done
 
             return actionMessage;
         } else {
             throw new MessageException('Missing BidMessage');
         }
+    }
+
+    private async createBid(bidMessage: BidMessage, listingItem: resources.ListingItem, bidder: string): Promise<resources.Bid> {
+        // create a bid
+        const bidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder);
+
+        // make sure the bids address type is correct
+        this.log.debug('found listingItem.id: ', listingItem.id);
+
+        if (!_.isEmpty(listingItem.ListingItemTemplate)) { // local profile is selling
+            this.log.debug('listingItem has template: ', listingItem.ListingItemTemplate.id);
+            this.log.debug('listingItem template has profile: ', listingItem.ListingItemTemplate.Profile.id);
+            bidCreateRequest.address.type = AddressType.SHIPPING_BID;
+            bidCreateRequest.address.profile_id = listingItem.ListingItemTemplate.Profile.id;
+        } else { // local profile is buying
+            this.log.debug('listingItem has no template ');
+            this.log.debug('bidder: ', bidder);
+            const profileModel = await this.profileService.findOneByAddress(bidder);
+            const profile = profileModel.toJSON();
+            bidCreateRequest.address.type = AddressType.SHIPPING_OWN;
+            bidCreateRequest.address.profile_id = profile.id;
+        }
+
+        const createdBidModel = await this.bidService.create(bidCreateRequest);
+        const createdBid = createdBidModel.toJSON();
+        return createdBid;
     }
 
     /**
@@ -661,6 +676,7 @@ export class BidActionService {
             }
         }
         throw new MessageException('Buyer not found for ListingItem.');
-
     }
+
+
 }

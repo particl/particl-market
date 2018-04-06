@@ -20,7 +20,9 @@ describe('BidSendCommand', () => {
 
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
+
     let createdListingItems: resources.ListingItem[];
+    let createdAddress: resources.Address;
 
     beforeAll(async () => {
 
@@ -29,12 +31,23 @@ describe('BidSendCommand', () => {
         // get default profile
         defaultProfile = await testUtil.getDefaultProfile();
 
-        // create address for default profile
-        const addressRes = await rpc(Commands.ADDRESS_ROOT.commandName, [Commands.ADDRESS_ADD.commandName,
+        const addCommandParams = [
+            Commands.ADDRESS_ADD.commandName,
             defaultProfile.id,
-            addressTestData.firstName, addressTestData.lastName, addressTestData.title,
-            addressTestData.addressLine1, addressTestData.addressLine2,
-            addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
+            addressTestData.firstName,
+            addressTestData.lastName,
+            addressTestData.title,
+            addressTestData.addressLine1,
+            addressTestData.addressLine2,
+            addressTestData.city,
+            addressTestData.state,
+            addressTestData.country,
+            addressTestData.zipCode
+        ];
+
+        // create address for default profile
+        const addressRes: any = await rpc(Commands.ADDRESS_ROOT.commandName, addCommandParams);
+        createdAddress = addressRes.getBody()['result'];
 
         // get default profile again
         defaultProfile = await testUtil.getDefaultProfile();
@@ -42,23 +55,58 @@ describe('BidSendCommand', () => {
         // get default market
         defaultMarket = await testUtil.getDefaultMarket();
 
-        // create a listing item to bid for
-        // listingItemCreateRequestBasic1.market_id = defaultMarket.id;
-        // createdListingItem1 = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
-
         // generate a listing item to bid for
         createdListingItems = await testUtil.generateData(CreatableModel.LISTINGITEM);
         log.debug('createdListingItem1: ', createdListingItems[0].id);
 
     });
 
-    test('Should send Bid for a ListingItem', async () => {
+    test('Should post Bid for a ListingItem', async () => {
 
         log.debug('createdListingItems[0].hash: ', createdListingItems[0].hash);
-        log.debug('createdListingItems[0].ActionMessages: ', JSON.stringify(createdListingItems[0].ActionMessages, null, 2));
+        // log.debug('createdListingItems[0].ActionMessages: ', JSON.stringify(createdListingItems[0].ActionMessages, null, 2));
+        log.debug('createdAddress:', JSON.stringify(createdAddress, null, 2));
+
+        const sendBidCommandParams = [
+            sendCommand,
+            createdListingItems[0].hash,
+            defaultProfile.id,
+            createdAddress.id,
+            'colour',
+            'black',
+            'size',
+            'xl'
+        ];
 
         // create listing item
-        const res: any = await rpc(bidCommand, [sendCommand, createdListingItems[0].hash, 'colour', 'black', 'size', 'xl']);
+        const res: any = await rpc(bidCommand, sendBidCommandParams);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        log.debug('result', result);
+        expect(result.result).toBe('Sent.');
+    });
+
+    test('Should find Bid after posting', async () => {
+
+        log.debug('createdListingItems[0].hash: ', createdListingItems[0].hash);
+        // log.debug('createdListingItems[0].ActionMessages: ', JSON.stringify(createdListingItems[0].ActionMessages, null, 2));
+        log.debug('createdAddress:', JSON.stringify(createdAddress, null, 2));
+
+        const sendBidCommandParams = [
+            sendCommand,
+            createdListingItems[0].hash,
+            defaultProfile.id,
+            createdAddress.id,
+            'colour',
+            'black',
+            'size',
+            'xl'
+        ];
+
+        // create listing item
+        const res: any = await rpc(bidCommand, sendBidCommandParams);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
