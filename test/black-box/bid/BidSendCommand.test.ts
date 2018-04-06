@@ -86,8 +86,10 @@ describe('BidSendCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
-        log.debug('result', result);
-        expect(result.result.length).toBe(1);
+        log.debug('bid search result:', JSON.stringify(result, null, 2));
+        expect(result[0].ListingItem.hash).toBe(createdListingItems[0].hash);
+        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].bidder).toBe(defaultProfile.address);
     });
 
 });
