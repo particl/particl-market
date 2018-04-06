@@ -27,11 +27,12 @@ import * as resources from 'resources';
 
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import { AddressType } from '../../src/api/enums/AddressType';
-import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
-import {NotFoundException} from '../../src/api/exceptions/NotFoundException';
+import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
+import { OrderItemService } from '../../src/api/services/OrderItemService';
+import { OrderItemObjectService } from '../../src/api/services/OrderItemObjectService';
 
 
 describe('Order', () => {
@@ -42,6 +43,8 @@ describe('Order', () => {
 
     let testDataService: TestDataService;
     let orderService: OrderService;
+    let orderItemService: OrderItemService;
+    let orderItemObjectService: OrderItemObjectService;
     let bidService: BidService;
     let marketService: MarketService;
     let profileService: ProfileService;
@@ -68,7 +71,8 @@ describe('Order', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         orderService = app.IoC.getNamed<OrderService>(Types.Service, Targets.Service.OrderService);
-        testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
+        orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.OrderItemService);
+        orderItemObjectService = app.IoC.getNamed<OrderItemObjectService>(Types.Service, Targets.Service.OrderItemObjectService);
         bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
@@ -134,6 +138,8 @@ describe('Order', () => {
         const bidModel1: Bid = await bidService.create(bidCreateRequest1);
         createdBid1 = bidModel1.toJSON();
 
+        log.debug('createdBid1: ', JSON.stringify(createdBid1, null, 2));
+
 /*
         // create a new bid for ListingItem that is being bought by local profile
         bidCreateRequest2.listing_item_id = createdListingItem2.id;
@@ -160,6 +166,13 @@ describe('Order', () => {
         testData.seller = createdListingItem1.seller;
         testData.orderItems[0].itemHash = createdListingItem1.hash;
         testData.orderItems[0].bid_id = createdBid1.id;
+        testData.orderItems[0].orderItemObjects = [{
+            dataId: createdBid1.BidDatas[0].dataId,
+            dataValue: createdBid1.BidDatas[0].dataValue
+        }, {
+            dataId: createdBid1.BidDatas[1].dataId,
+            dataValue: createdBid1.BidDatas[1].dataValue
+        }];
 
         // copy the address from bid to order
         testData.address = {
@@ -197,7 +210,7 @@ describe('Order', () => {
         );
     });
 
-    test('Should list Orders with our new create one', async () => {
+    test('Should list Orders with the newly created one', async () => {
 
         const orderCollection = await orderService.findAll();
         const order = orderCollection.toJSON();
@@ -210,7 +223,7 @@ describe('Order', () => {
         expect(result.hash).toBe(createdOrder.hash);
     });
 
-    test('Should return one order', async () => {
+    test('Should return one Order', async () => {
         const orderModel: Order = await orderService.findOne(createdOrder.id);
         const result = orderModel.toJSON();
 
@@ -219,11 +232,20 @@ describe('Order', () => {
         expect(result.hash).toBe(createdOrder.hash);
     });
 
-    test('Should delete the order', async () => {
-        expect.assertions(1);
+    test('Should delete the Order, related OrderItem and OrderItemObjects', async () => {
+        expect.assertions(4);
         await orderService.destroy(createdOrder.id);
         await orderService.findOne(createdOrder.id).catch(e =>
             expect(e).toEqual(new NotFoundException(createdOrder.id))
+        );
+        await orderItemService.findOne(createdOrder.OrderItems[0].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdOrder.OrderItems[0].id))
+        );
+        await orderItemObjectService.findOne(createdOrder.OrderItems[0].OrderItemObjects[0].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdOrder.OrderItems[0].OrderItemObjects[0].id))
+        );
+        await orderItemObjectService.findOne(createdOrder.OrderItems[0].OrderItemObjects[1].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdOrder.OrderItems[0].OrderItemObjects[1].id))
         );
     });
 
