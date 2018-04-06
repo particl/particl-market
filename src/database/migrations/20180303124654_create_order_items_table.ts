@@ -7,6 +7,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('status').notNullable();
+            table.string('item_hash').notNullable();
 
             table.integer('order_id').unsigned().notNullable();
             table.foreign('order_id').references('id')
@@ -16,9 +17,9 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('bid_id').references('id')
                 .inTable('bids');
 
-            table.integer('listing_item_id').unsigned().notNullable();
-            table.foreign('listing_item_id').references('id')
-                .inTable('listing_items');
+            // table.integer('listing_item_id').unsigned().notNullable();
+            // table.foreign('listing_item_id').references('id')
+            //    .inTable('listing_items');
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

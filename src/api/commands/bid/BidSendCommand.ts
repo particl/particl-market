@@ -35,7 +35,8 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      *
      * data.params[]:
      * [0]: itemhash, string
-     * [1]: addressId (from profile deliveryaddresses)
+     * [1]: profileId, number
+     * [1]: addressId (from profile shipping addresses), number
      * [2]: bidDataId, string
      * [3]: bidDataValue, string
      * [4]: bidDataId, string
@@ -69,7 +70,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
         // find address by id
         const addressId = data.params.shift();
-        let address: any = _.find(profile.ShippingAddresses, (addr: any) => {
+        const address: any = _.find(profile.ShippingAddresses, (addr: any) => {
             return addr.id === addressId;
         });
 

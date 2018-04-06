@@ -43,7 +43,10 @@ export class {{name.capitalize}}Service {
     }
 
     @validate()
-    public async create( @request({{name.capitalize}}CreateRequest) body: {{name.capitalize}}CreateRequest): Promise<{{name.capitalize}}> {
+    public async create( @request({{name.capitalize}}CreateRequest) data: {{name.capitalize}}CreateRequest): Promise<{{name.capitalize}}> {
+
+        const body = JSON.parse(JSON.stringify(data));
+        // this.log.debug('create {{name.capitalize}}, body: ', JSON.stringify(body, null, 2));
 
         // TODO: extract and remove related models from request
         // const {{name.camelCase}}Related = body.related;

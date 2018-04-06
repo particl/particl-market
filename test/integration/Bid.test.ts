@@ -135,7 +135,7 @@ describe('Bid', () => {
     });
 
     test('Should create a new Bid for ListingItem that is being sold by local Profile', async () => {
-        // set listing item id with bid
+        // set listing item id with bidder and address with a profile_id
         testData.listing_item_id = createdListingItem1.id;
         testData.bidder = createdListingItem1.ListingItemTemplate.Profile.address;
         testData.address.profile_id = defaultProfile.id;

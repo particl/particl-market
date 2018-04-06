@@ -225,6 +225,14 @@ export class TestDataService {
         this.log.debug('ignoreTables: ', this.ignoreTables);
 
         const tablesToClean = [
+            'message_objects',
+            'message_infos',
+            'message_escrows',
+            'message_datas',
+            'action_messages',
+            'order_item_objects',
+            'order_items',
+            'orders',
             'bid_datas',
             'bids',
             'location_markers',
@@ -239,20 +247,20 @@ export class TestDataService {
             'escrows',
             'payment_informations',
             'messaging_informations',
-            'listing_item_objects',
             'listing_item_object_datas',
+            'listing_item_objects',
             'listing_items',
             'listing_item_templates',
             'addresses',
             'favorite_items',
             'cryptocurrency_addresses',
             'profiles',
-            'shopping_cart',
             'shopping_cart_item',
+            'shopping_cart',
             'item_categories',
             'markets',
-            'users',     // todo: not needed
-            'price_ticker',
+            'users',        // todo: not needed
+            'price_ticker', // todo: price_tickers
             'flagged_items',
             'currency_prices'
         ];
@@ -408,7 +416,7 @@ export class TestDataService {
         const orderItemObjects: OrderItemObjectCreateRequest[] = [];
         return {
             order_id: 0,
-            listing_item_id: bid.ListingItem.id,
+            itemHash: bid.ListingItem.hash,
             bid_id: bid.id,
             status: OrderStatus.AWAITING_ESCROW,
             orderItemObjects
@@ -457,7 +465,6 @@ export class TestDataService {
         const addresses: any[] = [];
         for (let i = amount; i > 0; i--) {
             addresses.push({
-                profile_id: 0,
                 firstName: Faker.name.firstName(),
                 lastName: Faker.name.lastName(),
                 title: Faker.company.companyName(),

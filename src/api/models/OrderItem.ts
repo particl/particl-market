@@ -2,15 +2,15 @@ import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { Order } from './Order';
 import { Bid } from './Bid';
-import { ListingItem } from './ListingItem';
-import {OrderItemObject} from './OrderItemObject';
+import { OrderItemObject } from './OrderItemObject';
 
 export class OrderItem extends Bookshelf.Model<OrderItem> {
 
     public static RELATIONS = [
         'Order',
         'Bid',
-        'ListingItem',
+        // 'Bid.ShippingAddress',
+        // 'ListingItem',
         'OrderItemObjects'
     ];
 
@@ -33,6 +33,9 @@ export class OrderItem extends Bookshelf.Model<OrderItem> {
     public get Status(): string { return this.get('status'); }
     public set Status(value: string) { this.set('status', value); }
 
+    public get ItemHash(): string { return this.get('item_hash'); }
+    public set ItemHash(value: string) { this.set('item_hash', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
@@ -47,9 +50,9 @@ export class OrderItem extends Bookshelf.Model<OrderItem> {
         return this.belongsTo(Bid, 'bid_id', 'id');
     }
 
-    public ListingItem(): ListingItem {
-        return this.belongsTo(ListingItem, 'listing_item_id', 'id');
-    }
+    // public ListingItem(): ListingItem {
+    //    return this.belongsTo(ListingItem, 'listing_item_id', 'id');
+    // }
 
     public OrderItemObjects(): Collection<OrderItemObject> {
         return this.hasMany(OrderItemObject, 'order_item_id', 'id');

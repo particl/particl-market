@@ -2,9 +2,16 @@ import * as crypto from 'crypto-js';
 import { HashableObjectType } from '../../api/enums/HashableObjectType';
 import { HashableListingItem } from './HashableListingItem';
 import { HashableItemImage } from './HashableItemImage';
+import { HashableOrder } from './HashableOrder';
 
 export class ObjectHash {
 
+    /**
+     *
+     * @param objectToHash
+     * @param {HashableObjectType} type
+     * @returns {string}
+     */
     public static getHash(objectToHash: any, type: HashableObjectType): string {
 
         let hashableObject;
@@ -19,6 +26,10 @@ export class ObjectHash {
             case HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST:
             case HashableObjectType.ITEMIMAGE: {
                 hashableObject = new HashableItemImage(objectToHash);
+                break;
+            }
+            case HashableObjectType.ORDER_CREATEREQUEST: {
+                hashableObject = new HashableOrder(objectToHash);
                 break;
             }
             case HashableObjectType.DEFAULT: {

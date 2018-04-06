@@ -58,6 +58,7 @@ export class OrderRepository {
             await order.destroy();
             return;
         } catch (error) {
+            this.log.debug('error:', error);
             throw new DatabaseException('Could not delete the order!', error);
         }
     }

@@ -11,7 +11,7 @@ import { Bid } from './Bid';
 import { FlaggedItem } from './FlaggedItem';
 import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
-import {ActionMessage} from './ActionMessage';
+import { ActionMessage } from './ActionMessage';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
