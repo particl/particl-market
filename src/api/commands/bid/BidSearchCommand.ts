@@ -39,59 +39,43 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Bid>> {
         let itemHash;
-        if (data.params.length <= 1) {
+        if (data.params.length < 1) {
             itemHash = '*';
         } else {
-            itemHash = data.params.push();
+            itemHash = data.params.shift();
         }
 
         let status;
-        if (data.params.length <= 1) {
+        if (data.params.length < 1) {
             status = '*';
         } else {
-            status = data.params.push();
+            status = data.params.shift();
         }
 
-        if (itemHash === '*' && status === '*') {
-            // Don't bother doing the whole search and iteration dance, just return the lot.
-            return this.bidService.findAll();
+        const searchArgs = {} as BidSearchParams;
+        if (itemHash !== '*') {
+            searchArgs.listingItemHash = itemHash;
+        }
+        if (status !== '*') {
+            searchArgs.action = status;
         }
 
-        let listingItems: Bookshelf.Collection<ListingItem>;
-        if (itemHash === '*') {
-            // Get the whole list.
-            listingItems = await this.listingItemService.findAll();
+
+        if (data.params.length === 0) {
+            return await this.bidService.search(searchArgs);
         } else {
-            // Get just the one listing item via its hash.
-            const listingItem = await this.listingItemService.findOneByHash(itemHash);
-            if (listingItem == null) {
-                const errMsg = `Item with the hash=${itemHash} was not found!`;
-                this.log.warn(errMsg);
-                throw new NotFoundException(errMsg);
-            }
-            listingItems = new Bookshelf.Collection<ListingItem>([listingItem]);
-        }
-
-        const listOfBids: Bookshelf.Collection<Bid> = new Bookshelf.Collection<Bid>();
-        if (status === '*') {
-            // itemhash != * && status == *
-            // For each listingItem in listingItems call bidService.findAllByHash() then return the lot.
-            listOfBids.push(this.bidService.findAllByHash(itemHash));
-        } else {
-            // itemhash = anything && status != *
-            // For each listingItem in listingItems call bidService.search() the return the lot.
-            for ( const i in listingItems ) {
-                if ( i ) {
-                    const listingItem = listingItems[i];
-                    const foundBids = await this.bidService.search({
-                        listingItemId: listingItem.id,
-                        action: status
-                    } as BidSearchParams);
-                    listOfBids.push(foundBids);
+            let listOfBids: any = null;
+            for (const address of data.params) {
+                searchArgs.bidder = address;
+                const tmp = await this.bidService.search(searchArgs);
+                if (listOfBids !== null) {
+                    listOfBids.push(tmp);
+                } else {
+                    listOfBids = tmp;
                 }
             }
+            return listOfBids;
         }
-        return listOfBids;
     }
 
 
