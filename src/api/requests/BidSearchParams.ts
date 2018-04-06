@@ -10,11 +10,9 @@ export class BidSearchParams extends RequestBody {
     public action: BidMessageType;
 
     // @IsNotEmpty()
-    // TODO: id or hash should propably be required
     public listingItemId: number;
-    public listingItemHash: string;
+    public listingItemHash: string; // if hash is given, the service will fetch the id
 
-    public bidder: string;
     public bidders: string[];
 
 }

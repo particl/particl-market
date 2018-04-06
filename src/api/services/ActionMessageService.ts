@@ -107,7 +107,7 @@ export class ActionMessageService {
 
         actionMessageModel = await this.findOne(actionMessage.id);
         actionMessage = actionMessageModel.toJSON();
-        this.log.debug('created actionMessage: ', JSON.stringify(actionMessage, null, 2));
+        // this.log.debug('created actionMessage: ', JSON.stringify(actionMessage, null, 2));
         return actionMessageModel;
     }
 

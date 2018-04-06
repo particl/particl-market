@@ -299,8 +299,7 @@ export class TestDataService {
             const listingItem = await this.generateListingItemData(generateParams);
             // this.log.debug('listingItem: ', listingItem);
 
-            // TODO: hardcoded, fix
-            // TODO: seller address should be configurable, either generated or default
+            // TODO: seller/from address should be configurable, generated or default
 
             // set seller address as profiles address
             const sellerAddress = await this.coreRpcService.getNewAddress();

@@ -40,19 +40,18 @@ export class Bid extends Bookshelf.Model<Bid> {
                     qb.where('bids.action', '=', options.action);
                 }
 
-                if (options.bidder) {
-                    qb.where('bids.bidder', '=', options.bidder);
-                }
-
                 if (options.bidders) {
-                    let firstIteration = (options.bidder ? false : true);
+                    // let firstIteration = (options.bidder ? false : true);
                     for (const bidder of options.bidders) {
+                        qb.orWhere('bids.bidder', '=', bidder);
+/*
                         if (!firstIteration) {
                             qb.orWhere('bids.bidder', '=', bidder);
                         } else {
                             firstIteration = false;
                             qb.where('bids.bidder', '=', bidder);
                         }
+*/
                     }
                 }
 

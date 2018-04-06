@@ -7,12 +7,10 @@ import { BidService } from '../../services/BidService';
 import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
-import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidSearchParams } from '../../requests/BidSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { NotFoundException } from '../../exceptions/NotFoundException';
 
 export class BidSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
@@ -30,38 +28,30 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     /**
      *
      * data.params[]:
-     * [0]: ListingItem hash, string
-     * [1]: status, [Optional] ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
+     * [0]: ListingItem hash, string, * for all
+     * [1]: status, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}, * for all
+     * [2...]: bidder: particl address
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Bid>> {
-        let itemHash;
-        if (data.params.length < 1) {
-            itemHash = '*';
-        } else {
-            itemHash = data.params.shift();
+
+        const listingItemHash = data.params[0];
+        const action = data.params[1];
+
+        if (data.params.length > 2) {
+            data.params.shift();
+            data.params.shift();
         }
 
-        let status;
-        if (data.params.length < 1) {
-            status = '*';
-        } else {
-            status = data.params.shift();
-        }
+        const searchArgs = {
+            listingItemHash,
+            action,
+            bidders: data.params
+        } as BidSearchParams;
 
-        const searchArgs = {} as BidSearchParams;
-        if (itemHash !== '*') {
-            searchArgs.listingItemHash = itemHash;
-        }
-        if (status !== '*') {
-            searchArgs.action = status;
-        }
-        if (data.params.length > 0) {
-            searchArgs.bidders = data.params;
-        }
         return await this.bidService.search(searchArgs);
     }
 
@@ -85,6 +75,6 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public example(): string {
-        return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb MPA_ACCEPT ';
+        return 'bid ' + this.getName() + ' a22c63bc16652bc417068754688e50f60dbf2ce6d599b4ccf800d63b504e0a88 MPA_ACCEPT pmZpGbH2j2dDYU6LvTryHbEsM3iQzxpnjV';
     }
 }

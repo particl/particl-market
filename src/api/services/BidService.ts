@@ -68,6 +68,8 @@ export class BidService {
      */
     @validate()
     public async search(@request(BidSearchParams) options: BidSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+
+        // if item hash was given, set the item id
         if (options.listingItemHash) {
             const foundListing = await this.listingItemService.findOneByHash(options.listingItemHash, false);
             options.listingItemId = foundListing.Id;
