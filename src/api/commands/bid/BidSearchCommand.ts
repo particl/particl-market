@@ -59,23 +59,10 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
         if (status !== '*') {
             searchArgs.action = status;
         }
-
-
-        if (data.params.length === 0) {
-            return await this.bidService.search(searchArgs);
-        } else {
-            let listOfBids: any = null;
-            for (const address of data.params) {
-                searchArgs.bidder = address;
-                const tmp = await this.bidService.search(searchArgs);
-                if (listOfBids !== null) {
-                    listOfBids.push(tmp);
-                } else {
-                    listOfBids = tmp;
-                }
-            }
-            return listOfBids;
+        if (data.params.length > 0) {
+            searchArgs.bidders = data.params;
         }
+        return await this.bidService.search(searchArgs);
     }
 
 
