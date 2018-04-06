@@ -6,6 +6,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 
 import * as resources from 'resources';
 import * as listingItemCreateRequestBasic1 from '../../testdata/createrequest/listingItemCreateRequestBasic1.json';
+import {BidMessageType} from '../../../src/api/enums/BidMessageType';
 
 describe('BidSendCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -16,6 +17,7 @@ describe('BidSendCommand', () => {
 
     const bidCommand =  Commands.BID_ROOT.commandName;
     const sendCommand =  Commands.BID_SEND.commandName;
+    const searchCommand =  Commands.BID_SEARCH.commandName;
 
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
@@ -45,7 +47,7 @@ describe('BidSendCommand', () => {
         // log.debug('createdListingItems[0].ActionMessages: ', JSON.stringify(createdListingItems[0].ActionMessages, null, 2));
         log.debug('profile.shippingAddress:', JSON.stringify(defaultProfile.ShippingAddresses[0], null, 2));
 
-        const sendBidCommandParams = [
+        const bidSendCommandParams = [
             sendCommand,
             createdListingItems[0].hash,
             defaultProfile.id,
@@ -57,7 +59,7 @@ describe('BidSendCommand', () => {
         ];
 
         // create listing item
-        const res: any = await rpc(bidCommand, sendBidCommandParams);
+        const res: any = await rpc(bidCommand, bidSendCommandParams);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -69,28 +71,23 @@ describe('BidSendCommand', () => {
     test('Should find Bid after posting', async () => {
 
         log.debug('createdListingItems[0].hash: ', createdListingItems[0].hash);
-        // log.debug('createdListingItems[0].ActionMessages: ', JSON.stringify(createdListingItems[0].ActionMessages, null, 2));
-        log.debug('createdAddress:', JSON.stringify(createdAddress, null, 2));
 
-        const sendBidCommandParams = [
-            sendCommand,
+        // bid search (<itemhash>|*) [(<status>|*) [<bidderAddress> ...]
+        const bidSearchCommandParams = [
+            searchCommand,
             createdListingItems[0].hash,
-            defaultProfile.id,
-            createdAddress.id,
-            'colour',
-            'black',
-            'size',
-            'xl'
+            BidMessageType.MPA_BID,
+            defaultProfile.address
         ];
 
         // create listing item
-        const res: any = await rpc(bidCommand, sendBidCommandParams);
+        const res: any = await rpc(bidCommand, bidSearchCommandParams);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
         log.debug('result', result);
-        expect(result.result).toBe('Sent.');
+        expect(result.result.length).toBe(1);
     });
 
 });
