@@ -2,15 +2,21 @@ import { api, rpc, ApiOptions } from './api';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as _ from 'lodash';
-import { Market, Profile } from 'resources';
+import * as resources from 'resources';
 import { LoggerConfig } from '../../../src/config/LoggerConfig';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import { AddressType } from '../../../src/api/enums/AddressType';
+
 import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
 
 export class BlackBoxTestUtil {
 
+    public log: LoggerType = new LoggerType(__filename);
+
     constructor() {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
-        new LoggerConfig().configure();    }
+        new LoggerConfig().configure();
+    }
 
     /**
      * clean the db, also seeds the default data
@@ -62,14 +68,19 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<any>}
      */
-    public async getDefaultProfile(): Promise<Profile> {
+    public async getDefaultProfile(): Promise<resources.Profile> {
         const res: any = await rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT']);
         res.expectJson();
         res.expectStatusCode(200);
 
         const defaultProfile = res.getBody()['result'];
 
-        if (_.isEmpty(defaultProfile.ShippingAddresses)) {
+        if (_.isEmpty(defaultProfile.ShippingAddresses
+            || _.find(defaultProfile.ShippingAddresses, (address: resources.Address) => {
+                    return AddressType.SHIPPING_OWN === address.type;
+        }) === undefined )) {
+
+            this.log.debug('Adding a missing ShippingAddress for the default Profile.');
 
             // if default profile doesnt have a shipping address, add it
             const addCommandParams = [
@@ -104,7 +115,7 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<any>}
      */
-    public async getDefaultMarket(): Promise<Market> {
+    public async getDefaultMarket(): Promise<resources.Market> {
         const res: any = await rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_LIST.commandName]);
         res.expectJson();
         res.expectStatusCode(200);

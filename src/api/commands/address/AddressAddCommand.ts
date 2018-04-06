@@ -38,6 +38,7 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
      *  [7]: state
      *  [8]: country/countryCode
      *  [9]: zipCode
+     *  [10]: type, optional, default: AddressType.SHIPPING_OWN
      *
      * @param data
      * @param rpcCommandFactory
@@ -73,7 +74,7 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
             state: data.params[7],
             country: countryCode,
             zipCode: zipCodeStr,
-            type: AddressType.SHIPPING_OWN
+            type: data.params[10] ? data.params[10] : AddressType.SHIPPING_OWN
         } as AddressCreateRequest;
 
         this.log.debug('newAddress:', newAddress);
