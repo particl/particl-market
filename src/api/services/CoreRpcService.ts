@@ -42,11 +42,12 @@ export class CoreRpcService {
         const response = await this.call('getnewaddress');
 
         // call﻿smsgaddlocaladdress, even though I'm not sure if its required
-        // await this.call('smsgaddlocaladdress', [response]);
+        const addLocalAddressResponse = await this.call('smsgaddlocaladdress', [response]);
+        this.log.debug('addLocalAddressResponse: ', addLocalAddressResponse);
 
         // add address as receive address
-        const localKeyResponse = await this.call('smsglocalkeys', ['recv', '+', response]);
-        this.log.debug('localKeyResponse: ', localKeyResponse);
+        // const localKeyResponse = await this.call('smsglocalkeys', ['recv', '+', response]);
+        // this.log.debug('localKeyResponse: ', localKeyResponse);
 
         return response;
     }
