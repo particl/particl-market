@@ -465,7 +465,6 @@ export class TestDataService {
         const addresses: any[] = [];
         for (let i = amount; i > 0; i--) {
             addresses.push({
-                profile_id: 0,
                 firstName: Faker.name.firstName(),
                 lastName: Faker.name.lastName(),
                 title: Faker.company.companyName(),
