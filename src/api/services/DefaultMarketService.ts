@@ -24,6 +24,7 @@ export class DefaultMarketService {
         this.log = new Logger(__filename);
     }
 
+    // TODO: if something goes wrong here and default profile does not get created, the application should stop
 
     public async seedDefaultMarket(): Promise<void> {
 

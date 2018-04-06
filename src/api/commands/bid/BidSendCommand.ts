@@ -14,6 +14,7 @@ import { AddressService } from '../../services/AddressService';
 import { ProfileService } from '../../services/ProfileService';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import * as resources from 'resources';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -48,6 +49,18 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
+
+        if (data.params.length < 3) {
+            throw new MessageException('Missing parameters.');
+        }
+
+        if (typeof data.params[0] !== 'string') {
+            throw new MessageException('Invalid hash.');
+        }
+
+        if (typeof data.params[1] !== 'number' && typeof data.params[2] !== 'number') {
+            throw new MessageException('Invalid profileId or addressId.');
+        }
 
         // get listing item hash it is in first argument in the data.params
         const listingItemHash = data.params.shift();

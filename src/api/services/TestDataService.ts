@@ -502,8 +502,8 @@ export class TestDataService {
         const defaultMarket = defaultMarketModel.toJSON();
 
         // todo: parameterize, new address or default profile address
-        // const seller = await this.coreRpcService.getNewAddress();
-        const seller = defaultProfile.id;
+        const seller = await this.coreRpcService.getNewAddress();
+        // const seller = defaultProfile.id;
 
         const itemInformation = generateParams.generateItemInformation ? this.generateItemInformationData(generateParams) : {};
         const paymentInformation = generateParams.generatePaymentInformation ? this.generatePaymentInformationData(generateParams) : {};

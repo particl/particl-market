@@ -81,8 +81,8 @@ export const testDataListingItemTemplate = {
 
 export const addressTestData = {
     title: 'Work',
-    firstName: 'zfdg',
-    lastName: 'zxcv',
+    firstName: 'David',
+    lastName: 'Hoffman',
     addressLine1: '123 6th St',
     addressLine2: 'Melbourne FL 32904',
     city: 'Melbourne',
