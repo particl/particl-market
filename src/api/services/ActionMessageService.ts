@@ -54,7 +54,7 @@ export class ActionMessageService {
     }
 
     @validate()
-    public async create( @request(ActionMessageCreateRequest) data: any): Promise<ActionMessage> {
+    public async create( @request(ActionMessageCreateRequest) data: ActionMessageCreateRequest): Promise<ActionMessage> {
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
@@ -131,7 +131,7 @@ export class ActionMessageService {
     }
 
     @validate()
-    public async update(id: number, @request(ActionMessageUpdateRequest) body: any): Promise<ActionMessage> {
+    public async update(id: number, @request(ActionMessageUpdateRequest) body: ActionMessageUpdateRequest): Promise<ActionMessage> {
 
         throw new NotImplementedException();
 /*

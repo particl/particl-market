@@ -7,6 +7,7 @@ import { NotFoundException } from '../exceptions/NotFoundException';
 import { ValidationException } from '../exceptions/ValidationException';
 import { ListingItemObjectRepository } from '../repositories/ListingItemObjectRepository';
 import { ListingItemObject } from '../models/ListingItemObject';
+import { ListingItemObjectData } from '../models/ListingItemObjectData';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectDataCreateRequest } from '../requests/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
@@ -89,16 +90,31 @@ export class ListingItemObjectService {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
 
-        // find the existing one without related
+        // find the existing one without relatedb
         const listingItemObject = await this.findOne(id, false);
 
         // set new values
         listingItemObject.Type = body.type;
         listingItemObject.Description = body.description;
         listingItemObject.Order = body.order;
+        
+        // update listingItemObjectDatas
+        const listingItemObjectDatasOld = listingItemObject.ListingItemObjectDatas();
+        const objectDataIds: number[] = new Array();
+        listingItemObjectDatasOld.forEach((objectData: ListingItemObjectData): void {
+            objectDataIds.push(objectData.id);
+        });
+         
+        for (const objectDataId of objectDataIds) {
+            await this.listingItemObjectDataService.destroy(objectDataId);
+        }
 
-        // TODO : Update listingItemObjectData
+        const listingItemObjectDatas = body.listingItemObjectDatas;
 
+        for (const objectData of listingItemObjectDatas) {
+            objectData.listing_item_object_id = listingItemObject.Id;
+            await this.listingItemObjectDataService.create(objectData as ListingItemObjectDataCreateRequest);
+        }
 
         // update listingItemObject record
         const updatedListingItemObject = await this.listingItemObjectRepo.update(id, listingItemObject.toJSON());
