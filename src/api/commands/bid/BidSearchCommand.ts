@@ -7,10 +7,12 @@ import { BidService } from '../../services/BidService';
 import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
+import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidSearchParams } from '../../requests/BidSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { NotFoundException } from '../../exceptions/NotFoundException';
 
 export class BidSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
@@ -36,31 +38,46 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Bid>> {
-
-        // if hash is specified
-        if (data.params[0]) {
-            const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
-
-            return this.bidService.search({
-                listingItemId: listingItem.id,
-                action: data.params[1]
-            } as BidSearchParams);
+        let itemHash;
+        if (data.params.length < 1) {
+            itemHash = '*';
         } else {
-            // searching all bids
-            return this.bidService.findAll();
+            itemHash = data.params.shift();
         }
+
+        let status;
+        if (data.params.length < 1) {
+            status = '*';
+        } else {
+            status = data.params.shift();
+        }
+
+        const searchArgs = {} as BidSearchParams;
+        if (itemHash !== '*') {
+            searchArgs.listingItemHash = itemHash;
+        }
+        if (status !== '*') {
+            searchArgs.action = status;
+        }
+        if (data.params.length > 0) {
+            searchArgs.bidders = data.params;
+        }
+        return await this.bidService.search(searchArgs);
     }
 
 
     public usage(): string {
-        return this.getName() + ' [<itemhash> [<status>]] ';
+        return this.getName() + ' (<itemhash>|*) [(<status>|*) [<bidderAddress> ...]] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <itemhash>               - [optional] String - The hash of the item we want to search bids for. \n'
+            + '    <itemhash>               - String - The hash of the item we want to search bids for. \n'
+            + '                                The value * specifies that status can be anything. \n'
             + '    <status>                 - [optional] ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL} - \n'
-            + '                                The status of the bids we want to search for. ';
+            + '                                The status of the bids we want to search for. \n'
+            + '                                The value * specifies that status can be anything. \n'
+            + '    <bidderAddress>          - [optional] String - The address of the bidder we want to search bids for. ';
     }
 
     public description(): string {

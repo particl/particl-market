@@ -15,6 +15,7 @@ export class BidSearchParams extends RequestBody {
     public listingItemHash: string;
 
     public bidder: string;
+    public bidders: string[];
 
 }
 // tslint:enable:variable-name
