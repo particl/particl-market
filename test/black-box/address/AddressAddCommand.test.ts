@@ -2,6 +2,7 @@ import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
+import { AddressType } from '../../../src/api/enums/AddressType';
 
 describe('AddressAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -18,7 +19,8 @@ describe('AddressAddCommand', () => {
         city: 'Melbourne',
         state: 'Mel State',
         country: 'Finland',
-        zipCode: '85001'
+        zipCode: '85001',
+        type: AddressType.SHIPPING_OWN
     };
 
     let defaultProfile;
