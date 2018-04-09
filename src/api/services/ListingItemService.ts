@@ -81,7 +81,8 @@ export class ListingItemService {
 
     /**
      *
-     * @param hash, hash of the listing Item.
+     * @param {string} hash
+     * @param {boolean} withRelated
      * @returns {Promise<ListingItem>}
      */
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItem> {
@@ -96,8 +97,8 @@ export class ListingItemService {
     /**
      * search ListingItems using given ListingItemSearchParams
      *
-     * @param options
-     * @param withRelated
+     * @param {ListingItemSearchParams} options
+     * @param {boolean} withRelated
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */
     @validate()
@@ -110,7 +111,7 @@ export class ListingItemService {
 
     /**
      *
-     * @param data
+     * @param {ListingItemCreateRequest} data
      * @returns {Promise<ListingItem>}
      */
     @validate()
@@ -173,8 +174,8 @@ export class ListingItemService {
 
     /**
      *
-     * @param id
-     * @param data
+     * @param {number} id
+     * @param {ListingItemUpdateRequest} data
      * @returns {Promise<ListingItem>}
      */
     @validate()
@@ -295,7 +296,7 @@ export class ListingItemService {
 
     /**
      *
-     * @param id
+     * @param {number} id
      * @returns {Promise<void>}
      */
     public async destroy(id: number): Promise<void> {
@@ -316,20 +317,37 @@ export class ListingItemService {
         }
     }
 
-    // check if ListingItem already Flagged
+    /**
+     * check if ListingItem already Flagged
+     *
+     * @param {ListingItem} listingItem
+     * @returns {Promise<boolean>}
+     */
     public async isItemFlagged(listingItem: ListingItem): Promise<boolean> {
         const flaggedItem = listingItem.related('FlaggedItem').toJSON();
         return _.size(flaggedItem) !== 0;
     }
 
-    // check if object is exist in a array
+    /**
+     * check if object is exist in a array
+     *
+     * @param {string[]} objectArray
+     * @param {string} fieldName
+     * @param {string | number} value
+     * @returns {Promise<any>}
+     */
     private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
         return await _.find(objectArray, (object) => {
             return ( object[fieldName] === value );
         });
     }
 
-    // find highest order number from listingItemObjects
+    /**
+     * find highest order number from listingItemObjects
+     *
+     * @param {string[]} listingItemObjects
+     * @returns {Promise<any>}
+     */
     private async findHighestOrderNumber(listingItemObjects: string[]): Promise<any> {
         const highestOrder = await _.maxBy(listingItemObjects, (itemObject) => {
           return itemObject['order'];

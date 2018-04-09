@@ -30,6 +30,7 @@ import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCre
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
 import {ObjectHash} from '../../core/helpers/ObjectHash';
 import {HashableObjectType} from '../enums/HashableObjectType';
+import {HashableListingItem} from '../../core/helpers/HashableListingItem';
 
 export class ListingItemTemplateService {
 
@@ -61,6 +62,21 @@ export class ListingItemTemplateService {
     }
 
     /**
+     *
+     * @param {string} hash
+     * @param {boolean} withRelated
+     * @returns {Promise<ListingItemTemplate>}
+     */
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItemTemplate> {
+        const listingItemTemplate = await this.listingItemTemplateRepo.findOneByHash(hash, withRelated);
+        if (listingItemTemplate === null) {
+            this.log.warn(`ListingItemTemplate with the hash=${hash} was not found!`);
+            throw new NotFoundException(hash);
+        }
+        return listingItemTemplate;
+    }
+
+    /**
      * search ListingItemTemplates using given ListingItemTemplateSearchParams
      *
      * @param options
@@ -73,11 +89,12 @@ export class ListingItemTemplateService {
     }
 
     @validate()
-    public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest): Promise<ListingItemTemplate> {
+    public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest,
+                         timestampedHash: boolean = false): Promise<ListingItemTemplate> {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
+        body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST, timestampedHash);
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
@@ -88,6 +105,8 @@ export class ListingItemTemplateService {
         delete body.messagingInformation;
         const listingItemObjects = body.listingItemObjects || [];
         delete body.listingItemObjects;
+
+        this.log.debug('create template, body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the listingItemTemplate
         const listingItemTemplate: any = await this.listingItemTemplateRepo.create(body);

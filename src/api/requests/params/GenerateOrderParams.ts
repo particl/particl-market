@@ -7,7 +7,6 @@ export interface GenerateOrderParamsInterface {
 
 export class GenerateOrderParams implements GenerateOrderParamsInterface {
 
-    // GenerateBidParamsInterface
     public generateListingItem = true;
 
     /**

@@ -12,6 +12,7 @@ export class Bid extends Bookshelf.Model<Bid> {
         'BidDatas',
         'ShippingAddress',
         'ListingItem',
+        'ListingItem.ListingItemTemplate',
         'OrderItem',
         'OrderItem.OrderItemObjects',
         'OrderItem.ListingItem',

@@ -111,10 +111,12 @@ export class BidService {
 
         this.log.debug('body.listing_item_id: ', body.listing_item_id);
 
-        this.log.debug('address create request: ', JSON.stringify(addressCreateRequest, null, 2));
+        //
+
+        // this.log.debug('address create request: ', JSON.stringify(addressCreateRequest, null, 2));
         const addressModel = await this.addressService.create(addressCreateRequest);
         const address = addressModel.toJSON();
-        this.log.debug('created address: ', JSON.stringify(address, null, 2));
+        // this.log.debug('created address: ', JSON.stringify(address, null, 2));
 
         // set the address_id for bid
         body.address_id = address.id;

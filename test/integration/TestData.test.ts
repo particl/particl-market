@@ -12,27 +12,22 @@ import { ListingItemTemplateService } from '../../src/api/services/ListingItemTe
 import { MessageException } from '../../src/api/exceptions/MessageException';
 
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-import { Profile } from '../../src/api/models/Profile';
 
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 
-import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { EscrowType } from '../../src/api/enums/EscrowType';
-import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
-
-import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
-import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
+import { Profile } from '../../src/api/models/Profile';
+import { BidMessageType } from '../../src/api/enums/BidMessageType';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
 import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
 import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
+import * as resources from 'resources';
+import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
 
 
 describe('TestDataService', () => {
@@ -67,6 +62,106 @@ describe('TestDataService', () => {
         // log.info('afterAll');
     });
 
+    const expectGenerateProfile = (result: resources.Profile,
+                                   shouldHaveCryptocurrencyAddresses: boolean = true,
+                                   shouldHaveFavoriteItems: boolean = true,
+                                   shouldHaveShippingAddresses: boolean = true,
+                                   shouldHaveShoppingCart: boolean = true) => {
+
+        expect(result.address).not.toBeNull();
+        expect(result.name).not.toBeNull();
+
+        if (shouldHaveCryptocurrencyAddresses) {
+            expect(result.CryptocurrencyAddresses).not.toHaveLength(0);
+            expect(result.CryptocurrencyAddresses[0].profileId).toBe(result.id);
+            expect(result.CryptocurrencyAddresses[0].address).not.toBeNull();
+            expect(result.CryptocurrencyAddresses[0].type).not.toBeNull();
+        } else {
+            expect(result.CryptocurrencyAddresses).toHaveLength(0);
+        }
+
+        if (shouldHaveFavoriteItems) {
+            // TODO
+            expect(result.FavoriteItems).not.toHaveLength(0);
+        } else {
+            expect(result.FavoriteItems).toHaveLength(0);
+        }
+
+        if (shouldHaveShippingAddresses) {
+            expect(result.ShippingAddresses).not.toHaveLength(0);
+            expect(result.ShippingAddresses[0].profileId).toBe(result.id);
+            expect(result.ShippingAddresses[0].firstName).not.toBeNull();
+            expect(result.ShippingAddresses[0].lastName).not.toBeNull();
+            expect(result.ShippingAddresses[0].addressLine1).not.toBeNull();
+            expect(result.ShippingAddresses[0].addressLine2).not.toBeNull();
+            expect(result.ShippingAddresses[0].city).not.toBeNull();
+            expect(result.ShippingAddresses[0].country).not.toBeNull();
+            expect(result.ShippingAddresses[0].title).not.toBeNull();
+            expect(result.ShippingAddresses[0].zipCode).not.toBeNull();
+        } else {
+            expect(result.ShippingAddresses).toHaveLength(0);
+        }
+
+        if (shouldHaveShoppingCart) {
+            expect(result.ShoppingCart).toHaveLength(1);
+            expect(result.ShoppingCart[0].name).toBe('DEFAULT');
+        } else {
+            expect(result.ShoppingCart).toHaveLength(0);
+        }
+    };
+
+
+    const expectGenerateBid = (bidGenerateParams: GenerateBidParams, result: resources.Bid,
+                               shouldHaveListingItemTemplate: boolean = true,
+                               shouldHaveListingItem: boolean = true,
+                               shouldHaveBidDatas: boolean = true,
+                               shouldHaveShippingAddress: boolean = true) => {
+
+        expect(result.action).toBe(bidGenerateParams.action);
+        expect(result.bidder).toBe(bidGenerateParams.bidder);
+
+        if (shouldHaveListingItem) {
+            expect(result.ListingItem).toBeDefined();
+            expect(result.ListingItem.hash).not.toBeNull();
+
+            if (shouldHaveListingItemTemplate) {
+                // TODO: if both are generated, same data should be used
+                // generated template contains different data than the item
+                // expect(result.ListingItem.hash).toBe(result.ListingItem.ListingItemTemplate.hash);
+                expect(result.ListingItem.ListingItemTemplate).toBeDefined();
+                expect(result.ListingItem.ListingItemTemplate.hash).not.toBeNull();
+            } else {
+                expect(result.ListingItem.ListingItemTemplate).not.toBeDefined();
+            }
+
+            if (bidGenerateParams.listingItemHash) {
+                expect(result.ListingItem.hash).toBe(bidGenerateParams.listingItemHash);
+            }
+
+        } else {
+            expect(result.ListingItem.ListingItemTemplate).not.toBeDefined();
+        }
+
+        if (shouldHaveBidDatas) {
+            expect(result.BidDatas).not.toHaveLength(0);
+        } else {
+            expect(result.BidDatas).toHaveLength(0);
+        }
+
+        if (shouldHaveShippingAddress) {
+            expect(result.ShippingAddress.title).not.toBeNull();
+            expect(result.ShippingAddress.firstName).not.toBeNull();
+            expect(result.ShippingAddress.lastName).not.toBeNull();
+            expect(result.ShippingAddress.addressLine1).not.toBeNull();
+            expect(result.ShippingAddress.addressLine2).not.toBeNull();
+            expect(result.ShippingAddress.city).not.toBeNull();
+            expect(result.ShippingAddress.zipCode).not.toBeNull();
+            expect(result.ShippingAddress.country).not.toBeNull();
+        } else {
+            expect(result.ShippingAddress).not.toBeDefined();
+        }
+    };
+
     test('Should create default data if seed=true', async () => {
         // clean removes all
         await testDataService.clean(true);
@@ -93,30 +188,34 @@ describe('TestDataService', () => {
         expect(market).toHaveLength(0);
     });
 
-    test('Should create test data as par model', async () => {
+    test('Should create ListingItemTemplate', async () => {
         await testDataService.clean();
-        const defaultProfile = await profileService.getDefault();
+
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        const defaultProfile: resources.Profile = defaultProfileModel.toJSON();
 
         const listingItemTemplateData = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        listingItemTemplateData.profile_id = defaultProfile.Id;
+        listingItemTemplateData.profile_id = defaultProfile.id;
 
         // TODO: create tests to test creation of different model types
         // TODO: use test data files
 
         const createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
             model: CreatableModel.LISTINGITEMTEMPLATE,
-            data: listingItemTemplateData as any, // TODO: as any?
-            withRelated: true
+            data: listingItemTemplateData,
+            withRelated: true,
+            timestampedHash: true
         } as TestDataCreateRequest);
 
         const result = createdListingItemTemplate.toJSON();
-        // tslint:disable:max-line-length
         const listingItemTemplate = await listingItemTemplateService.findAll();
         expect(listingItemTemplate).toHaveLength(1);
 
         expect(result.hash).not.toBeNull();
-        expect(result.Profile.name).toBe(defaultProfile.Name);
+        expect(result.Profile.name).toBe(defaultProfile.name);
 
+        // tslint:disable:max-line-length
         expect(result.ItemInformation.title).toBe(listingItemTemplateData.itemInformation.title);
         expect(result.ItemInformation.shortDescription).toBe(listingItemTemplateData.itemInformation.shortDescription);
         expect(result.ItemInformation.longDescription).toBe(listingItemTemplateData.itemInformation.longDescription);
@@ -163,63 +262,45 @@ describe('TestDataService', () => {
         );
     });
 
-    test('Should generate single test data as par model', async () => {
+    test('Should generate single Profile', async () => {
         await testDataService.clean(false);
-        const model = 'profile';
-        const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
-            model,
+
+        let profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
+            model: CreatableModel.PROFILE,
             amount: 1,
             withRelated: true
         } as TestDataGenerateRequest);
-        const createdProfile = profiles[0].toJSON();
-        // CryptocurrencyAddresses
-        expect(createdProfile.CryptocurrencyAddresses).not.toHaveLength(0);
-        expect(createdProfile.CryptocurrencyAddresses[0].profileId).toBe(createdProfile.id);
-        expect(createdProfile.CryptocurrencyAddresses[0].address).not.toBeNull();
-        expect(createdProfile.CryptocurrencyAddresses[0].type).not.toBeNull();
-        // FavoriteItems
-        expect(createdProfile.FavoriteItems).toHaveLength(0);
-        // ShippingAddresses
-        expect(createdProfile.ShippingAddresses).not.toHaveLength(0);
-        expect(createdProfile.ShippingAddresses[0].profileId).toBe(createdProfile.id);
-        expect(createdProfile.ShippingAddresses[0].addressLine1).not.toBeNull();
-        expect(createdProfile.ShippingAddresses[0].addressLine2).not.toBeNull();
-        expect(createdProfile.ShippingAddresses[0].city).not.toBeNull();
-        expect(createdProfile.ShippingAddresses[0].country).not.toBeNull();
-        expect(createdProfile.ShippingAddresses[0].title).not.toBeNull();
-        expect(createdProfile.ShippingAddresses[0].zipCode).not.toBeNull();
-        // normal field
-        expect(createdProfile.address).not.toBeNull();
-        expect(createdProfile.name).not.toBeNull();
+        const createdProfile = profiles[0];
 
-        const profile = await profileService.findAll();
-        expect(profile).toHaveLength(1);
+        expectGenerateProfile(createdProfile, true, false, true, true);
+
+        profiles = await profileService.findAll();
+        expect(profiles).toHaveLength(1);
     });
 
-    test('Should generate single test data as par model with withRelated: false', async () => {
+    test('Should generate single Profile using withRelated=false and return only ids', async () => {
         await testDataService.clean(false);
-        const model = 'profile';
-        const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
-            model,
+
+        const profileIds: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
+            model: CreatableModel.PROFILE,
             amount: 1,
             withRelated: false
         } as TestDataGenerateRequest);
-        const createdProfile = profiles[0];
-        expect(createdProfile).toBeGreaterThan(0);
-        // CryptocurrencyAddresses
-        expect(createdProfile.CryptocurrencyAddresses).not.toBeDefined();
-        expect(createdProfile.FavoriteItems).not.toBeDefined();
-        expect(createdProfile.ShippingAddresses).not.toBeDefined();
 
-        const profile = await profileService.findAll();
-        expect(profile).toHaveLength(1);
+        expect(profileIds[0]).toBeGreaterThan(0);
+        expect(profileIds).toHaveLength(1);
+
+        const profile = await profileService.findOne(profileIds[0]);
+        const createdProfile = profile.toJSON();
+        expectGenerateProfile(createdProfile, true, false, true, true);
+
     });
 
-    test('Should generate three test data as par model', async () => {
+    test('Should generate three Profiles', async () => {
         await testDataService.clean(false);
-        const model = 'profile';
+
         const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
-            model,
+            model: CreatableModel.PROFILE,
             amount: 3,
             withRelated: true
         } as TestDataGenerateRequest);
@@ -250,11 +331,12 @@ describe('TestDataService', () => {
             generateParams: generateListingItemTemplateParams
         } as TestDataGenerateRequest);
 
+        // TODO: expects
     });
 
     test('Should throw error message when passed model is invalid for generate', async () => {
         expect.assertions(1);
-        const model = 'testmodel';
+        const model = 'invalidmodel';
         await testDataService.generate<Profile>({
             model,
             amount: 1,
@@ -264,7 +346,77 @@ describe('TestDataService', () => {
         );
     });
 
+    test('Should generate Bid using GenerateBidParams, generating a ListingItemTemplate and a ListingItem', async () => {
+        await testDataService.clean(true);
+
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        const defaultProfile: resources.Profile = defaultProfileModel.toJSON();
+
+        const bidGenerateParams = new GenerateBidParams([
+            true,                       // generateListingItemTemplate
+            true,                       // generateListingItem
+            null,                       // listingItemhash
+            BidMessageType.MPA_BID,     // action
+            defaultProfile.address      // bidder
+            // defaultProfile.address      // listingitem seller
+        ]);
+
+        const generatedBids = await testDataService.generate({
+            model: CreatableModel.BID,
+            amount: 1,
+            withRelated: true,
+            generateParams: bidGenerateParams.toParamsArray()
+        } as TestDataGenerateRequest);
+
+        const bid = generatedBids[0];
+        expectGenerateBid(bidGenerateParams, bid, true, true, false, true);
+    });
+
+    test('Should generate Bid using GenerateBidParams, with a relation to existing ListingItem', async () => {
+        await testDataService.clean(true);
+
+        // generate listingitemtemplate
+        const generateListingItemParams = new GenerateListingItemParams().toParamsArray();
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,
+            amount: 1,
+            withRelated: true,
+            generateParams: generateListingItemParams
+        } as TestDataGenerateRequest);
+
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        const defaultProfile: resources.Profile = defaultProfileModel.toJSON();
+
+        const bidGenerateParams = new GenerateBidParams([
+            false,                          // generateListingItemTemplate
+            false,                          // generateListingItem
+            listingItems[0].hash,           // listingItemHash
+            BidMessageType.MPA_BID,         // action
+            defaultProfile.address          // bidder
+            // defaultProfile.address       // listingitem seller
+        ]);
+
+        const generatedBids = await testDataService.generate({
+            model: CreatableModel.BID,
+            amount: 1,
+            withRelated: true,
+            generateParams: bidGenerateParams.toParamsArray()
+        } as TestDataGenerateRequest);
+
+        const bid = generatedBids[0];
+        expectGenerateBid(bidGenerateParams, bid, true, true, false, true);
+
+        expect(bid.ListingItem.hash).toBe(listingItems[0].hash);
+        // expect(bid.ListingItem.seller).toBe(defaultProfile.address);
+
+    });
+
     test('Should cleanup all tables', async () => {
+
+        // TODO: needs to be updated, should check that all tables are cleaned
+
         expect.assertions(4);
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -284,8 +436,5 @@ describe('TestDataService', () => {
         const profiles = await profileService.findAll();
         expect(profiles).toHaveLength(1);
     });
-
-
-    // TODO: test generate params
 
 });

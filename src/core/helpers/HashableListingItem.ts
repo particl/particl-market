@@ -18,7 +18,8 @@ export class HashableListingItem {
     public nullItemTimestamp: Date;
 
     // TODO: refactor
-    constructor(hashThis: resources.ListingItem | resources.ListingItemTemplate | ListingItemCreateRequest | ListingItemTemplateCreateRequest ) {
+    constructor(hashThis: resources.ListingItem | resources.ListingItemTemplate | ListingItemCreateRequest | ListingItemTemplateCreateRequest,
+                timestampedHash: boolean = false ) {
         const input = JSON.parse(JSON.stringify(hashThis));
 
         if (input) {
@@ -64,11 +65,13 @@ export class HashableListingItem {
             this.paymentAddress     = input.paymentInformation.itemPrice.cryptocurrencyAddress.address;
             this.messagingPublicKey = input.messagingInformation.publicKey;
 
+            // TODO: add listingitemobjects to hash
+
             // hack: allow empty objects for now
-            if (!this.title && !this.shortDescription && !this.longDescription && !this.basePrice && !this.paymentAddress && !this.messagingPublicKey) {
+            if ((!this.title && !this.shortDescription && !this.longDescription && !this.basePrice && !this.paymentAddress && !this.messagingPublicKey)
+                || timestampedHash) {
                 this.nullItemTimestamp = new Date();
             }
-
         }
     }
 

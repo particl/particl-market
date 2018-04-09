@@ -33,7 +33,8 @@ export class ListingItemRepository {
 
     /**
      *
-     * @param hash
+     * @param {string} hash
+     * @param {boolean} withRelated
      * @returns {Promise<ListingItem>}
      */
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItem> {
@@ -41,9 +42,9 @@ export class ListingItemRepository {
     }
 
     /**
-     * todo: optionally fetch withRelated
      *
-     * @param options, ListingItemSearchParams
+     * @param {ListingItemSearchParams} options
+     * @param {boolean} withRelated
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */
     public async search(options: ListingItemSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<ListingItem>> {

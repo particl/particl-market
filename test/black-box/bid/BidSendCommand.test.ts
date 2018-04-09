@@ -28,7 +28,7 @@ describe('BidSendCommand', () => {
 
         await testUtil.cleanDb();
 
-        // get default profile again
+        // get default profile
         defaultProfile = await testUtil.getDefaultProfile();
         log.debug('defaultProfile: ', JSON.stringify(defaultProfile, null, 2));
 

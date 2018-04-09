@@ -12,7 +12,7 @@ export class ObjectHash {
      * @param {HashableObjectType} type
      * @returns {string}
      */
-    public static getHash(objectToHash: any, type: HashableObjectType): string {
+    public static getHash(objectToHash: any, type: HashableObjectType, timestampedHash: boolean = false): string {
 
         let hashableObject;
         switch (type) {
@@ -20,7 +20,7 @@ export class ObjectHash {
             case HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST:
             case HashableObjectType.LISTINGITEM:
             case HashableObjectType.LISTINGITEMTEMPLATE: {
-                hashableObject = new HashableListingItem(objectToHash);
+                hashableObject = new HashableListingItem(objectToHash, timestampedHash);
                 break;
             }
             case HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST:
