@@ -31,8 +31,8 @@ export class AdminCommand extends BaseCommand implements RpcCommandInterface<any
         return await this.executeNext(data, rpcCommandFactory);
     }
 
-    public help(): string {
-        return this.getName() + ' (data)';
+    public usage(): string {
+        return this.getName() + ' (data)  -  ' + this.description();
     }
 
     public description(): string {

@@ -24,8 +24,8 @@ export class AddressRootCommand extends BaseCommand implements RpcCommandInterfa
         return await this.executeNext(data, rpcCommandFactory);
     }
 
-    public help(): string {
-        return this.getName() + ' (list|add|update|remove) ';
+    public usage(): string {
+        return this.getName() + ' (list|add|update|remove)  -  ' + this.description();
     }
 
     public description(): string {

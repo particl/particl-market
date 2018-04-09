@@ -30,8 +30,8 @@ export class MessagingInformationRootCommand extends BaseCommand implements RpcC
         return await this.executeNext(data, rpcCommandFactory);
     }
 
-    public help(): string {
-        return this.getName() + ' (update)';
+    public usage(): string {
+        return this.getName() + ' (update)  -  ' + this.description();
     }
 
     public description(): string {

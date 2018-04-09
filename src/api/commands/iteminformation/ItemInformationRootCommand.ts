@@ -24,8 +24,8 @@ export class ItemInformationRootCommand extends BaseCommand implements RpcComman
         return await this.executeNext(data, rpcCommandFactory);
     }
 
-    public help(): string {
-        return this.getName() + ' (get|add|update) ';
+    public usage(): string {
+        return this.getName() + ' (get|add|update)  -  ' + this.description();
     }
 
     public description(): string {

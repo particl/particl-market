@@ -25,8 +25,8 @@ export class ProfileRootCommand extends BaseCommand implements RpcCommandInterfa
         return await this.executeNext(data, rpcCommandFactory);
     }
 
-    public help(): string {
-        return this.getName() + ' (get|add|update|remove|address|favorite) ';
+    public usage(): string {
+        return this.getName() + ' (get|add|update|remove|address|favorite)  -  ' + this.description();
     }
 
     public description(): string {
