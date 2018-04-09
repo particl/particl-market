@@ -143,7 +143,7 @@ describe('BidSearchCommand', () => {
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
-    test('Should fail to search bids because invalid enum bid status', async () => {
+    test('Should fail to search Bids because invalid enum bid status', async () => {
         // search bid by item hash
         const res: any = await rpc(bidCommand, [searchCommand, listingItems[0].hash, 'INVALID STATUS']);
         res.expectJson();
@@ -152,7 +152,7 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe('Request body is not valid');
     });
 
-    test('Should return empty search result because bid with status MPA_REJECT does not exist', async () => {
+    test('Should return empty search result because Bid with status MPA_REJECT does not exist', async () => {
         // search bid by item hash
         const res: any = await rpc(bidCommand, [searchCommand, listingItems[0].hash, BidMessageType.MPA_REJECT]);
         res.expectJson();

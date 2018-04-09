@@ -1,4 +1,5 @@
 import { Bookshelf as Database } from '../../config/Database';
+import { Collection } from 'bookshelf';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
@@ -187,7 +188,7 @@ export class TestDataService {
      * @returns {Promise<any>}
      */
     @validate()
-    public async generate<T>( @request(TestDataGenerateRequest) body: TestDataGenerateRequest): Promise<any> {
+    public async generate<T>( @request(TestDataGenerateRequest) body: TestDataGenerateRequest ): Promise<any> {
         switch (body.model) {
             case CreatableModel.LISTINGITEMTEMPLATE: {
                 const generateParams = new GenerateListingItemTemplateParams(body.generateParams);
@@ -281,12 +282,17 @@ export class TestDataService {
     // -------------------
     // listingitemtemplates
 
-    private async generateListingItemTemplates(amount: number, withRelated: boolean = true, generateParams: GenerateListingItemTemplateParams): Promise<any> {
-        const items: any[] = [];
+    private async generateListingItemTemplates(
+        amount: number, withRelated: boolean = true,
+        generateParams: GenerateListingItemTemplateParams):
+    Promise<resources.ListingItemTemplate[]> {
+
+        const items: resources.ListingItemTemplate[] = [];
         for (let i = amount; i > 0; i--) {
             const listingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
             const listingItemTemplateModel = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest);
-            items.push(listingItemTemplateModel.toJSON());
+            const result = listingItemTemplateModel.toJSON();
+            items.push(result);
         }
         return this.generateResponse(items, withRelated);
     }
@@ -294,9 +300,12 @@ export class TestDataService {
     // -------------------
     // listingitems
 
-    private async generateListingItems(amount: number, withRelated: boolean = true, generateParams: GenerateListingItemParams): Promise<any> {
+    private async generateListingItems(
+        amount: number, withRelated: boolean = true,
+        generateParams: GenerateListingItemParams):
+    Promise<resources.ListingItem[]> {
 
-        const items: any[] = [];
+        const items: resources.ListingItem[] = [];
         for (let i = amount; i > 0; i--) {
 
             const listingItemCreateRequest = await this.generateListingItemData(generateParams);
@@ -321,10 +330,12 @@ export class TestDataService {
                 }
             }];
 
-            const savedListingItem = await this.listingItemService.create(listingItemCreateRequest);
+            const savedListingItemModel = await this.listingItemService.create(listingItemCreateRequest);
 
             // this.log.debug('savedListingItem: ', savedListingItem.toJSON());
-            items.push(savedListingItem.toJSON());
+            const result = savedListingItemModel.toJSON();
+            items.push(result);
+
         }
         // this.log.debug('items: ', items);
 
@@ -333,7 +344,9 @@ export class TestDataService {
 
     // -------------------
     // bids
-    private async generateBids(amount: number, withRelated: boolean = true, generateParams: GenerateBidParams): Promise<any> {
+    private async generateBids(
+        amount: number, withRelated: boolean = true, generateParams: GenerateBidParams):
+    Promise<resources.Bid[]> {
 
         this.log.debug('generateBids, generateParams: ', generateParams);
 
@@ -366,6 +379,7 @@ export class TestDataService {
 
             const listingItems = await this.generateListingItems(1, true, listingItemGenerateParams);
             listingItem = listingItems[0];
+
             this.log.debug('items generated:', listingItems.length);
             this.log.debug('listingItem.id:', listingItem.id);
             this.log.debug('listingItem.hash:', listingItem.hash);
@@ -376,11 +390,12 @@ export class TestDataService {
 
         this.log.debug('generateParams:', generateParams);
 
-        const items: any[] = [];
+        const items: resources.Bid[] = [];
         for (let i = amount; i > 0; i--) {
             const bid = await this.generateBidData(generateParams);
-            const savedBid = await this.bidService.create(bid);
-            items.push(savedBid.toJSON());
+            const savedBidModel = await this.bidService.create(bid);
+            const result = savedBidModel.toJSON();
+            items.push(result);
         }
         return this.generateResponse(items, withRelated);
     }
@@ -423,12 +438,16 @@ export class TestDataService {
 
     // -------------------
     // orders
-    private async generateOrders(amount: number, withRelated: boolean = true, generateParams: GenerateOrderParams): Promise<any> {
-        const items: any[] = [];
+    private async generateOrders(
+        amount: number, withRelated: boolean = true, generateParams: GenerateOrderParams):
+    Promise<resources.Order[]> {
+
+        const items: resources.Order[] = [];
         for (let i = amount; i > 0; i--) {
             const order = await this.generateOrderData(generateParams);
-            const savedOrder = await this.orderService.create(order);
-            items.push(savedOrder);
+            const savedOrderModel = await this.orderService.create(order);
+            const result = savedOrderModel.toJSON();
+            items.push(result);
         }
         return this.generateResponse(items, withRelated);
     }
@@ -475,17 +494,21 @@ export class TestDataService {
     // -------------------
     // profiles
 
-    private async generateProfiles(amount: number, withRelated: boolean = true, generateParams: GenerateProfileParams): Promise<any> {
-        const items: any[] = [];
+    private async generateProfiles(
+        amount: number, withRelated: boolean = true, generateParams: GenerateProfileParams):
+    Promise<resources.Profile[]> {
+
+        const items: resources.Profile[] = [];
         for (let i = amount; i > 0; i--) {
             const profile = await this.generateProfileData(generateParams);
-            const savedProfile = await this.profileService.create(profile);
-            items.push(savedProfile.toJSON());
+            const savedProfileModel = await this.profileService.create(profile);
+            const result = savedProfileModel.toJSON();
+            items.push(result);
         }
         return this.generateResponse(items, withRelated);
     }
 
-    private async generateResponse(items: any, withRelated: boolean): Promise<any[]> {
+    private async generateResponse(items: any, withRelated: boolean): Promise<any> {
         if (withRelated) {
             return items;
         } else {

@@ -117,6 +117,8 @@ describe('TestDataService', () => {
                                shouldHaveBidDatas: boolean = true,
                                shouldHaveShippingAddress: boolean = true) => {
 
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        log.debug('bidGenerateParams: ', JSON.stringify(bidGenerateParams, null, 2));
         expect(result.action).toBe(bidGenerateParams.action);
         expect(result.bidder).toBe(bidGenerateParams.bidder);
 
@@ -370,6 +372,7 @@ describe('TestDataService', () => {
         } as TestDataGenerateRequest);
 
         const bid = generatedBids[0];
+
         expectGenerateBid(bidGenerateParams, bid, true, true, false, true);
     });
 

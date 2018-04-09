@@ -20,7 +20,7 @@ export class MessageProcessor implements MessageProcessorInterface {
     public log: LoggerType;
 
     private timeout: any;
-    private interval = 3000;
+    private interval = 5000;
 
     // TODO: injecting listingItemService causes Error: knex: Required configuration option 'client' is missing.
     // tslint:disable:max-line-length
