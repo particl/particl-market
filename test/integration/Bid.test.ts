@@ -177,7 +177,7 @@ describe('Bid', () => {
 
         const bidCollection = await bidService.search(bidSearchParams);
         const bids = bidCollection.toJSON();
-        expect(bids.length).toBe(1);
+        expect(bids.length).toBe(2);
     });
 
     test('Should return one Bid for listingItem.hash', async () => {
