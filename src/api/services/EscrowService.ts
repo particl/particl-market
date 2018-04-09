@@ -133,7 +133,7 @@ export class EscrowService {
         } as MarketplaceMessage;
 
         // TODO: add profile and market addresses
-        return await this.smsgService.smsgSend('', '', marketPlaceMessage);
+        return await this.smsgService.smsgSend('', '', marketPlaceMessage, false);
     }
 
     @validate()
@@ -152,7 +152,7 @@ export class EscrowService {
         } as MarketplaceMessage;
 
         // TODO: add profile and market addresses
-        return await this.smsgService.smsgSend('', '', marketPlaceMessage);
+        return await this.smsgService.smsgSend('', '', marketPlaceMessage, false);
     }
 
     @validate()
@@ -171,7 +171,7 @@ export class EscrowService {
         } as MarketplaceMessage;
 
         // TODO: add profile and market addresses
-        return await this.smsgService.smsgSend('', '', marketPlaceMessage);
+        return await this.smsgService.smsgSend('', '', marketPlaceMessage, false);
     }
 
 }
