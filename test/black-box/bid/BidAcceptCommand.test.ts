@@ -77,13 +77,16 @@ describe('BidAcceptCommand', () => {
         log.debug('generatedTemplateHash:', generatedTemplateHash);
         expect(listingItemTemplate.hash).toBe(generatedTemplateHash);
 
-        // create listing item
+        // create ListingItemCreateRequest
         listingItemCreateRequestBasic1.market_id = defaultMarket.id;
         listingItemCreateRequestBasic1.listing_item_template_id = listingItemTemplate.id;
         listingItemCreateRequestBasic1.seller = sellerProfile.address;
 
         // expect listingItemCreateRequest also matches generatedTemplateHash
-        todo
+        const generatedListingItemCreateRequesHash = ObjectHash.getHash(listingItemTemplate, HashableObjectType.LISTINGITEM_CREATEREQUEST);
+        expect(listingItemTemplate.hash).toBe(generatedListingItemCreateRequesHash);
+
+        // expect listingItemCreateRequest also matches generatedTemplateHash
 
         listingItem = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
 
