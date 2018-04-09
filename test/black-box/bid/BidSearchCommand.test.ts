@@ -98,19 +98,19 @@ describe('BidSearchCommand', () => {
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
+
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
-        expect(result[0].ListingItem.hash).toBe(bids[0].ListingItem.hash);
 
     });
 
-    test('Should return two bids search by item hash', async () => {
+    test('Should return two Bids when search by ListingItem.hash', async () => {
         // create second bid
         const bidGenerateParams = new GenerateBidParams([
             true,                       // generateListingItemTemplate
             true,                       // generateListingItem
             listingItems[0].hash,       // listingItemhash
-            BidMessageType.MPA_BID,     // action
+            BidMessageType.MPA_ACCEPT,  // action
             defaultProfile.address      // bidder
         ]).toParamsArray();
 
@@ -128,11 +128,11 @@ describe('BidSearchCommand', () => {
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(2);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
-        expect(result[0].ListingItem.hash).toBe(bids[0].ListingItem.hash);
+        expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
 
     });
 
-    test('Should search bids by item hash and bid status', async () => {
+    test('Should search Bids by ListingItem.hash and bid status', async () => {
         // search bid by item hash
         const res: any = await rpc(bidCommand, [searchCommand, listingItems[0].hash, BidMessageType.MPA_BID]);
         res.expectJson();
@@ -140,7 +140,7 @@ describe('BidSearchCommand', () => {
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
-        expect(result[0].listingItemId).toBe(listingItems[0].hash);
+        expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
     test('Should fail to search bids because invalid enum bid status', async () => {
