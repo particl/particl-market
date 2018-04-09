@@ -1,73 +1,79 @@
-import { rpc, api } from './lib/api';
+import { rpc, api } from '../lib/api';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { BidCreateRequest } from '../../../src/api/requests/BidCreateRequest';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { addressTestData } from './BidCommandCommon';
 import { AddressCreateRequest } from '../../../src/api/requests/AddressCreateRequest';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 
 import * as resources from 'resources';
 import * as listingItemCreateRequestBasic1 from '../../testdata/createrequest/listingItemCreateRequestBasic1.json';
+import * as addressCreateRequest from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
+import {GenerateProfileParams} from "../../../src/api/requests/params/GenerateProfileParams";
 
 describe('BidAcceptCommand', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
 
     const testUtil = new BlackBoxTestUtil();
 
     const bidCommand =  Commands.BID_ROOT.commandName;
     const acceptCommand = Commands.BID_ACCEPT.commandName;
 
+    const dataCommand = Commands.DATA_ROOT.commandName;
+    const generateCommand = Commands.DATA_GENERATE.commandName;
+
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
+    let sellerProfile: resources.Profile;
+
+    let listingItemTemplate: resources.ListingItemTemplate;
     let listingItem: resources.ListingItem;
-    let createdBid: resources.Bid;
+
+    let bid: resources.Bid;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile
-        defaultProfile = await testUtil.getDefaultProfile();
-
-        // create address
-        const addressRes = await rpc(Commands.ADDRESS_ROOT.commandName, [Commands.ADDRESS_ADD.commandName,
-            defaultProfile.id,
-            addressTestData.firstName, addressTestData.lastName, addressTestData.title,
-            addressTestData.addressLine1, addressTestData.addressLine2,
-            addressTestData.city, addressTestData.state, addressTestData.country, addressTestData.zipCode]);
-
-        // get default profile again - to update
+        // get default profile - testUtil will add one shipping address to it unless one allready exists
         defaultProfile = await testUtil.getDefaultProfile();
 
         // get default market
         defaultMarket = await testUtil.getDefaultMarket();
 
-        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
+        // generate local seller profile
+        const generateProfileParams = new GenerateProfileParams([true, false]).toParamsArray();
+        const res = await rpc(dataCommand, [generateCommand, CreatableModel.PROFILE, 1, true].concat(generateProfileParams));
+        res.expectJson();
+        res.expectStatusCode(200);
+        sellerProfile = res.getBody()['result'];
+        log.debug('sellerProfile:', JSON.stringify(sellerProfile, null, 2));
 
         // generate listingItemTemplate
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams().toParamsArray();
         const listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
-
-        const createdListingItemTemplate = listingItemTemplates[0];
+        listingItemTemplate = listingItemTemplates[0];
 
         // create listing item
         listingItemCreateRequestBasic1.market_id = defaultMarket.id;
-        listingItemCreateRequestBasic1.listing_item_template_id = createdListingItemTemplate.id;
+        listingItemCreateRequestBasic1.listing_item_template_id = listingItemTemplate.id;
+        listingItemCreateRequestBasic1.seller = sellerProfile.address;
 
         listingItem = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
+
+        log.debug('listingItemTemplate:', listingItemTemplate);
+        log.debug('listingItem:', listingItem);
+
+        // make sure the hashes match
+        expect(listingItemTemplate.hash).toBe(listingItem.hash);
 
         // Ryno Hacks - This requires regtest
         // This needs to be updated whenever regtest allocations change
@@ -79,6 +85,8 @@ describe('BidAcceptCommand', () => {
 
         const pubkey = '02dcd01e1c1bde4d5f8eff82cde60017f81ac1c2888d04f47a31660004fe8d4bb7';
         const changeAddress = 'pYTjD9CRepFvh1YvVfowY2J14DK9ayrvrr';
+
+        // TODO: make it possible to pass bidDatas to bid test data generation
 
         // create bid
         const bidCreateRequest = {

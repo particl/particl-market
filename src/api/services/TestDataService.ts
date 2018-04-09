@@ -518,7 +518,7 @@ export class TestDataService {
 
     private async generateProfileData(generateParams: GenerateProfileParams): Promise<ProfileCreateRequest> {
         const name = 'TEST-' + Faker.name.firstName();
-        const address = Faker.finance.bitcoinAddress();
+        const address = await this.coreRpcService.getNewAddress();
 
         this.log.debug('generateParams.generateShippingAddresses: ', generateParams.generateShippingAddresses);
         this.log.debug('generateParams.generateCryptocurrencyAddresses: ', generateParams.generateCryptocurrencyAddresses);
