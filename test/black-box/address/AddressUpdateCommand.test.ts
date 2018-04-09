@@ -2,6 +2,7 @@ import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import {AddressType} from '../../../src/api/enums/AddressType';
 
 describe('AddressUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -9,7 +10,7 @@ describe('AddressUpdateCommand', () => {
     const subCommand = Commands.ADDRESS_UPDATE.commandName;
 
     const testData = {
-        name: 'TESTING-ADDRESS-PROFILE-NAME',
+        name: 'TESTING-ADDRESS-PROFILE-NAME' + new Date().getTime(),
         address: 'TESTING-ADDRESS-PROFILE-ADDRESS',
         shippingAddresses: [{
             firstName: 'Johnny',
@@ -20,7 +21,8 @@ describe('AddressUpdateCommand', () => {
             city: 'city',
             state: 'test state',
             country: 'SW',
-            zipCode: '85001'
+            zipCode: '85001',
+            type: AddressType.SHIPPING_OWN
         }]
     };
 
