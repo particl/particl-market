@@ -440,7 +440,7 @@ export class BidActionService {
         // TODO: should someone be able to bid more than once?
         const biddersExistingBidsForItem = await this.bidService.search({
             listingItemHash: bidMessage.item,
-            bidder
+            bidders: [bidder]
         } as BidSearchParams);
 
 
