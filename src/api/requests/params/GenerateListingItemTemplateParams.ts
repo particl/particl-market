@@ -35,7 +35,7 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
     public generateEscrow = true;
     public generateItemPrice = true;
     public generateObjectDatas = true;
-    public profileId = null;
+    public profileId: number | null = null;
 
     /**
      * generateParams[]:

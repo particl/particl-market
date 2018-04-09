@@ -633,7 +633,7 @@ export class TestDataService {
         return items;
     }
 
-    private generateItemInformationData(generateParams: GenerateListingItemTemplateParams): ItemInformationCreateRequest {
+    private generateItemInformationData(generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams): ItemInformationCreateRequest {
 
         const shippingDestinations = generateParams.generateShippingDestinations
             ? this.generateShippingDestinationsData(_.random(1, 5))
@@ -666,7 +666,9 @@ export class TestDataService {
         return itemInformation;
     }
 
-    private async generatePaymentInformationData(generateParams: GenerateListingItemTemplateParams): Promise<PaymentInformationCreateRequest> {
+    private async generatePaymentInformationData(
+        generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams):
+    Promise<PaymentInformationCreateRequest> {
 
         const escrow = generateParams.generateEscrow
             ? {
@@ -701,6 +703,7 @@ export class TestDataService {
         return paymentInformation;
     }
 
+    // TODO: type
     private generateMessagingInformationData(): any {
         const messagingInformation = [{
             protocol: Faker.random.arrayElement(Object.getOwnPropertyNames(MessagingProtocolType)),
@@ -710,7 +713,7 @@ export class TestDataService {
     }
 
     // listingitemobjects
-    private generateListingItemObjectsData(generateParams: GenerateListingItemTemplateParams): any {
+    private generateListingItemObjectsData(generateParams: GenerateListingItemParams | GenerateListingItemTemplateParams): any {
         const listingItemObjectDatas = generateParams.generateObjectDatas
             ? this.generateObjectDataData(_.random(1, 5))
             : [];
@@ -724,6 +727,7 @@ export class TestDataService {
         return listingItemObjects;
     }
 
+    // TODO: type
     private generateObjectDataData(amount: number): any[] {
         const object: any[] = [];
         for (let i = amount; i > 0; i--) {
@@ -741,14 +745,22 @@ export class TestDataService {
         const messagingInformation = generateParams.generateMessagingInformation ? this.generateMessagingInformationData() : [];
         const listingItemObjects = generateParams.generateListingItemObjects ? this.generateListingItemObjectsData(generateParams) : [];
 
-        const defaultProfile = await this.profileService.getDefault();
+        let profile: resources.Profile;
+
+        if (generateParams.profileId === null) {
+            const profileModel = await this.profileService.getDefault();
+            profile = profileModel.toJSON();
+        } else {
+            const profileModel = await this.profileService.findOne(generateParams.profileId);
+            profile = profileModel.toJSON();
+        }
 
         const listingItemTemplateCreateRequest = {
             itemInformation,
             paymentInformation,
             messagingInformation,
             listingItemObjects,
-            profile_id: defaultProfile.Id
+            profile_id: profile.id
         } as ListingItemTemplateCreateRequest;
 
         // this.log.debug('listingItemTemplateCreateRequest', JSON.stringify(listingItemTemplateCreateRequest, null, 2));

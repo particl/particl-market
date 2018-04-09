@@ -403,9 +403,6 @@ export class BidActionService {
             this.log.error(`Bid can not be rejected because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be rejected because it was already been ${bid.action}`);
         }
-=======
-        return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage, false);
->>>>>>> f4068ce... PD-129
     }
 
     /**
