@@ -319,7 +319,7 @@ export class BidActionService {
             const buyer = this.getBuyer(listingItem);
 
             // broadcast the accepted bid message
-            return await this.smsgService.smsgSend(profile.address, buyer, marketPlaceMessage);
+            return await this.smsgService.smsgSend(profile.address, buyer, marketPlaceMessage, false);
         } else {
             this.log.error(`Bid can not be accepted because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be accepted because it was already been ${bid.action}`);
@@ -358,7 +358,7 @@ export class BidActionService {
             const seller = this.getSeller(listingItem);
 
             // broadcast the cancel bid message
-            return await this.smsgService.smsgSend(profile.address, seller, marketPlaceMessage);
+            return await this.smsgService.smsgSend(profile.address, seller, marketPlaceMessage, false);
         } else {
             this.log.error(`Bid can not be cancelled because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be cancelled because it was already been ${bid.action}`);
@@ -398,14 +398,12 @@ export class BidActionService {
             const buyer = this.getBuyer(listingItem);
 
             // broadcast the reject bid message
-            return await this.smsgService.smsgSend(profile.address, buyer, marketPlaceMessage);
+            return await this.smsgService.smsgSend(profile.address, buyer, marketPlaceMessage, false);
         } else {
             this.log.error(`Bid can not be rejected because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be rejected because it was already been ${bid.action}`);
         }
-=======
         return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage, false);
->>>>>>> f4068ce... PD-129
     }
 
     /**
