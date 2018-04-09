@@ -29,7 +29,7 @@ import { BidActionService } from '../../../src/api/services/BidActionService';
 import { MarketplaceMessage } from '../../../src/api/messages/MarketplaceMessage';
 
 
-describe('BidMessage', () => {
+describe('BidMessageProcessing', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);

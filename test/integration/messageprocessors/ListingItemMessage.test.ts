@@ -14,6 +14,9 @@ import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage
 import * as listingItemSmsg1 from '../../testdata/message/smsgMessageWithListingItemMessage1.json';
 
 import * as resources from 'resources';
+import {GenerateListingItemTemplateParams} from "../../../src/api/requests/params/GenerateListingItemTemplateParams";
+import {CreatableModel} from "../../../src/api/enums/CreatableModel";
+import {TestDataGenerateRequest} from '../../../src/api/requests/TestDataGenerateRequest';
 
 
 describe('ListingItemMessage', () => {
@@ -145,6 +148,57 @@ describe('ListingItemMessage', () => {
         expectListingItemFromMessage(result, marketplaceMessage.item);
 
     });
+
+/*
+    test('Should process MarketplaceEvent containing ListingItemMessage and match ListingItem with ListingItemTemplate', async () => {
+
+        // TODO:
+        // - generate a template
+        // - create a SmsgMessage / ListingItemMessage based on it. hashes are created in ListingItemService.create and
+        // ListingItemTemplate.create, they should of course match, so you cannot just set the correct hash in smsgMessage
+        // and expect it to match, if the other values dont match.
+        // - pass the message to listingItemActionService.processListingItemReceivedEvent
+        // - expect ListingItem to be created with relation to the created ListingItemTemplate
+        //
+
+        // first generate a template to match with
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true,   // generateListingItemObjects
+            true    // generateObjectDatas
+        ]).toParamsArray();
+
+        const listingItemTemplates = await testDataService.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            amount: 1,
+            withRelated: true,
+            generateParams: generateListingItemTemplateParams
+        } as TestDataGenerateRequest);
+
+
+        const marketplaceMessage = JSON.parse(listingItemSmsg1.text);
+        marketplaceMessage.market = listingItemSmsg1.to;
+
+        const result = await listingItemActionService.processListingItemReceivedEvent({
+            smsgMessage: listingItemSmsg1,
+            marketplaceMessage
+        });
+
+        // log.debug('result: ', JSON.stringify(result, null, 2));
+        log.debug('listingItemMessage: ', JSON.stringify(marketplaceMessage.item, null, 2));
+        log.debug('result.hash: ', JSON.stringify(result.hash, null, 2));
+        log.debug('listingItemMessage.hash: ', JSON.stringify(marketplaceMessage.item.hash, null, 2));
+        expectListingItemFromMessage(result, marketplaceMessage.item);
+
+    });
+*/
+
 
     // todo: test with different types of data
 
