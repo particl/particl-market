@@ -68,14 +68,13 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
     public _generateHelp( commands: string[], rpcCommandFactory: RpcCommandFactory, command: any ): string {
         if ( commands.length === 0 ) {
             let retStr = '';
-
             if ( command.childCommands.length > 0 ) {
                 // Get the help for every sub command and return it.
                 for ( const childCommand of command.childCommands ) {
                     let commandCommand;
                     try {
                         commandCommand = rpcCommandFactory.get(childCommand);
-                        retStr += commandCommand.help() + '\n';
+                        retStr += commandCommand.help() + '\n\n';
                     } catch ( ex ) {
                         this.log.warn(`Command <${command} ${childCommand}> not found.`);
                         continue;
@@ -92,7 +91,7 @@ export class HelpCommand extends BaseCommand implements RpcCommandInterface<stri
                     throw new NotFoundException(`Command <${command}> not found.`);
                 }
                 const example = commandCommand.example();
-                return commandCommand.help() + '\n        ' + (example ? 'example:\n' + example : '');
+                return commandCommand.help() + '\n' + (example ? 'example:\n' + example : '') + '\n';
             }
         }
 

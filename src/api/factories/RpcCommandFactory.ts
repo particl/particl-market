@@ -6,13 +6,13 @@ import { RpcCommandInterface } from '../commands/RpcCommandInterface';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Environment, EnvironmentType } from '../../core/helpers/Environment';
 
-import { DaemonRootCommand } from '../commands/daemon/DaemonRootCommand';
+import { AddressRootCommand } from '../commands/address/AddressRootCommand';
+import { AddressListCommand } from '../commands/address/AddressListCommand';
+import { AddressAddCommand } from '../commands/address/AddressAddCommand';
+import { AddressUpdateCommand } from '../commands/address/AddressUpdateCommand';
+import { AddressRemoveCommand } from '../commands/address/AddressRemoveCommand';
 
-import { DataAddCommand } from '../commands/data/DataAddCommand';
-import { DataCleanCommand } from '../commands/data/DataCleanCommand';
-import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
-import { DataRootCommand } from '../commands/data/DataRootCommand';
-import { HelpCommand } from '../commands/HelpCommand';
+import { AdminCommand } from '../commands/admin/AdminCommand';
 
 import { BidRootCommand } from '../commands/bid/BidRootCommand';
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
@@ -21,6 +21,17 @@ import { BidCancelCommand } from '../commands/bid/BidCancelCommand';
 import { BidRejectCommand } from '../commands/bid/BidRejectCommand';
 import { BidSendCommand } from '../commands/bid/BidSendCommand';
 
+import { Command } from '../commands/Command';
+
+import { CurrencyPriceRootCommand } from '../commands/currencyprice/CurrencyPriceRootCommand';
+
+import { DaemonRootCommand } from '../commands/daemon/DaemonRootCommand';
+
+import { DataAddCommand } from '../commands/data/DataAddCommand';
+import { DataCleanCommand } from '../commands/data/DataCleanCommand';
+import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
+import { DataRootCommand } from '../commands/data/DataRootCommand';
+
 import { EscrowRootCommand } from '../commands/escrow/EscrowRootCommand';
 import { EscrowAddCommand } from '../commands/escrow/EscrowAddCommand';
 import { EscrowRemoveCommand } from '../commands/escrow/EscrowRemoveCommand';
@@ -28,10 +39,12 @@ import { EscrowUpdateCommand } from '../commands/escrow/EscrowUpdateCommand';
 import { EscrowLockCommand } from '../commands/escrow/EscrowLockCommand';
 import { EscrowRefundCommand } from '../commands/escrow/EscrowRefundCommand';
 import { EscrowReleaseCommand } from '../commands/escrow/EscrowReleaseCommand';
+
 import { FavoriteRootCommand } from '../commands/favorite/FavoriteRootCommand';
 import { FavoriteListCommand } from '../commands/favorite/FavoriteListCommand';
 import { FavoriteAddCommand } from '../commands/favorite/FavoriteAddCommand';
 import { FavoriteRemoveCommand } from '../commands/favorite/FavoriteRemoveCommand';
+
 import { ItemCategoryListCommand } from '../commands/itemcategory/ItemCategoryListCommand';
 import { ItemCategoryAddCommand } from '../commands/itemcategory/ItemCategoryAddCommand';
 import { ItemCategorySearchCommand } from '../commands/itemcategory/ItemCategorySearchCommand';
@@ -55,6 +68,8 @@ import { ItemLocationAddCommand } from '../commands/itemlocation/ItemLocationAdd
 import { ItemLocationUpdateCommand } from '../commands/itemlocation/ItemLocationUpdateCommand';
 import { ItemLocationRootCommand } from '../commands/itemlocation/ItemLocationRootCommand';
 
+import { HelpCommand } from '../commands/HelpCommand';
+
 import { ListingItemGetCommand } from '../commands/listingitem/ListingItemGetCommand';
 import { ListingItemSearchCommand } from '../commands/listingitem/ListingItemSearchCommand';
 import { ListingItemFlagCommand } from '../commands/listingitem/ListingItemFlagCommand';
@@ -68,21 +83,21 @@ import { ListingItemTemplateSearchCommand } from '../commands/listingitemtemplat
 import { ListingItemTemplatePostCommand } from '../commands/listingitemtemplate/ListingItemTemplatePostCommand';
 import { ListingItemTemplateRootCommand } from '../commands/listingitemtemplate/ListingItemTemplateRootCommand';
 
-import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
-import { MessagingInformationRootCommand } from '../commands/messaginginformation/MessagingInformationRootCommand';
-
 import { MarketAddCommand } from '../commands/market/MarketAddCommand';
 import { MarketRootCommand } from '../commands/market/MarketRootCommand';
 import { MarketListCommand } from '../commands/market/MarketListCommand';
 
+import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
+import { MessagingInformationRootCommand } from '../commands/messaginginformation/MessagingInformationRootCommand';
+
+
+import { OrderRootCommand } from '../commands/order/OrderRootCommand';
+import { OrderSearchCommand } from '../commands/order/OrderSearchCommand';
+
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
 import { PaymentInformationRootCommand } from '../commands/paymentinformation/PaymentInformationRootCommand';
 
-import { AddressRootCommand } from '../commands/address/AddressRootCommand';
-import { AddressListCommand } from '../commands/address/AddressListCommand';
-import { AddressAddCommand } from '../commands/address/AddressAddCommand';
-import { AddressUpdateCommand } from '../commands/address/AddressUpdateCommand';
-import { AddressRemoveCommand } from '../commands/address/AddressRemoveCommand';
+import { PriceTickerRootCommand } from '../commands/priceticker/PriceTickerRootCommand';
 
 import { ProfileAddCommand } from '../commands/profile/ProfileAddCommand';
 import { ProfileRemoveCommand } from '../commands/profile/ProfileRemoveCommand';
@@ -111,12 +126,6 @@ import { ShoppingCartItemAddCommand } from '../commands/shoppingcartitem/Shoppin
 import { ShoppingCartItemRemoveCommand } from '../commands/shoppingcartitem/ShoppingCartItemRemoveCommand';
 import { ShoppingCartItemListCommand } from '../commands/shoppingcartitem/ShoppingCartItemListCommand';
 import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitem/ShoppingCartItemRootCommand';
-
-import { PriceTickerRootCommand } from '../commands/priceticker/PriceTickerRootCommand';
-
-import { Command } from '../commands/Command';
-
-import { CurrencyPriceRootCommand } from '../commands/currencyprice/CurrencyPriceRootCommand';
 
 
 // tslint:disable:array-type
