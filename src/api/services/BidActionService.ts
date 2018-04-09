@@ -60,7 +60,7 @@ export class BidActionService {
         this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
         // broadcast the message in to the network
-        return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage);
+        return await this.smsgService.smsgSend(profile.address, market.address, marketPlaceMessage, false);
     }
 
     /**
