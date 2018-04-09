@@ -28,6 +28,10 @@ export class ShippingDestinationRootCommand extends BaseCommand implements RpcCo
         return this.getName() + ' (list|add|remove)  -  ' + this.description();
     }
 
+    public help(): string {
+        return this.usage();
+    }
+
     public description(): string {
         return 'Manage shipping destinations associated with a listing template.';
     }
