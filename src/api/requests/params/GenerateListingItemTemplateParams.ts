@@ -30,17 +30,12 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
     public generatePaymentInformation = true;
     public generateMessagingInformation = true;
     public generateListingItemObjects = true;
-
-    // GenerateItemInformationParamsInterface
     public generateShippingDestinations = true;
     public generateItemImages = true;
-
-    // GeneratePaymentInformationParamsInterface
     public generateEscrow = true;
     public generateItemPrice = true;
-
-    // GenerateListingItemObjectParamsInterface
     public generateObjectDatas = true;
+    public profileId = null;
 
     /**
      * generateParams[]:
@@ -53,28 +48,27 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
      * [6]: generateMessagingInformation
      * [7]: generateListingItemObjects
      * [8]: generateObjectDatas
+     * [9]: profileId
      *
      * @param generateParams
      */
-    constructor(generateParams: boolean[] = []) {
+    constructor(generateParams: any[] = []) {
         // set params only if there are some -> by default all are true
         if (!_.isEmpty(generateParams)) {
             this.generateItemInformation = generateParams[0] ? true : false;
             this.generateShippingDestinations = generateParams[1] ? true : false;
             this.generateItemImages = generateParams[2] ? true : false;
-
             this.generatePaymentInformation = generateParams[3] ? true : false;
             this.generateEscrow = generateParams[4] ? true : false;
             this.generateItemPrice = generateParams[5] ? true : false;
-
             this.generateMessagingInformation = generateParams[6] ? true : false;
-
             this.generateListingItemObjects = generateParams[7] ? true : false;
             this.generateObjectDatas = generateParams[8] ? true : false;
+            this.profileId = generateParams[9] ? generateParams[9] : null;
         }
     }
 
-    public toParamsArray(): boolean[] {
+    public toParamsArray(): any[] {
         return [
             this.generateItemInformation,
             this.generateShippingDestinations,
@@ -84,7 +78,8 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
             this.generateItemPrice,
             this.generateMessagingInformation,
             this.generateListingItemObjects,
-            this.generateObjectDatas
+            this.generateObjectDatas,
+            this.profileId
         ];
     }
 

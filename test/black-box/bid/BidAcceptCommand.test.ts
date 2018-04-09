@@ -53,14 +53,19 @@ describe('BidAcceptCommand', () => {
         log.debug('sellerProfile:', JSON.stringify(sellerProfile, null, 2));
 
         // generate listingItemTemplate
-        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams().toParamsArray();
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams();
+        generateListingItemTemplateParams.profileId = sellerProfile.id;
+
         const listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
-            generateListingItemTemplateParams   // what kind of data to generate
+            generateListingItemTemplateParams.toParamsArray()   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
         listingItemTemplate = listingItemTemplates[0];
+
+        // make sure template is related to correct profile
+        expect(listingItemTemplate.Profile.id).toBe(sellerProfile.id);
 
         // create listing item
         listingItemCreateRequestBasic1.market_id = defaultMarket.id;
