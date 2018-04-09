@@ -106,7 +106,7 @@ describe('Profile', () => {
             withRelated: true,                  // return model
             generateParams: new GenerateListingItemParams().toParamsArray() // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0].toJSON();
+        createdListingItem = listingItems[0];
 
     });
 
@@ -211,8 +211,7 @@ describe('Profile', () => {
             amount: 1,
             withRelated: true
         } as TestDataGenerateRequest);
-        const profileModel = profiles[0];
-        const result = profileModel.toJSON();
+        const result = profiles[0];
 
         expect(result.name.substring(0, 5)).toBe('TEST-');
         expect(result.address).toBeDefined();

@@ -88,7 +88,7 @@ describe('ActionMessage', () => {
             withRelated: true,                  // return model
             generateParams                      // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0].toJSON();
+        createdListingItem = listingItems[0];
 
     });
 
@@ -119,6 +119,7 @@ describe('ActionMessage', () => {
 
     });
 
+    // TODO: fix
 /*
     test('Should throw ValidationException because we want to create a empty action message', async () => {
         expect.assertions(1);

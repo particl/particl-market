@@ -90,7 +90,7 @@ describe('Bid', () => {
             withRelated: true,                          // return model
             generateParams: generateListingItemTemplateParams // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItemTemplate = listingItemTemplates[0].toJSON();
+        createdListingItemTemplate = listingItemTemplates[0];
         log.debug('createdListingItemTemplate: ', createdListingItemTemplate.id);
 
         // create listing item

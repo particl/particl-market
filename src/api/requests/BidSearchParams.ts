@@ -5,8 +5,9 @@ import { BidMessageType } from '../enums/BidMessageType';
 // tslint:disable:variable-name
 export class BidSearchParams extends RequestBody {
 
-    @ValidateIf(o => o.action)
-    @IsEnum(BidMessageType)
+    // TODO: add validation back
+    // @ValidateIf(o => o.action)
+    // @IsEnum(BidMessageType)
     public action: BidMessageType;
 
     // @IsNotEmpty()

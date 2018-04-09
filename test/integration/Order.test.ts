@@ -99,7 +99,7 @@ describe('Order', () => {
             withRelated: true,                          // return model
             generateParams: generateProfileParams       // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdSellerProfile = profiles[0].toJSON();
+        createdSellerProfile = profiles[0];
         log.debug('createdSellerProfile: ', createdSellerProfile.id);
 
         // generate template
@@ -110,7 +110,7 @@ describe('Order', () => {
             withRelated: true,                                  // return model
             generateParams: generateListingItemTemplateParams   // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItemTemplate = listingItemTemplates[0].toJSON();
+        createdListingItemTemplate = listingItemTemplates[0];
         log.debug('createdListingItemTemplate: ', createdListingItemTemplate.id);
 
         // create listing item, seller = createdSellerProfile

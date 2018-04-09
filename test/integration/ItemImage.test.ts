@@ -101,7 +101,7 @@ describe('ItemImage', () => {
             withRelated: true,                  // return model
             generateParams                      // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0].toJSON();
+        createdListingItem = listingItems[0];
 
         imageHash = ObjectHash.getHash(testData.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
     });
