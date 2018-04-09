@@ -11,7 +11,9 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/par
 import * as resources from 'resources';
 import * as listingItemCreateRequestBasic1 from '../../testdata/createrequest/listingItemCreateRequestBasic1.json';
 import * as addressCreateRequest from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
-import {GenerateProfileParams} from "../../../src/api/requests/params/GenerateProfileParams";
+import { GenerateProfileParams } from "../../../src/api/requests/params/GenerateProfileParams";
+import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
+import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 
 describe('BidAcceptCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -49,7 +51,7 @@ describe('BidAcceptCommand', () => {
         const res = await rpc(dataCommand, [generateCommand, CreatableModel.PROFILE, 1, true].concat(generateProfileParams));
         res.expectJson();
         res.expectStatusCode(200);
-        sellerProfile = res.getBody()['result'];
+        sellerProfile = res.getBody()['result'][0];
         log.debug('sellerProfile:', JSON.stringify(sellerProfile, null, 2));
 
         // generate listingItemTemplate
@@ -64,18 +66,34 @@ describe('BidAcceptCommand', () => {
         ) as resources.ListingItemTemplates[];
         listingItemTemplate = listingItemTemplates[0];
 
-        // make sure template is related to correct profile
+        // expect template is related to correct profile
+        log.debug('listingItemTemplate.Profile.id:', listingItemTemplate.Profile.id);
+        log.debug('sellerProfile.id:', sellerProfile.id);
         expect(listingItemTemplate.Profile.id).toBe(sellerProfile.id);
+
+        // expect template hash created on the server matches what we create here
+        const generatedTemplateHash = ObjectHash.getHash(listingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
+        log.debug('generatedTemplateHash:', generatedTemplateHash);
+        expect(listingItemTemplate.hash).toBe(generatedTemplateHash);
 
         // create listing item
         listingItemCreateRequestBasic1.market_id = defaultMarket.id;
         listingItemCreateRequestBasic1.listing_item_template_id = listingItemTemplate.id;
         listingItemCreateRequestBasic1.seller = sellerProfile.address;
 
+        // expect listingItemCreateRequest also matches generatedTemplateHash
+        todo
+
         listingItem = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
 
-        log.debug('listingItemTemplate:', listingItemTemplate);
-        log.debug('listingItem:', listingItem);
+        delete listingItemTemplate.ItemInformation.ItemImages;
+        delete listingItem.ItemInformation.ItemImages;
+        // log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2);
+        // log.debug('listingItem:', JSON.stringify(listingItem, null, 2);
+
+        log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
+        log.debug('listingItem.hash:', listingItem.hash);
 
         // make sure the hashes match
         expect(listingItemTemplate.hash).toBe(listingItem.hash);

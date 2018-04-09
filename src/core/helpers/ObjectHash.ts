@@ -3,6 +3,7 @@ import { HashableObjectType } from '../../api/enums/HashableObjectType';
 import { HashableListingItem } from './HashableListingItem';
 import { HashableItemImage } from './HashableItemImage';
 import { HashableOrder } from './HashableOrder';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 export class ObjectHash {
 
@@ -12,7 +13,13 @@ export class ObjectHash {
      * @param {HashableObjectType} type
      * @returns {string}
      */
-    public static getHash(objectToHash: any, type: HashableObjectType, timestampedHash: boolean = false): string {
+    public static getHash(
+        objectToHash: any,
+        type: HashableObjectType,
+        timestampedHash: boolean = false
+    ): string {
+
+        const log: LoggerType = new LoggerType(__filename);
 
         let hashableObject;
         switch (type) {
@@ -36,6 +43,13 @@ export class ObjectHash {
                 hashableObject = objectToHash;
             }
         }
-        return crypto.SHA256(JSON.stringify(hashableObject).split('').sort().toString()).toString();
+
+        const hash = crypto.SHA256(JSON.stringify(hashableObject).split('').sort().toString()).toString();
+
+        if (process.env.NODE_ENV === 'test') {
+            log.debug('hashableObject: ', JSON.stringify(hashableObject, null, 2));
+            log.debug('hashableObject, hash: ', hash);
+        }
+        return hash;
     }
 }
