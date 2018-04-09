@@ -1,30 +1,30 @@
 import * as _ from 'lodash';
-import {inject, named} from 'inversify';
-import {Logger as LoggerType} from '../../core/Logger';
-import {Types, Core, Targets, Events} from '../../constants';
+import { inject, named } from 'inversify';
+import { Logger as LoggerType } from '../../core/Logger';
+import { Types, Core, Targets, Events } from '../../constants';
 import * as resources from 'resources';
-import {MessageException} from '../exceptions/MessageException';
-import {MarketplaceEvent} from '../messages/MarketplaceEvent';
+import { MessageException } from '../exceptions/MessageException';
+import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 
-import {EventEmitter} from 'events';
+import { EventEmitter } from 'events';
 
-import {ActionMessageService} from './ActionMessageService';
-import {BidService} from './BidService';
-import {ProfileService} from './ProfileService';
-import {MarketService} from './MarketService';
-import {BidFactory} from '../factories/BidFactory';
-import {SmsgService} from './SmsgService';
-import {CoreRpcService} from './CoreRpcService';
-import {ListingItemService} from './ListingItemService';
+import { ActionMessageService } from './ActionMessageService';
+import { BidService } from './BidService';
+import { ProfileService } from './ProfileService';
+import { MarketService } from './MarketService';
+import { BidFactory } from '../factories/BidFactory';
+import { SmsgService } from './SmsgService';
+import { CoreRpcService } from './CoreRpcService';
+import { ListingItemService } from './ListingItemService';
 
-import {SmsgSendResponse} from '../responses/SmsgSendResponse';
-import {Market} from '../models/Market';
-import {MarketplaceMessage} from '../messages/MarketplaceMessage';
-import {BidMessageType} from '../enums/BidMessageType';
-import {Output} from 'resources';
-import {BidMessage} from '../messages/BidMessage';
-import {BidSearchParams} from '../requests/BidSearchParams';
-import {AddressType} from '../enums/AddressType';
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import { Market } from '../models/Market';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { BidMessageType } from '../enums/BidMessageType';
+import { Output } from 'resources';
+import { BidMessage } from '../messages/BidMessage';
+import { BidSearchParams } from '../requests/BidSearchParams';
+import { AddressType } from '../enums/AddressType';
 
 declare function unescape(s: string): string;
 

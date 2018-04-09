@@ -126,7 +126,7 @@ describe('Bid', () => {
     test('Should not return any Bids for listingItem.id and bidder', async () => {
         const bidSearchParams = {
             listingItemId: createdListingItem1.id,
-            bidder: testData.bidder
+            bidders: [testData.bidder]
         } as BidSearchParams;
 
         const bidCollection = await bidService.search(bidSearchParams);
@@ -172,7 +172,7 @@ describe('Bid', () => {
     test('Should return one Bid for listingItem.id and bidder', async () => {
         const bidSearchParams = {
             listingItemId: createdListingItem1.id,
-            bidder: testData.bidder
+            bidders: [testData.bidder]
         } as BidSearchParams;
 
         const bidCollection = await bidService.search(bidSearchParams);
@@ -192,7 +192,7 @@ describe('Bid', () => {
 
     test('Should return two Bids for bidder', async () => {
         const bidSearchParams = {
-            bidder: testData.bidder
+            bidders: [testData.bidder]
         } as BidSearchParams;
 
         const bidCollection = await bidService.search(bidSearchParams);
