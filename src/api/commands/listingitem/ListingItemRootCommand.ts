@@ -24,8 +24,12 @@ export class ListingItemRootCommand extends BaseCommand implements RpcCommandInt
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public usage(): string {
+        return this.getName() + ' (search|get|update)  -  ' + this.description();
+    }
+
     public help(): string {
-        return this.getName() + ' (search|get|update) ';
+        return this.usage();
     }
 
     public description(): string {

@@ -25,9 +25,12 @@ export class ListingItemTemplateRootCommand extends BaseCommand implements RpcCo
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public usage(): string {
+        return this.getName() + ' (search|get|add|remove|post)  -  ' + this.description();
+    }
+
     public help(): string {
-        // return this.getName() + ' (search | get | add | remove | information | image | location | import)';
-        return this.getName() + ' (search|get|add|remove) ';
+        return this.usage();
     }
 
     public description(): string {

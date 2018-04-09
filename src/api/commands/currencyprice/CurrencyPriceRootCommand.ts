@@ -56,8 +56,13 @@ export class CurrencyPriceRootCommand extends BaseCommand implements RpcCommandI
         }
     }
 
+
+    public usage(): string {
+        return this.getName() + ' <from> <to> [to...])  -  ' + this.description();
+    }
+
     public help(): string {
-        return this.getName() + ' <from> <to> [to...]) \n'
+        return this.usage() + '\n'
             + '    <from>                   - Currency name from which you want to convert. \n'
             + '    <to>                     - Currency name in which you want to convert. ';
     }

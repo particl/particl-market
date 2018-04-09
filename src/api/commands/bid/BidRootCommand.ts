@@ -24,8 +24,12 @@ export class BidRootCommand extends BaseCommand implements RpcCommandInterface<v
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public usage(): string {
+        return this.getName() + ' (search|accept|cancel|reject|send)  -  ' + this.description();
+    }
+
     public help(): string {
-        return this.getName() + ' (search|accept|cancel|reject|send) ';
+        return this.usage();
     }
 
     public description(): string {
