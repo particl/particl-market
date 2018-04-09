@@ -28,6 +28,10 @@ export class AddressRootCommand extends BaseCommand implements RpcCommandInterfa
         return this.getName() + ' (list|add|update|remove)  -  ' + this.description();
     }
 
+    public help(): string {
+        return this.usage();
+    }
+
     public description(): string {
         return 'Manage addresses associated with profiles.';
     }

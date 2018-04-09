@@ -28,6 +28,10 @@ export class ItemInformationRootCommand extends BaseCommand implements RpcComman
         return this.getName() + ' (get|add|update)  -  ' + this.description();
     }
 
+    public help(): string {
+        return this.usage();
+    }
+
     public description(): string {
         return 'Commands for managing iteminformations.';
     }

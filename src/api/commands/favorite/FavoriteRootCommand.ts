@@ -28,6 +28,10 @@ export class FavoriteRootCommand extends BaseCommand implements RpcCommandInterf
         return this.getName() + ' (list|add|remove)  -  ' + this.description();
     }
 
+    public help(): string {
+        return this.usage();
+    }
+
     public description(): string {
         return 'Commands for managing favorite listings.';
     }

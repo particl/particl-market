@@ -28,6 +28,10 @@ export class ItemLocationRootCommand extends BaseCommand implements RpcCommandIn
         return this.getName() + ' (add|update|remove)  -  ' + this.description();
     }
 
+    public help(): string {
+        return this.usage();
+    }
+
     public description(): string {
         return 'Commands for managing itemlocation.';
     }

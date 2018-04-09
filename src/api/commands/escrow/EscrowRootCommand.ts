@@ -28,6 +28,10 @@ export class EscrowRootCommand extends BaseCommand implements RpcCommandInterfac
         return this.getName() + ' (add|update|remove|lock|refund|release)  -  ' + this.description();
     }
 
+    public help(): string {
+        return this.usage();
+    }
+
     public description(): string {
         return 'Commands for managing escrow.';
     }

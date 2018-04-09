@@ -34,6 +34,10 @@ export class DataRootCommand extends BaseCommand implements RpcCommandInterface<
         return this.getName() + ' (add|generate|clean)  -  ' + this.description();
     }
 
+    public help(): string {
+        return this.usage();
+    }
+
     public description(): string {
         return 'Commands for managing data.';
     }

@@ -28,6 +28,10 @@ export class ItemImageRootCommand extends BaseCommand implements RpcCommandInter
         return this.getName() + ' (list|add|remove)  -  ' + this.description();
     }
 
+    public help(): string {
+        return this.usage();
+    }
+
     public description(): string {
         return 'Commands for managing item images.';
     }

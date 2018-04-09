@@ -34,6 +34,10 @@ export class MessagingInformationRootCommand extends BaseCommand implements RpcC
         return this.getName() + ' (update)  -  ' + this.description();
     }
 
+    public help(): string {
+        return this.usage();
+    }
+
     public description(): string {
         return 'Commands for managing messaging information. ';
     }

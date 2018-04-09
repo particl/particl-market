@@ -29,6 +29,10 @@ export class ListingItemTemplateRootCommand extends BaseCommand implements RpcCo
         return this.getName() + ' (search|get|add|remove|post)  -  ' + this.description();
     }
 
+    public help(): string {
+        return this.usage();
+    }
+
     public description(): string {
         return 'Commands for managing listingitem template.';
     }

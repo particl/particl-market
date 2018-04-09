@@ -29,6 +29,10 @@ export class ItemCategoryRootCommand extends BaseCommand implements RpcCommandIn
         return this.getName() + ' (list|get|add|update|remove|search)  -  ' + this.description();
     }
 
+    public help(): string {
+        return this.usage();
+    }
+
     public description(): string {
         return 'Commands for managing item categories.';
     }
