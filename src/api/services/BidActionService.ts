@@ -189,7 +189,6 @@ export class BidActionService {
             let sum = 0;
             let change = 0;
 
-            this.log.debug('unspent: ', unspent);
             this.log.debug('totalPrice: ', totalPrice);
 
             if (basePrice) {
@@ -253,6 +252,8 @@ export class BidActionService {
             const buyerChangeAddr = this.getValueFromBidDatas('changeAddr', bid.BidDatas); // TODO: Error handling - nice messagee..
             let buyerOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
 
+            this.log.debug('buyerOutputs: ', buyerOutputs);
+
             // TODO: Verify that buyers outputs are unspent?? :/
             if (buyerOutputs) {
                 sum = 0;
@@ -296,6 +297,8 @@ export class BidActionService {
             // const signed = await this.coreRpcService.signRawTransactionWithKey(rawtx, TODO );
 
             // const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
+
+            this.log.debug('signed: ', signed);
 
             if (!signed || (signed.errors && (
                     signed.errors[0].error !== 'Operation not valid with the current stack size' &&
