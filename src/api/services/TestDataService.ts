@@ -714,10 +714,10 @@ export class TestDataService {
         const itemPrice = generateParams.generateItemPrice
             ? {
                 currency: Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
-                basePrice: _.random(123.45, 5.43),
+                basePrice: _.random(0.1, 1.00),
                 shippingPrice: {
-                    domestic: _.random(5.00, 1.11),
-                    international: _.random(10.00, 5.003)
+                    domestic: _.random(0.01, 0.10),
+                    international: _.random(0.10, 0.20)
                 },
                 cryptocurrencyAddress: {
                     type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptocurrencyAddressType)),

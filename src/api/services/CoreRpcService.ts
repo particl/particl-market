@@ -60,7 +60,7 @@ export class CoreRpcService {
      * @param {boolean} smsgAddress
      * @returns {Promise<any>}
      */
-    public async getNewAddress(params: any[], smsgAddress: boolean = true): Promise<any> {
+    public async getNewAddress(params: any[] = [], smsgAddress: boolean = true): Promise<any> {
         const response = await this.call('getnewaddress', params);
 
         if (smsgAddress) {

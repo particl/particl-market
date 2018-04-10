@@ -189,6 +189,9 @@ export class BidActionService {
             let sum = 0;
             let change = 0;
 
+            this.log.debug('unspent: ', unspent);
+            this.log.debug('totalPrice: ', totalPrice);
+
             if (basePrice) {
                 unspent.find(output => {
                     if (output.spendable && output.solvable) {
