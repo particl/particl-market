@@ -23,7 +23,12 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     /**
-     *
+     * data.params[]:
+     * [0]: <itemhash>|*
+     * [1]: (<status>|*)
+     * [2]: (<buyerAddress>|*)
+     * [3]: (<sellerAddress>|*)
+     * [4]: <ordering>
      * @param {RpcRequest} data
      * @returns {Promise<Bookshelf.Collection<Order>>}
      */
@@ -38,16 +43,16 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <itemhash>               - String - The hash of the item we want to search orders for. \n '
-            + '                                A value of * specifies that any item hash is acceptable. \n '
-            + '    <status>                 - [optional] ENUM{AWAITING_ESCROW,ESCROW_LOCKED,SHIPPING,COMPLETE} - \n '
-            + '                                The status of the orders we want to search for \n '
-            + '                                A value of * specifies that any order status is acceptable. \n '
-            + '    <buyerAddress>           - [optional] String - The address of the buyer in the orders we want to search for. \n '
-            + '                                A value of * specifies that any buyer address is acceptable. \n '
-            + '    <sellerAddress>          - [optional] String - The address of the seller in the orders we want to search for. \n '
-            + '                                A value of * specifies that any seller address is acceptable. \n '
-            + '    <ordering>               - [optional] ENUM{ASC,DSC} - The ordering of the search results. ';
+            + '    <itemhash>               - String - The hash of the item we want to search orders for. \n'
+            + '                                A value of * specifies that any item hash is acceptable. \n'
+            + '    <status>                 - [optional] ENUM{AWAITING_ESCROW,ESCROW_LOCKED,SHIPPING,COMPLETE} - \n'
+            + '                                The status of the orders we want to search for \n'
+            + '                                A value of * specifies that any order status is acceptable. \n'
+            + '    <buyerAddress>           - [optional] String - The address of the buyer in the orders we want to search for. \n'
+            + '                                A value of * specifies that any buyer address is acceptable. \n'
+            + '    <sellerAddress>          - [optional] String - The address of the seller in the orders we want to search for. \n'
+            + '                                A value of * specifies that any seller address is acceptable. \n'
+            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the search results. ';
     }
 
     public description(): string {
