@@ -329,8 +329,8 @@ export class TestDataService {
                     itemInformation: listingItemTemplateCreateRequest.itemInformation,
                     paymentInformation: listingItemTemplateCreateRequest.paymentInformation,
                     messagingInformation: listingItemTemplateCreateRequest.messagingInformation,
-                    listingItemObjects: listingItemTemplateCreateRequest.listingItemObjects
-                    // TODO: consifgurable actionMessages
+                    listingItemObjects: listingItemTemplateCreateRequest.listingItemObjects,
+                    actionMessages
                 } as ListingItemCreateRequest;
 
                 const listingItemModel = await this.listingItemService.create(listingItemCreateRequest);

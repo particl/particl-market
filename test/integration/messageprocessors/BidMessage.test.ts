@@ -11,6 +11,7 @@ import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemService } from '../../../src/api/services/ListingItemService';
 import { BidService } from '../../../src/api/services/BidService';
 import { ProfileService } from '../../../src/api/services/ProfileService';
+import { AddressService } from '../../../src/api/services/AddressService';
 
 import { ListingItem } from '../../../src/api/models/ListingItem';
 import { ListingItemCreateRequest } from '../../../src/api/requests/ListingItemCreateRequest';
@@ -36,6 +37,9 @@ import { MarketplaceEvent } from '../../../src/api/messages/MarketplaceEvent';
 import { BidFactory } from '../../../src/api/factories/BidFactory';
 import { SmsgMessage } from '../../../src/api/messages/SmsgMessage';
 
+import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
+import {AddressType} from '../../../src/api/enums/AddressType';
+
 
 describe('BidMessageProcessing', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -54,6 +58,7 @@ describe('BidMessageProcessing', () => {
     let marketService: MarketService;
     let bidService: BidService;
     let profileService: ProfileService;
+    let addressService: AddressService;
     let bidActionService: BidActionService;
     let bidFactory: BidFactory;
 
@@ -63,6 +68,7 @@ describe('BidMessageProcessing', () => {
 
     let listingItem: resources.ListingItem;
     let listingItemTemplate: resources.ListingItemTemplate;
+    let bid: resources.Bid;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -74,6 +80,7 @@ describe('BidMessageProcessing', () => {
         bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
         bidActionService = app.IoC.getNamed<BidActionService>(Types.Service, Targets.Service.BidActionService);
         bidFactory = app.IoC.getNamed<BidFactory>(Types.Factory, Targets.Factory.BidFactory);
 
@@ -81,7 +88,16 @@ describe('BidMessageProcessing', () => {
         await testDataService.clean();
 
         // get default profile
-        const defaultProfileModel = await profileService.getDefault();
+        let defaultProfileModel = await profileService.getDefault();
+        defaultProfile = defaultProfileModel.toJSON();
+
+        // create shipping address for default profile
+        const addressCreateRequest = addressCreateRequestSHIPPING_OWN;
+        addressCreateRequest.profile_id = defaultProfile.id;
+        await addressService.create(addressCreateRequest);
+
+        // fetch it again
+        defaultProfileModel = await profileService.getDefault();
         defaultProfile = defaultProfileModel.toJSON();
 
         // get default market
@@ -130,13 +146,21 @@ describe('BidMessageProcessing', () => {
         log.debug('listingItemTemplate.ListingItems[0].hash:', listingItemTemplate.ListingItems[0].hash);
         expect(listingItemTemplate.hash).toBe(listingItemTemplate.ListingItems[0].hash);
 
+        delete listingItem.ItemInformation.ItemImages;
+        log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
+
+        // expect the ListingItem have no Bids and one ActionMessage at this point
+        expect(listingItem.Bids).toHaveLength(0);
+        expect(listingItem.ActionMessages).toHaveLength(1);
+
         // we now have:
         // - defaultProfile: Profile, for buyer
         // - sellerProfile: Profile, for seller
         // - listingItemTemplate, linked to seller profile
         // - listingItem, linked to template
         // - listingItem and template containing the same data with same hash
-        // - actionMessage MP_ITEM_ADD added to listingItem
+        // - listingItem having one actionMessage: MP_ITEM_ADD
+        // - listingItem having no Bids
 
     });
 
@@ -144,45 +168,39 @@ describe('BidMessageProcessing', () => {
         //
     });
 
-    test('Should process MarketplaceEvent containing send bid BidMessage', async () => {
-
-        // expect the ListingItem have no Bids and one ActionMessage at this point
-        expect(listingItem.Bids).toHaveLength(0);
-        expect(listingItem.ActionMessages).toHaveLength(1);
+    test('Should process MarketplaceEvent containing MPA_BID BidMessage', async () => {
 
         // create bid.objects for MPA_BID
-        const bidData = await this.generateBidDataForMPA_BID(
+        const bidDatas = await bidActionService.generateBidDatasForMPA_BID(
             listingItem,
             defaultProfile.ShippingAddresses[0],
             ['size', 'XL', 'color', 'pink']
         );
 
         // create MPA_BID type of MarketplaceMessage
-        const bidMessage: BidMessage = await bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidData);
+        const bidMessage: BidMessage = await bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidDatas);
 
         const marketplaceMessage: MarketplaceMessage = {
-            version: '0300',    // todo: means paid, change to free
+            version: '0300',    // todo: means paid, change to free, add enum?
             mpaction: bidMessage,
             market: defaultMarket.address
         };
 
+        expect(marketplaceMessage.mpaction.item).toBe(listingItem.hash);
+
         const smsgMessage: SmsgMessage = {
-            msgid: new Date().getTime(),
+            msgid: 'TESTMESSAGE' + new Date().getTime(),
             version: '0300',
             received: new Date().toISOString(),
             sent: new Date().toISOString(),
-            from: 'pgS7muLvK1DXsFMD56UySmqTryvnpnKvh6',
-            to: 'pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA',
-            text: ''
+            from: defaultProfile.address,
+            to: sellerProfile.address,
+            text: JSON.stringify(marketplaceMessage)
         };
 
-        bidSmsg1.from = defaultProfile.address;
-        marketplaceMessage.mpaction.item = listingItem.hash;
-        log.debug('marketplaceMessage: ', JSON.stringify(marketplaceMessage, null, 2));
-        // marketplaceMessage.market = listingItemSmsg1.to;
-
+        // process the message like it was received as MarketplaceEvent
         const result = await bidActionService.processBidReceivedEvent({
-            smsgMessage: bidSmsg1,
+            smsgMessage,
             marketplaceMessage
         } as MarketplaceEvent);
 
@@ -191,37 +209,89 @@ describe('BidMessageProcessing', () => {
         // log.debug('result.hash: ', JSON.stringify(result.hash, null, 2));
         // log.debug('listingItemMessage.hash: ', JSON.stringify(marketplaceMessage.item.hash, null, 2));
 
-        // TODO: add more expects
-        expect(result.action).toBe(marketplaceMessage.mpaction.action);
-        // expectListingItemFromMessage(result, marketplaceMessage.item);
+        expect(result.action).toBe(bidMessage.action);
+        expect(result.bidder).toBe(smsgMessage.from);
+        expect(result.ListingItem.hash).toBe(listingItem.hash);
+        expect(result.ListingItem.ListingItemTemplate.hash).toBe(listingItem.hash);
+        expect(result.ListingItem.seller).toBe(listingItem.seller);
+        expect(result.ListingItem.seller).toBe(sellerProfile.address);
+        expect(result.ListingItem.marketId).toBe(defaultMarket.id);
+        expect(result.ShippingAddress.firstName).toBe(defaultProfile.ShippingAddresses[0].firstName);
+        expect(result.ShippingAddress.lastName).toBe(defaultProfile.ShippingAddresses[0].lastName);
+        expect(result.ShippingAddress.country).toBe(defaultProfile.ShippingAddresses[0].country);
+        expect(result.ShippingAddress.zipCode).toBe(defaultProfile.ShippingAddresses[0].zipCode);
+        expect(result.ShippingAddress.type).toBe(AddressType.SHIPPING_BID);
+        expect(result.BidDatas).toHaveLength(14);
 
+        const createdListingItemModel = await listingItemService.findOneByHash(result.ListingItem.hash);
+        listingItem = createdListingItemModel.toJSON();
+
+        expect(listingItem.Bids).toHaveLength(1);
+        expect(listingItem.ActionMessages).toHaveLength(2);
+
+        bid = result;
     });
-/*
-    test('Should process MarketplaceEvent containing accept bid BidMessage', async () => {
 
-        const marketplaceMessage: MarketplaceMessage = JSON.parse(bidSmsg1.text);
-        bidSmsg1.from = defaultProfile.address;
-        marketplaceMessage.mpaction.item = createdListingItem.hash;
+    test('Should process MarketplaceEvent containing MPA_ACCEPT BidMessage', async () => {
+
+        // create bid.objects for MPA_ACCEPT
+        const bidDatas = await bidActionService.generateBidDatasForMPA_ACCEPT(listingItem, bid);
+
+        // create MPA_ACCEPT type of MarketplaceMessage
+        const bidMessage: BidMessage = await bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidDatas);
+
+        const marketplaceMessage: MarketplaceMessage = {
+            version: '0300',    // todo: means paid, change to free, add enum?
+            mpaction: bidMessage,
+            market: defaultMarket.address
+        };
+
         log.debug('marketplaceMessage: ', JSON.stringify(marketplaceMessage, null, 2));
-        // marketplaceMessage.market = listingItemSmsg1.to;
 
+        expect(marketplaceMessage.mpaction.item).toBe(listingItem.hash);
+
+        const smsgMessage: SmsgMessage = {
+            msgid: 'TESTMESSAGE' + new Date().getTime(),
+            version: '0300',
+            received: new Date().toISOString(),
+            sent: new Date().toISOString(),
+            from: sellerProfile.address,
+            to: defaultProfile.address,
+            text: JSON.stringify(marketplaceMessage)
+        };
+
+        // process the message like it was received as MarketplaceEvent
         const result = await bidActionService.processBidReceivedEvent({
-            smsgMessage: bidSmsg1,
+            smsgMessage,
             marketplaceMessage
-        });
+        } as MarketplaceEvent);
 
         log.debug('result: ', JSON.stringify(result, null, 2));
-        // log.debug('listingItemMessage: ', JSON.stringify(marketplaceMessage.item, null, 2));
-        // log.debug('result.hash: ', JSON.stringify(result.hash, null, 2));
-        // log.debug('listingItemMessage.hash: ', JSON.stringify(marketplaceMessage.item.hash, null, 2));
 
-        // TODO: add more expects
-        expect(result.action).toBe(marketplaceMessage.mpaction.action);
-        //
-        // expectListingItemFromMessage(result, marketplaceMessage.item);
+        expect(result.action).toBe(bidMessage.action);
+        expect(result.bidder).toBe(smsgMessage.from);
+        expect(result.ListingItem.hash).toBe(listingItem.hash);
+        expect(result.ListingItem.ListingItemTemplate.hash).toBe(listingItem.hash);
+        expect(result.ListingItem.seller).toBe(listingItem.seller);
+        expect(result.ListingItem.seller).toBe(sellerProfile.address);
+        expect(result.ListingItem.marketId).toBe(defaultMarket.id);
+        expect(result.ShippingAddress.firstName).toBe(defaultProfile.ShippingAddresses[0].firstName);
+        expect(result.ShippingAddress.lastName).toBe(defaultProfile.ShippingAddresses[0].lastName);
+        expect(result.ShippingAddress.country).toBe(defaultProfile.ShippingAddresses[0].country);
+        expect(result.ShippingAddress.zipCode).toBe(defaultProfile.ShippingAddresses[0].zipCode);
+        expect(result.ShippingAddress.type).toBe(AddressType.SHIPPING_BID);
+        expect(result.BidDatas).toHaveLength(14);
+
+        const createdListingItemModel = await listingItemService.findOneByHash(result.ListingItem.hash);
+        listingItem = createdListingItemModel.toJSON();
+
+        expect(listingItem.Bids).toHaveLength(1);
+        expect(listingItem.ActionMessages).toHaveLength(3);
+
+        bid = result;
 
     });
-*/
+
 
     /*
     test('Should throw ValidationException because no action', async () => {

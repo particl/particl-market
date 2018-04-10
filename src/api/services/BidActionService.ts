@@ -25,6 +25,7 @@ import { Output } from 'resources';
 import { BidMessage } from '../messages/BidMessage';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { AddressType } from '../enums/AddressType';
+import {Environment} from '../../core/helpers/Environment';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
@@ -61,13 +62,13 @@ export class BidActionService {
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
 
-        // generate bidData
-        const bidData = await this.generateBidDataForMPA_BID(listingItem, shippingAddress, additionalParams);
+        // generate bidDatas
+        const bidDatas = await this.generateBidDatasForMPA_BID(listingItem, shippingAddress, additionalParams);
 
         this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
 
         // create MPA_BID
-        const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidData);
+        const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidDatas);
 
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
@@ -89,17 +90,21 @@ export class BidActionService {
      * @param {"resources".ListingItem} listingItem
      * @returns {Promise<any[]>}
      */
-    public async generateBidDataForMPA_BID(
+    public async generateBidDatasForMPA_BID(
         listingItem: resources.ListingItem,
         shippingAddress: resources.Address,
-        additionalParams: any[]): Promise<any[]> {
+        additionalParams: any[]
+    ): Promise<any[]> {
 
         // Get unspent
-        const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
+        // const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
+        const unspent = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+
         if (!unspent || unspent.length === 0) {
             this.log.warn('No unspent outputs');
             throw new MessageException('No unspent outputs');
         }
+        this.log.debug('unspent outputs: ', unspent.length);
 
         const outputs: Output[] = [];
         const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
@@ -138,31 +143,47 @@ export class BidActionService {
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
-        const addr = await this.coreRpcService.call('getaccountaddress', ['_escrow_pub_' + listingItem.hash]);
-        const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']);
-        const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
+        // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
+        const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
+        // const addr = await this.coreRpcService.getAccountAddress('_escrow_pub_' + listingItem.hash);
+        // const addr = await this.coreRpcService.call('getaccountaddress', ['_escrow_pub_' + listingItem.hash]);
+        this.log.debug('addr: ', addr);
+
+        const changeAddr = await this.coreRpcService.getNewAddress(['_escrow_change'], false);
+        // const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']);
+        this.log.debug('changeAddr: ', changeAddr);
+
+        const addressInfo = await this.coreRpcService.getAddressInfo(addr);
+        this.log.debug('addressInfo: ', JSON.stringify(addressInfo, null, 2));
+
+        const pubkey = addressInfo.pubkey;
+        // const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
+
+        if (!pubkey) {
+            throw new MessageException('Could not get public key for address!');
+        }
 
         // convert the bid data params as bid data key value pair
-        const bidData = this.getBidDataFromArray(additionalParams.concat([
+        const bidDatas = this.getBidDatasFromArray(additionalParams.concat([
             'outputs', outputs,
             'pubkeys', [pubkey],
             'changeAddr', changeAddr,
             'change', change
         ]));
 
-        this.log.debug('bidData: ', JSON.stringify(bidData, null, 2));
+        this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
 
         // store the shipping address in biddata
-        bidData.push({id: 'ship.firstName', value: shippingAddress.firstName ? shippingAddress.firstName : ''});
-        bidData.push({id: 'ship.lastName', value: shippingAddress.lastName ? shippingAddress.lastName : ''});
-        bidData.push({id: 'ship.addressLine1', value: shippingAddress.addressLine1});
-        bidData.push({id: 'ship.addressLine2', value: shippingAddress.addressLine2});
-        bidData.push({id: 'ship.city', value: shippingAddress.city});
-        bidData.push({id: 'ship.state', value: shippingAddress.state});
-        bidData.push({id: 'ship.zipCode', value: shippingAddress.zipCode});
-        bidData.push({id: 'ship.country', value: shippingAddress.country});
+        bidDatas.push({id: 'ship.firstName', value: shippingAddress.firstName ? shippingAddress.firstName : ''});
+        bidDatas.push({id: 'ship.lastName', value: shippingAddress.lastName ? shippingAddress.lastName : ''});
+        bidDatas.push({id: 'ship.addressLine1', value: shippingAddress.addressLine1});
+        bidDatas.push({id: 'ship.addressLine2', value: shippingAddress.addressLine2});
+        bidDatas.push({id: 'ship.city', value: shippingAddress.city});
+        bidDatas.push({id: 'ship.state', value: shippingAddress.state});
+        bidDatas.push({id: 'ship.zipCode', value: shippingAddress.zipCode});
+        bidDatas.push({id: 'ship.country', value: shippingAddress.country});
 
-        return bidData;
+        return bidDatas;
     }
 
     /**
@@ -178,163 +199,15 @@ export class BidActionService {
         // last bids action needs to be MPA_BID
         if (bid.action === BidMessageType.MPA_BID) {
 
-            // TODO: Ryno Hacks - Refactor code below...
-            // This is a copy and paste - hacks hacks hacks ;(
-            // Get unspent
-            const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
-            const outputs: Output[] = [];
-            const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
-            const basePrice = listingItemPrice.basePrice;
-            const shippingPriceMax = Math.max(
-                listingItemPrice.ShippingPrice.international,
-                listingItemPrice.ShippingPrice.domestic);
-            const totalPrice = basePrice + shippingPriceMax; // TODO: Determine if local or international...
-            let sum = 0;
-            let change = 0;
-
-            this.log.debug('totalPrice: ', totalPrice);
-
-            if (basePrice) {
-                unspent.find(output => {
-                    if (output.spendable && output.solvable) {
-                        sum += output.amount;
-                        outputs.push({
-                            txid: output.txid,
-                            vout: output.vout,
-                            amount: output.amount
-                        });
-                    }
-
-                    if (sum > totalPrice) { // TODO: Ratio
-                        change = +(sum - totalPrice - 0.0001).toFixed(8); // TODO: Get actual fee...
-                        return true;
-                    }
-                    return false;
-                });
-
-                if (sum < basePrice) {
-                    this.log.error('Not enough funds');
-                    throw new MessageException('You are too broke...');
-                }
-            } else {
-                this.log.error(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
-                throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
-            }
-
-            const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
-
-            // TODO: Proper change address?!?!
-            const changeAddr = await this.coreRpcService.getNewAddress(['_escrow_change'], false);
-            const addressInfo = await this.coreRpcService.getAddressInfo(addr);
-            const pubkey = addressInfo.pubkey;
-
-            let buyerPubkey = this.getValueFromBidDatas('pubkeys', bid.BidDatas);
-            buyerPubkey = buyerPubkey[0] === '[' ? JSON.parse(buyerPubkey)[0] : buyerPubkey;
-
-            this.log.debug('addr: ', addr);
-            this.log.debug('changeAddr: ', changeAddr);
-            this.log.debug('pubkey: ', pubkey);
-            this.log.debug('buyerPubkey: ', buyerPubkey);
-            this.log.debug('listingItem.hash: ', listingItem.hash);
-
-            // dataToSave.dataValue = typeof (dataToSave.dataValue) === 'string' ? dataToSave.dataValue : JSON.stringify(dataToSave.dataValue);
-
-            // create Escrow address
-            const escrow = await this.coreRpcService.addMultiSigAddress(2, [pubkey, buyerPubkey].sort(), '_escrow_' + listingItem.hash);
-            this.log.debug('escrow: ', JSON.stringify(escrow, null, 2));
-
-            // const escrow = (await this.coreRpcService.call('addmultisigaddress', [
-            //    2, [pubkey, buyerPubkey].sort(), '_escrow_' + listingItem.hash  // TODO: Something unique??
-            //    ]));
-
-            const txout = {};
-
-            txout[escrow.address] = +(totalPrice * 3).toFixed(8); // TODO: Shipping... ;(
-            txout[changeAddr] = change;
-
-            const buyerChangeAddr = this.getValueFromBidDatas('changeAddr', bid.BidDatas); // TODO: Error handling - nice messagee..
-            let buyerOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
-
-            this.log.debug('buyerOutputs: ', buyerOutputs);
-
-            // TODO: Verify that buyers outputs are unspent?? :/
-            if (buyerOutputs) {
-                sum = 0;
-                change = 0;
-                buyerOutputs = JSON.parse(buyerOutputs);
-                buyerOutputs.forEach(output => {
-                    sum += output.amount;
-                    // TODO: Refactor reusable logic. and verify / validate buyer change.
-                    if (sum > totalPrice * 2) { // TODO: Ratio
-                        change = +(sum - (totalPrice * 2) - 0.0001).toFixed(8); // TODO: Get actual fee...
-                        return;
-                    }
-                });
-                txout[buyerChangeAddr] = change;
-            } else {
-                this.log.error('Buyer didn\'t supply outputs!');
-                throw new MessageException('Buyer didn\'t supply outputs!'); // TODO: proper message for no outputs :P
-            }
-
-            // TODO: Decide if we want this on the blockchain or not...
-            // TODO: Think about how to recover escrow information to finalize transactions should
-            // client pc / database crash..
-
-            //
-            // txout['data'] = unescape(encodeURIComponent(data.params[0]))
-            //    .split('').map(v => v.charCodeAt(0).toString(16)).join('').substr(0, 80);
-            //
-
-            const rawtx = await this.coreRpcService.createRawTransaction(outputs.concat(buyerOutputs), txout);
-
-            // const rawtx = await this.coreRpcService.call('createrawtransaction', [
-            //    outputs.concat(buyerOutputs),
-            //    txout
-            // ]);
-
-            this.log.debug('rawtx: ', rawtx);
-
-            // TODO: At this stage we need to store the unsigned transaction, as we will need user interaction to sign
-            // the transaction
-            const signed = await this.coreRpcService.signRawTransactionWithWallet(rawtx);
-            // const signed = await this.coreRpcService.signRawTransactionWithKey(rawtx, TODO );
-
-            // const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
-
-            this.log.debug('signed: ', signed);
-
-            if (!signed || (signed.errors && (
-                    signed.errors[0].error !== 'Operation not valid with the current stack size' &&
-                    signed.errors[0].error !== 'Unable to sign input, invalid stack size (possibly missing key)'))) {
-                this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
-                throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
-            }
-
-            if (signed.complete) {
-                this.log.error('Transaction should not be complete at this stage, will not send insecure message');
-                throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
-            }
-
-            // TODO: We need to send a refund / release address
-            const releaseAddr = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
-
-            // const releaseAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
-            const bidData = this.getBidDataFromArray(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex, 'address', releaseAddr]);
-
-            // - Most likely the transaction building and signing will happen in a different command that takes place
-            // before this..
-            // End - Ryno Hacks
+            // generate bidDatas
+            const bidDatas = await this.generateBidDatasForMPA_ACCEPT(listingItem, bid);
 
             // fetch the profile
             const profileModel = await this.profileService.getDefault();
             const profile = profileModel.toJSON();
 
-            // fetch the market
-            const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);
-            const market = marketModel.toJSON();
-
             // create the bid accept message
-            const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidData);
+            const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidDatas);
 
             const marketPlaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,
@@ -348,11 +221,181 @@ export class BidActionService {
 
             // broadcast the accepted bid message
             return await this.smsgService.smsgSend(profile.address, buyer, marketPlaceMessage, false);
+
         } else {
-            this.log.error(`Bid can not be accepted because it was already been ${bid.action}`);
-            throw new MessageException(`Bid can not be accepted because it was already been ${bid.action}`);
+            this.log.error(`Bid can not be accepted because its state allready is ${bid.action}`);
+            throw new MessageException(`Bid can not be accepted because its state already is ${bid.action}`);
         }
     }
+
+    public async generateBidDatasForMPA_ACCEPT(
+        listingItem: resources.ListingItem,
+        bid: resources.Bid
+    ): Promise<any[]> {
+
+        // TODO: Ryno Hacks - Refactor code below...
+        // This is a copy and paste - hacks hacks hacks ;(
+        // Get unspent
+        const unspent = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+        // const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
+
+        const outputs: Output[] = [];
+        const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
+        const basePrice = listingItemPrice.basePrice;
+        const shippingPriceMax = Math.max(
+            listingItemPrice.ShippingPrice.international,
+            listingItemPrice.ShippingPrice.domestic);
+        const totalPrice = basePrice + shippingPriceMax; // TODO: Determine if local or international...
+        let sum = 0;
+        let change = 0;
+
+        this.log.debug('totalPrice: ', totalPrice);
+
+        if (basePrice) {
+            unspent.find(output => {
+                if (output.spendable && output.solvable) {
+                    sum += output.amount;
+                    outputs.push({
+                        txid: output.txid,
+                        vout: output.vout,
+                        amount: output.amount
+                    });
+                }
+
+                if (sum > totalPrice) { // TODO: Ratio
+                    change = +(sum - totalPrice - 0.0001).toFixed(8); // TODO: Get actual fee...
+                    return true;
+                }
+                return false;
+            });
+
+            if (sum < basePrice) {
+                this.log.error('Not enough funds');
+                throw new MessageException('You are too broke...');
+            }
+        } else {
+            this.log.error(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
+            throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
+        }
+
+        const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
+
+        // TODO: Proper change address?!?!
+        const changeAddr = await this.coreRpcService.getNewAddress(['_escrow_change'], false);
+        const addressInfo = await this.coreRpcService.getAddressInfo(addr);
+        const pubkey = addressInfo.pubkey;
+
+        let buyerPubkey = this.getValueFromBidDatas('pubkeys', bid.BidDatas);
+        buyerPubkey = buyerPubkey[0] === '[' ? JSON.parse(buyerPubkey)[0] : buyerPubkey;
+
+        if (!buyerPubkey) {
+            throw new MessageException('Buyer public key was null!');
+        }
+
+        this.log.debug('addr: ', addr);
+        this.log.debug('changeAddr: ', changeAddr);
+        this.log.debug('pubkey: ', pubkey);
+        this.log.debug('buyerPubkey: ', buyerPubkey);
+        this.log.debug('listingItem.hash: ', listingItem.hash);
+
+        // dataToSave.dataValue = typeof (dataToSave.dataValue) === 'string' ? dataToSave.dataValue : JSON.stringify(dataToSave.dataValue);
+
+        // create Escrow address
+        const escrow = await this.coreRpcService.addMultiSigAddress(2, [pubkey, buyerPubkey].sort(), '_escrow_' + listingItem.hash);
+        this.log.debug('escrow: ', JSON.stringify(escrow, null, 2));
+
+        // const escrow = (await this.coreRpcService.call('addmultisigaddress', [
+        //    2, [pubkey, buyerPubkey].sort(), '_escrow_' + listingItem.hash  // TODO: Something unique??
+        //    ]));
+
+        const txout = {};
+
+        txout[escrow.address] = +(totalPrice * 3).toFixed(8); // TODO: Shipping... ;(
+        txout[changeAddr] = change;
+
+        const buyerChangeAddr = this.getValueFromBidDatas('changeAddr', bid.BidDatas); // TODO: Error handling - nice messagee..
+        let buyerOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
+
+        this.log.debug('buyerOutputs: ', buyerOutputs);
+
+        // TODO: Verify that buyers outputs are unspent?? :/
+        if (buyerOutputs) {
+            sum = 0;
+            change = 0;
+            buyerOutputs = JSON.parse(buyerOutputs);
+            buyerOutputs.forEach(output => {
+                sum += output.amount;
+                // TODO: Refactor reusable logic. and verify / validate buyer change.
+                if (sum > totalPrice * 2) { // TODO: Ratio
+                    change = +(sum - (totalPrice * 2) - 0.0001).toFixed(8); // TODO: Get actual fee...
+                    return;
+                }
+            });
+            txout[buyerChangeAddr] = change;
+        } else {
+            this.log.error('Buyer didn\'t supply outputs!');
+            throw new MessageException('Buyer didn\'t supply outputs!'); // TODO: proper message for no outputs :P
+        }
+
+        // TODO: Decide if we want this on the blockchain or not...
+        // TODO: Think about how to recover escrow information to finalize transactions should
+        // client pc / database crash..
+
+        //
+        // txout['data'] = unescape(encodeURIComponent(data.params[0]))
+        //    .split('').map(v => v.charCodeAt(0).toString(16)).join('').substr(0, 80);
+        //
+
+        const rawtx = await this.coreRpcService.createRawTransaction(outputs.concat(buyerOutputs), txout);
+
+        // const rawtx = await this.coreRpcService.call('createrawtransaction', [
+        //    outputs.concat(buyerOutputs),
+        //    txout
+        // ]);
+
+        this.log.debug('rawtx: ', rawtx);
+
+        // TODO: At this stage we need to store the unsigned transaction, as we will need user interaction to sign
+        // the transaction
+
+        let signed;
+
+        if (Environment.isDevelopment() || Environment.isTest()) {
+            const privKey = await this.coreRpcService.dumpPrivKey(addr);
+            signed = await this.coreRpcService.signRawTransactionWithKey(rawtx, [privKey]);
+        } else {
+            signed = await this.coreRpcService.signRawTransactionWithWallet(rawtx);
+        }
+
+        // const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
+
+        this.log.debug('signed: ', JSON.stringify(signed, null, 2));
+
+        if (!signed || (signed.errors && (
+                signed.errors[0].error !== 'Operation not valid with the current stack size' &&
+                signed.errors[0].error !== 'Unable to sign input, invalid stack size (possibly missing key)'))) {
+            this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
+            throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
+        }
+
+        if (signed.complete) {
+            this.log.error('Transaction should not be complete at this stage, will not send insecure message');
+            throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
+        }
+
+        // TODO: We need to send a refund / release address
+        const releaseAddr = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
+
+        // - Most likely the transaction building and signing will happen in a different command that takes place
+        // before this..
+        // End - Ryno Hacks
+
+        // const releaseAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
+        const bidDatas = this.getBidDatasFromArray(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex, 'address', releaseAddr]);
+
+        return bidDatas;
+    }
+
 
     /**
      * Cancel a Bid
@@ -438,7 +481,7 @@ export class BidActionService {
      * @param {MarketplaceMessageInterface} message
      * @returns {Promise<"resources".ActionMessage>}
      */
-    public async processBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
+    public async processBidReceivedEvent(event: MarketplaceEvent): Promise<resources.Bid> {
         this.log.debug('Received event:', event);
 
         // todo: fix
@@ -475,13 +518,12 @@ export class BidActionService {
         }
 
         if (bidMessage) {
-
             const createdBid = await this.createBid(bidMessage, listingItem, bidder);
             this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
 
             // TODO: do whatever else needs to be done
 
-            return actionMessage;
+            return createdBid;
         } else {
             throw new MessageException('Missing BidMessage');
         }
@@ -598,6 +640,7 @@ export class BidActionService {
     }
 
     private async createBid(bidMessage: BidMessage, listingItem: resources.ListingItem, bidder: string): Promise<resources.Bid> {
+
         // create a bid
         const bidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder);
 
@@ -646,14 +689,14 @@ export class BidActionService {
      * [3]: value, string
      * ..........
      */
-    private getBidDataFromArray(data: string[]): any[] {
-        const bidData: any[] = [];
+    private getBidDatasFromArray(data: string[]): any[] {
+        const bidDatas: any[] = [];
 
         // convert the bid data params as bid data key value pair
         for (let i = 0; i < data.length; i += 2) {
-            bidData.push({id: data[i], value: data[i + 1]});
+            bidDatas.push({id: data[i], value: data[i + 1]});
         }
-        return bidData;
+        return bidDatas;
     }
 
     /**

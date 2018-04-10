@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -184,6 +185,51 @@ export class CoreRpcService {
         }
 
         return await this.call('signrawtransactionwithkey', params);
+    }
+
+    /**
+     * ﻿Returns array of unspent transaction outputs
+     * with between minconf and maxconf (inclusive) confirmations.
+     * Optionally filter to only include txouts paid to specified addresses.
+     *
+     * @param {number} minconf
+     * @param {number} maxconf
+     * @param {string[]} addresses
+     * @param {boolean} includeUnsafe
+     * @param queryOptions
+     * @returns {Promise<any>}
+     */
+    public async listUnspent(minconf: number, maxconf: number,
+                             addresses: string[] = [], includeUnsafe: boolean = true, queryOptions: any = {}): Promise<any> {
+
+        const params: any[] = [minconf, maxconf, addresses, includeUnsafe];
+        if (!_.isEmpty(queryOptions)) {
+            params.push(queryOptions);
+        }
+
+        return await this.call('listunspent', params);
+    }
+
+    /**
+     * ﻿DEPRECATED. Returns the current Particl address for receiving payments to this account.
+     *
+     * @param {string} account
+     * @returns {Promise<any>}
+     */
+    public async getAccountAddress(account: string): Promise<any> {
+        const params: any[] = [account];
+        return await this.call('getaccountaddress', params);
+    }
+
+    /**
+     * ﻿Reveals the private key corresponding to 'address'.
+     *
+     * @param {string} address
+     * @returns {Promise<string>}
+     */
+    public async dumpPrivKey(address: string): Promise<string> {
+        const params: any[] = [address];
+        return await this.call('dumpprivkey', params);
     }
 
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {
