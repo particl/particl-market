@@ -55,6 +55,10 @@ export class BaseCommand {
         return ' <TODO: Command.help()>';
     }
 
+    public usage(): string {
+        return '<TODO: Command.usage()>';
+    }
+
     public description(): string {
         return 'TODO: Command.description()';
     }

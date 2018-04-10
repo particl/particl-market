@@ -24,8 +24,12 @@ export class ItemLocationRootCommand extends BaseCommand implements RpcCommandIn
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public usage(): string {
+        return this.getName() + ' (add|update|remove)  -  ' + this.description();
+    }
+
     public help(): string {
-        return this.getName() + ' (add|update|remove) ';
+        return this.usage();
     }
 
     public description(): string {
