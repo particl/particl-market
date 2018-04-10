@@ -5,8 +5,8 @@ import { MessageBody } from '../../core/api/MessageBody';
 
 export class BidMessage extends MessageBody implements ActionMessageInterface {
 
-    @IsNotEmpty()
-    @IsEnum(BidMessageType)
+    // @IsNotEmpty()
+    // @IsEnum(BidMessageType)
     public action: BidMessageType;
 
     @IsNotEmpty()

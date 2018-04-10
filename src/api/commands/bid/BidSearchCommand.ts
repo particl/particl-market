@@ -38,12 +38,14 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Bid>> {
 
-        const listingItemHash = data.params[0];
-        const action = data.params[1];
+        const listingItemHash = data.params[0] !== '*' ? data.params[0] : undefined;
+        const action = data.params[1] !== '*' ? data.params[1] : undefined;
 
-        if (data.params.length > 2) {
+        if (data.params.length >= 2) {
             data.params.shift();
             data.params.shift();
+        } else {
+            data.params = [];
         }
 
         const searchArgs = {

@@ -48,19 +48,51 @@ export class BidActionService {
     }
 
     /**
-     * Posts a Bid to the seller
      *
      * @param {"resources".ListingItem} listingItem
-     * @param {"resources".Profile} profile
+     * @param {"resources".Profile} bidderProfile
      * @param {"resources".Address} shippingAddress
-     * @param {any[]} params
+     * @param {any[]} additionalParams
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async send(listingItem: resources.ListingItem, profile: resources.Profile,
-                      shippingAddress: resources.Address, params: any[]): Promise<SmsgSendResponse> {
+    public async send(listingItem: resources.ListingItem, bidderProfile: resources.Profile,
+                      shippingAddress: resources.Address, additionalParams: any[]): Promise<SmsgSendResponse> {
 
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
+
+        // generate bidData
+        const bidData = await this.generateBidDataForMPA_BID(listingItem, shippingAddress, additionalParams);
+
+        this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
+
+        // create MPA_BID
+        const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidData);
+
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: bidMessage
+        } as MarketplaceMessage;
+
+        this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
+
+        // save bid locally before broadcasting
+        const createdBid = await this.createBid(bidMessage, listingItem, bidderProfile.address);
+        this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
+
+        // broadcast the message in to the network
+        return await this.smsgService.smsgSend(bidderProfile.address, listingItem.seller, marketPlaceMessage, false);
+    }
+
+    /**
+     *
+     * @param {"resources".ListingItem} listingItem
+     * @returns {Promise<any[]>}
+     */
+    public async generateBidDataForMPA_BID(
+        listingItem: resources.ListingItem,
+        shippingAddress: resources.Address,
+        additionalParams: any[]): Promise<any[]> {
 
         // Get unspent
         const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
@@ -68,6 +100,7 @@ export class BidActionService {
             this.log.warn('No unspent outputs');
             throw new MessageException('No unspent outputs');
         }
+
         const outputs: Output[] = [];
         const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
         const basePrice = listingItemPrice.basePrice;
@@ -109,25 +142,15 @@ export class BidActionService {
         const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']);
         const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
 
-        // TODO: enums
         // convert the bid data params as bid data key value pair
-        const bidData = this.getBidData(params.concat([
-            'outputs', outputs, 'pubkeys', [pubkey], 'changeAddr', changeAddr, 'change', change
+        const bidData = this.getBidDataFromArray(additionalParams.concat([
+            'outputs', outputs,
+            'pubkeys', [pubkey],
+            'changeAddr', changeAddr,
+            'change', change
         ]));
 
         this.log.debug('bidData: ', JSON.stringify(bidData, null, 2));
-
-        // fetch the profile
-        /*const profileModel = await this.profileService.getDefault();
-        const profile = profileModel.toJSON();*/
-
-        this.log.debug('bidder profile: ', JSON.stringify(profile, null, 2));
-
-        // add shipping address to bidData
-        /* if (_.isEmpty(profile.ShippingAddresses)) {
-            this.log.error('Profile is missing a shipping address.');
-            throw new MessageException('Profile is missing a shipping address.');
-        } */
 
         // store the shipping address in biddata
         bidData.push({id: 'ship.firstName', value: shippingAddress.firstName ? shippingAddress.firstName : ''});
@@ -139,27 +162,7 @@ export class BidActionService {
         bidData.push({id: 'ship.zipCode', value: shippingAddress.zipCode});
         bidData.push({id: 'ship.country', value: shippingAddress.country});
 
-        // fetch the market
-        const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);
-        const market = marketModel.toJSON();
-
-        const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidData);
-
-        const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: bidMessage
-        } as MarketplaceMessage;
-
-        this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
-
-        const seller = this.getSeller(listingItem);
-
-        // save bid locally
-        const createdBid = await this.createBid(bidMessage, listingItem, profile.address);
-        this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
-
-        // broadcast the message in to the network
-        return await this.smsgService.smsgSend(profile.address, seller, marketPlaceMessage, false);
+        return bidData;
     }
 
     /**
@@ -316,7 +319,7 @@ export class BidActionService {
             const releaseAddr = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
 
             // const releaseAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
-            const bidData = this.getBidData(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex, 'address', releaseAddr]);
+            const bidData = this.getBidDataFromArray(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex, 'address', releaseAddr]);
 
             // - Most likely the transaction building and signing will happen in a different command that takes place
             // before this..
@@ -379,11 +382,8 @@ export class BidActionService {
 
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
-            // bid cancel should be sent to seller
-            const seller = this.getSeller(listingItem);
-
             // broadcast the cancel bid message
-            return await this.smsgService.smsgSend(profile.address, seller, marketPlaceMessage, false);
+            return await this.smsgService.smsgSend(profile.address, listingItem.seller, marketPlaceMessage, false);
         } else {
             this.log.error(`Bid can not be cancelled because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be cancelled because it was already been ${bid.action}`);
@@ -646,7 +646,7 @@ export class BidActionService {
      * [3]: value, string
      * ..........
      */
-    private getBidData(data: string[]): any[] {
+    private getBidDataFromArray(data: string[]): any[] {
         const bidData: any[] = [];
 
         // convert the bid data params as bid data key value pair
@@ -670,22 +670,6 @@ export class BidActionService {
             this.log.error('Missing BidData value for key: ' + key);
             throw new MessageException('Missing BidData value for key: ' + key);
         }
-    }
-
-    /**
-     * get seller from listingitems MP_ITEM_ADD ActionMessage
-     * todo:  refactor
-     * @param {"resources".ListingItem} listingItem
-     * @returns {Promise<string>}
-     */
-    private getSeller(listingItem: resources.ListingItem): string {
-        for (const actionMessage of listingItem.ActionMessages) {
-            if (actionMessage.action === 'MP_ITEM_ADD') {
-                return actionMessage.MessageData.from;
-            }
-        }
-        throw new MessageException('Seller not found for ListingItem.');
-
     }
 
     /**

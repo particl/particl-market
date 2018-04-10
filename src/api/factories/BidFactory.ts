@@ -30,7 +30,7 @@ export class BidFactory {
     public async getMessage(bidMessageType: BidMessageType, itemHash: string, idValuePairObjects?: any[]): Promise<BidMessage> {
 
         const message = {
-            action: bidMessageType.toString(),
+            action: bidMessageType,
             item: itemHash,
             objects: idValuePairObjects
         } as BidMessage;

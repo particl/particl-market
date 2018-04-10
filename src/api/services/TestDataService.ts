@@ -305,6 +305,23 @@ export class TestDataService {
                     market = marketModel.toJSON();
                 }
 
+                // add ActionMessage
+                const actionMessages = [{
+                    action: ListingItemMessageType.MP_ITEM_ADD,
+                    objects: [{
+                        dataId: 'seller',
+                        dataValue: result.Profile.address
+                    }],
+                    data: {
+                        msgid: 'testdatanotsorandommsgidfrom_generateListingItems',
+                        version: '0300',
+                        received: new Date().toISOString(),
+                        sent: new Date().toISOString(),
+                        from: result.Profile.address,
+                        to: market.address
+                    }
+                }];
+
                 const listingItemCreateRequest = {
                     seller: result.Profile.address,
                     market_id: market.id,
@@ -342,7 +359,9 @@ export class TestDataService {
             const listingItemCreateRequest = await this.generateListingItemData(generateParams);
 
             // TODO: actionmessage generation should be configurable
-            const fromAddress = await this.coreRpcService.getNewAddress();
+            // const fromAddress = await this.coreRpcService.getNewAddress();
+            const marketModel = await this.marketService.getDefault();
+            const toAddress = marketModel.toJSON();
 
             // add ActionMessage
             listingItemCreateRequest.actionMessages = [{
@@ -356,8 +375,8 @@ export class TestDataService {
                     version: '0300',
                     received: new Date().toISOString(),
                     sent: new Date().toISOString(),
-                    from: fromAddress,
-                    to: listingItemCreateRequest.seller
+                    from: listingItemCreateRequest.seller,
+                    to: toAddress
                 }
             }];
 
