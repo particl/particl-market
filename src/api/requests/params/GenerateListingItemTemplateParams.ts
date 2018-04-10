@@ -36,6 +36,8 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
     public generateItemPrice = true;
     public generateObjectDatas = true;
     public profileId: number | null = null;
+    public generateListingItem = false;
+    public marketId: number | null = null;
 
     /**
      * generateParams[]:
@@ -49,6 +51,7 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
      * [7]: generateListingItemObjects
      * [8]: generateObjectDatas
      * [9]: profileId
+     * [10]: generateListingItem
      *
      * @param generateParams
      */
@@ -65,6 +68,8 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
             this.generateListingItemObjects = generateParams[7] ? true : false;
             this.generateObjectDatas = generateParams[8] ? true : false;
             this.profileId = generateParams[9] ? generateParams[9] : null;
+            this.generateListingItem = generateParams[10] ? true : false;
+            this.marketId = generateParams[11] ? generateParams[11] : null;
         }
     }
 
@@ -79,7 +84,9 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
             this.generateMessagingInformation,
             this.generateListingItemObjects,
             this.generateObjectDatas,
-            this.profileId
+            this.profileId,
+            this.generateListingItem,
+            this.marketId
         ];
     }
 

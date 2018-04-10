@@ -26,6 +26,7 @@ import { BidMessage } from '../messages/BidMessage';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { AddressType } from '../enums/AddressType';
 
+declare function escape(s: string): string;
 declare function unescape(s: string): string;
 
 export class BidActionService {
@@ -60,6 +61,7 @@ export class BidActionService {
 
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
+
         // Get unspent
         const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
         if (!unspent || unspent.length === 0) {
@@ -69,9 +71,7 @@ export class BidActionService {
         const outputs: Output[] = [];
         const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
         const basePrice = listingItemPrice.basePrice;
-        const shippingPriceMax = Math.max(
-            listingItemPrice.ShippingPrice.international,
-            listingItemPrice.ShippingPrice.domestic);
+        const shippingPriceMax = Math.max(listingItemPrice.ShippingPrice.international, listingItemPrice.ShippingPrice.domestic);
         const totalPrice = basePrice + shippingPriceMax;
 
         let sum = 0;
@@ -216,19 +216,31 @@ export class BidActionService {
                 throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
             }
 
-            const addr = await this.coreRpcService.call('getnewaddress', ['_escrow_pub_' + listingItem.hash]);
-            const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']); // TODO: Proper change address?!?!
-            const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
+            const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
+
+            // TODO: Proper change address?!?!
+            const changeAddr = await this.coreRpcService.getNewAddress(['_escrow_change'], false);
+            const addressInfo = await this.coreRpcService.getAddressInfo(addr);
+            const pubkey = addressInfo.pubkey;
 
             let buyerPubkey = this.getValueFromBidDatas('pubkeys', bid.BidDatas);
             buyerPubkey = buyerPubkey[0] === '[' ? JSON.parse(buyerPubkey)[0] : buyerPubkey;
 
-            // Create Escrow address
-            const escrow = (await this.coreRpcService.call('addmultisigaddress', [
-                2,
-                [pubkey, buyerPubkey].sort(),
-                '_escrow_' + listingItem.hash  // TODO: Something unique??
-            ]));
+            this.log.debug('addr: ', addr);
+            this.log.debug('changeAddr: ', changeAddr);
+            this.log.debug('pubkey: ', pubkey);
+            this.log.debug('buyerPubkey: ', buyerPubkey);
+            this.log.debug('listingItem.hash: ', listingItem.hash);
+
+            // dataToSave.dataValue = typeof (dataToSave.dataValue) === 'string' ? dataToSave.dataValue : JSON.stringify(dataToSave.dataValue);
+
+            // create Escrow address
+            const escrow = await this.coreRpcService.addMultiSigAddress(2, [pubkey, buyerPubkey].sort(), '_escrow_' + listingItem.hash);
+            this.log.debug('escrow: ', JSON.stringify(escrow, null, 2));
+
+            // const escrow = (await this.coreRpcService.call('addmultisigaddress', [
+            //    2, [pubkey, buyerPubkey].sort(), '_escrow_' + listingItem.hash  // TODO: Something unique??
+            //    ]));
 
             const txout = {};
 
@@ -266,15 +278,21 @@ export class BidActionService {
             //    .split('').map(v => v.charCodeAt(0).toString(16)).join('').substr(0, 80);
             //
 
+            const rawtx = await this.coreRpcService.createRawTransaction(outputs.concat(buyerOutputs), txout);
 
-            const rawtx = await this.coreRpcService.call('createrawtransaction', [
-                outputs.concat(buyerOutputs),
-                txout
-            ]);
+            // const rawtx = await this.coreRpcService.call('createrawtransaction', [
+            //    outputs.concat(buyerOutputs),
+            //    txout
+            // ]);
+
+            this.log.debug('rawtx: ', rawtx);
 
             // TODO: At this stage we need to store the unsigned transaction, as we will need user interaction to sign
             // the transaction
-            const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
+            const signed = await this.coreRpcService.signRawTransactionWithWallet(rawtx);
+            // const signed = await this.coreRpcService.signRawTransactionWithKey(rawtx, TODO );
+
+            // const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
 
             if (!signed || (signed.errors && (
                     signed.errors[0].error !== 'Operation not valid with the current stack size' &&
@@ -289,13 +307,14 @@ export class BidActionService {
             }
 
             // TODO: We need to send a refund / release address
-            const releaseAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
+            const releaseAddr = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
+
+            // const releaseAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
             const bidData = this.getBidData(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex, 'address', releaseAddr]);
 
             // - Most likely the transaction building and signing will happen in a different command that takes place
             // before this..
             // End - Ryno Hacks
-
 
             // fetch the profile
             const profileModel = await this.profileService.getDefault();

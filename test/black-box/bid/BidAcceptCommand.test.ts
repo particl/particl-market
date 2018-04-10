@@ -14,6 +14,7 @@ import * as addressCreateRequest from '../../testdata/createrequest/addressCreat
 import { GenerateProfileParams } from "../../../src/api/requests/params/GenerateProfileParams";
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
+import {AddressType} from '../../../src/api/enums/AddressType';
 
 describe('BidAcceptCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -27,6 +28,9 @@ describe('BidAcceptCommand', () => {
 
     const dataCommand = Commands.DATA_ROOT.commandName;
     const generateCommand = Commands.DATA_GENERATE.commandName;
+
+    const itemCommand = Commands.ITEM_ROOT.commandName;
+    const getCommand = Commands.ITEM_GET.commandName;
 
     let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
@@ -54,9 +58,11 @@ describe('BidAcceptCommand', () => {
         sellerProfile = res.getBody()['result'][0];
         log.debug('sellerProfile:', JSON.stringify(sellerProfile, null, 2));
 
-        // generate listingItemTemplate
+        // generate ListingItemTemplate with ListingItem
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams();
         generateListingItemTemplateParams.profileId = sellerProfile.id;
+        generateListingItemTemplateParams.generateListingItem = true;
+        generateListingItemTemplateParams.marketId = defaultMarket.id;
 
         const listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
@@ -66,10 +72,12 @@ describe('BidAcceptCommand', () => {
         ) as resources.ListingItemTemplates[];
         listingItemTemplate = listingItemTemplates[0];
 
-        // expect template is related to correct profile
-        log.debug('listingItemTemplate.Profile.id:', listingItemTemplate.Profile.id);
-        log.debug('sellerProfile.id:', sellerProfile.id);
+        // delete listingItemTemplate.ItemInformation.ItemImages;
+        // log.debug('listingItemTemplate: ', JSON.stringify(listingItemTemplate, null, 2));
+
+        // expect template is related to correct profile and listingitem posted to correct market
         expect(listingItemTemplate.Profile.id).toBe(sellerProfile.id);
+        expect(listingItemTemplate.ListingItems[0].marketId).toBe(defaultMarket.id);
 
         // expect template hash created on the server matches what we create here
         const generatedTemplateHash = ObjectHash.getHash(listingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
@@ -77,30 +85,18 @@ describe('BidAcceptCommand', () => {
         log.debug('generatedTemplateHash:', generatedTemplateHash);
         expect(listingItemTemplate.hash).toBe(generatedTemplateHash);
 
-        // create ListingItemCreateRequest
-        listingItemCreateRequestBasic1.market_id = defaultMarket.id;
-        listingItemCreateRequestBasic1.listing_item_template_id = listingItemTemplate.id;
-        listingItemCreateRequestBasic1.seller = sellerProfile.address;
-
-        // expect listingItemCreateRequest also matches generatedTemplateHash
-        const generatedListingItemCreateRequesHash = ObjectHash.getHash(listingItemTemplate, HashableObjectType.LISTINGITEM_CREATEREQUEST);
-        expect(listingItemTemplate.hash).toBe(generatedListingItemCreateRequesHash);
-
-        // expect listingItemCreateRequest also matches generatedTemplateHash
-
-        listingItem = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
-
-        delete listingItemTemplate.ItemInformation.ItemImages;
-        delete listingItem.ItemInformation.ItemImages;
-        // log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2);
-        // log.debug('listingItem:', JSON.stringify(listingItem, null, 2);
-
+        // expect the item hash generated at the same time as template, matches with the templates one
         log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
-        log.debug('listingItem.hash:', listingItem.hash);
+        log.debug('listingItemTemplate.ListingItems[0].hash:', listingItemTemplate.ListingItems[0].hash);
+        expect(listingItemTemplate.hash).toBe(listingItemTemplate.ListingItems[0].hash);
 
-        // make sure the hashes match
-        expect(listingItemTemplate.hash).toBe(listingItem.hash);
+        // set the listingItem
+        const listingItemRes = await rpc(itemCommand, [getCommand, listingItemTemplate.ListingItems[0].hash]);
+        listingItemRes.expectJson();
+        listingItemRes.expectStatusCode(200);
+        listingItem = listingItemRes.getBody()['result'];
 
+        // ---
         // Ryno Hacks - This requires regtest
         // This needs to be updated whenever regtest allocations change
         const outputs = [{
@@ -114,11 +110,11 @@ describe('BidAcceptCommand', () => {
 
         // TODO: make it possible to pass bidDatas to bid test data generation
 
-        // create bid
+        // create bid, defaultProfile is bidder, sellerProfile is seller
         const bidCreateRequest = {
             action: BidMessageType.MPA_BID,
             listing_item_id: listingItem.id,
-            bidder: 'bidderaddress',
+            bidder: defaultProfile.id,
             bidDatas: [
                 { dataId: 'COLOR', dataValue: 'RED' },
                 { dataId: 'SIZE', dataValue: 'XL' },
@@ -136,16 +132,18 @@ describe('BidAcceptCommand', () => {
                 city: 'city',
                 state: 'test state',
                 country: 'Finland',
-                zipCode: '85001'
+                zipCode: '85001',
+                type: AddressType.SHIPPING_BID
             } as AddressCreateRequest
         } as BidCreateRequest;
 
-        createdBid = await testUtil.addData(CreatableModel.BID, bidCreateRequest);
+        bid = await testUtil.addData(CreatableModel.BID, bidCreateRequest);
+
     });
 
     test('Should Accept a Bid for a ListingItem', async () => {
 
-        const res: any = await rpc(bidCommand, [acceptCommand, listingItem.hash, createdBid.id]);
+        const res: any = await rpc(bidCommand, [acceptCommand, listingItem.hash, bid.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

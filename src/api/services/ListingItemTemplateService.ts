@@ -28,9 +28,9 @@ import { MessagingInformationCreateRequest } from '../requests/MessagingInformat
 import { MessagingInformationUpdateRequest } from '../requests/MessagingInformationUpdateRequest';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
-import {ObjectHash} from '../../core/helpers/ObjectHash';
-import {HashableObjectType} from '../enums/HashableObjectType';
-import {HashableListingItem} from '../../core/helpers/HashableListingItem';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { HashableObjectType } from '../enums/HashableObjectType';
+import { HashableListingItem } from '../../core/helpers/HashableListingItem';
 
 export class ListingItemTemplateService {
 

@@ -290,8 +290,39 @@ export class TestDataService {
         const items: resources.ListingItemTemplate[] = [];
         for (let i = amount; i > 0; i--) {
             const listingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
-            const listingItemTemplateModel = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest);
-            const result = listingItemTemplateModel.toJSON();
+            let listingItemTemplateModel = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest);
+            let result = listingItemTemplateModel.toJSON();
+
+            // generate a ListingItem with the same data
+            if (generateParams.generateListingItem) {
+
+                let market: resources.Market;
+                if (generateParams.marketId === null) {
+                    const marketModel = await this.marketService.getDefault();
+                    market = marketModel.toJSON();
+                } else {
+                    const marketModel = await this.marketService.findOne(generateParams.marketId);
+                    market = marketModel.toJSON();
+                }
+
+                const listingItemCreateRequest = {
+                    seller: result.Profile.address,
+                    market_id: market.id,
+                    listing_item_template_id: result.id,
+                    itemInformation: listingItemTemplateCreateRequest.itemInformation,
+                    paymentInformation: listingItemTemplateCreateRequest.paymentInformation,
+                    messagingInformation: listingItemTemplateCreateRequest.messagingInformation,
+                    listingItemObjects: listingItemTemplateCreateRequest.listingItemObjects
+                    // TODO: consifgurable actionMessages
+                } as ListingItemCreateRequest;
+
+                const listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
+                const listingItem = listingItemModel.toJSON();
+
+                // fetch new relation
+                listingItemTemplateModel = await this.listingItemTemplateService.findOne(result.id);
+                result = listingItemTemplateModel.toJSON();
+            }
             items.push(result);
         }
         return this.generateResponse(items, withRelated);

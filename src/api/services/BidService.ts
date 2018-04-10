@@ -111,7 +111,23 @@ export class BidService {
 
         this.log.debug('body.listing_item_id: ', body.listing_item_id);
 
-        //
+        // in case there's no profile id, figure it out
+        if (!addressCreateRequest.profile_id) {
+            const foundBidderProfile = await this.profileService.findOneByAddress(body.bidder);
+            if (foundBidderProfile) {
+                // we are the bidder
+                addressCreateRequest.profile_id = foundBidderProfile.id;
+            } else {
+                try {
+                    // we are the seller
+                    const listingItemModel = await this.listingItemService.findOne(body.listing_item_id);
+                    const listingItem = listingItemModel.toJSON();
+                    addressCreateRequest.profile_id = listingItem.ListingItemTemplate.Profile.id;
+                } catch (e) {
+                    this.log.error('Funny test data bid? It seems we are neither bidder nor the seller.');
+                }
+            }
+        }
 
         // this.log.debug('address create request: ', JSON.stringify(addressCreateRequest, null, 2));
         const addressModel = await this.addressService.create(addressCreateRequest);
