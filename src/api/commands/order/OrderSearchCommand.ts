@@ -33,15 +33,25 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public usage(): string {
-        return this.getName() + ' TODO ';
+        return this.getName() + ' (<itemhash>|*) [(<status>|*) [(<buyerAddress>|*) [(<sellerAddress>|*) [<ordering>]]]] ';
     }
 
     public help(): string {
-        return this.usage() + ' -  ' + this.description();
+        return this.usage() + ' -  ' + this.description() + '\n'
+            + '    <itemhash>               - String - The hash of the item we want to search orders for. \n '
+            + '                                A value of * specifies that any item hash is acceptable. \n '
+            + '    <status>                 - [optional] ENUM{AWAITING_ESCROW,ESCROW_LOCKED,SHIPPING,COMPLETE} - \n '
+            + '                                The status of the orders we want to search for \n '
+            + '                                A value of * specifies that any order status is acceptable. \n '
+            + '    <buyerAddress>           - [optional] String - The address of the buyer in the orders we want to search for. \n '
+            + '                                A value of * specifies that any buyer address is acceptable. \n '
+            + '    <sellerAddress>          - [optional] String - The address of the seller in the orders we want to search for. \n '
+            + '                                A value of * specifies that any seller address is acceptable. \n '
+            + '    <ordering>               - [optional] ENUM{ASC,DSC} - The ordering of the search results. ';
     }
 
     public description(): string {
-        return 'TODO';
+        return 'Search for orders by item hash, order status, or addresses. ';
     }
 
     public example(): string {

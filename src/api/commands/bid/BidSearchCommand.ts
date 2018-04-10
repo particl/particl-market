@@ -71,7 +71,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public description(): string {
-            return 'Search bids by itemhash or bid status';
+            return 'Search bids by itemhash, bid status, or bidder address';
     }
 
     public example(): string {
