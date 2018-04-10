@@ -3,6 +3,7 @@ import { Collection } from 'bookshelf';
 import { ListingItem } from './ListingItem';
 import { BidData } from './BidData';
 import { BidSearchParams } from '../requests/BidSearchParams';
+import { SearchOrder } from '../enums/SearchOrder';
 import { Address } from './Address';
 import { OrderItem } from './OrderItem';
 
@@ -30,6 +31,10 @@ export class Bid extends Bookshelf.Model<Bid> {
     }
 
     public static async search(options: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
+        if (!options.ordering) {
+            options.ordering = SearchOrder.ASC;
+        }
+
         const bidCollection = Bid.forge<Collection<Bid>>()
             .query( qb => {
 
@@ -55,8 +60,7 @@ export class Bid extends Bookshelf.Model<Bid> {
 */
                     }
                 }
-
-            }).orderBy('bids.created_at', 'ASC');
+            }).orderBy('bids.created_at', options.ordering);
 
         if (withRelated) {
             return await bidCollection.fetchAll({
