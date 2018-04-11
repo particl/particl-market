@@ -571,7 +571,7 @@ export class TestDataService {
         this.log.debug('bid.ListingItem.ListingItemTemplate.id:', bid.ListingItem.ListingItemTemplate.id);
         this.log.debug('listingItemTemplate.id:', listingItemTemplate.id);
         this.log.debug('listingItem.id:', listingItem.id);
-        this.log.debug('listingItem.seller:', listingItem.seller);
+        this.log.debug('listingItem.seller:', listingItem.Seller);
         this.log.debug('bid.bidder:', bid.bidder);
         // this.log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
         // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
