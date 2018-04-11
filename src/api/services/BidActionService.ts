@@ -188,7 +188,6 @@ export class BidActionService {
 
     /**
      * Accept a Bid
-     * todo: add the bid as param, so we know whose bid we are accepting. now supports just one bidder.
      *
      * @param {"resources".ListingItem} listingItem
      * @param {"resources".Bid} bid
@@ -205,6 +204,14 @@ export class BidActionService {
             // create the bid accept message
             const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidDatas);
 
+
+            // update the bid locally
+            const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
+            const updatedBidModel = await this.bidService.update(bid.id, bidUpdateRequest);
+            const updatedBid = updatedBidModel.toJSON();
+            // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
+
+
             const marketPlaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,
                 mpaction: bidMessage
@@ -213,7 +220,7 @@ export class BidActionService {
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
             // broadcast the accepted bid message
-            return await this.smsgService.smsgSend(listingItem.seller, bid.bidder, marketPlaceMessage, false);
+            return await this.smsgService.smsgSend(listingItem.seller, updatedBid.bidder, marketPlaceMessage, false);
 
         } else {
             this.log.error(`Bid can not be accepted because its state allready is ${bid.action}`);
@@ -537,10 +544,12 @@ export class BidActionService {
         const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
         const listingItem = listingItemModel.toJSON();
 
-        delete listingItem.ItemInformation.ItemImages;
-        this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
-        this.log.debug('bidder:', bidder);
+        // delete listingItem.ItemInformation.ItemImages;
+        // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
+        // this.log.debug('bidder:', bidder);
 
+        // TODO: save incoming and outgoing actionmessages
+        // TODO: ... and do it in one place
         // first save it
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();

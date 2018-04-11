@@ -133,7 +133,6 @@ describe('BidSendCommand', () => {
             defaultProfile.address
         ];
 
-        // create listing item
         const res: any = await rpc(bidCommand, bidSearchCommandParams);
         res.expectJson();
         res.expectStatusCode(200);
