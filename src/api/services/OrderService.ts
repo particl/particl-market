@@ -9,11 +9,13 @@ import { OrderRepository } from '../repositories/OrderRepository';
 import { Order } from '../models/Order';
 import { OrderCreateRequest } from '../requests/OrderCreateRequest';
 import { OrderUpdateRequest } from '../requests/OrderUpdateRequest';
+import { OrderSearchParams } from '../requests/OrderSearchParams';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { MessageException } from '../exceptions/MessageException';
 import { OrderItemService } from './OrderItemService';
 import { AddressService } from './AddressService';
+import { ListingItemService } from './ListingItemService';
 import {AddressType} from '../enums/AddressType';
 
 
@@ -23,6 +25,7 @@ export class OrderService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Repository) @named(Targets.Repository.OrderRepository) public orderRepo: OrderRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -41,6 +44,23 @@ export class OrderService {
             throw new NotFoundException(id);
         }
         return order;
+    }
+
+    /**
+     * search Order using given OrderSearchParams
+     *
+     * @param options
+     * @returns {Promise<Bookshelf.Collection<Bid>>}
+     */
+    @validate()
+    public async search(@request(OrderSearchParams) options: OrderSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Order>> {
+
+        // if item hash was given, set the item id
+        if (options.listingItemHash) {
+            const foundListing = await this.listingItemService.findOneByHash(options.listingItemHash, false);
+            options.listingItemId = foundListing.Id;
+        }
+        return await this.orderRepo.search(options, withRelated);
     }
 
     @validate()

@@ -9,6 +9,8 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { Order } from '../../models/Order';
+import { SearchOrder } from '../../enums/SearchOrder';
+import { OrderSearchParams } from '../../requests/OrderSearchParams';
 
 export class OrderSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Order>> {
 
@@ -34,7 +36,25 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Order>> {
-        return {} as Bookshelf.Collection<Order>;
+        const listingItemHash = data.params[0] !== '*' ? data.params[0] : undefined;
+        const status = data.params[1] !== '*' ? data.params[1] : undefined;
+        const buyerAddress = data.params[2] !== '*' ? data.params[2] : undefined;
+        const sellerAddress = data.params[3] !== '*' ? data.params[3] : undefined;
+        let ordering = data.params[4];
+
+        if (!ordering) {
+            ordering = SearchOrder.ASC;
+        }
+
+        const searchArgs = {
+            listingItemHash,
+            status,
+            buyerAddress,
+            sellerAddress,
+            ordering
+        } as OrderSearchParams;
+
+        return await this.orderService.search(searchArgs);
     }
 
     public usage(): string {
