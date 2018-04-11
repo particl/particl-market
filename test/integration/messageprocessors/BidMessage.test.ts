@@ -261,7 +261,7 @@ describe('BidMessageProcessing', () => {
         };
 
         // process the message like it was received as MarketplaceEvent
-        const result = await bidActionService.processBidReceivedEvent({
+        const result = await bidActionService.processAcceptBidReceivedEvent({
             smsgMessage,
             marketplaceMessage
         } as MarketplaceEvent);
@@ -269,7 +269,7 @@ describe('BidMessageProcessing', () => {
         log.debug('result: ', JSON.stringify(result, null, 2));
 
         expect(result.action).toBe(bidMessage.action);
-        expect(result.bidder).toBe(smsgMessage.from);
+        expect(result.bidder).toBe(smsgMessage.to);
         expect(result.ListingItem.hash).toBe(listingItem.hash);
         expect(result.ListingItem.ListingItemTemplate.hash).toBe(listingItem.hash);
         expect(result.ListingItem.seller).toBe(listingItem.seller);
@@ -280,7 +280,7 @@ describe('BidMessageProcessing', () => {
         expect(result.ShippingAddress.country).toBe(defaultProfile.ShippingAddresses[0].country);
         expect(result.ShippingAddress.zipCode).toBe(defaultProfile.ShippingAddresses[0].zipCode);
         expect(result.ShippingAddress.type).toBe(AddressType.SHIPPING_BID);
-        expect(result.BidDatas).toHaveLength(14);
+        expect(result.BidDatas).toHaveLength(16);
 
         const createdListingItemModel = await listingItemService.findOneByHash(result.ListingItem.hash);
         listingItem = createdListingItemModel.toJSON();

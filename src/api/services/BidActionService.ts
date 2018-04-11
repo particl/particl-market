@@ -202,10 +202,6 @@ export class BidActionService {
             // generate bidDatas
             const bidDatas = await this.generateBidDatasForMPA_ACCEPT(listingItem, bid);
 
-            // fetch the profile
-            const profileModel = await this.profileService.getDefault();
-            const profile = profileModel.toJSON();
-
             // create the bid accept message
             const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidDatas);
 
@@ -216,11 +212,8 @@ export class BidActionService {
 
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
-            // bid accept is sent to the buyer
-            const buyer = this.getBuyer(listingItem);
-
             // broadcast the accepted bid message
-            return await this.smsgService.smsgSend(profile.address, buyer, marketPlaceMessage, false);
+            return await this.smsgService.smsgSend(listingItem.seller, bid.bidder, marketPlaceMessage, false);
 
         } else {
             this.log.error(`Bid can not be accepted because its state allready is ${bid.action}`);
@@ -407,13 +400,6 @@ export class BidActionService {
     public async cancel(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
 
         if (bid.action === BidMessageType.MPA_BID) {
-            // fetch the profile
-            const profileModel = await this.profileService.getDefault();
-            const profile = profileModel.toJSON();
-
-            // fetch the market
-            const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);
-            const market = marketModel.toJSON();
 
             // create the bid cancel message
             const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_CANCEL, listingItem.hash);
@@ -426,7 +412,7 @@ export class BidActionService {
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
             // broadcast the cancel bid message
-            return await this.smsgService.smsgSend(profile.address, listingItem.seller, marketPlaceMessage, false);
+            return await this.smsgService.smsgSend(bid.bidder, listingItem.seller, marketPlaceMessage, false);
         } else {
             this.log.error(`Bid can not be cancelled because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be cancelled because it was already been ${bid.action}`);
@@ -444,13 +430,10 @@ export class BidActionService {
     public async reject(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
 
         if (bid.action === BidMessageType.MPA_BID) {
-            // fetch the profile
-            const profileModel = await this.profileService.getDefault();
-            const profile = profileModel.toJSON();
 
-            // fetch the market
-            const marketModel: Market = await this.marketService.findOne(listingItem.Market.id);
-            const market = marketModel.toJSON();
+            // fetch the seller profile
+            const sellerProfileModel = await this.profileService.findOneByAddress(listingItem.seller);
+            const sellerProfile = sellerProfileModel.toJSON();
 
             // create the bid reject message
             const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_REJECT, listingItem.hash);
@@ -462,11 +445,8 @@ export class BidActionService {
 
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
-            // bid reject should be sent to buyer
-            const buyer = this.getBuyer(listingItem);
-
             // broadcast the reject bid message
-            return await this.smsgService.smsgSend(profile.address, buyer, marketPlaceMessage, false);
+            return await this.smsgService.smsgSend(sellerProfile.address, bid.bidder, marketPlaceMessage, false);
         } else {
             this.log.error(`Bid can not be rejected because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be rejected because it was already been ${bid.action}`);
@@ -505,12 +485,17 @@ export class BidActionService {
         const actionMessage = actionMessageModel.toJSON();
 
         this.log.debug('search for existing bid');
+
         // TODO: should someone be able to bid more than once?
+        // TODO: for that to be possible, we need to be able to identify different bids from one address
+        // -> needs bid.hash
+
         const biddersExistingBidsForItem = await this.bidService.search({
             listingItemHash: bidMessage.item,
             bidders: [bidder]
         } as BidSearchParams);
 
+        this.log.debug('biddersExistingBidsForItem:', JSON.stringify(biddersExistingBidsForItem, null, 2));
 
         if (biddersExistingBidsForItem && biddersExistingBidsForItem.length > 0) {
             this.log.debug('biddersExistingBidsForItem:', biddersExistingBidsForItem.length);
@@ -537,12 +522,12 @@ export class BidActionService {
      * @param {MarketplaceMessageInterface} message
      * @returns {Promise<"resources".ActionMessage>}
      */
-    public async processAcceptBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
+    public async processAcceptBidReceivedEvent(event: MarketplaceEvent): Promise<resources.Bid> {
 
-        this.log.info('Received event:', event);
+        this.log.debug('Received event:', event);
 
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
-        const bidder = event.smsgMessage.from;
+        const bidder = event.smsgMessage.to; // from seller to buyer
 
         // find the ListingItem
         const message = event.marketplaceMessage;
@@ -551,6 +536,10 @@ export class BidActionService {
         }
         const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
         const listingItem = listingItemModel.toJSON();
+
+        delete listingItem.ItemInformation.ItemImages;
+        this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
+        this.log.debug('bidder:', bidder);
 
         // first save it
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
@@ -563,17 +552,20 @@ export class BidActionService {
                 return o.action === BidMessageType.MPA_BID && o.bidder === bidder;
             });
 
-            this.log.debug('existingBid:', existingBid);
+            // this.log.debug('existingBid:', JSON.stringify(existingBid, null, 2));
 
             if (existingBid) {
                 // create a bid
                 const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, existingBid);
-                const updatedBid = this.bidService.update(existingBid.id, bidUpdateRequest);
+                // this.log.debug('bidUpdateRequest:', JSON.stringify(bidUpdateRequest, null, 2));
 
-                this.log.debug('updatedBid:', updatedBid);
+                const updatedBidModel = await this.bidService.update(existingBid.id, bidUpdateRequest);
+                const updatedBid = updatedBidModel.toJSON();
+
+                // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
                 // TODO: do whatever else needs to be done
 
-                return actionMessage;
+                return updatedBid;
             } else {
                 throw new MessageException('There is no existing Bid to accept.');
             }
