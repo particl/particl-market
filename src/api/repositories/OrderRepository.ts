@@ -5,6 +5,7 @@ import { Order } from '../models/Order';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { OrderSearchParams } from '../requests/OrderSearchParams';
 
 export class OrderRepository {
 
@@ -24,6 +25,15 @@ export class OrderRepository {
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Order> {
         return this.OrderModel.fetchById(id, withRelated);
+    }
+
+    /**
+     *
+     * @param options, OrderSearchParams
+     * @returns {Promise<Bookshelf.Collection<Order>>}
+     */
+    public async search(options: OrderSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Order>> {
+        return this.OrderModel.search(options, withRelated);
     }
 
     public async create(data: any): Promise<Order> {

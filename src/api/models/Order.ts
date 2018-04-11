@@ -2,7 +2,8 @@ import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { OrderItem } from './OrderItem';
 import { Address } from './Address';
-
+import { SearchOrder } from '../enums/SearchOrder';
+import { OrderSearchParams } from '../requests/OrderSearchParams';
 
 export class Order extends Bookshelf.Model<Order> {
 
@@ -44,6 +45,40 @@ export class Order extends Bookshelf.Model<Order> {
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
+
+
+    public static async search(options: OrderSearchParams, withRelated: boolean = true): Promise<Collection<Order>> {
+        if (!options.ordering) {
+            options.ordering = SearchOrder.ASC;
+        }
+
+        const orderCollection = Order.forge<Collection<Order>>()
+            .query( qb => {
+                if (options.listingItemId) {
+                    qb.where('orders.listing_item_id', '=', options.listingItemId);
+                }
+
+                if (options.status && typeof options.status === 'string') {
+                    qb.where('orders.action', '=', options.status);
+                }
+
+                if (options.buyerAddress && typeof options.buyerAddress === 'string') {
+                    qb.where('orders.buyer_address', '=', options.buyerAddress);
+                }
+
+                if (options.sellerAddress && typeof options.sellerAddress === 'string') {
+                    qb.where('orders.seller_address', '=', options.sellerAddress);
+                }
+            }).orderBy('orders.created_at', options.ordering);
+
+        if (withRelated) {
+            return await orderCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await orderCollection.fetchAll();
+        }
+    }
 
     public OrderItems(): Collection<OrderItem> {
         return this.hasMany(OrderItem, 'order_id', 'id');

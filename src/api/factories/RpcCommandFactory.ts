@@ -90,7 +90,6 @@ import { MarketListCommand } from '../commands/market/MarketListCommand';
 import { MessagingInformationUpdateCommand } from '../commands/messaginginformation/MessagingInformationUpdateCommand';
 import { MessagingInformationRootCommand } from '../commands/messaginginformation/MessagingInformationRootCommand';
 
-
 import { OrderRootCommand } from '../commands/order/OrderRootCommand';
 import { OrderSearchCommand } from '../commands/order/OrderSearchCommand';
 
@@ -200,6 +199,9 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationUpdateCommand) private messagingInformationUpdateCommand: MessagingInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.messaginginformation.MessagingInformationRootCommand) private messagingInformationRootCommand: MessagingInformationRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.order.OrderRootCommand) private orderRootCommand: OrderRootCommand,
+        @inject(Types.Command) @named(Targets.Command.order.OrderSearchCommand) private orderSearchCommand: OrderSearchCommand,
 
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationRootCommand) private paymentInformationRootCommand: PaymentInformationRootCommand,
@@ -321,6 +323,9 @@ export class RpcCommandFactory {
 
         this.commands.push(messagingInformationUpdateCommand);
         this.commands.push(messagingInformationRootCommand);
+
+        this.commands.push(orderRootCommand);
+        this.commands.push(orderSearchCommand);
 
         this.commands.push(paymentInformationUpdateCommand);
         this.commands.push(paymentInformationRootCommand);
