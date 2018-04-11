@@ -188,6 +188,22 @@ export class CoreRpcService {
     }
 
     /**
+     * Sign inputs for raw transaction (serialized, hex-encoded)
+     *
+     * @param {string} hexstring
+     * @param {any[]} outputs
+     * @returns {Promise<any>}
+     */
+    public async signRawTransaction(hexstring: string, outputs?: any[]): Promise<any> {
+        const params: any[] = [];
+        params.push(hexstring);
+        if (outputs) {
+            params.push(outputs);
+        }
+        return await this.call('signrawtransaction', params);
+    }
+
+    /**
      * ﻿Returns array of unspent transaction outputs
      * with between minconf and maxconf (inclusive) confirmations.
      * Optionally filter to only include txouts paid to specified addresses.
@@ -230,6 +246,17 @@ export class CoreRpcService {
     public async dumpPrivKey(address: string): Promise<string> {
         const params: any[] = [address];
         return await this.call('dumpprivkey', params);
+    }
+
+    /**
+     * ﻿Return information about the given particl address.
+     *
+     * @param {string} address
+     * @returns {Promise<string>}
+     */
+    public async validateAddress(address: string): Promise<any> {
+        const params: any[] = [address];
+        return await this.call('validateaddress', params);
     }
 
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {

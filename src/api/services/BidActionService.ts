@@ -157,10 +157,16 @@ export class BidActionService {
         // const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']);
         this.log.debug('changeAddr: ', changeAddr);
 
-        const addressInfo = await this.coreRpcService.getAddressInfo(addr);
-        this.log.debug('addressInfo: ', JSON.stringify(addressInfo, null, 2));
+        // TODO: this is not on 0.16.0.3 yet ...
+        // const addressInfo = await this.coreRpcService.getAddressInfo(addr);
+        // this.log.debug('addressInfo: ', JSON.stringify(addressInfo, null, 2));
+        // const pubkey = addressInfo.pubkey;
 
-        const pubkey = addressInfo.pubkey;
+        // 0.16.0.3
+        const validateAddress = await this.coreRpcService.validateAddress(addr);
+        this.log.debug('validateAddress: ', JSON.stringify(validateAddress, null, 2));
+        const pubkey = validateAddress.pubkey;
+
         // const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
 
         if (!pubkey) {
@@ -295,8 +301,16 @@ export class BidActionService {
 
         // TODO: Proper change address?!?!
         const changeAddr = await this.coreRpcService.getNewAddress(['_escrow_change'], false);
-        const addressInfo = await this.coreRpcService.getAddressInfo(addr);
-        const pubkey = addressInfo.pubkey;
+
+        // TODO: this is not on 0.16.0.3 yet ...
+        // const addressInfo = await this.coreRpcService.getAddressInfo(addr);
+        // this.log.debug('addressInfo: ', JSON.stringify(addressInfo, null, 2));
+        // const pubkey = addressInfo.pubkey;
+
+        // 0.16.0.3
+        const validateAddress = await this.coreRpcService.validateAddress(addr);
+        this.log.debug('validateAddress: ', JSON.stringify(validateAddress, null, 2));
+        const pubkey = validateAddress.pubkey;
 
         let buyerPubkey = this.getValueFromBidDatas('pubkeys', bid.BidDatas);
         buyerPubkey = buyerPubkey[0] === '[' ? JSON.parse(buyerPubkey)[0] : buyerPubkey;
@@ -371,15 +385,17 @@ export class BidActionService {
         // TODO: At this stage we need to store the unsigned transaction, as we will need user interaction to sign
         // the transaction
 
-        let signed;
+        // TODO: this is not on 0.16.0.3 yet ...
+        // let signed;
+        // if (Environment.isDevelopment() || Environment.isTest()) {
+        //    const privKey = await this.coreRpcService.dumpPrivKey(addr);
+        //    signed = await this.coreRpcService.signRawTransactionWithKey(rawtx, [privKey]);
+        // } else {
+        //    signed = await this.coreRpcService.signRawTransactionWithWallet(rawtx);
+        // }
 
-        if (Environment.isDevelopment() || Environment.isTest()) {
-            const privKey = await this.coreRpcService.dumpPrivKey(addr);
-            signed = await this.coreRpcService.signRawTransactionWithKey(rawtx, [privKey]);
-        } else {
-            signed = await this.coreRpcService.signRawTransactionWithWallet(rawtx);
-        }
-
+        // 0.16.0.3
+        const signed = await this.coreRpcService.signRawTransaction(rawtx);
         // const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
 
         this.log.debug('signed: ', JSON.stringify(signed, null, 2));
@@ -509,6 +525,7 @@ export class BidActionService {
         // TODO: should someone be able to bid more than once?
         // TODO: for that to be possible, we need to be able to identify different bids from one address
         // -> needs bid.hash
+        // TODO: when testing locally, bid gets created first for the bidder after which it can be found here when receiving the bid
 
         const biddersExistingBidsForItem = await this.bidService.search({
             listingItemHash: bidMessage.item,
