@@ -25,7 +25,9 @@ import { Output } from 'resources';
 import { BidMessage } from '../messages/BidMessage';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { AddressType } from '../enums/AddressType';
-import {Environment} from '../../core/helpers/Environment';
+import { Environment } from '../../core/helpers/Environment';
+import { OrderFactory } from '../factories/OrderFactory';
+import { OrderService } from './OrderService';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
@@ -40,8 +42,10 @@ export class BidActionService {
                 @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
                 @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
                 @inject(Types.Service) @named(Targets.Service.BidService) public bidService: BidService,
+                @inject(Types.Service) @named(Targets.Service.OrderService) public orderService: OrderService,
                 @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
                 @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
+                @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
                 @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
                 @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
@@ -204,13 +208,22 @@ export class BidActionService {
             // create the bid accept message
             const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidDatas);
 
-
             // update the bid locally
             const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
             const updatedBidModel = await this.bidService.update(bid.id, bidUpdateRequest);
             const updatedBid = updatedBidModel.toJSON();
             // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
 
+            // create the order
+            const orderCreateRequest = await this.orderFactory.getModel(updatedBid);
+            const orderModel = await this.orderService.create(orderCreateRequest);
+            const order = orderModel.toJSON();
+
+            this.log.debug('send(), created Order: ', order);
+
+            // add Order.hash to bidData
+            bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
+            bidMessage.objects.push({id: 'orderHash', value: order.hash});
 
             const marketPlaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,

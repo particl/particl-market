@@ -7,8 +7,8 @@ import { BidMessageType } from '../enums/BidMessageType';
 import { MessageException } from '../exceptions/MessageException';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import * as resources from 'resources';
-import {AddressCreateRequest} from '../requests/AddressCreateRequest';
-import {BidDataCreateRequest} from '../requests/BidDataCreateRequest';
+import { AddressCreateRequest } from '../requests/AddressCreateRequest';
+import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 
 export class BidFactory {
 

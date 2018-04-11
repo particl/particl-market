@@ -13,6 +13,6 @@ export class BidMessage extends MessageBody implements ActionMessageInterface {
     public item: string;
 
     // todo: objects
-    public objects?: any;
+    public objects?: any[];
 
 }
