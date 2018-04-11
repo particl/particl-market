@@ -7,8 +7,8 @@ import { BidMessageType } from '../enums/BidMessageType';
 import { MessageException } from '../exceptions/MessageException';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import * as resources from 'resources';
-import {AddressCreateRequest} from '../requests/AddressCreateRequest';
-import {BidDataCreateRequest} from '../requests/BidDataCreateRequest';
+import { AddressCreateRequest } from '../requests/AddressCreateRequest';
+import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 
 export class BidFactory {
 
@@ -30,7 +30,7 @@ export class BidFactory {
     public async getMessage(bidMessageType: BidMessageType, itemHash: string, idValuePairObjects?: any[]): Promise<BidMessage> {
 
         const message = {
-            action: bidMessageType.toString(),
+            action: bidMessageType,
             item: itemHash,
             objects: idValuePairObjects
         } as BidMessage;
@@ -61,28 +61,51 @@ export class BidFactory {
         // check that the bidAction is valid, throw if not
         if (this.checkBidMessageActionValidity(bidMessage, latestBid)) {
 
-            // it was, so create the bidData field
-            const bidDatas: BidDataCreateRequest[] = _.map(bidMessage.objects, (value) => {
-                return _.assign({}, {
-                    dataId: value['id'],
-                    dataValue: value['value']
-                } as BidDataCreateRequest);
+            const bidDataValues = {};
+
+            // copy the existing key-value pairs from latestBid.BidDatas
+            if (latestBid) {
+                for (const bidData of latestBid.BidDatas) {
+                    bidDataValues[bidData.dataId] = bidData.dataValue;
+                }
+            }
+
+            // copy the new key-value pairs from bidMessage overriding the old if some exist
+            if (bidMessage.objects) {
+                for (const bidData of bidMessage.objects) {
+                    bidDataValues[bidData.id] = bidData.value;
+                }
+            }
+
+            // create bidDataCreateRequests
+            const bidDatas = Object.keys(bidDataValues).map( (key) => {
+                return {
+                    dataId: key,
+                    dataValue: bidDataValues[key]
+                } as BidDataCreateRequest;
             });
 
-            const firstName = this.getValueFromBidDatas('ship.firstName', bidDatas);
-            const lastName = this.getValueFromBidDatas('ship.lastName', bidDatas);
-            const addressLine1 = this.getValueFromBidDatas('ship.addressLine1', bidDatas);
-            const addressLine2 = this.getValueFromBidDatas('ship.addressLine2', bidDatas);
-            const city = this.getValueFromBidDatas('ship.city', bidDatas);
-            const state = this.getValueFromBidDatas('ship.state', bidDatas);
-            const zipCode = this.getValueFromBidDatas('ship.zipCode', bidDatas);
-            const country = this.getValueFromBidDatas('ship.country', bidDatas);
+            // this.log.debug('bidDatas:', JSON.stringify(bidDatas, null, 2));
+
+            let address;
+            if (bidMessage.action === BidMessageType.MPA_BID) {
+                const firstName = this.getValueFromBidDatas('ship.firstName', bidDatas);
+                const lastName = this.getValueFromBidDatas('ship.lastName', bidDatas);
+                const addressLine1 = this.getValueFromBidDatas('ship.addressLine1', bidDatas);
+                const addressLine2 = this.getValueFromBidDatas('ship.addressLine2', bidDatas);
+                const city = this.getValueFromBidDatas('ship.city', bidDatas);
+                const state = this.getValueFromBidDatas('ship.state', bidDatas);
+                const zipCode = this.getValueFromBidDatas('ship.zipCode', bidDatas);
+                const country = this.getValueFromBidDatas('ship.country', bidDatas);
+
+                address = {
+                    firstName, lastName, addressLine1, addressLine2, city, state, zipCode, country
+                } as AddressCreateRequest;
+            }
 
             // create and return the request that can be used to create the bid
             const bidCreateRequest = {
-                address: {
-                    firstName, lastName, addressLine1, addressLine2, city, state, zipCode, country
-                } as AddressCreateRequest,
+                address,
                 listing_item_id: listingItemId,
                 action: bidMessage.action,
                 bidder,

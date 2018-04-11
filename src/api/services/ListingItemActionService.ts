@@ -140,6 +140,7 @@ export class ListingItemActionService {
      * @returns {Promise<"resources".ListingItem>}
      */
     public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<resources.ListingItem> {
+        // todo: this returns ListingItem and processed BidMessages return ActionMessage's
 
         this.log.info('Received event:', event);
 

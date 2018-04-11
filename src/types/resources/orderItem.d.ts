@@ -4,6 +4,8 @@ declare module 'resources' {
         id: number;
         status: string;
         itemHash: string;
+        Bid: Bid;
+        OrderItemObjects: OrderItemObject[];
         createdAt: Date;
         updatedAt: Date;
     }

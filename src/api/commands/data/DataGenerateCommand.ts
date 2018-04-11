@@ -9,7 +9,6 @@ import { TestDataGenerateRequest } from '../../requests/TestDataGenerateRequest'
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import {CreatableModel} from '../../enums/CreatableModel';
 
 export class DataGenerateCommand extends BaseCommand implements RpcCommandInterface<any> {
 

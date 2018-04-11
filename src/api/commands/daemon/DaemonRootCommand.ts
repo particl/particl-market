@@ -9,7 +9,7 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { Commands } from '../CommandEnumType';
 import { CoreRpcService } from '../../services/CoreRpcService';
 
-export class DaemonRootCommand extends BaseCommand implements RpcCommandInterface<void> {
+export class DaemonRootCommand extends BaseCommand implements RpcCommandInterface<any> {
 
     public log: LoggerType;
 
@@ -30,9 +30,13 @@ export class DaemonRootCommand extends BaseCommand implements RpcCommandInterfac
      * @returns {Promise<void>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<void> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
+        this.log.debug('data.params:', data.params);
         const command = data.params.shift();
-        return await this.coreRpcService.call(command, data.params);
+
+        const response = await this.coreRpcService.call(command, data.params);
+        this.log.debug('response: ', JSON.stringify(response));
+        return response;
     }
 
     public usage(): string {

@@ -46,10 +46,11 @@ export class ObjectHash {
 
         const hash = crypto.SHA256(JSON.stringify(hashableObject).split('').sort().toString()).toString();
 
-        if (process.env.NODE_ENV === 'test') {
-            log.debug('hashableObject: ', JSON.stringify(hashableObject, null, 2));
-            log.debug('hashableObject, hash: ', hash);
-        }
+        // if (process.env.NODE_ENV === 'test') {
+        //    log.debug('hashableObject, ' + type + ': ', JSON.stringify(hashableObject, null, 2));
+        //    log.debug('hashableObject, hash: ', hash);
+        // }
+
         return hash;
     }
 }

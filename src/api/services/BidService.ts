@@ -160,20 +160,38 @@ export class BidService {
     }
 
     @validate()
-    public async update(id: number, @request(BidUpdateRequest) body: BidUpdateRequest): Promise<Bid> {
+    public async update(id: number, @request(BidUpdateRequest) data: BidUpdateRequest): Promise<Bid> {
+
+        const body = JSON.parse(JSON.stringify(data));
 
         // find the existing one without related
         const bid = await this.findOne(id, false);
 
-        // set new values
+        // extract and remove related models from request
+        const bidDatas: BidDataCreateRequest[] = body.bidDatas;
+        delete body.bidDatas;
+
+        // set new values, we only need to change the action
         bid.Action = body.action;
-        bid.Bidder = body.bidder;
+        // bid.Bidder = body.bidder;
 
         // update bid record
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());
 
-        // return newBid;
-        return updatedBid;
+        // remove old BidDatas
+        const oldBidDatas = updatedBid.related('BidDatas').toJSON();
+        for (const bidData of oldBidDatas) {
+            await this.bidDataService.destroy(bidData.id);
+        }
+
+        // create new BidDatas
+        for (const bidData of bidDatas) {
+            bidData.bid_id = id;
+            bidData.dataValue = typeof (bidData.dataValue) === 'string' ? bidData.dataValue : JSON.stringify(bidData.dataValue);
+            await this.bidDataService.create(bidData);
+        }
+
+        return await this.findOne(id, true);
     }
 
     public async destroy(id: number): Promise<void> {

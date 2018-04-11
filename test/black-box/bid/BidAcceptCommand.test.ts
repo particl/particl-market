@@ -25,6 +25,7 @@ describe('BidAcceptCommand', () => {
 
     const bidCommand =  Commands.BID_ROOT.commandName;
     const acceptCommand = Commands.BID_ACCEPT.commandName;
+    const searchCommand =  Commands.BID_SEARCH.commandName;
 
     const dataCommand = Commands.DATA_ROOT.commandName;
     const generateCommand = Commands.DATA_GENERATE.commandName;
@@ -90,7 +91,7 @@ describe('BidAcceptCommand', () => {
         log.debug('listingItemTemplate.ListingItems[0].hash:', listingItemTemplate.ListingItems[0].hash);
         expect(listingItemTemplate.hash).toBe(listingItemTemplate.ListingItems[0].hash);
 
-        // set the listingItem
+        // get the listingItem
         const listingItemRes = await rpc(itemCommand, [getCommand, listingItemTemplate.ListingItems[0].hash]);
         listingItemRes.expectJson();
         listingItemRes.expectStatusCode(200);
@@ -143,10 +144,27 @@ describe('BidAcceptCommand', () => {
 
     test('Should Accept a Bid for a ListingItem', async () => {
 
-        const res: any = await rpc(bidCommand, [acceptCommand, listingItem.hash, bid.id]);
+        let res: any = await rpc(bidCommand, [acceptCommand, listingItem.hash, bid.id]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
+        let result: any = res.getBody()['result'];
+
+        const bidSearchCommandParams = [
+            searchCommand,
+            listingItem.hash,
+            BidMessageType.MPA_BID,
+            defaultProfile.address
+        ];
+
+        res = await rpc(bidCommand, bidSearchCommandParams);
+        res.expectJson();
+        res.expectStatusCode(200);
+        result = res.getBody()['result'];
+
+        log.debug('bid search result:', JSON.stringify(result, null, 2));
+        expect(result[0].ListingItem.hash).toBe(listingItem.hash);
+        expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
+        expect(result[0].bidder).toBe(defaultProfile.address);
     });
 
 });
