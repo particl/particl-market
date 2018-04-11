@@ -41,8 +41,8 @@ export class GenerateBidParams implements GenerateBidParamsInterface {
             this.bidder = generateParams[4] ? generateParams[4] : null;
 
             this.listingItemSeller = generateParams[5] ? generateParams[5] : null;
-
         }
+
     }
 
     public toParamsArray(): any[] {

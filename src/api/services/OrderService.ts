@@ -15,6 +15,8 @@ import { MessageException } from '../exceptions/MessageException';
 import { OrderItemService } from './OrderItemService';
 import { AddressService } from './AddressService';
 import {AddressType} from '../enums/AddressType';
+import {ProfileService} from './ProfileService';
+import {ListingItemService} from './ListingItemService';
 
 
 export class OrderService {
@@ -24,6 +26,8 @@ export class OrderService {
     constructor(
         @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
         @inject(Types.Service) @named(Targets.Service.OrderItemService) public orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Repository) @named(Targets.Repository.OrderRepository) public orderRepo: OrderRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -70,6 +74,25 @@ export class OrderService {
 
         // make sure the Orders shipping address has the correct type
         addressCreateRequest.type = AddressType.SHIPPING_ORDER;
+
+        // in case there's no profile id, figure it out
+        if (!addressCreateRequest.profile_id) {
+            const foundBidderProfile = await this.profileService.findOneByAddress(body.buyer);
+            if (foundBidderProfile) {
+                // we are the bidder
+                addressCreateRequest.profile_id = foundBidderProfile.id;
+            } else {
+                try {
+                    // we are the seller
+                    const foundSellerProfile = await this.profileService.findOneByAddress(body.seller);
+                    addressCreateRequest.profile_id = foundSellerProfile.id;
+                } catch (e) {
+                    this.log.error('Funny test data bid? It seems we are neither bidder nor the seller.');
+                }
+            }
+        }
+
+        this.log.debug('addressCreateRequest for ORDER: ', JSON.stringify(addressCreateRequest, null, 2));
 
         // save shipping address
         const addressModel = await this.addressService.create(addressCreateRequest);

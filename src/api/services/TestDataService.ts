@@ -79,6 +79,7 @@ import * as resources from 'resources';
 import { OrderStatus } from '../enums/OrderStatus';
 import { OrderItemObjectCreateRequest } from '../requests/OrderItemObjectCreateRequest';
 import { OrderService } from './OrderService';
+import {OrderFactory} from '../factories/OrderFactory';
 
 export class TestDataService {
 
@@ -102,6 +103,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) private actionMessageService: ActionMessageService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
+        @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -430,7 +432,7 @@ export class TestDataService {
             const listingItems = await this.generateListingItems(1, true, listingItemGenerateParams);
             listingItem = listingItems[0];
 
-            this.log.debug('items generated:', listingItems.length);
+            this.log.debug('listingItems generated:', listingItems.length);
             this.log.debug('listingItem.id:', listingItem.id);
             this.log.debug('listingItem.hash:', listingItem.hash);
 
@@ -492,44 +494,117 @@ export class TestDataService {
         amount: number, withRelated: boolean = true, generateParams: GenerateOrderParams):
     Promise<resources.Order[]> {
 
+        this.log.debug('generateOrders, generateParams: ', generateParams);
+
+        // const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams();
+        // const listingItemGenerateParams = new GenerateListingItemParams();
+        const bidGenerateParams = new GenerateBidParams();
+
+        // let listingItemTemplate: resources.ListingItemTemplate;
+        // let listingItem: resources.ListingItem;
+
+/*
+        // generate template
+        if (generateParams.generateListingItemTemplate) {
+            const listingItemTemplates = await this.generateListingItemTemplates(1, true, listingItemTemplateGenerateParams);
+            listingItemTemplate = listingItemTemplates[0];
+
+            this.log.debug('templates generated:', listingItemTemplates.length);
+            this.log.debug('listingItemTemplates[0].id:', listingItemTemplates[0].id);
+            this.log.debug('listingItemTemplates[0].hash:', listingItemTemplates[0].hash);
+
+            // set the hash for listing item generation
+            listingItemGenerateParams.listingItemTemplateHash = listingItemTemplates[0].hash;
+        } else {
+            listingItemTemplate = {} as resources.ListingItemTemplate;
+        }
+
+        // generate listingitem
+        if (generateParams.generateListingItem) {
+
+            // set the seller for listing item generation
+            listingItemGenerateParams.seller = generateParams.listingItemSeller ? generateParams.listingItemSeller : null;
+
+            this.log.debug('listingItemGenerateParams:', listingItemGenerateParams);
+
+            const listingItems = await this.generateListingItems(1, true, listingItemGenerateParams);
+            listingItem = listingItems[0];
+
+            this.log.debug('listingItems generated:', listingItems.length);
+            this.log.debug('listingItem.id:', listingItem.id);
+            this.log.debug('listingItem.hash:', listingItem.hash);
+
+            // set the hash for bid generation
+            bidGenerateParams.listingItemHash = listingItem.hash;
+        } else {
+            listingItem = {} as resources.ListingItem;
+        }
+*/
+        let bid: resources.Bid;
+
+        // generate bid
+        if (generateParams.generateBid) {
+
+            bidGenerateParams.generateListingItemTemplate = generateParams.generateListingItemTemplate;
+            bidGenerateParams.generateListingItem = generateParams.generateListingItem;
+            bidGenerateParams.action = BidMessageType.MPA_ACCEPT;
+            bidGenerateParams.listingItemSeller = generateParams.listingItemSeller;
+
+            const bids = await this.generateBids(1, true, bidGenerateParams);
+            bid = bids[0];
+
+            this.log.debug('bids generated:', bids.length);
+            this.log.debug('bid.id:', bid.id);
+
+            // set the bid_id for order generation
+            generateParams.bidId = bid.id;
+        } else {
+            bid = {} as resources.Bid;
+        }
+
+        this.log.debug('bid:', JSON.stringify(bid, null, 2));
+
+        // wtf why are the objects allready?
+        const listingItemTemplate = await this.listingItemTemplateService.findOne(bid.ListingItem.ListingItemTemplate.id);
+        const listingItem = await this.listingItemService.findOne(bid.ListingItem.id);
+
+        this.log.debug('bid.ListingItem.ListingItemTemplate.id:', bid.ListingItem.ListingItemTemplate.id);
+        this.log.debug('listingItemTemplate.id:', listingItemTemplate.id);
+        this.log.debug('listingItem.id:', listingItem.id);
+        this.log.debug('listingItem.seller:', listingItem.seller);
+        this.log.debug('bid.bidder:', bid.bidder);
+        // this.log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
+        // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
+
+
         const items: resources.Order[] = [];
         for (let i = amount; i > 0; i--) {
-            const order = await this.generateOrderData(generateParams);
-            const savedOrderModel = await this.orderService.create(order);
+            const orderCreateRequest = await this.generateOrderData(generateParams);
+
+
+            this.log.debug('orderCreateRequest:', JSON.stringify(orderCreateRequest, null, 2));
+
+            const savedOrderModel = await this.orderService.create(orderCreateRequest);
             const result = savedOrderModel.toJSON();
             items.push(result);
         }
+
         return this.generateResponse(items, withRelated);
     }
 
     private async generateOrderData(generateParams: GenerateOrderParams): Promise<OrderCreateRequest> {
-        // todo: add GenerateListingItemParams and GenerateBidParams inside generateOrderParams
 
-        const bidGenerateParams = new GenerateBidParams();
+        // get the bid
+        const bidModel = await this.bidService.findOne(generateParams.bidId);
+        const bid: resources.Bid = bidModel.toJSON();
 
-        //  generate bid which will also create a ListingItem
-        const bids = await this.generateBids(1, true, bidGenerateParams);
-        const bidId = bids[0].id;
-        const listingItemId = bids[0].ListingItem.id;
+        // then generate ordercreaterequest with some orderitems and orderitemobjects
+        const orderCreateRequest = await this.orderFactory.getModel(bid);
 
-        this.log.debug(`generateOrderData: generated new listing with id ${listingItemId}, continuing order creation`);
-        this.log.debug(`generateOrderData: generated new bid with id ${bidId}, continuing order creation`);
-
-        // TODO: then generate order with some orderitems and orderitemobjects
-        const orderItemCreateRequest = await this.generateOrderItemData(bids[0]);
-        const hash = Faker.random.uuid();
-        const buyer = Faker.finance.bitcoinAddress();
-        const seller = Faker.finance.bitcoinAddress();
-
-        return {
-            address_id: listingItemId,
-            hash,
-            orderItems: [orderItemCreateRequest],
-            buyer,
-            seller
-        } as OrderCreateRequest;
+        return orderCreateRequest;
     }
 
+    /*
     private async generateOrderItemData(bid: resources.Bid): Promise<OrderItemCreateRequest> {
         const orderItemObjects: OrderItemObjectCreateRequest[] = [];
         return {
@@ -540,6 +615,7 @@ export class TestDataService {
             orderItemObjects
         } as OrderItemCreateRequest;
     }
+    */
 
     // -------------------
     // profiles
@@ -641,7 +717,7 @@ export class TestDataService {
             market_id: defaultMarket.id
         } as ListingItemCreateRequest;
 
-        // fetch listingItemTemplate if hash was given
+        // fetch listingItemTemplate if hash was given and set the listing_item_template_id
         let listingItemTemplate: resources.ListingItemTemplate | null = null;
         if (generateParams.listingItemTemplateHash) {
             const listingItemTemplateModel = await this.listingItemTemplateService.findOneByHash(generateParams.listingItemTemplateHash);

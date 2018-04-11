@@ -53,6 +53,7 @@ export class OrderFactory {
                 seller
             } as OrderCreateRequest;
 
+            // can we mode this hashing to service level
             orderCreateRequest.hash = ObjectHash.getHash(orderCreateRequest, HashableObjectType.ORDER_CREATEREQUEST);
             return orderCreateRequest;
 

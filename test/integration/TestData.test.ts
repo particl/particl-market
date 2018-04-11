@@ -28,6 +28,7 @@ import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createreque
 import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
 import * as resources from 'resources';
 import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
+import {GenerateOrderParams} from '../../src/api/requests/params/GenerateOrderParams';
 
 
 describe('TestDataService', () => {
@@ -415,42 +416,100 @@ describe('TestDataService', () => {
 
     });
 
-    test('Should generate Bid using GenerateBidParams, with a relation to existing ListingItem', async () => {
-        await testDataService.clean(true);
 
-        // generate listingitemtemplate
-        const generateListingItemParams = new GenerateListingItemParams().toParamsArray();
-        const listingItems = await testDataService.generate({
-            model: CreatableModel.LISTINGITEM,
-            amount: 1,
-            withRelated: true,
-            generateParams: generateListingItemParams
-        } as TestDataGenerateRequest);
+
+    const expectGenerateOrder = (orderGenerateParams: GenerateOrderParams, result: resources.Order,
+                               shouldHaveListingItemTemplate: boolean = true,
+                               shouldHaveListingItem: boolean = true,
+                               shouldHaveBid: boolean = true) => {
+
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        log.debug('orderGenerateParams: ', JSON.stringify(orderGenerateParams, null, 2));
+
+        /*
+        expect(result.action).toBe(bidGenerateParams.action);
+        expect(result.bidder).toBe(bidGenerateParams.bidder);
+
+        if (shouldHaveListingItem) {
+            expect(result.ListingItem).toBeDefined();
+            expect(result.ListingItem.hash).not.toBeNull();
+
+            if (shouldHaveListingItemTemplate) {
+                // TODO: if both are generated, same data should be used
+                // generated template contains different data than the item
+                // expect(result.ListingItem.hash).toBe(result.ListingItem.ListingItemTemplate.hash);
+                expect(result.ListingItem.ListingItemTemplate).toBeDefined();
+                expect(result.ListingItem.ListingItemTemplate.hash).not.toBeNull();
+            } else {
+                expect(result.ListingItem.ListingItemTemplate).not.toBeDefined();
+            }
+
+            if (bidGenerateParams.listingItemHash) {
+                expect(result.ListingItem.hash).toBe(bidGenerateParams.listingItemHash);
+            }
+
+        } else {
+            expect(result.ListingItem.ListingItemTemplate).not.toBeDefined();
+        }
+
+        if (shouldHaveBidDatas) {
+            expect(result.BidDatas).not.toHaveLength(0);
+        } else {
+            expect(result.BidDatas).toHaveLength(0);
+        }
+
+        if (shouldHaveShippingAddress) {
+            expect(result.ShippingAddress.title).not.toBeNull();
+            expect(result.ShippingAddress.firstName).not.toBeNull();
+            expect(result.ShippingAddress.lastName).not.toBeNull();
+            expect(result.ShippingAddress.addressLine1).not.toBeNull();
+            expect(result.ShippingAddress.addressLine2).not.toBeNull();
+            expect(result.ShippingAddress.city).not.toBeNull();
+            expect(result.ShippingAddress.zipCode).not.toBeNull();
+            expect(result.ShippingAddress.country).not.toBeNull();
+        } else {
+            expect(result.ShippingAddress).not.toBeDefined();
+        }
+        */
+    };
+
+    test('Should generate Order using GenerateOrderParams, with a relation to existing ListingItem', async () => {
+        await testDataService.clean(true);
 
         // get default profile
         const defaultProfileModel = await profileService.getDefault();
         const defaultProfile: resources.Profile = defaultProfileModel.toJSON();
 
-        const bidGenerateParams = new GenerateBidParams([
-            false,                          // generateListingItemTemplate
-            false,                          // generateListingItem
-            listingItems[0].hash,           // listingItemHash
-            BidMessageType.MPA_BID,         // action
-            defaultProfile.address          // bidder
-            // defaultProfile.address       // listingitem seller
+        // [0]: generateListingItemTemplate, generate a ListingItemTemplate
+        // [1]: generateListingItem, generate a ListingItem
+        // [2]: generateBid, generate a Bid
+        // [3]: listingItemhash, attach bid to existing ListingItem
+        // [4]: bidId, attach Order to existing Bid
+        // [5]: bidder, bidders address
+        // [6]: listingItemSeller, ListingItem sellers address
+
+        const orderGenerateParams = new GenerateOrderParams([
+            true,                       // generateListingItemTemplate
+            true,                       // generateListingItem
+            true,                       // generateBid
+            null,                       // listingItemhash
+            null,                       // bidId
+            null,                       // bidder
+            defaultProfile.address      // listingItemSeller
         ]);
 
-        const generatedBids = await testDataService.generate({
-            model: CreatableModel.BID,
+        const generatedOrders = await testDataService.generate({
+            model: CreatableModel.ORDER,
             amount: 1,
             withRelated: true,
-            generateParams: bidGenerateParams.toParamsArray()
+            generateParams: orderGenerateParams.toParamsArray()
         } as TestDataGenerateRequest);
 
-        const bid = generatedBids[0];
-        expectGenerateBid(bidGenerateParams, bid, true, true, false, true);
+        const order = generatedOrders[0];
 
-        expect(bid.ListingItem.hash).toBe(listingItems[0].hash);
+        expectGenerateOrder(orderGenerateParams, order, true, true);
+
+        expect(order.hash).toBeDefined();
         // expect(bid.ListingItem.seller).toBe(defaultProfile.address);
 
     });
