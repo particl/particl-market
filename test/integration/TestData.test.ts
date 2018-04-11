@@ -163,7 +163,7 @@ describe('TestDataService', () => {
             expect(result.ShippingAddress).not.toBeDefined();
         }
     };
-/*
+
     test('Should create default data if seed=true', async () => {
         // clean removes all
         await testDataService.clean(true);
@@ -347,7 +347,7 @@ describe('TestDataService', () => {
             expect(e).toEqual(new MessageException('Not implemented'))
         );
     });
-*/
+
     test('Should generate Bid using GenerateBidParams, generating a ListingItemTemplate and a ListingItem', async () => {
         await testDataService.clean(true);
 
