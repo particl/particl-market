@@ -361,7 +361,7 @@ export class TestDataService {
             // TODO: actionmessage generation should be configurable
             // const fromAddress = await this.coreRpcService.getNewAddress();
             const marketModel = await this.marketService.getDefault();
-            const toAddress = marketModel.toJSON();
+            const market = marketModel.toJSON();
 
             // add ActionMessage
             listingItemCreateRequest.actionMessages = [{
@@ -376,7 +376,7 @@ export class TestDataService {
                     received: new Date().toISOString(),
                     sent: new Date().toISOString(),
                     from: listingItemCreateRequest.seller,
-                    to: toAddress
+                    to: market.address
                 }
             }];
 

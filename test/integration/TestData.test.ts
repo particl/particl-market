@@ -163,7 +163,7 @@ describe('TestDataService', () => {
             expect(result.ShippingAddress).not.toBeDefined();
         }
     };
-
+/*
     test('Should create default data if seed=true', async () => {
         // clean removes all
         await testDataService.clean(true);
@@ -347,7 +347,7 @@ describe('TestDataService', () => {
             expect(e).toEqual(new MessageException('Not implemented'))
         );
     });
-
+*/
     test('Should generate Bid using GenerateBidParams, generating a ListingItemTemplate and a ListingItem', async () => {
         await testDataService.clean(true);
 
@@ -361,7 +361,6 @@ describe('TestDataService', () => {
             null,                       // listingItemhash
             BidMessageType.MPA_BID,     // action
             defaultProfile.address      // bidder
-            // defaultProfile.address      // listingitem seller
         ]);
 
         const generatedBids = await testDataService.generate({
@@ -374,6 +373,46 @@ describe('TestDataService', () => {
         const bid = generatedBids[0];
 
         expectGenerateBid(bidGenerateParams, bid, true, true, false, true);
+    });
+
+    test('Should generate Bid using GenerateBidParams, with a relation to existing ListingItem', async () => {
+        await testDataService.clean(true);
+
+        // generate listingitemtemplate
+        const generateListingItemParams = new GenerateListingItemParams().toParamsArray();
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,
+            amount: 1,
+            withRelated: true,
+            generateParams: generateListingItemParams
+        } as TestDataGenerateRequest);
+
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        const defaultProfile: resources.Profile = defaultProfileModel.toJSON();
+
+        const bidGenerateParams = new GenerateBidParams([
+            false,                          // generateListingItemTemplate
+            false,                          // generateListingItem
+            listingItems[0].hash,           // listingItemHash
+            BidMessageType.MPA_BID,         // action
+            defaultProfile.address          // bidder
+            // defaultProfile.address       // listingitem seller
+        ]);
+
+        const generatedBids = await testDataService.generate({
+            model: CreatableModel.BID,
+            amount: 1,
+            withRelated: true,
+            generateParams: bidGenerateParams.toParamsArray()
+        } as TestDataGenerateRequest);
+
+        const bid = generatedBids[0];
+        expectGenerateBid(bidGenerateParams, bid, true, true, false, true);
+
+        expect(bid.ListingItem.hash).toBe(listingItems[0].hash);
+        // expect(bid.ListingItem.seller).toBe(defaultProfile.address);
+
     });
 
     test('Should generate Bid using GenerateBidParams, with a relation to existing ListingItem', async () => {
