@@ -52,20 +52,22 @@ export class Order extends Bookshelf.Model<Order> {
 
         const orderCollection = Order.forge<Collection<Order>>()
             .query( qb => {
+                qb.join('order_items', 'orders.id', 'order_items.order_id');
                 if (options.listingItemId) {
-                    qb.where('orders.listing_item_id', '=', options.listingItemId);
+                    qb.join('bids', 'order_items.bid_id', 'bids.id');
+                    qb.where('bids.listing_item_id', '=', options.listingItemId);
                 }
 
                 if (options.status && typeof options.status === 'string') {
-                    qb.where('orders.action', '=', options.status);
+                    qb.where('order_items.status', '=', options.status);
                 }
 
                 if (options.buyerAddress && typeof options.buyerAddress === 'string') {
-                    qb.where('orders.buyer_address', '=', options.buyerAddress);
+                    qb.where('orders.buyer', '=', options.buyerAddress);
                 }
 
                 if (options.sellerAddress && typeof options.sellerAddress === 'string') {
-                    qb.where('orders.seller_address', '=', options.sellerAddress);
+                    qb.where('orders.seller', '=', options.sellerAddress);
                 }
             }).orderBy('orders.created_at', options.ordering);
 
