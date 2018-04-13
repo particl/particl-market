@@ -16,7 +16,6 @@ export class Bid extends Bookshelf.Model<Bid> {
         'ListingItem.ListingItemTemplate',
         'OrderItem',
         'OrderItem.OrderItemObjects',
-        'OrderItem.ListingItem',
         'OrderItem.Order'
     ];
 
@@ -93,10 +92,6 @@ export class Bid extends Bookshelf.Model<Bid> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    public ListingItem(): ListingItem {
-       return this.belongsTo(ListingItem, 'listing_item_id', 'id');
-    }
-
     public BidDatas(): Collection<BidData> {
        return this.hasMany(BidData, 'bid_id', 'id');
     }
@@ -108,4 +103,9 @@ export class Bid extends Bookshelf.Model<Bid> {
     public OrderItem(): OrderItem {
         return this.hasOne(OrderItem);
     }
+
+    public ListingItem(): ListingItem {
+        return this.belongsTo(ListingItem, 'listing_item_id', 'id');
+    }
+
 }

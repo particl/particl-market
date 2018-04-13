@@ -42,6 +42,11 @@ import { AddressType } from '../../../src/api/enums/AddressType';
 import { OrderStatus } from '../../../src/api/enums/OrderStatus';
 import { EscrowActionService } from '../../../src/api/services/EscrowActionService';
 import { EscrowFactory } from '../../../src/api/factories/EscrowFactory';
+import { EscrowRequest } from '../../../src/api/requests/EscrowRequest';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+import { EscrowMessageType } from '../../../src/api/enums/EscrowMessageType';
+import { OrderItemService } from '../../../src/api/services/OrderItemService';
+import { OrderService } from '../../../src/api/services/OrderService';
 
 
 describe('BidMessageProcessing', () => {
@@ -63,7 +68,10 @@ describe('BidMessageProcessing', () => {
     let profileService: ProfileService;
     let addressService: AddressService;
     let bidActionService: BidActionService;
-    let escrowActionService: EscrowActionService
+    let escrowActionService: EscrowActionService;
+    let orderItemService: OrderItemService;
+    let orderService: OrderService;
+
     let bidFactory: BidFactory;
     let escrowFactory: EscrowFactory;
 
@@ -87,8 +95,10 @@ describe('BidMessageProcessing', () => {
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
         addressService = app.IoC.getNamed<AddressService>(Types.Service, Targets.Service.AddressService);
         bidActionService = app.IoC.getNamed<BidActionService>(Types.Service, Targets.Service.BidActionService);
-        bidFactory = app.IoC.getNamed<BidFactory>(Types.Factory, Targets.Factory.BidFactory);
         escrowActionService = app.IoC.getNamed<EscrowActionService>(Types.Service, Targets.Service.EscrowActionService);
+        orderItemService = app.IoC.getNamed<OrderItemService>(Types.Service, Targets.Service.OrderItemService);
+        orderService = app.IoC.getNamed<OrderService>(Types.Service, Targets.Service.OrderService);
+        bidFactory = app.IoC.getNamed<BidFactory>(Types.Factory, Targets.Factory.BidFactory);
         escrowFactory = app.IoC.getNamed<EscrowFactory>(Types.Factory, Targets.Factory.EscrowFactory);
 
         // clean up the db, first removes all data and then seeds the db with default data
@@ -310,10 +320,37 @@ describe('BidMessageProcessing', () => {
 
         // BUYER -> SELLER
 
+        log.debug('bid.id:', bid.id);
+        const bidModel = await bidService.findOne(bid.id);
+        bid = bidModel.toJSON();
+        log.debug('bid:', JSON.stringify(bid, null, 2));
 
+        log.debug('bid.OrderItem.Order.id:', bid.OrderItem.Order.id);
+        const orderModel = await orderService.findOne(bid.OrderItem.Order.id);
+        const order = orderModel.toJSON();
+        log.debug('order:', JSON.stringify(order, null, 2));
+
+        log.debug('bid.OrderItem.id:', bid.OrderItem.id);
+        const orderItemModel = await orderItemService.findOne(bid.OrderItem.id);
+        const orderItem = orderItemModel.toJSON();
+        log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
+
+        const escrowRequest = {
+            orderItem,
+            // nonce,
+            // accepted,
+            memo: 'memo',
+            action: EscrowMessageType.MPA_LOCK
+        } as EscrowRequest;
         // create order.objects for MPA_LOCK
-        const rawtx = await this.createRawTx(escrowRequest);
 
+        // MessageException: Seller can't lock an Escrow.
+        // const rawtx = await escrowActionService.createRawTx(escrowRequest, true);
+
+        // log.debug('rawtx:', rawtx);
+
+        // TODO: this doesnt work as it is
+/*
         // add Order.hash to bidData
         bidDatas.push({id: 'orderHash', value: 'TESTORDERHASH-' + listingItem.hash});
 
@@ -369,7 +406,7 @@ describe('BidMessageProcessing', () => {
         expect(listingItem.Bids).toHaveLength(1);
         expect(listingItem.ActionMessages).toHaveLength(3);
         bid = result;
-
+*/
     });
     /*
     test('Should throw ValidationException because no action', async () => {

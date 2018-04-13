@@ -10,7 +10,6 @@ import { OrderItemCreateRequest } from '../requests/OrderItemCreateRequest';
 import { OrderItemUpdateRequest } from '../requests/OrderItemUpdateRequest';
 import { OrderItemObjectService } from './OrderItemObjectService';
 
-
 export class OrderItemService {
 
     public log: LoggerType;

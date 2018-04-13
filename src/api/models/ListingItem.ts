@@ -131,7 +131,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 qb.groupBy('listing_items.id');
 
             })
-            .orderBy('item_informations.title', options.order).query({
+            .orderBy('updated_at', options.order)
+            .query({
                 limit: options.pageLimit,
                 offset: (options.page - 1) * options.pageLimit
             });
