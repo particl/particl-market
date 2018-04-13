@@ -6,7 +6,6 @@ import { TestUtil } from '../lib/TestUtil';
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemActionService } from '../../../src/api/services/ListingItemActionService';
-import { ListingItemService } from '../../../src/api/services/ListingItemService';
 
 import { ListingItemFactory } from '../../../src/api/factories/ListingItemFactory';
 
@@ -29,7 +28,6 @@ describe('ListingItemMessage', () => {
     let marketService: MarketService;
     let listingItemFactory: ListingItemFactory;
     let listingItemActionService: ListingItemActionService;
-    let listingItemService: ListingItemService;
 
     let defaultMarket;
 
