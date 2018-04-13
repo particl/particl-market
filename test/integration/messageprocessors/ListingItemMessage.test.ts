@@ -3,7 +3,6 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Types, Core, Targets } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
 
-import { CoreRpcService } from '../../../src/api/services/CoreRpcService';
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemActionService } from '../../../src/api/services/ListingItemActionService';
@@ -26,7 +25,6 @@ describe('ListingItemMessage', () => {
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();
 
-    let coreRpcService: CoreRpcService;
     let testDataService: TestDataService;
     let marketService: MarketService;
     let listingItemFactory: ListingItemFactory;
@@ -40,7 +38,6 @@ describe('ListingItemMessage', () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
-        coreRpcService = app.IoC.getNamed<CoreRpcService>(Types.Service, Targets.Service.CoreRpcService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.ListingItemFactory);
         listingItemActionService = app.IoC.getNamed<ListingItemActionService>(Types.Service, Targets.Service.ListingItemActionService);
