@@ -29,6 +29,7 @@ import { OrderItemObjectUpdateRequest } from '../requests/OrderItemObjectUpdateR
 import { EscrowMessage } from '../messages/EscrowMessage';
 import { OrderItemUpdateRequest } from '../requests/OrderItemUpdateRequest';
 import { OrderItemService } from './OrderItemService';
+import {OrderSearchParams} from '../requests/OrderSearchParams';
 
 export class EscrowActionService {
 
@@ -179,62 +180,143 @@ export class EscrowActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<"resources".ActionMessage>}
      */
-    public async processLockEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
+    public async processLockEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.Order> {
 
         // TODO: EscrowMessage should contain Order.hash to identify the item in case there are two different Orders
         // with the same item for same buyer. Currently, buyer can only bid once for an item, but this might not be the case always.
 
         this.log.info('Received event:', event);
 
-        const buyer = event.smsgMessage.from;
-        const seller = event.smsgMessage.to;
-
-        // find the ListingItem
         const message = event.marketplaceMessage;
         if (!message.mpaction) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
-        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+
+        const escrowMessage = message.mpaction as EscrowMessage;
+        const listingItemHash = escrowMessage.item;
+
+        // find the ListingItem
+        const listingItemModel = await this.listingItemService.findOneByHash(listingItemHash);
         const listingItem = listingItemModel.toJSON();
 
-        // find Order, using buyer, seller and Order.OrderItem.itemHash
-        this.orderService.findOne()
-        this.orderItemService.findOne()
+        const seller = listingItem.seller;
+        const buyer = listingItem.seller === event.smsgMessage.from ? event.smsgMessage.to : event.smsgMessage.from;
 
-        // first save it
+        // save ActionMessage
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
+        // find Order, using buyer, seller and Order.OrderItem.itemHash
+        const ordersModel = await this.orderService.search({
+            listingItemHash,
+            buyerAddress: buyer,
+            sellerAddress: seller
+        } as OrderSearchParams);
+        const orders = ordersModel.toJSON();
+
+        if (orders.length === 0) {
+            this.log.error('Order not found for EscrowMessage.');
+            throw new MessageException('Order not found for EscrowMessage.');
+        }
+
+        if (orders.length > 1) {
+            this.log.error('Multiple Orders found for EscrowMessage, this should not happen.');
+            throw new MessageException('Multiple Orders found for EscrowMessage.');
+        }
+
         // update OrderItemStatus
-        const newOrderStatus = OrderStatus.ESCROW_LOCKED;
-        const updatedOrderItem = await this.updateOrderItemStatus(escrowRequest, newOrderStatus);
+        const order: resources.Order = orders[0];
+        const orderItem = _.find(order.OrderItems, (o: resources.OrderItem) => {
+            return o.itemHash === listingItemHash;
+        });
 
-        // TODO: update OrderItem status
+        if (orderItem) {
 
-        // TODO: do whatever else needs to be done
+            // update rawtx
+            const rawtx = escrowMessage.escrow.rawtx;
+            const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
-        return actionMessage;
+            const newOrderStatus = OrderStatus.ESCROW_LOCKED;
+            const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
+
+            // TODO: do whatever else needs to be done
+
+
+        } else {
+            this.log.error('OrderItem not found for EscrowMessage.');
+            throw new MessageException('OrderItem not found for EscrowMessage.');
+        }
+
+        return order;
     }
 
-    public async processReleaseEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
+    public async processReleaseEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.Order> {
 
         this.log.info('Received event:', event);
 
-        // find the ListingItem
         const message = event.marketplaceMessage;
         if (!message.mpaction) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
-        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
-        const listingItem = listingItemModel.toJSON();
 
-        // first save it
+        const escrowMessage = message.mpaction as EscrowMessage;
+        const listingItemHash = escrowMessage.item;
+
+        // find the ListingItem
+        const listingItemModel = await this.listingItemService.findOneByHash(listingItemHash);
+        const listingItem: resources.ListingItem = listingItemModel.toJSON();
+
+        const seller = listingItem.seller;
+        const buyer = listingItem.seller === event.smsgMessage.from ? event.smsgMessage.to : event.smsgMessage.from;
+        const isMyListingItem = !!listingItem.ListingItemTemplate;
+
+        // save ActionMessage
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
-        // TODO: do whatever else needs to be done
+        // find Order, using buyer, seller and Order.OrderItem.itemHash
+        const ordersModel = await this.orderService.search({
+            listingItemHash,
+            buyerAddress: buyer,
+            sellerAddress: seller
+        } as OrderSearchParams);
+        const orders = ordersModel.toJSON();
 
-        return actionMessage;
+        if (orders.length === 0) {
+            this.log.error('Order not found for EscrowMessage.');
+            throw new MessageException('Order not found for EscrowMessage.');
+        }
+
+        if (orders.length > 1) {
+            this.log.error('Multiple Orders found for EscrowMessage, this should not happen.');
+            throw new MessageException('Multiple Orders found for EscrowMessage.');
+        }
+
+        // update OrderItemStatus
+        const order: resources.Order = orders[0];
+        const orderItem = _.find(order.OrderItems, (o: resources.OrderItem) => {
+            return o.itemHash === listingItemHash;
+        });
+
+        if (orderItem) {
+
+            // update rawtx
+            const rawtx = escrowMessage.escrow.rawtx;
+            const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
+
+
+            const newOrderStatus = isMyListingItem ? OrderStatus.COMPLETE : OrderStatus.SHIPPING;
+            const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
+
+            // TODO: do whatever else needs to be done
+
+
+        } else {
+            this.log.error('OrderItem not found for EscrowMessage.');
+            throw new MessageException('OrderItem not found for EscrowMessage.');
+        }
+
+        return order;
     }
 
     public async processRequestRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
