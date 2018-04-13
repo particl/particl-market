@@ -77,9 +77,9 @@ export class EscrowActionService {
         const rawtx = await this.createRawTx(escrowRequest);
         const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
-        // update OrderStatus
+        // update OrderItemStatus
         const newOrderStatus = OrderStatus.ESCROW_LOCKED;
-        const updatedOrderItem = await this.updateOrderItemStatus(escrowRequest, newOrderStatus);
+        const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
 
         // use escrowfactory to generate the lock message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
@@ -92,8 +92,192 @@ export class EscrowActionService {
         return await this.smsgService.smsgSend(orderItem.Order.seller, orderItem.Order.buyer, marketPlaceMessage, false);
     }
 
+    public async refund(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
 
+        throw new NotImplementedException();
 
+        // todo: refactor lock/refund/release since they're pretty much the same
+        // todo: add @validate to EscrowLockRequest
+/*
+        const orderItem = escrowRequest.orderItem;
+        const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
+
+        if (_.isEmpty(orderItem)) {
+            throw new MessageException('OrderItem not found!');
+        }
+
+        if (_.isEmpty(escrow)) {
+            throw new MessageException('Escrow not found!');
+        }
+
+        const listingItemModel = await this.listingItemService.findOneByHash(orderItem.itemHash);
+        const listingItem = listingItemModel.toJSON();
+
+        // generate rawtx
+        const rawtx = await this.createRawTx(escrowRequest, listingItem);
+
+        const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
+
+        // update OrderStatus
+        const newOrderStatus = OrderStatus.CHANGE;
+        const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
+
+        // use escrowfactory to generate the refund message
+        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
+
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: escrowActionMessage
+        } as MarketplaceMessage;
+
+        return await this.smsgService.smsgSend(orderItem.Order.seller, orderItem.Order.buyer, marketPlaceMessage, false);
+*/
+    }
+
+    public async release(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
+
+        // todo: refactor lock/refund/release since they're pretty much the same
+        // todo: add @validate to EscrowLockRequest
+
+        const orderItem = escrowRequest.orderItem;
+        const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
+
+        if (_.isEmpty(orderItem)) {
+            throw new MessageException('OrderItem not found!');
+        }
+
+        if (_.isEmpty(escrow)) {
+            throw new MessageException('Escrow not found!');
+        }
+
+        // generate rawtx
+        const rawtx = await this.createRawTx(escrowRequest);
+
+        const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
+
+        // update OrderStatus
+        const isMyListingItem = !!orderItem.Bid.ListingItem.ListingItemTemplate;
+        const newOrderStatus = isMyListingItem ? OrderStatus.SHIPPING : OrderStatus.COMPLETE;
+        const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
+
+        // use escrowfactory to generate the release message
+        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
+
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: escrowActionMessage
+        } as MarketplaceMessage;
+
+        const sendFromAddress = isMyListingItem ? orderItem.Order.seller : orderItem.Order.buyer;
+        const sendToAddress = isMyListingItem ? orderItem.Order.buyer : orderItem.Order.seller;
+
+        return await this.smsgService.smsgSend(sendFromAddress, sendToAddress, marketPlaceMessage, false);
+    }
+
+    /**
+     *
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<"resources".ActionMessage>}
+     */
+    public async processLockEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
+
+        // TODO: EscrowMessage should contain Order.hash to identify the item in case there are two different Orders
+        // with the same item for same buyer. Currently, buyer can only bid once for an item, but this might not be the case always.
+
+        this.log.info('Received event:', event);
+
+        const buyer = event.smsgMessage.from;
+        const seller = event.smsgMessage.to;
+
+        // find the ListingItem
+        const message = event.marketplaceMessage;
+        if (!message.mpaction) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItem = listingItemModel.toJSON();
+
+        // find Order, using buyer, seller and Order.OrderItem.itemHash
+        this.orderService.findOne()
+        this.orderItemService.findOne()
+
+        // first save it
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+        const actionMessage = actionMessageModel.toJSON();
+
+        // update OrderItemStatus
+        const newOrderStatus = OrderStatus.ESCROW_LOCKED;
+        const updatedOrderItem = await this.updateOrderItemStatus(escrowRequest, newOrderStatus);
+
+        // TODO: update OrderItem status
+
+        // TODO: do whatever else needs to be done
+
+        return actionMessage;
+    }
+
+    public async processReleaseEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
+
+        this.log.info('Received event:', event);
+
+        // find the ListingItem
+        const message = event.marketplaceMessage;
+        if (!message.mpaction) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItem = listingItemModel.toJSON();
+
+        // first save it
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+        const actionMessage = actionMessageModel.toJSON();
+
+        // TODO: do whatever else needs to be done
+
+        return actionMessage;
+    }
+
+    public async processRequestRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
+
+        this.log.info('Received event:', event);
+
+        // find the ListingItem
+        const message = event.marketplaceMessage;
+        if (!message.mpaction) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItem = listingItemModel.toJSON();
+
+        // first save it
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+        const actionMessage = actionMessageModel.toJSON();
+
+        // TODO: do whatever else needs to be done
+
+        return actionMessage;
+    }
+
+    public async processRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
+
+        this.log.info('Received event:', event);
+
+        // find the ListingItem
+        const message = event.marketplaceMessage;
+        if (!message.mpaction) {   // ACTIONEVENT
+            throw new MessageException('Missing mpaction.');
+        }
+        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItem = listingItemModel.toJSON();
+
+        // first save it
+        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+        const actionMessage = actionMessageModel.toJSON();
+
+        // TODO: do whatever else needs to be done
+
+        return actionMessage;
+    }
 
     /**
      * Creates rawtx based on params
@@ -299,175 +483,6 @@ export class EscrowActionService {
         }
     }
 
-
-    public async refund(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
-
-        throw new NotImplementedException();
-
-        // todo: refactor lock/refund/release since they're pretty much the same
-        // todo: add @validate to EscrowLockRequest
-/*
-        const orderItem = escrowRequest.orderItem;
-        const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
-
-        if (_.isEmpty(orderItem)) {
-            throw new MessageException('OrderItem not found!');
-        }
-
-        if (_.isEmpty(escrow)) {
-            throw new MessageException('Escrow not found!');
-        }
-
-        const listingItemModel = await this.listingItemService.findOneByHash(orderItem.itemHash);
-        const listingItem = listingItemModel.toJSON();
-
-        // generate rawtx
-        const rawtx = await this.createRawTx(escrowRequest, listingItem);
-
-        const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
-
-        // use escrowfactory to generate the refund message
-        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
-
-        const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: escrowActionMessage
-        } as MarketplaceMessage;
-
-        return await this.smsgService.smsgSend(orderItem.Order.seller, orderItem.Order.buyer, marketPlaceMessage, false);
-*/
-    }
-
-
-    public async release(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
-
-        // todo: refactor lock/refund/release since they're pretty much the same
-        // todo: add @validate to EscrowLockRequest
-
-        const orderItem = escrowRequest.orderItem;
-        const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
-
-        if (_.isEmpty(orderItem)) {
-            throw new MessageException('OrderItem not found!');
-        }
-
-        if (_.isEmpty(escrow)) {
-            throw new MessageException('Escrow not found!');
-        }
-
-        // generate rawtx
-        const rawtx = await this.createRawTx(escrowRequest);
-
-        const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
-
-        // update OrderStatus
-        const isMyListingItem = !!orderItem.Bid.ListingItem.ListingItemTemplate;
-        const newOrderStatus = isMyListingItem ? OrderStatus.SHIPPING : OrderStatus.COMPLETE;
-        const updatedOrderItem = await this.updateOrderItemStatus(escrowRequest, newOrderStatus);
-
-        // use escrowfactory to generate the refund message
-        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
-
-        const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: escrowActionMessage
-        } as MarketplaceMessage;
-
-        const sendFromAddress  = isMyListingItem ? orderItem.Order.seller : orderItem.Order.buyer;
-        const sendToAddress  = isMyListingItem ? orderItem.Order.buyer : orderItem.Order.seller;
-
-        return await this.smsgService.smsgSend(sendFromAddress, sendToAddress, marketPlaceMessage, false);
-    }
-
-    /**
-     *
-     * @param {MarketplaceEvent} event
-     * @returns {Promise<"resources".ActionMessage>}
-     */
-    public async processLockEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-
-        this.log.info('Received event:', event);
-
-        // find the ListingItem
-        const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
-            throw new MessageException('Missing mpaction.');
-        }
-        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
-        const listingItem = listingItemModel.toJSON();
-
-        // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-        const actionMessage = actionMessageModel.toJSON();
-
-        // TODO: do whatever else needs to be done
-
-        return actionMessage;
-    }
-
-    public async processReleaseEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-
-        this.log.info('Received event:', event);
-
-        // find the ListingItem
-        const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
-            throw new MessageException('Missing mpaction.');
-        }
-        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
-        const listingItem = listingItemModel.toJSON();
-
-        // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-        const actionMessage = actionMessageModel.toJSON();
-
-        // TODO: do whatever else needs to be done
-
-        return actionMessage;
-    }
-
-    public async processRequestRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-
-        this.log.info('Received event:', event);
-
-        // find the ListingItem
-        const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
-            throw new MessageException('Missing mpaction.');
-        }
-        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
-        const listingItem = listingItemModel.toJSON();
-
-        // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-        const actionMessage = actionMessageModel.toJSON();
-
-        // TODO: do whatever else needs to be done
-
-        return actionMessage;
-    }
-
-    public async processRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-
-        this.log.info('Received event:', event);
-
-        // find the ListingItem
-        const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
-            throw new MessageException('Missing mpaction.');
-        }
-        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
-        const listingItem = listingItemModel.toJSON();
-
-        // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-        const actionMessage = actionMessageModel.toJSON();
-
-        // TODO: do whatever else needs to be done
-
-        return actionMessage;
-    }
-
     private configureEventListeners(): void {
         this.eventEmitter.on(Events.LockEscrowReceivedEvent, async (event) => {
             await this.processLockEscrowReceivedEvent(event);
@@ -540,14 +555,14 @@ export class EscrowActionService {
         }
     }
 
-    private async updateOrderItemStatus(escrowRequest: EscrowRequest, newOrderStatus: OrderStatus): Promise<resources.OrderItem> {
+    private async updateOrderItemStatus(orderItem: resources.OrderItem, newOrderStatus: OrderStatus): Promise<resources.OrderItem> {
 
         const orderItemUpdateRequest = {
-            itemHash: escrowRequest.orderItem.itemHash,
+            itemHash: orderItem.itemHash,
             status: newOrderStatus
         } as OrderItemUpdateRequest;
 
-        const updatedOrderItemModel = await this.orderItemService.update(escrowRequest.orderItem.id, orderItemUpdateRequest);
+        const updatedOrderItemModel = await this.orderItemService.update(orderItem.id, orderItemUpdateRequest);
         const updatedOrderItem: resources.OrderItem = updatedOrderItemModel.toJSON();
         this.log.debug('updatedOrderItem:', JSON.stringify(updatedOrderItem, null, 2));
         return updatedOrderItem;

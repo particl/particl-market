@@ -86,19 +86,23 @@ export class OrderService {
                     // we are the seller
                     const foundSellerProfile = await this.profileService.findOneByAddress(body.seller);
                     addressCreateRequest.profile_id = foundSellerProfile.id;
+
+                    const listingItemModel = await this.listingItemService.findOne(body.listing_item_id);
+                    const listingItem = listingItemModel.toJSON();
+                    addressCreateRequest.profile_id = listingItem.ListingItemTemplate.Profile.id;
                 } catch (e) {
                     this.log.error('Funny test data bid? It seems we are neither bidder nor the seller.');
                 }
             }
         }
 
-        // this.log.debug('addressCreateRequest for ORDER: ', JSON.stringify(addressCreateRequest, null, 2));
+        this.log.debug('addressCreateRequest for ORDER: ', JSON.stringify(addressCreateRequest, null, 2));
 
         // save shipping address
         const addressModel = await this.addressService.create(addressCreateRequest);
         const address = addressModel.toJSON();
 
-        // this.log.debug('created address: ', JSON.stringify(address, null, 2));
+        this.log.debug('created address: ', JSON.stringify(address, null, 2));
 
         // set the address_id for order
         body.address_id = address.id;
@@ -109,7 +113,7 @@ export class OrderService {
         const orderModel = await this.orderRepo.create(body);
         const order = orderModel.toJSON();
 
-        // this.log.debug('created order: ', JSON.stringify(order, null, 2));
+        this.log.debug('created order: ', JSON.stringify(order, null, 2));
 
         // then create the OrderItems
         for (const orderItemCreateRequest of orderItemCreateRequests) {
