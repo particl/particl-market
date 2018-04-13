@@ -36,18 +36,20 @@ export class BidActionService {
 
     public log: LoggerType;
 
-    constructor(@inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-                @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-                @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
-                @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-                @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-                @inject(Types.Service) @named(Targets.Service.BidService) public bidService: BidService,
-                @inject(Types.Service) @named(Targets.Service.OrderService) public orderService: OrderService,
-                @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-                @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
-                @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
-                @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-                @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+    constructor(
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.BidService) public bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.OrderService) public orderService: OrderService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
+        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
+        @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+    ) {
         this.log = new Logger(__filename);
         this.configureEventListeners();
     }
@@ -62,6 +64,8 @@ export class BidActionService {
      */
     public async send(listingItem: resources.ListingItem, bidderProfile: resources.Profile,
                       shippingAddress: resources.Address, additionalParams: any[]): Promise<SmsgSendResponse> {
+
+        // TODO: change send params to BidSendRequest and @validate them
 
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
@@ -431,6 +435,8 @@ export class BidActionService {
         // End - Ryno Hacks
 
         // const releaseAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
+        // TODO: address should be named releaseAddress or sellerReleaseAddress and all keys should be enums,
+        // it's confusing when on escrowactionservice this 'address' is referred to as sellers address which it is not
         const bidDatas = this.getBidDatasFromArray(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex, 'address', releaseAddr]);
 
         return bidDatas;
