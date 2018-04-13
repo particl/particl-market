@@ -30,13 +30,10 @@ export class OrderFactory {
     /**
      * create a OrderCreateRequest
      *
-     * @param {BidMessage} bidMessage
-     * @param {number} listingItemId
-     * @param {string} bidder
-     * @param {"resources".Bid} latestBid
-     * @returns {Promise<BidCreateRequest>}
+     * @param {"resources".Bid} bid
+     * @returns {Promise<OrderCreateRequest>}
      */
-    public async getModel(bid: resources.Bid): Promise<OrderCreateRequest> {
+    public async getModelFromBid(bid: resources.Bid): Promise<OrderCreateRequest> {
 
         // only bids with action MPA_ACCEPT can be converted to Order
         if (bid.action === BidMessageType.MPA_ACCEPT) {
@@ -53,7 +50,7 @@ export class OrderFactory {
                 seller
             } as OrderCreateRequest;
 
-            // can we mode this hashing to service level
+            // can we move this hashing to service level
             orderCreateRequest.hash = ObjectHash.getHash(orderCreateRequest, HashableObjectType.ORDER_CREATEREQUEST);
             return orderCreateRequest;
 

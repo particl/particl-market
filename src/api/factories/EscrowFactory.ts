@@ -1,30 +1,18 @@
-import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { EscrowMessage } from '../messages/EscrowMessage';
-import { EscrowLockRequest } from '../requests/EscrowLockRequest';
-import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
-import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
 import { EscrowMessageType } from '../enums/EscrowMessageType';
-import { MessageException } from '../exceptions/MessageException';
 import * as resources from 'resources';
-
-
-// Ryno
-import { Bid } from '../models/Bid';
-import { BidMessageType } from '../enums/BidMessageType';
-import { ListingItem } from '../models/ListingItem';
-import { CoreRpcService } from '../services/CoreRpcService';
-import { ActionMessage } from '../models/ActionMessage';
+import { EscrowRequest } from '../requests/EscrowRequest';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
 
 export class EscrowFactory {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
     }
@@ -39,28 +27,24 @@ export class EscrowFactory {
      *
      * @returns {EscrowMessage}
      */
-    public async getMessage(
-        request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest,
-        escrow?: resources.Escrow
-    ): Promise<EscrowMessage> {
+    public async getMessage(request: EscrowRequest, rawtx: string): Promise<EscrowMessage> {
+
+        // TODO: validity check
+        // this.checkEscrowActionValidity(request.action, escrow);
 
         switch (request.action) {
-
             case EscrowMessageType.MPA_LOCK:
-                return await this.getLockMessage(request as EscrowLockRequest, escrow);
+                return await this.getLockMessage(request, rawtx);
 
             case EscrowMessageType.MPA_RELEASE:
-                return await this.getReleaseMessage(request as EscrowReleaseRequest, escrow);
+                return await this.getReleaseMessage(request, rawtx);
 
             case EscrowMessageType.MPA_REFUND:
-                return await this.getRefundMessage(request as EscrowRefundRequest, escrow);
+                return await this.getRefundMessage(request, rawtx);
 
-            case EscrowMessageType.MPA_REQUEST_REFUND:
-                // TODO: IMPLEMENT
-                // return this.getRequestRefundMessage(request as EscrowRequestRefundRequest, escrow);
-                return new EscrowMessage();
+            default:
+                throw new NotImplementedException();
         }
-
     }
 
     /**
@@ -82,20 +66,19 @@ export class EscrowFactory {
      * @param escrow
      * @returns {EscrowMessage}
      */
-    private async getLockMessage(lockRequest: EscrowLockRequest, escrow?: resources.Escrow): Promise<EscrowMessage> {
+    private async getLockMessage(request: EscrowRequest, rawtx: string): Promise<EscrowMessage> {
 
-        this.checkEscrowActionValidity(EscrowMessageType.MPA_LOCK, escrow);
-        const rawTx = await this.createRawTx(lockRequest, escrow);
-        // TODO: Sign Raw Transaction at right place, and we don't actually need a message here with shorter flow
+
         return {
-            action: lockRequest.action,
-            item: lockRequest.item,
-            nonce: lockRequest.nonce,
+            action: request.action,
+            item: request.orderItem.itemHash,
+            nonce: request.nonce,
             info: {
-                memo: lockRequest.memo
+                memo: request.memo
             },
             escrow: {
-                rawTx
+                type: 'lock',
+                rawtx
             }
         } as EscrowMessage;
     }
@@ -106,18 +89,15 @@ export class EscrowFactory {
      * @param releaseRequest
      * @param escrow
      */
-    private async getReleaseMessage(releaseRequest: EscrowReleaseRequest, escrow?: resources.Escrow): Promise<EscrowMessage> {
-
-        this.checkEscrowActionValidity(EscrowMessageType.MPA_RELEASE, escrow);
-        const rawTx = await this.createRawTx(releaseRequest, escrow);
+    private async getReleaseMessage(request: EscrowRequest, rawtx: string): Promise<EscrowMessage> {
 
         return {
-            action: releaseRequest.action,
-            item: releaseRequest.item,
-            memo: releaseRequest.memo,
+            action: request.action,
+            item: request.orderItem.itemHash,
+            memo: request.memo,
             escrow: {
                 type: 'release',
-                rawtx: rawTx
+                rawtx
             }
         } as EscrowMessage;
     }
@@ -128,19 +108,16 @@ export class EscrowFactory {
      * @param refundRequest
      * @param escrow
      */
-    private async getRefundMessage(refundRequest: EscrowRefundRequest, escrow?: resources.Escrow): Promise<EscrowMessage> {
-
-        this.checkEscrowActionValidity(EscrowMessageType.MPA_REFUND, escrow);
-        const rawTx = await this.createRawTx(refundRequest, escrow);
+    private async getRefundMessage(request: EscrowRequest, rawtx: string): Promise<EscrowMessage> {
 
         return {
-            action: refundRequest.action,
-            item: refundRequest.item,
-            accepted: refundRequest.accepted,
-            memo: refundRequest.memo,
+            action: request.action,
+            item: request.orderItem.itemHash,
+            accepted: request.accepted,
+            memo: request.memo,
             escrow: {
                 type: 'refund',
-                rawtx: rawTx
+                rawtx
             }
         } as EscrowMessage;
     }
@@ -160,167 +137,5 @@ export class EscrowFactory {
             // throw new MessageException('Action is not valid for the Escrow');
         }
         return isValid;
-    }
-
-    /**
-     * Creates rawtx based on params
-     *
-     * @param request
-     * @param escrow
-     * @returns {string}
-     */
-    private async createRawTx(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow?: resources.Escrow): Promise<string> {
-        // MPA_RELEASE:
-        // rawtx: 'The buyer sends the half signed rawtx which releases the escrow and payment.
-        // The vendor then recreates the whole transaction (check ouputs, inputs, scriptsigs
-        // and the fee), verifying that buyer\'s rawtx is indeed legitimate. The vendor then
-        // signs the rawtx and broadcasts it.'
-
-        // MPA_REFUND
-        // rawtx: 'The vendor decodes the rawtx from MP_REQUEST_REFUND and recreates the whole
-        // transaction (check ouputs, inputs, scriptsigs and the fee), verifying that buyer\'s
-        // rawtx is indeed legitimate. The vendor then signs the rawtx and sends it to the buyer.
-        // The vendor can decide to broadcast it himself.'
-
-        const listing = (await ListingItem.fetchByHash(request.item)).toJSON();
-
-        const isMine = !!listing.listingItemTemplateId;
-
-        const signTx = async (signrawtx, complete?) => {
-
-            // This requires user interaction, so should be elsewhere possibly?
-            // TODO: Verify that the transaction has the correct values! Very important!!! TODO TODO TODO
-            const signed = await this.coreRpcService.call('signrawtransaction', [signrawtx]);
-
-            if (!signed || signed.errors && (!complete && signed.errors[0].error !== 'Operation not valid with the current stack size' || complete)) {
-                this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
-                throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
-            }
-
-            if (complete) {
-                if (!signed.complete) {
-                    this.log.error('Transaction should be complete at this stage.', signed);
-                    throw new MessageException('Transaction should be complete at this stage');
-                }
-            } else if (signed.complete) {
-                this.log.error('Transaction should not be complete at this stage, will not send insecure message');
-                throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
-            }
-
-            return signed;
-        };
-
-        const bid: resources.Bid = listing.Bids[0];
-        const bidData = (await Bid.fetchById(bid.id)).related('BidDatas').toJSON() as resources.BidData[];
-
-        let rawtx: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'rawtx');
-        let pubkeys: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'pubkeys');
-
-        if (!isMine &&
-            (!bid || bid.action !== BidMessageType.MPA_ACCEPT || bidData.length === 0 || !rawtx || !pubkeys)) {
-            this.log.error('Not enough valid information to finalize escrow');
-            throw new MessageException('Not enough valid information to finalize escrow');
-        }
-
-
-        switch (request.action) {
-            case EscrowMessageType.MPA_LOCK:
-                if (isMine) {
-                    throw new MessageException('Seller can\'t lock escrow.');
-                }
-
-                rawtx = rawtx ? rawtx.dataValue as string : '';
-                pubkeys = pubkeys ? pubkeys.dataValue[0] === '[' ? JSON.parse(pubkeys.dataValue).sort() : pubkeys.dataValue : [];
-
-                // Add Escrow address
-                // TODO: Way to recover escrow address should we lose it
-                const escrowAddr = (await this.coreRpcService.call('addmultisigaddress', [
-                    2,
-                    pubkeys,
-                    '_escrow_' + request.item
-                ]));
-
-                // TODO: This requires user interaction, so should be elsewhere possibly?
-                // TODO: Save TXID somewhere maybe??!
-                return await this.coreRpcService.call('sendrawtransaction', [(await signTx(rawtx, true)).hex]);
-
-            case EscrowMessageType.MPA_RELEASE:
-                const release = listing.ActionMessages.find(actionMessage => actionMessage.action === EscrowMessageType.MPA_RELEASE);
-                // First check if someone has already called release...
-                if (release) {
-                    // TODO: URGENT: Make sure transaction is valid...
-                    return await this.coreRpcService.call('sendrawtransaction', [
-                        (await signTx(release.MessageObjects.find(object => object.dataId === 'rawtx'), true)).hex
-                    ]);
-                } else {
-                    if (isMine) {
-                        // TODO: Decide if seller can or can't initiate release..
-                        // If we decide to go that route, the seller would need the buyers release address from the beginning...
-                        throw new MessageException('Seller can\'t initiate escrow release.');
-                    }
-                    let sellerAddress: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'address');
-                    if (!sellerAddress) {
-                        this.log.error('Not enough valid information to finalize escrow');
-                        throw new MessageException('Not enough valid information to finalize escrow');
-                    }
-
-                    sellerAddress = sellerAddress.dataValue as string;
-                    const myAddress = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
-                    const decoded = await this.coreRpcService.call('decoderawtransaction', [rawtx]);
-
-                    const txid = decoded.txid;
-                    const value = decoded.vout[0].value - 0.0001; // TODO: Proper TX Fee
-
-                    if (!txid) {
-                        this.log.error(`Transaction with not found with txid: ${txid}.`);
-                        throw new MessageException(`Transaction with not found with txid: ${txid}.`);
-                    }
-
-                    const txout = {};
-
-                    txout[myAddress] = value / 3;
-                    txout[sellerAddress] = (value / 3) * 2;
-
-                    rawtx = await this.coreRpcService.call('createrawtransaction', [
-                        [{txid, vout: 0}], // TODO: Make sure this is the correct vout
-                        txout
-                    ]);
-
-                    // TODO: This requires user interaction, so should be elsewhere possibly?
-                    return (await signTx(rawtx)).hex;
-                }
-
-            default:
-                return 'todo: implement';
-        }
-
-    }
-
-    // TODO: Move to BidFactory
-    private getAddressOneLiner(address: resources.Address = {} as resources.Address): string {
-        const addressArray: any = [];
-
-        if (!_.isEmpty(address)) {
-            if (address.addressLine1) {
-                addressArray.push(address.addressLine1);
-            }
-            if (address.addressLine2) {
-                addressArray.push(address.addressLine2);
-            }
-            if (address.zipCode) {
-                addressArray.push(address.zipCode);
-            }
-            if (address.city) {
-                addressArray.push(address.city);
-            }
-            if (address.state) {
-                addressArray.push(address.state);
-            }
-            if (address.country) {
-                addressArray.push(address.country);
-            }
-        }
-
-        return addressArray.join(', ');
     }
 }
