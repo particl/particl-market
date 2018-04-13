@@ -50,7 +50,7 @@ export class OrderItemService {
         const orderItemModel = await this.orderItemRepo.create(body);
         const orderItem = orderItemModel.toJSON();
 
-        this.log.debug('created orderItem: ', JSON.stringify(orderItem, null, 2));
+        // this.log.debug('created orderItem: ', JSON.stringify(orderItem, null, 2));
 
         for (const orderItemObject of orderItemObjects) {
             orderItemObject.order_item_id = orderItem.id;

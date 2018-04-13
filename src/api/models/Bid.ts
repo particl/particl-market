@@ -101,10 +101,6 @@ export class Bid extends Bookshelf.Model<Bid> {
         return this.belongsTo(Address, 'address_id', 'id');
     }
 
-    // public OrderItem(): OrderItem {
-    //    return this.belongsTo(OrderItem, 'order_item_id', 'id');
-    // }
-
     public OrderItem(): OrderItem {
         return this.hasOne(OrderItem);
     }

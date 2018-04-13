@@ -8,6 +8,8 @@ export class Order extends Bookshelf.Model<Order> {
 
     public static RELATIONS = [
         'OrderItems',
+        'OrderItems.Bid',
+        'OrderItems.Bid.ListingItem',
         'OrderItems.OrderItemObjects',
         'ShippingAddress'
     ];

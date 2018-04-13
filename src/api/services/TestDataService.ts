@@ -565,13 +565,17 @@ export class TestDataService {
         this.log.debug('bid:', JSON.stringify(bid, null, 2));
 
         // wtf why are the objects allready?
-        const listingItemTemplate = await this.listingItemTemplateService.findOne(bid.ListingItem.ListingItemTemplate.id);
-        const listingItem = await this.listingItemService.findOne(bid.ListingItem.id);
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(bid.ListingItem.ListingItemTemplate.id);
+        const listingItemModel = await this.listingItemService.findOne(bid.ListingItem.id);
+
+        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
+        const listingItem: resources.ListingItem = listingItemModel.toJSON();
+
 
         this.log.debug('bid.ListingItem.ListingItemTemplate.id:', bid.ListingItem.ListingItemTemplate.id);
         this.log.debug('listingItemTemplate.id:', listingItemTemplate.id);
         this.log.debug('listingItem.id:', listingItem.id);
-        // this.log.debug('listingItem.seller:', listingItem.seller);
+        this.log.debug('listingItem.seller:', listingItem.seller);
         this.log.debug('bid.bidder:', bid.bidder);
         // this.log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
         // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));

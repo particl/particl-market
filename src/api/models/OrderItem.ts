@@ -9,6 +9,8 @@ export class OrderItem extends Bookshelf.Model<OrderItem> {
     public static RELATIONS = [
         'Order',
         'Bid',
+        'Bid.ListingItem',
+        'Bid.ListingItem.ListingItemTemplate',
         // 'Bid.ShippingAddress',
         // 'ListingItem',
         'OrderItemObjects'

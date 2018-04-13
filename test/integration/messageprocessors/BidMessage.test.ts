@@ -39,6 +39,7 @@ import { SmsgMessage } from '../../../src/api/messages/SmsgMessage';
 
 import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
 import {AddressType} from '../../../src/api/enums/AddressType';
+import {OrderStatus} from '../../../src/api/enums/OrderStatus';
 
 
 describe('BidMessageProcessing', () => {
@@ -235,7 +236,10 @@ describe('BidMessageProcessing', () => {
     test('Should process MarketplaceEvent containing MPA_ACCEPT BidMessage', async () => {
 
         // create bid.objects for MPA_ACCEPT
-        const bidDatas = await bidActionService.generateBidDatasForMPA_ACCEPT(listingItem, bid);
+        const bidDatas = await bidActionService.generateBidDatasForMPA_ACCEPT(listingItem, bid, true);
+
+        // add Order.hash to bidData
+        bidDatas.push({id: 'orderHash', value: 'TESTORDERHASH-' + listingItem.hash});
 
         // create MPA_ACCEPT type of MarketplaceMessage
         const bidMessage: BidMessage = await bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidDatas);
@@ -261,7 +265,7 @@ describe('BidMessageProcessing', () => {
         };
 
         // process the message like it was received as MarketplaceEvent
-        const result = await bidActionService.processAcceptBidReceivedEvent({
+        const result: resources.Bid = await bidActionService.processAcceptBidReceivedEvent({
             smsgMessage,
             marketplaceMessage
         } as MarketplaceEvent);
@@ -280,14 +284,14 @@ describe('BidMessageProcessing', () => {
         expect(result.ShippingAddress.country).toBe(defaultProfile.ShippingAddresses[0].country);
         expect(result.ShippingAddress.zipCode).toBe(defaultProfile.ShippingAddresses[0].zipCode);
         expect(result.ShippingAddress.type).toBe(AddressType.SHIPPING_BID);
-        expect(result.BidDatas).toHaveLength(16);
+        expect(result.BidDatas).toHaveLength(17);
+        expect(result.OrderItem.status).toBe(OrderStatus.AWAITING_ESCROW);
 
-        const createdListingItemModel = await listingItemService.findOneByHash(result.ListingItem.hash);
+        const createdListingItemModel = await listingItemService.findOneByHash(result.OrderItem.itemHash);
         listingItem = createdListingItemModel.toJSON();
 
         expect(listingItem.Bids).toHaveLength(1);
         expect(listingItem.ActionMessages).toHaveLength(3);
-
         bid = result;
 
     });
