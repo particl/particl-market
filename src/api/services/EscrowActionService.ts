@@ -8,25 +8,21 @@ import { EventEmitter } from 'events';
 import { ActionMessageService } from './ActionMessageService';
 import { EscrowService } from './EscrowService';
 import { ListingItemService } from './ListingItemService';
-import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { MessageException } from '../exceptions/MessageException';
 import * as _ from 'lodash';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { BidFactory } from '../factories/BidFactory';
 import { OrderFactory } from '../factories/OrderFactory';
 import { OrderService } from './OrderService';
-import { MarketService } from './MarketService';
-import { BidService } from './BidService';
 import { SmsgService } from './SmsgService';
 import { CoreRpcService } from './CoreRpcService';
 import { EscrowFactory } from '../factories/EscrowFactory';
 import { EscrowMessageType } from '../enums/EscrowMessageType';
 import { BidMessageType } from '../enums/BidMessageType';
 import { EscrowRequest } from '../requests/EscrowRequest';
-import {OrderStatus} from '../enums/OrderStatus';
-import {Output} from 'resources';
-import {NotImplementedException} from '../exceptions/NotImplementedException';
+import { OrderStatus } from '../enums/OrderStatus';
+import { Output } from 'resources';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
 
 export class EscrowActionService {
 
@@ -36,13 +32,9 @@ export class EscrowActionService {
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
         @inject(Types.Service) @named(Targets.Service.EscrowService) public escrowService: EscrowService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.BidService) public bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) private escrowFactory: EscrowFactory,
         @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -80,6 +72,7 @@ export class EscrowActionService {
         const rawtx = await this.createRawTx(escrowRequest, listingItem);
 
         // TODO: update rawtx in OrderItem.orderItemObjects
+        // TODO: save ActionMessages
 
         // use escrowfactory to generate the lock message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
@@ -483,7 +476,11 @@ export class EscrowActionService {
         // TODO: Verify that the transaction has the correct values! Very important!!! TODO TODO TODO
         const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
 
-        if (!signed || signed.errors && (!shouldBeComplete && signed.errors[0].error !== 'Operation not valid with the current stack size' || complete)) {
+        if (!signed
+            || signed.errors
+            && (!shouldBeComplete && signed.errors[0].error !== 'Operation not valid with the current stack size' || shouldBeComplete)) {
+            // TODO: ^^ is this correct?!
+
             this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
             throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
         }
