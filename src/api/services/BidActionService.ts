@@ -226,7 +226,7 @@ export class BidActionService {
             // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
 
             // create the order
-            const orderCreateRequest = await this.orderFactory.getModel(updatedBid);
+            const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
             const orderModel = await this.orderService.create(orderCreateRequest);
             const order = orderModel.toJSON();
 
@@ -621,7 +621,7 @@ export class BidActionService {
                 this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
 
                 // create the order from the bid
-                const orderCreateRequest = await this.orderFactory.getModel(updatedBid);
+                const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
                 const orderModel = await this.orderService.create(orderCreateRequest);
                 const order = orderModel.toJSON();
 

@@ -23,6 +23,12 @@ import { EscrowRequest } from '../requests/EscrowRequest';
 import { OrderStatus } from '../enums/OrderStatus';
 import { Output } from 'resources';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
+import { OrderItemObjectService } from './OrderItemObjectService';
+import { OrderItemObjectCreateRequest } from '../requests/OrderItemObjectCreateRequest';
+import { OrderItemObjectUpdateRequest } from '../requests/OrderItemObjectUpdateRequest';
+import { EscrowMessage } from '../messages/EscrowMessage';
+import { OrderItemUpdateRequest } from '../requests/OrderItemUpdateRequest';
+import { OrderItemService } from './OrderItemService';
 
 export class EscrowActionService {
 
@@ -34,6 +40,8 @@ export class EscrowActionService {
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.OrderService) public orderService: OrderService,
+        @inject(Types.Service) @named(Targets.Service.OrderItemService) public orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.OrderItemObjectService) public orderItemObjectService: OrderItemObjectService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) private escrowFactory: EscrowFactory,
         @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
@@ -65,14 +73,13 @@ export class EscrowActionService {
             throw new MessageException('Escrow not found!');
         }
 
-        const listingItemModel = await this.listingItemService.findOneByHash(orderItem.itemHash);
-        const listingItem = listingItemModel.toJSON();
-
         // generate rawtx
-        const rawtx = await this.createRawTx(escrowRequest, listingItem);
+        const rawtx = await this.createRawTx(escrowRequest);
+        const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
-        // TODO: update rawtx in OrderItem.orderItemObjects
-        // TODO: save ActionMessages
+        // update OrderStatus
+        const newOrderStatus = OrderStatus.ESCROW_LOCKED;
+        const updatedOrderItem = await this.updateOrderItemStatus(escrowRequest, newOrderStatus);
 
         // use escrowfactory to generate the lock message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
@@ -85,6 +92,9 @@ export class EscrowActionService {
         return await this.smsgService.smsgSend(orderItem.Order.seller, orderItem.Order.buyer, marketPlaceMessage, false);
     }
 
+
+
+
     /**
      * Creates rawtx based on params
      *
@@ -92,11 +102,11 @@ export class EscrowActionService {
      * @param escrow
      * @returns {string}
      */
-    public async createRawTx(
-        request: EscrowRequest,
-        listingItem: resources.ListingItem, // not necessarily needed? orderItem might be enough
-        testRun: boolean = false
-    ): Promise<string> {
+    public async createRawTx(request: EscrowRequest, testRun: boolean = false): Promise<string> {
+
+        // MPA_LOCK:
+        //
+        //
 
         // MPA_RELEASE:
         // rawtx: 'The buyer sends the half signed rawtx which releases the escrow and payment.
@@ -144,6 +154,7 @@ export class EscrowActionService {
 
                 // Add Escrow address
                 // TODO: Way to recover escrow address should we lose it
+                // TODO: add this to OrderItemObjects?
                 const escrowAddr = await this.coreRpcService.addMultiSigAddress(
                     2,
                     pubkeys.sort(),
@@ -313,7 +324,7 @@ export class EscrowActionService {
         // generate rawtx
         const rawtx = await this.createRawTx(escrowRequest, listingItem);
 
-        // TODO: update rawtx in OrderItem.orderItemObjects
+        const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
         // use escrowfactory to generate the refund message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
@@ -344,13 +355,15 @@ export class EscrowActionService {
             throw new MessageException('Escrow not found!');
         }
 
-        const listingItemModel = await this.listingItemService.findOneByHash(orderItem.itemHash);
-        const listingItem = listingItemModel.toJSON();
-
         // generate rawtx
-        const rawtx = await this.createRawTx(escrowRequest, listingItem);
+        const rawtx = await this.createRawTx(escrowRequest);
 
-        // TODO: update rawtx in OrderItem.orderItemObjects
+        const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
+
+        // update OrderStatus
+        const isMyListingItem = !!orderItem.Bid.ListingItem.ListingItemTemplate;
+        const newOrderStatus = isMyListingItem ? OrderStatus.SHIPPING : OrderStatus.COMPLETE;
+        const updatedOrderItem = await this.updateOrderItemStatus(escrowRequest, newOrderStatus);
 
         // use escrowfactory to generate the refund message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
@@ -360,7 +373,6 @@ export class EscrowActionService {
             mpaction: escrowActionMessage
         } as MarketplaceMessage;
 
-        const isMyListingItem = !!orderItem.Bid.ListingItem.ListingItemTemplate;
         const sendFromAddress  = isMyListingItem ? orderItem.Order.seller : orderItem.Order.buyer;
         const sendToAddress  = isMyListingItem ? orderItem.Order.buyer : orderItem.Order.seller;
 
@@ -498,26 +510,6 @@ export class EscrowActionService {
         return signed;
     }
 
-
-
-    /**
-     * data[]:
-     * [0]: id, string
-     * [1]: value, string
-     * [2]: id, string
-     * [3]: value, string
-     * ..........
-     */
-    private getOrderItemObjectsFromArray(data: string[]): any[] {
-        const orderItemObjects: any[] = [];
-
-        // convert the bid data params as bid data key value pair
-        for (let i = 0; i < data.length; i += 2) {
-            orderItemObjects.push({id: data[i], value: data[i + 1]});
-        }
-        return orderItemObjects;
-    }
-
     /**
      *
      * @param {string} key
@@ -532,5 +524,32 @@ export class EscrowActionService {
             this.log.error('Missing OrderItemObject value for key: ' + key);
             throw new MessageException('Missing OrderItemObject value for key: ' + key);
         }
+    }
+
+    private async updateRawTxOrderItemObject(orderItemObjects: resources.OrderItemObject[], newRawtx: string): Promise<any> {
+        const rawtxObject = orderItemObjects.find(kv => kv.dataId === 'rawtx');
+
+        if (rawtxObject) {
+            const updatedOrderItemObject = await this.orderItemObjectService.update(rawtxObject.id, {
+                dataId: 'rawtx',
+                dataValue: newRawtx
+            } as OrderItemObjectUpdateRequest);
+            return updatedOrderItemObject.toJSON();
+        } else {
+            throw new MessageException('OrderItemObject for rawtx not found!');
+        }
+    }
+
+    private async updateOrderItemStatus(escrowRequest: EscrowRequest, newOrderStatus: OrderStatus): Promise<resources.OrderItem> {
+
+        const orderItemUpdateRequest = {
+            itemHash: escrowRequest.orderItem.itemHash,
+            status: newOrderStatus
+        } as OrderItemUpdateRequest;
+
+        const updatedOrderItemModel = await this.orderItemService.update(escrowRequest.orderItem.id, orderItemUpdateRequest);
+        const updatedOrderItem: resources.OrderItem = updatedOrderItemModel.toJSON();
+        this.log.debug('updatedOrderItem:', JSON.stringify(updatedOrderItem, null, 2));
+        return updatedOrderItem;
     }
 }

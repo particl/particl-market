@@ -310,8 +310,9 @@ describe('BidMessageProcessing', () => {
 
         // BUYER -> SELLER
 
+
         // create order.objects for MPA_LOCK
-        const orderObjects = await escrowActionService.generateOrderItemObjectsForMPA_LOCK(listingItem, bid, true);
+        const rawtx = await this.createRawTx(escrowRequest);
 
         // add Order.hash to bidData
         bidDatas.push({id: 'orderHash', value: 'TESTORDERHASH-' + listingItem.hash});

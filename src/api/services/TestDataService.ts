@@ -603,7 +603,7 @@ export class TestDataService {
         const bid: resources.Bid = bidModel.toJSON();
 
         // then generate ordercreaterequest with some orderitems and orderitemobjects
-        const orderCreateRequest = await this.orderFactory.getModel(bid);
+        const orderCreateRequest = await this.orderFactory.getModelFromBid(bid);
 
         return orderCreateRequest;
     }
