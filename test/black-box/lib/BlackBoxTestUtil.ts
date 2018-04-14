@@ -12,10 +12,12 @@ import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/
 export class BlackBoxTestUtil {
 
     public log: LoggerType = new LoggerType(__filename);
+    private node;
 
-    constructor() {
+    constructor(node: number = 0) {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
         new LoggerConfig().configure();
+        this.node = node;
     }
 
     /**
@@ -24,7 +26,7 @@ export class BlackBoxTestUtil {
      * @returns {Promise<void>}
      */
     public async cleanDb(): Promise<any> {
-        const res = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName]);
+        const res = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName], this.node);
         res.expectJson();
         res.expectStatusCode(200);
         return { result: 'success' };
@@ -39,7 +41,7 @@ export class BlackBoxTestUtil {
      * @returns {Promise<any>}
      */
     public async addData(model: CreatableModel, data: any): Promise<any> {
-        const res = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_ADD.commandName, model.toString(), JSON.stringify(data)]);
+        const res = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_ADD.commandName, model.toString(), JSON.stringify(data)], this.node);
         res.expectJson();
         res.expectStatusCode(200);
         return res.getBody()['result'];
@@ -57,7 +59,7 @@ export class BlackBoxTestUtil {
     public async generateData(model: CreatableModel, amount: number = 1, withRelated: boolean = true, generateParams: boolean[] = []): Promise<any> {
         const params = [Commands.DATA_GENERATE.commandName, model.toString(), amount, withRelated]
             .concat(generateParams);
-        const res: any = await rpc(Commands.DATA_ROOT.commandName, params);
+        const res: any = await rpc(Commands.DATA_ROOT.commandName, params, this.node);
         res.expectJson();
         res.expectStatusCode(200);
         return res.getBody()['result'];
@@ -69,7 +71,7 @@ export class BlackBoxTestUtil {
      * @returns {Promise<any>}
      */
     public async getDefaultProfile(): Promise<resources.Profile> {
-        const res: any = await rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT']);
+        const res: any = await rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT'], this.node);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -83,6 +85,7 @@ export class BlackBoxTestUtil {
             this.log.debug('Adding a missing ShippingAddress for the default Profile.');
 
             // if default profile doesnt have a shipping address, add it
+            // TODO: generate a random address
             const addCommandParams = [
                 Commands.ADDRESS_ADD.commandName,
                 defaultProfile.id,
@@ -98,13 +101,13 @@ export class BlackBoxTestUtil {
             ];
 
             // create address for default profile
-            const addressRes: any = await rpc(Commands.ADDRESS_ROOT.commandName, addCommandParams);
+            const addressRes: any = await rpc(Commands.ADDRESS_ROOT.commandName, addCommandParams, this.node);
             addressRes.expectJson();
             addressRes.expectStatusCode(200);
 
             // get the updated profile
-            const res: any = await rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT']);
-            return res.getBody()['result'];
+            const profileRes: any = await rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT'], this.node);
+            return profileRes.getBody()['result'];
         } else {
             return defaultProfile;
         }
@@ -116,10 +119,10 @@ export class BlackBoxTestUtil {
      * @returns {Promise<any>}
      */
     public async getDefaultMarket(): Promise<resources.Market> {
-        const res: any = await rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_LIST.commandName]);
+        const res: any = await rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_LIST.commandName], this.node);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: Market[] = res.getBody()['result'];
+        const result: resources.Market[] = res.getBody()['result'];
         // get the commandType for the method name
         return _.find(result, o => o.name === 'DEFAULT');
     }
