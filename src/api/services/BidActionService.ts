@@ -1,4 +1,5 @@
 import * as _ from 'lodash';
+import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
@@ -25,6 +26,7 @@ import { Output } from 'resources';
 import { BidMessage } from '../messages/BidMessage';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { AddressType } from '../enums/AddressType';
+import { SearchOrder } from '../enums/SearchOrder';
 import { Environment } from '../../core/helpers/Environment';
 import { OrderFactory } from '../factories/OrderFactory';
 import { OrderService } from './OrderService';
@@ -657,7 +659,7 @@ export class BidActionService {
      */
     public async processCancelBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
         this.log.info('Received event:', event);
-        let bidMessage: any = event.marketplaceMessage.mpaction as BidMessage;
+        const bidMessage: any = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
         // find the ListingItem
         const message = event.marketplaceMessage;
@@ -672,8 +674,14 @@ export class BidActionService {
         const actionMessage = actionMessageModel.toJSON();
 
         // Get latest bid from listingItemId and bidder so we can get bidId.
-        // TODO:!!!!!! replace getLatestBid with bidService.search
-        let oldBid: any = await this.bidService.getLatestBid(listingItem.id, bidder);
+        const params: BidSearchParams = new BidSearchParams({
+            listingItemId: listingItem.id,
+            action: BidMessageType.MPA_BID,
+            bidders: [ bidder ],
+            ordering: SearchOrder.DESC
+        });
+        const oldBids: Bookshelf.Collection<Bid> = await this.bidService.search(params);
+        let oldBid: any = oldBids.pop();
         if (!oldBid) {
             throw new MessageException('Missing old bid.');
         }
@@ -687,7 +695,7 @@ export class BidActionService {
             bidder: tmpBidCreateRequest.bidder,
             bidDatas: tmpBidCreateRequest.bidDatas
         } as BidUpdateRequest;
-        await this.bidService.update(oldBid.Id, bidUpdateRequest);
+        const retBid = await this.bidService.update(oldBid.id, bidUpdateRequest);
 
         return actionMessage;
     }

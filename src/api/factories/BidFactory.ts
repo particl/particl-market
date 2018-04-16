@@ -63,7 +63,6 @@ export class BidFactory {
             const bidDataValues = {};
 
             // copy the existing key-value pairs from latestBid.BidDatas
-            this.log.error('latestBid = ' + JSON.stringify(latestBid));
             if (latestBid && latestBid.BidDatas) {
                 for (const bidData of latestBid.BidDatas) {
                     bidDataValues[bidData.dataId] = bidData.dataValue;
