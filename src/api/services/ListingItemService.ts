@@ -36,6 +36,7 @@ import { EventEmitter } from 'events';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ActionMessageService } from './ActionMessageService';
+import * as resources from 'resources';
 
 export class ListingItemService {
 
@@ -292,6 +293,28 @@ export class ListingItemService {
 
         // finally find and return the updated listingItem
         return await this.findOne(id);
+    }
+
+    @validate()
+    public async updateListingItemTemplateRelation(id: number): Promise<ListingItem> {
+
+        let listingItem = await this.findOne(id, false);
+
+        const templateId = await this.listingItemTemplateService.findOneByHash(listingItem.Hash)
+            .then(value => {
+                const template = value.toJSON();
+                return template.id;
+            })
+            .catch(reason => {
+                this.log.debug('matching ListingItemTemplate for ListingItem not found.');
+            });
+
+        if (templateId) {
+            listingItem.listing_item_template_id = templateId;
+            listingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
+        }
+
+        return listingItem;
     }
 
     /**

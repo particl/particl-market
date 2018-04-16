@@ -167,6 +167,9 @@ export class ListingItemActionService {
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
             let listingItem = listingItemModel.toJSON();
 
+            // update the template relation
+            await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
+
             // first save it
             const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
             const actionMessage = actionMessageModel.toJSON();
