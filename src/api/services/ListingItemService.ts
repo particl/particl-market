@@ -310,7 +310,7 @@ export class ListingItemService {
             });
 
         if (templateId) {
-            listingItem.listing_item_template_id = templateId;
+            listingItem['listing_item_template_id'] = templateId;
             listingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
         }
 
