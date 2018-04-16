@@ -39,18 +39,20 @@ export class BidActionService {
 
     public log: LoggerType;
 
-    constructor(@inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-                @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-                @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
-                @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-                @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-                @inject(Types.Service) @named(Targets.Service.BidService) public bidService: BidService,
-                @inject(Types.Service) @named(Targets.Service.OrderService) public orderService: OrderService,
-                @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
-                @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
-                @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
-                @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-                @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
+    constructor(
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.BidService) public bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.OrderService) public orderService: OrderService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
+        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
+        @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
+        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
+        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+    ) {
         this.log = new Logger(__filename);
         this.configureEventListeners();
     }
@@ -65,6 +67,8 @@ export class BidActionService {
      */
     public async send(listingItem: resources.ListingItem, bidderProfile: resources.Profile,
                       shippingAddress: resources.Address, additionalParams: any[]): Promise<SmsgSendResponse> {
+
+        // TODO: change send params to BidSendRequest and @validate them
 
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
@@ -211,6 +215,7 @@ export class BidActionService {
         // last bids action needs to be MPA_BID
         if (bid.action === BidMessageType.MPA_BID) {
 
+            // todo: create order before biddatas so order hash can be added to biddata in generateBidDatasForMPA_ACCEPT
             // generate bidDatas
             const bidDatas = await this.generateBidDatasForMPA_ACCEPT(listingItem, bid);
 
@@ -224,7 +229,7 @@ export class BidActionService {
             // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
 
             // create the order
-            const orderCreateRequest = await this.orderFactory.getModel(updatedBid);
+            const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
             const orderModel = await this.orderService.create(orderCreateRequest);
             const order = orderModel.toJSON();
 
@@ -250,9 +255,17 @@ export class BidActionService {
         }
     }
 
+    /**
+     *
+     * @param {"resources".ListingItem} listingItem
+     * @param {"resources".Bid} bid
+     * @param {boolean} testRun
+     * @returns {Promise<any[]>}
+     */
     public async generateBidDatasForMPA_ACCEPT(
         listingItem: resources.ListingItem,
-        bid: resources.Bid
+        bid: resources.Bid,
+        testRun: boolean = false
     ): Promise<any[]> {
 
         // TODO: Ryno Hacks - Refactor code below...
@@ -410,7 +423,9 @@ export class BidActionService {
             throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
         }
 
-        if (signed.complete) {
+        // when testRun is true, we are calling this from the tests and we just skip this
+        // todo: make it possible to run tests on one particld
+        if (signed.complete && testRun === false) {
             this.log.error('Transaction should not be complete at this stage, will not send insecure message');
             throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
         }
@@ -423,6 +438,8 @@ export class BidActionService {
         // End - Ryno Hacks
 
         // const releaseAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
+        // TODO: address should be named releaseAddress or sellerReleaseAddress and all keys should be enums,
+        // it's confusing when on escrowactionservice this 'address' is referred to as sellers address which it is not
         const bidDatas = this.getBidDatasFromArray(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex, 'address', releaseAddr]);
 
         return bidDatas;
@@ -594,18 +611,34 @@ export class BidActionService {
                 return o.action === BidMessageType.MPA_BID && o.bidder === bidder;
             });
 
-            // this.log.debug('existingBid:', JSON.stringify(existingBid, null, 2));
+            this.log.debug('existingBid:', JSON.stringify(existingBid, null, 2));
 
             if (existingBid) {
                 // create a bid
                 const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, existingBid);
                 // this.log.debug('bidUpdateRequest:', JSON.stringify(bidUpdateRequest, null, 2));
 
+                // update the bid locally
                 const updatedBidModel = await this.bidService.update(existingBid.id, bidUpdateRequest);
-                const updatedBid = updatedBidModel.toJSON();
+                let updatedBid: resources.Bid = updatedBidModel.toJSON();
+                this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
 
-                // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
+                // create the order from the bid
+                const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
+                const orderModel = await this.orderService.create(orderCreateRequest);
+                const order = orderModel.toJSON();
+
+                this.log.debug('processAcceptBidReceivedEvent(), created Order: ', JSON.stringify(order, null, 2));
+
+                const orderHash = this.getValueFromBidDatas('orderHash', updatedBid.BidDatas);
+                this.log.debug('seller orderHash: ', orderHash);
+                this.log.debug('local orderHash: ', order.hash);
+
+                await updatedBidModel.fetch({withRelated: ['OrderItem']});
+                updatedBid = updatedBidModel.toJSON();
                 // TODO: do whatever else needs to be done
+
+                // this.log.debug('processAcceptBidReceivedEvent(), updatedBid: ', JSON.stringify(updatedBid, null, 2));
 
                 return updatedBid;
             } else {

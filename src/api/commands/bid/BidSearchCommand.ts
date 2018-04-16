@@ -9,6 +9,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { Bid } from '../../models/Bid';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { BidSearchParams } from '../../requests/BidSearchParams';
+import { SearchOrder } from '../../enums/SearchOrder';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 
@@ -40,17 +41,24 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
 
         const listingItemHash = data.params[0] !== '*' ? data.params[0] : undefined;
         const action = data.params[1] !== '*' ? data.params[1] : undefined;
+        let ordering = data.params[2];
 
-        if (data.params.length >= 2) {
+        if (data.params.length >= 3) {
+            data.params.shift();
             data.params.shift();
             data.params.shift();
         } else {
             data.params = [];
         }
 
+        if (!ordering) {
+            ordering = SearchOrder.ASC;
+        }
+
         const searchArgs = {
             listingItemHash,
             action,
+            ordering,
             bidders: data.params
         } as BidSearchParams;
 
@@ -59,7 +67,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
 
 
     public usage(): string {
-        return this.getName() + ' (<itemhash>|*) [(<status>|*) [<bidderAddress> ...]] ';
+        return this.getName() + ' (<itemhash>|*) [(<status>|*) [<ordering> [<bidderAddress> ...]]] ';
     }
 
     public help(): string {
@@ -69,11 +77,12 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
             + '    <status>                 - [optional] ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL} - \n'
             + '                                The status of the bids we want to search for. \n'
             + '                                The value * specifies that status can be anything. \n'
+            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the search results. \n'
             + '    <bidderAddress>          - [optional] String - The address of the bidder we want to search bids for. ';
     }
 
     public description(): string {
-            return 'Search bids by itemhash or bid status';
+            return 'Search bids by itemhash, bid status, or bidder address';
     }
 
     public example(): string {

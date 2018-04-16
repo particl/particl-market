@@ -3,6 +3,7 @@ import { Collection } from 'bookshelf';
 import { ListingItem } from './ListingItem';
 import { BidData } from './BidData';
 import { BidSearchParams } from '../requests/BidSearchParams';
+import { SearchOrder } from '../enums/SearchOrder';
 import { Address } from './Address';
 import { OrderItem } from './OrderItem';
 
@@ -15,7 +16,6 @@ export class Bid extends Bookshelf.Model<Bid> {
         'ListingItem.ListingItemTemplate',
         'OrderItem',
         'OrderItem.OrderItemObjects',
-        'OrderItem.ListingItem',
         'OrderItem.Order'
     ];
 
@@ -30,6 +30,10 @@ export class Bid extends Bookshelf.Model<Bid> {
     }
 
     public static async search(options: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
+        if (!options.ordering) {
+            options.ordering = SearchOrder.ASC;
+        }
+
         const bidCollection = Bid.forge<Collection<Bid>>()
             .query( qb => {
 
@@ -55,8 +59,7 @@ export class Bid extends Bookshelf.Model<Bid> {
 */
                     }
                 }
-
-            }).orderBy('bids.created_at', 'ASC');
+            }).orderBy('bids.created_at', options.ordering);
 
         if (withRelated) {
             return await bidCollection.fetchAll({
@@ -89,10 +92,6 @@ export class Bid extends Bookshelf.Model<Bid> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    public ListingItem(): ListingItem {
-       return this.belongsTo(ListingItem, 'listing_item_id', 'id');
-    }
-
     public BidDatas(): Collection<BidData> {
        return this.hasMany(BidData, 'bid_id', 'id');
     }
@@ -101,11 +100,12 @@ export class Bid extends Bookshelf.Model<Bid> {
         return this.belongsTo(Address, 'address_id', 'id');
     }
 
-    // public OrderItem(): OrderItem {
-    //    return this.belongsTo(OrderItem, 'order_item_id', 'id');
-    // }
-
     public OrderItem(): OrderItem {
         return this.hasOne(OrderItem);
     }
+
+    public ListingItem(): ListingItem {
+        return this.belongsTo(ListingItem, 'listing_item_id', 'id');
+    }
+
 }

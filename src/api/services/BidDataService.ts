@@ -38,7 +38,7 @@ export class BidDataService {
     public async create( @request(BidDataCreateRequest) data: BidDataCreateRequest): Promise<BidData> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('BidDataCreateRequest: ', JSON.stringify(body, null, 2));
+        // this.log.debug('BidDataCreateRequest: ', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the bidData
         const bidData = await this.bidDataRepo.create(body);

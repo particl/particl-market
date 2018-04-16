@@ -565,8 +565,12 @@ export class TestDataService {
         this.log.debug('bid:', JSON.stringify(bid, null, 2));
 
         // wtf why are the objects allready?
-        const listingItemTemplate = await this.listingItemTemplateService.findOne(bid.ListingItem.ListingItemTemplate.id);
-        const listingItem = await this.listingItemService.findOne(bid.ListingItem.id);
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(bid.ListingItem.ListingItemTemplate.id);
+        const listingItemModel = await this.listingItemService.findOne(bid.ListingItem.id);
+
+        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
+        const listingItem: resources.ListingItem = listingItemModel.toJSON();
+
 
         this.log.debug('bid.ListingItem.ListingItemTemplate.id:', bid.ListingItem.ListingItemTemplate.id);
         this.log.debug('listingItemTemplate.id:', listingItemTemplate.id);
@@ -599,7 +603,7 @@ export class TestDataService {
         const bid: resources.Bid = bidModel.toJSON();
 
         // then generate ordercreaterequest with some orderitems and orderitemobjects
-        const orderCreateRequest = await this.orderFactory.getModel(bid);
+        const orderCreateRequest = await this.orderFactory.getModelFromBid(bid);
 
         return orderCreateRequest;
     }
