@@ -20,6 +20,10 @@ export class BlackBoxTestUtil {
         this.node = node;
     }
 
+    public async rpc(method: string, params: any[] = []): Promise<any> {
+        return rpc(method, params, 1);
+    }
+
     /**
      * clean the db, also seeds the default data
      *
@@ -126,6 +130,16 @@ export class BlackBoxTestUtil {
         // get the commandType for the method name
         return _.find(result, o => o.name === 'DEFAULT');
     }
+
+    public waitFor(timeout: number): Promise<void> {
+        this.log.debug('waiting for ' + timeout + 'ms');
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, timeout);
+        });
+    }
+
 }
 
 

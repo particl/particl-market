@@ -24,17 +24,22 @@ describe('ListingItemSearchCommand', () => {
         return rpc(method, params, 1);
     };
 
-    const testUtil = new BlackBoxTestUtil();
+    const testUtilNode0 = new BlackBoxTestUtil(0);
+    const testUtilNode1 = new BlackBoxTestUtil(1);
+
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
-    let defaultProfile;
+    let sellerProfile;
+    let buyerProfile;
     let defaultMarket;
     let listingItemTemplates: resources.ListingItemTemplate[];
     let postedTemplateId;
 
     beforeAll(async () => {
-        await testUtil.cleanDb();
+
+        await testUtilNode0.cleanDb();
+        await testUtilNode1.cleanDb();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
@@ -44,17 +49,21 @@ describe('ListingItemSearchCommand', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+            true,    // generateListingItemObjects
+            false,  // generateObjectDatas
+            null,    // profileId
+            false,   // generateListingItem
+            null     // marketId
         ]).toParamsArray();
 
-        // get default profile
-        defaultProfile = await testUtil.getDefaultProfile();
+        // get seller and buyer profiles
+        sellerProfile = await testUtilNode0.getDefaultProfile();
+        buyerProfile = await testUtilNode1.getDefaultProfile();
 
-        // fetch default market
-        defaultMarket = await testUtil.getDefaultMarket();
+        defaultMarket = await testUtilNode0.getDefaultMarket();
 
         // generate listingItemTemplate
-        listingItemTemplates = await testUtil.generateData(
+        listingItemTemplates = await testUtilNode0.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
@@ -63,9 +72,9 @@ describe('ListingItemSearchCommand', () => {
 
     });
 
-    test('Should post a ListingItem in to the default marketplace', async () => {
+    test('Should post a ListingItemTemplate to the default marketplace from node0', async () => {
         postedTemplateId = listingItemTemplates[0].id;
-        const res: any = await rpc(templateCommand, [templatePostCommand, postedTemplateId, defaultMarket.id]);
+        const res: any = await testUtilNode0.rpc(templateCommand, [templatePostCommand, postedTemplateId, defaultMarket.id]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -73,12 +82,14 @@ describe('ListingItemSearchCommand', () => {
         expect(result.result).toBe('Sent.');
         expect(result.txid).toBeDefined();
         expect(result.fee).toBeGreaterThan(0);
+
+        testUtilNode0.waitFor(10000);
     });
 
     test('Should post a ListingItem in to the default marketplace without LocationMarker', async () => {
 
         // generate listingItemTemplate
-        listingItemTemplates = await testUtil.addData(
+        listingItemTemplates = await testUtilNode0.addData(
             CreatableModel.LISTINGITEMTEMPLATE,
             listingItemTemplateCreateRequestWithoutLocationMarker
         ) as resources.ListingItemTemplates[];
