@@ -28,6 +28,9 @@ import { AddressType } from '../enums/AddressType';
 import { Environment } from '../../core/helpers/Environment';
 import { OrderFactory } from '../factories/OrderFactory';
 import { OrderService } from './OrderService';
+import { BidUpdateRequest } from '../requests/BidUpdateRequest';
+import { BidCreateRequest } from '../requests/BidCreateRequest';
+import { Bid } from '../models/Bid';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
@@ -620,12 +623,9 @@ export class BidActionService {
      * @returns {Promise<"resources".ActionMessage>}
      */
     public async processCancelBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-
         this.log.info('Received event:', event);
-
-        const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
+        let bidMessage: any = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
-
         // find the ListingItem
         const message = event.marketplaceMessage;
         if (!message.mpaction) {   // ACTIONEVENT
@@ -638,7 +638,23 @@ export class BidActionService {
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
-        // TODO: do whatever else needs to be done
+        // Get latest bid from listingItemId and bidder so we can get bidId.
+        // TODO:!!!!!! replace getLatestBid with bidService.search
+        let oldBid: any = await this.bidService.getLatestBid(listingItem.id, bidder);
+        if (!oldBid) {
+            throw new MessageException('Missing old bid.');
+        }
+        oldBid = oldBid.toJSON();
+
+        // Update the bid in the database with new action.
+        const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, oldBid);
+        const bidUpdateRequest: BidUpdateRequest = {
+            listing_item_id: tmpBidCreateRequest.listing_item_id,
+            action: BidMessageType.MPA_CANCEL,
+            bidder: tmpBidCreateRequest.bidder,
+            bidDatas: tmpBidCreateRequest.bidDatas
+        } as BidUpdateRequest;
+        await this.bidService.update(oldBid.Id, bidUpdateRequest);
 
         return actionMessage;
     }
@@ -666,6 +682,8 @@ export class BidActionService {
         const actionMessage = actionMessageModel.toJSON();
 
         // TODO: do whatever else needs to be done
+        // change bid status
+        // save new bid status
 
         return actionMessage;
     }
