@@ -10,12 +10,11 @@ import { ListingItemActionService } from '../../../src/api/services/ListingItemA
 import { ListingItemFactory } from '../../../src/api/factories/ListingItemFactory';
 
 import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
-
 import * as listingItemSmsg1 from '../../testdata/message/smsgMessageWithListingItemMessage1.json';
 
 import * as resources from 'resources';
-import {GenerateListingItemTemplateParams} from "../../../src/api/requests/params/GenerateListingItemTemplateParams";
-import {CreatableModel} from "../../../src/api/enums/CreatableModel";
+import {GenerateListingItemTemplateParams} from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import {CreatableModel} from '../../../src/api/enums/CreatableModel';
 import {TestDataGenerateRequest} from '../../../src/api/requests/TestDataGenerateRequest';
 
 
@@ -149,19 +148,8 @@ describe('ListingItemMessage', () => {
 
     });
 
-/*
+
     test('Should process MarketplaceEvent containing ListingItemMessage and match ListingItem with ListingItemTemplate', async () => {
-
-        // TODO:
-        // - generate a template
-        // - create a SmsgMessage / ListingItemMessage based on it. hashes are created in ListingItemService.create and
-        // ListingItemTemplate.create, they should of course match, so you cannot just set the correct hash in smsgMessage
-        // and expect it to match, if the other values dont match.
-        // - pass the message to listingItemActionService.processListingItemReceivedEvent
-        // - expect ListingItem to be created with relation to the created ListingItemTemplate
-        //
-
-        // first generate a template to match with
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
@@ -181,23 +169,39 @@ describe('ListingItemMessage', () => {
             generateParams: generateListingItemTemplateParams
         } as TestDataGenerateRequest);
 
+        expect(listingItemTemplates[0].ListingItems.length).toBe(1);
+        expect(listingItemTemplates[0].hash).toBe(listingItemTemplates[0].ListingItems[0].hash);
+
+        const listingItemMessage = {
+            hash: listingItemTemplates[0].hash,
+            information: listingItemTemplates[0].ItemInformation,
+            payment: listingItemTemplates[0].PaymentInformation,
+            messaging: listingItemTemplates[0].MessagingInformation,
+            objects: listingItemTemplates[0].ListingItems
+        } as ListingItemMessage;
+
+        const listingItemSmsg = listingItemSmsg1;
+        listingItemSmsg.text = JSON.stringify(listingItemMessage);
+        listingItemSmsg.from = listingItemTemplates[0].ListingItems[0].Seller;
+        listingItemSmsg.to = defaultMarket.address;
 
         const marketplaceMessage = JSON.parse(listingItemSmsg1.text);
-        marketplaceMessage.market = listingItemSmsg1.to;
+        marketplaceMessage.market = listingItemSmsg.to;
+        marketplaceMessage.item = listingItemMessage;
 
         const result = await listingItemActionService.processListingItemReceivedEvent({
-            smsgMessage: listingItemSmsg1,
+            smsgMessage: listingItemSmsg,
             marketplaceMessage
         });
 
-        // log.debug('result: ', JSON.stringify(result, null, 2));
         log.debug('listingItemMessage: ', JSON.stringify(marketplaceMessage.item, null, 2));
         log.debug('result.hash: ', JSON.stringify(result.hash, null, 2));
         log.debug('listingItemMessage.hash: ', JSON.stringify(marketplaceMessage.item.hash, null, 2));
+        
         expectListingItemFromMessage(result, marketplaceMessage.item);
-
+        expect(result.ListingItemTemplate.Id).toBe(listingItemTemplates[0].Id);
     });
-*/
+
 
 
     // todo: test with different types of data
