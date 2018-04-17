@@ -48,6 +48,10 @@ import { ItemInformation } from '../models/ItemInformation';
 import { Bid } from '../models/Bid';
 import { ItemImage } from '../models/ItemImage';
 
+import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
+import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
+import { MessageDataCreateRequest } from '../requests/MessageDataCreateRequest';
+import { MessageObjectCreateRequest } from '../requests/MessageObjectCreateRequest';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
@@ -57,6 +61,7 @@ import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
 import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
 import { CreatableModel } from '../enums/CreatableModel';
+import { GenerateActionMessageParams } from '../requests/params/GenerateActionMessageParams';
 import { GenerateListingItemTemplateParams } from '../requests/params/GenerateListingItemTemplateParams';
 import { GenerateListingItemParams } from '../requests/params/GenerateListingItemParams';
 import { GenerateProfileParams } from '../requests/params/GenerateProfileParams';
@@ -310,21 +315,22 @@ export class TestDataService {
                 }
 
                 // add ActionMessage
-                const actionMessages = [{
-                    action: ListingItemMessageType.MP_ITEM_ADD,
-                    objects: [{
-                        dataId: 'seller',
-                        dataValue: result.Profile.address
-                    }],
-                    data: {
-                        msgid: 'testdatanotsorandommsgidfrom_generateListingItems',
-                        version: '0300',
-                        received: new Date().toISOString(),
-                        sent: new Date().toISOString(),
-                        from: result.Profile.address,
-                        to: market.address
-                    }
-                }];
+                const generateActionMessageParams = new GenerateActionMessageParams([
+                    false,
+                    false,
+                    true,
+                    ListingItemMessageType.MP_ITEM_ADD,
+                    null,
+                    null,
+                    null,
+                    result.Profile.seller,
+                    1,
+                    null,
+                    null,
+                    null,
+                    'testdatanotsorandommsgidfrom_generateListingItems'
+                ]);
+                const actionMessages = await this.generateActionMessages(1, generateActionMessageParams);
 
                 const listingItemCreateRequest = {
                     seller: result.Profile.address,
@@ -369,21 +375,22 @@ export class TestDataService {
             const market = marketModel.toJSON();
 
             // add ActionMessage
-            listingItemCreateRequest.actionMessages = [{
-                action: ListingItemMessageType.MP_ITEM_ADD,
-                objects: [{
-                    dataId: 'seller',
-                    dataValue: listingItemCreateRequest.seller
-                }],
-                data: {
-                    msgid: 'testdatanotsorandommsgidfrom_generateListingItems',
-                    version: '0300',
-                    received: new Date().toISOString(),
-                    sent: new Date().toISOString(),
-                    from: listingItemCreateRequest.seller,
-                    to: market.address
-                }
-            }];
+            const generateActionMessageParams = new GenerateActionMessageParams([
+                false,
+                false,
+                true,
+                ListingItemMessageType.MP_ITEM_ADD,
+                null,
+                null,
+                null,
+                listingItemCreateRequest.seller,
+                1,
+                null,
+                null,
+                null,
+                'testdatanotsorandommsgidfrom_generateListingItems'
+            ]);
+            listingItemCreateRequest.actionMessages = this.generateActionMessages(1, generateActionMessageParams);
 
             this.log.debug('create listingitem start');
             const savedListingItemModel = await this.listingItemService.create(listingItemCreateRequest);
@@ -839,6 +846,59 @@ export class TestDataService {
         } as PaymentInformationCreateRequest;
         return paymentInformation;
     }
+
+
+    private async generateActionMessages(amount: number,
+                                         generateParams: GenerateActionMessageParams): Promise<resources.ActionMessage[]> {
+        const messages: resources.ActionMessage[] = [];
+
+        const marketModel = await this.marketService.getDefault();
+        const market = marketModel.toJSON();
+
+        const info = generateParams.generateMessageInfo ? {
+            address: generateParams.seller,
+            memo: generateParams.memo
+        } as MessageInfoCreateRequest : {};
+        const escrow = generateParams.generateMessageEscrow ? {
+            type: generateParams.type,
+            rawtx: generateParams.rawtx
+        } as MessageEscrowCreateRequest : {};
+        const data = generateParams.generateMessageData ? {
+            msgid: generateParams.msgid,
+            version: '0300',
+            received: new Date(),
+            sent: new Date(),
+            from: generateParams.seller,
+            to: market.address
+        } as MessageDataCreateRequest : {};
+        const objects: MessageObjectCreateRequest[] = [];
+        for (let i = generateParams.generateMessageObjectsAmount; i > 0; i--) {
+            const object = {
+                dataId: 'seller',
+                dataValue: generateParams.seller
+            } as MessageObjectCreateRequest;
+            objects.push(object);
+        }
+
+        const actionMessageCreateRequest = {
+            action: generateParams.action,
+            nonce: generateParams.nonce,
+            accepted: generateParams.accepted,
+            listing_item_id: generateParams.listingItemId,
+            info,
+            escrow,
+            data,
+            objects
+        } as ActionMessageCreateRequest;
+
+        for (let i = amount; i > 0; i--) {
+            const actionMessageModel = await this.actionMessageService.create(actionMessageCreateRequest);
+            const actionMessage = actionMessageModel.toJSON();
+            messages.push(actionMessage);
+        }
+        return messages;
+    }
+
 
     // TODO: type
     private generateMessagingInformationData(): any {
