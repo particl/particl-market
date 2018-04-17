@@ -295,7 +295,6 @@ export class ListingItemService {
         return await this.findOne(id);
     }
 
-    @validate()
     public async updateListingItemTemplateRelation(id: number): Promise<ListingItem> {
 
         let listingItem = await this.findOne(id, false);

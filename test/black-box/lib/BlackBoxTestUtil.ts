@@ -21,7 +21,7 @@ export class BlackBoxTestUtil {
     }
 
     public async rpc(method: string, params: any[] = []): Promise<any> {
-        return rpc(method, params, 1);
+        return rpc(method, params, this.node);
     }
 
     /**
@@ -30,6 +30,8 @@ export class BlackBoxTestUtil {
      * @returns {Promise<void>}
      */
     public async cleanDb(): Promise<any> {
+
+        this.log.debug('cleanDb, this.node', this.node);
         const res = await rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName], this.node);
         res.expectJson();
         res.expectStatusCode(200);

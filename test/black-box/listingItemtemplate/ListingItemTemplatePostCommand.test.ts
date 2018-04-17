@@ -39,6 +39,7 @@ describe('ListingItemSearchCommand', () => {
 
         // get default profile
         defaultProfile = await testUtil.getDefaultProfile();
+        log.debug('defaultProfile: ', defaultProfile);
 
         // fetch default market
         defaultMarket = await testUtil.getDefaultMarket();
@@ -67,11 +68,17 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should post a ListingItem in to the default marketplace without LocationMarker', async () => {
 
+        log.debug('before adddata', JSON.stringify(defaultProfile, null, 2));
+
+        listingItemTemplateCreateRequestWithoutLocationMarker.profile_id = defaultProfile.id;
+
         // generate listingItemTemplate
-        listingItemTemplates = await testUtil.addData(
+        const listingItemTemplate = await testUtil.addData(
             CreatableModel.LISTINGITEMTEMPLATE,
             listingItemTemplateCreateRequestWithoutLocationMarker
-        ) as resources.ListingItemTemplates[];
+        ) as resources.ListingItemTemplate;
+        log.debug('after adddata:', listingItemTemplate.id);
+        log.debug('after adddata:', defaultMarket.id);
 
         postedTemplateId = listingItemTemplates[0].id;
         const res: any = await rpc(templateCommand, [templatePostCommand, postedTemplateId, defaultMarket.id]);
