@@ -193,7 +193,8 @@ describe('TestDataService', () => {
         const listingItemTemplate = await listingItemTemplateService.findAll();
         expect(listingItemTemplate).toHaveLength(1);
 
-        expect(result.hash).toBe(listingItemTemplateData.hash);
+        expect(result.hash).toBeDefined();
+        expect(result.hash).not.toBe(listingItemTemplateData.hash);
         expect(result.Profile.name).toBe(defaultProfile.Name);
 
         expect(result.ItemInformation.title).toBe(listingItemTemplateData.itemInformation.title);

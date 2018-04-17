@@ -100,6 +100,9 @@ export class ItemImageService {
 
         // this.log.debug('create image, body: ', JSON.stringify(body, null, 2));
 
+        // hash
+        delete body.hash;
+        body.hash = await this.objectHashService.getHash(body, HashableObjectType.DEFAULT);
         // extract and remove related models from request
         const itemImageDatas: ItemImageDataCreateRequest[] = body.data;
         delete body.data;
@@ -119,7 +122,7 @@ export class ItemImageService {
 
         if (itemImageDataOriginal) {
 
-            if (_.isEmpty(itemImageDataOriginal.protocol) ||  protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
+            if (_.isEmpty(itemImageDataOriginal.protocol) || protocols.indexOf(itemImageDataOriginal.protocol) === -1) {
                 this.log.warn(`Invalid protocol <${itemImageDataOriginal.protocol}> encountered.`);
                 throw new MessageException('Invalid image protocol.');
             }
