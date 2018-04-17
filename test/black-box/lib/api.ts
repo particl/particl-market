@@ -56,9 +56,10 @@ export const api = async <T> ( method: string, path: string, options: ApiOptions
     try {
         res = await request(o);
     } catch (e) {
-        //  console.log('ERROR: ', e);
         error = e;
-/*        if (error.error) {
+
+        /*
+        if (error.error) {
             if (error.error.code) {
                 throw new HttpException(500, error.error.message);
             } else {
@@ -103,7 +104,7 @@ export const api = async <T> ( method: string, path: string, options: ApiOptions
 
 };
 
-export const rpc = async (method: string, params: any[] = [], instanceNumber: number = 0): any => {
+export const rpc = async (method: string, params: any[] = [], instanceNumber: number = 0): Promise<any> => {
     const body = { method, params, jsonrpc: '2.0' };
     return await api('POST', '/api/rpc', { body }, instanceNumber);
 };

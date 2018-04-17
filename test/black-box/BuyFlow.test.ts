@@ -11,7 +11,7 @@ import * as resources from 'resources';
 // tslint:enable:max-line-length
 
 describe('ListingItemSearchCommand', () => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT * 5;
 
     const log: LoggerType = new LoggerType(__filename);
 
@@ -21,12 +21,16 @@ describe('ListingItemSearchCommand', () => {
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
+    const templateGetCommand = Commands.TEMPLATE_GET.commandName;
+
+    const listingItemCommand = Commands.ITEM_ROOT.commandName;
+    const listingItemGetCommand = Commands.ITEM_GET.commandName;
 
     let sellerProfile;
     let buyerProfile;
     let defaultMarket;
-    let listingItemTemplates: resources.ListingItemTemplate[];
-    let postedTemplateId;
+
+    let listingItemTemplatesNode0: resources.ListingItemTemplate[];
 
     beforeAll(async () => {
 
@@ -35,12 +39,18 @@ describe('ListingItemSearchCommand', () => {
 
         // get seller and buyer profiles
         sellerProfile = await testUtilNode0.getDefaultProfile();
-        buyerProfile = await testUtilNode1.getDefaultProfile();
+        expect(sellerProfile.id).toBeDefined();
 
-        log.debug('sellerProfile: ', sellerProfile);
-        log.debug('buyerProfile: ', buyerProfile);
+        buyerProfile = await testUtilNode1.getDefaultProfile();
+        expect(buyerProfile.id).toBeDefined();
+
+        log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
+        log.debug('buyerProfile: ', JSON.stringify(buyerProfile, null, 2));
 
         defaultMarket = await testUtilNode0.getDefaultMarket();
+        expect(defaultMarket.id).toBeDefined();
+
+        log.debug('defaultMarket: ', JSON.stringify(defaultMarket, null, 2));
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
@@ -58,31 +68,62 @@ describe('ListingItemSearchCommand', () => {
         ]).toParamsArray();
 
         // generate listingItemTemplate
-        listingItemTemplates = await testUtilNode0.generateData(
+        listingItemTemplatesNode0 = await testUtilNode0.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
 
+        expect(listingItemTemplatesNode0[0].id).toBeDefined();
+
+        // we should be also able to get the template
+        const templateGetRes: any = await testUtilNode0.rpc(templateCommand, [templateGetCommand, listingItemTemplatesNode0[0].id]);
+        templateGetRes.expectJson();
+        templateGetRes.expectStatusCode(200);
+        const result: any = templateGetRes.getBody()['result'];
+
+        log.debug('listingItemTemplates[0].hash:', listingItemTemplatesNode0[0].hash);
+        log.debug('result.hash:', result.hash);
+        expect(result.hash).toBe(listingItemTemplatesNode0[0].hash);
+
     });
 
     test('Should post a ListingItemTemplate to the default marketplace from node0', async () => {
 
-        log.debug('listingItemTemplates[0]:', listingItemTemplates[0]);
-        postedTemplateId = listingItemTemplates[0].id;
-        const res: any = await testUtilNode0.rpc(templateCommand, [templatePostCommand, postedTemplateId, defaultMarket.id]);
-        res.expectJson();
-        res.expectStatusCode(200);
+        // log.debug('listingItemTemplates[0]:', listingItemTemplatesNode0[0]);
 
-        const result: any = res.getBody()['result'];
-        log.debug('result', JSON.stringify(result, null, 2));
+        const templateIdToPost = listingItemTemplatesNode0[0].id;
+        const templatePostRes: any = await testUtilNode0.rpc(templateCommand, [templatePostCommand, templateIdToPost, defaultMarket.id]);
+        templatePostRes.expectJson();
+        templatePostRes.expectStatusCode(200);
 
+        // make sure we got the expected result from posting the template
+        let result: any = templatePostRes.getBody()['result'];
         expect(result.result).toBe('Sent.');
         expect(result.txid).toBeDefined();
         expect(result.fee).toBeGreaterThan(0);
 
-        testUtilNode1.waitFor(10000);
+        await testUtilNode0.waitFor(5);
+
+        // try to find the item from the other node
+
+        const itemGetRes: any = await testUtilNode1.rpcWaitFor(
+            listingItemCommand,
+            [listingItemGetCommand, listingItemTemplatesNode0[0].hash],
+            3 * 60,
+            200,
+            'hash',
+            listingItemTemplatesNode0[0].hash
+        );
+        itemGetRes.expectJson();
+        itemGetRes.expectStatusCode(200);
+
+        // make sure we got the expected result
+        result = itemGetRes.getBody()['result'];
+        expect(result.hash).toBe(listingItemTemplatesNode0[0].hash);
+
+
     });
 
     test('Should post a ListingItem in to the default marketplace without LocationMarker', async () => {
