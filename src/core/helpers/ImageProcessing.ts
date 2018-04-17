@@ -1,8 +1,7 @@
 import * as _ from 'lodash';
-import sharp = require('sharp');
 import { ImageVersion } from './ImageVersion';
 import {MessageException} from '../../api/exceptions/MessageException';
-import Jimp = require('jimp');
+import * as Jimp from 'jimp';
 
 declare const Buffer;
 
