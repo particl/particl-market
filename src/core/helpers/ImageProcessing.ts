@@ -2,9 +2,6 @@ import * as _ from 'lodash';
 import sharp = require('sharp');
 import { ImageVersion } from './ImageVersion';
 import {MessageException} from '../../api/exceptions/MessageException';
-// import { Canvas } from 'canvas';
-// import { JSDOM } from 'jsdom';
-// import PImage = require('pureimage');
 import Jimp = require('jimp');
 
 declare const Buffer;
@@ -728,15 +725,6 @@ public static milkcatWide = '/9j/4AAQSkZJRgABAQEAoACgAAD/4RI9RXhpZgAASUkqAAgAAAA
 
     public static PIEXIF_JPEG_START_STR = 'data:image/jpeg;base64,';
 
-    /* public static async streamToString (stream) {
-      const chunks = []
-      return new Promise((resolve, reject) => {
-        stream.on('data', chunks.push)
-        stream.on('error', reject)
-        stream.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')))
-      })
-    } */
-
     /**
      * Takes a PNG, GIF, or JPEG image in base64 string format, and converts it to a JPEG,
      * stripping out the metadata in the process.
@@ -745,75 +733,12 @@ public static milkcatWide = '/9j/4AAQSkZJRgABAQEAoACgAAD/4RI9RXhpZgAASUkqAAgAAAA
      * @returns {Promise<string>}
      */
     public static async convertToJPEG(imageRaw: string): Promise<string> {
-        // const data = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAAAXNSR0IArs4c6QAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1'
-        //           + 'FB9oMCRUiMrIBQVkAAAAZdEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIEdJTVBXgQ4XAAAADElEQVQI12NgoC4AAABQAAEiE+h1AAAAAElFTkSuQmCC';
-
-        /* const { document } = (new JSDOM(`...`)).window;
-        // const image = new Image();
-        const image = document.createElement('img');
-        // const image = new Canvas.Image();
-        image.src = data;
-        const canvas = document.createElement('canvas');
-        // const canvas = Canvas.createCanvas(100, 100);
-        const canvasContext = canvas.getContext('2d');
-        if (!canvasContext) {
-          throw new MessageException('convertToJPEG(): canvasContext was null.');
-        }
-        canvasContext.drawImage(image, 0, 0);
-        return canvas.toDataURL('image/jpeg');*/
-
-        /* const image = PImage.make(100, 50);
-        // image.src = data;
-        const canvasContext = image.getContext('2d');
-        canvasContext.drawImage(image, 0, 0);
-        canvasContext.scale(1.5, 1.5);
-        canvasContext.save();
-        // return image.toDataURL('image/jpeg');
-        const retval = canvasContext.getImageData();
-        console.log('retval = ' + JSON.stringify(retval));
-        console.log('retval = ' + retval.data.toString());
-        return retval.toString();*/
-
-        // PImage.encodeJPEGToStream(img2,fs.createWriteStream(pth)).then(() => {
-        //   console.log("done writing");
-        // };
-        // return image.
-        // const result = await streamToString(stream)
-
-        // Convert image to JPEG (and strip metadata in the process)
-        /* let imageBuffer;
-        try {
-            const dataBuffer = Buffer.from(imageRaw, 'base64');
-            imageBuffer = sharp(dataBuffer);
-            imageBuffer = await imageBuffer.jpeg().toBuffer();
-        } catch ( ex ) {
-            if ( ex.toString() === 'Error: Input buffer has corrupt header' ) {
-                throw new MessageException('Image data was an unknown format. Supports: JPEG, PNG, GIF.');
-            } else {
-                console.log('convertToJPEG(): ' + ex);
-                throw ex;
-            }
-        }
-
-        return imageBuffer.toString('base64');*/
-
         const buf = Buffer.from(imageRaw, 'base64');
         const image = await Jimp.read(buf);
-        // const image = await Jimp.read(this.PIEXIF_JPEG_START_STR + imageRaw);
-        console.log('image2 = ' + image);
-
         const retBuf = await image.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
-          console.log('buffer.toString() = ' + buffer.toString('base64'));
           return buffer.toString();
         });
         return buf.toString('base64');
-
-        /* var retval: any = Jimp(imageRaw, (err, image) => {
-          return this.getBuffer(Jimp.MIME_JPEG, function (err, buffer) {
-            console.log('buffer.toString() = ' + buffer.toString());
-          });
-        }); */
-        // return imageRaw;
     }
 
     /**
