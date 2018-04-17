@@ -734,10 +734,11 @@ public static milkcatWide = '/9j/4AAQSkZJRgABAQEAoACgAAD/4RI9RXhpZgAASUkqAAgAAAA
     public static async convertToJPEG(imageRaw: string): Promise<string> {
         const buf = Buffer.from(imageRaw, 'base64');
         const image = await Jimp.read(buf);
-        const retBuf = await image.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
-          return buffer.toString();
+        const retval: any = await image.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
+          return buffer.toString('base64');
         });
-        return buf.toString('base64');
+        console.log('retval = ' + retval);
+        return retval;
     }
 
     /**
@@ -766,13 +767,14 @@ public static milkcatWide = '/9j/4AAQSkZJRgABAQEAoACgAAD/4RI9RXhpZgAASUkqAAgAAAA
      */
     public static async resizeImageToVersion(imageRaw: string, version: ImageVersion): Promise<string> {
         const dataBuffer = Buffer.from(imageRaw, 'base64');
-        const imageBuffer = sharp(dataBuffer);
-
+        const imageBuffer = await Jimp.read(dataBuffer);
         // resize only if target sizes > 0, else return original
         if (version.imageWidth > 0 && version.imageHeight > 0) {
-            let resizedImage = imageBuffer.resize(version.imageWidth, version.imageHeight).max();
-            resizedImage = await resizedImage.jpeg().toBuffer();
-            return resizedImage.toString('base64');
+            imageBuffer.scaleToFit(version.imageWidth, version.imageHeight);
+            const resizedImage: any = await imageBuffer.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
+              return buffer.toString('base64');
+            });
+            return resizedImage;
         } else {
             return imageRaw;
         }
