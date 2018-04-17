@@ -52,6 +52,7 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
      * [8]: generateObjectDatas
      * [9]: profileId
      * [10]: generateListingItem
+     * [11]: marketId
      *
      * @param generateParams
      */

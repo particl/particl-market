@@ -1,17 +1,28 @@
 import { rpc, api } from '../lib/api';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { ListingItem, ListingItemTemplate } from 'resources';
+import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import {HashableObjectType} from '../../../src/api/enums/HashableObjectType';
+import {ObjectHash} from '../../../src/core/helpers/ObjectHash';
+import {TestDataGenerateRequest} from '../../../src/api/requests/TestDataGenerateRequest';
 
 
 describe('ListingItemTemplateRemoveCommand', () => {
-    const testUtil = new BlackBoxTestUtil();
-    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const removeCommand = Commands.TEMPLATE_REMOVE.commandName;
 
-    let profile;
+    const log: LoggerType = new LoggerType(__filename);
+
+    const testUtil = new BlackBoxTestUtil();
+
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templateRemoveCommand = Commands.TEMPLATE_REMOVE.commandName;
+
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+
     let createdTemplateId;
 
     const listingItemData = {
@@ -28,67 +39,93 @@ describe('ListingItemTemplateRemoveCommand', () => {
         }
     };
 
-    const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-        true,   // generateItemInformation
-        true,   // generateShippingDestinations
-        true,   // generateItemImages
-        true,   // generatePaymentInformation
-        true,   // generateEscrow
-        true,   // generateItemPrice
-        true,   // generateMessagingInformation
-        false    // generateListingItemObjects
-    ]).toParamsArray();
-
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        profile = await testUtil.getDefaultProfile();
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
+
     });
 
-    test('Should remove Listing Item Template', async () => {
-        const listingitemtemplate = await testUtil.generateData(
+    test('Should remove ListingItemTemplate', async () => {
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false   // generateObjectDatas
+        ]).toParamsArray();
+
+        const listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
-        ) as ListingItemTemplate[];
+        ) as resources.ListingItemTemplates[];
 
-        createdTemplateId = listingitemtemplate[0].id;
+        createdTemplateId = listingItemTemplates[0].id;
 
-        const result: any = await rpc(templateCommand, [removeCommand, createdTemplateId]);
+        const result: any = await rpc(templateCommand, [templateRemoveCommand, createdTemplateId]);
         result.expectJson();
         result.expectStatusCode(200);
     });
 
-    test('Should fail remove Listing Item Template because Listing Item Template already removed', async () => {
+    test('Should fail remove ListingItemTemplate because ListingItemTemplate already removed', async () => {
         // remove Listing item template
-        const result: any = await rpc(templateCommand, [removeCommand, createdTemplateId]);
+        const result: any = await rpc(templateCommand, [templateRemoveCommand, createdTemplateId]);
         result.expectJson();
         result.expectStatusCode(404);
     });
 
-    test('Should fail remove Listing Item Template because Listing Item Template have related listing-items', async () => {
-        // listingItem template
-        const listingitemtemplate = await testUtil.generateData(
+    test('Should fail remove ListingItemTemplate because ListingItemTemplate have related ListingItems', async () => {
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            true,   // generateListingItem
+            defaultMarket.id  // marketId
+        ]).toParamsArray();
+
+        // generate ListingItemTemplate with ListingItem
+        const listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
-        ) as ListingItemTemplate[];
+        ) as resources.ListingItemTemplate[];
 
-        createdTemplateId = listingitemtemplate[0]['id'];
+        const listingItemTemplate = listingItemTemplates[0];
+        createdTemplateId = listingItemTemplate.id;
 
-        // market
-        const res = await rpc(Commands.MARKET_ROOT.commandName, [Commands.MARKET_ADD.commandName, 'Test Market', 'privateKey', 'Market Address']);
-        const resultMarket: any = res.getBody()['result'];
-        listingItemData.market_id = resultMarket.id;
+        // expect template is related to correct profile and listingitem posted to correct market
+        expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
+        expect(listingItemTemplate.ListingItems[0].marketId).toBe(defaultMarket.id);
 
-        // listingItem
-        listingItemData.listing_item_template_id = createdTemplateId;
-        const addListingItem: any = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemData);
+        // expect template hash created on the server matches what we create here
+        const generatedTemplateHash = ObjectHash.getHash(listingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
+        log.debug('generatedTemplateHash:', generatedTemplateHash);
+        expect(listingItemTemplate.hash).toBe(generatedTemplateHash);
+
+        // expect the item hash generated at the same time as template, matches with the templates one
+        log.debug('listingItemTemplate.hash:', listingItemTemplate.hash);
+        log.debug('listingItemTemplate.ListingItems[0].hash:', listingItemTemplate.ListingItems[0].hash);
+        expect(listingItemTemplate.hash).toBe(listingItemTemplate.ListingItems[0].hash);
 
         // remove Listing item template
-        const result: any = await rpc(templateCommand, [removeCommand, createdTemplateId]);
+        const result: any = await rpc(templateCommand, [templateRemoveCommand, createdTemplateId]);
         result.expectJson();
         result.expectStatusCode(404);
         expect(result.error.error.message).toBe(`ListingItemTemplate has ListingItems so it can't be deleted. id=${createdTemplateId}`);
