@@ -25,7 +25,8 @@ describe('AddressListCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        defaultProfile = await testUtil.getDefaultProfile();
+
+        defaultProfile = await testUtil.getDefaultProfile(false);
         defaultProfileId = defaultProfile.id;
     });
 

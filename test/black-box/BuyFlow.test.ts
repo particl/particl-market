@@ -15,9 +15,9 @@ describe('ListingItemSearchCommand', () => {
 
     const log: LoggerType = new LoggerType(__filename);
 
-    // const testUtilNode0 = new BlackBoxTestUtil(0);
-    const testUtilNode1 = new BlackBoxTestUtil(0);
-    const testUtilNode2 = new BlackBoxTestUtil(1);
+    const testUtilNode0 = new BlackBoxTestUtil(0);
+    const testUtilNode1 = new BlackBoxTestUtil(1);
+    // const testUtilNode2 = new BlackBoxTestUtil(2);
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
@@ -30,17 +30,17 @@ describe('ListingItemSearchCommand', () => {
 
     beforeAll(async () => {
 
-        await testUtilNode1.cleanDb();
+        await testUtilNode0.cleanDb();
         // await testUtilNode2.cleanDb();
 
         // get seller and buyer profiles
-        sellerProfile = await testUtilNode1.getDefaultProfile();
-        buyerProfile = await testUtilNode2.getDefaultProfile();
+        sellerProfile = await testUtilNode0.getDefaultProfile();
+        buyerProfile = await testUtilNode1.getDefaultProfile();
 
         log.debug('sellerProfile: ', sellerProfile);
         log.debug('buyerProfile: ', buyerProfile);
 
-        defaultMarket = await testUtilNode1.getDefaultMarket();
+        defaultMarket = await testUtilNode0.getDefaultMarket();
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
@@ -50,7 +50,7 @@ describe('ListingItemSearchCommand', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            true,    // generateListingItemObjects
+            false,    // generateListingItemObjects
             false,  // generateObjectDatas
             sellerProfile.id,    // profileId
             false,   // generateListingItem
@@ -58,7 +58,7 @@ describe('ListingItemSearchCommand', () => {
         ]).toParamsArray();
 
         // generate listingItemTemplate
-        listingItemTemplates = await testUtilNode1.generateData(
+        listingItemTemplates = await testUtilNode0.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
@@ -71,7 +71,7 @@ describe('ListingItemSearchCommand', () => {
 
         log.debug('listingItemTemplates[0]:', listingItemTemplates[0]);
         postedTemplateId = listingItemTemplates[0].id;
-        const res: any = await testUtilNode1.rpc(templateCommand, [templatePostCommand, postedTemplateId, defaultMarket.id]);
+        const res: any = await testUtilNode0.rpc(templateCommand, [templatePostCommand, postedTemplateId, defaultMarket.id]);
         res.expectJson();
         res.expectStatusCode(200);
 

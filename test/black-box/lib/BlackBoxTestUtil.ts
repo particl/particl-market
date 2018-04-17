@@ -72,11 +72,11 @@ export class BlackBoxTestUtil {
     }
 
     /**
-     * get default profile
      *
-     * @returns {Promise<any>}
+     * @param {boolean} generateShippingAddress, default true
+     * @returns {Promise<"resources".Profile>}
      */
-    public async getDefaultProfile(): Promise<resources.Profile> {
+    public async getDefaultProfile(generateShippingAddress: boolean = true): Promise<resources.Profile> {
         const res: any = await rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT'], this.node);
         res.expectJson();
         res.expectStatusCode(200);
@@ -88,32 +88,36 @@ export class BlackBoxTestUtil {
                     return AddressType.SHIPPING_OWN === address.type;
         }) === undefined )) {
 
-            this.log.debug('Adding a missing ShippingAddress for the default Profile.');
+            if (generateShippingAddress) {
+                this.log.debug('Adding a missing ShippingAddress for the default Profile.');
 
-            // if default profile doesnt have a shipping address, add it
-            // TODO: generate a random address
-            const addCommandParams = [
-                Commands.ADDRESS_ADD.commandName,
-                defaultProfile.id,
-                addressCreateRequestSHIPPING_OWN.firstName,
-                addressCreateRequestSHIPPING_OWN.lastName,
-                addressCreateRequestSHIPPING_OWN.title,
-                addressCreateRequestSHIPPING_OWN.addressLine1,
-                addressCreateRequestSHIPPING_OWN.addressLine2,
-                addressCreateRequestSHIPPING_OWN.city,
-                addressCreateRequestSHIPPING_OWN.state,
-                addressCreateRequestSHIPPING_OWN.country,
-                addressCreateRequestSHIPPING_OWN.zipCode
-            ];
+                // if default profile doesnt have a shipping address, add it
+                // TODO: generate a random address
+                const addCommandParams = [
+                    Commands.ADDRESS_ADD.commandName,
+                    defaultProfile.id,
+                    addressCreateRequestSHIPPING_OWN.firstName,
+                    addressCreateRequestSHIPPING_OWN.lastName,
+                    addressCreateRequestSHIPPING_OWN.title,
+                    addressCreateRequestSHIPPING_OWN.addressLine1,
+                    addressCreateRequestSHIPPING_OWN.addressLine2,
+                    addressCreateRequestSHIPPING_OWN.city,
+                    addressCreateRequestSHIPPING_OWN.state,
+                    addressCreateRequestSHIPPING_OWN.country,
+                    addressCreateRequestSHIPPING_OWN.zipCode
+                ];
 
-            // create address for default profile
-            const addressRes: any = await rpc(Commands.ADDRESS_ROOT.commandName, addCommandParams, this.node);
-            addressRes.expectJson();
-            addressRes.expectStatusCode(200);
+                // create address for default profile
+                const addressRes: any = await rpc(Commands.ADDRESS_ROOT.commandName, addCommandParams, this.node);
+                addressRes.expectJson();
+                addressRes.expectStatusCode(200);
+
+            }
 
             // get the updated profile
             const profileRes: any = await rpc(Commands.PROFILE_ROOT.commandName, [Commands.PROFILE_GET.commandName, 'DEFAULT'], this.node);
             return profileRes.getBody()['result'];
+
         } else {
             return defaultProfile;
         }
