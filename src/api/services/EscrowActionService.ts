@@ -388,8 +388,6 @@ export class EscrowActionService {
 
         const orderItem: resources.OrderItem = request.orderItem;
         const bid: resources.Bid = orderItem.Bid;
-        console.log(' [RM] template '); 
-        console.log(orderItem.Bid.ListingItem.ListingItemTemplate);
         const isMyListingItem = !_.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
 
         let rawtx = this.getValueFromOrderItemObjects('rawtx', orderItem.OrderItemObjects);
