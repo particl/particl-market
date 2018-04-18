@@ -97,14 +97,14 @@ export class ListingItemObjectService {
         listingItemObject.Type = body.type;
         listingItemObject.Description = body.description;
         listingItemObject.Order = body.order;
-        
+
         // update listingItemObjectDatas
         const listingItemObjectDatasOld = listingItemObject.ListingItemObjectDatas();
         const objectDataIds: number[] = new Array();
-        listingItemObjectDatasOld.forEach((objectData: ListingItemObjectData): void {
+        listingItemObjectDatasOld.forEach((objectData: ListingItemObjectData): void => {
             objectDataIds.push(objectData.id);
         });
-         
+
         for (const objectDataId of objectDataIds) {
             await this.listingItemObjectDataService.destroy(objectDataId);
         }
