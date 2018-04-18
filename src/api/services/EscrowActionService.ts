@@ -90,7 +90,7 @@ export class EscrowActionService {
             mpaction: escrowActionMessage
         } as MarketplaceMessage;
 
-        return await this.smsgService.smsgSend(orderItem.Order.seller, orderItem.Order.buyer, marketPlaceMessage, false);
+        return await this.smsgService.smsgSend(orderItem.Order.buyer, orderItem.Order.seller, marketPlaceMessage, false);
     }
 
     public async refund(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
