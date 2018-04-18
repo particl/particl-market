@@ -737,7 +737,6 @@ public static milkcatWide = '/9j/4AAQSkZJRgABAQEAoACgAAD/4RI9RXhpZgAASUkqAAgAAAA
         const retval: any = await image.getBuffer(Jimp.MIME_JPEG, (err, buffer) => {
           return buffer.toString('base64');
         });
-        console.log('retval = ' + retval);
         return retval;
     }
 
