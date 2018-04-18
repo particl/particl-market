@@ -111,7 +111,7 @@ describe('BidSendCommand', () => {
             'xl'
         ];
 
-        // create listing item
+        // send bid
         const res: any = await rpc(bidCommand, bidSendCommandParams);
         res.expectJson();
         res.expectStatusCode(200);

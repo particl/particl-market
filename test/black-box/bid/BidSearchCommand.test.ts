@@ -7,7 +7,6 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { GenerateBidParams } from '../../../src/api/requests/params/GenerateBidParams';
 
-import * as bidCreateRequest1 from '../../testdata/createrequest/bidCreateRequestMPA_BID.json';
 import * as resources from 'resources';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 
@@ -57,7 +56,7 @@ describe('BidSearchCommand', () => {
 
     });
 
-    test('Should return empty bid search result because bids does not exist for the given item', async () => {
+    test('Should return empty bid search result because Bids do not exist for the given ListingItem', async () => {
         const res: any = await rpc(bidCommand, [searchCommand, listingItems[0].hash]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -65,7 +64,7 @@ describe('BidSearchCommand', () => {
         expect(result.length).toBe(0);
     });
 
-    test('Should fail to search bids because invalid item hash', async () => {
+    test('Should fail to search for Bids because invalid ListingItem.hash', async () => {
         // search bid by item hash
         const res: any = await rpc(bidCommand, [searchCommand, 'INVALID HASH']);
         res.expectJson();
@@ -74,12 +73,12 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe('Entity with identifier INVALID HASH does not exist');
     });
 
-    test('Should return one Bid searched by ListingItem hash', async () => {
+    test('Should return one Bid searched by ListingItem.hash', async () => {
 
         const bidGenerateParams = new GenerateBidParams([
             true,                       // generateListingItemTemplate
             true,                       // generateListingItem
-            listingItems[0].hash,       // listingItemhash
+            listingItems[0].hash,       // listingItem.hash
             BidMessageType.MPA_BID,     // action
             defaultProfile.address      // bidder
         ]).toParamsArray();
@@ -132,7 +131,7 @@ describe('BidSearchCommand', () => {
 
     });
 
-    test('Should search Bids by ListingItem.hash and bid status', async () => {
+    test('Should search Bids by ListingItem.hash and Bid.status', async () => {
         // search bid by item hash
         const res: any = await rpc(bidCommand, [searchCommand, listingItems[0].hash, BidMessageType.MPA_BID]);
         res.expectJson();
@@ -143,13 +142,13 @@ describe('BidSearchCommand', () => {
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
-    test('Should fail to search Bids because invalid enum bid status', async () => {
+    test('Should fail to search Bids because invalid BidMessageType enum', async () => {
         // search bid by item hash
         const res: any = await rpc(bidCommand, [searchCommand, listingItems[0].hash, 'INVALID STATUS']);
         res.expectJson();
-        res.expectStatusCode(400);
+        res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Request body is not valid');
+        expect(res.error.error.message).toBe('Invalid BidMessageType: INVALID STATUS');
     });
 
     test('Should return empty search result because Bid with status MPA_REJECT does not exist', async () => {
@@ -161,5 +160,9 @@ describe('BidSearchCommand', () => {
         expect(result.length).toBe(0);
     });
 
+
+    // TODO: missing tests for search order
+    // TODO: missing tests for searching using bidder
+    // TODO: missing tests for searching using multiple bidders
 
 });

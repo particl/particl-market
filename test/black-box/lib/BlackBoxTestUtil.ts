@@ -162,7 +162,7 @@ export class BlackBoxTestUtil {
     public async rpcWaitFor(method: string, params: any[] = [], maxSeconds: number = 10, waitForStatusCode: number = 200,
                             waitForObjectProperty?: string, waitForObjectPropertyValue?: any ): Promise<any> {
 
-        this.log.debug('=[ rpcWaitFor ]==============================================================================');
+        this.log.debug('==[ rpcWaitFor ]=============================================================================');
         this.log.debug('waiting for StatusCode: ' + waitForStatusCode);
         this.log.debug('waiting for ObjectProperty: ' + waitForObjectProperty);
         this.log.debug('waiting for ObjectPropertyValue: ' + JSON.stringify(waitForObjectPropertyValue));
@@ -179,17 +179,17 @@ export class BlackBoxTestUtil {
                     const objectPropertyValue = _.get(result, waitForObjectProperty);
 
                     if (objectPropertyValue === waitForObjectPropertyValue) {
-                        this.log.debug('statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
+                        this.log.debug('success! statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
                         return response;
                     } else {
                         this.log.debug(waitForObjectProperty + ' !== ' + waitForObjectPropertyValue);
                     }
                 } else {
-                    this.log.debug('statusCode === ' + waitForStatusCode);
+                    this.log.debug('success! statusCode === ' + waitForStatusCode);
                     return response;
                 }
             } else {
-                this.log.debug('not expecting this: ', response);
+                this.log.debug('confusion! not expecting this: ', response);
             }
 
             // try again

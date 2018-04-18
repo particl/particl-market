@@ -8,6 +8,7 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as listingItemTemplateCreateRequestWithoutLocationMarker from '../testdata/createrequest/listingItemTemplateCreateRequestWithoutLocationMarker.json';
 import * as resources from 'resources';
+import {BidMessageType} from '../../src/api/enums/BidMessageType';
 // tslint:enable:max-line-length
 
 describe('ListingItemSearchCommand', () => {
@@ -27,11 +28,15 @@ describe('ListingItemSearchCommand', () => {
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
 
+    const bidCommand = Commands.BID_ROOT.commandName;
+    const bidSendCommand = Commands.BID_SEND.commandName;
+
     let sellerProfile;
     let buyerProfile;
     let defaultMarket;
 
     let listingItemTemplatesNode0: resources.ListingItemTemplate[];
+    let listingItemReceivedNode1: resources.ListingItem;
 
     beforeAll(async () => {
 
@@ -94,29 +99,24 @@ describe('ListingItemSearchCommand', () => {
 
         // log.debug('listingItemTemplates[0]:', listingItemTemplatesNode0[0]);
 
-        const templateIdToPost = listingItemTemplatesNode0[0].id;
-        const templatePostRes: any = await testUtilNode0.rpc(templateCommand, [templatePostCommand, templateIdToPost, defaultMarket.id]);
+        const templatePostRes: any = await testUtilNode0.rpc(templateCommand, [templatePostCommand, listingItemTemplatesNode0[0].id, defaultMarket.id]);
         templatePostRes.expectJson();
         templatePostRes.expectStatusCode(200);
 
         // make sure we got the expected result from posting the template
-        let result: any = templatePostRes.getBody()['result'];
+        const result: any = templatePostRes.getBody()['result'];
         expect(result.result).toBe('Sent.');
         expect(result.txid).toBeDefined();
         expect(result.fee).toBeGreaterThan(0);
 
-        log.debug('===============================================================================');
-        log.debug('id: ' + listingItemTemplatesNode0[0].id + ', ' + listingItemTemplatesNode0[0].ItemInformation.title);
-        log.debug('desc: ' + listingItemTemplatesNode0[0].ItemInformation.shortDescription);
-        log.debug('category: ' + listingItemTemplatesNode0[0].ItemInformation.ItemCategory.id + ', '
+        log.debug('==[ post ListingItemTemplate /// seller (node0) -> marketplace ]========================');
+        log.debug('item.id: ' + listingItemTemplatesNode0[0].id);
+        log.debug('item.hash: ' + listingItemTemplatesNode0[0].hash);
+        log.debug('item.title: ' + listingItemTemplatesNode0[0].ItemInformation.title);
+        log.debug('item.desc: ' + listingItemTemplatesNode0[0].ItemInformation.shortDescription);
+        log.debug('item.category: [' + listingItemTemplatesNode0[0].ItemInformation.ItemCategory.id + '] '
             + listingItemTemplatesNode0[0].ItemInformation.ItemCategory.name);
-        log.debug('hash: ' + listingItemTemplatesNode0[0].hash);
-        log.debug('===============================================================================');
-
-
-
-
-
+        log.debug('========================================================================================');
 
     });
 
@@ -137,6 +137,9 @@ describe('ListingItemSearchCommand', () => {
         // make sure we got the expected result
         const result = itemGetNode1Res.getBody()['result'];
         expect(result.hash).toBe(listingItemTemplatesNode0[0].hash);
+
+        // store for later tests
+        listingItemReceivedNode1 = result;
 
     }, 600000); // timeout to 600s
 
@@ -163,5 +166,46 @@ describe('ListingItemSearchCommand', () => {
 
     }, 600000); // timeout to 600s
 
+    test('Should send BidMessage for the ListingItem from node1 to seller', async () => {
+
+        const bidSendCommandParams = [
+            bidSendCommand,
+            listingItemReceivedNode1.hash,
+            buyerProfile.id,
+            buyerProfile.ShippingAddresses[0].id,
+            'colour',   // TODO: make sure item has these options and test that these end up in the Order
+            'black',
+            'size',
+            'xl'
+        ];
+
+        const bidSendRes: any = await testUtilNode1.rpc(bidCommand, bidSendCommandParams);
+        bidSendRes.expectJson();
+        bidSendRes.expectStatusCode(200);
+
+        // make sure we got the expected result from sending the bid
+        const result: any = bidSendRes.getBody()['result'];
+        log.debug('result', result);
+        expect(result.result).toBe('Sent.');
+
+        // get the bid
+        // <itemhash>|*) [(<status>|*) [<ordering> [<bidderAddress..
+        // search bid by item hash
+        const res: any = await rpc(bidCommand, [searchCommand, listingItems[0].hash, BidMessageType.MPA_BID]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
+
+        log.debug('==[ send Bid /// buyer (node1) -> seller (node0) ]=============================');
+        log.debug('msgid: ' + result.msgid);
+        log.debug('item.hash: ' + listingItemReceivedNode1.hash);
+        log.debug('item.seller: ' + listingItemReceivedNode1.seller);
+        log.debug('bid.bidder: ' + listingItemTemplatesNode0[0].hash);
+        log.debug('===============================================================================');
+
+    }, 600000); // timeout to 600s
 
 });
