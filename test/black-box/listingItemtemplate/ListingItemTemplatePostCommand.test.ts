@@ -64,6 +64,15 @@ describe('ListingItemSearchCommand', () => {
         expect(result.result).toBe('Sent.');
         expect(result.txid).toBeDefined();
         expect(result.fee).toBeGreaterThan(0);
+
+        log.debug('==[ POSTED ITEM ]=============================================================================');
+        log.debug('id: ' + listingItemTemplates[0].id + ', ' + listingItemTemplates[0].ItemInformation.title);
+        log.debug('desc: ' + listingItemTemplates[0].ItemInformation.shortDescription);
+        log.debug('category: ' + listingItemTemplates[0].ItemInformation.ItemCategory.id + ', '
+            + listingItemTemplates[0].ItemInformation.ItemCategory.name);
+        log.debug('hash: ' + listingItemTemplates[0].hash);
+        log.debug('==============================================================================================');
+
     });
 
 
