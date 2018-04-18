@@ -8,6 +8,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { AddressType } from '../../../src/api/enums/AddressType';
 
 import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
+import {MessageException} from '../../../src/api/exceptions/MessageException';
 
 export class BlackBoxTestUtil {
 
@@ -136,7 +137,7 @@ export class BlackBoxTestUtil {
     public async rpc(method: string, params: any[] = []): Promise<any> {
         const response = await rpc(method, params, this.node);
         if (response.error) {
-            this.log.debug(JSON.stringify(response.error.message));
+            this.log.error(response.error.error.message);
         }
         return response;
     }
@@ -161,10 +162,18 @@ export class BlackBoxTestUtil {
     public async rpcWaitFor(method: string, params: any[] = [], maxSeconds: number = 10, waitForStatusCode: number = 200,
                             waitForObjectProperty?: string, waitForObjectPropertyValue?: any ): Promise<any> {
 
+        this.log.debug('=[ rpcWaitFor ]==============================================================================');
+        this.log.debug('waiting for StatusCode: ' + waitForStatusCode);
+        this.log.debug('waiting for ObjectProperty: ' + waitForObjectProperty);
+        this.log.debug('waiting for ObjectPropertyValue: ' + JSON.stringify(waitForObjectPropertyValue));
+        this.log.debug('=============================================================================================');
+
         for (let i = 0; i < maxSeconds; i++) {
             const response: any = await this.rpc(method, params);
 
-            if (waitForStatusCode === response.res.statusCode) {
+            if (response.error) {
+                // this.log.debug('response.error: ', response.error.error.message);
+            } else if (waitForStatusCode === response.res.statusCode) {
                 if (waitForObjectProperty) {
                     const result = response.getBody()['result'];
                     const objectPropertyValue = _.get(result, waitForObjectProperty);
@@ -179,16 +188,19 @@ export class BlackBoxTestUtil {
                     this.log.debug('statusCode === ' + waitForStatusCode);
                     return response;
                 }
+            } else {
+                this.log.debug('not expecting this: ', response);
             }
 
             // try again
             await this.waitTimeOut(1000);
         }
-        return true;
+
+        throw new MessageException('rpcWaitFor did not receive expected response within given time.');
     }
 
     private waitTimeOut(timeoutMs: number): Promise<void> {
-        this.log.debug('waiting for ' + timeoutMs + 'ms');
+
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve();

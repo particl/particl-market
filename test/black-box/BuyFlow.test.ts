@@ -11,7 +11,8 @@ import * as resources from 'resources';
 // tslint:enable:max-line-length
 
 describe('ListingItemSearchCommand', () => {
-    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT * 5;
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
 
@@ -104,14 +105,22 @@ describe('ListingItemSearchCommand', () => {
         expect(result.txid).toBeDefined();
         expect(result.fee).toBeGreaterThan(0);
 
-        await testUtilNode0.waitFor(5);
+        log.debug('===============================================================================');
+        log.debug('id: ' + listingItemTemplatesNode0[0].id + ', ' + listingItemTemplatesNode0[0].ItemInformation.title);
+        log.debug('desc: ' + listingItemTemplatesNode0[0].ItemInformation.shortDescription);
+        log.debug('category: ' + listingItemTemplatesNode0[0].ItemInformation.ItemCategory.id + ', '
+            + listingItemTemplatesNode0[0].ItemInformation.ItemCategory.name);
+        log.debug('hash: ' + listingItemTemplatesNode0[0].hash);
+        log.debug('===============================================================================');
+
+        // await testUtilNode0.waitFor(5);
 
         // try to find the item from the other node
 
         const itemGetRes: any = await testUtilNode1.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplatesNode0[0].hash],
-            3 * 60,
+            8 * 60,
             200,
             'hash',
             listingItemTemplatesNode0[0].hash
@@ -123,8 +132,7 @@ describe('ListingItemSearchCommand', () => {
         result = itemGetRes.getBody()['result'];
         expect(result.hash).toBe(listingItemTemplatesNode0[0].hash);
 
-
-    });
+    }, 600000); // timeout to 600s
 
     test('Should post a ListingItem in to the default marketplace without LocationMarker', async () => {
 /*

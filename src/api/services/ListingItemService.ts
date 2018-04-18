@@ -297,6 +297,8 @@ export class ListingItemService {
 
     public async updateListingItemTemplateRelation(id: number): Promise<ListingItem> {
 
+        this.log.debug('updating ListingItem relation to possible ListingItemTemplate.');
+
         let listingItem = await this.findOne(id, false);
 
         const templateId = await this.listingItemTemplateService.findOneByHash(listingItem.Hash)

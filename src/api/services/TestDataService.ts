@@ -812,7 +812,7 @@ export class TestDataService {
 
         const itemPrice = generateParams.generateItemPrice
             ? {
-                currency: Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
+                currency: Currency.PARTICL.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
                 basePrice: _.random(0.1, 1.00),
                 shippingPrice: {
                     domestic: _.random(0.01, 0.10),

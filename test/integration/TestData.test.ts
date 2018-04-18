@@ -29,6 +29,7 @@ import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updatereque
 import * as resources from 'resources';
 import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
 import {GenerateOrderParams} from '../../src/api/requests/params/GenerateOrderParams';
+import {OrderStatus} from '../../src/api/enums/OrderStatus';
 
 
 describe('TestDataService', () => {
@@ -113,21 +114,20 @@ describe('TestDataService', () => {
 
 
     const expectGenerateBid = (bidGenerateParams: GenerateBidParams, result: resources.Bid,
-                               shouldHaveListingItemTemplate: boolean = true,
-                               shouldHaveListingItem: boolean = true,
                                shouldHaveBidDatas: boolean = true,
                                shouldHaveShippingAddress: boolean = true) => {
 
-        log.debug('result: ', JSON.stringify(result, null, 2));
-        log.debug('bidGenerateParams: ', JSON.stringify(bidGenerateParams, null, 2));
+        // log.debug('result: ', JSON.stringify(result, null, 2));
+        // log.debug('bidGenerateParams: ', JSON.stringify(bidGenerateParams, null, 2));
+
         expect(result.action).toBe(bidGenerateParams.action);
         expect(result.bidder).toBe(bidGenerateParams.bidder);
 
-        if (shouldHaveListingItem) {
+        if (bidGenerateParams.generateListingItem) {
             expect(result.ListingItem).toBeDefined();
             expect(result.ListingItem.hash).not.toBeNull();
 
-            if (shouldHaveListingItemTemplate) {
+            if (bidGenerateParams.generateListingItemTemplate) {
                 // TODO: if both are generated, same data should be used
                 // generated template contains different data than the item
                 // expect(result.ListingItem.hash).toBe(result.ListingItem.ListingItemTemplate.hash);
@@ -142,7 +142,10 @@ describe('TestDataService', () => {
             }
 
         } else {
-            expect(result.ListingItem.ListingItemTemplate).not.toBeDefined();
+            if (bidGenerateParams.listingItemHash) {
+                expect(result.ListingItem.hash).toBe(bidGenerateParams.listingItemHash);
+            }
+            expect(result.ListingItem.ListingItemTemplate).toEqual({});
         }
 
         if (shouldHaveBidDatas) {
@@ -162,6 +165,43 @@ describe('TestDataService', () => {
             expect(result.ShippingAddress.country).not.toBeNull();
         } else {
             expect(result.ShippingAddress).not.toBeDefined();
+        }
+    };
+
+    const expectGenerateOrder = (orderGenerateParams: GenerateOrderParams, result: resources.Order) => {
+
+        log.debug('result: ', JSON.stringify(result, null, 2));
+        log.debug('orderGenerateParams: ', JSON.stringify(orderGenerateParams, null, 2));
+
+        expect(result.hash).toBeDefined();
+
+        expect(result.OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
+
+        if (orderGenerateParams.generateListingItem) {
+            expect(result.OrderItems[0].Bid.ListingItem).toBeDefined();
+            expect(result.OrderItems[0].Bid.ListingItem.hash).not.toBeNull();
+
+            if (orderGenerateParams.generateListingItemTemplate) {
+                // TODO: if both are generated, same data should be used
+                expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate).toBeDefined();
+                expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate.hash).not.toBeNull();
+            } else {
+                expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate).not.toBeDefined();
+            }
+
+            if (orderGenerateParams.listingItemHash) {
+                expect(result.OrderItems[0].Bid.ListingItem.hash).toBe(orderGenerateParams.listingItemHash);
+                expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate.hash).toBe(orderGenerateParams.listingItemHash);
+            }
+
+        } else {
+            expect(result.OrderItems[0].Bid.ListingItem.ListingItemTemplate).not.toBeDefined();
+        }
+
+        if (orderGenerateParams.generateBid) {
+            expect(result.OrderItems[0].Bid).toBeDefined();
+        } else {
+            expect(result.OrderItems[0].Bid).not.toBeDefined();
         }
     };
 
@@ -202,7 +242,6 @@ describe('TestDataService', () => {
         listingItemTemplateData.profile_id = defaultProfile.id;
 
         // TODO: create tests to test creation of different model types
-        // TODO: use test data files
 
         const createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
             model: CreatableModel.LISTINGITEMTEMPLATE,
@@ -373,7 +412,7 @@ describe('TestDataService', () => {
 
         const bid = generatedBids[0];
 
-        expectGenerateBid(bidGenerateParams, bid, true, true, false, true);
+        expectGenerateBid(bidGenerateParams, bid, false, true);
     });
 
     test('Should generate Bid using GenerateBidParams, with a relation to existing ListingItem', async () => {
@@ -409,69 +448,13 @@ describe('TestDataService', () => {
         } as TestDataGenerateRequest);
 
         const bid = generatedBids[0];
-        expectGenerateBid(bidGenerateParams, bid, true, true, false, true);
+        expectGenerateBid(bidGenerateParams, bid, false, true);
 
         expect(bid.ListingItem.hash).toBe(listingItems[0].hash);
         // expect(bid.ListingItem.seller).toBe(defaultProfile.address);
 
     });
 
-
-
-    const expectGenerateOrder = (orderGenerateParams: GenerateOrderParams, result: resources.Order,
-                               shouldHaveListingItemTemplate: boolean = true,
-                               shouldHaveListingItem: boolean = true,
-                               shouldHaveBid: boolean = true) => {
-
-        log.debug('result: ', JSON.stringify(result, null, 2));
-        log.debug('orderGenerateParams: ', JSON.stringify(orderGenerateParams, null, 2));
-
-        /*
-        expect(result.action).toBe(bidGenerateParams.action);
-        expect(result.bidder).toBe(bidGenerateParams.bidder);
-
-        if (shouldHaveListingItem) {
-            expect(result.ListingItem).toBeDefined();
-            expect(result.ListingItem.hash).not.toBeNull();
-
-            if (shouldHaveListingItemTemplate) {
-                // TODO: if both are generated, same data should be used
-                // generated template contains different data than the item
-                // expect(result.ListingItem.hash).toBe(result.ListingItem.ListingItemTemplate.hash);
-                expect(result.ListingItem.ListingItemTemplate).toBeDefined();
-                expect(result.ListingItem.ListingItemTemplate.hash).not.toBeNull();
-            } else {
-                expect(result.ListingItem.ListingItemTemplate).not.toBeDefined();
-            }
-
-            if (bidGenerateParams.listingItemHash) {
-                expect(result.ListingItem.hash).toBe(bidGenerateParams.listingItemHash);
-            }
-
-        } else {
-            expect(result.ListingItem.ListingItemTemplate).not.toBeDefined();
-        }
-
-        if (shouldHaveBidDatas) {
-            expect(result.BidDatas).not.toHaveLength(0);
-        } else {
-            expect(result.BidDatas).toHaveLength(0);
-        }
-
-        if (shouldHaveShippingAddress) {
-            expect(result.ShippingAddress.title).not.toBeNull();
-            expect(result.ShippingAddress.firstName).not.toBeNull();
-            expect(result.ShippingAddress.lastName).not.toBeNull();
-            expect(result.ShippingAddress.addressLine1).not.toBeNull();
-            expect(result.ShippingAddress.addressLine2).not.toBeNull();
-            expect(result.ShippingAddress.city).not.toBeNull();
-            expect(result.ShippingAddress.zipCode).not.toBeNull();
-            expect(result.ShippingAddress.country).not.toBeNull();
-        } else {
-            expect(result.ShippingAddress).not.toBeDefined();
-        }
-        */
-    };
 
     test('Should generate Order using GenerateOrderParams, with a relation to existing ListingItem', async () => {
         await testDataService.clean(true);
@@ -507,10 +490,8 @@ describe('TestDataService', () => {
 
         const order = generatedOrders[0];
 
-        expectGenerateOrder(orderGenerateParams, order, true, true);
+        expectGenerateOrder(orderGenerateParams, order);
 
-        expect(order.hash).toBeDefined();
-        // expect(bid.ListingItem.seller).toBe(defaultProfile.address);
 
     });
 

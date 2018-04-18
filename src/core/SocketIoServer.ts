@@ -53,13 +53,13 @@ export class SocketIoServer {
             });
 
             client.on('serverpong', (data) => {
-                this.log.debug('received pong from client');
+                // this.log.debug('received pong from client');
             });
 
         });
 
         setInterval(() => {
-            this.log.debug('sending ping to client');
+            // this.log.debug('sending ping to client');
             io.sockets.emit('serverping', { data: new Date().toString()});
         }, 15000);
 
