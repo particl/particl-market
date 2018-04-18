@@ -161,7 +161,7 @@ export class ListingItemService {
             await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
         }
 
-        this.log.debug('create actionMessages:', JSON.stringify(actionMessages, null, 2));
+        // this.log.debug('create actionMessages:', JSON.stringify(actionMessages, null, 2));
 
         // create actionMessages, only used to create testdata
         for (const actionMessage of actionMessages) {
