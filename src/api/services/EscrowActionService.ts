@@ -90,7 +90,7 @@ export class EscrowActionService {
             mpaction: escrowActionMessage
         } as MarketplaceMessage;
 
-        return await this.smsgService.smsgSend(orderItem.Order.seller, orderItem.Order.buyer, marketPlaceMessage, false);
+        return await this.smsgService.smsgSend(orderItem.Order.buyer, orderItem.Order.seller, marketPlaceMessage, false);
     }
 
     public async refund(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
@@ -388,8 +388,6 @@ export class EscrowActionService {
 
         const orderItem: resources.OrderItem = request.orderItem;
         const bid: resources.Bid = orderItem.Bid;
-        console.log(' [RM] template '); 
-        console.log(orderItem.Bid.ListingItem.ListingItemTemplate);
         const isMyListingItem = !_.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
 
         let rawtx = this.getValueFromOrderItemObjects('rawtx', orderItem.OrderItemObjects);
