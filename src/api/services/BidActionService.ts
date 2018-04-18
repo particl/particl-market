@@ -20,6 +20,7 @@ import { ListingItemService } from './ListingItemService';
 
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { Market } from '../models/Market';
+import { Profile } from '../models/Profile';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { BidMessageType } from '../enums/BidMessageType';
 import { Output } from 'resources';
@@ -460,7 +461,17 @@ export class BidActionService {
         if (bid.action === BidMessageType.MPA_BID) {
 
             // create the bid cancel message
-            const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_CANCEL, listingItem.hash);
+            const bidMessage: BidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_CANCEL, listingItem.hash);
+
+            // Update the bid in the database with new action.
+            const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
+            const bidUpdateRequest: BidUpdateRequest = {
+                listing_item_id: tmpBidCreateRequest.listing_item_id,
+                action: BidMessageType.MPA_CANCEL,
+                bidder: tmpBidCreateRequest.bidder,
+                bidDatas: tmpBidCreateRequest.bidDatas
+            } as BidUpdateRequest;
+            const retBid = await this.bidService.update(bid.id, bidUpdateRequest);
 
             const marketPlaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,
@@ -488,13 +499,26 @@ export class BidActionService {
     public async reject(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
 
         if (bid.action === BidMessageType.MPA_BID) {
-
             // fetch the seller profile
-            const sellerProfileModel = await this.profileService.findOneByAddress(listingItem.seller);
+            const sellerProfileModel: Profile = await this.profileService.findOneByAddress(listingItem.seller);
+            if (!sellerProfileModel) {
+                this.log.error('Seller profile not found. We aren\'t the seller?');
+                throw new MessageException('Seller profile not found. We aren\'t the seller?');
+            }
             const sellerProfile = sellerProfileModel.toJSON();
 
             // create the bid reject message
             const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_REJECT, listingItem.hash);
+
+            // Update the bid in the database with new action.
+            const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
+            const bidUpdateRequest: BidUpdateRequest = {
+                listing_item_id: tmpBidCreateRequest.listing_item_id,
+                action: BidMessageType.MPA_REJECT,
+                bidder: tmpBidCreateRequest.bidder,
+                bidDatas: tmpBidCreateRequest.bidDatas
+            } as BidUpdateRequest;
+            const retBid = await this.bidService.update(bid.id, bidUpdateRequest);
 
             const marketPlaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,
@@ -707,24 +731,47 @@ export class BidActionService {
      * @returns {Promise<"resources".ActionMessage>}
      */
     public async processRejectBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-
         this.log.info('Received event:', event);
 
-        // find the ListingItem
+        this.log.info('Received event:', event);
         const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
+        const bidMessage: any = message.mpaction as BidMessage;
+        const bidder = event.smsgMessage.to;
+
+        // find the ListingItem
+        if (!bidMessage) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
-        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
+        const listingItemModel = await this.listingItemService.findOneByHash(bidMessage.item);
         const listingItem = listingItemModel.toJSON();
 
         // first save it
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
-        // TODO: do whatever else needs to be done
-        // change bid status
-        // save new bid status
+        // Get latest bid from listingItemId and bidder so we can get bidId.
+        const params: BidSearchParams = new BidSearchParams({
+            listingItemId: listingItem.id,
+            action: BidMessageType.MPA_BID,
+            bidders: [ bidder ],
+            ordering: SearchOrder.DESC
+        });
+        const oldBids: Bookshelf.Collection<Bid> = await this.bidService.search(params);
+        let oldBid: any = oldBids.pop();
+        if (!oldBid) {
+            throw new MessageException('Missing old bid.');
+        }
+        oldBid = oldBid.toJSON();
+
+        // Update the bid in the database with new action.
+        const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, oldBid);
+        const bidUpdateRequest: BidUpdateRequest = {
+            listing_item_id: tmpBidCreateRequest.listing_item_id,
+            action: BidMessageType.MPA_REJECT,
+            bidder: tmpBidCreateRequest.bidder,
+            bidDatas: tmpBidCreateRequest.bidDatas
+        } as BidUpdateRequest;
+        const retBid = await this.bidService.update(oldBid.id, bidUpdateRequest);
 
         return actionMessage;
     }

@@ -37,32 +37,28 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
-        try {
-            if (data.params.length < 2) {
-                throw new MessageException('Requires two args');
-            }
-            const itemHash = data.params[0];
-            const bidId = data.params[1];
-
-            // find listingItem by hash
-            const listingItemModel = await this.listingItemService.findOneByHash(itemHash);
-            const listingItem = listingItemModel.toJSON();
-
-            // find the bid
-            const bids: resources.Bid[] = listingItem.Bids;
-            const bidToCancel = _.find(bids, (bid) => {
-                return bid.id === bidId;
-            });
-
-            if (!bidToCancel) {
-                throw new MessageException('Bid not found.');
-            }
-
-            return this.bidActionService.cancel(listingItem, bidToCancel);
-        } catch (ex) {
-            this.log.error(ex);
-            throw ex;
+        if (data.params.length < 2) {
+            this.log.error('Requires two args');
+            throw new MessageException('Requires two args');
         }
+        const itemHash = data.params[0];
+        const bidId = data.params[1];
+
+        // find listingItem by hash
+        const listingItemModel = await this.listingItemService.findOneByHash(itemHash);
+        const listingItem = listingItemModel.toJSON();
+
+        // find the bid
+        const bids: resources.Bid[] = listingItem.Bids;
+        const bidToCancel = _.find(bids, (bid) => {
+            return bid.id === bidId;
+        });
+
+        if (!bidToCancel) {
+            throw new MessageException('Bid not found.');
+        }
+
+        return this.bidActionService.cancel(listingItem, bidToCancel);
     }
 
     public usage(): string {
