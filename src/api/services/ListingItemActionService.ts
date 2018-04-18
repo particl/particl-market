@@ -152,6 +152,8 @@ export class ListingItemActionService {
             const market = marketModel.toJSON();
 
             const listingItemMessage = message.item;
+
+            this.log.debug('listingItemMessage: ', listingItemMessage);
             // create the new custom categories in case there are some
             const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
 

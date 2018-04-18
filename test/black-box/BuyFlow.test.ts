@@ -113,11 +113,17 @@ describe('ListingItemSearchCommand', () => {
         log.debug('hash: ' + listingItemTemplatesNode0[0].hash);
         log.debug('===============================================================================');
 
-        // await testUtilNode0.waitFor(5);
+
+
+
+
+
+    });
+
+    test('Should receive ListingItemTemplate posted from node0 as ListingItem on node1', async () => {
 
         // try to find the item from the other node
-
-        const itemGetRes: any = await testUtilNode1.rpcWaitFor(
+        const itemGetNode1Res: any = await testUtilNode1.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplatesNode0[0].hash],
             8 * 60,
@@ -125,35 +131,37 @@ describe('ListingItemSearchCommand', () => {
             'hash',
             listingItemTemplatesNode0[0].hash
         );
-        itemGetRes.expectJson();
-        itemGetRes.expectStatusCode(200);
+        itemGetNode1Res.expectJson();
+        itemGetNode1Res.expectStatusCode(200);
 
         // make sure we got the expected result
-        result = itemGetRes.getBody()['result'];
+        const result = itemGetNode1Res.getBody()['result'];
         expect(result.hash).toBe(listingItemTemplatesNode0[0].hash);
 
     }, 600000); // timeout to 600s
 
-    test('Should post a ListingItem in to the default marketplace without LocationMarker', async () => {
-/*
-        // generate listingItemTemplate
-        listingItemTemplates = await testUtilNode0.addData(
-            CreatableModel.LISTINGITEMTEMPLATE,
-            listingItemTemplateCreateRequestWithoutLocationMarker
-        ) as resources.ListingItemTemplates[];
+    test('Should receive ListingItemTemplate posted from node0 as ListingItem on node0 and match it with the existing ListingItemTemplate', async () => {
 
-        postedTemplateId = listingItemTemplates[0].id;
-        const res: any = await rpc(templateCommand, [templatePostCommand, postedTemplateId, defaultMarket.id]);
-        res.expectJson();
-        res.expectStatusCode(200);
+        // try to find the item from the seller node
+        const itemGetNode0Res: any = await testUtilNode0.rpcWaitFor(
+            listingItemCommand,
+            [listingItemGetCommand, listingItemTemplatesNode0[0].hash],
+            8 * 60,
+            200,
+            'hash',
+            listingItemTemplatesNode0[0].hash
+        );
+        itemGetNode0Res.expectJson();
+        itemGetNode0Res.expectStatusCode(200);
 
-        const result: any = res.getBody()['result'];
-        expect(result.result).toBe('Sent.');
-        expect(result.txid).toBeDefined();
-        expect(result.fee).toBeGreaterThan(0);
-*/
-    });
+        // make sure we got the expected result from seller node -> item hash was matched with existing template hash
+        const result = itemGetNode0Res.getBody()['result'];
 
+        log.debug('result: ', result);
+        expect(result.hash).toBe(listingItemTemplatesNode0[0].hash);
+        expect(result.ListingItemTemplate.hash).toBe(listingItemTemplatesNode0[0].hash);
+
+    }, 600000); // timeout to 600s
 
 
 });

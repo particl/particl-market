@@ -300,10 +300,10 @@ export class ListingItemService {
         this.log.debug('updating ListingItem relation to possible ListingItemTemplate.');
 
         let listingItem = await this.findOne(id, false);
-
         const templateId = await this.listingItemTemplateService.findOneByHash(listingItem.Hash)
             .then(value => {
                 const template = value.toJSON();
+                this.log.debug('found ListingItemTemplate with matching hash, id:', template.id);
                 return template.id;
             })
             .catch(reason => {
@@ -311,9 +311,11 @@ export class ListingItemService {
             });
 
         if (templateId) {
-            listingItem['listing_item_template_id'] = templateId;
-            listingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
+            listingItem.set('listingItemTemplateId', templateId);
+            await this.listingItemRepo.update(id, listingItem.toJSON());
         }
+
+        listingItem = await this.findOne(id);
 
         return listingItem;
     }
