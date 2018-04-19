@@ -114,6 +114,8 @@ export class BidActionService {
         }
         this.log.debug('unspent outputs: ', unspent.length);
 
+        this.log.debug('listingItem.PaymentInformation: ', JSON.stringify(listingItem.PaymentInformation, null, 2));
+
         const outputs: Output[] = [];
         const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
         const basePrice = listingItemPrice.basePrice;

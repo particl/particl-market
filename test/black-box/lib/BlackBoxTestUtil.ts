@@ -163,6 +163,7 @@ export class BlackBoxTestUtil {
                             waitForObjectProperty?: string, waitForObjectPropertyValue?: any ): Promise<any> {
 
         this.log.debug('==[ rpcWaitFor ]=============================================================================');
+        this.log.debug('command: ' + method + ' ' + params.toString());
         this.log.debug('waiting for StatusCode: ' + waitForStatusCode);
         this.log.debug('waiting for ObjectProperty: ' + waitForObjectProperty);
         this.log.debug('waiting for ObjectPropertyValue: ' + JSON.stringify(waitForObjectPropertyValue));

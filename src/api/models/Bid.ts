@@ -38,8 +38,6 @@ export class Bid extends Bookshelf.Model<Bid> {
         const bidCollection = Bid.forge<Collection<Bid>>()
             .query( qb => {
 
-                qb.debug(true);
-
                 if (options.listingItemId) {
                     qb.where('bids.listing_item_id', '=', options.listingItemId);
                 }
@@ -63,8 +61,6 @@ export class Bid extends Bookshelf.Model<Bid> {
 */
                 }
             }).orderBy('bids.created_at', options.ordering);
-
-        bidCollection.query().debug(true);
 
         if (withRelated) {
             return await bidCollection.fetchAll({
