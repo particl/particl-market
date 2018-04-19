@@ -612,7 +612,6 @@ export class EscrowActionService {
             || signed.errors
             && (!shouldBeComplete && ignoreErrors.indexOf(signed.errors[0].error) === -1 || shouldBeComplete)) {
             // TODO: ^^ is this correct?!
-            this.log.debug('Throwing error!');
             this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
             throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
         }
