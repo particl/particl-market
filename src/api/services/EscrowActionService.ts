@@ -157,7 +157,7 @@ export class EscrowActionService {
         const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
         // update OrderStatus
-        const isMyListingItem = !!orderItem.Bid.ListingItem.ListingItemTemplate;
+        const isMyListingItem = _.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
         const newOrderStatus = isMyListingItem ? OrderStatus.SHIPPING : OrderStatus.COMPLETE;
         const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
 
@@ -390,6 +390,7 @@ export class EscrowActionService {
         const bid: resources.Bid = orderItem.Bid;
         const isMyListingItem = !_.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
 
+        // rawtx is potentially the txid in case of ESCROW_LOCKED.
         let rawtx = this.getValueFromOrderItemObjects('rawtx', orderItem.OrderItemObjects);
         let pubkeys = this.getValueFromOrderItemObjects('pubkeys', orderItem.OrderItemObjects);
         pubkeys = JSON.parse(pubkeys);
@@ -467,7 +468,10 @@ export class EscrowActionService {
                     const myAddress = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
                     // const myAddress = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
 
-                    const decoded = await this.coreRpcService.decodeRawTransaction(rawtx);
+                    // rawtx is the transaction id!
+                    const realrawtx = await this.coreRpcService.getRawTransaction(rawtx);
+
+                    const decoded = await this.coreRpcService.decodeRawTransaction(realrawtx);
                     // const decoded = await this.coreRpcService.call('decoderawtransaction', [rawtx]);
 
                     const txid = decoded.txid;
@@ -480,10 +484,24 @@ export class EscrowActionService {
 
                     const txout = {};
 
+                    // CRITICAL TODO: Use the right ratio's...
                     txout[myAddress] = value / 3;
                     txout[releaseAddress] = (value / 3) * 2;
 
+                    this.log.debug('txout untruncated: ', txout);
+
+                    // Kewde: simple truncation to 8
+                    const truncateToDecimals = (int: number) => {
+                        const calcDec = Math.pow(10, 8);
+                        return Math.trunc(int * calcDec) / calcDec;
+                    };
+
+                    txout[myAddress] = truncateToDecimals(txout[myAddress]);
+                    txout[releaseAddress] = truncateToDecimals(txout[releaseAddress]);
+                    this.log.debug('final txout: ', txout);
+
                     const outputs: Output[] = [{txid, vout: 0}];  // TODO: Make sure this is the correct vout
+                    this.log.debug('inputs: ', outputs);
 
                     rawtx = await this.coreRpcService.createRawTransaction(outputs, txout);
                     // rawtx = await this.coreRpcService.call('createrawtransaction', [
@@ -492,7 +510,7 @@ export class EscrowActionService {
                     // ]);
 
                     // TODO: This requires user interaction, so should be elsewhere possibly?
-                    const signedForReleaseBySeller = await this.signRawTx(rawtx);
+                    const signedForReleaseBySeller = await this.signRawTx(rawtx, false);
                     return signedForReleaseBySeller.hex;
 
                 } else if (OrderStatus.SHIPPING === orderItem.status && !isMyListingItem) {
@@ -580,15 +598,20 @@ export class EscrowActionService {
     }
 
     private async signRawTx(rawtx: string, shouldBeComplete?: boolean): Promise<any> {
+        this.log.debug('signRawTx: signing rawtx and expecting it to be complete:', shouldBeComplete);
         // This requires user interaction, so should be elsewhere possibly?
         // TODO: Verify that the transaction has the correct values! Very important!!! TODO TODO TODO
-        const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
+        const signed = await this.coreRpcService.signRawTransaction(rawtx);
+
+        const ignoreErrors = [
+            'Unable to sign input, invalid stack size (possibly missing key)',
+            'Operation not valid with the current stack size'
+        ];
 
         if (!signed
             || signed.errors
-            && (!shouldBeComplete && signed.errors[0].error !== 'Operation not valid with the current stack size' || shouldBeComplete)) {
+            && (!shouldBeComplete && ignoreErrors.indexOf(signed.errors[0].error) === -1 || shouldBeComplete)) {
             // TODO: ^^ is this correct?!
-
             this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
             throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
         }

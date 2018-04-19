@@ -216,6 +216,12 @@ export class CoreRpcService {
         return await this.call('sendrawtransaction', params);
     }
 
+    /**
+     * Return a JSON object representing the serialized, hex-encoded transaction.
+     *
+     * @param {string} hexstring
+     * @returns {Promise<any>}
+     */
     public async decodeRawTransaction(hexstring: string, isWitness?: boolean): Promise<any> {
         const params: any[] = [];
         params.push(hexstring);
@@ -224,6 +230,25 @@ export class CoreRpcService {
             params.push(isWitness);
         }
         return await this.call('decoderawtransaction', params);
+    }
+
+    /**
+     * Return the raw transaction data.
+     *
+     * @param {string} hexstring
+     * @returns {Promise<any>}
+     */
+    public async getRawTransaction(txid: string, verbose?: boolean, blockhash?: string): Promise<any> {
+        const params: any[] = [];
+        params.push(txid);
+
+        if (verbose !== undefined) {
+            params.push(verbose);
+        }
+        if (blockhash !== undefined) {
+            params.push(blockhash);
+        }
+        return await this.call('getrawtransaction', params);
     }
 
     /**
