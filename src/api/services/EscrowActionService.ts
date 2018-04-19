@@ -157,7 +157,7 @@ export class EscrowActionService {
         const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
         // update OrderStatus
-        const isMyListingItem = _.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
+        const isMyListingItem = !_.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
         const newOrderStatus = isMyListingItem ? OrderStatus.SHIPPING : OrderStatus.COMPLETE;
         const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
 
