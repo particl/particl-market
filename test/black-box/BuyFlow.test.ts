@@ -17,8 +17,8 @@ describe('BuyFlow', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     // const testUtilNode0 = new BlackBoxTestUtil(0);
-    const testUtilNode1 = new BlackBoxTestUtil(0);
-    const testUtilNode2 = new BlackBoxTestUtil(2);
+    const testUtilNode1 = new BlackBoxTestUtil(1);  // SELLER
+    const testUtilNode2 = new BlackBoxTestUtil(2);  // BUYER
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
@@ -40,8 +40,8 @@ describe('BuyFlow', () => {
     let listingItemReceivedNode1: resources.ListingItem;
     let listingItemReceivedNode2: resources.ListingItem;
 
-    let bidNode2: resources.Bid;
     let bidNode1: resources.Bid;
+    let bidNode2: resources.Bid;
 
     beforeAll(async () => {
 
@@ -129,6 +129,7 @@ describe('BuyFlow', () => {
     test('Should receive ListingItemMessage (MP_ITEM_ADD) posted from sellers node1 as ListingItem on bidders node2', async () => {
 
         // try to find the item from the other node
+        log.debug('WAIT FOR: MP_ITEM_ADD on bidder node2');
         const itemGetRes: any = await testUtilNode2.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplatesNode1[0].hash],
@@ -153,6 +154,7 @@ describe('BuyFlow', () => {
     test('Should receive ListingItemMessage (MP_ITEM_ADD) posted from sellers node1 as ListingItem on sellers node1 and match it with the existing ListingItemTemplate', async () => {
 
         // try to find the item from the seller node
+        log.debug('WAIT FOR: MP_ITEM_ADD on seller node1');
         const itemGetRes: any = await testUtilNode1.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplatesNode1[0].hash],
@@ -245,6 +247,8 @@ describe('BuyFlow', () => {
             SearchOrder.ASC,
             buyerProfile.address
         ];
+
+        log.debug('WAIT FOR: MPA_BID on seller node1');
 
         // try to find the item from the seller node
         const bidSearchRes: any = await testUtilNode1.rpcWaitFor(

@@ -134,9 +134,9 @@ export class BlackBoxTestUtil {
         return _.find(result, o => o.name === 'DEFAULT');
     }
 
-    public async rpc(method: string, params: any[] = []): Promise<any> {
+    public async rpc(method: string, params: any[] = [], logError: boolean = true): Promise<any> {
         const response = await rpc(method, params, this.node);
-        if (response.error) {
+        if (logError && response.error) {
             this.log.error(response.error.error.message);
         }
         return response;
@@ -169,11 +169,20 @@ export class BlackBoxTestUtil {
         this.log.debug('waiting for ObjectPropertyValue: ' + JSON.stringify(waitForObjectPropertyValue));
         this.log.debug('=============================================================================================');
 
+        let errorCount = 0;
+
         for (let i = 0; i < maxSeconds; i++) {
-            const response: any = await this.rpc(method, params);
+            const response: any = await this.rpc(method, params, false);
 
             if (response.error) {
-                // this.log.debug('response.error: ', response.error.error.message);
+                errorCount++;
+                if (errorCount < 5 || errorCount % 15 === 0) {
+                    this.log.error(response.error.error.message);
+                }
+                if (errorCount === 5) {
+                    this.log.error('enough, posting every 15th from now on...');
+                }
+
             } else if (waitForStatusCode === response.res.statusCode) {
                 if (waitForObjectProperty) {
                     const result = response.getBody()['result'];
@@ -190,7 +199,16 @@ export class BlackBoxTestUtil {
                         this.log.debug('success! statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
                         return response;
                     } else {
-                        this.log.debug(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !== ' + waitForObjectPropertyValue);
+
+                        errorCount++;
+
+                        if (errorCount < 5 || errorCount % 15 === 0) {
+                            this.log.error(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !== ' + waitForObjectPropertyValue);
+                        }
+                        if (errorCount === 5) {
+                            this.log.error('enough, posting every 15th from now on...');
+                        }
+
                         // do not throw here for now.
                         // for example bid search will not throw an exception like findOne so the statusCode === 200,
                         // but we need to keep on querying until correct value is returned.
