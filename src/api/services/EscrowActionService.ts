@@ -484,7 +484,7 @@ export class EscrowActionService {
 
                     const txout = {};
 
-                    // CRITICAL TODO: Use the right ratio's... 
+                    // CRITICAL TODO: Use the right ratio's...
                     txout[myAddress] = value / 3;
                     txout[releaseAddress] = (value / 3) * 2;
 
@@ -494,7 +494,7 @@ export class EscrowActionService {
                     const truncateToDecimals = (int: number) => {
                         const calcDec = Math.pow(10, 8);
                         return Math.trunc(int * calcDec) / calcDec;
-                    }
+                    };
 
                     txout[myAddress] = truncateToDecimals(txout[myAddress]);
                     txout[releaseAddress] = truncateToDecimals(txout[releaseAddress]);
