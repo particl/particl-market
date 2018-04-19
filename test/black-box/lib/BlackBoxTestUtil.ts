@@ -177,6 +177,9 @@ export class BlackBoxTestUtil {
             } else if (waitForStatusCode === response.res.statusCode) {
                 if (waitForObjectProperty) {
                     const result = response.getBody()['result'];
+
+                    this.log.debug('result: ' + JSON.stringify(result, null, 2));
+
                     const objectPropertyValue = _.get(result, waitForObjectProperty);
 
                     this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
