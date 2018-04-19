@@ -6,8 +6,8 @@ import { ItemImageService } from '../services/ItemImageService';
 import { ItemImageHttpUploadService } from '../services/ItemImageHttpUploadService';
 import { Logger as LoggerType } from '../../core/Logger';
 import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
-import sharp = require('sharp');
 import * as _ from 'lodash';
+import * as Jimp from 'jimp';
 
 // Get middlewares
 const restApi = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.AuthenticateMiddleware);
@@ -52,10 +52,9 @@ export class ItemImageController {
         res.status(404).send('Image Not found');
       } else {
         const dataBuffer = new Buffer(imgVersion['data'], 'base64');
-        const imageBuffer = sharp(dataBuffer);
-        const newInfo = await imageBuffer.metadata();
+        const imageBuffer = await Jimp.read(dataBuffer);
         res.setHeader('Content-Disposition', 'filename=' + imageVersion + '.'
-          + newInfo.format );
+          + imageBuffer.getExtension() );
         res.send(dataBuffer);
       }
     }
