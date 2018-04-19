@@ -252,7 +252,7 @@ describe('BuyFlow', () => {
             8 * 60,
             200,
             '[0].action',
-            BidMessageType.MPA_BID
+            BidMessageType.MPA_BID.toString()
         );
         bidSearchRes.expectJson();
         bidSearchRes.expectStatusCode(200);
@@ -292,6 +292,8 @@ describe('BuyFlow', () => {
         const result: any = bidAcceptRes.getBody()['result'];
         log.debug('result', result);
         expect(result.result).toBe('Sent.');
+
+        // todo: check that order was created
 
         log.debug('==[ accept Bid /// seller (node1) -> buyer (node2) ]=============================');
         log.debug('msgid: ' + result.msgid);

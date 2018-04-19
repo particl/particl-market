@@ -191,7 +191,11 @@ export class BlackBoxTestUtil {
                         return response;
                     } else {
                         this.log.debug(waitForObjectProperty + ' !== ' + waitForObjectPropertyValue);
-                        throw new MessageException('rpcWaitFor received unexpected waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
+                        // do not throw here for now.
+                        // for example bid search will not throw an exception like findOne so the statusCode === 200,
+                        // but we need to keep on querying until correct value is returned.
+                        // todo: it should be configurable how this works
+                        // throw new MessageException('rpcWaitFor received non-matching waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
                     }
                 } else {
                     this.log.debug('success! statusCode === ' + waitForStatusCode);
