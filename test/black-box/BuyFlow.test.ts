@@ -30,6 +30,7 @@ describe('ListingItemSearchCommand', () => {
     const bidCommand = Commands.BID_ROOT.commandName;
     const bidSendCommand = Commands.BID_SEND.commandName;
     const bidSearchCommand = Commands.BID_SEARCH.commandName;
+    const bidAcceptCommand = Commands.BID_ACCEPT.commandName;
 
     let sellerProfile: resources.Profile;
     let buyerProfile: resources.Profile;
@@ -37,7 +38,9 @@ describe('ListingItemSearchCommand', () => {
 
     let listingItemTemplatesNode1: resources.ListingItemTemplate[];
     let listingItemReceivedNode2: resources.ListingItem;
+
     let bidNode2: resources.Bid;
+    let bidNode1: resources.Bid;
 
     beforeAll(async () => {
 
@@ -220,6 +223,11 @@ describe('ListingItemSearchCommand', () => {
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedNode2.hash);
 
+        log.debug('result[0].ListingItem.ListingItemTemplate', result[0].ListingItem.ListingItemTemplate);
+
+        // there should be no relation to template on the buyer side
+        expect(result[0].ListingItem.ListingItemTemplate).not.toBeDefined();
+
         bidNode2 = result[0];
     });
 
@@ -250,6 +258,43 @@ describe('ListingItemSearchCommand', () => {
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedNode2.hash);
 
+        log.debug('result[0].ListingItem.ListingItemTemplate', result[0].ListingItem.ListingItemTemplate);
+
+        // there should be a relation to template on the seller side
+        expect(result[0].ListingItem.ListingItemTemplate).toBeDefined();
+
+        // todo: check for correct biddata
+        bidNode1 = result[0];
+
+
     }, 600000); // timeout to 600s
+
+    test('Should send BidMessage (MPA_ACCEPT) from sellers node1 to the bidders node2 and create an Order', async () => {
+
+        const bidAcceptCommandParams = [
+            bidAcceptCommand,
+            bidNode1.ListingItem.hash,
+            bidNode1.id
+        ];
+
+        const bidAcceptRes: any = await testUtilNode1.rpc(bidCommand, bidAcceptCommandParams);
+        bidAcceptRes.expectJson();
+        bidAcceptRes.expectStatusCode(200);
+
+        // make sure we got the expected result from sending the bid
+        const result: any = bidAcceptRes.getBody()['result'];
+        log.debug('result', result);
+        expect(result.result).toBe('Sent.');
+
+        log.debug('==[ accept Bid /// seller (node1) -> buyer (node2) ]=============================');
+        log.debug('msgid: ' + result.msgid);
+        log.debug('item.hash: ' + bidNode1.ListingItem.hash);
+        log.debug('bid.id: ' + bidNode1.id);
+        log.debug('bid.bidder: ' + bidNode1.bidder);
+        log.debug('bid.ListingItem.seller: ' + bidNode1.ListingItem.seller);
+        log.debug('=================================================================================');
+
+    });
+
 
 });
