@@ -178,19 +178,19 @@ export class BlackBoxTestUtil {
                 if (waitForObjectProperty) {
                     const result = response.getBody()['result'];
 
-                    this.log.debug('result: ' + JSON.stringify(result, null, 2));
+                    // this.log.debug('result: ' + JSON.stringify(result, null, 2));
 
-                    const objectPropertyValue = _.get(result, waitForObjectProperty);
+                    const objectPropertyValue = !_.isEmpty(result) ? _.get(result, waitForObjectProperty) : 'empty result';
 
-                    this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
-                    this.log.debug('waitForObjectPropertyValue.toString(): ' + waitForObjectPropertyValue.toString());
-                    this.log.debug('objectPropertyValue: ' + objectPropertyValue);
+                    // this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
+                    // this.log.debug('waitForObjectPropertyValue.toString(): ' + waitForObjectPropertyValue.toString());
+                    // this.log.debug('objectPropertyValue: ' + objectPropertyValue);
 
                     if (objectPropertyValue === waitForObjectPropertyValue) {
                         this.log.debug('success! statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
                         return response;
                     } else {
-                        this.log.debug(waitForObjectProperty + ' !== ' + waitForObjectPropertyValue);
+                        this.log.debug(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !== ' + waitForObjectPropertyValue);
                         // do not throw here for now.
                         // for example bid search will not throw an exception like findOne so the statusCode === 200,
                         // but we need to keep on querying until correct value is returned.

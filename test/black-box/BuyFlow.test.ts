@@ -129,7 +129,7 @@ describe('BuyFlow', () => {
     test('Should receive ListingItemMessage (MP_ITEM_ADD) posted from sellers node1 as ListingItem on bidders node2', async () => {
 
         // try to find the item from the other node
-        const itemGetNode1Res: any = await testUtilNode2.rpcWaitFor(
+        const itemGetRes: any = await testUtilNode2.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplatesNode1[0].hash],
             8 * 60,
@@ -137,11 +137,11 @@ describe('BuyFlow', () => {
             'hash',
             listingItemTemplatesNode1[0].hash
         );
-        itemGetNode1Res.expectJson();
-        itemGetNode1Res.expectStatusCode(200);
+        itemGetRes.expectJson();
+        itemGetRes.expectStatusCode(200);
 
         // make sure we got the expected result
-        const result: resources.ListingItem = itemGetNode1Res.getBody()['result'];
+        const result: resources.ListingItem = itemGetRes.getBody()['result'];
         expect(result.hash).toBe(listingItemTemplatesNode1[0].hash);
 
         // store ListingItem for later tests
@@ -150,10 +150,10 @@ describe('BuyFlow', () => {
     }, 600000); // timeout to 600s
 
 // tslint:disable:max-line-length
-    test('Should receive ListingItemMessage (MP_ITEM_ADD) posted from sellers node1 as ListingItem on bidders node2 and match it with the existing ListingItemTemplate', async () => {
+    test('Should receive ListingItemMessage (MP_ITEM_ADD) posted from sellers node1 as ListingItem on sellers node1 and match it with the existing ListingItemTemplate', async () => {
 
         // try to find the item from the seller node
-        const itemGetNode0Res: any = await testUtilNode1.rpcWaitFor(
+        const itemGetRes: any = await testUtilNode1.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplatesNode1[0].hash],
             8 * 60,
@@ -161,11 +161,12 @@ describe('BuyFlow', () => {
             'hash',
             listingItemTemplatesNode1[0].hash
         );
-        itemGetNode0Res.expectJson();
-        itemGetNode0Res.expectStatusCode(200);
+        itemGetRes.expectJson();
+        itemGetRes.expectStatusCode(200);
 
-        // make sure we got the expected result from seller node -> item hash was matched with existing template hash
-        const result: resources.ListingItem = itemGetNode0Res.getBody()['result'];
+        // make sure we got the expected result from seller node
+        // -> meaning item hash was matched with the existing template hash
+        const result: resources.ListingItem = itemGetRes.getBody()['result'];
 
         log.debug('result: ', result);
         expect(result.hash).toBe(listingItemTemplatesNode1[0].hash);
@@ -226,8 +227,8 @@ describe('BuyFlow', () => {
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedNode2.hash);
-
-        log.debug('result[0].ListingItem.ListingItemTemplate', result[0].ListingItem.ListingItemTemplate);
+        expect(result[0].bidder).toBe(buyerProfile.address);
+        expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
 
         // there should be no relation to template on the buyer side
         expect(result[0].ListingItem.ListingItemTemplate).toEqual({});
@@ -260,9 +261,9 @@ describe('BuyFlow', () => {
         const result: resources.Bid = bidSearchRes.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
-        expect(result[0].ListingItem.hash).toBe(listingItemReceivedNode2.hash);
-
-        log.debug('result[0].ListingItem.ListingItemTemplate', result[0].ListingItem.ListingItemTemplate);
+        expect(result[0].bidder).toBe(buyerProfile.address);
+        expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
+        expect(result[0].ListingItem.hash).toBe(listingItemReceivedNode1.hash);
 
         // there should be a relation to template on the seller side
         expect(result[0].ListingItem.ListingItemTemplate).toBeDefined();
@@ -272,7 +273,6 @@ describe('BuyFlow', () => {
 
         // todo: check for correct biddata
         bidNode1 = result[0];
-
 
     }, 600000); // timeout to 600s
 

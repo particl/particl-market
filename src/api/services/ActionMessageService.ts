@@ -61,7 +61,7 @@ export class ActionMessageService {
         const messageInfoCreateRequest = body.info;
         const messageEscrowCreateRequest = body.escrow;
         const messageDataCreateRequest = body.data;
-        const actionMessageObjects = body.objects;
+        const actionMessageObjects = body.objects || [];
 
         delete body.info;
         delete body.escrow;
