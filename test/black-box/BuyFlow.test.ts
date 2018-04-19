@@ -9,6 +9,7 @@ import { GenerateListingItemTemplateParams } from '../../src/api/requests/params
 import * as listingItemTemplateCreateRequestWithoutLocationMarker from '../testdata/createrequest/listingItemTemplateCreateRequestWithoutLocationMarker.json';
 import * as resources from 'resources';
 import {BidMessageType} from '../../src/api/enums/BidMessageType';
+import {SearchOrder} from '../../src/api/enums/SearchOrder';
 // tslint:enable:max-line-length
 
 describe('ListingItemSearchCommand', () => {
@@ -30,13 +31,15 @@ describe('ListingItemSearchCommand', () => {
 
     const bidCommand = Commands.BID_ROOT.commandName;
     const bidSendCommand = Commands.BID_SEND.commandName;
+    const bidSearchCommand = Commands.BID_SEARCH.commandName;
 
-    let sellerProfile;
-    let buyerProfile;
-    let defaultMarket;
+    let sellerProfile: resources.Profile;
+    let buyerProfile: resources.Profile;
+    let defaultMarket: resources.Market;
 
     let listingItemTemplatesNode0: resources.ListingItemTemplate[];
     let listingItemReceivedNode1: resources.ListingItem;
+    let bidNode1: resources.Bid;
 
     beforeAll(async () => {
 
@@ -87,7 +90,7 @@ describe('ListingItemSearchCommand', () => {
         const templateGetRes: any = await testUtilNode0.rpc(templateCommand, [templateGetCommand, listingItemTemplatesNode0[0].id]);
         templateGetRes.expectJson();
         templateGetRes.expectStatusCode(200);
-        const result: any = templateGetRes.getBody()['result'];
+        const result: resources.ListingItemTemplate = templateGetRes.getBody()['result'];
 
         log.debug('listingItemTemplates[0].hash:', listingItemTemplatesNode0[0].hash);
         log.debug('result.hash:', result.hash);
@@ -135,7 +138,7 @@ describe('ListingItemSearchCommand', () => {
         itemGetNode1Res.expectStatusCode(200);
 
         // make sure we got the expected result
-        const result = itemGetNode1Res.getBody()['result'];
+        const result: resources.ListingItem = itemGetNode1Res.getBody()['result'];
         expect(result.hash).toBe(listingItemTemplatesNode0[0].hash);
 
         // store for later tests
@@ -158,7 +161,7 @@ describe('ListingItemSearchCommand', () => {
         itemGetNode0Res.expectStatusCode(200);
 
         // make sure we got the expected result from seller node -> item hash was matched with existing template hash
-        const result = itemGetNode0Res.getBody()['result'];
+        const result: resources.ListingItem = itemGetNode0Res.getBody()['result'];
 
         log.debug('result: ', result);
         expect(result.hash).toBe(listingItemTemplatesNode0[0].hash);
@@ -173,7 +176,7 @@ describe('ListingItemSearchCommand', () => {
             listingItemReceivedNode1.hash,
             buyerProfile.id,
             buyerProfile.ShippingAddresses[0].id,
-            'colour',   // TODO: make sure item has these options and test that these end up in the Order
+            'colour',   // TODO: make sure created template/item has these options and test that these end up in the Order
             'black',
             'size',
             'xl'
@@ -188,17 +191,6 @@ describe('ListingItemSearchCommand', () => {
         log.debug('result', result);
         expect(result.result).toBe('Sent.');
 
-        // get the bid
-        // <itemhash>|*) [(<status>|*) [<ordering> [<bidderAddress..
-        // search bid by item hash
-        const res: any = await rpc(bidCommand, [searchCommand, listingItems[0].hash, BidMessageType.MPA_BID]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.length).toBe(1);
-        expect(result[0].action).toBe(BidMessageType.MPA_BID);
-        expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
-
         log.debug('==[ send Bid /// buyer (node1) -> seller (node0) ]=============================');
         log.debug('msgid: ' + result.msgid);
         log.debug('item.hash: ' + listingItemReceivedNode1.hash);
@@ -206,6 +198,32 @@ describe('ListingItemSearchCommand', () => {
         log.debug('bid.bidder: ' + listingItemTemplatesNode0[0].hash);
         log.debug('===============================================================================');
 
-    }, 600000); // timeout to 600s
+    });
+
+    test('Should be able to find the Bid from node1', async () => {
+
+        // find the bid
+        const bidSearchCommandParams = [
+            bidSearchCommand,
+            listingItemReceivedNode1.hash,
+            BidMessageType.MPA_BID,
+            SearchOrder.ASC,
+            buyerProfile.address
+        ];
+        // <itemhash>|*) [(<status>|*) [<ordering> [<bidderAddress..
+        // search bid by item hash
+
+        const bidSearchRes: any = await rpc(bidCommand, bidSearchCommandParams);
+        bidSearchRes.expectJson();
+        bidSearchRes.expectStatusCode(200);
+
+        const result: resources.Bid = bidSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].ListingItem.hash).toBe(listingItemReceivedNode1.hash);
+
+        bidNode1 = result[0];
+    });
+
 
 });

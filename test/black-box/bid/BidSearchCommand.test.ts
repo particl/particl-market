@@ -9,6 +9,7 @@ import { GenerateBidParams } from '../../../src/api/requests/params/GenerateBidP
 
 import * as resources from 'resources';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
+import {SearchOrder} from '../../../src/api/enums/SearchOrder';
 
 describe('BidSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -73,7 +74,7 @@ describe('BidSearchCommand', () => {
         expect(res.error.error.message).toBe('Entity with identifier INVALID HASH does not exist');
     });
 
-    test('Should return one Bid searched by ListingItem.hash', async () => {
+    test('Should generate a Bid and return one Bid when searched by ListingItem.hash', async () => {
 
         const bidGenerateParams = new GenerateBidParams([
             true,                       // generateListingItemTemplate
@@ -103,7 +104,7 @@ describe('BidSearchCommand', () => {
 
     });
 
-    test('Should return two Bids when search by ListingItem.hash', async () => {
+    test('Should generate a second Bid and return two Bids when search by ListingItem.hash', async () => {
         // create second bid
         const bidGenerateParams = new GenerateBidParams([
             true,                       // generateListingItemTemplate
@@ -120,7 +121,6 @@ describe('BidSearchCommand', () => {
             true,
             bidGenerateParams);
 
-        // search bid by item hash
         const res: any = await rpc(bidCommand, [searchCommand, listingItems[0].hash]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -128,14 +128,31 @@ describe('BidSearchCommand', () => {
         expect(result.length).toBe(2);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
-
     });
 
-    test('Should search Bids by ListingItem.hash and Bid.status', async () => {
-        // search bid by item hash
+    test('Should search Bids by ListingItem.hash and Bid.status and find one', async () => {
         const res: any = await rpc(bidCommand, [searchCommand, listingItems[0].hash, BidMessageType.MPA_BID]);
         res.expectJson();
         res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
+    });
+
+    test('Should search Bids by ListingItem.hash, Bid.status and Bid.bidder and find one', async () => {
+        const bidSearchCommandParams = [
+            searchCommand,
+            listingItems[0].hash,
+            BidMessageType.MPA_BID,
+            SearchOrder.ASC,
+            defaultProfile.address
+        ];
+
+        const res: any = await rpc(bidCommand, bidSearchCommandParams);
+        res.expectJson();
+        res.expectStatusCode(200);
+
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
