@@ -179,6 +179,10 @@ export class BlackBoxTestUtil {
                     const result = response.getBody()['result'];
                     const objectPropertyValue = _.get(result, waitForObjectProperty);
 
+                    this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
+                    this.log.debug('waitForObjectPropertyValue.toString(): ' + waitForObjectPropertyValue.toString());
+                    this.log.debug('objectPropertyValue: ' + objectPropertyValue);
+
                     if (objectPropertyValue === waitForObjectPropertyValue) {
                         this.log.debug('success! statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
                         return response;
@@ -189,7 +193,7 @@ export class BlackBoxTestUtil {
                         return response;
                     } else {
                         this.log.debug(waitForObjectProperty + ' !== ' + waitForObjectPropertyValue);
-                        throw new MessageException('rpcWaitFor received unexpected waitForObjectPropertyValue.');
+                        throw new MessageException('rpcWaitFor received unexpected waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
                     }
                 } else {
                     this.log.debug('success! statusCode === ' + waitForStatusCode);
