@@ -8,7 +8,7 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 import {ItemImageDataUpdateRequest} from '../../src/api/requests/ItemImageDataUpdateRequest';
-import * as sharp from 'sharp';
+import * as Jimp from 'jimp';
 import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import {ListingItemTemplate} from '../../src/api/models/ListingItemTemplate';
 
@@ -159,15 +159,10 @@ describe('ItemImageAddCommand', () => {
                 expect(largeData).not.toEqual('');
 
                 const dataBuffer = Buffer.from(largeData, 'base64');
-                const imageBuffer = sharp(dataBuffer);
+                const imageBuffer = await Jimp.read(dataBuffer);
 
-                const dataBufferOriginal = Buffer.from(rawImage, 'base64');
-                const imageBufferOriginal = sharp(dataBufferOriginal);
-                const newInfo = await imageBuffer.metadata();
-                const originalInfo = await imageBufferOriginal.metadata();
-
-                expect(newInfo.width).toBe(ImageVersions.LARGE.imageWidth);
-                expect(newInfo.height).toBe(ImageVersions.LARGE.imageHeight);
+                expect(imageBuffer.bitmap.width).toBe(ImageVersions.LARGE.imageWidth);
+                expect(imageBuffer.bitmap.height).toBe(ImageVersions.LARGE.imageHeight);
             }
 
         }
@@ -196,11 +191,10 @@ describe('ItemImageAddCommand', () => {
                 expect(mediumData).not.toEqual('');
 
                 const dataBuffer = Buffer.from(mediumData, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-                const newInfo = await imageBuffer.metadata();
+                const imageBuffer = await Jimp.read(dataBuffer);
 
-                expect(newInfo.width).toBe(ImageVersions.MEDIUM.imageWidth);
-                expect(newInfo.height).toBeLessThanOrEqual(ImageVersions.MEDIUM.imageHeight);
+                expect(imageBuffer.bitmap.width).toBe(ImageVersions.MEDIUM.imageWidth);
+                expect(imageBuffer.bitmap.height).toBeLessThanOrEqual(ImageVersions.MEDIUM.imageHeight);
             }
 
         }
@@ -229,11 +223,10 @@ describe('ItemImageAddCommand', () => {
                 expect(thumbData).not.toEqual('');
 
                 const dataBuffer = Buffer.from(thumbData, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-                const newInfo = await imageBuffer.metadata();
+                const imageBuffer = await Jimp.read(dataBuffer);
 
-                expect(newInfo.width).toBe(ImageVersions.THUMBNAIL.imageWidth);
-                expect(newInfo.height).toBeLessThanOrEqual(ImageVersions.THUMBNAIL.imageHeight);
+                expect(imageBuffer.bitmap.width).toBe(ImageVersions.THUMBNAIL.imageWidth);
+                expect(imageBuffer.bitmap.height).toBeLessThanOrEqual(ImageVersions.THUMBNAIL.imageHeight);
             }
 
         }
