@@ -56,8 +56,9 @@ services:
     volumes:
       - ./data/particl1:/root/.particl
     ports:
-      - 52738:51738
+#      - 52738:51738
       - 52935:51935
+      - 52936:51936
 #    network_mode: "host"
 #    networks:
 #      - partnet
@@ -66,6 +67,7 @@ services:
       - CONF_TESTNET=1                 # Use the test chain
       - CONF_RPCUSERNAME=test           # Username for JSON-RPC connections, generated unless set
       - CONF_RPCPASSWORD=test           # Password for JSON-RPC connections, generated unless set
+#      - CONF_RPCPORT=52935
       - CONF_PRINTTOCONSOLE=0           # Send trace/debug info to console instead of debug.log file
 #      - CONF_ONLYNET=onion              # Only connect to nodes in network: ipv4, ipv6 or onion
 #      - CONF_PROXY=127.0.0.1:9050       # Connect through SOCKS5 proxy
@@ -88,8 +90,9 @@ services:
     volumes:
       - ./data/particl2:/root/.particl
     ports:
-      - 53738:51738
+#      - 53738:51738
       - 53935:51935
+      - 53936:51936
 #    network_mode: "host"
 #    networks:
 #      - partnet

@@ -112,8 +112,9 @@ describe('BuyFlow', () => {
         // make sure we got the expected result from posting the template
         const result: any = templatePostRes.getBody()['result'];
         expect(result.result).toBe('Sent.');
-        expect(result.txid).toBeDefined();
-        expect(result.fee).toBeGreaterThan(0);
+        // smsgservice.sendsmsg skips paid messages when development or test environment flag is set
+        // expect(result.txid).toBeDefined();
+        // expect(result.fee).toBeGreaterThan(0);
 
         log.debug('==[ post ListingItemTemplate /// seller (node1) -> marketplace ]========================');
         log.debug('item.id: ' + listingItemTemplatesNode1[0].id);
