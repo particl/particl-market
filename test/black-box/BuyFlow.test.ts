@@ -10,7 +10,7 @@ import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 // tslint:enable:max-line-length
 
-describe('ListingItemSearchCommand', () => {
+describe('BuyFlow', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -37,6 +37,7 @@ describe('ListingItemSearchCommand', () => {
     let defaultMarket: resources.Market;
 
     let listingItemTemplatesNode1: resources.ListingItemTemplate[];
+    let listingItemReceivedNode1: resources.ListingItem;
     let listingItemReceivedNode2: resources.ListingItem;
 
     let bidNode2: resources.Bid;
@@ -170,6 +171,9 @@ describe('ListingItemSearchCommand', () => {
         expect(result.hash).toBe(listingItemTemplatesNode1[0].hash);
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplatesNode1[0].hash);
 
+        // store ListingItem for later tests
+        listingItemReceivedNode1 = result;
+
     }, 600000); // timeout to 600s
 // tslint:enable:max-line-length
 
@@ -226,7 +230,7 @@ describe('ListingItemSearchCommand', () => {
         log.debug('result[0].ListingItem.ListingItemTemplate', result[0].ListingItem.ListingItemTemplate);
 
         // there should be no relation to template on the buyer side
-        expect(result[0].ListingItem.ListingItemTemplate).not.toBeDefined();
+        expect(result[0].ListingItem.ListingItemTemplate).toEqual({});
 
         bidNode2 = result[0];
     });
@@ -242,7 +246,7 @@ describe('ListingItemSearchCommand', () => {
         ];
 
         // try to find the item from the seller node
-        const bidSearchRes: any = await testUtilNode2.rpcWaitFor(
+        const bidSearchRes: any = await testUtilNode1.rpcWaitFor(
             bidCommand,
             bidSearchCommandParams,
             8 * 60,
@@ -262,6 +266,9 @@ describe('ListingItemSearchCommand', () => {
 
         // there should be a relation to template on the seller side
         expect(result[0].ListingItem.ListingItemTemplate).toBeDefined();
+
+        // the relation should match the hash of the template that was created earlier on node1
+        expect(result[0].ListingItem.ListingItemTemplate.hash).toBe(listingItemTemplatesNode1[0].hash);
 
         // todo: check for correct biddata
         bidNode1 = result[0];
