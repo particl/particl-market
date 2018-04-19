@@ -182,8 +182,14 @@ export class BlackBoxTestUtil {
                     if (objectPropertyValue === waitForObjectPropertyValue) {
                         this.log.debug('success! statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
                         return response;
+                    } else if (typeof waitForObjectPropertyValue !== 'string'
+                        && objectPropertyValue === waitForObjectPropertyValue.toString()) {
+                        // fix for enums, although a bad one
+                        this.log.debug('success! statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
+                        return response;
                     } else {
                         this.log.debug(waitForObjectProperty + ' !== ' + waitForObjectPropertyValue);
+                        throw new MessageException('rpcWaitFor received unexpected waitForObjectPropertyValue.');
                     }
                 } else {
                     this.log.debug('success! statusCode === ' + waitForStatusCode);
