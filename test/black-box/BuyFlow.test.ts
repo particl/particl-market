@@ -239,7 +239,7 @@ describe('ListingItemSearchCommand', () => {
             bidSearchCommandParams,
             8 * 60,
             200,
-            'action',
+            '[0].action',
             BidMessageType.MPA_BID
         );
         bidSearchRes.expectJson();
