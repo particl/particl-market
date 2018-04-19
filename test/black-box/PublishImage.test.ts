@@ -1,6 +1,6 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import * as sharp from 'sharp';
+import * as Jimp from 'jimp';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
@@ -34,7 +34,7 @@ describe('/publish-image', () => {
     let createdTemplateId;
     let itemImageId;
     let imageVersion;
-    let newInfo;
+    let newFormat;
     let dataBuffer;
 
     beforeAll(async () => {
@@ -67,14 +67,14 @@ describe('/publish-image', () => {
         imageVersion = result.ItemImageDatas[0].imageVersion;
 
         dataBuffer = new Buffer(result.ItemImageDatas[0]['data'], 'base64');
-        const imageBuffer = sharp(dataBuffer);
-        newInfo = await imageBuffer.metadata();
+        const imageBuffer = await Jimp.read(dataBuffer);
+        newFormat = await imageBuffer.getExtension();
 
     });
 
-    test('GET  /item-images/:id/:imageVersion        Should publish an item image', async () => {
+    test('GET  /item-images/:id/:imageVersion        Should publish an item image [1]', async () => {
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
-        expect(res.res.headers['content-disposition']).toBe(`filename=${imageVersion}.${newInfo.format}`);
+        expect(res.res.headers['content-disposition']).toBe(`filename=${imageVersion}.${newFormat}`);
         res.expectStatusCode(200);
         expect(res.error).toBe(null);
         expect(res.res).toBeDefined();
@@ -96,8 +96,8 @@ describe('/publish-image', () => {
         expect(res.res).toBeUndefined();
     });
 
-    test('POST  /item-images/template/:id        Should publish an item image', async () => {
-        expect.assertions(35); // 3 [basic expects] + 4 [image types] * 8 [expects in the loop]
+    test('POST  /item-images/template/:id        Should publish an item image [2]', async () => {
+        expect.assertions(24); // 4 [basic expects] + 4 [image types] * 5 [expects in the loop]
 
         const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const res: any = await api('POST', `/api/item-images/template/${createdTemplateId}`, {
@@ -116,30 +116,33 @@ describe('/publish-image', () => {
             }
         });
 
-        res.expectStatusCode(200);
         expect(res.error).toBe(null);
+        res.expectStatusCode(200);
         expect(res.res).toBeDefined();
+        expect(res.res.body).toBeDefined();
 
         // For each created image fetch it and check everything matches
         //  (except the image data itself because that's modified during the storage process and therefore difficult to validate)
         for ( const i in res.res.body ) {
             if ( i ) {
-                const img = res.res.body[i];
-                const imageRes = await api('GET', `/api/item-image-data/${img.id}`);
-                expect(imageRes.res.body.data.id).toBe(img.id);
-                expect(imageRes.res.body.data.protocol).toBe(img.protocol);
-                expect(imageRes.res.body.data.encoding).toBe(img.encoding);
-                expect(imageRes.res.body.data.imageVersion).toBe(img.imageVersion);
-                expect(imageRes.res.body.data.itemImageId).toBe(img.itemImageId);
-                expect(imageRes.res.body.data.createdAt).toBe(img.createdAt);
-                expect(imageRes.res.body.data.originalMime).toBe(img.originalMime);
-                expect(imageRes.res.body.data.originalName).toBe(img.originalName);
+                const imgset = res.res.body[i];
+                for ( const j in imgset.ItemImageDatas ) {
+                    if ( j ) {
+                        const imgImageDatas = imgset.ItemImageDatas[j];
+                        const imageRes = await api('GET', `/api/item-images/${imgset.id}/${imgImageDatas.imageVersion}`);
+                        expect(imageRes).toBeDefined();
+                        expect(imageRes.error).toBe(null);
+                        imageRes.expectStatusCode(200);
+                        expect(imageRes.res).toBeDefined();
+                        expect(imageRes.res.body).toBeDefined();
+                    }
+                }
             }
         }
     });
 
-    test('POST  /item-images/template/:id        Should publish an item image', async () => {
-        expect.assertions(67); // 3 [basic expects] + 4 [image types] * 8 [expects in the loop]
+    test('POST  /item-images/template/:id        Should publish an item image [3]', async () => {
+        expect.assertions(44); // 4 [basic expects] + 2 [images] * 4 [image types] * 5 [expects in the loop]
 
         const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
         const res: any = await api('POST', `/api/item-images/template/${createdTemplateId}`, {
@@ -165,25 +168,29 @@ describe('/publish-image', () => {
             }
         });
 
-        res.expectStatusCode(200);
         expect(res.error).toBe(null);
+        res.expectStatusCode(200);
         expect(res.res).toBeDefined();
+        expect(res.res.body).toBeDefined();
 
         // For each created image fetch it and check everything matches
         //  (except the image data itself because that's modified during the storage process and therefore difficult to validate)
         for ( const i in res.res.body ) {
             if ( i ) {
-                const img = res.res.body[i];
-                const imageRes = await api('GET', `/api/item-image-data/${img.id}`);
-                expect(imageRes.res.body.data.id).toBe(img.id);
-                expect(imageRes.res.body.data.protocol).toBe(img.protocol);
-                expect(imageRes.res.body.data.encoding).toBe(img.encoding);
-                expect(imageRes.res.body.data.imageVersion).toBe(img.imageVersion);
-                expect(imageRes.res.body.data.itemImageId).toBe(img.itemImageId);
-                expect(imageRes.res.body.data.createdAt).toBe(img.createdAt);
-                expect(imageRes.res.body.data.originalMime).toBe(img.originalMime);
-                expect(imageRes.res.body.data.originalName).toBe(img.originalName);
+                const imgset = res.res.body[i];
+                for ( const j in imgset.ItemImageDatas ) {
+                    if ( j ) {
+                        const imgImageDatas = imgset.ItemImageDatas[j];
+                        const imageRes = await api('GET', `/api/item-images/${imgset.id}/${imgImageDatas.imageVersion}`);
+                        expect(imageRes).toBeDefined();
+                        expect(imageRes.error).toBe(null);
+                        imageRes.expectStatusCode(200);
+                        expect(imageRes.res).toBeDefined();
+                        expect(imageRes.res.body).toBeDefined();
+                    }
+                }
             }
         }
+    });
     });
 });
