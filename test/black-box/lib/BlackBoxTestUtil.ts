@@ -189,7 +189,7 @@ export class BlackBoxTestUtil {
 
                     // this.log.debug('result: ' + JSON.stringify(result, null, 2));
 
-                    const objectPropertyValue = !_.isEmpty(result) ? _.get(result, waitForObjectProperty) : 'empty result';
+                    const objectPropertyValue = !_.isEmpty(result) ? _.get(result, waitForObjectProperty) : null;
 
                     // this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
                     // this.log.debug('waitForObjectPropertyValue.toString(): ' + waitForObjectPropertyValue.toString());

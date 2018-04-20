@@ -583,7 +583,7 @@ describe('Happy BuyFlow', () => {
         orderNode1 = result[0];
     });
 
-    test('Should receive EscrowMessage (MPA_RELEASE) posted from sellers node1 on buyers node2', async () => {
+    test('Should receive EscrowMessage (MPA_RELEASE) posted from sellers node1 on buyers node2, OrderStatus.SHIPPING', async () => {
 
         const orderSearchCommandParams = [
             orderSearchCommand,
@@ -610,6 +610,94 @@ describe('Happy BuyFlow', () => {
         const result: resources.Order = orderSearchRes.getBody()['result'];
         expect(result.length).toBe(1);
         expect(result[0].OrderItems[0].status).toBe(OrderStatus.SHIPPING);
+        expect(result[0].buyer).toBe(buyerProfile.address);
+        expect(result[0].seller).toBe(sellerProfile.address);
+
+        orderNode2 = result[0];
+
+    }, 600000); // timeout to 600s
+
+    test('Should send EscrowMessage (MPA_RELEASE) from buyers node2 to the sellers node1 indicating that the item has been received', async () => {
+
+        const escrowReleaseCommandParams = [
+            escrowReleaseCommand,
+            orderNode2.OrderItems[0].id,
+            'kthanxbye'
+        ];
+
+        const escrowReleaseRes: any = await testUtilNode2.rpc(escrowCommand, escrowReleaseCommandParams);
+        escrowReleaseRes.expectJson();
+        escrowReleaseRes.expectStatusCode(200);
+
+        const result: any = escrowReleaseRes.getBody()['result'];
+        log.debug('result', JSON.stringify(result, null, 2));
+        expect(result.result).toBe('Sent.');
+
+        log.debug('==[ release Escrow /// buyer (node2) -> seller (node1) ]=========================');
+        log.debug('msgid: ' + result.msgid);
+        log.debug('order.hash: ' + orderNode2.hash);
+        log.debug('order.buyer: ' + orderNode2.buyer);
+        log.debug('order.seller: ' + orderNode2.seller);
+        log.debug('order.id: ' + orderNode2.id);
+        log.debug('order.orderItem.id: ' + orderNode2.OrderItems[0].id);
+        log.debug('=================================================================================');
+
+    });
+
+    test('Should be able to find the Order with OrderStatus.COMPLETE from buyers node2 after posting the EscrowMessage (MPA_RELEASE)', async () => {
+
+        const orderSearchCommandParams = [
+            orderSearchCommand,
+            bidNode2.ListingItem.hash,
+            OrderStatus.COMPLETE,
+            buyerProfile.address,
+            sellerProfile.address,
+            SearchOrder.ASC
+        ];
+
+        const orderSearchRes: any = await testUtilNode2.rpc(orderCommand, orderSearchCommandParams);
+        orderSearchRes.expectJson();
+        orderSearchRes.expectStatusCode(200);
+
+        const result: resources.Order = orderSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
+        expect(result[0].buyer).toBe(buyerProfile.address);
+        expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].OrderItems).toHaveLength(1);
+        expect(result[0].OrderItems[0].status).toBe(OrderStatus.COMPLETE);
+        expect(result[0].OrderItems[0].itemHash).toBe(bidNode2.ListingItem.hash);
+
+        orderNode1 = result[0];
+    });
+
+    test('Should receive EscrowMessage (MPA_RELEASE) posted from buyers node2 on sellers node1, OrderStatus.COMPLETE', async () => {
+
+        const orderSearchCommandParams = [
+            orderSearchCommand,
+            bidNode1.ListingItem.hash,
+            OrderStatus.COMPLETE,
+            buyerProfile.address,
+            sellerProfile.address,
+            SearchOrder.ASC
+        ];
+
+        log.debug('WAIT FOR: MPA_RELEASE on seller node1');
+
+        const orderSearchRes: any = await testUtilNode2.rpcWaitFor(
+            orderCommand,
+            orderSearchCommandParams,
+            8 * 60,
+            200,
+            '[0].OrderItems[0].status',
+            OrderStatus.COMPLETE.toString()
+        );
+        orderSearchRes.expectJson();
+        orderSearchRes.expectStatusCode(200);
+
+        const result: resources.Order = orderSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].OrderItems[0].status).toBe(OrderStatus.COMPLETE);
         expect(result[0].buyer).toBe(buyerProfile.address);
         expect(result[0].seller).toBe(sellerProfile.address);
 
