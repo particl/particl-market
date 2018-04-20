@@ -58,9 +58,9 @@ export class ActionMessageService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ActionMessage, body: ', JSON.stringify(body, null, 2));
 
-        const messageInfoCreateRequest = body.info;
-        const messageEscrowCreateRequest = body.escrow;
-        const messageDataCreateRequest = body.data;
+        const messageInfoCreateRequest = body.info || {};
+        const messageEscrowCreateRequest = body.escrow || {};
+        const messageDataCreateRequest = body.data || {};
         const actionMessageObjects = body.objects || [];
 
         delete body.info;

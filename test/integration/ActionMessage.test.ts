@@ -5,6 +5,7 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
+import { DatabaseException } from '../../src/api/exceptions/DatabaseException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ActionMessage } from '../../src/api/models/ActionMessage';
@@ -112,36 +113,6 @@ describe('ActionMessage', () => {
         //
     });
 
-    test('Should not create a new action message without info', async () => {
-        expect.assertions(1);
-        const testData1 = JSON.parse(JSON.stringify(testData));
-
-        delete testData1.info;
-
-        await actionMessageService.create(testData1).catch(e =>
-            expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []))
-        );
-    });
-
-    test('Should not create a new action message without escrow', async () => {
-        expect.assertions(1);
-        const testData1 = JSON.parse(JSON.stringify(testData));
-
-        delete testData1.escrow;
-        await actionMessageService.create(testData1).catch(e =>
-            expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []))
-        );
-    });
-
-    test('Should not create a new action message without data', async () => {
-        expect.assertions(1);
-        const testData1 = JSON.parse(JSON.stringify(testData));
-
-        delete testData1.data;
-        await actionMessageService.create(testData1).catch(e =>
-            expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []))
-        );
-    });
 
     test('Should create a new action message', async () => {
 
