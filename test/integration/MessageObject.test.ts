@@ -89,28 +89,15 @@ describe('MessageObject', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        const generateParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
-
-        // create listingitem without ShippingDestinations and store its id for testing
+        const generateParams = new GenerateListingItemParams().toParamsArray();
         const listingItems = await testDataService.generate({
             model: CreatableModel.LISTINGITEM,  // what to generate
             amount: 1,                          // how many to generate
             withRelated: true,                  // return model
             generateParams                      // what kind of data to generate
         } as TestDataGenerateRequest);
-        const createdListingItem = listingItems[0].toJSON();
 
-        // create actionMessage
-        testDataActionMessage.listing_item_id = createdListingItem.id;
+        testDataActionMessage.listing_item_id = listingItems[0].id;
 
         let actionMessageModel: ActionMessage = await actionMessageService.create(testDataActionMessage);
 
@@ -151,9 +138,11 @@ describe('MessageObject', () => {
     test('Should list message objects with our new create one', async () => {
         const messageObjectCollection = await messageObjectService.findAll();
         const messageObject = messageObjectCollection.toJSON();
-        expect(messageObject.length).toBe(1);
 
-        const result = messageObject[0];
+        // first one is created when listingitem is generated
+        expect(messageObject.length).toBe(2);
+
+        const result = messageObject[1];
 
         // test the values
         expect(result.dataId).toBe(testData.dataId);

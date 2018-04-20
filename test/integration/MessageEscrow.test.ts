@@ -76,7 +76,6 @@ describe('MessageEscrow', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-
         const generateParams = new GenerateListingItemParams().toParamsArray();
         const listingItems = await testDataService.generate({
             model: CreatableModel.LISTINGITEM,  // what to generate
