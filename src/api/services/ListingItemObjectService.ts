@@ -85,7 +85,7 @@ export class ListingItemObjectService {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        // todo: could this be annotated in ListingItemObjectUpdateRequest?
+        // todo: messy
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
             throw new ValidationException('Request body is not valid', ['listing_item_id or listing_item_template_id missing']);
         }
@@ -97,14 +97,16 @@ export class ListingItemObjectService {
         listingItemObject.Type = body.type;
         listingItemObject.Description = body.description;
         listingItemObject.Order = body.order;
-        
+
         // update listingItemObjectDatas
-        const listingItemObjectDatasOld = listingItemObject.ListingItemObjectDatas();
-        const objectDataIds: number[] = new Array();
-        listingItemObjectDatasOld.forEach((objectData: ListingItemObjectData): void {
+        const listingItemObjectJSON = listingItemObject.toJSON();
+        const listingItemObjectDatasOld = listingItemObjectJSON.ListingItemObjectDatas;
+        const objectDataIds: number[] = [];
+
+        for (const objectData of listingItemObjectDatasOld) {
             objectDataIds.push(objectData.id);
-        });
-         
+        }
+
         for (const objectDataId of objectDataIds) {
             await this.listingItemObjectDataService.destroy(objectDataId);
         }
