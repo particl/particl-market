@@ -29,8 +29,6 @@ import { BidSearchParams } from '../requests/BidSearchParams';
 import { AddressType } from '../enums/AddressType';
 import { SearchOrder } from '../enums/SearchOrder';
 import { Environment } from '../../core/helpers/Environment';
-import { OrderFactory } from '../factories/OrderFactory';
-import { OrderService } from './OrderService';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { Bid } from '../models/Bid';
