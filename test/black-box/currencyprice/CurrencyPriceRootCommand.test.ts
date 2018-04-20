@@ -40,6 +40,7 @@ describe('CurrencyPriceRootCommand', () => {
     test('Should fail to get currency price because empty params', async () => {
         const res = await rpc(method, []);
         res.expectJson();
+        // todo: MessageExceptions are returning 404 which doesnt make sense, should be 400
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('Invalid params');
