@@ -12,7 +12,7 @@ describe('CurrencyPriceRootCommand', () => {
         await testUtil.cleanDb();
     });
 
-    test('Should get one new currency price', async () => {
+    test('Should get one new CurrencyPrice', async () => {
         const res = await rpc(method, ['PART', 'INR']);
         res.expectJson();
         res.expectStatusCode(200);
@@ -25,7 +25,7 @@ describe('CurrencyPriceRootCommand', () => {
         expect(result[0].createdAt).toBe(result[0].updatedAt);
     });
 
-    test('Should not updated currency price', async () => {
+    test('Should not have updated CurrencyPrice', async () => {
         const res = await rpc(method, ['PART', 'INR']);
         res.expectJson();
         res.expectStatusCode(200);
@@ -37,7 +37,7 @@ describe('CurrencyPriceRootCommand', () => {
         expect(result[0].createdAt).toBe(result[0].updatedAt);
     });
 
-    test('Should fail to get currency price because empty params', async () => {
+    test('Should fail to get CurrencyPrice because empty params', async () => {
         const res = await rpc(method, []);
         res.expectJson();
         // todo: MessageExceptions are returning 404 which doesnt make sense, should be 400
@@ -46,7 +46,7 @@ describe('CurrencyPriceRootCommand', () => {
         expect(res.error.error.message).toBe('Invalid params');
     });
 
-    test('Should fail to get currency price because without from curreny as PART', async () => {
+    test('Should fail to get CurrencyPrice without from currency as PART', async () => {
         const res = await rpc(method, ['INR']);
         res.expectJson();
         res.expectStatusCode(404);
@@ -54,7 +54,7 @@ describe('CurrencyPriceRootCommand', () => {
         expect(res.error.error.message).toBe('Invalid params');
     });
 
-    test('Should fail to get currency price because without to currencies', async () => {
+    test('Should fail to get CurrencyPrice without to currencies', async () => {
         const res = await rpc(method, ['PART']);
         res.expectJson();
         res.expectStatusCode(404);
@@ -62,13 +62,13 @@ describe('CurrencyPriceRootCommand', () => {
         expect(res.error.error.message).toBe('Invalid params');
     });
 
-    test('Should fail to get currency price because invalid from currency', async () => {
+    test('Should fail to get CurrencyPrice because invalid from currency', async () => {
         const res = await rpc(method, ['EUR', 'INR', 'USD']);
         res.expectJson();
         res.expectStatusCode(404);
     });
 
-    test('Should fail to get currency price because some un supported currencies', async () => {
+    test('Should fail to get CurrencyPrice because unsupported currencies', async () => {
         const res = await rpc(method, ['PART', 'INR', 'USD', 'TEST']);
         res.expectJson();
         res.expectStatusCode(404);
