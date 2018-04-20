@@ -40,7 +40,10 @@ export class MessageObjectService {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        this.log.debug('messageobject body:', JSON.stringify(body, null, 2));
+        // this.log.debug('messageobject body:', JSON.stringify(body, null, 2));
+        if ( typeof body.dataValue !== 'string') {
+            body.dataValue = JSON.stringify(body.dataValue);
+        }
 
         // If the request body was valid we will create the messageObject
         const messageObject = await this.messageObjectRepo.create(body);

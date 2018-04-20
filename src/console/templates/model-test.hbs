@@ -12,6 +12,7 @@ import { {{name.capitalize}} } from '../../src/api/models/{{name.capitalize}}';
 import { {{name.capitalize}}Service } from '../../src/api/services/{{name.capitalize}}Service';
 
 describe('{{name.capitalize}}', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new TestUtil();

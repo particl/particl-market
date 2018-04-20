@@ -13,6 +13,7 @@ export interface RpcCommandInterface<T> {
     getCommand(): Command;
     getChildCommands(): Command[];
     help(): string;
+    usage(): string;
     example(): any;
     description(): string;
 }

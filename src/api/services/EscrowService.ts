@@ -5,35 +5,19 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
-import { MessageException } from '../exceptions/MessageException';
-
 import { Escrow } from '../models/Escrow';
 import { EscrowRepository } from '../repositories/EscrowRepository';
-
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../requests/EscrowUpdateRequest';
-import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
-import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
-import { EscrowLockRequest } from '../requests/EscrowLockRequest';
-
-import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-
-import { EscrowFactory } from '../factories/EscrowFactory';
-
 import { EscrowRatioService } from '../services/EscrowRatioService';
 import { AddressService } from '../services/AddressService';
-import { SmsgService } from '../services/SmsgService';
 
 export class EscrowService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) public escrowFactory: EscrowFactory,
         @inject(Types.Repository) @named(Targets.Repository.EscrowRepository) public escrowRepo: EscrowRepository,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.EscrowRatioService) public escrowRatioService: EscrowRatioService,
         @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -107,71 +91,6 @@ export class EscrowService {
 
     public async destroy(id: number): Promise<void> {
         await this.escrowRepo.destroy(id);
-    }
-
-    @validate()
-    public async lock(@request(EscrowLockRequest) escrowRequest: EscrowLockRequest, escrow: Escrow): Promise<SmsgSendResponse> {
-
-        // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
-        // resources.Escrow module not able to include here.
-
-        const escrowModel: any = escrow;
-
-        // fetch the address
-        const addressModel = await this.addressService.findOne(escrowRequest.addressId, false);
-        const address = addressModel.toJSON();
-
-        if (_.isEmpty(escrowModel) || _.isEmpty(address)) {
-            throw new MessageException('Escrow or Address not found!');
-        }
-
-        // use escrowfactory to generate the lock message
-        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel, address);
-        const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: escrowActionMessage
-        } as MarketplaceMessage;
-
-        // TODO: add profile and market addresses
-        return await this.smsgService.smsgSend('', '', marketPlaceMessage, false);
-    }
-
-    @validate()
-    public async refund(@request(EscrowRefundRequest) escrowRequest: EscrowRefundRequest, escrow: Escrow): Promise<SmsgSendResponse> {
-
-        // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
-        // resources.Escrow module not able to include here.
-
-        const escrowModel: any = escrow;
-
-        // use escrowfactory to generate the refund message
-        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
-        const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: escrowActionMessage
-        } as MarketplaceMessage;
-
-        // TODO: add profile and market addresses
-        return await this.smsgService.smsgSend('', '', marketPlaceMessage, false);
-    }
-
-    @validate()
-    public async release(@request(EscrowReleaseRequest) escrowRequest: EscrowReleaseRequest, escrow: Escrow): Promise<SmsgSendResponse> {
-
-        // NOTE: We need to change as any from here to may be Escrow like that, currently I added it as any here because here
-        // resources.Escrow module not able to include here.
-
-        const escrowModel: any = escrow;
-
-        // use escrowfactory to generate the release message
-        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, escrowModel);
-        const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: escrowActionMessage
-        } as MarketplaceMessage;
-
-        // TODO: add profile and market addresses
-        return await this.smsgService.smsgSend('', '', marketPlaceMessage, false);
     }
 
 }

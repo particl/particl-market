@@ -90,7 +90,7 @@ describe('ShippingDestination', () => {
             withRelated: true,                  // return model
             generateParams                      // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0].toJSON();
+        createdListingItem = listingItems[0];
 
         generateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
@@ -110,7 +110,7 @@ describe('ShippingDestination', () => {
             withRelated: true,                          // return model
             generateParams                              // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItemTemplate = listingItemTemplates[0].toJSON();
+        createdListingItemTemplate = listingItemTemplates[0];
     });
 
     afterAll(async () => {

@@ -16,6 +16,8 @@ import { InternalServerException } from '../exceptions/InternalServerException';
 import { BidMessage } from '../messages/BidMessage';
 import { EscrowMessage } from '../messages/EscrowMessage';
 import { SmsgMessage } from '../messages/SmsgMessage';
+import {ListingItemMessageType} from '../enums/ListingItemMessageType';
+import {ListingItemAddMessage} from '../messages/ListingItemAddMessage';
 
 export class ActionMessageFactory {
 
@@ -33,6 +35,17 @@ export class ActionMessageFactory {
         const data = this.getModelMessageData(smsgMessage);
 
         switch (message.action) {
+            case ListingItemMessageType.MP_ITEM_ADD:
+                const listingItemMessage = message as ListingItemAddMessage;
+                const listingItemobjects = this.getModelMessageObjects(listingItemMessage);
+                actionMessageCreateRequest = {
+                    listing_item_id: listingItemId,
+                    action: listingItemMessage.action.toString(),
+                    objects: listingItemobjects,
+                    data
+                } as ActionMessageCreateRequest;
+                break;
+
             case BidMessageType.MPA_BID:
             case BidMessageType.MPA_ACCEPT:
             case BidMessageType.MPA_REJECT:
@@ -79,7 +92,7 @@ export class ActionMessageFactory {
         return actionMessageCreateRequest;
     }
 
-    private getModelMessageObjects(bidMessage: BidMessage): MessageObjectCreateRequest[] {
+    private getModelMessageObjects(bidMessage: BidMessage | ListingItemAddMessage): MessageObjectCreateRequest[] {
         const createRequests: MessageObjectCreateRequest[] = [];
         for (const messageObject of bidMessage.objects) {
             const createRequest = {

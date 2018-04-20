@@ -30,7 +30,7 @@ import { GenerateListingItemParams } from '../../src/api/requests/params/Generat
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ItemImageDataService } from '../../src/api/services/ItemImageDataService';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { ObjectHashService } from '../../src/api/services/ObjectHashService';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 
 describe('ItemImage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -42,11 +42,10 @@ describe('ItemImage', () => {
     let itemImageService: ItemImageService;
     let itemImageDataService: ItemImageDataService;
     let listingItemService: ListingItemService;
-    let objectHashService: ObjectHashService;
 
     let createdImageId;
     let createdListingItem;
-    let hash;
+    let imageHash;
 
     const testData = {
         // item_information_id
@@ -80,7 +79,6 @@ describe('ItemImage', () => {
         itemImageService = app.IoC.getNamed<ItemImageService>(Types.Service, Targets.Service.ItemImageService);
         itemImageDataService = app.IoC.getNamed<ItemImageDataService>(Types.Service, Targets.Service.ItemImageDataService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
-        objectHashService = app.IoC.getNamed<ObjectHashService>(Types.Service, Targets.Service.ObjectHashService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -103,9 +101,9 @@ describe('ItemImage', () => {
             withRelated: true,                  // return model
             generateParams                      // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0].toJSON();
+        createdListingItem = listingItems[0];
 
-        hash = await objectHashService.getHash(testData.data[0], HashableObjectType.DEFAULT);
+        imageHash = ObjectHash.getHash(testData.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
     });
 
     afterAll(async () => {
@@ -124,7 +122,7 @@ describe('ItemImage', () => {
 
         // add the required data to testData
         testData.item_information_id = createdListingItem.ItemInformation.id;
-        testData.hash = hash;
+        testData.hash = imageHash;
 
         // create
         const itemImageModel: ItemImage = await itemImageService.create(testData);
@@ -187,7 +185,7 @@ describe('ItemImage', () => {
 
     test('Should update the ItemImage', async () => {
         testDataUpdated.item_information_id = createdListingItem.ItemInformation.id;
-        testDataUpdated.hash = await objectHashService.getHash(testDataUpdated.data[0], HashableObjectType.DEFAULT);
+        testDataUpdated.hash = ObjectHash.getHash(testDataUpdated.data[0], HashableObjectType.ITEMIMAGEDATA_CREATEREQUEST);
 
         const itemImageModel: ItemImage = await itemImageService.update(createdImageId, testDataUpdated);
         const result = itemImageModel.toJSON();

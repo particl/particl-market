@@ -3,8 +3,6 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Types, Core, Targets } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
 
-import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
-
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemActionService } from '../../../src/api/services/ListingItemActionService';
@@ -13,10 +11,16 @@ import { ListingItemFactory } from '../../../src/api/factories/ListingItemFactor
 
 import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
 
-import * as listingItemSmsg1 from '../../testdata/message/smsgMessageWithListingItemMessage1.json';
-import * as listingItemSmsg2 from '../../testdata/message/smsgMessageWithListingItemMessage2.json';
-import * as listingItemSmsg3 from '../../testdata/message/smsgMessageWithListingItemMessage3.json';
 import * as resources from 'resources';
+
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
+import { ProfileService } from '../../../src/api/services/ProfileService';
+import { MarketplaceMessage } from '../../../src/api/messages/MarketplaceMessage';
+import { SmsgMessage } from '../../../src/api/messages/SmsgMessage';
+import { ListingItemService } from '../../../src/api/services/ListingItemService';
+import { ListingItemTemplateService } from '../../../src/api/services/ListingItemTemplateService';
 
 
 describe('ListingItemMessage', () => {
@@ -27,10 +31,16 @@ describe('ListingItemMessage', () => {
 
     let testDataService: TestDataService;
     let marketService: MarketService;
+    let profileService: ProfileService;
     let listingItemFactory: ListingItemFactory;
     let listingItemActionService: ListingItemActionService;
+    let listingItemService: ListingItemService;
+    let listingItemTemplateService: ListingItemTemplateService;
 
-    let defaultMarket;
+    let defaultMarket: resources.Market;
+    let defaultProfile: resources.Profile;
+
+    let listingItemTemplates: resources.ListingItemTemplate[];
 
     // tslint:disable:max-line-length
     beforeAll(async () => {
@@ -38,9 +48,11 @@ describe('ListingItemMessage', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
         listingItemFactory = app.IoC.getNamed<ListingItemFactory>(Types.Factory, Targets.Factory.ListingItemFactory);
-
         listingItemActionService = app.IoC.getNamed<ListingItemActionService>(Types.Service, Targets.Service.ListingItemActionService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -48,13 +60,43 @@ describe('ListingItemMessage', () => {
         const defaultMarketModel = await marketService.getDefault();
         defaultMarket = defaultMarketModel.toJSON();
 
+        const defaultProfileModel = await profileService.getDefault();
+        defaultProfile = defaultProfileModel.toJSON();
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            false,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,    // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id,    // profileId
+            false,   // generateListingItem
+            defaultMarket.id     // marketId
+        ]).toParamsArray();
+
+        // generate two templates without an item
+        listingItemTemplates = await testDataService.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            amount: 2,
+            withRelated: true,
+            generateParams: generateListingItemTemplateParams
+        } as TestDataGenerateRequest);
+
+        log.debug('listingItemTemplates[0].hash:', listingItemTemplates[0].hash);
+        log.debug('listingItemTemplates[1].hash:', listingItemTemplates[1].hash);
+        expect(listingItemTemplates.length).toBe(2);
+
     });
     // tslint:enable:max-line-length
 
     const expectListingItemFromMessage = (result: resources.ListingItem, message: ListingItemMessage) => {
 
         expect(result.id).not.toBeNull();
-        expect(result.hash).toBe(message.hash);
+        expect(result.hash).not.toBeNull();
 
         // fields from message that we dont want to see
         expect(result).not.toHaveProperty('information');
@@ -134,21 +176,98 @@ describe('ListingItemMessage', () => {
 
     test('Should process MarketplaceEvent containing ListingItemMessage', async () => {
 
-        const marketplaceMessage = JSON.parse(listingItemSmsg1.text);
-        marketplaceMessage.market = listingItemSmsg1.to;
+        // the first template is used to generate the message and is deleted before message processing to
+        // test processing on a situation where the message receiver is not the seller
 
-        const result = await listingItemActionService.processListingItemReceivedEvent({
-            smsgMessage: listingItemSmsg1,
+        // there should be no related ListingItems
+        expect(listingItemTemplates[0].ListingItems.length).toBe(0);
+
+        // just to be sure, fetch it, and test again
+        const listingItemTemplateModel = await listingItemTemplateService.findOneByHash(listingItemTemplates[0].hash);
+        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
+        expect(listingItemTemplate.ListingItems.length).toBe(0);
+
+        // prepare the message to be processed
+        const listingItemMessage: ListingItemMessage = await listingItemFactory.getMessage(listingItemTemplates[0]);
+
+        const marketplaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            item: listingItemMessage,
+            market: defaultMarket.address
+        } as MarketplaceMessage;
+
+        // put the MarketplaceMessage in SmsgMessage
+        const listingItemSmsg = {
+            msgid: 'somethingnotsorandom',
+            version: '0300',
+            received: new Date().toISOString(),
+            sent: new Date().toISOString(),
+            from: defaultProfile.address,
+            to: defaultMarket.address,
+            text: JSON.stringify(marketplaceMessage)
+        } as SmsgMessage;
+
+        // we have the message, so remove the template
+        await listingItemTemplateService.destroy(listingItemTemplates[0].id);
+
+        // process the message like it was received from the network
+        const result: resources.ListingItem = await listingItemActionService.processListingItemReceivedEvent({
+            smsgMessage: listingItemSmsg,
             marketplaceMessage
         });
 
-        // log.debug('result: ', JSON.stringify(result, null, 2));
-        log.debug('listingItemMessage: ', JSON.stringify(marketplaceMessage.item, null, 2));
-        log.debug('result.hash: ', JSON.stringify(result.hash, null, 2));
-        log.debug('listingItemMessage.hash: ', JSON.stringify(marketplaceMessage.item.hash, null, 2));
-        expectListingItemFromMessage(result, marketplaceMessage.item);
+        // common ListingItem expects, expect listingitem to match with the message
+        expectListingItemFromMessage(result, listingItemMessage);
 
     });
+
+    test('Should process MarketplaceEvent containing ListingItemMessage and match ListingItem with ListingItemTemplate', async () => {
+
+        // there should be no related ListingItem yet
+        expect(listingItemTemplates[1].ListingItems.length).toBe(0);
+
+        // just to be sure, fetch it
+        const listingItemTemplateModel = await listingItemTemplateService.findOneByHash(listingItemTemplates[1].hash);
+        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
+        expect(listingItemTemplate.ListingItems.length).toBe(0);
+
+        // prepare the message to be processed
+        const listingItemMessage: ListingItemMessage = await listingItemFactory.getMessage(listingItemTemplates[1]);
+
+        const marketplaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            item: listingItemMessage,
+            market: defaultMarket.address
+        } as MarketplaceMessage;
+
+        // put the MarketplaceMessage in SmsgMessage
+        const listingItemSmsg = {
+            msgid: 'somethingnotsorandom',
+            version: '0300',
+            received: new Date().toISOString(),
+            sent: new Date().toISOString(),
+            from: defaultProfile.address,
+            to: defaultMarket.address,
+            text: JSON.stringify(marketplaceMessage)
+        } as SmsgMessage;
+
+        // process the message like it was received from the network
+        const result: resources.ListingItem = await listingItemActionService.processListingItemReceivedEvent({
+            smsgMessage: listingItemSmsg,
+            marketplaceMessage
+        });
+
+        log.debug('listingItemMessage: ', JSON.stringify(marketplaceMessage.item, null, 2));
+        log.debug('result.hash: ', JSON.stringify(result.hash, null, 2));
+
+        // common ListingItem expects, expect listingitem to match with the message
+        expectListingItemFromMessage(result, listingItemMessage);
+
+        // as a result we should have gotten ListingItem with a relation to the ListingItemTemplate with matching hashes
+        expect(result.ListingItemTemplate).toBeDefined();
+        expect(result.ListingItemTemplate.hash).toBe(result.hash);
+    });
+
 
     // todo: test with different types of data
 

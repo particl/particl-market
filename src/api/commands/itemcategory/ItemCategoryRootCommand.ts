@@ -25,8 +25,12 @@ export class ItemCategoryRootCommand extends BaseCommand implements RpcCommandIn
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public usage(): string {
+        return this.getName() + ' (list|get|add|update|remove|search)  -  ' + this.description();
+    }
+
     public help(): string {
-        return this.getName() + ' (list|get|add|update|remove|search) ';
+        return this.usage();
     }
 
     public description(): string {

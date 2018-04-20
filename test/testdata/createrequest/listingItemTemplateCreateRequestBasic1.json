@@ -1,5 +1,4 @@
 {
-    "hash": "hash1",
     "itemInformation": {
         "title": "Small Soft Gloves Template",
         "shortDescription": "Ergonomic Tuna Template",
@@ -94,7 +93,7 @@
             },
             "cryptocurrencyAddress": {
                 "type": "NORMAL",
-                "address": "1OKRI3PXP0LTFABHIQA70DF5A5JL9M2F"
+                "address": "po5gLc7rVVV2F9DBvQgcZJXWA5zW8tVsPx"
             }
         }
     },

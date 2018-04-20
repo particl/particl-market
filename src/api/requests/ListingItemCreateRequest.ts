@@ -1,11 +1,14 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import { ActionMessageCreateRequest } from './ActionMessageCreateRequest';
 
 // tslint:disable:variable-name
 export class ListingItemCreateRequest extends RequestBody {
 
-    @IsNotEmpty()
     public hash: string;
+
+    @IsNotEmpty()
+    public seller: string;
 
     @IsNotEmpty()
     public market_id: number;
@@ -16,5 +19,8 @@ export class ListingItemCreateRequest extends RequestBody {
     public paymentInformation;
     public messagingInformation;
     public listingItemObjects;
+
+    // used only to create testdata
+    public actionMessages;
 }
 // tslint:enable:variable-name

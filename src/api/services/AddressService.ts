@@ -35,7 +35,9 @@ export class AddressService {
 
     @validate()
     public async create( @request(AddressCreateRequest) body: AddressCreateRequest): Promise<Address> {
-        // TODO: validate that the profile exists
+
+        // todo: should propably validate country here
+        // this.log.debug('create Address, body: ', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the address
         const address = await this.addressRepo.create(body);
@@ -54,7 +56,7 @@ export class AddressService {
         address.LastName = body.lastName;
         address.AddressLine1 = body.addressLine1;
         address.AddressLine2 = body.addressLine2;
-        address.zipCode = body.zipCode;
+        address.ZipCode = body.zipCode;
         address.City = body.city;
         address.State = body.state;
         address.Country = body.country;
@@ -64,6 +66,7 @@ export class AddressService {
     }
 
     public async destroy(id: number): Promise<void> {
+        this.log.debug('removing address:', id);
         return await this.addressRepo.destroy(id);
     }
 

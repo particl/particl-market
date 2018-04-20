@@ -6,7 +6,6 @@ import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ItemCategoryFactory } from './ItemCategoryFactory';
 import * as resources from 'resources';
 import { ShippingAvailability } from '../enums/ShippingAvailability';
-import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
 import { LocationMarkerCreateRequest } from '../requests/LocationMarkerCreateRequest';
 import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
@@ -23,6 +22,7 @@ import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCre
 import { ListingItemObjectDataCreateRequest } from '../requests/ListingItemObjectDataCreateRequest';
 import { MessagingProtocolType } from '../enums/MessagingProtocolType';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
+import {ItemLocationCreateRequest} from '../requests/ItemLocationCreateRequest';
 
 export class ListingItemFactory {
 
@@ -42,9 +42,9 @@ export class ListingItemFactory {
      * @param {'resources'.ItemCategory} listingItemCategory
      * @returns {Promise<ListingItemMessage>}
      */
-    public async getMessage(listingItemTemplate: resources.ListingItemTemplate, listingItemCategory: resources.ItemCategory): Promise<ListingItemMessage> {
+    public async getMessage(listingItemTemplate: resources.ListingItemTemplate): Promise<ListingItemMessage> {
 
-        const information = await this.getMessageInformation(listingItemTemplate.ItemInformation, listingItemCategory);
+        const information = await this.getMessageInformation(listingItemTemplate.ItemInformation);
         const payment = await this.getMessagePayment(listingItemTemplate.PaymentInformation);
         const messaging = await this.getMessageMessaging(listingItemTemplate.MessagingInformation);
         const objects = await this.getMessageObjects(listingItemTemplate.ListingItemObjects);
@@ -61,16 +61,15 @@ export class ListingItemFactory {
     }
 
     /**
-     * Creates a ListingItemCreateRequest from given data
      *
-     * @param data
-     * @returns {ListingItemCreateRequest}
+     * @param {ListingItemMessage} listingItemMessage
+     * @param {number} marketId
+     * @param {string} seller
+     * @param {"resources".ItemCategory} rootCategory
+     * @returns {Promise<ListingItemCreateRequest>}
      */
-    public async getModel(
-        listingItemMessage: ListingItemMessageInterface,
-        marketId: number,
-        rootCategory: resources.ItemCategory
-    ): Promise<ListingItemCreateRequest> {
+    public async getModel(listingItemMessage: ListingItemMessage, marketId: number, seller: string,
+                          rootCategory: resources.ItemCategory): Promise<ListingItemCreateRequest> {
 
         const itemInformation = await this.getModelItemInformation(listingItemMessage.information, rootCategory);
         const paymentInformation = await this.getModelPaymentInformation(listingItemMessage.payment);
@@ -78,6 +77,7 @@ export class ListingItemFactory {
         const listingItemObjects = await this.getModelListingItemObjects(listingItemMessage.objects);
 
         return {
+            seller,
             hash: listingItemMessage.hash,
             market_id: marketId,
             itemInformation,
@@ -209,32 +209,42 @@ export class ListingItemFactory {
         } as ItemInformationCreateRequest;
     }
 
-    private async getModelLocation(location: any): Promise<any> {
-
+    private async getModelLocation(location: any): Promise<ItemLocationCreateRequest> {
+        const locationObject: any = {};
         const region = location.country;
         const address = location.address;
-        const locationMarker = await this.getModelLocationMarker(location.gps);
 
-        return {
-            region,
-            address,
-            locationMarker
-        };
+        if (region) {
+            locationObject.region = region;
+        }
+        if (address) {
+            locationObject.address = address;
+        }
+
+        if (location.gps) {
+            const locationMarker = await this.getModelLocationMarker(location.gps);
+            locationObject.locationMarker = locationMarker;
+
+        }
+
+        return locationObject;
     }
 
     private async getModelLocationMarker(gps: any): Promise<LocationMarkerCreateRequest> {
-
-        const markerTitle = gps.marker_title;
-        const markerText = gps.marker_text;
-        const lat = gps.lat;
-        const lng = gps.lng;
-
-        return {
-            markerTitle,
-            markerText,
+        const lat: number = gps.lat;
+        const lng: number = gps.lng;
+        const locationMarker = {
             lat,
             lng
         } as LocationMarkerCreateRequest;
+
+        if (gps.marker_title) {
+            locationMarker.markerTitle = gps.marker_title;
+        }
+        if (gps.marker_text) {
+            locationMarker.markerText = gps.marker_text;
+        }
+        return locationMarker as LocationMarkerCreateRequest;
     }
 
     private async getModelShippingDestinations(shippingDestinations: string[]): Promise<resources.ShippingDestination[]> {
@@ -291,8 +301,8 @@ export class ListingItemFactory {
     // ---------------
     // MESSAGE
     // ---------------
-    private async getMessageInformation(itemInformation: resources.ItemInformation, listingItemCategory: resources.ItemCategory): Promise<any> {
-        const category = await this.itemCategoryFactory.getArray(listingItemCategory);
+    private async getMessageInformation(itemInformation: resources.ItemInformation): Promise<any> {
+        const category = await this.itemCategoryFactory.getArray(itemInformation.ItemCategory);
         const location = await this.getMessageInformationLocation(itemInformation.ItemLocation);
         const shippingDestinations = await this.getMessageInformationShippingDestinations(itemInformation.ShippingDestinations);
         const images = await this.getMessageInformationImages(itemInformation.ItemImages);
@@ -310,16 +320,27 @@ export class ListingItemFactory {
 
     private async getMessageInformationLocation(itemLocation: resources.ItemLocation): Promise<any> {
         const locationMarker: resources.LocationMarker = itemLocation.LocationMarker;
-        return {
-            country: itemLocation.region,
-            address: itemLocation.address,
-            gps: {
-                marker_title: locationMarker.markerTitle,
-                marker_text: locationMarker.markerText,
+        const informationLocation: any = {};
+        if (itemLocation.region) {
+            informationLocation.country = itemLocation.region;
+        }
+        if (itemLocation.address) {
+            informationLocation.address = itemLocation.address;
+        }
+        if (locationMarker) {
+            informationLocation.gps = {
                 lng: locationMarker.lng,
                 lat: locationMarker.lat
+            };
+
+            if (locationMarker.markerTitle) {
+                informationLocation.gps.marker_title = locationMarker.markerTitle;
             }
-        };
+            if (locationMarker.markerText) {
+                informationLocation.gps.marker_text = locationMarker.markerText;
+            }
+        }
+        return informationLocation;
     }
 
     private async getMessageInformationShippingDestinations(shippingDestinations: resources.ShippingDestination[]): Promise<string[]> {

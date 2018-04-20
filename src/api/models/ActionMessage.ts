@@ -4,7 +4,7 @@ import { MessageObject } from './MessageObject';
 import { MessageInfo } from './MessageInfo';
 import { MessageEscrow } from './MessageEscrow';
 import { MessageData } from './MessageData';
-import {ListingItem} from './ListingItem';
+import { ListingItem } from './ListingItem';
 
 export class ActionMessage extends Bookshelf.Model<ActionMessage> {
 

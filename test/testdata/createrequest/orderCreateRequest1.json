@@ -1,0 +1,18 @@
+{
+    "hash": "WILLBESETWHENSAVED",
+    "buyer": "CHANGE",
+    "seller": "CHANGE",
+    "orderItems": [{
+        "itemHash": "SETTHEITEMHASHFROMBID",
+        "bid_id": 0,
+        "status": "AWAITING_ESCROW",
+        "orderItemObjects": [{
+            "dataId": "testid",
+            "dataValue": "testdata"
+        }]
+    }],
+    "address": {
+        "REPLACE_WITH_SHIPPING_ADDRESS_FROM_BID": 0
+    }
+
+}

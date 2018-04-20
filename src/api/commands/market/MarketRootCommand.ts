@@ -24,8 +24,12 @@ export class MarketRootCommand extends BaseCommand implements RpcCommandInterfac
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public usage(): string {
+        return this.getName() + ' (list|add)  -  ' + this.description();
+    }
+
     public help(): string {
-        return this.getName() + ' (list|add) ';
+        return this.usage();
     }
 
     public description(): string {

@@ -7,13 +7,11 @@ import { ListingItemTemplateService } from '../../services/ListingItemTemplateSe
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemImage } from '../../models/ItemImage';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import * as crypto from 'crypto-js';
 import { ItemImageCreateRequest } from '../../requests/ItemImageCreateRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-import { HashableObjectType } from '../../../api/enums/HashableObjectType';
-import { ObjectHashService } from '../../services/ObjectHashService';
+import { ImageVersions } from '../../../core/helpers/ImageVersionEnumType';
 
 export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterface<ItemImage> {
 
@@ -22,8 +20,7 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService,
-        @inject(Types.Service) @named(Targets.Service.ObjectHashService) private objectHashService: ObjectHashService
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) private listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.ITEMIMAGE_ADD);
         this.log = new Logger(__filename);
@@ -48,28 +45,18 @@ export class ItemImageAddCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException('ListingItemTemplate id can not be null.');
         }
         // find listing item template
-        const listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(data.params[0]);
+        const listingItemTemplate = listingItemTemplateModel.toJSON();
 
-        // find related itemInformation
-        const itemInformation = listingItemTemplate.related('ItemInformation').toJSON();
-
-        // TODO: why the fuck is image hash created from iteminformation?
         // create item images
         return await this.itemImageService.create({
-            item_information_id: itemInformation.id,
-            hash: await this.objectHashService.getHash({
-                dataId: data.params[1],
-                protocol: data.params[2],
-                encoding: data.params[3],
-                data: data.params[4],
-                imageVersion: 'ORIGINAL'
-            }, HashableObjectType.ITEMIMAGE),
+            item_information_id: listingItemTemplate.ItemInformation.id,
             data: [{
                 dataId: data.params[1],
                 protocol: data.params[2],
                 encoding: data.params[3],
                 data: data.params[4],
-                imageVersion: 'ORIGINAL'
+                imageVersion: ImageVersions.ORIGINAL.propName
             }]
         } as ItemImageCreateRequest);
     }

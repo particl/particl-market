@@ -14,6 +14,7 @@ import { AddressUpdateRequest } from '../../src/api/requests/AddressUpdateReques
 
 import { AddressService } from '../../src/api/services/AddressService';
 import { ProfileService } from '../../src/api/services/ProfileService';
+import {AddressType} from '../../src/api/enums/AddressType';
 
 describe('Address', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -38,7 +39,8 @@ describe('Address', () => {
         state: 'test state',
         country: 'Finland',
         zipCode: '85001',
-        profile_id: 0
+        profile_id: 0,
+        type: AddressType.SHIPPING_OWN
     } as AddressCreateRequest;
 
     const testDataUpdated = {

@@ -7,8 +7,8 @@ exports.up = (db: Knex): Promise<any> => {
             table.increments('id').primary();
 
             table.string('action').notNullable();
-            table.string('nonce').notNullable();
-            table.boolean('accepted').notNullable();
+            table.string('nonce').nullable();
+            table.boolean('accepted').nullable();
 
             table.integer('listing_item_id').notNullable();
             table.foreign('listing_item_id').references('id')

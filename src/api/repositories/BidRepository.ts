@@ -37,8 +37,9 @@ export class BidRepository {
         return this.BidModel.search(options, withRelated);
     }
 
-    public async getLatestBid(listingItemId: number): Promise<Bid> {
-        return this.BidModel.getLatestBid(listingItemId);
+    // todo: add orderby option to BidSearchParams and get rid of this
+    public async getLatestBid(listingItemId: number, bidder: string): Promise<Bid> {
+        return this.BidModel.getLatestBid(listingItemId, bidder);
     }
 
     public async create(data: any): Promise<Bid> {
@@ -47,6 +48,7 @@ export class BidRepository {
             const bidCreated = await bid.save();
             return this.BidModel.fetchById(bidCreated.id);
         } catch (error) {
+            this.log.error('Could not creat the bid!', error);
             throw new DatabaseException('Could not create the bid!', error);
         }
     }

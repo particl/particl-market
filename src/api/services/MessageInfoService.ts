@@ -40,7 +40,7 @@ export class MessageInfoService {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        this.log.debug('messageinfo body:', JSON.stringify(body, null, 2));
+        // this.log.debug('messageinfo body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the messageInfo
         const messageInfo = await this.messageInfoRepo.create(body);

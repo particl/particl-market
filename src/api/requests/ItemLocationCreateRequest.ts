@@ -10,7 +10,6 @@ export class ItemLocationCreateRequest extends RequestBody {
     @IsNotEmpty()
     public region: string;
 
-    // @IsNotEmpty()
     public address: string;
 
     public locationMarker;

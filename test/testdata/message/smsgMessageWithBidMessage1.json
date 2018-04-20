@@ -1,0 +1,8 @@
+﻿{
+    "msgid": "e12fc05a0000000024d6c5cf3f9eeec4db01f30c5a2c1e565b9a9018",
+    "version": "0300",
+    "sent": "2018-04-01T03:03:29+0200",
+    "from": "pZGNMf4cCDc7B5yf2rksq7MPpWBosADdzB",
+    "to": "prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx",
+    "text": "{\"version\":\"0.0.1.0\",\"mpaction\":{\"action\":\"MPA_BID\",\"item\":\"453e64b11f03064c4cf8ee4878dd27b38ac83adcbb1f00045ec5c0869733fd56\",\"objects\":[{\"id\":\"colour\",\"value\":\"black\"},{\"id\":\"size\",\"value\":\"xl\"},{\"id\":\"outputs\",\"value\":[{\"txid\":\"0a179d93b374cb5112193d53b114577c6ec728a0c35bc437923e205a333d4e04\",\"vout\":1,\"amount\":1488.76082542}]},{\"id\":\"pubkeys\",\"value\":[null]},{\"id\":\"changeAddr\",\"value\":\"pfp8FJ6EAHPaFV95PvGEoP9Ywd7DNagN6G\"},{\"id\":\"change\",\"value\":1318.58423254},{\"id\":\"ship.firstName\",\"value\":\"zfdg\"},{\"id\":\"ship.lastName\",\"value\":\"zxcv\"},{\"id\":\"ship.addressLine1\",\"value\":\"123 6th St\"},{\"id\":\"ship.addressLine2\",\"value\":\"Melbourne FL 32904\"},{\"id\":\"ship.city\",\"value\":\"Melbourne\"},{\"id\":\"ship.state\",\"value\":\"Mel State\"},{\"id\":\"ship.zipCode\",\"value\":\"85001\"},{\"id\":\"ship.country\",\"value\":\"FI\"}]}}"
+}

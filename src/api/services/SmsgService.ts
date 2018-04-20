@@ -2,8 +2,9 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { CoreRpcService } from './CoreRpcService';
-import { MarketplaceMessageInterface } from '../messages/MarketplaceMessageInterface';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import {Environment} from '../../core/helpers/Environment';
 
 export class SmsgService {
 
@@ -68,14 +69,19 @@ export class SmsgService {
      *
      * @param {string} profileAddress
      * @param {string} marketAddress
-     * @param {MarketplaceMessageInterface} message
+     * @param {MarketplaceMessage} message
      * @param {boolean} paidMessage
      * @param {number} daysRetention
      * @returns {Promise<any>}
      */
-    public async smsgSend(profileAddress: string, marketAddress: string, message: MarketplaceMessageInterface,
+    public async smsgSend(profileAddress: string, marketAddress: string, message: MarketplaceMessage,
                           paidMessage: boolean = true,
                           daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)): Promise<SmsgSendResponse> {
+
+        // TODO: REMOVE!
+        if (Environment.isDevelopment() || Environment.isTest()) {
+            paidMessage = false;
+        }
 
         this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
         // this.log.debug('smsgSend, message: ' + JSON.stringify(message, null, 2));
@@ -112,7 +118,7 @@ export class SmsgService {
      */
     public async smsgLocalKeys(): Promise<any> {
         const response = await this.coreRpcService.call('smsglocalkeys');
-        this.log.debug('smsgLocalKeys, response: ' + JSON.stringify(response, null, 2));
+        // this.log.debug('smsgLocalKeys, response: ' + JSON.stringify(response, null, 2));
         return response;
     }
 

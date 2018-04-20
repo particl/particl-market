@@ -1,7 +1,6 @@
 import { rpc, api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import * as sharp from 'sharp';
-import { ObjectHashService } from '../../src/api/services/ObjectHashService';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
@@ -9,7 +8,7 @@ import { Commands } from '../../src/api/commands/CommandEnumType';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
-import { MessageException } from '../../src/api/exceptions/MessageException';
+import {ObjectHash} from '../../src/core/helpers/ObjectHash';
 
 describe('/publish-image', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -45,7 +44,7 @@ describe('/publish-image', () => {
         testDataListingItemTemplate.profile_id = defaultProfile.id;
 
         // set hash
-        testDataListingItemTemplate.hash = await this.ObjectHashService.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         // create item template
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);

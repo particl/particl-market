@@ -13,5 +13,7 @@ export class TestDataCreateRequest extends RequestBody {
 
     public withRelated?: boolean;
 
+    public timestampedHash? = false;
+
 }
 // tslint:enable:variable-name

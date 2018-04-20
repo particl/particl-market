@@ -1,31 +1,27 @@
-import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
+import * as resources from 'resources';
+
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { BidMessage } from '../../messages/BidMessage';
-import { BidFactory } from '../../factories/BidFactory';
 import { ListingItemService } from '../../services/ListingItemService';
-import { SmsgService } from '../../services/SmsgService';
-import { NotFoundException } from '../../exceptions/NotFoundException';
 import { MessageException } from '../../exceptions/MessageException';
-import { BidMessageType } from '../../enums/BidMessageType';
-import { Bid } from '../../models/Bid';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MarketplaceMessageInterface } from '../../messages/MarketplaceMessageInterface';
+import { BidActionService } from '../../services/BidActionService';
+import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 
-export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface<Bid> {
+export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
-        @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory
+        @inject(Types.Service) @named(Targets.Service.BidActionService) private bidActionService: BidActionService
     ) {
         super(Commands.BID_ACCEPT);
         this.log = new Logger(__filename);
@@ -34,49 +30,42 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      * [0]: itemhash, string
+     * [1]: bidId
+     *
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bid> {
+    public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
+
+        this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
+        const itemHash = data.params[0];
+        const bidId = data.params[1];
+
         // find listingItem by hash
-        const listingItem = await this.listingItemService.findOneByHash(data.params[0]);
+        const listingItemModel = await this.listingItemService.findOneByHash(itemHash);
+        const listingItem = listingItemModel.toJSON();
 
-        // if listingItem not found
-        if (listingItem === null) {
-            this.log.warn(`ListingItem with the hash=${data.params[0]} was not found!`);
-            throw new NotFoundException(data.params[0]);
-        } else {
-            // find related bid
-            // TODO: LATER WE WILL CHANGE IT FOR THE SINGLE BID
-            const bid = listingItem.related('Bids').toJSON()[0];
+        this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
-            // if bid not found for the given listing item hash
-            if (!bid) {
-                this.log.warn(`Bid with the listing Item hash=${data.params[0]} was not found!`);
-                throw new MessageException(`Bid not found for the listing item hash ${data.params[0]}`);
-
-            } else if (bid.action === BidMessageType.MPA_BID) {
-                // broadcast the accepted bid message
-                // TODO: add profile and market addresses
-                const marketPlaceMessage = {
-                    version: process.env.MARKETPLACE_VERSION,
-                    mpaction: {
-                        item: data.params[0],
-                        action: BidMessageType.MPA_ACCEPT
-                    }
-                } as MarketplaceMessageInterface;
-
-                await this.smsgService.smsgSend('', '', marketPlaceMessage);
-
-                // TODO: We will change the return data once broadcast functionality will be implemented
-                return bid;
-
-            } else {
-                this.log.warn(`Bid can not be accepted because it was already been ${bid.action}`);
-                throw new MessageException(`Bid can not be accepted because it was already been ${bid.action}`);
-            }
+        // make sure we have a ListingItemTemplate, so we know it's our item
+        if (_.isEmpty(listingItem.ListingItemTemplate)) {
+            this.log.error('Not your item.'); // Added for Unit Tests
+            throw new MessageException('Not your item.');
         }
+
+        // find the bid
+        const bids: resources.Bid[] = listingItem.Bids;
+        const bidToAccept = bids.find(bid => {
+            return bid.id === bidId;
+        });
+
+        if (!bidToAccept) {
+            this.log.error('Bid not found.'); // Added for Unit Tests
+            throw new MessageException('Bid not found.');
+        }
+
+        return this.bidActionService.accept(listingItem, bidToAccept);
     }
 
     public usage(): string {

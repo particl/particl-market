@@ -2,14 +2,16 @@ import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { AddressType } from '../../../src/api/enums/AddressType';
 
 describe('AddressUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ADDRESS_ROOT.commandName;
     const subCommand = Commands.ADDRESS_UPDATE.commandName;
+    const addSubCommand = Commands.ADDRESS_ADD.commandName;
 
     const testData = {
-        name: 'TESTING-ADDRESS-PROFILE-NAME',
+        name: 'TESTING-ADDRESS-PROFILE-NAME' + new Date().getTime(),
         address: 'TESTING-ADDRESS-PROFILE-ADDRESS',
         shippingAddresses: [{
             firstName: 'Johnny',
@@ -20,7 +22,8 @@ describe('AddressUpdateCommand', () => {
             city: 'city',
             state: 'test state',
             country: 'SW',
-            zipCode: '85001'
+            zipCode: '85001',
+            type: AddressType.SHIPPING_OWN
         }]
     };
 
@@ -36,11 +39,113 @@ describe('AddressUpdateCommand', () => {
         zipCode: '85001'
     };
 
+    const testData2 = [{
+        name: 'TESTING-ADDRESS-PROFILE-NAME1' + new Date().getTime(),
+        address: 'TESTING-ADDRESS-PROFILE-ADDRESS1',
+        shippingAddresses: [{
+            firstName: 'Johnny1',
+            lastName: 'Depp1',
+            title: 'Title1',
+            addressLine1: 'Add1',
+            addressLine2: 'ADD 221',
+            city: 'city1',
+            state: 'test state1',
+            country: 'FI',
+            zipCode: '85001',
+            type: AddressType.SHIPPING_OWN
+        }]
+    },
+    {
+        name: 'TESTING-ADDRESS-PROFILE-NAME2' + new Date().getTime(),
+        address: 'TESTING-ADDRESS-PROFILE-ADDRESS2',
+        shippingAddresses: [{
+            firstName: 'Johnny2',
+            lastName: 'Depp2',
+            title: 'Title2',
+            addressLine1: 'Add2',
+            addressLine2: 'ADD 222',
+            city: 'city2',
+            state: 'test state2',
+            country: 'FI',
+            zipCode: '85002',
+            type: AddressType.SHIPPING_OWN
+        }]
+    },
+    {
+        name: 'TESTING-ADDRESS-PROFILE-NAME3' + new Date().getTime(),
+        address: 'TESTING-ADDRESS-PROFILE-ADDRESS3',
+        shippingAddresses: [{
+            firstName: 'Johnny3',
+            lastName: 'Depp3',
+            title: 'Title3',
+            addressLine1: 'Add3',
+            addressLine2: 'ADD 223',
+            city: 'city3',
+            state: 'test state3',
+            country: 'FI',
+            zipCode: '85003',
+            type: AddressType.SHIPPING_OWN
+        }]
+    }];
+
+    const testDataUpdate2 = [{
+        name: 'TESTING-ADDRESS-PROFILE-NAME4' + new Date().getTime(),
+        address: 'TESTING-ADDRESS-PROFILE-ADDRESS4',
+        shippingAddresses: [{
+            firstName: 'Johnny4',
+            lastName: 'Depp4',
+            title: 'Title4',
+            addressLine1: 'Add4',
+            addressLine2: 'ADD 224',
+            city: 'city4',
+            state: 'test state4',
+            country: 'FI',
+            zipCode: '85004',
+            type: AddressType.SHIPPING_OWN
+        }]
+    },
+    {
+        name: 'TESTING-ADDRESS-PROFILE-NAME5' + new Date().getTime(),
+        address: 'TESTING-ADDRESS-PROFILE-ADDRESS5',
+        shippingAddresses: [{
+            firstName: 'Johnny5',
+            lastName: 'Depp5',
+            title: 'Title5',
+            addressLine1: 'Add5',
+            addressLine2: 'ADD 225',
+            city: 'city5',
+            state: 'test state5',
+            country: 'FI',
+            zipCode: '85005',
+            type: AddressType.SHIPPING_OWN
+        }]
+    },
+    {
+        name: 'TESTING-ADDRESS-PROFILE-NAME6' + new Date().getTime(),
+        address: 'TESTING-ADDRESS-PROFILE-ADDRESS6',
+        shippingAddresses: [{
+            firstName: 'Johnny6',
+            lastName: 'Depp6',
+            title: 'Title6',
+            addressLine1: 'Add6',
+            addressLine2: 'ADD 226',
+            city: 'city6',
+            state: 'test state6',
+            country: 'FI',
+            zipCode: '85006',
+            type: AddressType.SHIPPING_OWN
+        }]
+    }];
+
     let profileId;
     let addressId;
+    let defaultProfileId;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        let defaultProfile = await testUtil.getDefaultProfile();
+        defaultProfileId = defaultProfile.id;
     });
 
     test('Should update the address', async () => {
@@ -150,6 +255,73 @@ describe('AddressUpdateCommand', () => {
         expect(result.state).toBe('');
         expect(result.country).toBe(testDataUpdated.country);
         expect(result.zipCode).toBe(testDataUpdated.zipCode);
+    });
 
+    test('Should create 3 addresses then update all 3 in a particular order', async () => {
+        // Save data to database
+        let addDataRess: any[] = [];
+        for (let data of testData2) {
+            const shippingAddress = data.shippingAddresses[0];
+            const tmpAddDataRes = await rpc(method, [addSubCommand,
+                defaultProfileId,
+                shippingAddress.firstName,
+                shippingAddress.lastName,
+                shippingAddress.title,
+                shippingAddress.addressLine1,
+                shippingAddress.addressLine2,
+                shippingAddress.city,
+                shippingAddress.state,
+                shippingAddress.country,
+                shippingAddress.zipCode
+            );
+            tmpAddDataRes.expectJson();
+            tmpAddDataRes.expectStatusCode(200);
+
+            const addDataRes = tmpAddDataRes.getBody()['result'];
+            expect(addDataRes.firstName).toBe(shippingAddress.firstName);
+            expect(addDataRes.lastName).toBe(shippingAddress.lastName);
+            expect(addDataRes.title).toBe(shippingAddress.title);
+            expect(addDataRes.addressLine1).toBe(shippingAddress.addressLine1);
+            expect(addDataRes.addressLine2).toBe(shippingAddress.addressLine2);
+            expect(addDataRes.city).toBe(shippingAddress.city);
+            expect(addDataRes.state).toBe(shippingAddress.state);
+            expect(addDataRes.country).toBe(shippingAddress.country);
+            expect(addDataRes.zipCode).toBe(shippingAddress.zipCode);
+
+            addDataRess.push(addDataRes);
+        }
+
+        // update addresses in the order `order`, and check that they were updated correctly.
+        let order = [1, 0, 2];
+        for (let i in testData2) {
+            const addressId = addDataRess[order[i]].id;
+            const data = testDataUpdate2[order[i]].shippingAddresses[0];
+            const res = await rpc(method, [subCommand,
+                addressId,
+                data.firstName,
+                data.lastName,
+                data.title,
+                data.addressLine1,
+                data.addressLine2,
+                data.city,
+                data.state,
+                data.country,
+                data.zipCode,
+                profileId
+            ]);
+            res.expectJson();
+            res.expectStatusCode(200);
+
+            const result: any = res.getBody()['result'];
+            expect(result.firstName).toBe(data.firstName);
+            expect(result.lastName).toBe(data.lastName);
+            expect(result.title).toBe(data.title);
+            expect(result.addressLine1).toBe(data.addressLine1);
+            expect(result.addressLine2).toBe(data.addressLine2);
+            expect(result.city).toBe(data.city);
+            expect(result.state).toBe(data.state);
+            expect(result.country).toBe(data.country);
+            expect(result.zipCode).toBe(data.zipCode);
+        }
     });
 });

@@ -68,6 +68,7 @@ describe('ActionMessage', () => {
 
     let createdActionMessage;
     let createdListingItem;
+    let startNumActionMessages;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -99,8 +100,12 @@ describe('ActionMessage', () => {
             withRelated: true,                  // return model
             generateParams                      // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItem = listingItems[0].toJSON();
+        // createdListingItem = listingItems[0].toJSON();
+        createdListingItem = listingItems[0];
 
+        const actionMessageCollection = await actionMessageService.findAll();
+        const actionMessage = actionMessageCollection.toJSON();
+        startNumActionMessages = actionMessage.length;
     });
 
     afterAll(async () => {
@@ -112,6 +117,7 @@ describe('ActionMessage', () => {
         const testData1 = JSON.parse(JSON.stringify(testData));
 
         delete testData1.info;
+
         await actionMessageService.create(testData1).catch(e =>
             expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []))
         );
@@ -201,9 +207,9 @@ describe('ActionMessage', () => {
     test('Should list action messages with our new create one', async () => {
         const actionMessageCollection = await actionMessageService.findAll();
         const actionMessage = actionMessageCollection.toJSON();
-        expect(actionMessage.length).toBe(1);
+        expect(actionMessage.length).toBe(startNumActionMessages + 1);
 
-        const result = actionMessage[0];
+        const result = actionMessage[startNumActionMessages];
 
         // test the values
         expect(result.action).toBe(testData.action);

@@ -9,21 +9,19 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { ListingItemObjectData } from '../../src/api/models/ListingItemObjectData';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
-import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
-
 import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { ObjectHashService } from '../../src/api/services/ObjectHashService';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 
 import { ListingItemObjectDataCreateRequest } from '../../src/api/requests/ListingItemObjectDataCreateRequest';
 import { ListingItemObjectDataUpdateRequest } from '../../src/api/requests/ListingItemObjectDataUpdateRequest';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-
 
 describe('ListingItemObjectData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -34,7 +32,6 @@ describe('ListingItemObjectData', () => {
     let listingItemObjectDataService: ListingItemObjectDataService;
     let profileService: ProfileService;
     let listingItemTemplateService: ListingItemTemplateService;
-    let objectHashService: ObjectHashService;
 
     let createdId;
     let createdListingItemObject;
@@ -58,18 +55,17 @@ describe('ListingItemObjectData', () => {
         listingItemObjectDataService = app.IoC.getNamed<ListingItemObjectDataService>(Types.Service, Targets.Service.ListingItemObjectDataService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
-        objectHashService = app.IoC.getNamed<ObjectHashService>(Types.Service, Targets.Service.ObjectHashService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
         const defaultProfile = await profileService.getDefault();
         const templateData = JSON.parse(JSON.stringify(listingItemTemplateCreateRequestBasic1));
-        templateData.hash = await objectHashService.getHash(templateData, HashableObjectType.DEFAULT);
+        templateData.hash = ObjectHash.getHash(templateData, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST);
         templateData.profile_id = defaultProfile.Id;
 
         const createdListingItemTemplate = await testDataService.create<ListingItemTemplate>({
-            model: 'listingitemtemplate',
+            model: CreatableModel.LISTINGITEMTEMPLATE,
             data: templateData,
             withRelated: true
         } as TestDataCreateRequest);

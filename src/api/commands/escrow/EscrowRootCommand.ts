@@ -13,7 +13,6 @@ export class EscrowRootCommand extends BaseCommand implements RpcCommandInterfac
     public log: LoggerType;
 
     constructor(
-
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.ESCROW_ROOT);
@@ -25,8 +24,12 @@ export class EscrowRootCommand extends BaseCommand implements RpcCommandInterfac
         return await this.executeNext(data, rpcCommandFactory);
     }
 
+    public usage(): string {
+        return this.getName() + ' (add|update|remove|lock|refund|release)  -  ' + this.description();
+    }
+
     public help(): string {
-        return this.getName() + ' (add|update|remove|lock|refund|release) ';
+        return this.usage();
     }
 
     public description(): string {

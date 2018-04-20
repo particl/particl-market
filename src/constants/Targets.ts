@@ -37,6 +37,9 @@ export const Targets = {
         MessageInfo: 'MessageInfo',
         MessageObject: 'MessageObject',
         MessagingInformation: 'MessagingInformation',
+        Order: 'Order',
+        OrderItem: 'OrderItem',
+        OrderItemObject: 'OrderItemObject',
         PaymentInformation: 'PaymentInformation',
         PriceTicker: 'PriceTicker',
         Profile: 'Profile',
@@ -74,6 +77,9 @@ export const Targets = {
         MessageInfoRepository: 'MessageInfoRepository',
         MessageObjectRepository: 'MessageObjectRepository',
         MessagingInformationRepository: 'MessagingInformationRepository',
+        OrderItemObjectRepository: 'OrderItemObjectRepository',
+        OrderItemRepository: 'OrderItemRepository',
+        OrderRepository: 'OrderRepository',
         PaymentInformationRepository: 'PaymentInformationRepository',
         PriceTickerRepository: 'PriceTickerRepository',
         ProfileRepository: 'ProfileRepository',
@@ -120,6 +126,9 @@ export const Targets = {
         MessageInfoService: 'MessageInfoService',
         MessageObjectService: 'MessageObjectService',
         MessagingInformationService: 'MessagingInformationService',
+        OrderItemObjectService: 'OrderItemObjectService',
+        OrderItemService: 'OrderItemService',
+        OrderService: 'OrderService',
         PaymentInformationService: 'PaymentInformationService',
         PriceTickerService: 'PriceTickerService',
         ProfileService: 'ProfileService',
@@ -129,8 +138,7 @@ export const Targets = {
         ShoppingCartService: 'ShoppingCartService',
         SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
-        UserService: 'UserService',
-        ObjectHashService: 'ObjectHashService'
+        UserService: 'UserService'
     },
     Command:     {
         address: {
@@ -237,6 +245,10 @@ export const Targets = {
             MessagingInformationRootCommand: 'MessagingInformationRootCommand',
             MessagingInformationUpdateCommand: 'MessagingInformationUpdateCommand'
         },
+        order: {
+            OrderRootCommand: 'OrderRootCommand',
+            OrderSearchCommand: 'OrderSearchCommand'
+        },
         paymentinformation: {
             PaymentInformationRootCommand: 'PaymentInformationRootCommand',
             PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'
@@ -283,6 +295,7 @@ export const Targets = {
         ItemCategoryFactory: 'ItemCategoryFactory',
         ListingItemFactory: 'ListingItemFactory',
         MessagingInformationFactory: 'MessagingInformationFactory',
+        OrderFactory: 'OrderFactory',
         RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {

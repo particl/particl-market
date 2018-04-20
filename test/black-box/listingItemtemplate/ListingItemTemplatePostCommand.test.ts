@@ -1,20 +1,13 @@
+// tslint:disable:max-line-length
 import { rpc, api } from '../lib/api';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-
-import * as listingItemCreateRequestBasic1 from '../../testdata/createrequest/listingItemCreateRequestBasic1.json';
-import * as listingItemCreateRequestBasic2 from '../../testdata/createrequest/listingItemCreateRequestBasic2.json';
-import * as listingItemCreateRequestBasic3 from '../../testdata/createrequest/listingItemCreateRequestBasic3.json';
-
-import * as listingItemUpdateRequestBasic1 from '../../testdata/pdaterequest/listingItemUpdateRequestBasic1.json';
-
-import * as listingItemTemplateCreateRequestBasic1 from '../../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-import * as listingItemTemplateCreateRequestBasic2 from '../../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
-
+import * as listingItemTemplateCreateRequestWithoutLocationMarker from '../../testdata/createrequest/listingItemTemplateCreateRequestWithoutLocationMarker.json';
 import * as resources from 'resources';
+// tslint:enable:max-line-length
 
 describe('ListingItemSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -46,6 +39,7 @@ describe('ListingItemSearchCommand', () => {
 
         // get default profile
         defaultProfile = await testUtil.getDefaultProfile();
+        log.debug('defaultProfile: ', defaultProfile);
 
         // fetch default market
         defaultMarket = await testUtil.getDefaultMarket();
@@ -53,7 +47,7 @@ describe('ListingItemSearchCommand', () => {
         // generate listingItemTemplate
         listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
-            1,                          // how many to generate
+            2,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
@@ -70,6 +64,15 @@ describe('ListingItemSearchCommand', () => {
         expect(result.result).toBe('Sent.');
         expect(result.txid).toBeDefined();
         expect(result.fee).toBeGreaterThan(0);
+
+        log.debug('==[ POSTED ITEM ]=============================================================================');
+        log.debug('id: ' + listingItemTemplates[0].id + ', ' + listingItemTemplates[0].ItemInformation.title);
+        log.debug('desc: ' + listingItemTemplates[0].ItemInformation.shortDescription);
+        log.debug('category: ' + listingItemTemplates[0].ItemInformation.ItemCategory.id + ', '
+            + listingItemTemplates[0].ItemInformation.ItemCategory.name);
+        log.debug('hash: ' + listingItemTemplates[0].hash);
+        log.debug('==============================================================================================');
+
     });
 
 

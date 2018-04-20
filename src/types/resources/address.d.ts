@@ -2,6 +2,8 @@ declare module 'resources' {
 
     interface Address {
         id: number;
+        firstName: string;
+        lastName: string;
         addressLine1: string;
         addressLine2: string;
         city: string;
@@ -10,6 +12,7 @@ declare module 'resources' {
         zipCode: string;
         createdAt: Date;
         updatedAt: Date;
+        Profile: Profile;
     }
 
 }

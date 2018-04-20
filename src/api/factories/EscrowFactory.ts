@@ -1,15 +1,11 @@
-import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { EscrowMessage } from '../messages/EscrowMessage';
-import { EscrowLockRequest } from '../requests/EscrowLockRequest';
-import { EscrowRefundRequest } from '../requests/EscrowRefundRequest';
-import { EscrowReleaseRequest } from '../requests/EscrowReleaseRequest';
 import { EscrowMessageType } from '../enums/EscrowMessageType';
-import { MessageException } from '../exceptions/MessageException';
 import * as resources from 'resources';
-
+import { EscrowRequest } from '../requests/EscrowRequest';
+import { NotImplementedException } from '../exceptions/NotImplementedException';
 
 export class EscrowFactory {
 
@@ -31,29 +27,24 @@ export class EscrowFactory {
      *
      * @returns {EscrowMessage}
      */
-    public async getMessage(
-        request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest,
-        escrow?: resources.Escrow,
-        address?: resources.Address
-    ): Promise<EscrowMessage> {
+    public async getMessage(request: EscrowRequest, rawtx: string): Promise<EscrowMessage> {
+
+        // TODO: validity check
+        // this.checkEscrowActionValidity(request.action, escrow);
 
         switch (request.action) {
-
             case EscrowMessageType.MPA_LOCK:
-                return await this.getLockMessage(request as EscrowLockRequest, escrow, address);
+                return await this.getLockMessage(request, rawtx);
 
             case EscrowMessageType.MPA_RELEASE:
-                return await this.getReleaseMessage(request as EscrowReleaseRequest, escrow);
+                return await this.getReleaseMessage(request, rawtx);
 
             case EscrowMessageType.MPA_REFUND:
-                return await this.getRefundMessage(request as EscrowRefundRequest, escrow);
+                return await this.getRefundMessage(request, rawtx);
 
-            case EscrowMessageType.MPA_REQUEST_REFUND:
-                // TODO: IMPLEMENT
-                // return this.getRequestRefundMessage(request as EscrowRequestRefundRequest, escrow);
-                return new EscrowMessage();
+            default:
+                throw new NotImplementedException();
         }
-
     }
 
     /**
@@ -73,25 +64,21 @@ export class EscrowFactory {
      *
      * @param lockRequest
      * @param escrow
-     * @param address
      * @returns {EscrowMessage}
      */
-    private async getLockMessage(lockRequest: EscrowLockRequest, escrow?: resources.Escrow, address?: resources.Address): Promise<EscrowMessage> {
+    private async getLockMessage(request: EscrowRequest, rawtx: string): Promise<EscrowMessage> {
 
-        this.checkEscrowActionValidity(EscrowMessageType.MPA_LOCK, escrow);
-        const rawTx = this.createRawTx(lockRequest, escrow);
-        const addressOneLiner = this.getAddressOneLiner(address);
 
         return {
-            action: lockRequest.action,
-            item: lockRequest.item,
-            nonce: lockRequest.nonce,
+            action: request.action,
+            item: request.orderItem.itemHash,
+            nonce: request.nonce,
             info: {
-                address: addressOneLiner,
-                memo: lockRequest.memo
+                memo: request.memo
             },
             escrow: {
-                rawtx: rawTx
+                type: 'lock',
+                rawtx
             }
         } as EscrowMessage;
     }
@@ -102,18 +89,15 @@ export class EscrowFactory {
      * @param releaseRequest
      * @param escrow
      */
-    private async getReleaseMessage(releaseRequest: EscrowReleaseRequest, escrow?: resources.Escrow): Promise<EscrowMessage> {
-
-        this.checkEscrowActionValidity(EscrowMessageType.MPA_RELEASE, escrow);
-        const rawTx = this.createRawTx(releaseRequest, escrow);
+    private async getReleaseMessage(request: EscrowRequest, rawtx: string): Promise<EscrowMessage> {
 
         return {
-            action: releaseRequest.action,
-            item: releaseRequest.item,
-            memo: releaseRequest.memo,
+            action: request.action,
+            item: request.orderItem.itemHash,
+            memo: request.memo,
             escrow: {
                 type: 'release',
-                rawtx: rawTx
+                rawtx
             }
         } as EscrowMessage;
     }
@@ -124,19 +108,16 @@ export class EscrowFactory {
      * @param refundRequest
      * @param escrow
      */
-    private async getRefundMessage(refundRequest: EscrowRefundRequest, escrow?: resources.Escrow): Promise<EscrowMessage> {
-
-        this.checkEscrowActionValidity(EscrowMessageType.MPA_REFUND, escrow);
-        const rawTx = this.createRawTx(refundRequest, escrow);
+    private async getRefundMessage(request: EscrowRequest, rawtx: string): Promise<EscrowMessage> {
 
         return {
-            action: refundRequest.action,
-            item: refundRequest.item,
-            accepted: refundRequest.accepted,
-            memo: refundRequest.memo,
+            action: request.action,
+            item: request.orderItem.itemHash,
+            accepted: request.accepted,
+            memo: request.memo,
             escrow: {
                 type: 'refund',
-                rawtx: rawTx
+                rawtx
             }
         } as EscrowMessage;
     }
@@ -156,57 +137,5 @@ export class EscrowFactory {
             // throw new MessageException('Action is not valid for the Escrow');
         }
         return isValid;
-    }
-
-    /**
-     * Creates rawtx based on params
-     *
-     * @param request
-     * @param escrow
-     * @returns {string}
-     */
-    private createRawTx(request: EscrowLockRequest | EscrowRefundRequest | EscrowReleaseRequest, escrow?: resources.Escrow): string {
-        // MPA_RELEASE:
-        // rawtx: 'The buyer sends the half signed rawtx which releases the escrow and paymeny.
-        // The vendor then recreates the whole transaction (check ouputs, inputs, scriptsigs
-        // and the fee), verifying that buyer\'s rawtx is indeed legitimate. The vendor then
-        // signs the rawtx and broadcasts it.'
-
-        // MPA_REFUND
-        // rawtx: 'The vendor decodes the rawtx from MP_REQUEST_REFUND and recreates the whole
-        // transaction (check ouputs, inputs, scriptsigs and the fee), verifying that buyer\'s
-        // rawtx is indeed legitimate. The vendor then signs the rawtx and sends it to the buyer.
-        // The vendor can decide to broadcast it himself.'
-
-        // TODO: implement
-        return 'todo: implement';
-    }
-
-
-    private getAddressOneLiner(address: resources.Address = {} as resources.Address): string {
-        const addressArray: any = [];
-
-        if (!_.isEmpty(address)) {
-            if (address.addressLine1) {
-                addressArray.push(address.addressLine1);
-            }
-            if (address.addressLine2) {
-                addressArray.push(address.addressLine2);
-            }
-            if (address.zipCode) {
-                addressArray.push(address.zipCode);
-            }
-            if (address.city) {
-                addressArray.push(address.city);
-            }
-            if (address.state) {
-                addressArray.push(address.state);
-            }
-            if (address.country) {
-                addressArray.push(address.country);
-            }
-        }
-
-        return addressArray.join(', ');
     }
 }

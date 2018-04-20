@@ -6,7 +6,7 @@ import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryF
 import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMessage';
 import { ListingItemCreateRequest } from '../../../../src/api/requests/ListingItemCreateRequest';
 
-import * as listingItemTemplateBasic from '../../../testdata/model/listingItemTemplateBasic.json';
+import * as listingItemTemplateBasic1 from '../../../testdata/model/listingItemTemplateBasic1.json';
 import * as listingItemCategoryWithRelated from '../../../testdata/model/listingItemCategoryWithRelated.json';
 import * as listingItemCategoryRootWithRelated from '../../../testdata/model/listingItemCategoryRootWithRelated.json';
 
@@ -59,11 +59,12 @@ describe('ListingItemFactory', () => {
         expect(message.information.title).toBe(testData.ItemInformation.title);
         expect(message.information.short_description).toBe(testData.ItemInformation.shortDescription);
         expect(message.information.long_description).toBe(testData.ItemInformation.longDescription);
+
         expect(message.information.category).toBeDefined();
         expect(message.information.category.length).toBe(3);
-        expect(message.information.category[0]).toBe('cat_ROOT');
-        expect(message.information.category[1]).toBe('cat_wholesale_science_industrial');
-        expect(message.information.category[2]).toBe('cat_wholesale_consumer_goods');
+        expect(message.information.category[0]).toBe(testData.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.key);
+        expect(message.information.category[1]).toBe(testData.ItemInformation.ItemCategory.ParentItemCategory.key);
+        expect(message.information.category[2]).toBe(testData.ItemInformation.ItemCategory.key);
 
         // message.information.location
         expect(message.information.location).toBeDefined();
@@ -361,12 +362,12 @@ describe('ListingItemFactory', () => {
 
     test('Should create ListingItemMessage', async () => {
 
-        createdListingItemMessage = await listingItemFactory.getMessage(listingItemTemplateBasic, listingItemCategoryWithRelated);
+        createdListingItemMessage = await listingItemFactory.getMessage(listingItemTemplateBasic1);
 
         // console.log('message: ', JSON.stringify(createdListingItemMessage, null, 2));
 
         // test message conversion
-        expectMessageFromListingItem(createdListingItemMessage, listingItemTemplateBasic);
+        expectMessageFromListingItem(createdListingItemMessage, listingItemTemplateBasic1);
 
     });
 

@@ -1,5 +1,4 @@
 {
-    "hash": "hash1",
     "itemInformation": {
         "title": "Different Soft Gloves",
         "shortDescription": "Ergonomic Tuna",
@@ -147,6 +146,25 @@
                     "value": "#103584"
                 }
             ]
+        }
+    ],
+    "actionMessages": [
+        {
+            "action": "MP_ITEM_ADD",
+            "objects": [
+                {
+                    "dataId": "seller",
+                    "dataValue": "prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx"
+                }
+            ],
+            "data": {
+                "msgid": "fceabe5a000000002cc363a3bc350d6bca87b1977335deeba5a554f6",
+                "version": "0300",
+                "sent": "2018-03-31T03:57:16+0200",
+                "received": "2018-03-31T03:57:16+0200",
+                "from": "prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx",
+                "to": "pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA"
+            }
         }
     ]
 }

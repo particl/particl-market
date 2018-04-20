@@ -18,6 +18,23 @@
             "env": {
                 "NODE_ENV": "development"
             }
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug Single Test",
+            "program": "${workspaceRoot}/node_modules/jest/bin/jest",
+            "env": {
+                "NODE_ENV": "test"
+            },
+            "args": [
+                "--forceExit",
+                "--verbose",
+                "--testPathPattern=${file}",
+                "--silent=false"
+            ],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
         }
     ]
 }

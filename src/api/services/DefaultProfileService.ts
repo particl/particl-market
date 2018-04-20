@@ -19,6 +19,7 @@ export class DefaultProfileService {
         this.log = new Logger(__filename);
     }
 
+    // TODO: if something goes wrong here and default profile does not get created, the application should stop
     public async seedDefaultProfile(): Promise<void> {
         const defaultProfile = {
             name: 'DEFAULT'

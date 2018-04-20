@@ -61,6 +61,11 @@ export class ProfileService {
         return profile;
     }
 
+    public async findOneByAddress(name: string, withRelated: boolean = true): Promise<Profile> {
+        const profile = await this.profileRepo.findOneByAddress(name, withRelated);
+        return profile;
+    }
+
     @validate()
     public async create( @request(ProfileCreateRequest) data: ProfileCreateRequest): Promise<Profile> {
         const body = JSON.parse(JSON.stringify(data));

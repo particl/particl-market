@@ -34,6 +34,8 @@ test/**/*.js.map
 coverage/
 !test/preprocessor.js
 
+test/testdata/test.json
+
 data/marketplace.db
 data/marketplace-test.db
 data/particl1

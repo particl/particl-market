@@ -5,14 +5,14 @@ import { MessageBody } from '../../core/api/MessageBody';
 
 export class BidMessage extends MessageBody implements ActionMessageInterface {
 
-    @IsNotEmpty()
-    @IsEnum(BidMessageType)
+    // @IsNotEmpty()
+    // @IsEnum(BidMessageType)
     public action: BidMessageType;
 
     @IsNotEmpty()
     public item: string;
 
     // todo: objects
-    public objects?: any;
+    public objects?: any[];
 
 }

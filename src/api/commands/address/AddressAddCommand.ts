@@ -13,6 +13,7 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { NotFoundException } from '../../exceptions/NotFoundException';
+import {AddressType} from '../../enums/AddressType';
 
 export class AddressAddCommand extends BaseCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
@@ -37,6 +38,7 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
      *  [7]: state
      *  [8]: country/countryCode
      *  [9]: zipCode
+     *  [10]: type, optional, default: AddressType.SHIPPING_OWN
      *
      * @param data
      * @param rpcCommandFactory
@@ -45,6 +47,8 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
         this.log.debug('Attempting to create address');
+
+        this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
 
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
@@ -69,13 +73,16 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
             city: data.params[6],
             state: data.params[7],
             country: countryCode,
-            zipCode: zipCodeStr
+            zipCode: zipCodeStr,
+            type: data.params[10] ? data.params[10] : AddressType.SHIPPING_OWN
         } as AddressCreateRequest;
 
         this.log.debug('newAddress:', newAddress);
 
         return await this.addressService.create(newAddress);
     }
+
+    // TODO: title should be after profileId
 
     // tslint:disable:max-line-length
     public usage(): string {

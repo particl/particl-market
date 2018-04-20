@@ -4,7 +4,6 @@ import { RequestBody } from '../../core/api/RequestBody';
 // tslint:disable:variable-name
 export class ListingItemTemplateUpdateRequest extends RequestBody {
 
-    // @IsNotEmpty()
     public hash: string;
 
     public itemInformation;

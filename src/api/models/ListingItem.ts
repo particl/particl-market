@@ -11,7 +11,7 @@ import { Bid } from './Bid';
 import { FlaggedItem } from './FlaggedItem';
 import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
-import {ActionMessage} from './ActionMessage';
+import { ActionMessage } from './ActionMessage';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -37,10 +37,16 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'ListingItemObjects',
         'ListingItemObjects.ListingItemObjectDatas',
         'ActionMessages',
+        'ActionMessages.MessageObjects',
+        'ActionMessages.MessageInfo',
+        'ActionMessages.MessageEscrow',
+        'ActionMessages.MessageData',
         'Bids',
+        'Bids.BidDatas',
         'Market',
         'FlaggedItem',
-        'ListingItemTemplate'
+        'ListingItemTemplate',
+        'ListingItemTemplate.Profile'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {
@@ -53,10 +59,14 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         }
     }
 
-    public static async fetchByHash(value: string): Promise<ListingItem> {
-        return await ListingItem.where<ListingItem>({ hash: value }).fetch({
-            withRelated: this.RELATIONS
-        });
+    public static async fetchByHash(value: string, withRelated: boolean = true): Promise<ListingItem> {
+        if (withRelated) {
+            return await ListingItem.where<ListingItem>({ hash: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ListingItem.where<ListingItem>({ hash: value }).fetch();
+        }
     }
 
     public static async fetchByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {
@@ -121,7 +131,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 qb.groupBy('listing_items.id');
 
             })
-            .orderBy('item_informations.title', options.order).query({
+            .orderBy('updated_at', options.order)
+            .query({
                 limit: options.pageLimit,
                 offset: (options.page - 1) * options.pageLimit
             });
@@ -144,6 +155,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
+
+    public get Seller(): string { return this.get('seller'); }
+    public set Seller(value: string) { this.set('seller', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

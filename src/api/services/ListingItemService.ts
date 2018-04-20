@@ -33,6 +33,10 @@ import { FlaggedItem } from '../models/FlaggedItem';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { FlaggedItemService } from './FlaggedItemService';
 import { EventEmitter } from 'events';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { HashableObjectType } from '../enums/HashableObjectType';
+import { ActionMessageService } from './ActionMessageService';
+import * as resources from 'resources';
 
 export class ListingItemService {
 
@@ -49,6 +53,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
+        @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -77,11 +82,12 @@ export class ListingItemService {
 
     /**
      *
-     * @param hash, hash of the listing Item.
+     * @param {string} hash
+     * @param {boolean} withRelated
      * @returns {Promise<ListingItem>}
      */
-    public async findOneByHash(hash: string): Promise<ListingItem> {
-        const listingItem = await this.listingItemRepo.findOneByHash(hash);
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ListingItem> {
+        const listingItem = await this.listingItemRepo.findOneByHash(hash, withRelated);
         if (listingItem === null) {
             this.log.warn(`ListingItem with the hash=${hash} was not found!`);
             throw new NotFoundException(hash);
@@ -92,8 +98,8 @@ export class ListingItemService {
     /**
      * search ListingItems using given ListingItemSearchParams
      *
-     * @param options
-     * @param withRelated
+     * @param {ListingItemSearchParams} options
+     * @param {boolean} withRelated
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */
     @validate()
@@ -101,12 +107,12 @@ export class ListingItemService {
                         withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
         // if valid params
         // todo: check whether category is string or number, if string, try to find the Category by key
-        return this.listingItemRepo.search(options, withRelated);
+        return await this.listingItemRepo.search(options, withRelated);
     }
 
     /**
      *
-     * @param data
+     * @param {ListingItemCreateRequest} data
      * @returns {Promise<ListingItem>}
      */
     @validate()
@@ -114,6 +120,8 @@ export class ListingItemService {
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
+
+        body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEM_CREATEREQUEST);
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
@@ -124,6 +132,9 @@ export class ListingItemService {
         delete body.messagingInformation;
         const listingItemObjects = body.listingItemObjects || [];
         delete body.listingItemObjects;
+
+        const actionMessages = body.actionMessages || [];
+        delete body.actionMessages;
 
         // If the request body was valid we will create the listingItem
         const listingItem = await this.listingItemRepo.create(body);
@@ -150,14 +161,22 @@ export class ListingItemService {
             await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
         }
 
+        // this.log.debug('create actionMessages:', JSON.stringify(actionMessages, null, 2));
+
+        // create actionMessages, only used to create testdata
+        for (const actionMessage of actionMessages) {
+            actionMessage.listing_item_id = listingItem.Id;
+            await this.actionMessageService.create(actionMessage);
+        }
+
         // finally find and return the created listingItem
         return await this.findOne(listingItem.Id);
     }
 
     /**
      *
-     * @param id
-     * @param data
+     * @param {number} id
+     * @param {ListingItemUpdateRequest} data
      * @returns {Promise<ListingItem>}
      */
     @validate()
@@ -165,6 +184,8 @@ export class ListingItemService {
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('updating ListingItem, body: ', JSON.stringify(body, null, 2));
+
+        body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEM_CREATEREQUEST);
 
         // find the existing one without related
         const listingItem = await this.findOne(id, false);
@@ -210,8 +231,11 @@ export class ListingItemService {
                 paymentInformation.listing_item_id = id;
                 await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
             }
-        } else if (!_.isEmpty(paymentInformation)) {
-            await this.paymentInformationService.destroy(paymentInformation.id);
+        } else {
+            // empty paymentinfo create request
+            if (!_.isEmpty(paymentInformation)) {
+                await this.paymentInformationService.destroy(paymentInformation.id);
+            }
         }
 
         // MessagingInformation
@@ -271,9 +295,34 @@ export class ListingItemService {
         return await this.findOne(id);
     }
 
+    public async updateListingItemTemplateRelation(id: number): Promise<ListingItem> {
+
+        this.log.debug('updating ListingItem relation to possible ListingItemTemplate.');
+
+        let listingItem = await this.findOne(id, false);
+        const templateId = await this.listingItemTemplateService.findOneByHash(listingItem.Hash)
+            .then(value => {
+                const template = value.toJSON();
+                this.log.debug('found ListingItemTemplate with matching hash, id:', template.id);
+                return template.id;
+            })
+            .catch(reason => {
+                this.log.debug('matching ListingItemTemplate for ListingItem not found.');
+            });
+
+        if (templateId) {
+            listingItem.set('listingItemTemplateId', templateId);
+            await this.listingItemRepo.update(id, listingItem.toJSON());
+        }
+
+        listingItem = await this.findOne(id);
+
+        return listingItem;
+    }
+
     /**
      *
-     * @param id
+     * @param {number} id
      * @returns {Promise<void>}
      */
     public async destroy(id: number): Promise<void> {
@@ -294,20 +343,37 @@ export class ListingItemService {
         }
     }
 
-    // check if ListingItem already Flagged
+    /**
+     * check if ListingItem already Flagged
+     *
+     * @param {ListingItem} listingItem
+     * @returns {Promise<boolean>}
+     */
     public async isItemFlagged(listingItem: ListingItem): Promise<boolean> {
         const flaggedItem = listingItem.related('FlaggedItem').toJSON();
         return _.size(flaggedItem) !== 0;
     }
 
-    // check if object is exist in a array
+    /**
+     * check if object is exist in a array
+     *
+     * @param {string[]} objectArray
+     * @param {string} fieldName
+     * @param {string | number} value
+     * @returns {Promise<any>}
+     */
     private async checkExistingObject(objectArray: string[], fieldName: string, value: string | number): Promise<any> {
         return await _.find(objectArray, (object) => {
             return ( object[fieldName] === value );
         });
     }
 
-    // find highest order number from listingItemObjects
+    /**
+     * find highest order number from listingItemObjects
+     *
+     * @param {string[]} listingItemObjects
+     * @returns {Promise<any>}
+     */
     private async findHighestOrderNumber(listingItemObjects: string[]): Promise<any> {
         const highestOrder = await _.maxBy(listingItemObjects, (itemObject) => {
           return itemObject['order'];

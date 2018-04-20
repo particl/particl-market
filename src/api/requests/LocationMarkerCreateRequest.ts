@@ -8,16 +8,14 @@ export class LocationMarkerCreateRequest extends RequestBody {
     public item_location_id: number;
 
     @IsNotEmpty()
-    public markerTitle: string;
-
-    @IsNotEmpty()
-    public markerText: string;
-
-    @IsNotEmpty()
     public lat: number;
 
     @IsNotEmpty()
     public lng: number;
+
+    public markerTitle: string;
+
+    public markerText: string;
 
 }
 // tslint:enable:variable-name

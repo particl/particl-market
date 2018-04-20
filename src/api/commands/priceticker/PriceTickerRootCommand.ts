@@ -54,8 +54,12 @@ export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInt
         }
     }
 
+    public usage(): string {
+        return this.getName() + ' <currency> [currencies...]  -  ' + this.description();
+    }
+
     public help(): string {
-        return this.getName() + ' <currency> [currencies...] \n'
+        return this.usage() + '\n'
             + '    <currency>               - Currency. ';
     }
 

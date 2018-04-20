@@ -1,4 +1,5 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -18,6 +19,9 @@ import { BidSearchParams } from '../requests/BidSearchParams';
 
 import { EventEmitter } from 'events';
 import { BidDataService } from './BidDataService';
+import { ListingItemService } from './ListingItemService';
+import { AddressService } from './AddressService';
+import { ProfileService } from './ProfileService';
 
 export class BidService {
 
@@ -26,6 +30,9 @@ export class BidService {
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.BidRepository) public bidRepo: BidRepository,
         @inject(Types.Service) @named(Targets.Service.BidDataService) public bidDataService: BidDataService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -33,7 +40,7 @@ export class BidService {
     }
 
     public async findAll(): Promise<Bookshelf.Collection<Bid>> {
-        return this.bidRepo.findAll();
+        return await this.bidRepo.findAll();
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Bid> {
@@ -46,10 +53,11 @@ export class BidService {
     }
 
     public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+        // TODO: this does not seem to be implemented, see repo/model
         const params = {
             listingItemHash: hash
         } as BidSearchParams;
-        return this.search(params);
+        return await this.search(params);
     }
 
     /**
@@ -60,34 +68,88 @@ export class BidService {
      */
     @validate()
     public async search(@request(BidSearchParams) options: BidSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
-        return this.bidRepo.search(options, withRelated);
+
+        // if item hash was given, set the item id
+        if (options.listingItemHash) {
+            const foundListing = await this.listingItemService.findOneByHash(options.listingItemHash, false);
+            options.listingItemId = foundListing.Id;
+        }
+        return await this.bidRepo.search(options, withRelated);
     }
 
     @validate()
-    public async getLatestBid(listingItemId: number): Promise<Bid> {
-        return await this.bidRepo.getLatestBid(listingItemId);
+    public async getLatestBid(listingItemId: number, bidder: string): Promise<Bid> {
+        return await this.bidRepo.getLatestBid(listingItemId, bidder);
     }
 
     @validate()
     public async create(@request(BidCreateRequest) data: BidCreateRequest): Promise<Bid> {
 
         const body = JSON.parse(JSON.stringify(data));
+        // this.log.debug('BidCreateRequest:', JSON.stringify(body, null, 2));
 
-        // bid needs to be related to listing item
+        // bid needs is related to listing item
         if (body.listing_item_id == null) {
+            this.log.error('Request body is not valid, listing_item_id missing');
             throw new ValidationException('Request body is not valid', ['listing_item_id missing']);
         }
 
-        const bidData = body.bidData || [];
-        delete body.bidData;
+        // bid needs to have a bidder
+        if (body.bidder == null) {
+            this.log.error('Request body is not valid, bidder missing');
+            throw new ValidationException('Request body is not valid', ['bidder missing']);
+        }
 
-        this.log.debug('body: ', body);
+        // shipping address
+        if (body.address == null) {
+            this.log.error('Request body is not valid, address missing');
+            throw new ValidationException('Request body is not valid', ['address missing']);
+        }
+
+        const addressCreateRequest = body.address;
+        delete body.address;
+
+        // in case there's no profile id, figure it out
+        if (!addressCreateRequest.profile_id) {
+            const foundBidderProfile = await this.profileService.findOneByAddress(body.bidder);
+            if (foundBidderProfile) {
+                // we are the bidder
+                addressCreateRequest.profile_id = foundBidderProfile.id;
+            } else {
+                try {
+                    // we are the seller
+                    const listingItemModel = await this.listingItemService.findOne(body.listing_item_id);
+                    const listingItem = listingItemModel.toJSON();
+                    addressCreateRequest.profile_id = listingItem.ListingItemTemplate.Profile.id;
+                } catch (e) {
+                    this.log.error('Funny test data bid? It seems we are neither bidder nor the seller.');
+                }
+            }
+        }
+
+        // this.log.debug('address create request: ', JSON.stringify(addressCreateRequest, null, 2));
+        const addressModel = await this.addressService.create(addressCreateRequest);
+        const address = addressModel.toJSON();
+        // this.log.debug('created address: ', JSON.stringify(address, null, 2));
+
+        // set the address_id for bid
+        body.address_id = address.id;
+
+        const bidDatas = body.bidDatas || [];
+        delete body.bidDatas;
+
+        // this.log.debug('body: ', JSON.stringify(body, null, 2));
         // If the request body was valid we will create the bid
         const bid = await this.bidRepo.create(body);
 
-        for (const dataToSave of bidData) {
+        for (const dataToSave of bidDatas) {
+            // todo: move to biddataservice?
             dataToSave.bid_id = bid.Id;
-            await this.bidDataService.create(dataToSave as BidDataCreateRequest);
+            // todo: test with different types of dataValue
+            dataToSave.dataValue = typeof (dataToSave.dataValue) === 'string' ? dataToSave.dataValue : JSON.stringify(dataToSave.dataValue);
+
+            // this.log.debug('dataToSave: ', JSON.stringify(dataToSave, null, 2));
+            await this.bidDataService.create(dataToSave);
         }
 
         // finally find and return the created bid
@@ -96,21 +158,38 @@ export class BidService {
     }
 
     @validate()
-    public async update(id: number, @request(BidUpdateRequest) body: BidUpdateRequest): Promise<Bid> {
-        // TODO: this doesnt work, FIX
+    public async update(id: number, @request(BidUpdateRequest) data: BidUpdateRequest): Promise<Bid> {
+
+        const body = JSON.parse(JSON.stringify(data));
+
         // find the existing one without related
         const bid = await this.findOne(id, false);
 
-        // set new values
-        if (body.action) {
-            bid.Action = body.action;
-        }
+        // extract and remove related models from request
+        const bidDatas: BidDataCreateRequest[] = body.bidDatas;
+        delete body.bidDatas;
+
+        // set new values, we only need to change the action
+        bid.Action = body.action;
+        // bid.Bidder = body.bidder;
 
         // update bid record
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());
 
-        // return newBid;
-        return updatedBid;
+        // remove old BidDatas
+        const oldBidDatas = updatedBid.related('BidDatas').toJSON();
+        for (const bidData of oldBidDatas) {
+            await this.bidDataService.destroy(bidData.id);
+        }
+
+        // create new BidDatas
+        for (const bidData of bidDatas) {
+            bidData.bid_id = id;
+            bidData.dataValue = typeof (bidData.dataValue) === 'string' ? bidData.dataValue : JSON.stringify(bidData.dataValue);
+            await this.bidDataService.create(bidData);
+        }
+
+        return await this.findOne(id, true);
     }
 
     public async destroy(id: number): Promise<void> {
