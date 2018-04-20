@@ -81,28 +81,16 @@ describe('MessageData', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        const generateParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateShippingDestinations
-            true,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
-
-        // create listingitem without ShippingDestinations and store its id for testing
+        const generateParams = new GenerateListingItemParams().toParamsArray();
         const listingItems = await testDataService.generate({
             model: CreatableModel.LISTINGITEM,  // what to generate
             amount: 1,                          // how many to generate
             withRelated: true,                  // return model
             generateParams                      // what kind of data to generate
         } as TestDataGenerateRequest);
-        const createdListingItem = listingItems[0].toJSON();
 
-        // create actionMessage
-        testDataActionMessage.listing_item_id = createdListingItem.id;
+        testDataActionMessage.listing_item_id = listingItems[0].id;
+
     });
 
     afterAll(async () => {
@@ -137,10 +125,13 @@ describe('MessageData', () => {
     test('Should list message datas with our new create one', async () => {
         const messageDataCollection = await messageDataService.findAll();
         const messageData = messageDataCollection.toJSON();
-        expect(messageData.length).toBe(1);
 
-        const result = messageData[0];
+        // testDataService.generate creates the first one
+        expect(messageData.length).toBe(2);
 
+        const result = messageData[1];
+
+        log.debug('result: ', JSON.stringify(result, null, 2));
         // test the values
         expect(result.actionMessageId).toBe(createdActionMessageId);
         expect(result.from).toBe(testData.from);

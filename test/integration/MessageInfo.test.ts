@@ -84,7 +84,6 @@ describe('MessageInfo', () => {
             generateParams                      // what kind of data to generate
         } as TestDataGenerateRequest);
 
-        // create actionMessage
         testDataActionMessage.listing_item_id = listingItems[0].id;
     });
 
