@@ -6,7 +6,7 @@ import { ItemImageService } from '../services/ItemImageService';
 import { ItemImageHttpUploadService } from '../services/ItemImageHttpUploadService';
 import { Logger as LoggerType } from '../../core/Logger';
 import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
-import sharp = require('sharp');
+import sharp from 'sharp';
 import * as _ from 'lodash';
 
 // Get middlewares

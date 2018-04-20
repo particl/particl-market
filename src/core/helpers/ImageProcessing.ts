@@ -1,5 +1,5 @@
 import * as _ from 'lodash';
-import sharp = require('sharp');
+import sharp from 'sharp';
 import { ImageVersion } from './ImageVersion';
 import {MessageException} from '../../api/exceptions/MessageException';
 
