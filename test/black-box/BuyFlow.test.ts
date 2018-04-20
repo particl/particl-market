@@ -1,4 +1,4 @@
-///<reference path="../../node_modules/@types/jest/index.d.ts"/>
+import * from 'jest';
 // tslint:disable:max-line-length
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
@@ -8,7 +8,7 @@ import { GenerateListingItemTemplateParams } from '../../src/api/requests/params
 import * as resources from 'resources';
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
-import {OrderStatus} from '../../src/api/enums/OrderStatus';
+import { OrderStatus } from '../../src/api/enums/OrderStatus';
 // tslint:enable:max-line-length
 
 describe('Happy BuyFlow', () => {

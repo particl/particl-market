@@ -144,7 +144,7 @@ describe('AddressUpdateCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        let defaultProfile = await testUtil.getDefaultProfile();
+        const defaultProfile = await testUtil.getDefaultProfile();
         defaultProfileId = defaultProfile.id;
     });
 
@@ -257,71 +257,4 @@ describe('AddressUpdateCommand', () => {
         expect(result.zipCode).toBe(testDataUpdated.zipCode);
     });
 
-    test('Should create 3 addresses then update all 3 in a particular order', async () => {
-        // Save data to database
-        let addDataRess: any[] = [];
-        for (let data of testData2) {
-            const shippingAddress = data.shippingAddresses[0];
-            const tmpAddDataRes = await rpc(method, [addSubCommand,
-                defaultProfileId,
-                shippingAddress.firstName,
-                shippingAddress.lastName,
-                shippingAddress.title,
-                shippingAddress.addressLine1,
-                shippingAddress.addressLine2,
-                shippingAddress.city,
-                shippingAddress.state,
-                shippingAddress.country,
-                shippingAddress.zipCode
-            );
-            tmpAddDataRes.expectJson();
-            tmpAddDataRes.expectStatusCode(200);
-
-            const addDataRes = tmpAddDataRes.getBody()['result'];
-            expect(addDataRes.firstName).toBe(shippingAddress.firstName);
-            expect(addDataRes.lastName).toBe(shippingAddress.lastName);
-            expect(addDataRes.title).toBe(shippingAddress.title);
-            expect(addDataRes.addressLine1).toBe(shippingAddress.addressLine1);
-            expect(addDataRes.addressLine2).toBe(shippingAddress.addressLine2);
-            expect(addDataRes.city).toBe(shippingAddress.city);
-            expect(addDataRes.state).toBe(shippingAddress.state);
-            expect(addDataRes.country).toBe(shippingAddress.country);
-            expect(addDataRes.zipCode).toBe(shippingAddress.zipCode);
-
-            addDataRess.push(addDataRes);
-        }
-
-        // update addresses in the order `order`, and check that they were updated correctly.
-        let order = [1, 0, 2];
-        for (let i in testData2) {
-            const addressId = addDataRess[order[i]].id;
-            const data = testDataUpdate2[order[i]].shippingAddresses[0];
-            const res = await rpc(method, [subCommand,
-                addressId,
-                data.firstName,
-                data.lastName,
-                data.title,
-                data.addressLine1,
-                data.addressLine2,
-                data.city,
-                data.state,
-                data.country,
-                data.zipCode,
-                profileId
-            ]);
-            res.expectJson();
-            res.expectStatusCode(200);
-
-            const result: any = res.getBody()['result'];
-            expect(result.firstName).toBe(data.firstName);
-            expect(result.lastName).toBe(data.lastName);
-            expect(result.title).toBe(data.title);
-            expect(result.addressLine1).toBe(data.addressLine1);
-            expect(result.addressLine2).toBe(data.addressLine2);
-            expect(result.city).toBe(data.city);
-            expect(result.state).toBe(data.state);
-            expect(result.country).toBe(data.country);
-            expect(result.zipCode).toBe(data.zipCode);
-        }
-    });
 });
