@@ -23,7 +23,6 @@ import { ItemImageUpdateRequest } from '../../src/api/requests/ItemImageUpdateRe
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { ImageTriplet } from '../../src/core/helpers/ImageTriplet';
 
-import sharp = require('sharp');
 import piexif = require('piexifjs');
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
@@ -203,35 +202,6 @@ describe('ItemImage', () => {
         expect(result.ItemImageDatas.length).toBe(4);
 
         // TODO: check images sizes
-
-        /* if (!testDataUpdated.data && testDataUpdated.data != null) {
-            expect(result.ItemImageData.dataBig).toBeUndefined();
-            expect(result.ItemImageData.dataMedium).toBeUndefined();
-            expect(result.ItemImageData.dataThumbnail).toBeUndefined();
-        } else {
-            // TODO: If image is in test data check size and validity of processed image
-            expect(result.ItemImageData.dataBig).toBeDefined();
-            expect(result.ItemImageData.dataMedium).toBeDefined();
-            if (result.ItemImageData.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.ItemImageData.dataMedium, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-
-                const newInfo = await imageBuffer.metadata();
-
-                expect(newInfo.height).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(MEDIUM_IMAGE_SIZE.width);
-            }
-            expect(result.ItemImageData.dataMedium).toBeDefined();
-            if (result.ItemImageData.dataMedium !== null) {
-                const dataBuffer = Buffer.from(result.ItemImageData.dataThumbnail, 'base64');
-                const imageBuffer = sharp(dataBuffer);
-
-                const newInfo = await imageBuffer.metadata();
-
-                expect(newInfo.height).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.height);
-                expect(newInfo.width).toBeLessThanOrEqual(THUMBNAIL_IMAGE_SIZE.width);
-            }
-        } */
     });
 
     test('Should delete the item image', async () => {
