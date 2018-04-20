@@ -79,9 +79,9 @@ export class SmsgService {
                           daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)): Promise<SmsgSendResponse> {
 
         // TODO: REMOVE!
-        if (Environment.isDevelopment() || Environment.isTest()) {
-            paidMessage = false;
-        }
+        // if (Environment.isDevelopment() || Environment.isTest()) {
+        //    paidMessage = false;
+        // }
 
         this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
         // this.log.debug('smsgSend, message: ' + JSON.stringify(message, null, 2));

@@ -14,84 +14,123 @@ import * as listingItemTemplateCreateRequestBasic1 from '../../testdata/createre
 import * as resources from 'resources';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
+import {Logger as LoggerType} from '../../../src/core/Logger';
+import {SearchOrder} from '../../../src/api/enums/SearchOrder';
+import {GenerateListingItemParams} from '../../../src/api/requests/params/GenerateListingItemParams';
 
 describe('ListingItemSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
+    const log: LoggerType = new LoggerType(__filename);
+
     const testUtil = new BlackBoxTestUtil();
+
     const itemCommand = Commands.ITEM_ROOT.commandName;
-    const searchCommand = Commands.ITEM_SEARCH.commandName;
+    const itemSearchCommand = Commands.ITEM_SEARCH.commandName;
 
-    const marketCommand = Commands.MARKET_ROOT.commandName;
-    const addCommand = Commands.MARKET_ADD.commandName;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
 
-    let defaultProfile;
-    let customMarket: resources.Market;
     let listingItemTemplates: resources.ListingItemTemplate[];
-    let createdListingItem1: resources.ListingItem;
-    let createdListingItem2: resources.ListingItem;
-
-    // listingItemSearch parameter
-    let pageNumber = 1;
-    let pageLimit = 2;
-    const order = 'ASC';
-    let category = '';
-    const type = 'FLAGGED'; // to do : only passing, Functionlity need to be implement
-    let profileId = '';
-    let minPrice = null;
-    let maxPrice = null;
-    let country = '';
-    let shippingDestination = '';
-    let searchString = '';
-    let withRelated = true;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
+
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            false,   // generateItemInformation
-            false,   // generateShippingDestinations
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
             false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            true,   // generateListingItem
+            defaultMarket.id  // marketId
         ]).toParamsArray();
 
-
-        // get default profile
-        defaultProfile = await testUtil.getDefaultProfile();
-
-        // add market
-        const res = await rpc(marketCommand, [addCommand, 'Test Market', 'privateKey', 'Market Address']);
-        customMarket = res.getBody()['result'];
-
-        // create first listing item
-        listingItemCreateRequestBasic1.market_id = customMarket.id;
-        listingItemCreateRequestBasic1.hash = await ObjectHash.getHash(listingItemCreateRequestBasic1, HashableObjectType.LISTINGITEM);
-        createdListingItem1 = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic1);
-
-        // generate listingItemTemplate
+        // generate ListingItemTemplate with ListingItem
         listingItemTemplates = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
-        ) as resources.ListingItemTemplates[];
+        ) as resources.ListingItemTemplate[];
 
-        // create second listing item
-        listingItemCreateRequestBasic2.market_id = customMarket.id;
-        listingItemCreateRequestBasic2.listing_item_template_id = listingItemTemplates[0].id;
-        listingItemCreateRequestBasic2.hash = await ObjectHash.getHash(listingItemCreateRequestBasic2, HashableObjectType.LISTINGITEM);
+        const listingItemTemplateWithListingItem = listingItemTemplates[0];
 
-        createdListingItem2 = await testUtil.addData(CreatableModel.LISTINGITEM, listingItemCreateRequestBasic2);
+        // expect template is related to correct profile and listingitem posted to correct market
+        expect(listingItemTemplateWithListingItem.Profile.id).toBe(defaultProfile.id);
+        expect(listingItemTemplateWithListingItem.ListingItems[0].marketId).toBe(defaultMarket.id);
 
+        // expect template hash created on the server matches what we create here
+        const generatedTemplateHash = ObjectHash.getHash(listingItemTemplateWithListingItem, HashableObjectType.LISTINGITEMTEMPLATE);
+        log.debug('listingItemTemplate.hash:', listingItemTemplateWithListingItem.hash);
+        log.debug('generatedTemplateHash:', generatedTemplateHash);
+        expect(listingItemTemplateWithListingItem.hash).toBe(generatedTemplateHash);
+
+        // expect the item hash generated at the same time as template, matches with the templates one
+        log.debug('listingItemTemplate.hash:', listingItemTemplateWithListingItem.hash);
+        log.debug('listingItemTemplate.ListingItems[0].hash:', listingItemTemplateWithListingItem.ListingItems[0].hash);
+        expect(listingItemTemplateWithListingItem.hash).toBe(listingItemTemplateWithListingItem.ListingItems[0].hash);
+
+        // generate ListingItem without a ListingItemTemplate
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            false,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        // create two items and store their id's for testing
+        const listingItems = await testUtil.generateData(
+            CreatableModel.LISTINGITEM,         // what to generate
+            1,                          // how many to generate
+            true,                    // return model
+            generateListingItemParams           // what kind of data to generate
+        ) as ListingItem[];
     });
 
     test('Should fail to get ListingItems if type is invalid', async () => {
-        const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
-            pageLimit, order, category, 'TEST', profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
+/*
+     *  [0]: page, number
+     *  [1]: pageLimit, number
+     *  [2]: order, SearchOrder
+     *  [3]: category, number|string, if string, try to find using key, can be null
+     *  [4]: type (FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL)
+     *  [5]: profileId, (NUMBER | OWN | ALL | *)
+     *  [6]: minPrice, number to search item basePrice between 2 range
+     *  [7]: maxPrice, number to search item basePrice between 2 range
+     *  [8]: country, string, can be null
+     *  [9]: shippingDestination, string, can be null
+     *  [10]: searchString, string, can be null
+     *  [11]: withRelated, boolean
+ */
+        const listingItemSearchCommandParams = [
+            itemSearchCommand,
+            1,                  // pageNumber, todo: start from 0?
+            2,                  // pageLimit
+            SearchOrder.ASC,    // order
+            '',                 // category, todo: should we use * for all, and not just here?
+            'FLAGGED',          // type, todo: not implemented
+            '',                 // profileId
+            null,               // minPrice, todo: null?
+            null,               // maxPrice, todo: null?
+            '',                 // country
+            '',                 // shippingDestination
+            ''                  // searchString
+        ];
+
+        const getDataRes: any = await rpc(itemCommand, listingItemSearchCommandParams);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(404);
         expect(getDataRes.error.error.success).toBe(false);
@@ -99,9 +138,22 @@ describe('ListingItemSearchCommand', () => {
     });
 
     test('Should fail to get ListingItems if profileid is not (NUMBER | OWN | ALL)', async () => {
-        profileId = 'test';
-        const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
-            pageLimit, order, category, type, profileId, minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
+        const listingItemSearchCommandParams = [
+            itemSearchCommand,
+            1,                  // pageNumber, todo: start from 0?
+            2,                  // pageLimit
+            SearchOrder.ASC,    // order
+            '',                 // category, todo: should we use * for all, and not just here?
+            'FLAGGED',          // type, todo: not implemented
+            'test',             // profileId
+            null,               // minPrice, todo: null?
+            null,               // maxPrice, todo: null?
+            '',                 // country
+            '',                 // shippingDestination
+            ''                  // searchString
+        ];
+
+        const getDataRes: any = await rpc(itemCommand, listingItemSearchCommandParams);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(404);
         expect(getDataRes.error.error.success).toBe(false);
@@ -109,8 +161,23 @@ describe('ListingItemSearchCommand', () => {
     });
 
     test('Should get OWN ListingItems when profileid = OWN', async () => {
-        const getDataRes: any = await rpc(itemCommand, [searchCommand, pageNumber,
-            pageLimit, order, category, type, 'OWN', minPrice, maxPrice, country, shippingDestination, searchString, withRelated]);
+
+        const listingItemSearchCommandParams = [
+            itemSearchCommand,
+            1,                  // pageNumber, todo: start from 0?
+            2,                  // pageLimit
+            SearchOrder.ASC,    // order
+            '',                 // category, todo: should we use * for all, and not just here?
+            'FLAGGED',          // type, todo: not implemented
+            'OWN',              // profileId
+            null,               // minPrice, todo: null?
+            null,               // maxPrice, todo: null?
+            '',                 // country
+            '',                 // shippingDestination
+            ''                  // searchString
+        ];
+
+        const getDataRes: any = await rpc(itemCommand, listingItemSearchCommandParams);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
