@@ -139,7 +139,7 @@ export class ProfileService {
         this.log.debug('updatedProfile: ', updatedProfile.toJSON());
 
         // remove existing addresses
-        const addressesToDelete = profile.toJSON().ShippingAddresses;
+        const addressesToDelete = profile.toJSON().ShippingAddresses || [];
         for (const address of addressesToDelete) {
             await this.addressService.destroy(address.id);
         }
