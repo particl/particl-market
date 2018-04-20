@@ -100,7 +100,7 @@ export class ListingItemObjectService {
 
         // update listingItemObjectDatas
         const listingItemObjectJSON = listingItemObject.toJSON();
-        const listingItemObjectDatasOld = listingItemObjectJSON.ListingItemObjectDatas;
+        const listingItemObjectDatasOld = listingItemObjectJSON.ListingItemObjectDatas || [];
         const objectDataIds: number[] = [];
 
         for (const objectData of listingItemObjectDatasOld) {
@@ -111,7 +111,7 @@ export class ListingItemObjectService {
             await this.listingItemObjectDataService.destroy(objectDataId);
         }
 
-        const listingItemObjectDatas = body.listingItemObjectDatas;
+        const listingItemObjectDatas = body.listingItemObjectDatas || [];
 
         for (const objectData of listingItemObjectDatas) {
             objectData.listing_item_object_id = listingItemObject.Id;
