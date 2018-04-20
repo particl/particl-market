@@ -1,5 +1,5 @@
 import { Bookshelf } from '../../config/Database';
-import { Collection } from 'bookshelf';
+import { Collection, Model } from 'bookshelf';
 
 export class ItemCategory extends Bookshelf.Model<ItemCategory> {
 
@@ -47,7 +47,7 @@ export class ItemCategory extends Bookshelf.Model<ItemCategory> {
     }
 
     public static async fetchAllByName(name: string, withRelated: boolean = true): Promise<Collection<ItemCategory>> {
-        const listingCollection = ItemCategory.forge<Collection<ItemCategory>>()
+        const listingCollection = ItemCategory.forge<Model<ItemCategory>>()
             .query(qb => {
                 qb.where('name', 'LIKE', '%' + name + '%');
             })
