@@ -180,7 +180,7 @@ export class BlackBoxTestUtil {
                     this.log.error(response.error.error.message);
                 }
                 if (errorCount === 5) {
-                    this.log.error('enough, posting every 15th from now on...');
+                    this.log.error('... posting every 15th from now on...');
                 }
 
             } else if (waitForStatusCode === response.res.statusCode) {
@@ -206,7 +206,7 @@ export class BlackBoxTestUtil {
                             this.log.error(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !== ' + waitForObjectPropertyValue);
                         }
                         if (errorCount === 5) {
-                            this.log.error('enough, posting every 15th from now on...');
+                            this.log.error('... posting every 15th from now on...');
                         }
 
                         // do not throw here for now.

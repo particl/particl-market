@@ -11,7 +11,7 @@ import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import {OrderStatus} from '../../src/api/enums/OrderStatus';
 // tslint:enable:max-line-length
 
-describe('BuyFlow', () => {
+describe('Happy BuyFlow', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -35,6 +35,10 @@ describe('BuyFlow', () => {
 
     const orderCommand = Commands.ORDER_ROOT.commandName;
     const orderSearchCommand = Commands.ORDER_SEARCH.commandName;
+
+    const escrowCommand = Commands.ESCROW_ROOT.commandName;
+    const escrowLockCommand = Commands.ESCROW_LOCK.commandName;
+    const escrowReleaseCommand = Commands.ESCROW_RELEASE.commandName;
 
     let sellerProfile: resources.Profile;
     let buyerProfile: resources.Profile;
@@ -136,7 +140,6 @@ describe('BuyFlow', () => {
 
     test('Should receive ListingItemMessage (MP_ITEM_ADD) posted from sellers node1 as ListingItem on bidders node2', async () => {
 
-        // try to find the item from the other node
         log.debug('WAIT FOR: MP_ITEM_ADD on bidder node2');
         const itemGetRes: any = await testUtilNode2.rpcWaitFor(
             listingItemCommand,
@@ -149,7 +152,6 @@ describe('BuyFlow', () => {
         itemGetRes.expectJson();
         itemGetRes.expectStatusCode(200);
 
-        // make sure we got the expected result
         const result: resources.ListingItem = itemGetRes.getBody()['result'];
         expect(result.hash).toBe(listingItemTemplatesNode1[0].hash);
 
@@ -161,7 +163,6 @@ describe('BuyFlow', () => {
 // tslint:disable:max-line-length
     test('Should receive ListingItemMessage (MP_ITEM_ADD) posted from sellers node1 as ListingItem on sellers node1 and match it with the existing ListingItemTemplate', async () => {
 
-        // try to find the item from the seller node
         log.debug('WAIT FOR: MP_ITEM_ADD on seller node1');
         const itemGetRes: any = await testUtilNode1.rpcWaitFor(
             listingItemCommand,
@@ -205,7 +206,6 @@ describe('BuyFlow', () => {
         bidSendRes.expectJson();
         bidSendRes.expectStatusCode(200);
 
-        // make sure we got the expected result from sending the bid
         const result: any = bidSendRes.getBody()['result'];
         log.debug('result', result);
         expect(result.result).toBe('Sent.');
@@ -258,7 +258,6 @@ describe('BuyFlow', () => {
 
         log.debug('WAIT FOR: MPA_BID on seller node1');
 
-        // try to find the item from the seller node
         const bidSearchRes: any = await testUtilNode1.rpcWaitFor(
             bidCommand,
             bidSearchCommandParams,
@@ -286,7 +285,7 @@ describe('BuyFlow', () => {
         // todo: check for correct biddata
         bidNode1 = result[0];
 
-        log.debug('Bid on seller node1 waiting to be accepted: ', JSON.stringify(result, null, 2));
+        // log.debug('Bid on seller node1 waiting to be accepted: ', JSON.stringify(result, null, 2));
 
     }, 600000); // timeout to 600s
 
@@ -386,7 +385,6 @@ describe('BuyFlow', () => {
 
         log.debug('WAIT FOR: MPA_ACCEPT on buyer node2');
 
-        // try to find the item from the seller node
         const bidSearchRes: any = await testUtilNode2.rpcWaitFor(
             bidCommand,
             bidSearchCommandParams,
@@ -413,7 +411,7 @@ describe('BuyFlow', () => {
 
     }, 600000); // timeout to 600s
 
-    test('Should be able to find the Order from buyers node2 after receiving the BidMessage (MPA_ACCEPT)', async () => {
+    test('Should be able to find the Order OrderStatus.AWAITING_ESCROW from buyers node2 after receiving the BidMessage (MPA_ACCEPT)', async () => {
 
         const orderSearchCommandParams = [
             orderSearchCommand,
@@ -437,7 +435,187 @@ describe('BuyFlow', () => {
         expect(result[0].OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
         expect(result[0].OrderItems[0].itemHash).toBe(bidNode1.ListingItem.hash);
 
+        orderNode2 = result[0];
+    });
+
+
+    test('Should send EscrowMessage (MPA_LOCK) from buyers node2 to the sellers node1', async () => {
+
+        const escrowLockCommandParams = [
+            escrowLockCommand,
+            orderNode2.OrderItems[0].id,
+            'random-nonce-nse',
+            'WANTITPLEASETAKEMYMONEYS!'
+        ];
+
+        const escrowLockRes: any = await testUtilNode2.rpc(escrowCommand, escrowLockCommandParams);
+        escrowLockRes.expectJson();
+        escrowLockRes.expectStatusCode(200);
+
+        // make sure we got the expected result from sending the bid
+        const result: any = escrowLockRes.getBody()['result'];
+        log.debug('result', result);
+        expect(result.result).toBe('Sent.');
+
+        log.debug('==[ lock Escrow /// buyer (node2) -> seller (node1) ]============================');
+        log.debug('msgid: ' + result.msgid);
+        log.debug('order.hash: ' + orderNode2.hash);
+        log.debug('order.buyer: ' + orderNode2.buyer);
+        log.debug('order.seller: ' + orderNode2.seller);
+        log.debug('order.id: ' + orderNode2.id);
+        log.debug('order.orderItem.id: ' + orderNode2.OrderItems[0].id);
+        log.debug('=================================================================================');
+
+    });
+
+    test('Should be able to find the Order with OrderStatus.ESCROW_LOCKED from buyers node2 after sending the EscrowMessage (MPA_LOCK)', async () => {
+
+        const orderSearchCommandParams = [
+            orderSearchCommand,
+            bidNode2.ListingItem.hash,
+            OrderStatus.ESCROW_LOCKED,
+            buyerProfile.address,
+            sellerProfile.address,
+            SearchOrder.ASC
+        ];
+
+        const orderSearchRes: any = await testUtilNode2.rpc(orderCommand, orderSearchCommandParams);
+        orderSearchRes.expectJson();
+        orderSearchRes.expectStatusCode(200);
+
+        const result: resources.Order = orderSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
+        expect(result[0].buyer).toBe(buyerProfile.address);
+        expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].OrderItems).toHaveLength(1);
+        expect(result[0].OrderItems[0].status).toBe(OrderStatus.ESCROW_LOCKED);
+        expect(result[0].OrderItems[0].itemHash).toBe(bidNode1.ListingItem.hash);
+
+        orderNode2 = result[0];
+    });
+
+    test('Should receive EscrowMessage (MPA_LOCK) posted from buyers node2 on sellers node1', async () => {
+
+        const orderSearchCommandParams = [
+            orderSearchCommand,
+            bidNode1.ListingItem.hash,
+            OrderStatus.ESCROW_LOCKED,
+            buyerProfile.address,
+            sellerProfile.address,
+            SearchOrder.ASC
+        ];
+
+        log.debug('WAIT FOR: MPA_LOCK on seller node1');
+
+        const orderSearchRes: any = await testUtilNode1.rpcWaitFor(
+            orderCommand,
+            orderSearchCommandParams,
+            8 * 60,
+            200,
+            '[0].OrderItems[0].status',
+            OrderStatus.ESCROW_LOCKED.toString()
+        );
+        orderSearchRes.expectJson();
+        orderSearchRes.expectStatusCode(200);
+
+        const result: resources.Order = orderSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].OrderItems[0].status).toBe(OrderStatus.ESCROW_LOCKED);
+        expect(result[0].buyer).toBe(buyerProfile.address);
+        expect(result[0].seller).toBe(sellerProfile.address);
+
+        orderNode1 = result[0];
+
+    }, 600000); // timeout to 600s
+
+    test('Should send EscrowMessage (MPA_RELEASE) from sellers node1 to the buyers node2 indicating that the item has been sent', async () => {
+
+        const escrowReleaseCommandParams = [
+            escrowReleaseCommand,
+            orderNode1.OrderItems[0].id,
+            'tracking1234'
+        ];
+
+        const escrowReleaseRes: any = await testUtilNode1.rpc(escrowCommand, escrowReleaseCommandParams);
+        escrowReleaseRes.expectJson();
+        escrowReleaseRes.expectStatusCode(200);
+
+        const result: any = escrowReleaseRes.getBody()['result'];
+        log.debug('result', JSON.stringify(result, null, 2));
+        expect(result.result).toBe('Sent.');
+
+        log.debug('==[ release Escrow /// seller (node1) -> buyer (node2) ]=========================');
+        log.debug('msgid: ' + result.msgid);
+        log.debug('order.hash: ' + orderNode2.hash);
+        log.debug('order.buyer: ' + orderNode2.buyer);
+        log.debug('order.seller: ' + orderNode2.seller);
+        log.debug('order.id: ' + orderNode2.id);
+        log.debug('order.orderItem.id: ' + orderNode2.OrderItems[0].id);
+        log.debug('=================================================================================');
+
+    });
+
+    test('Should be able to find the Order with OrderStatus.SHIPPING from sellers node1 after posting the EscrowMessage (MPA_RELEASE)', async () => {
+
+        const orderSearchCommandParams = [
+            orderSearchCommand,
+            bidNode1.ListingItem.hash,
+            OrderStatus.SHIPPING,
+            buyerProfile.address,
+            sellerProfile.address,
+            SearchOrder.ASC
+        ];
+
+        const orderSearchRes: any = await testUtilNode1.rpc(orderCommand, orderSearchCommandParams);
+        orderSearchRes.expectJson();
+        orderSearchRes.expectStatusCode(200);
+
+        const result: resources.Order = orderSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
+        expect(result[0].buyer).toBe(buyerProfile.address);
+        expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].OrderItems).toHaveLength(1);
+        expect(result[0].OrderItems[0].status).toBe(OrderStatus.SHIPPING);
+        expect(result[0].OrderItems[0].itemHash).toBe(bidNode1.ListingItem.hash);
+
         orderNode1 = result[0];
     });
+
+    test('Should receive EscrowMessage (MPA_RELEASE) posted from sellers node1 on buyers node2', async () => {
+
+        const orderSearchCommandParams = [
+            orderSearchCommand,
+            bidNode2.ListingItem.hash,
+            OrderStatus.SHIPPING,
+            buyerProfile.address,
+            sellerProfile.address,
+            SearchOrder.ASC
+        ];
+
+        log.debug('WAIT FOR: MPA_RELEASE on buyer node2');
+
+        const orderSearchRes: any = await testUtilNode2.rpcWaitFor(
+            orderCommand,
+            orderSearchCommandParams,
+            8 * 60,
+            200,
+            '[0].OrderItems[0].status',
+            OrderStatus.SHIPPING.toString()
+        );
+        orderSearchRes.expectJson();
+        orderSearchRes.expectStatusCode(200);
+
+        const result: resources.Order = orderSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].OrderItems[0].status).toBe(OrderStatus.SHIPPING);
+        expect(result[0].buyer).toBe(buyerProfile.address);
+        expect(result[0].seller).toBe(sellerProfile.address);
+
+        orderNode2 = result[0];
+
+    }, 600000); // timeout to 600s
+
 
 });

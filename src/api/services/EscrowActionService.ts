@@ -157,7 +157,7 @@ export class EscrowActionService {
         const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
         // update OrderStatus
-        const isMyListingItem = _.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
+        const isMyListingItem = !_.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
         const newOrderStatus = isMyListingItem ? OrderStatus.SHIPPING : OrderStatus.COMPLETE;
         const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
 
@@ -168,6 +168,10 @@ export class EscrowActionService {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: escrowActionMessage
         } as MarketplaceMessage;
+
+        this.log.debug('orderItem: ', JSON.stringify(orderItem, null, 2));
+
+        this.log.debug('isMyListingItem: ', isMyListingItem);
 
         const sendFromAddress = isMyListingItem ? orderItem.Order.seller : orderItem.Order.buyer;
         const sendToAddress = isMyListingItem ? orderItem.Order.buyer : orderItem.Order.seller;
@@ -668,7 +672,7 @@ export class EscrowActionService {
 
         const updatedOrderItemModel = await this.orderItemService.update(orderItem.id, orderItemUpdateRequest);
         const updatedOrderItem: resources.OrderItem = updatedOrderItemModel.toJSON();
-        this.log.debug('updatedOrderItem:', JSON.stringify(updatedOrderItem, null, 2));
+        // this.log.debug('updatedOrderItem:', JSON.stringify(updatedOrderItem, null, 2));
         return updatedOrderItem;
     }
 }
