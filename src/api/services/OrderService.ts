@@ -16,8 +16,7 @@ import { MessageException } from '../exceptions/MessageException';
 import { OrderItemService } from './OrderItemService';
 import { AddressService } from './AddressService';
 import { ListingItemService } from './ListingItemService';
-import {AddressType} from '../enums/AddressType';
-import {ProfileService} from './ProfileService';
+import { AddressType } from '../enums/AddressType';
 import * as resources from 'resources';
 
 
@@ -29,7 +28,6 @@ export class OrderService {
         @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.OrderItemService) public orderItemService: OrderItemService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Repository) @named(Targets.Repository.OrderRepository) public orderRepo: OrderRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -94,37 +92,7 @@ export class OrderService {
         // make sure the Orders shipping address has the correct type
         addressCreateRequest.type = AddressType.SHIPPING_ORDER;
 
-        this.log.debug('OrderCreateRequest body:', body);
-
-        // in case there's no profile id, figure it out
-        if (!addressCreateRequest.profile_id) {
-            const foundBidderProfile = await this.profileService.findOneByAddress(body.buyer);
-            this.log.debug('foundBidderProfile:', foundBidderProfile);
-            if (foundBidderProfile) {
-                // we are the bidder
-                addressCreateRequest.profile_id = foundBidderProfile.id;
-            } else {
-                this.log.error('Did not find Profile for the buyer address: ' + body.buyer + ', trying seller: ' + body.seller);
-
-                try {
-                    // we are the seller
-                    const foundSellerProfile = await this.profileService.findOneByAddress(body.seller);
-                    this.log.debug('foundSellerProfile:', foundSellerProfile);
-                    if (foundSellerProfile) {
-                        addressCreateRequest.profile_id = foundSellerProfile.id;
-                    } else {
-                        this.log.error('Did not find Profile for the seller address: ', body.seller);
-                    }
-
-                    // const listingItemModel = await this.listingItemService.findOne(body.listing_item_id);
-                    // const listingItem: resources.ListingItem = listingItemModel.toJSON();
-                    // addressCreateRequest.profile_id = listingItem.ListingItemTemplate.Profile.id;
-                } catch (e) {
-                    this.log.error('Funny test data bid? It seems we are neither bidder nor the seller.');
-                }
-            }
-        }
-
+        this.log.debug('OrderCreateRequest body:', JSON.stringify(body, null, 2));
         this.log.debug('addressCreateRequest for ORDER: ', JSON.stringify(addressCreateRequest, null, 2));
 
         // save shipping address

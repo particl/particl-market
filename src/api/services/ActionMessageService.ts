@@ -53,14 +53,14 @@ export class ActionMessageService {
     }
 
     @validate()
-    public async create( @request(ActionMessageCreateRequest) data: any): Promise<ActionMessage> {
+    public async create( @request(ActionMessageCreateRequest) data: ActionMessageCreateRequest): Promise<ActionMessage> {
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ActionMessage, body: ', JSON.stringify(body, null, 2));
 
-        const messageInfoCreateRequest = body.info;
-        const messageEscrowCreateRequest = body.escrow;
-        const messageDataCreateRequest = body.data;
+        const messageInfoCreateRequest = body.info || {};
+        const messageEscrowCreateRequest = body.escrow || {};
+        const messageDataCreateRequest = body.data || {};
         const actionMessageObjects = body.objects || [];
 
         delete body.info;
@@ -132,7 +132,7 @@ export class ActionMessageService {
 
             // create ActionMessage
             const actionMessageCreateRequest = await this.actionMessageFactory.getModel(message.mpaction, listingItem.id, event.smsgMessage);
-            this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
+            // this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
 
             const actionMessage = await this.create(actionMessageCreateRequest);
             return actionMessage;
@@ -168,7 +168,7 @@ export class ActionMessageService {
     }
 
     @validate()
-    public async update(id: number, @request(ActionMessageUpdateRequest) body: any): Promise<ActionMessage> {
+    public async update(id: number, @request(ActionMessageUpdateRequest) body: ActionMessageUpdateRequest): Promise<ActionMessage> {
 
         throw new NotImplementedException();
 /*

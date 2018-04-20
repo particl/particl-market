@@ -5,6 +5,7 @@ import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
+import { DatabaseException } from '../../src/api/exceptions/DatabaseException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ActionMessage } from '../../src/api/models/ActionMessage';
@@ -112,47 +113,6 @@ describe('ActionMessage', () => {
         //
     });
 
-    test('Should not create a new action message without info', async () => {
-        expect.assertions(1);
-        const testData1 = JSON.parse(JSON.stringify(testData));
-
-        delete testData1.info;
-        let actionMessage: any = null;
-        try {
-            actionMessage = await actionMessageService.create(testData1);
-        } catch (e) {
-            // expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []));
-            expect(true).toEqual(true);
-        };
-    });
-
-    test('Should not create a new action message without escrow', async () => {
-        expect.assertions(1);
-        const testData1 = JSON.parse(JSON.stringify(testData));
-
-        delete testData1.escrow;
-        let actionMessage: any = null;
-        try {
-            actionMessage = await actionMessageService.create(testData1);
-        } catch (e) {
-            // expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []));
-            expect(true).toEqual(true);
-        };
-    });
-
-    test('Should not create a new action message without data', async () => {
-        expect.assertions(1);
-        const testData1 = JSON.parse(JSON.stringify(testData));
-
-        delete testData1.data;
-        let actionMessage: any = null;
-        try {
-            actionMessage = await actionMessageService.create(testData1);
-        } catch (e) {
-            // expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []));
-            expect(true).toEqual(true);
-        };
-    });
 
     test('Should create a new action message', async () => {
 
@@ -324,8 +284,8 @@ describe('ActionMessage', () => {
         );
 
         // MessageObjects
-        await messageDataService.findOne(createdActionMessage.MessageObjects[startNumActionMessages].id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdActionMessage.MessageObjects[startNumActionMessages].id))
+        await messageDataService.findOne(createdActionMessage.MessageObjects[0].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdActionMessage.MessageObjects[0].id))
         );
     });
 

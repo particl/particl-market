@@ -134,9 +134,9 @@ export class BlackBoxTestUtil {
         return _.find(result, o => o.name === 'DEFAULT');
     }
 
-    public async rpc(method: string, params: any[] = []): Promise<any> {
+    public async rpc(method: string, params: any[] = [], logError: boolean = true): Promise<any> {
         const response = await rpc(method, params, this.node);
-        if (response.error) {
+        if (logError && response.error) {
             this.log.error(response.error.error.message);
         }
         return response;
@@ -169,29 +169,51 @@ export class BlackBoxTestUtil {
         this.log.debug('waiting for ObjectPropertyValue: ' + JSON.stringify(waitForObjectPropertyValue));
         this.log.debug('=============================================================================================');
 
+        let errorCount = 0;
+
         for (let i = 0; i < maxSeconds; i++) {
-            const response: any = await this.rpc(method, params);
+            const response: any = await this.rpc(method, params, false);
 
             if (response.error) {
-                // this.log.debug('response.error: ', response.error.error.message);
+                errorCount++;
+                if (errorCount < 5 || errorCount % 15 === 0) {
+                    this.log.error(response.error.error.message);
+                }
+                if (errorCount === 5) {
+                    this.log.error('... posting every 15th from now on...');
+                }
+
             } else if (waitForStatusCode === response.res.statusCode) {
                 if (waitForObjectProperty) {
                     const result = response.getBody()['result'];
 
-                    this.log.debug('result: ' + JSON.stringify(result, null, 2));
+                    // this.log.debug('result: ' + JSON.stringify(result, null, 2));
 
-                    const objectPropertyValue = _.get(result, waitForObjectProperty);
+                    const objectPropertyValue = !_.isEmpty(result) ? _.get(result, waitForObjectProperty) : null;
 
-                    this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
-                    this.log.debug('waitForObjectPropertyValue.toString(): ' + waitForObjectPropertyValue.toString());
-                    this.log.debug('objectPropertyValue: ' + objectPropertyValue);
+                    // this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
+                    // this.log.debug('waitForObjectPropertyValue.toString(): ' + waitForObjectPropertyValue.toString());
+                    // this.log.debug('objectPropertyValue: ' + objectPropertyValue);
 
                     if (objectPropertyValue === waitForObjectPropertyValue) {
                         this.log.debug('success! statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
                         return response;
                     } else {
-                        this.log.debug(waitForObjectProperty + ' !== ' + waitForObjectPropertyValue);
-                        throw new MessageException('rpcWaitFor received unexpected waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
+
+                        errorCount++;
+
+                        if (errorCount < 5 || errorCount % 15 === 0) {
+                            this.log.error(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !== ' + waitForObjectPropertyValue);
+                        }
+                        if (errorCount === 5) {
+                            this.log.error('... posting every 15th from now on...');
+                        }
+
+                        // do not throw here for now.
+                        // for example bid search will not throw an exception like findOne so the statusCode === 200,
+                        // but we need to keep on querying until correct value is returned.
+                        // todo: it should be configurable how this works
+                        // throw new MessageException('rpcWaitFor received non-matching waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
                     }
                 } else {
                     this.log.debug('success! statusCode === ' + waitForStatusCode);

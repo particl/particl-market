@@ -5,7 +5,6 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import * as listingItemTemplateCreateRequestWithoutLocationMarker from '../../testdata/createrequest/listingItemTemplateCreateRequestWithoutLocationMarker.json';
 import * as resources from 'resources';
 // tslint:enable:max-line-length
 
@@ -20,6 +19,7 @@ describe('ListingItemSearchCommand', () => {
 
     let defaultProfile;
     let defaultMarket;
+
     let listingItemTemplates: resources.ListingItemTemplate[];
     let postedTemplateId;
 

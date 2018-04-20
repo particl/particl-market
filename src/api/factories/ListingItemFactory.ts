@@ -19,6 +19,7 @@ import { ShippingPriceCreateRequest } from '../requests/ShippingPriceCreateReque
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
+import { ListingItemObjectDataCreateRequest } from '../requests/ListingItemObjectDataCreateRequest';
 import { MessagingProtocolType } from '../enums/MessagingProtocolType';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
 import {ItemLocationCreateRequest} from '../requests/ItemLocationCreateRequest';
@@ -90,8 +91,43 @@ export class ListingItemFactory {
     // MODEL
     // ---------------
     private async getModelListingItemObjects(objects: any): Promise<ListingItemObjectCreateRequest[]> {
-        // TODO: impl
-        return [];
+        const objectArray: ListingItemObjectCreateRequest[] = [];
+        for (const object of objects) {
+            let objectData;
+            if (object.type === 'TABLE') {
+                objectData = await this.getModelObjectDataForTypeTable(object['table']);
+            } else if (object.type === 'DROPDOWN') {
+                objectData = await this.getModelObjectDataForTypeDropDown(object['options']);
+            }
+            objectArray.push({
+                type: object.type,
+                description: object.title,
+                listingItemObjectDatas: objectData
+            } as ListingItemObjectCreateRequest);
+        }
+        return objectArray;
+    }
+
+    private async getModelObjectDataForTypeTable(objectDatas: any): Promise<ListingItemObjectDataCreateRequest[]> {
+        const objectDataArray: ListingItemObjectDataCreateRequest[] = [];
+        for (const objectData of objectDatas) {
+            objectDataArray.push({
+                key: objectData.key,
+                value: objectData.value
+            } as ListingItemObjectDataCreateRequest);
+        }
+        return objectDataArray;
+    }
+
+    private async getModelObjectDataForTypeDropDown(objectDatas: any): Promise<ListingItemObjectDataCreateRequest[]> {
+        const objectDataArray: ListingItemObjectDataCreateRequest[] = [];
+        for (const objectData of objectDatas) {
+            objectDataArray.push({
+                key: objectData.name,
+                value: objectData.value
+            } as ListingItemObjectDataCreateRequest);
+        }
+        return objectDataArray;
     }
 
     private async getModelMessagingInformation(messaging: any): Promise<MessagingInformationCreateRequest[]> {
@@ -442,7 +478,7 @@ export class ListingItemFactory {
 
     private async getObjectDataOptions(objectDatas: resources.ListingItemObjectData[]): Promise<any> {
         const objectDataArray: object[] = [];
-        objectDatas.forEach( async (objectValue) => {
+        objectDatas.forEach(async (objectValue) => {
             objectDataArray.push({
                 name: objectValue.key,
                 value: objectValue.value

@@ -177,7 +177,7 @@ describe('Bid', () => {
 
         const bidCollection = await bidService.search(bidSearchParams);
         const bids = bidCollection.toJSON();
-        expect(bids.length).toBe(2);
+        expect(bids.length).toBe(1);
     });
 
     test('Should return one Bid for listingItem.hash', async () => {
@@ -241,7 +241,7 @@ describe('Bid', () => {
         const result = bidModel.toJSON();
         // test the values
         expect(result.action).toBe(testDataUpdated.action);
-        expect(result.bidder).toBe(testDataUpdated.bidder);
+        expect(result.bidder).toBe(createdBid1.bidder); // we dont update the bidder field
     });
 
     test('Should delete the first Bid', async () => {

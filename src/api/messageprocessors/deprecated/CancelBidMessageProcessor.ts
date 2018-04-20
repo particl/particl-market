@@ -30,7 +30,7 @@ export class CancelBidMessageProcessor implements MessageProcessorInterface {
      *
      * data:
      *  action: action of the BidMessage
-     *  listing: item hash
+     *  item: item hash
      *
      * @returns {Promise<Bid>}
      */

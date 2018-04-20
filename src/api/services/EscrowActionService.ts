@@ -169,6 +169,10 @@ export class EscrowActionService {
             mpaction: escrowActionMessage
         } as MarketplaceMessage;
 
+        this.log.debug('orderItem: ', JSON.stringify(orderItem, null, 2));
+
+        this.log.debug('isMyListingItem: ', isMyListingItem);
+
         const sendFromAddress = isMyListingItem ? orderItem.Order.seller : orderItem.Order.buyer;
         const sendToAddress = isMyListingItem ? orderItem.Order.buyer : orderItem.Order.seller;
 
@@ -668,7 +672,7 @@ export class EscrowActionService {
 
         const updatedOrderItemModel = await this.orderItemService.update(orderItem.id, orderItemUpdateRequest);
         const updatedOrderItem: resources.OrderItem = updatedOrderItemModel.toJSON();
-        this.log.debug('updatedOrderItem:', JSON.stringify(updatedOrderItem, null, 2));
+        // this.log.debug('updatedOrderItem:', JSON.stringify(updatedOrderItem, null, 2));
         return updatedOrderItem;
     }
 }

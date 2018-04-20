@@ -10,7 +10,7 @@ export class BidDataCreateRequest extends RequestBody {
     @IsNotEmpty()
     public dataId: string;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public dataValue: string;
 
 }

@@ -9,12 +9,10 @@ import { AddressCreateRequest } from '../../../src/api/requests/AddressCreateReq
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 
 import * as resources from 'resources';
-import * as listingItemCreateRequestBasic1 from '../../testdata/createrequest/listingItemCreateRequestBasic1.json';
-import * as addressCreateRequest from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
-import { GenerateProfileParams } from "../../../src/api/requests/params/GenerateProfileParams";
+import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-import {AddressType} from '../../../src/api/enums/AddressType';
+import { AddressType } from '../../../src/api/enums/AddressType';
 
 describe('BidAcceptCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

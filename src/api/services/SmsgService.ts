@@ -4,6 +4,7 @@ import { Types, Core, Targets } from '../../constants';
 import { CoreRpcService } from './CoreRpcService';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import {Environment} from '../../core/helpers/Environment';
 
 export class SmsgService {
 
@@ -76,6 +77,11 @@ export class SmsgService {
     public async smsgSend(profileAddress: string, marketAddress: string, message: MarketplaceMessage,
                           paidMessage: boolean = true,
                           daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)): Promise<SmsgSendResponse> {
+
+        // TODO: REMOVE!
+        // if (Environment.isDevelopment() || Environment.isTest()) {
+        //    paidMessage = false;
+        // }
 
         this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
         // this.log.debug('smsgSend, message: ' + JSON.stringify(message, null, 2));
