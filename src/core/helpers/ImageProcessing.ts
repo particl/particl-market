@@ -1,5 +1,4 @@
 import { ImageVersion } from './ImageVersion';
-import {MessageException} from '../../api/exceptions/MessageException';
 import * as Jimp from 'jimp';
 
 declare const Buffer;
