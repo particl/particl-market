@@ -45,6 +45,7 @@ export class GenerateOrderParams implements GenerateOrderParamsInterface {
             this.generateListingItem = this.bidId ? false : true;
             this.generateBid = this.bidId ? false : true;
 
+            // TODO: change, bidder is buyer in Order, so propably should be changed here
             this.bidder = generateParams[5] ? generateParams[5] : null;
 
             this.listingItemSeller = generateParams[6] ? generateParams[6] : null;

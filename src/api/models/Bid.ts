@@ -1,5 +1,6 @@
 import { Bookshelf } from '../../config/Database';
 import { Collection } from 'bookshelf';
+import * as _ from 'lodash';
 import { ListingItem } from './ListingItem';
 import { BidData } from './BidData';
 import { BidSearchParams } from '../requests/BidSearchParams';
@@ -12,6 +13,7 @@ export class Bid extends Bookshelf.Model<Bid> {
     public static RELATIONS = [
         'BidDatas',
         'ShippingAddress',
+        'ShippingAddress.Profile',
         'ListingItem',
         'ListingItem.ListingItemTemplate',
         'OrderItem',
@@ -45,19 +47,19 @@ export class Bid extends Bookshelf.Model<Bid> {
                     qb.where('bids.action', '=', options.action);
                 }
 
-                if (options.bidders) {
-                    // let firstIteration = (options.bidder ? false : true);
-                    for (const bidder of options.bidders) {
-                        qb.orWhere('bids.bidder', '=', bidder);
+                if (!_.isEmpty(options.bidders)) {
+                    qb.whereIn('bids.bidder', options.bidders);
 /*
-                        if (!firstIteration) {
-                            qb.orWhere('bids.bidder', '=', bidder);
+                    let firstIteration = true;
+                    for (const bidder of options.bidders) {
+                        if (firstIteration) {
+                            qb.where('bids.bidder', '=', bidder);
                         } else {
                             firstIteration = false;
-                            qb.where('bids.bidder', '=', bidder);
+                            qb.orWhere('bids.bidder', '=', bidder);
                         }
-*/
                     }
+*/
                 }
             }).orderBy('bids.created_at', options.ordering);
 

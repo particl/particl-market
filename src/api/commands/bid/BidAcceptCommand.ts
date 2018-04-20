@@ -46,6 +46,8 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
         const listingItemModel = await this.listingItemService.findOneByHash(itemHash);
         const listingItem = listingItemModel.toJSON();
 
+        this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
+
         // make sure we have a ListingItemTemplate, so we know it's our item
         if (_.isEmpty(listingItem.ListingItemTemplate)) {
             this.log.error('Not your item.'); // Added for Unit Tests

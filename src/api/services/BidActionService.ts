@@ -34,6 +34,11 @@ import { OrderService } from './OrderService';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { Bid } from '../models/Bid';
+import { OrderFactory } from '../factories/OrderFactory';
+import { OrderService } from './OrderService';
+import { BidDataService } from './BidDataService';
+import {BidDataCreateRequest} from '../requests/BidDataCreateRequest';
+import {IsNotEmpty} from 'class-validator';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
@@ -49,6 +54,7 @@ export class BidActionService {
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.BidService) public bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.BidDataService) public bidDataService: BidDataService,
         @inject(Types.Service) @named(Targets.Service.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
@@ -110,6 +116,11 @@ export class BidActionService {
         additionalParams: any[]
     ): Promise<any[]> {
 
+        if (!listingItem.PaymentInformation.ItemPrice || !listingItem.PaymentInformation.ItemPrice.basePrice) {
+            this.log.error('Missing ItemPrice.');
+            throw new MessageException('Missing ItemPrice.');
+        }
+
         // Get unspent
         // const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
         const unspent = await this.coreRpcService.listUnspent(1, 99999999, [], false);
@@ -119,6 +130,8 @@ export class BidActionService {
             throw new MessageException('No unspent outputs');
         }
         this.log.debug('unspent outputs: ', unspent.length);
+
+        this.log.debug('listingItem.PaymentInformation: ', JSON.stringify(listingItem.PaymentInformation, null, 2));
 
         const outputs: Output[] = [];
         const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
@@ -224,23 +237,34 @@ export class BidActionService {
 
             // create the bid accept message
             const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidDatas);
+            this.log.debug('created bidMessage (MPA_ACCEPT):', JSON.stringify(bidMessage, null, 2));
 
             // update the bid locally
             const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
             const updatedBidModel = await this.bidService.update(bid.id, bidUpdateRequest);
             const updatedBid = updatedBidModel.toJSON();
-            // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
+            this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
 
             // create the order
             const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
             const orderModel = await this.orderService.create(orderCreateRequest);
             const order = orderModel.toJSON();
 
-            this.log.debug('send(), created Order: ', order);
+            this.log.debug('accept(), created Order: ', order);
 
             // add Order.hash to bidData
             bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
+
+            // TODO: ENUM
             bidMessage.objects.push({id: 'orderHash', value: order.hash});
+
+            // TODO: clean this up, so that we can add this with bidService.update
+            // not necessarily needed, but
+            await this.bidDataService.create({
+                bid_id: updatedBid.id,
+                dataId: 'orderHash',
+                dataValue: order.hash
+            } as BidDataCreateRequest);
 
             const marketPlaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,
@@ -561,12 +585,9 @@ export class BidActionService {
         const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
         const listingItem = listingItemModel.toJSON();
 
-        // first save it
-        this.log.debug('save actionmessage');
+        // first save actionmessage
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
-
-        this.log.debug('search for existing bid');
 
         // TODO: should someone be able to bid more than once?
         // TODO: for that to be possible, we need to be able to identify different bids from one address
@@ -578,16 +599,14 @@ export class BidActionService {
             bidders: [bidder]
         } as BidSearchParams);
 
-        this.log.debug('biddersExistingBidsForItem:', JSON.stringify(biddersExistingBidsForItem, null, 2));
-
         if (biddersExistingBidsForItem && biddersExistingBidsForItem.length > 0) {
-            this.log.debug('biddersExistingBidsForItem:', biddersExistingBidsForItem.length);
+            this.log.debug('biddersExistingBidsForItem:', JSON.stringify(biddersExistingBidsForItem, null, 2));
             throw new MessageException('Bids allready exist for the ListingItem for the bidder.');
         }
 
         if (bidMessage) {
             const createdBid = await this.createBid(bidMessage, listingItem, bidder);
-            this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
+            // this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
 
             // TODO: do whatever else needs to be done
 

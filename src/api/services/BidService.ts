@@ -86,7 +86,7 @@ export class BidService {
     public async create(@request(BidCreateRequest) data: BidCreateRequest): Promise<Bid> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('BidCreateRequest:', JSON.stringify(body, null, 2));
+        // this.log.debug('BidCreateRequest:', JSON.stringify(body, null, 2));
 
         // bid needs is related to listing item
         if (body.listing_item_id == null) {
@@ -108,8 +108,6 @@ export class BidService {
 
         const addressCreateRequest = body.address;
         delete body.address;
-
-        this.log.debug('body.listing_item_id: ', body.listing_item_id);
 
         // in case there's no profile id, figure it out
         if (!addressCreateRequest.profile_id) {

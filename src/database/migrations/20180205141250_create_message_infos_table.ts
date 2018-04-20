@@ -10,8 +10,8 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('action_message_id').references('id')
                 .inTable('action_messages').onDelete('cascade');
 
-            table.string('address').notNullable();
-            table.string('memo').notNullable();
+            table.string('address').nullable();
+            table.string('memo').nullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

@@ -7,10 +7,10 @@ export class MessageEscrowCreateRequest extends RequestBody {
     @IsNotEmpty()
     public action_message_id: number;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public type: string;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public rawtx: string;
 
 }

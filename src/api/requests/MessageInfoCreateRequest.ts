@@ -7,10 +7,10 @@ export class MessageInfoCreateRequest extends RequestBody {
     @IsNotEmpty()
     public action_message_id: number;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public address: string;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public memo: string;
 
 }

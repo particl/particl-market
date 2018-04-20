@@ -106,6 +106,7 @@ export class ItemCategoryService {
         const rootCategoryWithRelatedModel: any = await this.findRoot();
         let rootCategoryToSearchFrom = rootCategoryWithRelatedModel.toJSON();
 
+        this.log.debug('categoryArray', categoryArray);
         for (const categoryKeyOrName of categoryArray) { // [cat0, cat1, cat2, cat3, cat4]
 
             let existingCategory = await this.findChildCategoryByKeyOrName(rootCategoryToSearchFrom, categoryKeyOrName);

@@ -61,7 +61,7 @@ export class ActionMessageService {
         const messageInfoCreateRequest = body.info;
         const messageEscrowCreateRequest = body.escrow;
         const messageDataCreateRequest = body.data;
-        const actionMessageObjects = body.objects;
+        const actionMessageObjects = body.objects || [];
 
         delete body.info;
         delete body.escrow;
@@ -133,7 +133,7 @@ export class ActionMessageService {
             // create ActionMessage
 
             const actionMessageCreateRequest = await this.actionMessageFactory.getModel(message.mpaction, listingItem.id, event.smsgMessage);
-            this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
+            // this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
 
             const actionMessage = await this.create(actionMessageCreateRequest);
             return actionMessage;

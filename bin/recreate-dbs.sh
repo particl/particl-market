@@ -1,4 +1,6 @@
 #!/bin/sh
+mkdir -p data/app1
+mkdir -p data/app2
 rm -rf data/marketplace*db
 rm -rf data/app1/marketplace*db
 rm -rf data/app2/marketplace*db
