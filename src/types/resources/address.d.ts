@@ -12,6 +12,7 @@ declare module 'resources' {
         zipCode: string;
         createdAt: Date;
         updatedAt: Date;
+        Profile: Profile;
     }
 
 }

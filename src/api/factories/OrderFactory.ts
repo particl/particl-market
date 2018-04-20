@@ -61,6 +61,7 @@ export class OrderFactory {
 
     private getShippingAddress(bid: resources.Bid): AddressCreateRequest {
         return {
+            profile_id: bid.ShippingAddress.Profile.id,
             firstName: bid.ShippingAddress.firstName,
             lastName: bid.ShippingAddress.lastName,
             addressLine1: bid.ShippingAddress.addressLine1,

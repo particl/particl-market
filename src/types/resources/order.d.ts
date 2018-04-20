@@ -7,10 +7,10 @@ declare module 'resources' {
         hash: string;
         buyer: string;
         seller: string;
-        OrderItems: OrderItem[];
-        ShippingAddress: Address;
         createdAt: Date;
         updatedAt: Date;
+        OrderItems: OrderItem[];
+        ShippingAddress: Address;
     }
 
 }

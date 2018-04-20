@@ -13,6 +13,7 @@ export class Bid extends Bookshelf.Model<Bid> {
     public static RELATIONS = [
         'BidDatas',
         'ShippingAddress',
+        'ShippingAddress.Profile',
         'ListingItem',
         'ListingItem.ListingItemTemplate',
         'OrderItem',

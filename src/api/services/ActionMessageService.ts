@@ -132,7 +132,7 @@ export class ActionMessageService {
 
             // create ActionMessage
             const actionMessageCreateRequest = await this.actionMessageFactory.getModel(message.mpaction, listingItem.id, event.smsgMessage);
-            this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
+            // this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
 
             const actionMessage = await this.create(actionMessageCreateRequest);
             return actionMessage;

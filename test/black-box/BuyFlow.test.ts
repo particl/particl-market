@@ -8,6 +8,7 @@ import { GenerateListingItemTemplateParams } from '../../src/api/requests/params
 import * as resources from 'resources';
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
+import {OrderStatus} from '../../src/api/enums/OrderStatus';
 // tslint:enable:max-line-length
 
 describe('BuyFlow', () => {
@@ -32,6 +33,9 @@ describe('BuyFlow', () => {
     const bidSearchCommand = Commands.BID_SEARCH.commandName;
     const bidAcceptCommand = Commands.BID_ACCEPT.commandName;
 
+    const orderCommand = Commands.ORDER_ROOT.commandName;
+    const orderSearchCommand = Commands.ORDER_SEARCH.commandName;
+
     let sellerProfile: resources.Profile;
     let buyerProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -42,6 +46,9 @@ describe('BuyFlow', () => {
 
     let bidNode1: resources.Bid;
     let bidNode2: resources.Bid;
+
+    let orderNode1: resources.Order;
+    let orderNode2: resources.Order;
 
     beforeAll(async () => {
 
@@ -171,7 +178,7 @@ describe('BuyFlow', () => {
         // -> meaning item hash was matched with the existing template hash
         const result: resources.ListingItem = itemGetRes.getBody()['result'];
 
-        log.debug('result: ', result);
+        log.debug('ListingItem on seller node1: ', result);
         expect(result.hash).toBe(listingItemTemplatesNode1[0].hash);
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplatesNode1[0].hash);
 
@@ -279,6 +286,8 @@ describe('BuyFlow', () => {
         // todo: check for correct biddata
         bidNode1 = result[0];
 
+        log.debug('Bid on seller node1 waiting to be accepted: ', JSON.stringify(result, null, 2));
+
     }, 600000); // timeout to 600s
 
     test('Should send BidMessage (MPA_ACCEPT) from sellers node1 to the bidders node2 and create an Order', async () => {
@@ -298,8 +307,6 @@ describe('BuyFlow', () => {
         log.debug('result', result);
         expect(result.result).toBe('Sent.');
 
-        // todo: check that order was created
-
         log.debug('==[ accept Bid /// seller (node1) -> buyer (node2) ]=============================');
         log.debug('msgid: ' + result.msgid);
         log.debug('item.hash: ' + bidNode1.ListingItem.hash);
@@ -310,5 +317,127 @@ describe('BuyFlow', () => {
 
     });
 
+    test('Should be able to find the Bid having BidMessageType.MPA_ACCEPT from sellers node1 after posting the BidMessage', async () => {
+
+        const bidSearchCommandParams = [
+            bidSearchCommand,
+            bidNode1.ListingItem.hash,
+            BidMessageType.MPA_ACCEPT,
+            SearchOrder.ASC,
+            buyerProfile.address
+        ];
+
+        const bidSearchRes: any = await testUtilNode1.rpc(bidCommand, bidSearchCommandParams);
+        bidSearchRes.expectJson();
+        bidSearchRes.expectStatusCode(200);
+
+        const result: resources.Bid = bidSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
+        expect(result[0].ListingItem.hash).toBe(bidNode1.ListingItem.hash);
+        expect(result[0].bidder).toBe(buyerProfile.address);
+        expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
+
+        // there should be a relation to template on the seller side
+        expect(result[0].ListingItem.ListingItemTemplate.hash).toBe(listingItemTemplatesNode1[0].hash);
+
+        bidNode1 = result[0];
+    });
+
+    test('Should be able to find the Order from sellers node1 after posting the BidMessage (MPA_ACCEPT)', async () => {
+
+        const orderSearchCommandParams = [
+            orderSearchCommand,
+            bidNode1.ListingItem.hash,
+            OrderStatus.AWAITING_ESCROW,
+            buyerProfile.address,
+            sellerProfile.address,
+            SearchOrder.ASC
+        ];
+
+        const orderSearchRes: any = await testUtilNode1.rpc(orderCommand, orderSearchCommandParams);
+        orderSearchRes.expectJson();
+        orderSearchRes.expectStatusCode(200);
+
+        const result: resources.Order = orderSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
+        expect(result[0].buyer).toBe(buyerProfile.address);
+        expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].OrderItems).toHaveLength(1);
+        expect(result[0].OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(result[0].OrderItems[0].itemHash).toBe(bidNode1.ListingItem.hash);
+
+        orderNode1 = result[0];
+    });
+
+    test('Should receive BidMessage (MPA_ACCEPT) posted from sellers node1 on buyers node2 and create an Order', async () => {
+
+        // TODO: when we first get the template hash, store it in originalTemplateHash and use that for searches and expects
+        // same for other similar cases...
+
+        const bidSearchCommandParams = [
+            bidSearchCommand,
+            bidNode2.ListingItem.hash,
+            BidMessageType.MPA_ACCEPT,
+            SearchOrder.ASC,
+            buyerProfile.address
+        ];
+
+        log.debug('WAIT FOR: MPA_ACCEPT on buyer node2');
+
+        // try to find the item from the seller node
+        const bidSearchRes: any = await testUtilNode2.rpcWaitFor(
+            bidCommand,
+            bidSearchCommandParams,
+            8 * 60,
+            200,
+            '[0].action',
+            BidMessageType.MPA_ACCEPT.toString()
+        );
+        bidSearchRes.expectJson();
+        bidSearchRes.expectStatusCode(200);
+
+        const result: resources.Bid = bidSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
+        expect(result[0].bidder).toBe(buyerProfile.address);
+        expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
+        expect(result[0].ListingItem.hash).toBe(listingItemReceivedNode1.hash);
+
+        // there should be no relation to template on the buyer side
+        expect(result[0].ListingItem.ListingItemTemplate).toEqual({});
+
+        // todo: check for correct biddata
+        bidNode2 = result[0];
+
+    }, 600000); // timeout to 600s
+
+    test('Should be able to find the Order from buyers node2 after receiving the BidMessage (MPA_ACCEPT)', async () => {
+
+        const orderSearchCommandParams = [
+            orderSearchCommand,
+            bidNode2.ListingItem.hash,
+            OrderStatus.AWAITING_ESCROW,
+            buyerProfile.address,
+            sellerProfile.address,
+            SearchOrder.ASC
+        ];
+
+        const orderSearchRes: any = await testUtilNode2.rpc(orderCommand, orderSearchCommandParams);
+        orderSearchRes.expectJson();
+        orderSearchRes.expectStatusCode(200);
+
+        const result: resources.Order = orderSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
+        expect(result[0].buyer).toBe(buyerProfile.address);
+        expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].OrderItems).toHaveLength(1);
+        expect(result[0].OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(result[0].OrderItems[0].itemHash).toBe(bidNode1.ListingItem.hash);
+
+        orderNode1 = result[0];
+    });
 
 });
