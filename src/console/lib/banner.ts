@@ -1,5 +1,5 @@
 import * as figlet from 'figlet';
-import chalk from 'chalk';
+import * as chalk from 'chalk';
 
 
 
