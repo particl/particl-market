@@ -84,6 +84,16 @@ export class DataDir {
         const datadir = this.getDataDirPath();
         const database = this.getDatabasePath();
 
+        // may also be the particl-market/testnet
+        // so check if upper directory exists.
+        // TODO: might not be the best check
+        if (datadir.endsWith('testnet') || datadir.endsWith('tesnet/')) {
+            const dir = path.dirname(datadir); // pop the 'testnet' folder name
+            if (!this.checkIfExists(dir)) {
+                fs.mkdirSync(dir);
+            }
+        }
+
         if (!this.checkIfExists(datadir)) {
             fs.mkdirSync(datadir);
         }
