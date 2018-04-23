@@ -14,6 +14,7 @@ import {ListingItemSearchParams} from '../../../src/api/requests/ListingItemSear
 import {ListingItemSearchType} from '../../../src/api/enums/ListingItemSearchType';
 import * as _ from 'lodash';
 import {ShippingCountries} from '../../../src/core/helpers/ShippingCountries';
+import {ShippingAvailability} from '../../../src/api/enums/ShippingAvailability';
 
 describe('ListingItemSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -394,7 +395,11 @@ describe('ListingItemSearchCommand', () => {
     test('Should search listing item by shipping Destination', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
-        params.shippingDestination = createdListingItem.ItemInformation.ItemInformation.ShippingDestinations;
+
+        let shippingDestinations: resources.ShippingDestination[] = createdListingItem.ItemInformation.ItemInformation.ShippingDestinations;
+        shippingDestinations = _.filter(shippingDestinations, (o: resources.ShippingDestination) => {
+            return o.shippingAvailability === ShippingAvailability.SHIPS;
+        });
 
         const itemCount = createdListingItem.ItemInformation.ItemLocation.region
         === createdListingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.region
