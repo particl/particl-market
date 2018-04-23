@@ -72,6 +72,8 @@ export class ServerStartedListener implements interfaces.Listener {
             if (this.previousState !== isConnected) {
                 this.log.info('connection with particld established.');
 
+                // this.coreRpcService.call('smsgscanchain');
+
                 // seed the default market
                 await this.defaultMarketService.seedDefaultMarket();
 

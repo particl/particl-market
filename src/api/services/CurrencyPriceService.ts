@@ -62,7 +62,6 @@ export class CurrencyPriceService {
      *
      * @returns {Promise<CurrencyPrice[]>}
      */
-
     public async getCurrencyPrices(fromCurrency: string, toCurrencies: string[]): Promise<resources.CurrencyPrice[]> {
 
         const returnData: any = [];
