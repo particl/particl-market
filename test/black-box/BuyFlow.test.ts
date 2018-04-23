@@ -1,4 +1,4 @@
-///<reference path="../../node_modules/@types/jest/index.d.ts"/>
+/* <reference path="../../node_modules/@types/jest/index.d.ts"/> */
 // tslint:disable:max-line-length
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
@@ -48,7 +48,7 @@ describe('BuyFlow', () => {
     let bidNode2: resources.Bid;
 
     let orderNode1: resources.Order;
-    let orderNode2: resources.Order;
+    const orderNode2: resources.Order;
 
     beforeAll(async () => {
 

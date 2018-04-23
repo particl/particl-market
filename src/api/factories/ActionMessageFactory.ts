@@ -94,12 +94,14 @@ export class ActionMessageFactory {
 
     private getModelMessageObjects(bidMessage: BidMessage | ListingItemAddMessage): MessageObjectCreateRequest[] {
         const createRequests: MessageObjectCreateRequest[] = [];
-        for (const messageObject of bidMessage.objects) {
-            const createRequest = {
-                dataId: messageObject.id,
-                dataValue: messageObject.value
-            } as MessageObjectCreateRequest;
-            createRequests.push(createRequest);
+        if (bidMessage.objects) {
+            for (const messageObject of bidMessage.objects) {
+                const createRequest = {
+                    dataId: messageObject.id,
+                    dataValue: messageObject.value
+                } as MessageObjectCreateRequest;
+                createRequests.push(createRequest);
+            }
         }
         return createRequests;
     }
