@@ -14,6 +14,7 @@ import { EventEmitter } from './api/events';
 import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
 import { Environment } from './helpers/Environment';
 import { SocketIoServer } from './SocketIoServer';
+import { DataDir } from './helpers/DataDir';
 
 
 export interface Configurable {
@@ -31,12 +32,21 @@ export class App {
     private bootstrapApp = new Bootstrap();
     private configurations: Configurable[] = [];
 
-    constructor(dataDir: string = './') {
+    constructor(dataDir?: string) {
 
         // loads the .env file into the 'process.env' variable.
-        Environment.isTest()
-            ? dotenv.config({path: './test/.env.test'})
-            : dotenv.config({path: path.join(dataDir, '.env')});
+        if (Environment.isTest()) {
+            // Kewde: I'm leaving this as it is right now, not to mess with tests.
+            dotenv.config({path: './test/.env.test'});
+        } else {
+            if (dataDir) {
+                DataDir.set(dataDir);
+            } else {
+                dataDir = DataDir.getDataDirPath();
+            }
+
+            dotenv.config({path: path.join(dataDir, '.env')});
+        }
 
         // Configure the logger, because we need it already.
         const loggerConfig = new LoggerConfig();

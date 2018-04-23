@@ -1,3 +1,5 @@
+import { DataDir } from '../core/helpers/DataDir';
+
 /**
  * config.Database
  * ------------------------------------
@@ -14,7 +16,7 @@ import * as bookshelf from 'bookshelf';
 
 export const DatabaseConfig = {
     client: process.env.DB_CLIENT,
-    connection: process.env.DB_CONNECTION,
+    connection: process.env.DB_CONNECTION || DataDir.getDatabasePath(),
     pool: {
         min: parseInt(process.env.DB_POOL_MIN, 10),
         max: parseInt(process.env.DB_POOL_MAX, 10),
