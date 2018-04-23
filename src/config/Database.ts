@@ -26,6 +26,7 @@ export const DatabaseConfig = {
         directory: process.env.DB_MIGRATION_DIR,
         tableName: process.env.DB_MIGRATION_TABLE
     },
+    // not used anymore, potentially we can delete this.
     seeds: {
         directory: process.env.DB_SEEDS_DIR
     },
