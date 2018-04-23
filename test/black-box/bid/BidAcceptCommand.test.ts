@@ -11,7 +11,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/par
 import * as resources from 'resources';
 import * as listingItemCreateRequestBasic1 from '../../testdata/createrequest/listingItemCreateRequestBasic1.json';
 import * as addressCreateRequest from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
-import { GenerateProfileParams } from "../../../src/api/requests/params/GenerateProfileParams";
+import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import {AddressType} from '../../../src/api/enums/AddressType';

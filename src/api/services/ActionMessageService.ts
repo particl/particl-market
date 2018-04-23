@@ -131,6 +131,7 @@ export class ActionMessageService {
             // const listingItem = listingItemModel.toJSON();
 
             // create ActionMessage
+
             const actionMessageCreateRequest = await this.actionMessageFactory.getModel(message.mpaction, listingItem.id, event.smsgMessage);
             // this.log.debug('process(), actionMessageCreateRequest:', JSON.stringify(actionMessageCreateRequest, null, 2));
 

@@ -28,7 +28,7 @@ import { ItemImageDataUpdateRequest } from '../../src/api/requests/ItemImageData
 import { ImageProcessing, MEDIUM_IMAGE_SIZE, THUMBNAIL_IMAGE_SIZE } from '../../src/core/helpers/ImageProcessing';
 import { ImageTriplet } from '../../src/core/helpers/ImageTriplet';
 
-import sharp = require('sharp');
+import Jimp = require('jimp');
 import piexif = require('piexifjs');
 import {ImageVersions} from '../../src/core/helpers/ImageVersionEnumType';
 import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
