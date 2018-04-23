@@ -177,16 +177,18 @@ export class BidService {
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());
 
         // remove old BidDatas
-        const oldBidDatas = updatedBid.related('BidDatas').toJSON();
-        for (const bidData of oldBidDatas) {
-            await this.bidDataService.destroy(bidData.id);
-        }
+        if (bidDatas) {
+            const oldBidDatas = updatedBid.related('BidDatas').toJSON();
+            for (const bidData of oldBidDatas) {
+                await this.bidDataService.destroy(bidData.id);
+            }
 
-        // create new BidDatas
-        for (const bidData of bidDatas) {
-            bidData.bid_id = id;
-            bidData.dataValue = typeof (bidData.dataValue) === 'string' ? bidData.dataValue : JSON.stringify(bidData.dataValue);
-            await this.bidDataService.create(bidData);
+            // create new BidDatas
+            for (const bidData of bidDatas) {
+                bidData.bid_id = id;
+                bidData.dataValue = typeof (bidData.dataValue) === 'string' ? bidData.dataValue : JSON.stringify(bidData.dataValue);
+                await this.bidDataService.create(bidData);
+            }
         }
 
         return await this.findOne(id, true);

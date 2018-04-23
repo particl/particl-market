@@ -37,7 +37,10 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
-
+        if (data.params.length < 2) {
+            this.log.error('Requires two args');
+            throw new MessageException('Requires two args');
+        }
         const itemHash = data.params[0];
         const bidId = data.params[1];
 
@@ -64,7 +67,8 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <itemhash>               - String - The hash of the item whose bid we want to cancel. ';
+            + '    <itemhash>               - String - The hash of the item whose bid we want to cancel. '
+            + '    <bidId>                  - Numeric - The ID of the bid we want to cancel. ';
     }
 
     public description(): string {

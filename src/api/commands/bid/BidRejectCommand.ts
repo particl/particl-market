@@ -30,12 +30,17 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     /**
      * data.params[]:
      * [0]: item, string
+     * [1]: bidId: number
      *
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
+        if (data.params.length < 2) {
+            this.log.error('Requires two args');
+            throw new MessageException('Requires two args');
+        }
         const itemHash = data.params[0];
         const bidId = data.params[1];
 
@@ -45,6 +50,7 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
 
         // make sure we have a ListingItemTemplate, so we know it's our item
         if (_.isEmpty(listingItem.ListingItemTemplate)) {
+            this.log.error('Not your item.');
             throw new MessageException('Not your item.');
         }
 
@@ -55,6 +61,9 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
         });
 
         if (!bidToAccept) {
+            // this.log.error('Bid not found.');
+            // delete listingItem.ItemInformation; // Get rid of image spam
+            this.log.error('listingItem = ' + JSON.stringify(listingItem, null, 2));
             throw new MessageException('Bid not found.');
         }
 
@@ -62,12 +71,13 @@ export class BidRejectCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public usage(): string {
-        return this.getName() + ' <itemhash> ';
+        return this.getName() + ' <itemhash> <bidId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-        + '    <itemhash>               - String - The hash if the item whose bid we want to reject. ';
+        + '    <itemhash>               - String - The hash if the item whose bid we want to reject. '
+        + '    <bidId>                  - Numeric - The ID of the bid we want to reject. ';
     }
 
     public description(): string {
