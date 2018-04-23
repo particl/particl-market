@@ -10,32 +10,6 @@ describe('ProfileUpdateCommand', () => {
     const method = Commands.PROFILE_ROOT.commandName;
     const subCommand = Commands.PROFILE_UPDATE.commandName;
 
-    const testData = {
-        name: 'DEFAULT-PROFILE-TEST',
-        address: 'DEFAULT-PROFILE-ADDRESS',
-        shippingAddresses: [{
-            firstName: 'Johnny',
-            lastName: 'Depp',
-            title: 'Title',
-            addressLine1: 'Add',
-            addressLine2: 'ADD 22',
-            city: 'city',
-            state: 'test state',
-            country: 'Sweden',
-            zipCode: '85001'
-        }, {
-            firstName: 'Robert',
-            lastName: 'Downey',
-            title: 'Tite',
-            addressLine1: 'Ad',
-            addressLine2: 'ADD 222',
-            city: 'city',
-            state: 'test state',
-            country: 'Finland',
-            zipCode: '85001'
-        }]
-    };
-
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
