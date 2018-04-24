@@ -35,17 +35,19 @@ export class App {
     constructor(dataDir?: string) {
 
         // loads the .env file into the 'process.env' variable.
-        if (Environment.isTest()) {
+        if (false) {
             // Kewde: I'm leaving this as it is right now, not to mess with tests.
-            dotenv.config({path: './test/.env.test'});
+            // dotenv.config({path: './test/.env.test'});
         } else {
             if (dataDir) {
                 DataDir.set(dataDir);
             } else {
                 dataDir = DataDir.getDataDirPath();
-            }
 
-            dotenv.config({path: path.join(dataDir, '.env')});
+            }
+            const envfile = path.join(dataDir, '.env');
+            console.log('particl-market env file path:', envfile);
+            dotenv.config({path: envfile});
         }
 
         // Configure the logger, because we need it already.
