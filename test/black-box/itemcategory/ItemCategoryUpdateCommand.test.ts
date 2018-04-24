@@ -100,6 +100,7 @@ describe('ItemCategoryUpdateCommand', () => {
         const listingitemData = {
             market_id: marketId,
             hash: '',
+            seller: 'some seller',
             itemInformation: {
                 title: 'item title1',
                 shortDescription: 'item short desc1',
