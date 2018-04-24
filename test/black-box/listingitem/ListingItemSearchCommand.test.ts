@@ -392,58 +392,86 @@ describe('ListingItemSearchCommand', () => {
 
     });
 
-    test('Should search listing item by shipping Destination', async () => {
+    test('Should search listing item by shippingDestination', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
 
-        let shippingDestinations: resources.ShippingDestination[] = createdListingItem.ItemInformation.ItemInformation.ShippingDestinations;
-        shippingDestinations = _.filter(shippingDestinations, (o: resources.ShippingDestination) => {
+        const shippingDestinationsForItem1: resources.ShippingDestination[] = createdListingItem.ItemInformation.ShippingDestinations;
+        const shippingDestinationsThatShip = _.filter(shippingDestinationsForItem1, (o: resources.ShippingDestination) => {
             return o.shippingAvailability === ShippingAvailability.SHIPS;
         });
 
-        const itemCount = createdListingItem.ItemInformation.ItemLocation.region
-        === createdListingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.region
-            ? 2 : 1;
+        log.debug('shippingDestinationsThatShip:', JSON.stringify(shippingDestinationsThatShip, null, 2));
+        params.shippingDestination = shippingDestinationsThatShip[0].country;
 
-        country
+        const shippingDestinationsForItem2: resources.ShippingDestination[] = createdListingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations;
+        const shippingDestinationsThatShipToTheSamePlace = _.filter(shippingDestinationsForItem2, (o: resources.ShippingDestination) => {
+            return o.shippingAvailability === ShippingAvailability.SHIPS
+                && o.country === params.shippingDestination;
+        });
 
-        const getDataRes: any = await rpc(itemCommand, listingItemSearchCommandParams);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(1);
-        expect(result[0].ItemInformation.ShippingDestinations[1].country).toBe(shippingDestination);
+        const itemCount = 1 + shippingDestinationsThatShipToTheSamePlace.length;
+
+        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.length).toBe(itemCount);
+        expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(params.shippingDestination);
     });
 
-/*
-    test('Should search listing item by shipping Destination, min-max price and SearchString = information title', async () => {
-        const listingItemSearchCommandParams = defaultListingItemSearchCommandParams.slice();
-        listingItemSearchCommandParams[3] = '';
-        listingItemSearchCommandParams[5] = 'ALL';
-        listingItemSearchCommandParams[6] = 0;
-        listingItemSearchCommandParams[7] = 100;
-        listingItemSearchCommandParams[8] = '';
-        listingItemSearchCommandParams[9] = 'MA';
-        listingItemSearchCommandParams[10] = createdListingItem.ItemInformation.title;
-        listingItemSearchCommandParams[11] = 1;
+    test('Should search listing item by shippingDestination, min-maxPrice and searchString', async () => {
 
-        const getDataRes: any = await rpc(itemCommand, listingItemSearchCommandParams);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result.length).toBe(1);
-        expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(shippingDestination);
-        expect(result[0].ItemInformation.title).toBe(createdListingItem.ItemInformation.title);
+        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
+
+        const shippingDestinationsForItem1: resources.ShippingDestination[] = createdListingItem.ItemInformation.ShippingDestinations;
+        const shippingDestinationsThatShip = _.filter(shippingDestinationsForItem1, (o: resources.ShippingDestination) => {
+            return o.shippingAvailability === ShippingAvailability.SHIPS;
+        });
+
+        log.debug('shippingDestinationsThatShip:', JSON.stringify(shippingDestinationsThatShip, null, 2));
+        params.shippingDestination = shippingDestinationsThatShip[0].country;
+
+        const shippingDestinationsForItem2: resources.ShippingDestination[] = createdListingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations;
+        const shippingDestinationsThatShipToTheSamePlace = _.filter(shippingDestinationsForItem2, (o: resources.ShippingDestination) => {
+            return o.shippingAvailability === ShippingAvailability.SHIPS
+                && o.country === params.shippingDestination;
+        });
+
+        const itemCount = 1 + shippingDestinationsThatShipToTheSamePlace.length;
+
+        params.minPrice = createdListingItem.PaymentInformation.ItemPrice.basePrice
+        < createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
+            ? createdListingItem.PaymentInformation.ItemPrice.basePrice - 0.0001
+            : createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice - 0.0001;
+
+        params.maxPrice = createdListingItem.PaymentInformation.ItemPrice.basePrice
+        > createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
+            ? createdListingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
+            : createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
+
+        params.searchString = createdListingItem.ItemInformation.title.substr(0, 10);
+
+        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        expect(result.length).toBe(itemCount);
+
     });
 
-    test('Should search all listing item without any searching criteria', async () => {
-        const getDataRes: any = await rpc(itemCommand, [itemSearchCommand, pageNumber,
-            pageLimit, order]);
+    test('Should find all ListingItems when using no search criteria', async () => {
 
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
+        const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
+
+        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
         expect(result.length).toBe(2);
     });
-*/
+
 });
