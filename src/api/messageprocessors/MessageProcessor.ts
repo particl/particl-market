@@ -54,14 +54,14 @@ export class MessageProcessor implements MessageProcessorInterface {
 
                     const messageForLogging = JSON.parse(JSON.stringify(parsed.item));
                     delete messageForLogging.information.images;
-                    this.log.debug('==] poll(), new ListingItemMessage [=============================================================');
-                    this.log.debug('msgid:', message.msgid);
+                    this.log.debug('==] poll(), new ListingItemMessage [============================================');
+                    this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
                     this.log.debug('from:', message.from);
                     this.log.debug('to:', message.to);
                     this.log.debug('sent:', message.sent);
                     this.log.debug('received:', message.received);
-                    this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
-                    this.log.debug('=================================================================================================');
+                    this.log.debug('msgid:', message.msgid);
+                    this.log.debug('==] poll(), new ListingItemMessage, end [=======================================');
 
                     // ListingItemMessage, listingitemservice listens for this event
                     this.eventEmitter.emit(Events.ListingItemReceivedEvent, {
@@ -79,14 +79,14 @@ export class MessageProcessor implements MessageProcessorInterface {
                 } else if (parsed.mpaction) {
 
                     const messageForLogging = JSON.parse(JSON.stringify(parsed.item));
-                    this.log.debug('==] poll(), new ListingItemMessage [=============================================================');
-                    this.log.debug('msgid:', message.msgid);
+                    this.log.debug('==] poll(), new ActionMessage [===============================================');
+                    this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
                     this.log.debug('from:', message.from);
                     this.log.debug('to:', message.to);
                     this.log.debug('sent:', message.sent);
                     this.log.debug('received:', message.received);
-                    this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
-                    this.log.debug('=================================================================================================');
+                    this.log.debug('msgid:', message.msgid);
+                    this.log.debug('==] poll(), new ActionMessage, end [==========================================');
 
                     // ActionMessage
                     const eventType = await this.getActionEventType(parsed.mpaction);
