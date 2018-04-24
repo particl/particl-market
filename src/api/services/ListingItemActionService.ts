@@ -142,7 +142,7 @@ export class ListingItemActionService {
     public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<resources.ListingItem> {
         // todo: this returns ListingItem and processed BidMessages return ActionMessage's
 
-        this.log.info('Received event:', event);
+        this.log.info('Received event, msgid:', event.smsgMessage.msgid);
 
         const message = event.marketplaceMessage;
 
@@ -153,7 +153,6 @@ export class ListingItemActionService {
 
             const listingItemMessage = message.item;
 
-            this.log.debug('listingItemMessage: ', listingItemMessage);
             // create the new custom categories in case there are some
             const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
 
@@ -186,7 +185,7 @@ export class ListingItemActionService {
             listingItemModel = await this.listingItemService.findOne(listingItem.id);
             listingItem = listingItemModel.toJSON();
 
-            this.log.debug('saved listingItem:', JSON.stringify(listingItem, null, 2));
+            this.log.debug('saved listingItem:', listingItem.hash);
 
             return listingItem;
 
