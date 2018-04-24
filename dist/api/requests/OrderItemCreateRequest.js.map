@@ -1,0 +1,1 @@
+{"version":3,"file":"OrderItemCreateRequest.js","sourceRoot":"","sources":["../../../src/api/requests/OrderItemCreateRequest.ts"],"names":[],"mappings":";;;AAAA,qDAAqD;AACrD,4DAAyD;AAEzD,sDAAmD;AAEnD,+BAA+B;AAC/B,4BAAoC,SAAQ,yBAAW;CAoBtD;AAdG;IADC,4BAAU,EAAE;;wDACW;AAGxB;IADC,4BAAU,EAAE;;sDACS;AAItB;IAFC,wBAAM,CAAC,yBAAW,CAAC;IACnB,4BAAU,EAAE;;sDACc;AAb/B,wDAoBC;AACD,8BAA8B"}
