@@ -27,13 +27,11 @@ exports.migrate = migrate;
 /**
  * Starts the main application
  */
-function start() {
+exports.start = () => {
     const app = new App_1.App();
     // Here you can add more custom configurations
     app.configure(new CustomConfig_1.CustomConfig());
     // Launch the server with all his awesome features.
     app.bootstrap();
-    return app;
-}
-exports.start = start;
+};
 //# sourceMappingURL=module.js.map

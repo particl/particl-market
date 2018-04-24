@@ -34,9 +34,10 @@
     "transpile": "./node_modules/.bin/tsc",
     "clean": "npm run banner clean && npm run clean:dist",
     "clean:dist": "./node_modules/.bin/trash './dist'",
-    "copy:assets": "npm run copy:swagger && npm run copy:public",
+    "copy:assets": "npm run copy:swagger && npm run copy:public && npm run copy:env",
     "copy:swagger": "./node_modules/.bin/copyup ./src/api/swagger.json ./dist",
     "copy:public": "./node_modules/.bin/copyup ./src/public/* ./dist",
+    "copy:env": "cp .env.dist dist/.env",
     "banner": "npm run ts-node:fast -- ./src/console/lib/banner.ts",
     "ts-node": "./node_modules/.bin/ts-node",
     "ts-node:fast": "./node_modules/.bin/ts-node -F"
