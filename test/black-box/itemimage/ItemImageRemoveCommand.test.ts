@@ -25,12 +25,12 @@ describe('ItemImageRemoveCommand', () => {
         profile_id: 0,
         hash: '',
         itemInformation: {
-        title: 'item title1',
-        shortDescription: 'item short desc1',
-        longDescription: 'item long desc1',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            }
+            title: 'item title1',
+            shortDescription: 'item short desc1',
+            longDescription: 'item long desc1',
+                itemCategory: {
+                    key: 'cat_high_luxyry_items'
+                }
         },
         paymentInformation: {
             type: PaymentType.SALE
@@ -97,6 +97,9 @@ describe('ItemImageRemoveCommand', () => {
 
         // set listing item id
         testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
+
+        testDataListingItemTemplate.itemInformation.title = 'new title to give new hash';
+
         // set hash
         testDataListingItemTemplate.hash = await ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
