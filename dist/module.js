@@ -9,7 +9,7 @@ const databaseMigrate = require("./database/migrate");
  * Initializes the data directory
  */
 function initialize() {
-    return DataDir_1.DataDir.initialize;
+    return DataDir_1.DataDir.initialize();
 }
 exports.initialize = initialize;
 /**
@@ -17,11 +17,11 @@ exports.initialize = initialize;
  * in the datadir.
  */
 function createDefaultEnvFile() {
-    return DataDir_1.DataDir.createDefaultEnvFile;
+    return DataDir_1.DataDir.createDefaultEnvFile();
 }
 exports.createDefaultEnvFile = createDefaultEnvFile;
 function migrate() {
-    return databaseMigrate.migrate;
+    return databaseMigrate.migrate();
 }
 exports.migrate = migrate;
 /**
