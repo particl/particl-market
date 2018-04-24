@@ -1,11 +1,11 @@
 import { inject, named } from 'inversify';
-import { Logger as LoggerType } from '../../core/Logger';
 import { Environment } from '../../core/helpers/Environment';
 import { migrate } from '../../database/migrate';
 
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
+import { dirname } from 'path';
 
 
 /**
@@ -69,13 +69,17 @@ export class DataDir {
         return path.join(this.getDataDirPath(), 'data');
     }
 
+    public static getDatabaseFile(): string {
+        return path.join(this.getDatabasePath(), 'marketplace.db');
+    }
+
     public static checkIfExists(dir: string): boolean {
         try {
             fs.accessSync(dir, fs.constants.R_OK);
-            this.log.info('Found particl-market path', dir);
+            console.log('Found particl-market path', dir);
             return true;
         } catch (err) {
-            this.log.error('Could not find particl-market path!', dir);
+            console.error('Could not find particl-market path!', dir);
         }
         return false;
     }
@@ -112,6 +116,62 @@ export class DataDir {
         return this.checkIfExists(datadir) && this.checkIfExists(database);
     }
 
-    private static log: LoggerType = new LoggerType(__filename);
+    public static createDefaultEnvFile(): Promise<boolean> {
+        return new Promise((resolve, reject) => {
+            // The .env file that we use as template is stored in different locations
+            // /somepath/particl-market/srcORdist/core/helpers -> /somepath/particl-market/srcORdist/
+            let dir = path.dirname(path.dirname(__dirname));
+            let dotenv;
+
+            const mask = path.dirname(dir);
+            const isDist: boolean = dir.replace(mask, '').replace(path.sep, '') === 'dist';
+
+            if (isDist) {
+                // running from a distributable
+                const try1 = path.join(dir, '.env');
+                if (this.checkIfExists(try1)) {
+                    console.log('found distributable .env', try1);
+                    dotenv = try1;
+                } else {
+                    console.error('distributable .env not found');
+                    reject('distributable .env not found');
+                }
+            } else {
+                // we're most likely running from source
+                dir = path.dirname(dir);
+                const try2 = path.join(dir, '.env');
+                if (this.checkIfExists(try2)) {
+                    console.log('found the local .env', try2);
+                    dotenv = try2;
+                } else {
+                    console.error('src .env not found');
+                    reject('src .env not found');
+                }
+            }
+
+            // copy .env to new location!
+            // TODO: error handling on streams
+            console.log('copying and potentially overwritting .env file');
+            const defaultDotEnvPath = path.join(this.getDataDirPath(), '.env');
+            fs.createReadStream(dotenv).pipe(fs.createWriteStream(defaultDotEnvPath))
+            .on('close', (ex) => {
+                if (ex) {
+                    reject(ex);
+                } else {
+                    // should have worked, now let's verify.
+                    resolve(this.checkIfExists(defaultDotEnvPath));
+                }
+            });
+        });
+    }
+
+    public static getDefaultMigrationsPath(): string {
+        return path.join(__dirname, '../../database/migrations');
+    }
+
+    public static getDefaultSeedsPath(): string {
+        return path.join(__dirname, '../../database/seeds');
+    }
+
     private static datadir: string;
 }

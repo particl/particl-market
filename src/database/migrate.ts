@@ -5,9 +5,9 @@ export const migrate = (): Promise<any> => {
 
     const db = Knex();
 
+    // migrate is a bluebird promise, hack around it
     return Promise.all([
-        db.migrate.latest(),
-        db.destroy()
+        db.migrate.latest()
     ]);
 };
 
