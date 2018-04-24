@@ -78,7 +78,7 @@ describe('Happy BuyFlow', () => {
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
-            false,   // generateItemImages
+            true,   // generateItemImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
