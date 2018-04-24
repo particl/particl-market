@@ -46,6 +46,7 @@ export class BlackBoxTestUtil {
     public async addData(model: CreatableModel, data: any): Promise<any> {
         const res = await this.rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_ADD.commandName, model.toString(), JSON.stringify(data)]);
         res.expectJson();
+        expect(res.error).toBe(null);
         res.expectStatusCode(200);
         return res.getBody()['result'];
     }
