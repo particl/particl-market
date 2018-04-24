@@ -20,6 +20,7 @@ export const DatabaseConfig = {
         max: parseInt(process.env.DB_POOL_MAX, 10),
         afterCreate: (conn, cb) => {
             conn.run('PRAGMA foreign_keys = ON', cb);
+            conn.run('PRAGMA journal_mode = WAL', cb);
         }
     },
     migrations: {
