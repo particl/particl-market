@@ -52,6 +52,7 @@ describe('ProfileAddCommand', () => {
         const res = await rpc(method, [subCommand]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.message).toBe('404 - {\"success\":false,\"message\":\"Requires profile name arg.\",\"error\":\"Requires profile name arg.\"}');
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Requires profile name arg.');
     });
 });
