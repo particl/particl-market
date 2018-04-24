@@ -2,11 +2,8 @@
  * core.Environment
  * ------------------------------------
  *
- * Helps us to simplify 'process.env' and also provide
- * the content of the package.json.
+ * Helps us to simplify 'process.env'.
  */
-import * as packageInfo from '../../../package.json';
-
 
 export enum EnvironmentType {
     ALL = 'ALL',
@@ -44,10 +41,6 @@ export class Environment {
             return nodeEnv.toUpperCase() === EnvironmentType.PRODUCTION.toString();
         }
         return false;
-    }
-
-    public static getPkg(): any {
-        return packageInfo;
     }
 
     public static isTruthy(bool: string): boolean {

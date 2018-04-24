@@ -42,6 +42,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory',
         'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
         'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+        'ListingItems.ItemInformation.ShippingDestinations',
         'Profile'
     ];
 
