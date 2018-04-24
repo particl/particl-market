@@ -23,3 +23,9 @@ if (process.env.NODE_ENV !== 'test') {
     app.bootstrap();
 }
 
+exports.startMarket = () => {
+    // Here you can add more custom configurations
+    app.configure(new CustomConfig());
+    // Launch the server with all his awesome features.
+    app.bootstrap();
+};
