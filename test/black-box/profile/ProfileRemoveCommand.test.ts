@@ -52,8 +52,9 @@ describe('ProfileRemoveCommand', () => {
 
     test('Should delete the profile by id', async () => {
         // set up the test data
-        const addDataRes: any = await testUtil.addData(CreatableModel.PROFILE, testData);
-        createdId = addDataRes.id;
+        let generatedProfile: any = await testUtil.generateData(CreatableModel.PROFILE, 1, true);
+        generatedProfile = generatedProfile[0];
+        createdId = generatedProfile.id;
 
         // delete profile
         const res = await rpc(method, [subCommand, createdId]);
@@ -63,11 +64,12 @@ describe('ProfileRemoveCommand', () => {
 
     test('Should delete the profile by name ', async () => {
         // set up the test data
-        const addDataRes: any = await testUtil.addData(CreatableModel.PROFILE, testData);
-        createdId = addDataRes.id;
-        profileName = addDataRes.name;
+        let generatedProfile: any = await testUtil.generateData(CreatableModel.PROFILE, 1, true);
+        generatedProfile = generatedProfile[0];
+        profileName = generatedProfile.name;
+
         // delete profile by name
-        const res = await rpc(method, [subCommand, addDataRes.name]);
+        const res = await rpc(method, [subCommand, profileName]);
         res.expectJson();
         res.expectStatusCode(200);
     });
