@@ -60,7 +60,6 @@ export class BidFactory {
 
         // check that the bidAction is valid, throw if not
         if (this.checkBidMessageActionValidity(bidMessage, latestBid)) {
-
             const bidDataValues = {};
 
             // copy the existing key-value pairs from latestBid.BidDatas
@@ -127,23 +126,22 @@ export class BidFactory {
      * @returns {boolean}
      */
     private checkBidMessageActionValidity(bidMessage: BidMessage, latestBid?: resources.Bid): boolean {
-
         if (latestBid) {
             switch (latestBid.action) {
-                case BidMessageType.MPA_BID:
+                case BidMessageType.MPA_BID.toString():
                     // if the latest bid was allready bidded on, then the message needs to be something else
-                    return bidMessage.action !== BidMessageType.MPA_BID;
-                case BidMessageType.MPA_ACCEPT:
+                    return bidMessage.action !== BidMessageType.MPA_BID.toString();
+                case BidMessageType.MPA_ACCEPT.toString():
                     // latest bid was allready accepted, any bid is invalid
                     return false;
-                case BidMessageType.MPA_CANCEL:
+                case BidMessageType.MPA_CANCEL.toString():
                     // latest bid was cancelled, so we allow only new bids
-                    return bidMessage.action === BidMessageType.MPA_BID;
-                case BidMessageType.MPA_REJECT:
+                    return bidMessage.action === BidMessageType.MPA_BID.toString();
+                case BidMessageType.MPA_REJECT.toString():
                     // latest bid was rejected, so we allow only new bids
-                    return bidMessage.action === BidMessageType.MPA_BID;
+                    return bidMessage.action === BidMessageType.MPA_BID.toString();
             }
-        } else if (bidMessage.action === BidMessageType.MPA_BID) {
+        } else if (bidMessage.action === BidMessageType.MPA_BID.toString()) {
             // if no existing bid and message is MPA_BID -> true
             return true;
         }

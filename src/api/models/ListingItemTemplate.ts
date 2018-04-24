@@ -32,6 +32,17 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ListingItemObjects',
         'ListingItemObjects.ListingItemObjectDatas',
         'ListingItems',
+        'ListingItems.PaymentInformation',
+        'ListingItems.PaymentInformation.ItemPrice',
+        'ListingItems.PaymentInformation.ItemPrice.ShippingPrice',
+        'ListingItems.ItemInformation',
+        'ListingItems.ItemInformation.ItemLocation',
+        'ListingItems.ItemInformation.ItemCategory',
+        'ListingItems.ItemInformation.ItemCategory.ParentItemCategory',
+        'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory',
+        'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+        'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+        'ListingItems.ItemInformation.ShippingDestinations',
         'Profile'
     ];
 

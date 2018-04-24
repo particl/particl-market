@@ -741,7 +741,7 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             items.push({
                 country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
-                shippingAvailability: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingAvailability))
+                shippingAvailability: ShippingAvailability.SHIPS
             });
         }
         return items;

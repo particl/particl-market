@@ -1,5 +1,6 @@
 import * as express from 'express';
 import * as dotenv from 'dotenv';
+import * as path from 'path';
 import { Container } from 'inversify';
 import { InversifyExpressServer } from 'inversify-express-utils';
 import { Logger } from './Logger';
@@ -30,10 +31,12 @@ export class App {
     private bootstrapApp = new Bootstrap();
     private configurations: Configurable[] = [];
 
-    constructor() {
+    constructor(dataDir: string = './') {
 
         // loads the .env file into the 'process.env' variable.
-        Environment.isTest() ? dotenv.config({path: './test/.env.test'}) : dotenv.config();
+        Environment.isTest()
+            ? dotenv.config({path: './test/.env.test'})
+            : dotenv.config({path: path.join(dataDir, '.env')});
 
         // Configure the logger, because we need it already.
         const loggerConfig = new LoggerConfig();

@@ -3,7 +3,7 @@ import { HashableObjectType } from '../../api/enums/HashableObjectType';
 import { HashableListingItem } from './HashableListingItem';
 import { HashableItemImage } from './HashableItemImage';
 import { HashableOrder } from './HashableOrder';
-import { Logger as LoggerType } from '../../../src/core/Logger';
+import { Logger as LoggerType } from '../Logger';
 
 export class ObjectHash {
 
