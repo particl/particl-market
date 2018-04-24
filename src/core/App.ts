@@ -33,7 +33,7 @@ export class App {
     private configurations: Configurable[] = [];
 
     constructor(dataDir?: string) {
-
+        console.log('particl-market __dirname ', __dirname);
         // loads the .env file into the 'process.env' variable.
         if (false) {
             // Kewde: I'm leaving this as it is right now, not to mess with tests.
