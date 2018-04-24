@@ -71,7 +71,7 @@ export class Server {
         this.log.debug(``);
         this.log.debug('-------------------------------------------------------');
         this.log.debug(`Environment  : ${Environment.getNodeEnv()}`);
-        this.log.debug(`Version      : ${Environment.getPkg().version}`);
+        // this.log.debug(`Version      : ${Environment.getPkg().version}`);
         this.log.debug(``);
         if (Environment.isTruthy(process.env.API_INFO_ENABLED)) {
             this.log.debug(`API Info     : ${app.get('host')}:${app.get('port')}${ApiInfo.getRoute()}`);
