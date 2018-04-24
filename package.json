@@ -40,7 +40,7 @@
     "copy:env": "cp .env.dist dist/.env",
     "banner": "npm run ts-node:fast -- ./src/console/lib/banner.ts",
     "ts-node": "./node_modules/.bin/ts-node",
-    "ts-node:fast": "./node_modules/.bin/ts-node -F"
+    "ts-node:fast": "./node_modules/.bin/ts-node -F ./src/app.ts"
   },
   "repository": "git+ssh://git@github.com:particl/dapp-shell.git",
   "keywords": [
