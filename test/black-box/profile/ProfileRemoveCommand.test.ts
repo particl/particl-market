@@ -10,32 +10,6 @@ describe('ProfileRemoveCommand', () => {
     const method = Commands.PROFILE_ROOT.commandName;
     const subCommand = Commands.PROFILE_REMOVE.commandName;
 
-    const testData = {
-        name: 'DEFAULT-PROFILE-TEST',
-        address: 'DEFAULT-PROFILE-ADDRESS',
-        shippingAddresses: [{
-            firstName: 'Robert',
-            lastName: 'Downey',
-            title: 'Title',
-            addressLine1: 'Add',
-            addressLine2: 'ADD 22',
-            city: 'city',
-            state: 'test state',
-            country: 'Sweden',
-            zipCode: '85001'
-        }, {
-            firstName: 'Johnny',
-            lastName: 'Depp',
-            title: 'Tite',
-            addressLine1: 'Ad',
-            addressLine2: 'ADD 222',
-            city: 'city',
-            state: 'test state',
-            country: 'Finland',
-            zipCode: '85001'
-        }]
-    };
-
     let createdId = 0;
     let profileName;
 
