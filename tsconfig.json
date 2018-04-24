@@ -5,7 +5,6 @@
         "pretty": true,
         "sourceMap": true,
         "outDir": "dist",
-        "declaration": true,
         "importHelpers": true,
         "strict": true,
         "noImplicitAny": false,
