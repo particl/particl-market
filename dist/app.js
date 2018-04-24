@@ -21,10 +21,4 @@ if (process.env.NODE_ENV !== 'test') {
     // Launch the server with all his awesome features.
     exports.app.bootstrap();
 }
-exports.startMarket = () => {
-    // Here you can add more custom configurations
-    exports.app.configure(new CustomConfig_1.CustomConfig());
-    // Launch the server with all his awesome features.
-    exports.app.bootstrap();
-};
 //# sourceMappingURL=app.js.map
