@@ -2,7 +2,7 @@
   "name": "particl-marketplace",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/app.js",
+  "main": "dist/module.js",
   "scripts": {
     "setup": "yarn install && npm run banner setup && npm run db:migrate && npm run db:seed",
     "serve": "npm run banner serve && NODE_ENV=development \"./node_modules/.bin/nodemon\" --watch src --watch .env",

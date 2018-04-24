@@ -7,20 +7,20 @@ import * as databaseMigrate from './database/migrate';
 /**
  * Initializes the data directory
  */
-export function initialize(): () => Promise<any> {
-    return DataDir.initialize;
+export function initialize(): Promise<any> {
+    return DataDir.initialize();
 }
 
 /**
  * Create the default configuration/environment file
  * in the datadir.
  */
-export function createDefaultEnvFile(): () => Promise<any> {
-    return DataDir.createDefaultEnvFile;
+export function createDefaultEnvFile(): Promise<any> {
+    return DataDir.createDefaultEnvFile();
 }
 
-export function migrate(): () => Promise<any> {
-    return databaseMigrate.migrate;
+export function migrate(): Promise<any> {
+    return databaseMigrate.migrate();
 }
 
 /**
