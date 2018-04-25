@@ -56,6 +56,7 @@ export class ListingItemObjectService {
 
     @validate()
     public async create( @request(ListingItemObjectCreateRequest) data: ListingItemObjectCreateRequest): Promise<ListingItemObject> {
+        const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
         // todo: could this be annotated in ListingItemObjectCreateRequest?
@@ -77,6 +78,8 @@ export class ListingItemObjectService {
 
         // finally find and return the created listingItemObject
         const newListingItemObject = await this.findOne(listingItemObject.id);
+
+        this.log.debug('listingItemObjectService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return newListingItemObject;
     }
 

@@ -37,6 +37,7 @@ export class MessagingInformationService {
 
     @validate()
     public async create( @request(MessagingInformationCreateRequest) body: MessagingInformationCreateRequest): Promise<MessagingInformation> {
+        const startTime = new Date().getTime();
 
         // todo: could this be annotated in MessagingInformationCreateRequest?
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
@@ -48,6 +49,8 @@ export class MessagingInformationService {
 
         // finally find and return the created messagingInformation
         const newMessagingInformation = await this.findOne(messagingInformation.Id);
+
+        this.log.debug('messagingInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return newMessagingInformation;
     }
 

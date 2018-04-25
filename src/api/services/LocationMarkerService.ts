@@ -37,12 +37,15 @@ export class LocationMarkerService {
 
     @validate()
     public async create( @request(LocationMarkerCreateRequest) body: LocationMarkerCreateRequest): Promise<LocationMarker> {
+        const startTime = new Date().getTime();
 
         // If the request body was valid we will create the locationMarker
         const locationMarker = await this.locationMarkerRepo.create(body);
 
         // finally find and return the created locationMarker
-        return await this.findOne(locationMarker.Id);
+        const result = await this.findOne(locationMarker.Id);
+        this.log.debug('locationMarkerService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        return result;
     }
 
     @validate()

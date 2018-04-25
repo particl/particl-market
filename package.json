@@ -2,7 +2,7 @@
   "name": "particl-marketplace",
   "version": "0.0.1",
   "description": "",
-  "main": "src/app.ts",
+  "main": "dist/module.js",
   "scripts": {
     "setup": "yarn install && npm run banner setup && npm run db:migrate && npm run db:seed",
     "serve": "npm run banner serve && NODE_ENV=development \"./node_modules/.bin/nodemon\" --watch src --watch .env",
@@ -13,16 +13,16 @@
     "test:pretty": "npm run test -- --verbose",
     "test:coverage": "npm run test -- --coverage",
     "pretest:black-box": "./node_modules/.bin/tslint -c ./tslint.json -t stylish './test/black-box/**/*.ts'",
-    "test:black-box": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --forceExit --testPathPattern=black-box -i",
-    "test:black-box:pretty": "npm run test:black-box -- --verbose",
-    "test:black-box:single": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --forceExit --verbose --testPathPattern=black-box/$TEST -i",
-    "test:ui": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --forceExit --testPathPattern=ui -i",
-    "test:ui:pretty": "npm run test:ui -- --verbose",
-    "test:ui:single": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --forceExit --verbose --testPathPattern=ui/$TEST -i",
+    "test:black-box": "NODE_ENV=test npm run banner test && cross-env \"./node_modules/.bin/jest\" --forceExit --testPathPattern=black-box -i",
+    "test:black-box:pretty": "NODE_ENV=test npm run test:black-box -- --verbose",
+    "test:black-box:single": "NODE_ENV=test npm run banner test && cross-env \"./node_modules/.bin/jest\" --forceExit --verbose --testPathPattern=black-box/$TEST -i",
+    "test:ui": "NODE_ENV=test npm run banner test && cross-env \"./node_modules/.bin/jest\" --forceExit --testPathPattern=ui -i",
+    "test:ui:pretty": "NODE_ENV=test npm run test:ui -- --verbose",
+    "test:ui:single": "NODE_ENV=test npm run banner test && cross-env \"./node_modules/.bin/jest\" --forceExit --verbose --testPathPattern=ui/$TEST -i",
     "pretest:integration": "./node_modules/.bin/tslint -c ./tslint.json -t stylish './test/integration/**/*.ts'",
-    "test:integration": "npm run banner test && cross-env \"./node_modules/.bin/jest\" --forceExit --testPathPattern=integration -i",
+    "test:integration": "NODE_ENV=test npm run banner test && cross-env \"./node_modules/.bin/jest\" --forceExit --testPathPattern=integration -i",
     "test:integration:pretty": "NODE_ENV=test npm run test:integration -- --verbose",
-    "test:integration:single": "npm run banner test && cross-env \"./node_modules/.bin/jest\" --forceExit --testPathPattern=integration/$TEST -i",
+    "test:integration:single": "NODE_ENV=test npm run banner test && cross-env \"./node_modules/.bin/jest\" --forceExit --testPathPattern=integration/$TEST -i",
     "db:migrate": "npm run banner migrate && \"./node_modules/.bin/knex\" migrate:latest",
     "db:migrate:rollback": "npm run banner rollback && \"./node_modules/.bin/knex\" migrate:rollback",
     "db:seed": "npm run banner seed && \"./node_modules/.bin/knex\" seed:run",
@@ -34,24 +34,28 @@
     "transpile": "./node_modules/.bin/tsc",
     "clean": "npm run banner clean && npm run clean:dist",
     "clean:dist": "./node_modules/.bin/trash './dist'",
-    "copy:assets": "npm run copy:swagger && npm run copy:public",
+    "copy:assets": "npm run copy:swagger && npm run copy:public && npm run copy:env",
     "copy:swagger": "./node_modules/.bin/copyup ./src/api/swagger.json ./dist",
     "copy:public": "./node_modules/.bin/copyup ./src/public/* ./dist",
+    "copy:env": "cp .env.dist dist/.env",
     "banner": "npm run ts-node:fast -- ./src/console/lib/banner.ts",
     "ts-node": "./node_modules/.bin/ts-node",
-    "ts-node:fast": "./node_modules/.bin/ts-node -F"
+    "ts-node:fast": "./node_modules/.bin/ts-node -F ./src/app.ts"
   },
-  "repository": "git+ssh://git@github.com:particl/dapp-shell.git",
+  "repository": "git+ssh://git@github.com:particl/particl-market.git",
   "keywords": [
     "particl"
   ],
-  "homepage": "https://github.com/particl/dapp-shell#readme",
+  "homepage": "https://github.com/particl/particl-market#readme",
   "contributors": [
     {
       "name": "Juha Kovanen",
       "email": "juha@particl.io",
       "url": "https://github.com/xludx"
     }
+  ],
+  "files": [
+    "dist/**/*"
   ],
   "dependencies": {
     "@types/bluebird": "^3.5.8",
