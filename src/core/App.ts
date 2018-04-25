@@ -12,9 +12,9 @@ import { AppConfig } from '../config/AppConfig';
 import { Types, Core } from '../constants';
 import { EventEmitter } from './api/events';
 import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
-import { Environment } from './helpers/Environment';
 import { SocketIoServer } from './SocketIoServer';
-import { DataDir } from './helpers/DataDir';
+import { EnvConfig } from '../config/env/EnvConfig';
+import { ProductionEnvConfig } from '../config/env/ProductionEnvConfig';
 
 
 export interface Configurable {
@@ -31,33 +31,21 @@ export class App {
     private log: Logger = new Logger(__filename);
     private bootstrapApp = new Bootstrap();
     private configurations: Configurable[] = [];
+    private envConfig: EnvConfig;
 
-    constructor(dataDir?: string) {
-        console.log('particl-market __dirname ', __dirname);
-        // loads the .env file into the 'process.env' variable.
-        if (false) {
-            // Kewde: I'm leaving this as it is right now, not to mess with tests.
-            // dotenv.config({path: './test/.env.test'});
-        } else {
-            if (dataDir) {
-                DataDir.set(dataDir);
-            } else {
-                dataDir = DataDir.getDataDirPath();
+    constructor(envConfig?: EnvConfig) {
 
-            }
-            const envfile = path.join(dataDir, '.env');
-            console.log('particl-market env file path:', envfile);
-            dotenv.config({path: envfile});
-        }
+        // if envConfig isn't given, use ProductionEnvConfig
+        this.envConfig = !envConfig ? new ProductionEnvConfig() : envConfig;
 
         // Configure the logger, because we need it already.
         const loggerConfig = new LoggerConfig();
         loggerConfig.configure();
 
-        // Create express app
         this.log.info('NODE_ENV: ' + process.env.NODE_ENV);
-        this.log.info('Defining app...');
-        if (!Environment.isTest()) {
+
+        if (this.envConfig.useExpress) {
+            this.log.info('Defining app...');
             this.bootstrapApp.defineExpressApp(this.express);
         }
     }
@@ -90,7 +78,7 @@ export class App {
     public async bootstrap(): Promise<any> {
         this.log.info('Configuring app...');
 
-        if (!Environment.isTest()) {
+        if (this.envConfig.useExpress) {
             // Add express monitor app
             this.bootstrapApp.setupMonitor(this.express);
             // Configure the app config for all the middlewares
@@ -104,7 +92,7 @@ export class App {
         this.log.info('Binding IoC modules...');
         await this.ioc.bindModules();
 
-        if (!Environment.isTest()) {
+        if (this.envConfig.useExpress) {
             this.log.info('Setting up IoC...');
             this.inversifyExpressServer = this.bootstrapApp.setupInversifyExpressServer(this.express, this.ioc);
             this.express = this.bootstrapApp.bindInversifyExpressServer(this.express, this.inversifyExpressServer);
@@ -113,7 +101,9 @@ export class App {
 
             this.server = new Server(this.bootstrapApp.startServer(this.express));
             this.server.use(this.express);
+        }
 
+        if (this.envConfig.useSocketIO) {
             // create our socketioserver
             this.socketIoServer = this.bootstrapApp.createSocketIoServer(this.server, this.ioc);
         }
