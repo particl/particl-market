@@ -36,11 +36,12 @@
     "clean:dist": "./node_modules/.bin/trash './dist'",
     "copy:assets": "npm run copy:swagger && npm run copy:public && npm run copy:env",
     "copy:swagger": "./node_modules/.bin/copyup ./src/api/swagger.json ./dist",
-    "copy:public": "./node_modules/.bin/copyup ./src/public/* ./dist",
+    "copy:public": "./node_modules/.bin/copyup \"public/cli/**\" \"public/favicon.ico\" ./dist",
     "copy:env": "cp .env.dist dist/.env",
     "banner": "npm run ts-node:fast -- ./src/console/lib/banner.ts",
     "ts-node": "./node_modules/.bin/ts-node",
-    "ts-node:fast": "./node_modules/.bin/ts-node -F ./src/app.ts"
+    "ts-node:fast": "./node_modules/.bin/ts-node -F",
+    "ts-node:fast:yarn": "./node_modules/.bin/ts-node -F ./src/app.ts"
   },
   "repository": "git+ssh://git@github.com:particl/particl-market.git",
   "keywords": [
