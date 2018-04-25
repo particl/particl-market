@@ -1,1 +1,0 @@
-{"version":3,"file":"ItemPriceUpdateRequest.js","sourceRoot":"","sources":["../../../src/api/requests/ItemPriceUpdateRequest.ts"],"names":[],"mappings":";;;AAAA,qDAAqD;AACrD,4DAAyD;AACzD,gDAA6C;AAE7C,+BAA+B;AAC/B,4BAAoC,SAAQ,yBAAW;CAetD;AAZG;IADC,4BAAU,EAAE;;sEACyB;AAItC;IAFC,wBAAM,CAAC,mBAAQ,CAAC;IAChB,4BAAU,EAAE;;wDACa;AAG1B;IADC,4BAAU,EAAE;;yDACY;AAV7B,wDAeC;AACD,8BAA8B"}
