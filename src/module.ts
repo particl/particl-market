@@ -34,4 +34,3 @@ exports.start = () => {
     // Launch the server with all his awesome features.
     app.bootstrap();
 };
-

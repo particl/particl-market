@@ -42,17 +42,20 @@
     "ts-node": "./node_modules/.bin/ts-node",
     "ts-node:fast": "./node_modules/.bin/ts-node -F ./src/app.ts"
   },
-  "repository": "git+ssh://git@github.com:particl/dapp-shell.git",
+  "repository": "git+ssh://git@github.com:particl/particl-market.git",
   "keywords": [
     "particl"
   ],
-  "homepage": "https://github.com/particl/dapp-shell#readme",
+  "homepage": "https://github.com/particl/particl-market#readme",
   "contributors": [
     {
       "name": "Juha Kovanen",
       "email": "juha@particl.io",
       "url": "https://github.com/xludx"
     }
+  ],
+  "files": [
+    "dist/**/*"
   ],
   "dependencies": {
     "@types/bluebird": "^3.5.8",

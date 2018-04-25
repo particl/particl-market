@@ -19,7 +19,7 @@ Thumbs.db
 typings/
 
 # Dist #
-# dist/
+dist/
 
 # IDE #
 .idea/
