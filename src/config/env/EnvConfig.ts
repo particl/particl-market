@@ -6,7 +6,6 @@ import { Environment } from '../../core/helpers/Environment';
 
 export class EnvConfig extends Environment {
 
-    public dataDir: DataDir;
     public envFileName = '.env';
 
     public useExpress = true;

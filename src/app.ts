@@ -34,24 +34,13 @@ if (Environment.isProduction()) {
     envConfig = new EnvConfig('./', '.env');
 }
 
-/*
-async function main(): Promise<App> {
-    return new App(envConfig);
+const newApp = new App(envConfig);
+
+if (!Environment.isTest()) {
+    // integration tests will bootstrap the app
+    newApp.configure(new CustomConfig());
+    newApp.bootstrap();
+
 }
 
-main()
-    .then( async (app) => {
-        console.log('bootstrapping app.');
-        await app.bootstrap();
-        console.log('app loaded.');
-    })
-    .catch(console.error);
-*/
-
-export const app = new App(envConfig);
-if (process.env.NODE_ENV !== 'test') {
-    // here you can add more custom configurations
-    app.configure(new CustomConfig());
-    app.bootstrap();
-}
-
+export const app = newApp;

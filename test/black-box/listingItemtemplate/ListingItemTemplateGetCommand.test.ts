@@ -14,7 +14,7 @@ describe('ListingItemTemplateGetCommand', () => {
     const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
         true,   // generateItemInformation
         true,   // generateShippingDestinations
-        true,   // generateItemImages
+        false,   // generateItemImages
         true,   // generatePaymentInformation
         true,   // generateEscrow
         true,   // generateItemPrice

@@ -90,13 +90,14 @@ export class ListingItemFactory {
     // ---------------
     // MODEL
     // ---------------
-    private async getModelListingItemObjects(objects: any): Promise<ListingItemObjectCreateRequest[]> {
+    private async getModelListingItemObjects(objects: any[]): Promise<ListingItemObjectCreateRequest[]> {
         const objectArray: ListingItemObjectCreateRequest[] = [];
+        this.log.debug('objectArray: ', JSON.stringify(objectArray, null, 2));
         for (const object of objects) {
             let objectData;
-            if (object.type === 'TABLE') {
+            if ('TABLE' === object.type) {
                 objectData = await this.getModelObjectDataForTypeTable(object['table']);
-            } else if (object.type === 'DROPDOWN') {
+            } else if ('DROPDOWN' === object.type) {
                 objectData = await this.getModelObjectDataForTypeDropDown(object['options']);
             }
             objectArray.push({
