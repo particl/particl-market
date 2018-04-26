@@ -197,7 +197,7 @@ describe('ListingItemMessage', () => {
         log.debug('listingItemMessage: ', JSON.stringify(marketplaceMessage.item, null, 2));
         log.debug('result.hash: ', JSON.stringify(result.hash, null, 2));
         log.debug('listingItemMessage.hash: ', JSON.stringify(marketplaceMessage.item.hash, null, 2));
-        
+
         expectListingItemFromMessage(result, marketplaceMessage.item);
         expect(result.ListingItemTemplate.Id).toBe(listingItemTemplates[0].Id);
     });

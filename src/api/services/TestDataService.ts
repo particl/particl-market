@@ -201,6 +201,10 @@ export class TestDataService {
                 const generateParams = new GenerateListingItemTemplateParams(body.generateParams);
                 return await this.generateListingItemTemplates(body.amount, body.withRelated, generateParams);
             }
+            case CreatableModel.ACTIONMESSAGE: {
+                const generateParams = new GenerateActionMessageParams(body.generateParams);
+                return await this.generateActionMessages(body.amount, generateParams);
+            }
             case CreatableModel.LISTINGITEM: {
                 const generateParams = new GenerateListingItemParams(body.generateParams);
                 return await this.generateListingItems(body.amount, body.withRelated, generateParams);
@@ -312,7 +316,6 @@ export class TestDataService {
                     market = marketModel.toJSON();
                 }
 
-                // add ActionMessage
                 const generateActionMessageParams = new GenerateActionMessageParams([
                     false,
                     false,

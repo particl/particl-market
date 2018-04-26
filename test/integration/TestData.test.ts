@@ -22,12 +22,14 @@ import { Profile } from '../../src/api/models/Profile';
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 
+import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
 import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
 import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
 import * as resources from 'resources';
 import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
+import {GenerateActionMessageParams} from '../../src/api/requests/params/GenerateActionMessageParams';
 import {GenerateOrderParams} from '../../src/api/requests/params/GenerateOrderParams';
 
 
@@ -251,6 +253,55 @@ describe('TestDataService', () => {
         // tslint:enable:max-line-length
     });
 
+    test('Check generateActionMessages', async () => {
+        await testDataService.clean();
+
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        const defaultProfile: resources.Profile = defaultProfileModel.toJSON();
+
+        const generateActionMessageParams = new GenerateActionMessageParams([
+            true,
+            true,
+            true,
+            ListingItemMessageType.MP_ITEM_ADD,
+            'nonce',
+            true,
+            null,
+            defaultProfile.address,
+            1,
+            'actionmessage',
+            '0xf0afa0dbb1312410adaebccc12320567',
+            'dadadafgagag',
+            'testdatanotsorandommsgidfrom_generateListingItems'
+        ]).toParamsArray();
+
+        const actionMessages = await testDataService.generate({
+            model: CreatableModel.ACTIONMESSAGE,
+            amount: 1,
+            withRelated: false,
+            generateParams: generateActionMessageParams
+        } as TestDataGenerateRequest);
+
+        expect(actionMessages).toHaveLength(1);
+        expect(actionMessages[0].ListingItem()).toBeNull();
+        expect(actionMessages[0].nonce).toBe('nonce');
+        expect(actionMessages[0].action).toBe(ListingItemMessageType.MP_ITEM_ADD);
+        expect(actionMessages[0].MessageInfo().address).toBe(defaultProfile.address);
+        expect(actionMessages[0].MessageInfo().memo).toBe('dadadafgagag');
+        expect(actionMessages[0].MessageInfo().action_message_id).toBe(actionMessages[0].id);
+        expect(actionMessages[0].MessageEscrow().action_message_id).toBe(actionMessages[0].id);
+        expect(actionMessages[0].MessageEscrow().type).toBe('actionmessage');
+        expect(actionMessages[0].MessageEscrow().rawtx).toBe('0xf0afa0dbb1312410adaebccc12320567');
+        expect(actionMessages[0].MessageData().action_message_id).toBe(actionMessages[0].id);
+        expect(actionMessages[0].MessageData().msgid).toBe('testdatanotsorandommsgidfrom_generateListingItems');
+        expect(actionMessages[0].MessageData().version).toBe('0300');
+        expect(actionMessages[0].MessageObjects()).toHaveLength(1);
+        expect(actionMessages[0].MessageObjects()[0].action_message_id).toBe(actionMessages[0].id);
+        expect(actionMessages[0].MessageObjects()[0].data_id).toBe('seller');
+        expect(actionMessages[0].MessageObjects()[0].data_value).toBe(defaultProfile.address);
+    });
+
     test('Should throw error message when passed model is invalid for create', async () => {
         expect.assertions(1);
         const model = 'testmodel';
@@ -419,9 +470,9 @@ describe('TestDataService', () => {
 
 
     const expectGenerateOrder = (orderGenerateParams: GenerateOrderParams, result: resources.Order,
-                               shouldHaveListingItemTemplate: boolean = true,
-                               shouldHaveListingItem: boolean = true,
-                               shouldHaveBid: boolean = true) => {
+                                 shouldHaveListingItemTemplate: boolean = true,
+                                 shouldHaveListingItem: boolean = true,
+                                 shouldHaveBid: boolean = true) => {
 
         log.debug('result: ', JSON.stringify(result, null, 2));
         log.debug('orderGenerateParams: ', JSON.stringify(orderGenerateParams, null, 2));

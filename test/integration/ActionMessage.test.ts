@@ -123,7 +123,7 @@ describe('ActionMessage', () => {
         } catch (e) {
             // expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []));
             expect(true).toEqual(true);
-        };
+        }
     });
 
     test('Should not create a new action message without escrow', async () => {
@@ -137,7 +137,7 @@ describe('ActionMessage', () => {
         } catch (e) {
             // expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []));
             expect(true).toEqual(true);
-        };
+        }
     });
 
     test('Should not create a new action message without data', async () => {
@@ -151,7 +151,7 @@ describe('ActionMessage', () => {
         } catch (e) {
             // expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []));
             expect(true).toEqual(true);
-        };
+        }
     });
 
     test('Should create a new action message', async () => {
