@@ -13,13 +13,34 @@
 import 'reflect-metadata';
 import { App } from './core/App';
 import { CustomConfig } from './config/CustomConfig';
+import { Environment } from './core/helpers/Environment';
+import { EnvConfig } from './config/env/EnvConfig';
+import { DevelopmentEnvConfig } from './config/env/DevelopmentEnvConfig';
+import { TestEnvConfig } from './config/env/TestEnvConfig';
+import { ProductionEnvConfig } from './config/env/ProductionEnvConfig';
 
-export const app = new App();
+let envConfig;
 
-if (process.env.NODE_ENV !== 'test') {
-    // Here you can add more custom configurations
-    app.configure(new CustomConfig());
-    // Launch the server with all his awesome features.
-    app.bootstrap();
+console.log('process.env.NODE_ENV:', process.env.NODE_ENV );
+console.log('Environment.isTest():', Environment.isTest() );
+
+if (Environment.isProduction()) {
+    envConfig = new ProductionEnvConfig();
+} else if (Environment.isDevelopment()) {
+    envConfig = new DevelopmentEnvConfig();
+} else if (Environment.isTest()) {
+    envConfig = new TestEnvConfig('./test', '.env.test');
+} else {
+    envConfig = new EnvConfig('./', '.env');
 }
 
+const newApp = new App(envConfig);
+
+if (!Environment.isTest()) {
+    // integration tests will bootstrap the app
+    newApp.configure(new CustomConfig());
+    newApp.bootstrap();
+
+}
+
+export const app = newApp;

@@ -38,14 +38,18 @@ export class ImageFactory {
             throw new MessageException('image data was empty.');
         }
         let originalData: string;
+        let startTime = new Date().getTime();
         try {
             originalData = await ImageProcessing.convertToJPEG(originalImageData.data);
+            this.log.debug('ImageProcessing.convertToJPEG: ' + (new Date().getTime() - startTime) + 'ms');
         } catch ( ex ) {
             throw ex;
         }
         // this.log.debug('originalData: ', originalData);
-
+        startTime = new Date().getTime();
         const resizedDatas: Map<string, string> = await ImageProcessing.resizeImageData(originalData, toVersions);
+        this.log.debug('ImageProcessing.resizeImageData: ' + (new Date().getTime() - startTime) + 'ms');
+
         // this.log.debug('resizedDatas: ', resizedDatas);
 
         const imageDatas: ItemImageDataCreateRequest[] = [];

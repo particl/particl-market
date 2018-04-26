@@ -17,7 +17,7 @@ export class TestUtil {
         this.log = new LoggerType(__filename);
     }
 
-    public async bootstrapAppContainer(app: any): boolean {
+    public async bootstrapAppContainer(app: any): Promise<void> {
 
         const emitter = await app.bootstrap();
         this.serverStartedListener = app.IoC.getNamed<ServerStartedListener>(Types.Listener, Targets.Listener.ServerStartedListener);
@@ -28,7 +28,7 @@ export class TestUtil {
         await this.waitForServerStarted();
     }
 
-    private async isServerStarted(): boolean {
+    private async isServerStarted(): Promise<boolean> {
         // if (this.serverStartedListener.isStarted === false) {
         if (this.serverStarted === false) {
             throw Error('Not started.');

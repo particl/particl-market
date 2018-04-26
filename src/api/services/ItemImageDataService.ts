@@ -39,6 +39,8 @@ export class ItemImageDataService {
 
     @validate()
     public async create( @request(ItemImageDataCreateRequest) body: ItemImageDataCreateRequest): Promise<ItemImageData> {
+        const startTime = new Date().getTime();
+
         if (body.dataId == null && body.protocol == null && body.encoding == null && body.data == null ) {
             throw new ValidationException('Request body is not valid', ['dataId, protocol, encoding and data cannot all be null']);
         }
@@ -48,6 +50,7 @@ export class ItemImageDataService {
 
         // finally find and return the created itemImageData
         const newItemImageData = await this.findOne(itemImageData.Id);
+        this.log.debug('itemImageDataService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return newItemImageData;
     }
 

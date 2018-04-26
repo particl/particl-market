@@ -54,6 +54,7 @@ export class ActionMessageService {
 
     @validate()
     public async create( @request(ActionMessageCreateRequest) data: ActionMessageCreateRequest): Promise<ActionMessage> {
+        const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ActionMessage, body: ', JSON.stringify(body, null, 2));
@@ -108,6 +109,8 @@ export class ActionMessageService {
         actionMessageModel = await this.findOne(actionMessage.id);
         actionMessage = actionMessageModel.toJSON();
         // this.log.debug('created actionMessage: ', JSON.stringify(actionMessage, null, 2));
+        this.log.debug('actionMessageService.create: ' + (new Date().getTime() - startTime) + 'ms');
+
         return actionMessageModel;
     }
 
