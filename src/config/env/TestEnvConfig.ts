@@ -1,5 +1,6 @@
 import * as _ from 'lodash';
 import { EnvConfig } from './EnvConfig';
+import {Environment} from '../../core/helpers/Environment';
 
 export class TestEnvConfig extends EnvConfig {
 
@@ -9,8 +10,8 @@ export class TestEnvConfig extends EnvConfig {
             envFileName || '.env.test'
         );
 
-        this.useExpress = false;
-        this.useSocketIO = false;
+        Environment.useExpress = false;
+        Environment.useSocketIO = false;
     }
 
 }

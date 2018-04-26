@@ -36,8 +36,7 @@ coverage/
 
 test/testdata/test.json
 
-data/marketplace.db*
-data/marketplace-test.db*
+data/database/*
 data/particl1
 data/particl2
 data/app1

@@ -13,7 +13,6 @@ import { DataDir } from '../core/helpers/DataDir';
 import * as knex from 'knex';
 import * as bookshelf from 'bookshelf';
 
-
 export const DatabaseConfig = {
     client: process.env.DB_CLIENT || 'sqlite3',
     connection: process.env.DB_CONNECTION || DataDir.getDatabaseFile(),

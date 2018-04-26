@@ -15,6 +15,9 @@ export enum EnvironmentType {
 
 export class Environment {
 
+    public static useExpress = true;
+    public static useSocketIO = true;
+
     public static getNodeEnv(): string {
         return process.env.NODE_ENV || EnvironmentType.DEFAULT.toString();
     }
