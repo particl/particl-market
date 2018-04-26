@@ -357,6 +357,7 @@ export class TestDataService {
         generateParams: GenerateListingItemParams):
     Promise<resources.ListingItem[]> {
 
+        this.log.debug('generateListingItems start');
         const items: resources.ListingItem[] = [];
         for (let i = amount; i > 0; i--) {
 
@@ -384,7 +385,9 @@ export class TestDataService {
                 }
             }];
 
+            this.log.debug('create listingitem start');
             const savedListingItemModel = await this.listingItemService.create(listingItemCreateRequest);
+            this.log.debug('create listingitem end');
 
             // this.log.debug('savedListingItem: ', savedListingItem.toJSON());
             const result = savedListingItemModel.toJSON();
@@ -392,6 +395,8 @@ export class TestDataService {
 
         }
         // this.log.debug('items: ', items);
+
+        this.log.debug('generateListingItems end');
 
         return await this.generateResponse(items, withRelated);
     }
