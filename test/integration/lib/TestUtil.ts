@@ -1,4 +1,3 @@
-
 import { Logger as LoggerType} from '../../../src/core/Logger';
 import { Types, Core, Targets } from '../../../src/constants';
 import { EventEmitter } from '../../../src/core/api/events';

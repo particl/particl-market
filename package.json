@@ -5,7 +5,7 @@
   "main": "dist/module.js",
   "scripts": {
     "setup": "yarn install && npm run banner setup && npm run db:migrate && npm run db:seed",
-    "serve": "npm run banner serve && NODE_ENV=development \"./node_modules/.bin/nodemon\" --watch src --watch .env",
+    "serve": "npm run banner serve && NODE_ENV=development \"./node_modules/.bin/nodemon\" --watch src --watch .env -- ./src/app.ts",
     "build": "npm run banner build && npm run lint && npm run clean:dist && npm run transpile && npm run copy:assets",
     "start": "node dist/app.js",
     "pretest": "./node_modules/.bin/tslint -c ./tslint.json -t stylish './test/unit/**/*.ts'",
@@ -36,11 +36,11 @@
     "clean:dist": "./node_modules/.bin/trash './dist'",
     "copy:assets": "npm run copy:swagger && npm run copy:public && npm run copy:env",
     "copy:swagger": "./node_modules/.bin/copyup ./src/api/swagger.json ./dist",
-    "copy:public": "./node_modules/.bin/copyup ./src/public/* ./dist",
+    "copy:public": "./node_modules/.bin/copyup \"public/cli/**\" \"public/favicon.ico\" ./dist/public",
     "copy:env": "cp .env.dist dist/.env",
     "banner": "npm run ts-node:fast -- ./src/console/lib/banner.ts",
     "ts-node": "./node_modules/.bin/ts-node",
-    "ts-node:fast": "./node_modules/.bin/ts-node -F ./src/app.ts"
+    "ts-node:fast": "./node_modules/.bin/ts-node -F"
   },
   "repository": "git+ssh://git@github.com:particl/particl-market.git",
   "keywords": [

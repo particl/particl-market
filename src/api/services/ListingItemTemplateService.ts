@@ -92,6 +92,8 @@ export class ListingItemTemplateService {
     public async create( @request(ListingItemTemplateCreateRequest) data: ListingItemTemplateCreateRequest,
                          timestampedHash: boolean = false): Promise<ListingItemTemplate> {
 
+        // TODO: need to add transactions and rollback in case of failure
+
         const body = JSON.parse(JSON.stringify(data));
 
         body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST, timestampedHash);

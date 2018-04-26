@@ -5,7 +5,8 @@ export class DevelopmentEnvConfig extends EnvConfig {
 
     constructor(dataDirLocation?: string) {
         super(
-            dataDirLocation || './'
+            dataDirLocation || './data',
+            '.env'
         );
     }
 

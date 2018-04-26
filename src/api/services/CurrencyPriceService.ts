@@ -109,8 +109,7 @@ export class CurrencyPriceService {
                 throw new MessageException(`Invalid currency ${toCurrency}`);
             }
         }
-        this.log.debug('currencyData: ', returnData);
-        // return all currency prices
+        // this.log.debug('currencyData: ', returnData);
         return returnData;
     }
 

@@ -1,16 +1,13 @@
 import { rpc, api } from '../lib/api';
-import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
-import { PaymentType } from '../../src/api/enums/PaymentType';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { CreatableModel } from '../../src/api/enums/CreatableModel';
-import { Commands } from '../../src/api/commands/CommandEnumType';
-import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
-import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
-import {ItemImageDataUpdateRequest} from '../../src/api/requests/ItemImageDataUpdateRequest';
+import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
+import { ImageVersions } from '../../../src/core/helpers/ImageVersionEnumType';
 import * as Jimp from 'jimp';
-import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import {ListingItemTemplate} from '../../src/api/models/ListingItemTemplate';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
 
 describe('ItemImageAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();

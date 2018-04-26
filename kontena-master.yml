@@ -77,7 +77,7 @@ services:
       - MONITOR_ENABLED=true
       - MONITOR_ROUTE=/status
       - DB_CLIENT=sqlite3
-      - DB_CONNECTION=/app/data/marketplace.db
+      - DB_CONNECTION=/app/data/database/marketplace.db
       - DB_POOL_MIN=2
       - DB_POOL_MAX=10
       - DB_MIGRATION_DIR=/app/src/database/migrations
@@ -124,7 +124,7 @@ services:
       - MONITOR_ENABLED=true
       - MONITOR_ROUTE=/status
       - DB_CLIENT=sqlite3
-      - DB_CONNECTION=/app/data/marketplace.db
+      - DB_CONNECTION=/app/data/database/marketplace.db
       - DB_POOL_MIN=2
       - DB_POOL_MAX=10
       - DB_MIGRATION_DIR=/app/src/database/migrations

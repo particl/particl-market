@@ -1,11 +1,8 @@
-import { inject, named } from 'inversify';
 import { Environment } from '../../core/helpers/Environment';
-import { migrate } from '../../database/migrate';
 
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
-import { dirname } from 'path';
 
 
 /**
@@ -66,7 +63,7 @@ export class DataDir {
     }
 
     public static getDatabasePath(): string {
-        return path.join(this.getDataDirPath(), 'data');
+        return path.join(this.getDataDirPath(), 'database');
     }
 
     public static getDatabaseFile(): string {
@@ -76,10 +73,10 @@ export class DataDir {
     public static checkIfExists(dir: string): boolean {
         try {
             fs.accessSync(dir, fs.constants.R_OK);
-            console.log('Found particl-market path', dir);
+            // console.log('found:', dir);
             return true;
         } catch (err) {
-            console.error('Could not find particl-market path!', dir);
+            console.error('Could not find path:', dir);
         }
         return false;
     }

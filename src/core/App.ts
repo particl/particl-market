@@ -1,6 +1,4 @@
 import * as express from 'express';
-import * as dotenv from 'dotenv';
-import * as path from 'path';
 import { Container } from 'inversify';
 import { InversifyExpressServer } from 'inversify-express-utils';
 import { Logger } from './Logger';
@@ -15,6 +13,7 @@ import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
 import { SocketIoServer } from './SocketIoServer';
 import { EnvConfig } from '../config/env/EnvConfig';
 import { ProductionEnvConfig } from '../config/env/ProductionEnvConfig';
+import { Environment } from './helpers/Environment';
 
 
 export interface Configurable {
@@ -29,7 +28,7 @@ export class App {
     private inversifyExpressServer: InversifyExpressServer;
     private ioc: IoC = new IoC();
     private log: Logger = new Logger(__filename);
-    private bootstrapApp = new Bootstrap();
+    private bootstrapApp: Bootstrap;
     private configurations: Configurable[] = [];
     private envConfig: EnvConfig;
 
@@ -37,14 +36,13 @@ export class App {
 
         // if envConfig isn't given, use ProductionEnvConfig
         this.envConfig = !envConfig ? new ProductionEnvConfig() : envConfig;
+        this.bootstrapApp = new Bootstrap(this.envConfig);
 
         // Configure the logger, because we need it already.
         const loggerConfig = new LoggerConfig();
         loggerConfig.configure();
 
-        this.log.info('NODE_ENV: ' + process.env.NODE_ENV);
-
-        if (this.envConfig.useExpress) {
+        if (Environment.useExpress) {
             this.log.info('Defining app...');
             this.bootstrapApp.defineExpressApp(this.express);
         }
@@ -78,7 +76,7 @@ export class App {
     public async bootstrap(): Promise<any> {
         this.log.info('Configuring app...');
 
-        if (this.envConfig.useExpress) {
+        if (Environment.useExpress) {
             // Add express monitor app
             this.bootstrapApp.setupMonitor(this.express);
             // Configure the app config for all the middlewares
@@ -92,7 +90,7 @@ export class App {
         this.log.info('Binding IoC modules...');
         await this.ioc.bindModules();
 
-        if (this.envConfig.useExpress) {
+        if (Environment.useExpress) {
             this.log.info('Setting up IoC...');
             this.inversifyExpressServer = this.bootstrapApp.setupInversifyExpressServer(this.express, this.ioc);
             this.express = this.bootstrapApp.bindInversifyExpressServer(this.express, this.inversifyExpressServer);
@@ -103,7 +101,7 @@ export class App {
             this.server.use(this.express);
         }
 
-        if (this.envConfig.useSocketIO) {
+        if (Environment.useSocketIO) {
             // create our socketioserver
             this.socketIoServer = this.bootstrapApp.createSocketIoServer(this.server, this.ioc);
         }
