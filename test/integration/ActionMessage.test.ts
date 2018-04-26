@@ -116,7 +116,6 @@ describe('ActionMessage', () => {
         //
     });
 
-
     test('Should create a new action message', async () => {
 
         testData.listing_item_id = createdListingItem.id;
