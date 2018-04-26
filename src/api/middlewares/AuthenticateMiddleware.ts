@@ -18,19 +18,24 @@ export class AuthenticateMiddleware implements interfaces.Middleware {
     }
 
     public use = (req: myExpress.Request, res: myExpress.Response, next: myExpress.NextFunction): void => {
-        if (req.headers.authorization && req.headers.authorization.search('Basic ') === 0) {
-            const authentication = new Buffer(req.headers.authorization.split(' ')[1], 'base64').toString();
 
-            // this.log.debug('auth:' + authentication + '===' + process.env.MARKET_RPC_USER + ':' + process.env.MARKET_RPC_PASSWORD);
-            // this.log.debug('auth:' + authentication + '===' + process.env.MARKET_RPC_USER + ':' + process.env.MARKET_RPC_PASSWORD);
+        if (true === process.env.MARKET_RPC_AUTH_DISABLED) {
+            return next();
+        } else {
+            if (req.headers.authorization && req.headers.authorization.search('Basic ') === 0) {
+                const authentication = new Buffer(req.headers.authorization.split(' ')[1], 'base64').toString();
 
-            if ( authentication === process.env.MARKET_RPC_USER + ':' + process.env.MARKET_RPC_PASSWORD) {
-                return next();
+                // this.log.debug('auth:' + authentication + '===' + process.env.MARKET_RPC_USER + ':' + process.env.MARKET_RPC_PASSWORD);
+                // this.log.debug('auth:' + authentication + '===' + process.env.MARKET_RPC_USER + ':' + process.env.MARKET_RPC_PASSWORD);
+
+                if (authentication === process.env.MARKET_RPC_USER + ':' + process.env.MARKET_RPC_PASSWORD) {
+                    return next();
+                } else {
+                    return res.failed(401, 'You are not allowed to request this resource!');
+                }
             } else {
                 return res.failed(401, 'You are not allowed to request this resource!');
             }
-        } else {
-            return res.failed(401, 'You are not allowed to request this resource!');
         }
     }
 }
