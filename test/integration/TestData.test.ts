@@ -22,17 +22,13 @@ import { Profile } from '../../src/api/models/Profile';
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 
-import { ListingItemMessageType } from '../src/api/enums/ListingItemMessageType';
+import { ListingItemMessageType } from '../../src/api/enums/ListingItemMessageType';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
-import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
-import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
 import * as resources from 'resources';
-import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
-import {GenerateActionMessageParams} from '../../src/api/requests/params/GenerateActionMessageParams';
-import {GenerateOrderParams} from '../../src/api/requests/params/GenerateOrderParams';
-import {OrderStatus} from '../../src/api/enums/OrderStatus';
-
+import { OrderStatus } from '../../src/api/enums/OrderStatus';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { GenerateActionMessageParams } from '../../src/api/requests/params/GenerateActionMessageParams';
+import { GenerateOrderParams } from '../../src/api/requests/params/GenerateOrderParams'
 
 describe('TestDataService', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
