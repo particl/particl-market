@@ -33,6 +33,9 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Profile> {
+        if (data.params.length < 1) {
+            throw new MessageException('Requires profile name arg.');
+        }
         const profile = await this.profileService.findOneByName(data.params[0]);
         // check if profile already exist for the given name
         if (profile !== null) {
