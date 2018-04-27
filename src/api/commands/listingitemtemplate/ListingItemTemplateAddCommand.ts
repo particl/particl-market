@@ -10,6 +10,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -46,16 +47,19 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
-        let body;
-        if (data.params[1] && data.params[2] && data.params[3] && data.params[4]) {
-            let cryptocurrencyAddress = {};
+
+        if (data.params.length >= 9) {
+
+            let cryptocurrencyAddress;
+
             if (data.params[10]) {
                 cryptocurrencyAddress = {
                     type: CryptocurrencyAddressType.NORMAL,
                     address: data.params[10]
                 };
             }
-            body = {
+
+            const body = {
                 profile_id: data.params[0],
                 itemInformation: {
                     title: data.params[1],
@@ -78,12 +82,11 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
                     }
                 }
             };
+            return await this.listingItemTemplateService.create(body as ListingItemTemplateCreateRequest);
+
         } else {
-            body = {
-                profile_id: data.params[0]
-            };
+            throw new MessageException('Not enough params.');
         }
-        return await this.listingItemTemplateService.create(body as ListingItemTemplateCreateRequest);
     }
 
     public usage(): string {
