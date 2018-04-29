@@ -24,7 +24,7 @@ let envConfig;
 
 console.log('process.env.NODE_ENV:', process.env.NODE_ENV );
 
-if (Environment.isProduction()) {
+if (Environment.isProduction() || Environment.isAlpha()) {
     envConfig = new ProductionEnvConfig();
 } else if (Environment.isDevelopment()) {
     envConfig = new DevelopmentEnvConfig();

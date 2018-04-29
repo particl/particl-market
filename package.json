@@ -5,7 +5,7 @@
   "main": "dist/module.js",
   "scripts": {
     "setup": "yarn install && npm run banner setup && npm run db:migrate && npm run db:seed",
-    "serve": "npm run banner serve && NODE_ENV=development \"./node_modules/.bin/nodemon\" --watch src --watch .env -- ./src/app.ts",
+    "serve": "npm run banner serve && NODE_ENV=alpha \"./node_modules/.bin/nodemon\" --watch src --watch .env -- ./src/app.ts",
     "build": "npm run banner build && npm run lint && npm run clean:dist && npm run transpile && npm run copy:assets",
     "start": "node dist/app.js",
     "pretest": "./node_modules/.bin/tslint -c ./tslint.json -t stylish './test/unit/**/*.ts'",

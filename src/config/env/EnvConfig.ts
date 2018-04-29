@@ -15,8 +15,6 @@ export class EnvConfig {
         APP_HOST: 'http://localhost',
         APP_URL_PREFIX: '/api',
         APP_PORT: 3000,
-        RPCUSER: 'test',
-        RPCPASSWORD: 'test',
         RPCHOSTNAME: 'localhost',
         MAINNET_PORT: 51738,
         TESTNET_PORT: 51935,
