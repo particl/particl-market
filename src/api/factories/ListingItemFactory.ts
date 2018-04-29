@@ -1,4 +1,5 @@
 import { inject, named } from 'inversify';
+import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
@@ -22,7 +23,7 @@ import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCre
 import { ListingItemObjectDataCreateRequest } from '../requests/ListingItemObjectDataCreateRequest';
 import { MessagingProtocolType } from '../enums/MessagingProtocolType';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
-import {ItemLocationCreateRequest} from '../requests/ItemLocationCreateRequest';
+import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
 
 export class ListingItemFactory {
 
@@ -410,20 +411,26 @@ export class ListingItemFactory {
     }
 
     private async getMessageCryptoCurrency(itemPrice: resources.ItemPrice): Promise<object> {
-        return [
-            {
-                currency: itemPrice.currency,
-                base_price: itemPrice.basePrice,
-                shipping_price: {
-                    domestic: itemPrice.ShippingPrice.domestic,
-                    international: itemPrice.ShippingPrice.international
-                },
-                address: {
-                    type: itemPrice.CryptocurrencyAddress.type,
-                    address: itemPrice.CryptocurrencyAddress.address
-                }
-            }
-        ];
+
+        let address;
+
+        // not using CryptocurrencyAddress in alpha
+        if (!_.isEmpty(itemPrice.CryptocurrencyAddress)) {
+            address = {
+                type: itemPrice.CryptocurrencyAddress.type,
+                address: itemPrice.CryptocurrencyAddress.address
+            };
+        }
+
+        return [{
+            currency: itemPrice.currency,
+            base_price: itemPrice.basePrice,
+            shipping_price: {
+                domestic: itemPrice.ShippingPrice.domestic,
+                international: itemPrice.ShippingPrice.international
+            },
+            address
+        }];
     }
 
     private async getMessageMessaging(messagingInformation: resources.MessagingInformation[]): Promise<object[]> {

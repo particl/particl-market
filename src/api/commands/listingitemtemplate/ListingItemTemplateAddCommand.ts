@@ -10,7 +10,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { CryptocurrencyAddressType } from '../../enums/CryptocurrencyAddressType';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCommandInterface<ListingItemTemplate> {
 
@@ -81,9 +81,9 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
                         cryptocurrencyAddress
                     }
                 }
-            };
-            return await this.listingItemTemplateService.create(body as ListingItemTemplateCreateRequest);
+            } as ListingItemTemplateCreateRequest;
 
+            return await this.listingItemTemplateService.create(body);
         } else {
             throw new MessageException('Not enough params.');
         }
