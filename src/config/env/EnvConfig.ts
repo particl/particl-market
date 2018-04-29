@@ -38,12 +38,9 @@ export class EnvConfig {
         MONITOR_ENABLED: true,
         MONITOR_ROUTE: '/status',
         DB_CLIENT: 'sqlite3',
-        DB_CONNECTION: './data/database/marketplace.db',
         DB_POOL_MIN: 2,
         DB_POOL_MAX: 10,
-        DB_MIGRATION_DIR: './src/database/migrations',
         DB_MIGRATION_TABLE: 'version',
-        DB_SEEDS_DIR: './src/database/seeds',
         DATA_CHECK_DELAY: 60,
         CHASING_COINS_API: 'https://chasing-coins.com/api/v1/convert',
         CHASING_COINS_API_DELAY: 60
