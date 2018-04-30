@@ -379,6 +379,10 @@ export class CoreRpcService {
     }
 
     private getUrl(): string {
+        // this.log.debug('Environment.isTestnet():', Environment.isTestnet());
+        // this.log.debug('Environment.isAlpha():', Environment.isAlpha());
+        // this.log.debug('process.env.TESTNET:', process.env.TESTNET);
+
         const host = (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.DEFAULT_HOSTNAME);
         const port = (Environment.isTestnet() ?
             (process.env.TESTNET_PORT ? process.env.TESTNET_PORT : this.DEFAULT_TESTNET_PORT) :
