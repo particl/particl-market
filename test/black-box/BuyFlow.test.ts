@@ -78,7 +78,7 @@ describe('Happy BuyFlow', () => {
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
-            true,   // generateItemImages
+            false,   // generateItemImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
@@ -179,7 +179,8 @@ describe('Happy BuyFlow', () => {
         // -> meaning item hash was matched with the existing template hash
         const result: resources.ListingItem = itemGetRes.getBody()['result'];
 
-        log.debug('ListingItem on seller node1: ', result);
+        delete result.ItemInformation.ItemImages;
+        log.debug('ListingItem on seller node1: ', JSON.stringify(result, null, 2));
         expect(result.hash).toBe(listingItemTemplatesNode1[0].hash);
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplatesNode1[0].hash);
 
