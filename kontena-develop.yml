@@ -60,6 +60,7 @@ services:
       - APP_HOST=http://dev1.particl.xyz
       - APP_URL_PREFIX=/api
       - APP_PORT=3333
+      - TESTNET=true
       - RPCUSER=test
       - RPCPASSWORD=test
       - RPCHOSTNAME=particld1
@@ -109,6 +110,7 @@ services:
       - APP_HOST=http://dev2.particl.xyz
       - APP_URL_PREFIX=/api
       - APP_PORT=3333
+      - TESTNET=true
       - RPCUSER=test
       - RPCPASSWORD=test
       - RPCHOSTNAME=particld2

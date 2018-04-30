@@ -380,7 +380,7 @@ export class CoreRpcService {
 
     private getUrl(): string {
         const host = (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.DEFAULT_HOSTNAME);
-        const port = (Environment.isDevelopment() || Environment.isTest() ?
+        const port = (Environment.isTestnet() ?
             (process.env.TESTNET_PORT ? process.env.TESTNET_PORT : this.DEFAULT_TESTNET_PORT) :
             (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT));
         return 'http://' + host + ':' + port;

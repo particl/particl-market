@@ -9,6 +9,7 @@ export enum EnvironmentType {
     ALL = 'ALL',
     PRODUCTION = 'PRODUCTION',
     TEST = 'TEST',
+    ALPHA = 'ALPHA',
     DEVELOPMENT = 'DEVELOPMENT',
     DEFAULT = DEVELOPMENT
 }
@@ -44,6 +45,18 @@ export class Environment {
             return nodeEnv.toUpperCase() === EnvironmentType.PRODUCTION.toString();
         }
         return false;
+    }
+
+    public static isAlpha(): boolean {
+        const nodeEnv = this.getNodeEnv();
+        if ( nodeEnv ) {
+            return nodeEnv.toUpperCase() === EnvironmentType.ALPHA.toString();
+        }
+        return false;
+    }
+
+    public static isTestnet(): boolean {
+        return process.env.TESTNET === true || this.isAlpha();
     }
 
     public static isTruthy(bool: string): boolean {
