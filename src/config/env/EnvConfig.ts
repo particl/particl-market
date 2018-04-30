@@ -18,6 +18,7 @@ export class EnvConfig {
         RPCHOSTNAME: 'localhost',
         MAINNET_PORT: 51738,
         TESTNET_PORT: 51935,
+        TESTNET: true,
         JASMINE_TIMEOUT: 100000,
         DEFAULT_MARKETPLACE_NAME: 'DEFAULT',
         DEFAULT_MARKETPLACE_PRIVATE_KEY: '2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek',
