@@ -33,7 +33,7 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
                     json: Environment.isProduction(),
                     maxsize: 52428800, // 50MB
                     maxFiles: 5,
-                    colorize: false,
+                    colorize: false
                 })
             ],
             exitOnError: false
