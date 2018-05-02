@@ -82,7 +82,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ../particl-desktop/:/app/
-      - ./data/gui1_node_modules:/app/node_modules
+      - ./data/gui2_node_modules:/app/node_modules
     ports:
       - 4400:4200
     command: bin/entrypoint.sh
