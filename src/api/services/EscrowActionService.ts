@@ -394,6 +394,7 @@ export class EscrowActionService {
         const bid: resources.Bid = orderItem.Bid;
         const isMyListingItem = !_.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
 
+        this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
         // rawtx is potentially the txid in case of ESCROW_LOCKED.
         let rawtx = this.getValueFromOrderItemObjects('rawtx', orderItem.OrderItemObjects);
         let pubkeys = this.getValueFromOrderItemObjects('pubkeys', orderItem.OrderItemObjects);

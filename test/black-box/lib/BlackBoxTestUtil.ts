@@ -145,6 +145,7 @@ export class BlackBoxTestUtil {
 
     public async waitFor(maxSeconds: number): Promise<boolean> {
         for (let i = 0; i < maxSeconds; i++) {
+            this.log.debug('waiting... ');
             await this.waitTimeOut(1000);
         }
         return true;
@@ -221,7 +222,7 @@ export class BlackBoxTestUtil {
                     return response;
                 }
             } else {
-                this.log.debug('confusion! not expecting this: ', response);
+                this.log.debug('wtf?! not expecting this: ', response);
             }
 
             // try again

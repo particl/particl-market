@@ -93,7 +93,7 @@ export class BidActionService {
             mpaction: bidMessage
         } as MarketplaceMessage;
 
-        this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
+        this.log.debug('send(), marketPlaceMessage: ', JSON.stringify(marketPlaceMessage, null, 2));
 
         // save bid locally before broadcasting
         const createdBid = await this.createBid(bidMessage, listingItem, bidderProfile.address);

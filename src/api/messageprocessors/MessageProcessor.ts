@@ -8,7 +8,6 @@ import { SmsgService } from '../services/SmsgService';
 
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { ListingItemService } from '../services/ListingItemService';
 import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { BidMessageType } from '../enums/BidMessageType';
 import { EscrowMessageType } from '../enums/EscrowMessageType';
@@ -43,7 +42,24 @@ export class MessageProcessor implements MessageProcessorInterface {
     public async process(messages: SmsgMessage[]): Promise<void> {
 
         for (const message of messages) {
-            const parsed: MarketplaceMessage | null = await this.parseJSONSafe(message.text);
+            this.log.debug('message.text:', JSON.stringify(message.text, null, 2));
+
+            this.log.debug('typeof message.text', typeof message.text);
+
+            let parsed: MarketplaceMessage | any;
+
+            parsed = await this.parseJSONSafe(message.text)
+                .then(value => {
+                    return value;
+                })
+                .catch(reason => {
+                    this.log.debug('parse error:' + reason);
+                    return null;
+                });
+
+            // const parsed: MarketplaceMessage = JSON.parse(message.text);
+            // this.log.debug('parsed:', parsed);
+
             delete message.text;
 
             if (parsed) {
@@ -77,8 +93,7 @@ export class MessageProcessor implements MessageProcessorInterface {
 
                 // in case of ActionMessage, which is either BidMessage or EscrowMessage
                 } else if (parsed.mpaction) {
-
-                    const messageForLogging = JSON.parse(JSON.stringify(parsed.item));
+                    const messageForLogging = JSON.parse(JSON.stringify(parsed.mpaction));
                     this.log.debug('==] poll(), new ActionMessage [===============================================');
                     this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
                     this.log.debug('from:', message.from);
@@ -141,10 +156,10 @@ export class MessageProcessor implements MessageProcessorInterface {
                 return;
             })
             .catch( reason => {
-                this.log.error('poll(), error:', reason);
-                this.eventEmitter.emit('cli', {
-                    message: 'poll(), error' + reason
-                });
+                this.log.error('poll(), error:' + reason);
+                // this.eventEmitter.emit('cli', {
+                //    message: 'poll(), error' + reason
+                // });
                 return;
             });
     }
@@ -158,9 +173,11 @@ export class MessageProcessor implements MessageProcessorInterface {
     private async parseJSONSafe(json: string): Promise<MarketplaceMessage|null> {
         let parsed = null;
         try {
+           // this.log.debug('json to parse:', json);
             parsed = JSON.parse(json);
         } catch (e) {
-            this.log.error('parseJSONSafe, invalid JSON:', json);
+            this.log.debug('parseJSONSafe, invalid JSON:', json);
+            return null;
         }
         return parsed;
     }

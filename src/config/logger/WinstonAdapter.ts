@@ -25,6 +25,15 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
                     handleExceptions: Environment.isProduction(),
                     json: Environment.isProduction(),
                     colorize: !Environment.isProduction()
+                }),
+                new winston.transports.File({
+                    level: process.env.LOG_LEVEL,
+                    filename: './data/marketplace.log',
+                    handleExceptions: Environment.isProduction(),
+                    json: Environment.isProduction(),
+                    maxsize: 52428800, // 50MB
+                    maxFiles: 5,
+                    colorize: false,
                 })
             ],
             exitOnError: false
