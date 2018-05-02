@@ -57,8 +57,8 @@ describe('Happy BuyFlow', () => {
     beforeAll(async () => {
 
         // await testUtilNode0.cleanDb();
-        await testUtilNode1.cleanDb();
-        await testUtilNode2.cleanDb();
+        // await testUtilNode1.cleanDb();
+        // await testUtilNode2.cleanDb();
 
         // get seller and buyer profiles
         sellerProfile = await testUtilNode1.getDefaultProfile();
@@ -193,7 +193,7 @@ describe('Happy BuyFlow', () => {
     test('Should send BidMessage (MPA_BID) for the ListingItem from bidders node2 to the sellers node1', async () => {
 
         // wait a bit more to make sure the item was fully saved
-        testUtilNode2.waitFor(15);
+        await testUtilNode2.waitFor(15);
 
         const bidSendCommandParams = [
             bidSendCommand,
@@ -295,7 +295,7 @@ describe('Happy BuyFlow', () => {
 
     test('Should send BidMessage (MPA_ACCEPT) from sellers node1 to the bidders node2 and create an Order', async () => {
 
-        testUtilNode1.waitFor(5);
+        await testUtilNode1.waitFor(5);
 
         const bidAcceptCommandParams = [
             bidAcceptCommand,
@@ -419,7 +419,7 @@ describe('Happy BuyFlow', () => {
 
     test('Should be able to find the Order OrderStatus.AWAITING_ESCROW from buyers node2 after receiving the BidMessage (MPA_ACCEPT)', async () => {
 
-        testUtilNode2.waitFor(5);
+        await testUtilNode2.waitFor(5);
 
         const orderSearchCommandParams = [
             orderSearchCommand,
@@ -478,7 +478,7 @@ describe('Happy BuyFlow', () => {
 
     test('Should be able to find the Order with OrderStatus.ESCROW_LOCKED from buyers node2 after sending the EscrowMessage (MPA_LOCK)', async () => {
 
-        testUtilNode2.waitFor(5);
+        await testUtilNode2.waitFor(5);
 
         const orderSearchCommandParams = [
             orderSearchCommand,
@@ -541,7 +541,7 @@ describe('Happy BuyFlow', () => {
 
     test('Should send EscrowMessage (MPA_RELEASE) from sellers node1 to the buyers node2 indicating that the item has been sent', async () => {
 
-        testUtilNode1.waitFor(5);
+        await testUtilNode1.waitFor(5);
 
         const escrowReleaseCommandParams = [
             escrowReleaseCommand,
@@ -570,7 +570,7 @@ describe('Happy BuyFlow', () => {
 
     test('Should be able to find the Order with OrderStatus.SHIPPING from sellers node1 after posting the EscrowMessage (MPA_RELEASE)', async () => {
 
-        testUtilNode2.waitFor(5);
+        await testUtilNode2.waitFor(5);
 
         const orderSearchCommandParams = [
             orderSearchCommand,
@@ -633,7 +633,7 @@ describe('Happy BuyFlow', () => {
 
     test('Should send EscrowMessage (MPA_RELEASE) from buyers node2 to the sellers node1 indicating that the item has been received', async () => {
 
-        testUtilNode2.waitFor(5);
+        await testUtilNode2.waitFor(5);
 
         const escrowReleaseCommandParams = [
             escrowReleaseCommand,
@@ -662,7 +662,7 @@ describe('Happy BuyFlow', () => {
 
     test('Should be able to find the Order with OrderStatus.COMPLETE from buyers node2 after posting the EscrowMessage (MPA_RELEASE)', async () => {
 
-        testUtilNode2.waitFor(5);
+        await testUtilNode2.waitFor(5);
 
         const orderSearchCommandParams = [
             orderSearchCommand,
