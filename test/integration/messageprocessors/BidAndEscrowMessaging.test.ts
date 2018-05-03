@@ -19,8 +19,6 @@ import { TestDataCreateRequest } from '../../../src/api/requests/TestDataCreateR
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { BidMessage } from '../../../src/api/messages/BidMessage';
 
-import * as bidSmsg1 from '../../testdata/message/smsgMessageWithBidMessage1.json';
-
 import * as resources from 'resources';
 
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';

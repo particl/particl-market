@@ -9,7 +9,7 @@ import * as resources from 'resources';
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
-import {ImageDataProtocolType} from "../../src/api/enums/ImageDataProtocolType";
+import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 // tslint:enable:max-line-length
 
 describe('Happy BuyFlow', () => {
