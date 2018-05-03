@@ -44,10 +44,7 @@ export class MessageProcessor implements MessageProcessorInterface {
         for (const message of messages) {
             this.log.debug('message.text:', JSON.stringify(message.text, null, 2));
 
-            this.log.debug('typeof message.text', typeof message.text);
-
             let parsed: MarketplaceMessage | any;
-
             parsed = await this.parseJSONSafe(message.text)
                 .then(value => {
                     return value;
@@ -56,10 +53,6 @@ export class MessageProcessor implements MessageProcessorInterface {
                     this.log.debug('parse error:' + reason);
                     return null;
                 });
-
-            // const parsed: MarketplaceMessage = JSON.parse(message.text);
-            // this.log.debug('parsed:', parsed);
-
             delete message.text;
 
             if (parsed) {

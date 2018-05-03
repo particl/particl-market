@@ -19,8 +19,6 @@ import { TestDataCreateRequest } from '../../../src/api/requests/TestDataCreateR
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { BidMessage } from '../../../src/api/messages/BidMessage';
 
-import * as bidSmsg1 from '../../testdata/message/smsgMessageWithBidMessage1.json';
-
 import * as resources from 'resources';
 
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
@@ -193,7 +191,23 @@ describe('BidMessageProcessing', () => {
         const bidDatas = await bidActionService.generateBidDatasForMPA_BID(
             listingItem,
             defaultProfile.ShippingAddresses[0],
-            ['size', 'XL', 'color', 'pink']
+            [
+                'size', 'XL',
+                'color', 'pink',
+                'outputs', '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0b\",\"vout\":1,\"amount\":100.52497491}]',
+                'pubkeys', '[\"021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d90\"]',
+                'changeaddr', 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb4',
+                'change', 96.52477491,
+                'ship.firstName', 'asdf',
+                'ship.lastName', 'asdf',
+                'ship.addressLine1', 'asdf',
+                'ship.addressLine2', 'asdf',
+                'ship.city', 'asdf',
+                'ship.state', '',
+                'ship.zipCode', '1234',
+                'ship.country', 'FI'
+
+            ]
         );
 
         // create MPA_BID type of MarketplaceMessage
