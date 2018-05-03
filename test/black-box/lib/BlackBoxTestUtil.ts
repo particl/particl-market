@@ -121,6 +121,28 @@ export class BlackBoxTestUtil {
         }
     }
 
+    public async getRandomBase64Image(): Promise<string> {
+/*
+        return await require('request')({
+            url: 'https://picsum.photos/200/300/?random'
+        }, function (e,r,b) {
+            const type    = r.headers['content-type'];
+            const prefix  = 'data:' + type + ';base64,';
+            const base64  = new Buffer(b, 'binary').toString('base64');
+            const dataURI = prefix + base64;
+            return dataURI;
+        });
+*/
+        const request = require('request').defaults({ encoding: 'base64' });
+
+        const result = await request.get('https://picsum.photos/200/300/?random', function (error, response, body) {
+            if (!error && response.statusCode == 200) {
+                return "data:" + response.headers["content-type"] + ";base64," + new Buffer(body).toString('base64');
+            }
+        });
+        return result;
+    }
+
     /**
      * get default market
      *

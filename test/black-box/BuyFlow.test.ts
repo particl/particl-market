@@ -9,6 +9,7 @@ import * as resources from 'resources';
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
+import {ImageDataProtocolType} from "../../src/api/enums/ImageDataProtocolType";
 // tslint:enable:max-line-length
 
 describe('Happy BuyFlow', () => {
@@ -24,6 +25,9 @@ describe('Happy BuyFlow', () => {
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
+
+    const imageCommand = Commands.ITEMIMAGE_ROOT.commandName;
+    const imageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
 
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
@@ -67,8 +71,10 @@ describe('Happy BuyFlow', () => {
         buyerProfile = await testUtilNode2.getDefaultProfile();
         expect(buyerProfile.id).toBeDefined();
 
-        log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
-        log.debug('buyerProfile: ', JSON.stringify(buyerProfile, null, 2));
+        // log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
+        // log.debug('buyerProfile: ', JSON.stringify(buyerProfile, null, 2));
+        log.debug('sellerProfile: ', sellerProfile.id);
+        log.debug('buyerProfile: ', buyerProfile.id);
 
         defaultMarket = await testUtilNode1.getDefaultMarket();
         expect(defaultMarket.id).toBeDefined();
@@ -109,6 +115,21 @@ describe('Happy BuyFlow', () => {
         log.debug('listingItemTemplates[0].hash:', listingItemTemplatesNode1[0].hash);
         log.debug('result.hash:', result.hash);
         expect(result.hash).toBe(listingItemTemplatesNode1[0].hash);
+
+        // add image
+        const base64Image = await testUtilNode1.getRandomBase64Image();
+        const imageAddRes: any = await testUtilNode1.rpc(imageCommand, [
+            imageAddCommand,
+            listingItemTemplatesNode1[0].id,
+            'uniqueid',
+            ImageDataProtocolType.LOCAL,
+            'BASE64',
+            base64Image
+        ]);
+        imageAddRes.expectJson();
+        imageAddRes.expectStatusCode(200);
+        const imageResult: resources.ListingItemTemplate = imageAddRes.getBody()['result'];
+        // log.debug('imageResult:', imageResult);
 
     });
 
