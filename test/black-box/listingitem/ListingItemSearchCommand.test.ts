@@ -10,11 +10,9 @@ import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import {ListingItemSearchParams} from '../../../src/api/requests/ListingItemSearchParams';
-import {ListingItemSearchType} from '../../../src/api/enums/ListingItemSearchType';
+import { ListingItemSearchParams } from '../../../src/api/requests/ListingItemSearchParams';
 import * as _ from 'lodash';
-import {ShippingCountries} from '../../../src/core/helpers/ShippingCountries';
-import {ShippingAvailability} from '../../../src/api/enums/ShippingAvailability';
+import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
 
 describe('ListingItemSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

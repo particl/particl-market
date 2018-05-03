@@ -30,6 +30,8 @@ if (Environment.isProduction() || Environment.isAlpha()) {
     envConfig = new DevelopmentEnvConfig();
 } else if (Environment.isTest()) {
     envConfig = new TestEnvConfig(process.env.MP_DATA_FOLDER || './data', process.env.MP_DOTENV_FILE || '.env.test');
+} else if (Environment.isBlackBoxTest()) {
+    envConfig = new TestEnvConfig(process.env.MP_DATA_FOLDER || './data', process.env.MP_DOTENV_FILE || '.env.blackbox');
 } else {
     envConfig = new EnvConfig(process.env.MP_DATA_FOLDER || './data', process.env.MP_DOTENV_FILE || '.env');
 }
@@ -43,7 +45,7 @@ console.log('DataDir.getDefaultSeedsPath():', DataDir.getDefaultSeedsPath());
 
 const newApp = new App(envConfig);
 
-if (!Environment.isTest()) {
+if (!Environment.isTest() && !Environment.isBlackBoxTest()) {
     // integration tests will bootstrap the app
     newApp.configure(new CustomConfig());
     newApp.bootstrap();

@@ -9,6 +9,7 @@ export enum EnvironmentType {
     ALL = 'ALL',
     PRODUCTION = 'PRODUCTION',
     TEST = 'TEST',
+    BLACKBOX = 'BLACKBOX',
     ALPHA = 'ALPHA',
     DEVELOPMENT = 'DEVELOPMENT',
     DEFAULT = DEVELOPMENT
@@ -27,6 +28,14 @@ export class Environment {
         const nodeEnv = this.getNodeEnv();
         if ( nodeEnv ) {
             return nodeEnv.toUpperCase() === EnvironmentType.TEST.toString();
+        }
+        return false;
+    }
+
+    public static isBlackBoxTest(): boolean {
+        const nodeEnv = this.getNodeEnv();
+        if ( nodeEnv ) {
+            return nodeEnv.toUpperCase() === EnvironmentType.BLACKBOX.toString();
         }
         return false;
     }

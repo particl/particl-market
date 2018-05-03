@@ -1,3 +1,5 @@
+import { app } from '../../../src/app';
+
 import { api, rpc, ApiOptions } from './api';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -8,7 +10,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { AddressType } from '../../../src/api/enums/AddressType';
 
 import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
-import {MessageException} from '../../../src/api/exceptions/MessageException';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
 
 export class BlackBoxTestUtil {
 
