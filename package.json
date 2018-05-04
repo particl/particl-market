@@ -1,6 +1,6 @@
 {
   "name": "particl-marketplace",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "",
   "main": "dist/module.js",
   "scripts": {
@@ -127,7 +127,8 @@
     "request": "^2.81.0",
     "request-promise": "^4.2.1",
     "serve-favicon": "^2.4.3",
-    "sqlite3": "^3.1.13",
+    "socket.io": "^2.0.4",
+    "sqlite3": "particl/sqlite3-offline",
     "swagger-jsdoc": "^1.9.6",
     "swagger-ui-express": "^2.0.1",
     "trash-cli": "^1.4.0",
