@@ -167,6 +167,12 @@ export class BlackBoxTestUtil {
         return response;
     }
 
+    /**
+     * wait for given amount of time
+     *
+     * @param {number} maxSeconds
+     * @returns {Promise<boolean>}
+     */
     public async waitFor(maxSeconds: number): Promise<boolean> {
         for (let i = 0; i < maxSeconds; i++) {
             this.log.debug('waiting... ');

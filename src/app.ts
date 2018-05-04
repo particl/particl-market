@@ -45,6 +45,9 @@ console.log('DataDir.getDefaultSeedsPath():', DataDir.getDefaultSeedsPath());
 
 const newApp = new App(envConfig);
 
+console.log('!Environment.isTest():', !Environment.isTest());
+console.log('!Environment.isBlackBoxTest():', !Environment.isBlackBoxTest());
+
 if (!Environment.isTest() && !Environment.isBlackBoxTest()) {
     // integration tests will bootstrap the app
     newApp.configure(new CustomConfig());

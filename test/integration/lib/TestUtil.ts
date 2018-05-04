@@ -1,63 +1,42 @@
 import { Logger as LoggerType} from '../../../src/core/Logger';
-import { Types, Core, Targets } from '../../../src/constants';
-import { EventEmitter } from '../../../src/core/api/events';
-import { ServerStartedListener } from '../../../src/api/listeners/ServerStartedListener';
+import { LoggerConfig } from '../../../src/config/LoggerConfig';
 
 export class TestUtil {
 
-    public log: LoggerType;
-    private serverStartedListener: ServerStartedListener;
-    private timeout: any;
-    private interval = 1000;
-    private MAX_RETRIES = 10;
-    private serverStarted = false;
+    public log: LoggerType = new LoggerType(__filename);
 
     constructor() {
-        this.log = new LoggerType(__filename);
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+        new LoggerConfig().configure();
     }
 
     public async bootstrapAppContainer(app: any): Promise<void> {
 
-        const emitter = await app.bootstrap();
-        this.serverStartedListener = app.IoC.getNamed<ServerStartedListener>(Types.Listener, Targets.Listener.ServerStartedListener);
-
-        emitter.on(ServerStartedListener.ServerReadyEvent, () => {
-            this.serverStarted = true;
-        });
-        await this.waitForServerStarted();
+        await app.bootstrap();
+        await this.waitFor(10);
     }
 
-    private async isServerStarted(): Promise<boolean> {
-        // if (this.serverStartedListener.isStarted === false) {
-        if (this.serverStarted === false) {
-            throw Error('Not started.');
-        } else {
-            this.log.debug('SERVER READY!');
+    /**
+     * wait for given amount of time
+     *
+     * @param {number} maxSeconds
+     * @returns {Promise<boolean>}
+     */
+    public async waitFor(maxSeconds: number): Promise<boolean> {
+        for (let i = 0; i < maxSeconds; i++) {
+            this.log.debug('waiting... ');
+            await this.waitTimeOut(1000);
         }
         return true;
     }
 
-    private waitFor(timeout: number): Promise<void> {
-        this.log.debug('waiting for ' + timeout + 'ms');
+    private waitTimeOut(timeoutMs: number): Promise<void> {
+
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve();
-            }, timeout);
+            }, timeoutMs);
         });
-    }
-
-    private async waitForServerStarted(): Promise<boolean> {
-
-        for (let i = 0; i <= this.MAX_RETRIES; i++) {
-            try {
-                return await this.isServerStarted();
-            } catch (err) {
-                await this.waitFor(this.interval);
-                this.log.debug('error: ' + err.message);
-            }
-        }
-
-        this.serverStartedListener.stop();
     }
 }
 
