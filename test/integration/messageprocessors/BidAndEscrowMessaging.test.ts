@@ -256,7 +256,7 @@ describe('BidMessageProcessing', () => {
         expect(result.ShippingAddress.country).toBe(defaultProfile.ShippingAddresses[0].country);
         expect(result.ShippingAddress.zipCode).toBe(defaultProfile.ShippingAddresses[0].zipCode);
         expect(result.ShippingAddress.type).toBe(AddressType.SHIPPING_BID);
-        expect(result.BidDatas).toHaveLength(14);
+        expect(result.BidDatas).toHaveLength(15);
 
         const createdListingItemModel = await listingItemService.findOneByHash(result.ListingItem.hash);
         listingItem = createdListingItemModel.toJSON();
@@ -320,7 +320,7 @@ describe('BidMessageProcessing', () => {
         expect(result.ShippingAddress.country).toBe(defaultProfile.ShippingAddresses[0].country);
         expect(result.ShippingAddress.zipCode).toBe(defaultProfile.ShippingAddresses[0].zipCode);
         expect(result.ShippingAddress.type).toBe(AddressType.SHIPPING_BID);
-        expect(result.BidDatas).toHaveLength(17);
+        expect(result.BidDatas).toHaveLength(18);
         expect(result.OrderItem.status).toBe(OrderStatus.AWAITING_ESCROW);
 
         const createdListingItemModel = await listingItemService.findOneByHash(result.OrderItem.itemHash);

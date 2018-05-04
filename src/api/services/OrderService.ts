@@ -68,6 +68,7 @@ export class OrderService {
     public async create( @request(OrderCreateRequest) data: OrderCreateRequest): Promise<Order> {
 
         const body = JSON.parse(JSON.stringify(data));
+        this.log.debug('OrderCreateRequest: ', JSON.stringify(body, null, 2));
 
         // you need at least one order item to create an order
         body.hash = ObjectHash.getHash(body, HashableObjectType.ORDER_CREATEREQUEST);
@@ -111,11 +112,14 @@ export class OrderService {
         const order = orderModel.toJSON();
 
         this.log.debug('created order: ', JSON.stringify(order, null, 2));
+        // this.log.debug('orderItemCreateRequests: ', JSON.stringify(orderItemCreateRequests, null, 2));
 
         // then create the OrderItems
         for (const orderItemCreateRequest of orderItemCreateRequests) {
             orderItemCreateRequest.order_id = order.id;
-            await this.orderItemService.create(orderItemCreateRequest);
+            const orderItemModel = await this.orderItemService.create(orderItemCreateRequest);
+            const orderItem = orderItemModel.toJSON();
+            this.log.debug('created orderItem: ', JSON.stringify(orderItem, null, 2));
         }
 
         // finally find and return the created order
