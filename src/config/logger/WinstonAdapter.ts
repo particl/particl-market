@@ -17,25 +17,32 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
     private logger: winston.LoggerInstance;
 
     constructor(private scope: string) {
-        this.logger = new winston.Logger({
-            transports: [
-                new winston.transports.Console({
-                    level: process.env.LOG_LEVEL,
-                    timestamp: true,
-                    handleExceptions: Environment.isProduction(),
-                    json: Environment.isProduction(),
-                    colorize: !Environment.isProduction()
-                }),
+        let logs = [
+            new winston.transports.Console({
+                level: process.env.LOG_LEVEL,
+                timestamp: true,
+                handleExceptions: Environment.isProduction(),
+                json: Environment.isProduction(),
+                colorize: !Environment.isProduction()
+            })
+        ]; 
+
+        if(process.env.LOG_PATH) {
+            logs.push(
                 new winston.transports.File({
                     level: process.env.LOG_LEVEL,
-                    filename: './data/marketplace.log',
+                    filename: process.env.LOG_PATH,
                     handleExceptions: Environment.isProduction(),
                     json: Environment.isProduction(),
                     maxsize: 52428800, // 50MB
                     maxFiles: 5,
                     colorize: false
-                })
-            ],
+                }));
+        }
+
+
+        this.logger = new winston.Logger({
+            transports: logs,
             exitOnError: false
         });
     }

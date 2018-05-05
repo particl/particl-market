@@ -28,6 +28,7 @@ export class EnvConfig {
         MARKET_RPC_USER: 'test',
         MARKET_RPC_PASSWORD: 'test',
         LOG_LEVEL: 'debug',
+        LOG_PATH:  './data/marketplace.log',
         LOG_ADAPTER: 'winston',
         API_INFO_ENABLED: true,
         API_INFO_ROUTE: '/info',
@@ -59,6 +60,8 @@ export class EnvConfig {
 
         if (dataDirLocation) {
             DataDir.set(dataDirLocation);
+
+            this.defaultEnv.LOG_PATH = DataDir.getLogFile();
         }
 
         if (envFileName && DataDir.checkIfExists(envFileName)) {
