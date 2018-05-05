@@ -107,6 +107,7 @@
     "swagger-ui-express": "^2.0.1",
     "trash-cli": "^1.4.0",
     "ts-enums": "0.0.6",
+    "tslib": "^1.7.1",
     "web-request": "^1.0.7",
     "winston": "^2.3.1"
   },
