@@ -17,7 +17,7 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
     private logger: winston.LoggerInstance;
 
     constructor(private scope: string) {
-        let logs = [
+        const logs: any = [
             new winston.transports.Console({
                 level: process.env.LOG_LEVEL,
                 timestamp: true,
@@ -25,9 +25,9 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
                 json: Environment.isProduction(),
                 colorize: !Environment.isProduction()
             })
-        ]; 
+        ];
 
-        if(process.env.LOG_PATH) {
+        if (process.env.LOG_PATH) {
             logs.push(
                 new winston.transports.File({
                     level: process.env.LOG_LEVEL,
