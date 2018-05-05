@@ -60,8 +60,6 @@ export class EnvConfig {
 
         if (dataDirLocation) {
             DataDir.set(dataDirLocation);
-
-            this.defaultEnv.LOG_PATH = DataDir.getLogFile();
         }
 
         if (envFileName && DataDir.checkIfExists(envFileName)) {
@@ -70,7 +68,10 @@ export class EnvConfig {
             this.envFile = path.join(DataDir.getDataDirPath(), this.envFile);
         }
 
+        this.defaultEnv.LOG_PATH = DataDir.getLogFile();
+
         console.log('EnvConfig: env file path:', this.envFile);
+        console.log('EnvConfig: log file:', this.defaultEnv.LOG_PATH);
 
         // loads the .env file into the 'process.env' variable.
         dotenv.config({ path: this.envFile });
