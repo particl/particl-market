@@ -7,12 +7,12 @@ if (( $# == 0 )); then
 elif (( $# == 1 )); then
     SERVICE="$1"
     shift
-    echo ">>> docker-compose exec $SERVICE /opt/particl-0.16/bin/particl-cli help"
+    echo ">>> docker-compose exec $SERVICE /opt/particl-0.16.0.4/bin/particl-cli help"
     docker-compose exec "$SERVICE" /opt/particl-0.16/bin/particl-cli help
 else
     SERVICE="$1"
     shift
-    echo ">>> docker-compose exec $SERVICE /opt/particl-0.16/bin/particl-cli $@"
+    echo ">>> docker-compose exec $SERVICE /opt/particl-0.16.0.4/bin/particl-cli $@"
     docker-compose exec "$SERVICE" /opt/particl-0.16/bin/particl-cli "$@"
 fi
 
