@@ -8,11 +8,12 @@ RUN npm install -g ts-node
 RUN npm install -g typescript
 #RUN npm install sqlite3 --save
 
-RUN mkdir -p /app/data
-WORKDIR /app
+RUN mkdir -p /app/data/database
+WORKDIR /app/
 COPY package.json /app
 COPY yarn.lock /app
-RUN yarn install
+
+#RUN yarn install
 
 COPY . /app/
 #COPY ./.env.example /app/.env
@@ -21,5 +22,10 @@ COPY . /app/
 #RUN bin/ci-create-dbs.sh
 #RUN bin/ci-create-build-version.sh
 
+#VOLUME /app/data
+#VOLUME /app/
+
 #CMD [ "yarn", "serve" ]
+#CMD [ "bin/entrypoint.sh" ]
+
 EXPOSE 3000 3100 3200

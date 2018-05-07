@@ -1,12 +1,13 @@
 #!/bin/sh
-rm -rf data/database/marketplace*db
-#rm -rf data/app1/database/marketplace*db
-#rm -rf data/app2/database/marketplace*db
-#mkdir -p data/app1
-#mkdir -p data/app2
+mkdir -p data/database
+rm -rf data/database/marketplace*db*
+
 npm run db:migrate
 cp data/database/marketplace.db data/database/marketplace-test.db
-#cp data/database/marketplace.db data/app1/database/marketplace.db
-#cp data/database/marketplace.db data/app1/database/marketplace-test.db
-#cp data/database/marketplace.db data/app2/database/marketplace.db
-#cp data/database/marketplace.db data/app2/database/marketplace-test.db
+cp data/database/marketplace.db-shm data/database/marketplace-test.db-shm
+cp data/database/marketplace.db-wal data/database/marketplace-test.db-wal
+
+echo ""
+echo "local app db:"
+ls -al data/database
+

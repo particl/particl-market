@@ -70,6 +70,10 @@ export class DataDir {
         return path.join(this.getDatabasePath(), 'marketplace.db');
     }
 
+    public static getLogFile(): string {
+        return path.join(this.getDataDirPath(), 'marketplace.log');
+    }
+
     public static checkIfExists(dir: string): boolean {
         try {
             fs.accessSync(dir, fs.constants.R_OK);
