@@ -1,7 +1,7 @@
 import { NotFoundException } from '../../api/exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
 
-import postalCodes = require('postal-codes-js');
+import postalCodes from 'postal-codes-js';
 
 export class ShippingZips {
     public static isCountryCodeSupported( countryCode: string ): boolean {

@@ -1,5 +1,5 @@
 import { Bookshelf } from '../../config/Database';
-import { Collection } from 'bookshelf';
+import { Collection, Model } from 'bookshelf';
 import { Profile } from './Profile';
 import { ListingItem } from './ListingItem';
 import { FavoriteSearchParams } from '../requests/FavoriteSearchParams';
@@ -25,7 +25,7 @@ export class FavoriteItem extends Bookshelf.Model<FavoriteItem> {
     }
 
     public static async findFavoritesByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<FavoriteItem>> {
-        const favoriteItems = FavoriteItem.forge<Collection<FavoriteItem>>()
+        const favoriteItems = FavoriteItem.forge<Model<FavoriteItem>>()
             .query(qb => {
                 qb.where('profile_id', '=', profileId);
             })

@@ -1,5 +1,5 @@
-import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
+import { Collection, Model } from 'bookshelf';
 import { ShoppingCart } from './ShoppingCart';
 import { ListingItem } from './ListingItem';
 
@@ -49,7 +49,7 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
     }
 
     public static async findListItemsByCartId(cartId: number, withRelated: boolean = true): Promise<Collection<ShoppingCartItem>> {
-        const ShoppingCartItemCollection = ShoppingCartItem.forge<Collection<ShoppingCartItem>>()
+        const ShoppingCartItemCollection = ShoppingCartItem.forge<Model<ShoppingCartItem>>()
             .query(qb => {
                 qb.where('shopping_cart_id', '=', cartId);
             })
