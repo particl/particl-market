@@ -8,7 +8,8 @@ export class ShippingCountries {
 
     public static initialize(): void {
         this.countryCodeList = reduce(getDataSet(), 'en');
-        this.countryList = {};
+        this.countryList = {}; // TODO: named as List even though it is not a list but an object,
+
         for ( const x in this.countryCodeList ) {
             if ( x ) {
                 this.countryList[this.countryCodeList[x].name.toUpperCase()] = x.toUpperCase();
