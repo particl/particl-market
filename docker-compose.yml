@@ -6,7 +6,7 @@ services:
       context: ./
     volumes:
       - .:/app/
-      - ./data/app1_dist:/app/data/dist
+      - ./data/app1_dist:/app/dist
       - ./data/app1:/app/data
       - ./data/app1_node_modules:/app/node_modules
     ports:
@@ -33,7 +33,7 @@ services:
       context: ./
     volumes:
       - .:/app/
-      - ./data/app2_dist:/app/data/dist
+      - ./data/app2_dist:/app/dist
       - ./data/app2:/app/data
       - ./data/app2_node_modules:/app/node_modules
     ports:

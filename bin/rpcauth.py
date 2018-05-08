@@ -40,7 +40,7 @@ def main():
     salt = generate_salt()
     password, password_hmac = generate_password(salt, password)
 
-    print('String to be appended to bitcoin.conf:')
+    print('String to be appended to particl.conf:')
     print('rpcauth={0}:{1}${2}'.format(username, salt, password_hmac))
     print('Your password:\n{0}'.format(password))
 

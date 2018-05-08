@@ -4853,7 +4853,7 @@ sprintf-js@~1.0.2:
 
 sqlite3@particl/sqlite3-offline:
   version "3.2.0"
-  resolved "https://codeload.github.com/particl/sqlite3-offline/tar.gz/b505d73bd34bfb5def82899b197fe8b84ae7c711"
+  resolved "https://codeload.github.com/particl/sqlite3-offline/tar.gz/27fb8d759d6fb0d6a235e318887d9c79255b22b5"
 
 sshpk@^1.7.0:
   version "1.13.0"

@@ -1,5 +1,5 @@
-import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
+import { Collection, Model } from 'bookshelf';
 import { OrderItem } from './OrderItem';
 import { Address } from './Address';
 import { SearchOrder } from '../enums/SearchOrder';
@@ -57,7 +57,7 @@ export class Order extends Bookshelf.Model<Order> {
             options.ordering = SearchOrder.ASC;
         }
 
-        const orderCollection = Order.forge<Collection<Order>>()
+        const orderCollection = Order.forge<Model<Order>>()
             .query( qb => {
                 qb.join('order_items', 'orders.id', 'order_items.order_id');
                 if (options.listingItemId) {

@@ -1,5 +1,5 @@
-import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
+import { Collection, Model } from 'bookshelf';
 import { ListingItem } from './ListingItem';
 import { ListingItemTemplate } from './ListingItemTemplate';
 import { ListingItemObjectSearchParams } from '../requests/ListingItemObjectSearchParams';
@@ -22,7 +22,7 @@ export class ListingItemObject extends Bookshelf.Model<ListingItemObject> {
     }
 
     public static async searchBy(options: ListingItemObjectSearchParams): Promise<Collection<ListingItemObject>> {
-        const listingCollection = ListingItemObject.forge<Collection<ListingItemObject>>()
+        const listingCollection = ListingItemObject.forge<Model<ListingItemObject>>()
             .query(qb => {
                 qb.where('listing_item_objects.type', 'LIKE', '%' + options.searchString + '%');
                 qb.orWhere('listing_item_objects.description', 'LIKE', '%' + options.searchString + '%');
