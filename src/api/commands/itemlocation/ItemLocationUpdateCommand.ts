@@ -67,7 +67,7 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
                             markerText: data.params[4],
                             lat: data.params[5],
                             lng: data.params[6]
-                    }
+                    };
                 }
 
                 // update item location
