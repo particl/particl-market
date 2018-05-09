@@ -1,4 +1,5 @@
 import { app } from '../../src/app';
+
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import * as _ from 'lodash';

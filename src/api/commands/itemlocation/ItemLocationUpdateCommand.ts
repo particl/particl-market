@@ -55,7 +55,7 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
             if (itemInformation.listingItemId) {
                 throw new MessageException('ItemLocation cannot be updated because the item has allready been posted!');
             } else {
-                let updateRequest = {
+                const updateRequest = {
                     item_information_id: itemInformation.id,
                     region: countryCode,
                     address: data.params[2]
