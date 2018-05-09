@@ -20,12 +20,15 @@
     "test:ui": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --forceExit --testPathPattern=ui -i",
     "test:ui:pretty": "npm run test:ui -- --verbose",
     "test:ui:single": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" --forceExit --verbose --testPathPattern=ui/$TEST -i",
-    "pretest:integration": "./node_modules/.bin/tslint -c ./tslint.json -t stylish './test/integration/**/*.ts'",
+
+
+
     "test:runtest": "npm run banner test && cross-env NODE_ENV=test \"./node_modules/.bin/jest\" -i",
     "test:integration": "npm run test:runtest -- --testPathPattern=integration",
     "test:integration:pretty": "npm run test:integration -- --verbose",
-    "test:integration:single": "npm run test:runtest -- --testPathPattern=integration/$TEST -i",
+    "test:integration:single": "npm run test:runtest -- --testPathPattern=integration/$TEST",
     "test:integration:coverage": "npm run test:integration -- --coverage",
+
     "db:migrate": "npm run banner migrate && \"./node_modules/.bin/knex\" migrate:latest",
     "db:migrate:rollback": "npm run banner rollback && \"./node_modules/.bin/knex\" migrate:rollback",
     "db:seed": "npm run banner seed && \"./node_modules/.bin/knex\" seed:run",
@@ -160,7 +163,7 @@
     "nodemon": "^1.11.0",
     "ts-jest": "^20.0.7",
     "ts-node": "^3.2.0",
-    "tslint": "^5.5.0",
+    "tslint": "5.10.0",
     "typescript": "^2.4.1",
     "zombie": "^5.0.7"
   }

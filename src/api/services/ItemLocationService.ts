@@ -91,6 +91,7 @@ export class ItemLocationService {
             // we have new locationMarker but no existingLocationMarker -> create new
             locationMarker.item_location_id = id;
             await this.locationMarkerService.create(locationMarker);
+
         } else if (_.isEmpty(locationMarker) && !_.isEmpty(existingLocationMarker)) {
             // we have no new locationMarker and existingLocationMarker -> remove existing
             await this.locationMarkerService.destroy(existingLocationMarker.id);
