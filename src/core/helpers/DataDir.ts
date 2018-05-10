@@ -67,7 +67,7 @@ export class DataDir {
     }
 
     public static getDatabaseFile(): string {
-        return path.join(this.getDatabasePath(), 'marketplace.db');
+        return path.join(this.getDatabasePath(), !Environment.isTest() ? 'marketplace.db' : 'marketplace-test.db');
     }
 
     public static getLogFile(): string {

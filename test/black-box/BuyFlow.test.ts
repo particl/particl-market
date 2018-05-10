@@ -1,5 +1,5 @@
-import * from 'jest';
 // tslint:disable:max-line-length
+import * from 'jest';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
