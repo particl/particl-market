@@ -96,13 +96,7 @@ describe('ListingItemTemplate', async () => {
 
     beforeAll(async () => {
 
-        console.log('IMPORTED');
-        await app.configure(new CustomConfig());
-        await app.bootstrap();
-
-        console.log('STARTED');
-
-        // await testUtil.bootstrapAppContainer();  // bootstrap the app
+        await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
