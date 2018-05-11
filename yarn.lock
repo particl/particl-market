@@ -4921,7 +4921,7 @@ sprintf-js@~1.0.2:
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/sprintf-js/-/sprintf-js-1.0.3.tgz#04e6926f662895354f3dd015203633b857297e2c"
 
-sqlite3-offline@particl/sqlite3-offline, sqlite3@particl/sqlite3-offline:
+sqlite3@particl/sqlite3-offline:
   version "3.2.0"
   resolved "https://codeload.github.com/particl/sqlite3-offline/tar.gz/27fb8d759d6fb0d6a235e318887d9c79255b22b5"
 
