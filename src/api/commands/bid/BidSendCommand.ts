@@ -72,7 +72,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         let profile: any = await this.profileService.findOne(profileId);
         profile = profile.toJSON();
 
-        // todo: profile is never null, findOne is throwing an exception
+        // todo: profile is never null, findOne is throwing an exception, which we should be catching
         // if profile not found
         if (profile === null) {
             this.log.warn(`Profile with the id=${profileId} was not found!`);

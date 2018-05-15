@@ -114,13 +114,15 @@ export class BidActionService {
         additionalParams: any[]
     ): Promise<any[]> {
 
+        // todo: propably something that we should check earlier
+        // todo: and we shouldnt even be having items without a price at the moment, validation before posting should take care of that
+        // todo: this could also be caused by of some other error, while saving the item
         if (!listingItem.PaymentInformation.ItemPrice || !listingItem.PaymentInformation.ItemPrice.basePrice) {
             this.log.error('Missing ItemPrice.');
             throw new MessageException('Missing ItemPrice.');
         }
 
-        // Get unspent
-        // const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
+        // get unspent
         const unspent = await this.coreRpcService.listUnspent(1, 99999999, [], false);
 
         if (!unspent || unspent.length === 0) {
