@@ -194,12 +194,18 @@ export class BidActionService {
             throw new MessageException('Could not get public key for address!');
         }
 
+        // TODO: We need to send a refund / release address
+        // TODO: address should be named releaseAddress or sellerReleaseAddress and all keys should be enums,
+        // it's confusing when on escrowactionservice this 'address' is referred to as sellers address which it is not
+        const buyerAddress = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
+
         // convert the bid data params as bid data key value pair
         const bidDatas = this.getBidDatasFromArray(additionalParams.concat([
             'outputs', outputs,
             'pubkeys', [pubkey],
             'changeAddr', changeAddr,
-            'change', change
+            'change', change,
+            'buyerAddress', buyerAddress
         ]));
 
         this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
@@ -464,17 +470,11 @@ export class BidActionService {
             throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
         }
 
-        // TODO: We need to send a refund / release address
-        const releaseAddr = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
-
         // - Most likely the transaction building and signing will happen in a different command that takes place
         // before this..
         // End - Ryno Hacks
 
-        // const releaseAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
-        // TODO: address should be named releaseAddress or sellerReleaseAddress and all keys should be enums,
-        // it's confusing when on escrowactionservice this 'address' is referred to as sellers address which it is not
-        const bidDatas = this.getBidDatasFromArray(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex, 'address', releaseAddr]);
+        const bidDatas = this.getBidDatasFromArray(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex]);
 
         return bidDatas;
     }
