@@ -93,7 +93,7 @@ export class BidActionService {
             mpaction: bidMessage
         } as MarketplaceMessage;
 
-        this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
+        this.log.debug('send(), marketPlaceMessage: ', JSON.stringify(marketPlaceMessage, null, 2));
 
         // save bid locally before broadcasting
         const createdBid = await this.createBid(bidMessage, listingItem, bidderProfile.address);
@@ -249,20 +249,29 @@ export class BidActionService {
             const order = orderModel.toJSON();
 
             this.log.debug('accept(), created Order: ', order);
+            this.log.debug('accept(), created bidMessage.objects: ', bidMessage.objects);
 
             // add Order.hash to bidData
-            bidMessage.objects = bidMessage.objects ? bidMessage.objects : [];
+            // bidMessage.objects = !_.isEmpty(bidMessage.objects) ? bidMessage.objects : [];
 
+            if (!bidMessage.objects) {
+                bidMessage.objects = [];
+            }
             // TODO: ENUM
             bidMessage.objects.push({id: 'orderHash', value: order.hash});
 
+            this.log.debug('accept(), updatedBid.id: ', updatedBid.id);
+            this.log.debug('accept(), order.hash: ', order.hash);
+
             // TODO: clean this up, so that we can add this with bidService.update
             // not necessarily needed, but
-            await this.bidDataService.create({
+            const orderHashBidData = await this.bidDataService.create({
                 bid_id: updatedBid.id,
                 dataId: 'orderHash',
                 dataValue: order.hash
             } as BidDataCreateRequest);
+
+            this.log.debug('accept(), added orderHash to bidData: ', orderHashBidData.toJSON());
 
             const marketPlaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,

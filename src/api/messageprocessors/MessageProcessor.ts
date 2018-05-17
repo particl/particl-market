@@ -8,7 +8,6 @@ import { SmsgService } from '../services/SmsgService';
 
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { ListingItemService } from '../services/ListingItemService';
 import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { BidMessageType } from '../enums/BidMessageType';
 import { EscrowMessageType } from '../enums/EscrowMessageType';
@@ -41,10 +40,19 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @returns {Promise<void>}
      */
     public async process(messages: SmsgMessage[]): Promise<void> {
-        this.log.debug('poll(), new messages:', JSON.stringify(messages, null, 2));
 
         for (const message of messages) {
-            const parsed: MarketplaceMessage | null = await this.parseJSONSafe(message.text);
+            this.log.debug('message.text:', JSON.stringify(message.text, null, 2));
+
+            let parsed: MarketplaceMessage | any;
+            parsed = await this.parseJSONSafe(message.text)
+                .then(value => {
+                    return value;
+                })
+                .catch(reason => {
+                    this.log.debug('parse error:' + reason);
+                    return null;
+                });
             delete message.text;
 
             if (parsed) {
@@ -52,6 +60,18 @@ export class MessageProcessor implements MessageProcessorInterface {
 
                 // in case of ListingItemMessage
                 if (parsed.item) {
+
+                    const messageForLogging = JSON.parse(JSON.stringify(parsed.item));
+                    delete messageForLogging.information.images;
+                    this.log.debug('==] poll(), new ListingItemMessage [============================================');
+                    this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
+                    this.log.debug('from:', message.from);
+                    this.log.debug('to:', message.to);
+                    this.log.debug('sent:', message.sent);
+                    this.log.debug('received:', message.received);
+                    this.log.debug('msgid:', message.msgid);
+                    this.log.debug('==] poll(), new ListingItemMessage, end [=======================================');
+
                     // ListingItemMessage, listingitemservice listens for this event
                     this.eventEmitter.emit(Events.ListingItemReceivedEvent, {
                         smsgMessage: message,
@@ -66,6 +86,16 @@ export class MessageProcessor implements MessageProcessorInterface {
 
                 // in case of ActionMessage, which is either BidMessage or EscrowMessage
                 } else if (parsed.mpaction) {
+                    const messageForLogging = JSON.parse(JSON.stringify(parsed.mpaction));
+                    this.log.debug('==] poll(), new ActionMessage [===============================================');
+                    this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
+                    this.log.debug('from:', message.from);
+                    this.log.debug('to:', message.to);
+                    this.log.debug('sent:', message.sent);
+                    this.log.debug('received:', message.received);
+                    this.log.debug('msgid:', message.msgid);
+                    this.log.debug('==] poll(), new ActionMessage, end [==========================================');
+
                     // ActionMessage
                     const eventType = await this.getActionEventType(parsed.mpaction);
                     this.eventEmitter.emit(eventType, {
@@ -119,10 +149,10 @@ export class MessageProcessor implements MessageProcessorInterface {
                 return;
             })
             .catch( reason => {
-                this.log.error('poll(), error:', reason);
-                this.eventEmitter.emit('cli', {
-                    message: 'poll(), error' + reason
-                });
+                this.log.error('poll(), error:' + reason);
+                // this.eventEmitter.emit('cli', {
+                //    message: 'poll(), error' + reason
+                // });
                 return;
             });
     }
@@ -136,9 +166,11 @@ export class MessageProcessor implements MessageProcessorInterface {
     private async parseJSONSafe(json: string): Promise<MarketplaceMessage|null> {
         let parsed = null;
         try {
+           // this.log.debug('json to parse:', json);
             parsed = JSON.parse(json);
         } catch (e) {
-            this.log.error('parseJSONSafe, invalid JSON:', json);
+            this.log.debug('parseJSONSafe, invalid JSON:', json);
+            return null;
         }
         return parsed;
     }

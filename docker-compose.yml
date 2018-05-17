@@ -6,6 +6,7 @@ services:
       context: ./
     volumes:
       - .:/app/
+      - ./data/app1_dist:/app/dist
       - ./data/app1:/app/data
       - ./data/app1_node_modules:/app/node_modules
     ports:
@@ -20,6 +21,7 @@ services:
     environment:
       - NODE_ENV=development
       - APP_PORT=3100
+      - TESTNET=true
       - RPCUSER=test
       - RPCPASSWORD=test
       - RPCHOSTNAME=particld1
@@ -31,6 +33,7 @@ services:
       context: ./
     volumes:
       - .:/app/
+      - ./data/app2_dist:/app/dist
       - ./data/app2:/app/data
       - ./data/app2_node_modules:/app/node_modules
     ports:
@@ -45,11 +48,56 @@ services:
     environment:
       - NODE_ENV=development
       - APP_PORT=3200
+      - TESTNET=true
       - RPCUSER=test
       - RPCPASSWORD=test
       - RPCHOSTNAME=particld2
       - MAINNET_PORT=51738
       - TESTNET_PORT=51935
+
+  gui1:
+    image: marketplace-gui:latest
+    build:
+      context: ../particl-desktop
+      dockerfile: Dockerfile
+    volumes:
+      - ../particl-desktop/:/app/
+      - ./data/gui1_node_modules:/app/node_modules
+    ports:
+      - 4300:4200
+    command: bin/entrypoint.sh
+    links:
+      - app1
+      - particld1
+    depends_on:
+      - app1
+      - particld1
+    environment:
+      - NODE_ENV=development
+      - GUI_ENV=docker1
+      - PORT=4200
+
+  gui2:
+    image: marketplace-gui:latest
+    build:
+      context: ../particl-desktop
+      dockerfile: Dockerfile
+    volumes:
+      - ../particl-desktop/:/app/
+      - ./data/gui2_node_modules:/app/node_modules
+    ports:
+      - 4400:4200
+    command: bin/entrypoint.sh
+    links:
+      - app2
+      - particld2
+    depends_on:
+      - app2
+      - particld2
+    environment:
+      - NODE_ENV=development
+      - GUI_ENV=docker2
+      - PORT=4200
 
   particld1:
     image: ludx/particl:0.16

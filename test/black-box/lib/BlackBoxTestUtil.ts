@@ -1,3 +1,5 @@
+import { app } from '../../../src/app';
+
 import { api, rpc, ApiOptions } from './api';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -8,7 +10,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { AddressType } from '../../../src/api/enums/AddressType';
 
 import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
-import {MessageException} from '../../../src/api/exceptions/MessageException';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
 
 export class BlackBoxTestUtil {
 
@@ -46,6 +48,7 @@ export class BlackBoxTestUtil {
     public async addData(model: CreatableModel, data: any): Promise<any> {
         const res = await this.rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_ADD.commandName, model.toString(), JSON.stringify(data)]);
         res.expectJson();
+        expect(res.error).toBe(null);
         res.expectStatusCode(200);
         return res.getBody()['result'];
     }
@@ -120,6 +123,28 @@ export class BlackBoxTestUtil {
         }
     }
 
+    public async getRandomBase64Image(): Promise<string> {
+/*
+        return await require('request')({
+            url: 'https://picsum.photos/200/300/?random'
+        }, function (e,r,b) {
+            const type    = r.headers['content-type'];
+            const prefix  = 'data:' + type + ';base64,';
+            const base64  = new Buffer(b, 'binary').toString('base64');
+            const dataURI = prefix + base64;
+            return dataURI;
+        });
+*/
+        const request = require('request').defaults({ encoding: 'base64' });
+
+        const result = await request.get('https://picsum.photos/200/300/?random', (error, response, body) => {
+            if (!error && response.statusCode === 200) {
+                return 'data:' + response.headers['content-type'] + ';base64,' + new Buffer(body).toString('base64');
+            }
+        });
+        return result;
+    }
+
     /**
      * get default market
      *
@@ -142,8 +167,15 @@ export class BlackBoxTestUtil {
         return response;
     }
 
+    /**
+     * wait for given amount of time
+     *
+     * @param {number} maxSeconds
+     * @returns {Promise<boolean>}
+     */
     public async waitFor(maxSeconds: number): Promise<boolean> {
         for (let i = 0; i < maxSeconds; i++) {
+            this.log.debug('waiting... ');
             await this.waitTimeOut(1000);
         }
         return true;
@@ -180,7 +212,7 @@ export class BlackBoxTestUtil {
                     this.log.error(response.error.error.message);
                 }
                 if (errorCount === 5) {
-                    this.log.error('enough, posting every 15th from now on...');
+                    this.log.error('... posting every 15th from now on...');
                 }
 
             } else if (waitForStatusCode === response.res.statusCode) {
@@ -189,7 +221,7 @@ export class BlackBoxTestUtil {
 
                     // this.log.debug('result: ' + JSON.stringify(result, null, 2));
 
-                    const objectPropertyValue = !_.isEmpty(result) ? _.get(result, waitForObjectProperty) : 'empty result';
+                    const objectPropertyValue = !_.isEmpty(result) ? _.get(result, waitForObjectProperty) : null;
 
                     // this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
                     // this.log.debug('waitForObjectPropertyValue.toString(): ' + waitForObjectPropertyValue.toString());
@@ -206,7 +238,7 @@ export class BlackBoxTestUtil {
                             this.log.error(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !== ' + waitForObjectPropertyValue);
                         }
                         if (errorCount === 5) {
-                            this.log.error('enough, posting every 15th from now on...');
+                            this.log.error('... posting every 15th from now on...');
                         }
 
                         // do not throw here for now.
@@ -220,7 +252,7 @@ export class BlackBoxTestUtil {
                     return response;
                 }
             } else {
-                this.log.debug('confusion! not expecting this: ', response);
+                this.log.debug('wtf?! not expecting this: ', response);
             }
 
             // try again

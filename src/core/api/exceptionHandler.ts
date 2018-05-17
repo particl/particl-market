@@ -15,11 +15,10 @@ export const exceptionHandler = (error: Exception | Error, req: myExpress.Reques
         res.failed(error['code'], error.message, error['body'] || null);
         next();
     } else {
-        if (Environment.isDevelopment()) {
+        if (Environment.isDevelopment() || Environment.isAlpha() || Environment.isTest()) {
             console.error(error.stack);
         }
-        console.error(error['body']);
-        res.failed(500, 'Something broke: ' + error, error['body'] || null);
+        res.failed(500, 'Something broke!', error['body'] || null);
         next(error);
     }
 };

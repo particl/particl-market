@@ -1,4 +1,3 @@
-import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
@@ -42,10 +41,17 @@ export class CurrencyPriceRootCommand extends BaseCommand implements RpcCommandI
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<resources.CurrencyPrice[]> {
+
+        // todo: better errors
+        if (data.params.length < 2) {
+            throw new MessageException('Invalid params');
+        }
+
         const fromCurrency = data.params.shift().toUpperCase();
+
         // throw exception if fromCurrency is not a PART or toCurrencies has length 0
-        if (fromCurrency.toUpperCase() !== 'PART' || data.params.length < 1 ) {
-           throw new MessageException('Invalid params');
+        if (fromCurrency !== 'PART') {
+            throw new MessageException('Invalid params');
         } else {
             // convert params to uppercase
             const toCurrencies: string[] = [];

@@ -14,6 +14,7 @@ test/.env.blackbox
 # OS generated files #
 .DS_Store
 Thumbs.db
+.Trash*
 
 # Typing #
 typings/
@@ -36,14 +37,15 @@ coverage/
 
 test/testdata/test.json
 
-data/marketplace.db
-data/marketplace-test.db
+data/database/*
 data/particl1
 data/particl2
 data/app1
 data/app2
 data/app1_node_modules
 data/app2_node_modules
+data/gui1_node_modules
+data/gui2_node_modules
 data/uploads
 
 *.paw

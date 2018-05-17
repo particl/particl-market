@@ -1,5 +1,5 @@
 import { Bookshelf } from '../../config/Database';
-import { Collection } from 'bookshelf';
+import { Collection, Model } from 'bookshelf';
 import { ItemInformation } from './ItemInformation';
 import { PaymentInformation } from './PaymentInformation';
 import { MessagingInformation } from './MessagingInformation';
@@ -32,6 +32,17 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ListingItemObjects',
         'ListingItemObjects.ListingItemObjectDatas',
         'ListingItems',
+        'ListingItems.PaymentInformation',
+        'ListingItems.PaymentInformation.ItemPrice',
+        'ListingItems.PaymentInformation.ItemPrice.ShippingPrice',
+        'ListingItems.ItemInformation',
+        'ListingItems.ItemInformation.ItemLocation',
+        'ListingItems.ItemInformation.ItemCategory',
+        'ListingItems.ItemInformation.ItemCategory.ParentItemCategory',
+        'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory',
+        'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+        'ListingItems.ItemInformation.ItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory.ParentItemCategory',
+        'ListingItems.ItemInformation.ShippingDestinations',
         'Profile'
     ];
 
@@ -57,7 +68,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
     }
 
     public static async searchBy(options: ListingItemTemplateSearchParams, withRelated: boolean = true): Promise<Collection<ListingItemTemplate>> {
-        const listingCollection = ListingItemTemplate.forge<Collection<ListingItemTemplate>>()
+        const listingCollection = ListingItemTemplate.forge<Model<ListingItemTemplate>>()
             .query(qb => {
                 if (typeof options.category === 'number') {
                     qb.where('item_informations.item_category_id', '=', options.category);

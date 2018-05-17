@@ -40,7 +40,7 @@ export class MessageEscrowService {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        this.log.debug('messageescrow body:', JSON.stringify(body, null, 2));
+        // this.log.debug('messageescrow body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the messageEscrow
         const messageEscrow = await this.messageEscrowRepo.create(body);

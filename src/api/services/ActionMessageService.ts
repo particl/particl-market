@@ -53,14 +53,15 @@ export class ActionMessageService {
     }
 
     @validate()
-    public async create( @request(ActionMessageCreateRequest) data: any): Promise<ActionMessage> {
+    public async create( @request(ActionMessageCreateRequest) data: ActionMessageCreateRequest): Promise<ActionMessage> {
+        const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ActionMessage, body: ', JSON.stringify(body, null, 2));
 
-        const messageInfoCreateRequest = body.info;
-        const messageEscrowCreateRequest = body.escrow;
-        const messageDataCreateRequest = body.data;
+        const messageInfoCreateRequest = body.info || {};
+        const messageEscrowCreateRequest = body.escrow || {};
+        const messageDataCreateRequest = body.data || {};
         const actionMessageObjects = body.objects || [];
 
         delete body.info;
@@ -73,7 +74,6 @@ export class ActionMessageService {
         let actionMessage = actionMessageModel.toJSON();
 
         // this.log.debug('created actionMessage: ', JSON.stringify(actionMessage, null, 2));
-
         if (!_.isEmpty(messageInfoCreateRequest)) {
             messageInfoCreateRequest.action_message_id = actionMessage.id;
             const messageInfoModel = await this.messageInfoService.create(messageInfoCreateRequest);
@@ -101,13 +101,14 @@ export class ActionMessageService {
             object.action_message_id = actionMessage.id;
             const messageObjectModel = await this.messageObjectService.create(object);
             const messageObject = messageObjectModel.toJSON();
-            // this.log.debug('created messageObject: ', JSON.stringify(messageObject, null, 2));
+            this.log.debug('created messageObject: ', JSON.stringify(messageObject, null, 2));
 
         }
-
         actionMessageModel = await this.findOne(actionMessage.id);
         actionMessage = actionMessageModel.toJSON();
         // this.log.debug('created actionMessage: ', JSON.stringify(actionMessage, null, 2));
+        // this.log.debug('actionMessageService.create: ' + (new Date().getTime() - startTime) + 'ms');
+
         return actionMessageModel;
     }
 
@@ -169,7 +170,7 @@ export class ActionMessageService {
     }
 
     @validate()
-    public async update(id: number, @request(ActionMessageUpdateRequest) body: any): Promise<ActionMessage> {
+    public async update(id: number, @request(ActionMessageUpdateRequest) body: ActionMessageUpdateRequest): Promise<ActionMessage> {
 
         throw new NotImplementedException();
 /*

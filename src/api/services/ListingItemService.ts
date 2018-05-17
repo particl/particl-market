@@ -117,6 +117,7 @@ export class ListingItemService {
      */
     @validate()
     public async create( @request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
+        const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
@@ -170,7 +171,12 @@ export class ListingItemService {
         }
 
         // finally find and return the created listingItem
-        return await this.findOne(listingItem.Id);
+        const result = await this.findOne(listingItem.Id);
+
+        this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
+
+        return result;
+
     }
 
     /**

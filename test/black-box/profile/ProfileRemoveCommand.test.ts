@@ -10,32 +10,6 @@ describe('ProfileRemoveCommand', () => {
     const method = Commands.PROFILE_ROOT.commandName;
     const subCommand = Commands.PROFILE_REMOVE.commandName;
 
-    const testData = {
-        name: 'DEFAULT-PROFILE-TEST',
-        address: 'DEFAULT-PROFILE-ADDRESS',
-        shippingAddresses: [{
-            firstName: 'Robert',
-            lastName: 'Downey',
-            title: 'Title',
-            addressLine1: 'Add',
-            addressLine2: 'ADD 22',
-            city: 'city',
-            state: 'test state',
-            country: 'Sweden',
-            zipCode: '85001'
-        }, {
-            firstName: 'Johnny',
-            lastName: 'Depp',
-            title: 'Tite',
-            addressLine1: 'Ad',
-            addressLine2: 'ADD 222',
-            city: 'city',
-            state: 'test state',
-            country: 'Finland',
-            zipCode: '85001'
-        }]
-    };
-
     let createdId = 0;
     let profileName;
 
@@ -52,8 +26,9 @@ describe('ProfileRemoveCommand', () => {
 
     test('Should delete the profile by id', async () => {
         // set up the test data
-        const addDataRes: any = await testUtil.addData(CreatableModel.PROFILE, testData);
-        createdId = addDataRes.id;
+        let generatedProfile: any = await testUtil.generateData(CreatableModel.PROFILE, 1, true);
+        generatedProfile = generatedProfile[0];
+        createdId = generatedProfile.id;
 
         // delete profile
         const res = await rpc(method, [subCommand, createdId]);
@@ -63,11 +38,12 @@ describe('ProfileRemoveCommand', () => {
 
     test('Should delete the profile by name ', async () => {
         // set up the test data
-        const addDataRes: any = await testUtil.addData(CreatableModel.PROFILE, testData);
-        createdId = addDataRes.id;
-        profileName = addDataRes.name;
+        let generatedProfile: any = await testUtil.generateData(CreatableModel.PROFILE, 1, true);
+        generatedProfile = generatedProfile[0];
+        profileName = generatedProfile.name;
+
         // delete profile by name
-        const res = await rpc(method, [subCommand, addDataRes.name]);
+        const res = await rpc(method, [subCommand, profileName]);
         res.expectJson();
         res.expectStatusCode(200);
     });

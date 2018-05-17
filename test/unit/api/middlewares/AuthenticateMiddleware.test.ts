@@ -1,7 +1,7 @@
 import { AuthenticateMiddleware } from '../../../../src/api/middlewares/AuthenticateMiddleware';
 import { LogMock } from '../../lib/LogMock';
 import * as dotenv from 'dotenv';
-dotenv.config({ path: './test/.env.test' });
+dotenv.config({ path: './.env.test' });
 
 describe('AuthenticateMiddleware', () => {
 

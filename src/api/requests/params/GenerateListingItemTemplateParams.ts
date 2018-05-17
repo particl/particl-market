@@ -27,13 +27,14 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
 
     // GenerateListingItemTemplateParamsInterface
     public generateItemInformation = true;
-    public generatePaymentInformation = true;
-    public generateMessagingInformation = true;
-    public generateListingItemObjects = true;
     public generateShippingDestinations = true;
     public generateItemImages = true;
+    public generatePaymentInformation = true;
     public generateEscrow = true;
     public generateItemPrice = true;
+    public generateMessagingInformation = true;
+    public generateListingItemObjects = true;
+
     public generateObjectDatas = true;
     public profileId: number | null = null;
     public generateListingItem = false;

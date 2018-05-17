@@ -51,6 +51,8 @@ describe('ProfileAddCommand', () => {
     test('Should fail because we want to create an empty profile', async () => {
         const res = await rpc(method, [subCommand]);
         res.expectJson();
-        res.expectStatusCode(400);
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Requires profile name arg.');
     });
 });

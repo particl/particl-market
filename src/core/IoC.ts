@@ -63,13 +63,17 @@ export class IoC {
         await this.bindListeners();
 
         if (!Environment.isTest()) {
+            this.log.info('binding middlewares');
             await this.bindMiddlewares();
+            this.log.info('binding controllers');
             await this.bindControllers();
         }
 
         if (this.customConfiguration) {
             this.container = this.customConfiguration(this.container);
         }
+        this.log.info('binding done.');
+
     }
 
     private bindCore(): void {
@@ -162,8 +166,8 @@ export class IoC {
     private bindFiles(filePath: string, target: any, callback: (name: any, value: any) => void): Promise<void> {
         return new Promise<void>((resolve) => {
             this.getFiles(filePath, (files: string[]) => {
-                // this.log.info('bindFiles, filePath:', filePath);
-                // this.log.info('bindFiles, files:', files);
+                this.log.info('bindFiles, filePath:', filePath);
+                this.log.info('bindFiles, files:', files);
                 files.forEach((file: any) => {
                     let fileExport;
                     let fileClass;

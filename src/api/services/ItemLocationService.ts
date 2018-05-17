@@ -39,6 +39,7 @@ export class ItemLocationService {
 
     @validate()
     public async create(@request(ItemLocationCreateRequest) data: ItemLocationCreateRequest): Promise<ItemLocation> {
+        const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -56,7 +57,9 @@ export class ItemLocationService {
         }
 
         // finally find and return the created itemLocation
-        return await this.findOne(itemLocation.Id);
+        const result = await this.findOne(itemLocation.Id);
+        this.log.debug('itemLocationService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        return result;
     }
 
     @validate()
@@ -88,6 +91,7 @@ export class ItemLocationService {
             // we have new locationMarker but no existingLocationMarker -> create new
             locationMarker.item_location_id = id;
             await this.locationMarkerService.create(locationMarker);
+
         } else if (_.isEmpty(locationMarker) && !_.isEmpty(existingLocationMarker)) {
             // we have no new locationMarker and existingLocationMarker -> remove existing
             await this.locationMarkerService.destroy(existingLocationMarker.id);

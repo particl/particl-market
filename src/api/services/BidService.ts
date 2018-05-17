@@ -166,7 +166,7 @@ export class BidService {
         const bid = await this.findOne(id, false);
 
         // extract and remove related models from request
-        const bidDatas: BidDataCreateRequest[] = body.bidDatas;
+        const bidDatas: BidDataCreateRequest[] = body.bidDatas || [];
         delete body.bidDatas;
 
         // set new values, we only need to change the action
