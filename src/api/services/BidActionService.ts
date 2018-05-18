@@ -822,7 +822,7 @@ export class BidActionService {
             this.log.debug('bidder: ', bidder);
             const profileModel = await this.profileService.findOneByAddress(bidder);
             const profile = profileModel.toJSON();
-            bidCreateRequest.address.type = AddressType.SHIPPING_OWN;
+            bidCreateRequest.address.type = AddressType.SHIPPING_BID;
             bidCreateRequest.address.profile_id = profile.id;
         }
 
