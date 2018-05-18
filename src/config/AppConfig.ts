@@ -29,7 +29,6 @@ export class AppConfig implements Configurable {
 
             // Helmet helps you secure your Express apps by setting various HTTP headers. It's not a silver bullet, but it can help!
             .use(helmet())
-            .use(helmet.noCache())
             .use(helmet.hsts({
                 maxAge: 31536000,
                 includeSubdomains: true
@@ -46,7 +45,7 @@ export class AppConfig implements Configurable {
             }))
 
             // Serve static files like images from the public folder
-            .use(express.static(path.join(__dirname, '..', 'public'), { maxAge: 31557600000 }))
+            .use(express.static(path.join(__dirname, '..', 'public'), { maxAge: Infinity }))
 
             // A favicon is a visual cue that client software, like browsers, use to identify a site
             .use(favicon(path.join(__dirname, '..', 'public', 'favicon.ico')))
