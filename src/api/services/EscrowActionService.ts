@@ -462,10 +462,10 @@ export class EscrowActionService {
                     // TODO: earlier I think it was assumed that buyer releases the Escrow first,
                     // TODO: so should we actually have buyerReleaseAddress here?
 
-                    const releaseAddress = this.getValueFromOrderItemObjects('address', orderItem.OrderItemObjects);
+                    const buyerAddress = this.getValueFromOrderItemObjects('buyerAddress', orderItem.OrderItemObjects);
                     // let sellerAddress: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'address');
 
-                    if (!releaseAddress) {
+                    if (!buyerAddress) {
                         this.log.error('Not enough valid information to finalize escrow');
                         throw new MessageException('Not enough valid information to finalize escrow');
                     }
@@ -491,7 +491,7 @@ export class EscrowActionService {
 
                     // CRITICAL TODO: Use the right ratio's...
                     txout[myAddress] = value / 3;
-                    txout[releaseAddress] = (value / 3) * 2;
+                    txout[buyerAddress] = (value / 3) * 2;
 
                     this.log.debug('txout untruncated: ', txout);
 
@@ -502,7 +502,7 @@ export class EscrowActionService {
                     };
 
                     txout[myAddress] = truncateToDecimals(txout[myAddress]);
-                    txout[releaseAddress] = truncateToDecimals(txout[releaseAddress]);
+                    txout[buyerAddress] = truncateToDecimals(txout[buyerAddress]);
                     this.log.debug('final txout: ', txout);
 
                     const outputs: Output[] = [{txid, vout: 0}];  // TODO: Make sure this is the correct vout
