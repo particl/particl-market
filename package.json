@@ -121,7 +121,8 @@
       "ts",
       "tsx",
       "js",
-      "json"
+      "json",
+      "node"
     ],
     "testEnvironment": "node",
     "setupTestFrameworkScriptFile": "./test/unit/lib/setup.ts"
