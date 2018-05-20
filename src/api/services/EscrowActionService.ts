@@ -490,7 +490,7 @@ export class EscrowActionService {
                     const txout = {};
 
                     // CRITICAL TODO: Use the right ratio's...
-                    txout[myAddress] = value / 3;       // seller gets his escrow amount + buyer payment back
+                    txout[myAddress] = value / 3 * 2;   // seller gets his escrow amount + buyer payment back
                     txout[buyerAddress] = (value / 3);  // buyer gets the escrow amount back
 
                     this.log.debug('txout untruncated: ', txout);
