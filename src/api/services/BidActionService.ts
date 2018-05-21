@@ -170,6 +170,14 @@ export class BidActionService {
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
+        // lock the outputs
+        for (var outputToLock of outputs){
+            await this.coreRpcService.lockUnspent(false, [{
+                txid: outputToLock.txid,
+                vout: outputToLock.vout
+            }]);
+        }
+
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
         const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
         // const addr = await this.coreRpcService.getAccountAddress('_escrow_pub_' + listingItem.hash);
