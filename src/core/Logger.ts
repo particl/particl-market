@@ -33,12 +33,21 @@ export class Logger {
 
     private static parsePathToScope(filepath: string): string {
         if (filepath.indexOf(path.sep) >= 0) {
-            filepath = filepath.replace(process.cwd(), '');
-            filepath = filepath.replace(`${path.sep}src${path.sep}`, '');
-            filepath = filepath.replace(`${path.sep}dist${path.sep}`, '');
+            // split and reverse filepath
+            const split = filepath.split(path.sep).reverse();
+            const rebuild: string[] = [];
+            // rebuild from filename, to dirs.
+            split.some((e) => {
+                // abort if we reach the src or dist directory
+                const quit = (['src', 'dist'].indexOf(e) !== -1);
+                if (!quit) {
+                    rebuild.push(e);
+                }
+                return quit;
+            });
+            filepath = rebuild.reverse().join(path.sep);
             filepath = filepath.replace('.ts', '');
             filepath = filepath.replace('.js', '');
-            filepath = filepath.replace(path.sep, ':');
         }
         return filepath;
     }
