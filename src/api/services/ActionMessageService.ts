@@ -74,7 +74,6 @@ export class ActionMessageService {
         let actionMessage = actionMessageModel.toJSON();
 
         // this.log.debug('created actionMessage: ', JSON.stringify(actionMessage, null, 2));
-
         if (!_.isEmpty(messageInfoCreateRequest)) {
             messageInfoCreateRequest.action_message_id = actionMessage.id;
             const messageInfoModel = await this.messageInfoService.create(messageInfoCreateRequest);
@@ -102,14 +101,13 @@ export class ActionMessageService {
             object.action_message_id = actionMessage.id;
             const messageObjectModel = await this.messageObjectService.create(object);
             const messageObject = messageObjectModel.toJSON();
-            // this.log.debug('created messageObject: ', JSON.stringify(messageObject, null, 2));
+            this.log.debug('created messageObject: ', JSON.stringify(messageObject, null, 2));
 
         }
-
         actionMessageModel = await this.findOne(actionMessage.id);
         actionMessage = actionMessageModel.toJSON();
         // this.log.debug('created actionMessage: ', JSON.stringify(actionMessage, null, 2));
-        this.log.debug('actionMessageService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        // this.log.debug('actionMessageService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         return actionMessageModel;
     }
