@@ -171,7 +171,7 @@ export class BidActionService {
         }
 
         // lock the outputs
-        for (var outputToLock of outputs){
+        for (const outputToLock of outputs) {
             await this.coreRpcService.lockUnspent(false, [{
                 txid: outputToLock.txid,
                 vout: outputToLock.vout
