@@ -19,7 +19,8 @@ describe('ListingItemTemplateAddCommand', () => {
         profile = await testUtil.getDefaultProfile();
     });
 
-    test('Should create a new Listing Item Template with only Profile Id', async () => {
+    // Command usage doesn't allow this
+    /* test('Should create a new Listing Item Template with only Profile Id', async () => {
 
         const res = await rpc(method, [subCommand, profile.id]);
         res.expectJson();
@@ -34,7 +35,7 @@ describe('ListingItemTemplateAddCommand', () => {
         expect(result).hasOwnProperty('MessagingInformation');
         expect(result).hasOwnProperty('ListingItemObjects');
         expect(result).hasOwnProperty('ListingItems');
-    });
+    });*/
 
     test('Should create a new Listing Item Template by RPC with Profile + Item-information + Payment-information', async () => {
 
@@ -129,6 +130,6 @@ describe('ListingItemTemplateAddCommand', () => {
         const testData = [subCommand];
         const res = await rpc(method, testData);
         res.expectJson();
-        res.expectStatusCode(400);
+        res.expectStatusCode(404);
     });
 });
