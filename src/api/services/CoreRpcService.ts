@@ -275,6 +275,18 @@ export class CoreRpcService {
     }
 
     /**
+     *
+     * @param {boolean} unlock
+     * @param {module:resources.Output[]} outputs, [{"txid":"id","vout": n},...]
+     * @returns {Promise<any>}
+     */
+    public async lockUnspent(unlock: boolean, outputs: Output[]): Promise<any> {
+
+        const params: any[] = [unlock, outputs];
+        return await this.call('lockunspent', params);
+    }
+
+    /**
      * ﻿DEPRECATED. Returns the current Particl address for receiving payments to this account.
      *
      * @param {string} account

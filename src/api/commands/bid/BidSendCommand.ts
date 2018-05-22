@@ -37,11 +37,11 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      * data.params[]:
      * [0]: itemhash, string
      * [1]: profileId, number
-     * [1]: addressId (from profile shipping addresses), number
-     * [2]: bidDataId, string
-     * [3]: bidDataValue, string
-     * [4]: bidDataId, string
-     * [5]: bidDataValue, string
+     * [2]: addressId (from profile shipping addresses), number
+     * [3]: bidDataId, string
+     * [4]: bidDataValue, string
+     * [5]: bidDataId, string
+     * [6]: bidDataValue, string
      * ......
      *
      * @param data
@@ -62,19 +62,17 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             throw new MessageException('Invalid profileId or addressId.');
         }
 
-        // get listing item hash it is in first argument in the data.params
+        // listingitem we are bidding for
         const listingItemHash = data.params.shift();
-
-        // find listingItem by hash
         const listingItemModel = await this.listingItemService.findOneByHash(listingItemHash);
         const listingItem = listingItemModel.toJSON();
 
-        // find profile by id
+        // profile that is doing the bidding
         const profileId = data.params.shift();
         let profile: any = await this.profileService.findOne(profileId);
         profile = profile.toJSON();
-        // this.log.warn('profile = ' + JSON.stringify(profile));
 
+        // todo: profile is never null, findOne is throwing an exception, which we should be catching
         // if profile not found
         if (profile === null) {
             this.log.warn(`Profile with the id=${profileId} was not found!`);

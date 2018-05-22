@@ -114,13 +114,15 @@ export class BidActionService {
         additionalParams: any[]
     ): Promise<any[]> {
 
+        // todo: propably something that we should check earlier
+        // todo: and we shouldnt even be having items without a price at the moment, validation before posting should take care of that
+        // todo: this could also be caused by of some other error, while saving the item
         if (!listingItem.PaymentInformation.ItemPrice || !listingItem.PaymentInformation.ItemPrice.basePrice) {
             this.log.error('Missing ItemPrice.');
             throw new MessageException('Missing ItemPrice.');
         }
 
-        // Get unspent
-        // const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
+        // get unspent
         const unspent = await this.coreRpcService.listUnspent(1, 99999999, [], false);
 
         if (!unspent || unspent.length === 0) {
@@ -168,6 +170,14 @@ export class BidActionService {
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
+        // lock the outputs
+        for (const outputToLock of outputs) {
+            await this.coreRpcService.lockUnspent(false, [{
+                txid: outputToLock.txid,
+                vout: outputToLock.vout
+            }]);
+        }
+
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
         const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
         // const addr = await this.coreRpcService.getAccountAddress('_escrow_pub_' + listingItem.hash);
@@ -194,12 +204,18 @@ export class BidActionService {
             throw new MessageException('Could not get public key for address!');
         }
 
+        // TODO: We need to send a refund / release address
+        // TODO: address should be named releaseAddress or sellerReleaseAddress and all keys should be enums,
+        // it's confusing when on escrowactionservice this 'address' is referred to as sellers address which it is not
+        const buyerAddress = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
+
         // convert the bid data params as bid data key value pair
         const bidDatas = this.getBidDatasFromArray(additionalParams.concat([
             'outputs', outputs,
             'pubkeys', [pubkey],
             'changeAddr', changeAddr,
-            'change', change
+            'change', change,
+            'buyerAddress', buyerAddress
         ]));
 
         this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
@@ -464,17 +480,11 @@ export class BidActionService {
             throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
         }
 
-        // TODO: We need to send a refund / release address
-        const releaseAddr = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
-
         // - Most likely the transaction building and signing will happen in a different command that takes place
         // before this..
         // End - Ryno Hacks
 
-        // const releaseAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
-        // TODO: address should be named releaseAddress or sellerReleaseAddress and all keys should be enums,
-        // it's confusing when on escrowactionservice this 'address' is referred to as sellers address which it is not
-        const bidDatas = this.getBidDatasFromArray(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex, 'address', releaseAddr]);
+        const bidDatas = this.getBidDatasFromArray(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex]);
 
         return bidDatas;
     }
@@ -820,7 +830,7 @@ export class BidActionService {
             this.log.debug('bidder: ', bidder);
             const profileModel = await this.profileService.findOneByAddress(bidder);
             const profile = profileModel.toJSON();
-            bidCreateRequest.address.type = AddressType.SHIPPING_OWN;
+            bidCreateRequest.address.type = AddressType.SHIPPING_BID;
             bidCreateRequest.address.profile_id = profile.id;
         }
 
