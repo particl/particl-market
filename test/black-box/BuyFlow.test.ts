@@ -65,6 +65,11 @@ describe('Happy BuyFlow', () => {
         // await testUtilNode1.cleanDb();
         // await testUtilNode2.cleanDb();
 
+        const testUtilNode1 = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
+        const testUtilNode2 = new BlackBoxTestUtil(randomBoolean ? 2 : 1);  // BUYER
+        log.debug('SELLER IS NODE' + (randomBoolean ? 1 : 2));
+        log.debug('BUYER IS NODE' + (randomBoolean ? 2 : 1));
+
         // get seller and buyer profiles
         sellerProfile = await testUtilNode1.getDefaultProfile();
         expect(sellerProfile.id).toBeDefined();
