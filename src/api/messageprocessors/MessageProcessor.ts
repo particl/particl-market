@@ -42,7 +42,7 @@ export class MessageProcessor implements MessageProcessorInterface {
     public async process(messages: SmsgMessage[]): Promise<void> {
 
         for (const message of messages) {
-            this.log.debug('message.text:', JSON.stringify(message.text, null, 2));
+            this.log.debug('MessageProcessor.process, received message...');
 
             let parsed: MarketplaceMessage | any;
             parsed = await this.parseJSONSafe(message.text)

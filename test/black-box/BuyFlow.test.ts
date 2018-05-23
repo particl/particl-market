@@ -19,8 +19,9 @@ describe('Happy BuyFlow', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     // const testUtilNode0 = new BlackBoxTestUtil(0);
-    const testUtilNode1 = new BlackBoxTestUtil(1);  // SELLER
-    const testUtilNode2 = new BlackBoxTestUtil(2);  // BUYER
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtilNode1 = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
+    const testUtilNode2 = new BlackBoxTestUtil(randomBoolean ? 2 : 1);  // BUYER
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
@@ -183,6 +184,8 @@ describe('Happy BuyFlow', () => {
 
 // tslint:disable:max-line-length
     test('Should receive ListingItemMessage (MP_ITEM_ADD) posted from sellers node1 as ListingItem on sellers node1 and match it with the existing ListingItemTemplate', async () => {
+
+        await testUtilNode1.waitFor(20);
 
         log.debug('WAIT FOR: MP_ITEM_ADD on seller node1');
         const itemGetRes: any = await testUtilNode1.rpcWaitFor(
