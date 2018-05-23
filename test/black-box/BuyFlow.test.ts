@@ -19,8 +19,9 @@ describe('Happy BuyFlow', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     // const testUtilNode0 = new BlackBoxTestUtil(0);
-    const testUtilNode1 = new BlackBoxTestUtil(1);  // SELLER
-    const testUtilNode2 = new BlackBoxTestUtil(2);  // BUYER
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtilNode1 = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
+    const testUtilNode2 = new BlackBoxTestUtil(randomBoolean ? 2 : 1);  // BUYER
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
