@@ -185,6 +185,8 @@ describe('Happy BuyFlow', () => {
 // tslint:disable:max-line-length
     test('Should receive ListingItemMessage (MP_ITEM_ADD) posted from sellers node1 as ListingItem on sellers node1 and match it with the existing ListingItemTemplate', async () => {
 
+        await testUtilNode1.waitFor(20);
+
         log.debug('WAIT FOR: MP_ITEM_ADD on seller node1');
         const itemGetRes: any = await testUtilNode1.rpcWaitFor(
             listingItemCommand,
