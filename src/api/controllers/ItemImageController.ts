@@ -50,7 +50,8 @@ export class ItemImageController {
         if (itemImage === null || itemImageResult.ItemImageDatas.length === 0 || !imgVersion) {
             res.status(404).send('Image Not found');
         } else {
-            const dataBuffer = new Buffer(imgVersion['data'], 'base64');
+            const data = imgVersion.ItemImageDataContent.data || imgVersion.data;
+            const dataBuffer = new Buffer(data, 'base64');
             const imageBuffer = await Jimp.read(dataBuffer);
             res.setHeader('Content-Disposition', 'filename=' + imageVersion + '.'
                 + imageBuffer.getExtension());
