@@ -45,7 +45,7 @@ export class ItemImageController {
         const itemImageResult = itemImage.toJSON();
 
         // search the itemImageData like params image version
-        const imgVersion = await _.find(itemImageResult.ItemImageDatas, data => data['imageVersion'] === imageVersion);
+        const imgVersion: any = await _.find(itemImageResult.ItemImageDatas, data => data['imageVersion'] === imageVersion);
 
         if (itemImage === null || itemImageResult.ItemImageDatas.length === 0 || !imgVersion) {
             res.status(404).send('Image Not found');

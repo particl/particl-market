@@ -1,3 +1,4 @@
+
 declare module 'resources' {
 
     interface ItemImageData {
@@ -9,6 +10,7 @@ declare module 'resources' {
         imageVersion: string;
         createdAt: Date;
         updatedAt: Date;
+        ItemImageDataContent: ItemImageDataContent;
     }
 
 }
