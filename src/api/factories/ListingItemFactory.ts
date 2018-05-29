@@ -154,7 +154,7 @@ export class ListingItemFactory {
         } as PaymentInformationCreateRequest;
     }
 
-    private async getModelItemPrice(cryptocurrency: any): Promise<getMessageInformationItemPriceCreateRequest> {
+    private async getModelItemPrice(cryptocurrency: any): Promise<ItemPriceCreateRequest> {
         const shippingPrice = await this.getModelShippingPrice(cryptocurrency[0].shipping_price);
         let cryptocurrencyAddress;
         if (!_.isEmpty(cryptocurrency[0].address)) {
