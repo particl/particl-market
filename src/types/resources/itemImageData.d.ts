@@ -1,4 +1,3 @@
-
 declare module 'resources' {
 
     interface ItemImageData {
