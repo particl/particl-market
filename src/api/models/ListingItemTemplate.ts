@@ -21,6 +21,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
         'ItemInformation.ItemLocation.LocationMarker',
         'ItemInformation.ItemImages',
         'ItemInformation.ItemImages.ItemImageDatas',
+        'ItemInformation.ItemImages.ItemImageDatas.ItemImageDataContent',
         'ItemInformation.ShippingDestinations',
         'PaymentInformation',
         'PaymentInformation.Escrow',
