@@ -172,7 +172,6 @@ export class BidActionService {
         // lock the outputs
         const locked = await this.coreRpcService.lockUnspent(false, outputs);
         this.log.debug('outputs locked?', locked);
-        
 
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
         const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
