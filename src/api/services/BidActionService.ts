@@ -148,8 +148,7 @@ export class BidActionService {
                     sum += output.amount;
                     outputs.push({
                         txid: output.txid,
-                        vout: output.vout,
-                        amount: output.amount
+                        vout: output.vout
                     });
                 }
 
@@ -171,12 +170,9 @@ export class BidActionService {
         }
 
         // lock the outputs
-        for (const outputToLock of outputs) {
-            await this.coreRpcService.lockUnspent(false, [{
-                txid: outputToLock.txid,
-                vout: outputToLock.vout
-            }]);
-        }
+        const locked = await this.coreRpcService.lockUnspent(false, outputs);
+        this.log.debug('outputs locked?', locked);
+        
 
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
         const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
