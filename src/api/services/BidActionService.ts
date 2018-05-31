@@ -102,7 +102,7 @@ export class BidActionService {
         this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
 
         // store the selected outputs, so we can load and lock them again on mp restart
-        const selectedOutputs = this.getValueFromBidDatas('outputs', bidDatas);
+        const selectedOutputs = this.getValueFromBidDatas('outputs', createdBid.BidDatas);
         const createdLockedOutputs = await this.lockedOutputService.createLockedOutputs(selectedOutputs, createdBid.id);
         const success = await this.lockedOutputService.lockOutputs(createdLockedOutputs);
 
