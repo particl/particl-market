@@ -1,5 +1,6 @@
 import { Bookshelf } from '../../config/Database';
 import { Bid } from './Bid';
+import {Profile} from "./Profile";
 
 
 export class LockedOutput extends Bookshelf.Model<LockedOutput> {
@@ -15,6 +16,16 @@ export class LockedOutput extends Bookshelf.Model<LockedOutput> {
             });
         } else {
             return await LockedOutput.where<LockedOutput>({ id: value }).fetch();
+        }
+    }
+
+    public static async fetchByTxId(value: string, withRelated: boolean = true): Promise<LockedOutput> {
+        if (withRelated) {
+            return await LockedOutput.where<LockedOutput>({ txid: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await LockedOutput.where<LockedOutput>({ txid: value }).fetch();
         }
     }
 

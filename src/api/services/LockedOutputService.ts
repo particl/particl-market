@@ -10,6 +10,7 @@ import { LockedOutputCreateRequest } from '../requests/LockedOutputCreateRequest
 import { LockedOutputUpdateRequest } from '../requests/LockedOutputUpdateRequest';
 import * as resources from 'resources';
 import { CoreRpcService } from './CoreRpcService';
+import {Profile} from "../models/Profile";
 
 
 export class LockedOutputService {
@@ -34,6 +35,11 @@ export class LockedOutputService {
             this.log.warn(`LockedOutput with the id=${id} was not found!`);
             throw new NotFoundException(id);
         }
+        return lockedOutput;
+    }
+
+    public async findOneByTxId(txid: string, withRelated: boolean = true): Promise<LockedOutput> {
+        const lockedOutput = await this.lockedOutputRepo.findOneByTxId(txid, withRelated);
         return lockedOutput;
     }
 
@@ -77,7 +83,7 @@ export class LockedOutputService {
         await this.lockedOutputRepo.destroy(id);
     }
 
-    public async createLockedOutputs( outputs: LockedOutputCreateRequest[], bidId: number): Promise<resources.LockedOutput[]> {
+    public async createLockedOutputs(outputs: LockedOutputCreateRequest[], bidId: number): Promise<resources.LockedOutput[]> {
         const lockedOutputs: resources.LockedOutput[] = [];
         for (const selectedOutput of outputs) {
             selectedOutput.bid_id = bidId;
@@ -88,14 +94,21 @@ export class LockedOutputService {
         return lockedOutputs;
     }
 
-    public async lockOutputs( outputs: resources.LockedOutput[]): Promise<boolean> {
+    public async destroyLockedOutputs(outputs: resources.LockedOutput[]): Promise<void> {
+        for (const selectedOutput of outputs) {
+            const lockedOutput = await this.findOneByTxId(selectedOutput.txid);
+            await this.destroy(lockedOutput.Id);
+        }
+    }
+
+    public async lockOutputs(outputs: resources.LockedOutput[]): Promise<boolean> {
         this.log.debug('locking outputs:', outputs);
         const locked = await this.coreRpcService.lockUnspent(false, outputs);
         this.log.debug('outputs locked?', locked);
         return locked;
     }
 
-    public async unlockOutputs( outputs: resources.LockedOutput[]): Promise<boolean> {
+    public async unlockOutputs(outputs: resources.LockedOutput[]): Promise<boolean> {
         this.log.debug('unlocking outputs:', outputs);
         const unlocked = await this.coreRpcService.lockUnspent(true, outputs);
         this.log.debug('outputs unlocked?', unlocked);

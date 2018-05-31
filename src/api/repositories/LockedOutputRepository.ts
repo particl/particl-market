@@ -5,6 +5,7 @@ import { LockedOutput } from '../models/LockedOutput';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import {Profile} from "../models/Profile";
 
 export class LockedOutputRepository {
 
@@ -24,6 +25,10 @@ export class LockedOutputRepository {
 
     public async findOne(id: number, withRelated: boolean = true): Promise<LockedOutput> {
         return this.LockedOutputModel.fetchById(id, withRelated);
+    }
+
+    public async findOneByTxId(txid: string, withRelated: boolean = true): Promise<LockedOutput> {
+        return this.LockedOutputModel.fetchByTxId(txid, withRelated);
     }
 
     public async create(data: any): Promise<LockedOutput> {
