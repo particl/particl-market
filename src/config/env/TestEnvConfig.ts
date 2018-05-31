@@ -11,6 +11,7 @@ export class TestEnvConfig extends EnvConfig {
         );
 
         process.env.EXPRESS_ENABLED = false;
+        process.env.SOCKETIO_ENABLED = false;
     }
 
 }
