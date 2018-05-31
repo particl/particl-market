@@ -35,8 +35,9 @@ import { Bid } from '../models/Bid';
 import { OrderFactory } from '../factories/OrderFactory';
 import { OrderService } from './OrderService';
 import { BidDataService } from './BidDataService';
-import {BidDataCreateRequest} from '../requests/BidDataCreateRequest';
-import {IsNotEmpty} from 'class-validator';
+import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
+import { IsNotEmpty } from 'class-validator';
+import { LockedOutputService } from './LockedOutputService';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
@@ -55,6 +56,7 @@ export class BidActionService {
         @inject(Types.Service) @named(Targets.Service.BidDataService) public bidDataService: BidDataService,
         @inject(Types.Service) @named(Targets.Service.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -85,7 +87,7 @@ export class BidActionService {
 
         this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
 
-        // create MPA_BID
+        // create bid
         const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidDatas);
 
         const marketPlaceMessage = {
@@ -96,11 +98,22 @@ export class BidActionService {
         this.log.debug('send(), marketPlaceMessage: ', JSON.stringify(marketPlaceMessage, null, 2));
 
         // save bid locally before broadcasting
-        const createdBid = await this.createBid(bidMessage, listingItem, bidderProfile.address);
+        const createdBid: resources.Bid = await this.createBid(bidMessage, listingItem, bidderProfile.address);
         this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
 
-        // broadcast the message in to the network
-        return await this.smsgService.smsgSend(bidderProfile.address, listingItem.seller, marketPlaceMessage, false);
+        // store the selected outputs, so we can load and lock them again on mp restart
+        let selectedOutputs = this.getValueFromBidDatas('outputs', createdBid.BidDatas);
+        selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
+
+        const createdLockedOutputs = await this.lockedOutputService.createLockedOutputs(selectedOutputs, createdBid.id);
+        const success = await this.lockedOutputService.lockOutputs(createdLockedOutputs);
+
+        if (success) {
+            // broadcast the message in to the network
+            return await this.smsgService.smsgSend(bidderProfile.address, listingItem.seller, marketPlaceMessage, false);
+        } else {
+            throw new MessageException('Failed to lock the selected outputs.');
+        }
     }
 
     /**
@@ -130,7 +143,6 @@ export class BidActionService {
             throw new MessageException('No unspent outputs');
         }
         this.log.debug('unspent outputs: ', unspent.length);
-
         this.log.debug('listingItem.PaymentInformation: ', JSON.stringify(listingItem.PaymentInformation, null, 2));
 
         const outputs: Output[] = [];
@@ -170,10 +182,7 @@ export class BidActionService {
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
-        // lock the outputs
-        this.log.debug('locking outputs', outputs);
-        const locked = await this.coreRpcService.lockUnspent(false, outputs);
-        this.log.debug('outputs locked?', locked);
+        this.log.debug('selected outputs:', JSON.stringify(outputs, null, 2));
 
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
         const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
@@ -285,16 +294,27 @@ export class BidActionService {
             } as BidDataCreateRequest);
 
             this.log.debug('accept(), added orderHash to bidData: ', orderHashBidData.toJSON());
+            this.log.debug('accept(), bidDatas: ', JSON.stringify(bidDatas, null, 2));
+
+            // store the selected outputs, so we can load and lock them again on mp restart
+            let selectedOutputs = this.getValueFromBidDatas('sellerOutputs', updatedBid.BidDatas);
+            selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
+
+            const createdLockedOutputs = await this.lockedOutputService.createLockedOutputs(selectedOutputs, bid.id);
+            const success = await this.lockedOutputService.lockOutputs(createdLockedOutputs);
 
             const marketPlaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,
                 mpaction: bidMessage
             } as MarketplaceMessage;
 
-            this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
-
-            // broadcast the accepted bid message
-            return await this.smsgService.smsgSend(listingItem.seller, updatedBid.bidder, marketPlaceMessage, false);
+            if (success) {
+                // broadcast the accepted bid message
+                this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
+                return await this.smsgService.smsgSend(listingItem.seller, updatedBid.bidder, marketPlaceMessage, false);
+            } else {
+                throw new MessageException('Failed to lock the selected outputs.');
+            }
 
         } else {
             this.log.error(`Bid can not be accepted because its state allready is ${bid.action}`);
@@ -321,7 +341,7 @@ export class BidActionService {
         const unspent = await this.coreRpcService.listUnspent(1, 99999999, [], false);
         // const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
 
-        const outputs: Output[] = [];
+        const sellerOutputs: Output[] = [];
         const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
         const basePrice = listingItemPrice.basePrice;
         const shippingPriceMax = Math.max(
@@ -337,7 +357,7 @@ export class BidActionService {
             unspent.find(output => {
                 if (output.spendable && output.solvable) {
                     sum += output.amount;
-                    outputs.push({
+                    sellerOutputs.push({
                         txid: output.txid,
                         vout: output.vout,
                         amount: output.amount
@@ -360,10 +380,7 @@ export class BidActionService {
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
-        // lock the outputs
-        this.log.debug('locking outputs', outputs);
-        const locked = await this.coreRpcService.lockUnspent(false, outputs);
-        this.log.debug('outputs locked?', locked);
+        this.log.debug('selected outputs:', JSON.stringify(sellerOutputs, null, 2));
 
         const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
 
@@ -441,7 +458,7 @@ export class BidActionService {
         //    .split('').map(v => v.charCodeAt(0).toString(16)).join('').substr(0, 80);
         //
 
-        const rawtx = await this.coreRpcService.createRawTransaction(outputs.concat(buyerOutputs), txout);
+        const rawtx = await this.coreRpcService.createRawTransaction(sellerOutputs.concat(buyerOutputs), txout);
 
         // const rawtx = await this.coreRpcService.call('createrawtransaction', [
         //    outputs.concat(buyerOutputs),
@@ -486,7 +503,11 @@ export class BidActionService {
         // before this..
         // End - Ryno Hacks
 
-        const bidDatas = this.getBidDatasFromArray(['pubkeys', [pubkey, buyerPubkey].sort(), 'rawtx', signed.hex]);
+        const bidDatas = this.getBidDatasFromArray([
+            'sellerOutputs', sellerOutputs,
+            'pubkeys', [pubkey, buyerPubkey].sort(),
+            'rawtx', signed.hex
+        ]);
 
         return bidDatas;
     }
@@ -523,8 +544,20 @@ export class BidActionService {
 
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
-            // broadcast the cancel bid message
-            return await this.smsgService.smsgSend(bid.bidder, listingItem.seller, marketPlaceMessage, false);
+            // remove lockedoutputs
+            let selectedOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
+            selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
+
+            await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
+            const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
+
+            if (success) {
+                // broadcast the cancel bid message
+                return await this.smsgService.smsgSend(bid.bidder, listingItem.seller, marketPlaceMessage, false);
+            } else {
+                throw new MessageException('Failed to unlock the locked outputs.');
+            }
+
         } else {
             this.log.error(`Bid can not be cancelled because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be cancelled because it was already been ${bid.action}`);
@@ -809,9 +842,22 @@ export class BidActionService {
             bidder: tmpBidCreateRequest.bidder,
             bidDatas: tmpBidCreateRequest.bidDatas
         } as BidUpdateRequest;
-        const retBid = await this.bidService.update(oldBid.id, bidUpdateRequest);
+        const bidModel = await this.bidService.update(oldBid.id, bidUpdateRequest);
+        const bid = bidModel.toJSON();
 
-        return actionMessage;
+        // remove lockedoutputs
+        let selectedOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
+        selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
+
+        await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
+        const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
+
+        if (success) {
+            return actionMessage;
+        } else {
+            throw new MessageException('Failed to unlock the locked outputs.');
+        }
+
     }
 
     private async createBid(bidMessage: BidMessage, listingItem: resources.ListingItem, bidder: string): Promise<resources.Bid> {

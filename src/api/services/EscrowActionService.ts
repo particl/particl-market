@@ -29,7 +29,8 @@ import { OrderItemObjectUpdateRequest } from '../requests/OrderItemObjectUpdateR
 import { EscrowMessage } from '../messages/EscrowMessage';
 import { OrderItemUpdateRequest } from '../requests/OrderItemUpdateRequest';
 import { OrderItemService } from './OrderItemService';
-import {OrderSearchParams} from '../requests/OrderSearchParams';
+import { OrderSearchParams } from '../requests/OrderSearchParams';
+import { LockedOutputService } from './LockedOutputService';
 
 export class EscrowActionService {
 
@@ -44,6 +45,7 @@ export class EscrowActionService {
         @inject(Types.Service) @named(Targets.Service.OrderItemService) public orderItemService: OrderItemService,
         @inject(Types.Service) @named(Targets.Service.OrderItemObjectService) public orderItemObjectService: OrderItemObjectService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
         @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) private escrowFactory: EscrowFactory,
         @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -74,23 +76,35 @@ export class EscrowActionService {
             throw new MessageException('Escrow not found!');
         }
 
-        // generate rawtx
-        const rawtx = await this.createRawTx(escrowRequest);
-        const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
+        // unlock the locked outputs before sending the rawtx
+        let selectedOutputs = this.getValueFromOrderItemObjects('outputs', orderItem.OrderItemObjects);
+        selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
 
-        // update OrderItemStatus
-        const newOrderStatus = OrderStatus.ESCROW_LOCKED;
-        const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
+        await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
+        const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
 
-        // use escrowfactory to generate the lock message
-        const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
+        if (success) {
+            // generate rawtx
+            const rawtx = await this.createRawTx(escrowRequest);
+            const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
-        const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: escrowActionMessage
-        } as MarketplaceMessage;
+            // update OrderItemStatus
+            const newOrderStatus = OrderStatus.ESCROW_LOCKED;
+            const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
 
-        return await this.smsgService.smsgSend(orderItem.Order.buyer, orderItem.Order.seller, marketPlaceMessage, false);
+            // use escrowfactory to generate the lock message
+            const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
+
+            const marketPlaceMessage = {
+                version: process.env.MARKETPLACE_VERSION,
+                mpaction: escrowActionMessage
+            } as MarketplaceMessage;
+
+            return await this.smsgService.smsgSend(orderItem.Order.buyer, orderItem.Order.seller, marketPlaceMessage, false);
+        } else {
+            throw new MessageException('Failed to unlock the locked outputs.');
+        }
+
     }
 
     public async refund(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
@@ -242,6 +256,14 @@ export class EscrowActionService {
 
             const newOrderStatus = OrderStatus.ESCROW_LOCKED;
             const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
+
+            // unlock the sellers locked outputs
+            let selectedOutputs = this.getValueFromOrderItemObjects('sellerOutputs', orderItem.OrderItemObjects);
+            selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
+
+            await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
+            // Invalid parameter, expected unspent output
+            // const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
 
             // TODO: do whatever else needs to be done
 
