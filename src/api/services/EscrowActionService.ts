@@ -262,7 +262,8 @@ export class EscrowActionService {
             selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
 
             await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
-            const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
+            // Invalid parameter, expected unspent output
+            // const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
 
             // TODO: do whatever else needs to be done
 
