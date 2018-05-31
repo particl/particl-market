@@ -102,7 +102,9 @@ export class BidActionService {
         this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
 
         // store the selected outputs, so we can load and lock them again on mp restart
-        const selectedOutputs = this.getValueFromBidDatas('outputs', createdBid.BidDatas);
+        let selectedOutputs = this.getValueFromBidDatas('outputs', createdBid.BidDatas);
+        selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
+
         const createdLockedOutputs = await this.lockedOutputService.createLockedOutputs(selectedOutputs, createdBid.id);
         const success = await this.lockedOutputService.lockOutputs(createdLockedOutputs);
 
@@ -294,7 +296,9 @@ export class BidActionService {
             this.log.debug('accept(), added orderHash to bidData: ', orderHashBidData.toJSON());
 
             // store the selected outputs, so we can load and lock them again on mp restart
-            const selectedOutputs = this.getValueFromBidDatas('sellerOutputs', bidDatas);
+            let selectedOutputs = this.getValueFromBidDatas('sellerOutputs', bidDatas);
+            selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
+
             const createdLockedOutputs = await this.lockedOutputService.createLockedOutputs(selectedOutputs, bid.id);
             const success = await this.lockedOutputService.lockOutputs(createdLockedOutputs);
 
@@ -540,7 +544,9 @@ export class BidActionService {
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
             // remove lockedoutputs
-            const selectedOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
+            let selectedOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
+            selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
+
             await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
             const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
 
@@ -839,7 +845,9 @@ export class BidActionService {
         const bid = bidModel.toJSON();
 
         // remove lockedoutputs
-        const selectedOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
+        let selectedOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
+        selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
+
         await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
         const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
 
