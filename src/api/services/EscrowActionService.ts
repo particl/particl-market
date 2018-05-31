@@ -77,7 +77,9 @@ export class EscrowActionService {
         }
 
         // unlock the locked outputs before sending the rawtx
-        const selectedOutputs = this.getValueFromOrderItemObjects('outputs', orderItem.OrderItemObjects);
+        let selectedOutputs = this.getValueFromOrderItemObjects('outputs', orderItem.OrderItemObjects);
+        selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
+
         await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
         const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
 
@@ -256,7 +258,9 @@ export class EscrowActionService {
             const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
 
             // unlock the sellers locked outputs
-            const selectedOutputs = this.getValueFromOrderItemObjects('sellerOutputs', orderItem.OrderItemObjects);
+            let selectedOutputs = this.getValueFromOrderItemObjects('sellerOutputs', orderItem.OrderItemObjects);
+            selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
+
             await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
             const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
 
