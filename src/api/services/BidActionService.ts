@@ -148,7 +148,8 @@ export class BidActionService {
                     sum += output.amount;
                     outputs.push({
                         txid: output.txid,
-                        vout: output.vout
+                        vout: output.vout,
+                        amount: output.amount
                     });
                 }
 
@@ -170,6 +171,7 @@ export class BidActionService {
         }
 
         // lock the outputs
+
         const locked = await this.coreRpcService.lockUnspent(false, outputs);
         this.log.debug('outputs locked?', locked);
 
