@@ -10,6 +10,7 @@ import { LockedOutputCreateRequest } from '../requests/LockedOutputCreateRequest
 import { LockedOutputUpdateRequest } from '../requests/LockedOutputUpdateRequest';
 import * as resources from 'resources';
 import { CoreRpcService } from './CoreRpcService';
+import {Profile} from "../models/Profile";
 
 
 export class LockedOutputService {
@@ -34,6 +35,11 @@ export class LockedOutputService {
             this.log.warn(`LockedOutput with the id=${id} was not found!`);
             throw new NotFoundException(id);
         }
+        return lockedOutput;
+    }
+
+    public async findOneByTxId(txid: string, withRelated: boolean = true): Promise<LockedOutput> {
+        const lockedOutput = await this.lockedOutputRepo.findOneByTxId(txid, withRelated);
         return lockedOutput;
     }
 
@@ -90,7 +96,8 @@ export class LockedOutputService {
 
     public async destroyLockedOutputs(outputs: resources.LockedOutput[]): Promise<void> {
         for (const selectedOutput of outputs) {
-            const lockedOutputModel = await this.destroy(selectedOutput.id);
+            const lockedOutput = await this.findOneByTxId(selectedOutput.txid);
+            await this.destroy(lockedOutput.Id);
         }
     }
 

@@ -80,10 +80,9 @@ export class EscrowActionService {
         let selectedOutputs = this.getValueFromOrderItemObjects('outputs', orderItem.OrderItemObjects);
         selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
 
-        // await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
-        // const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
+        await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
+        const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
 
-        const success = true;
         if (success) {
             // generate rawtx
             const rawtx = await this.createRawTx(escrowRequest);
