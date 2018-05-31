@@ -77,7 +77,7 @@ export class LockedOutputService {
         await this.lockedOutputRepo.destroy(id);
     }
 
-    public async createLockedOutputs( outputs: LockedOutputCreateRequest[], bidId: number): Promise<resources.LockedOutput[]> {
+    public async createLockedOutputs(outputs: LockedOutputCreateRequest[], bidId: number): Promise<resources.LockedOutput[]> {
         const lockedOutputs: resources.LockedOutput[] = [];
         for (const selectedOutput of outputs) {
             selectedOutput.bid_id = bidId;
@@ -88,14 +88,20 @@ export class LockedOutputService {
         return lockedOutputs;
     }
 
-    public async lockOutputs( outputs: resources.LockedOutput[]): Promise<boolean> {
+    public async destroyLockedOutputs(outputs: resources.LockedOutput[]): Promise<void> {
+        for (const selectedOutput of outputs) {
+            const lockedOutputModel = await this.destroy(selectedOutput.id);
+        }
+    }
+
+    public async lockOutputs(outputs: resources.LockedOutput[]): Promise<boolean> {
         this.log.debug('locking outputs:', outputs);
         const locked = await this.coreRpcService.lockUnspent(false, outputs);
         this.log.debug('outputs locked?', locked);
         return locked;
     }
 
-    public async unlockOutputs( outputs: resources.LockedOutput[]): Promise<boolean> {
+    public async unlockOutputs(outputs: resources.LockedOutput[]): Promise<boolean> {
         this.log.debug('unlocking outputs:', outputs);
         const unlocked = await this.coreRpcService.lockUnspent(true, outputs);
         this.log.debug('outputs unlocked?', unlocked);
