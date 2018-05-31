@@ -88,13 +88,15 @@ export class LockedOutputService {
         return lockedOutputs;
     }
 
-    public async lockOutputs( outputs: resources.LockedOutput[], bidId: number): Promise<boolean> {
+    public async lockOutputs( outputs: resources.LockedOutput[]): Promise<boolean> {
+        this.log.debug('locking outputs:', outputs);
         const locked = await this.coreRpcService.lockUnspent(false, outputs);
         this.log.debug('outputs locked?', locked);
         return locked;
     }
 
-    public async unlockOutputs( outputs: resources.LockedOutput[], bidId: number): Promise<boolean> {
+    public async unlockOutputs( outputs: resources.LockedOutput[]): Promise<boolean> {
+        this.log.debug('unlocking outputs:', outputs);
         const unlocked = await this.coreRpcService.lockUnspent(true, outputs);
         this.log.debug('outputs unlocked?', unlocked);
         return unlocked;
