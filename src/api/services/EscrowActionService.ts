@@ -255,6 +255,11 @@ export class EscrowActionService {
             const newOrderStatus = OrderStatus.ESCROW_LOCKED;
             const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
 
+            // unlock the sellers locked outputs
+            const selectedOutputs = this.getValueFromOrderItemObjects('sellerOutputs', orderItem.OrderItemObjects);
+            await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
+            const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
+
             // TODO: do whatever else needs to be done
 
 
