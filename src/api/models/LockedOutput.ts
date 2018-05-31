@@ -1,6 +1,5 @@
 import { Bookshelf } from '../../config/Database';
 import { Bid } from './Bid';
-import {Profile} from "./Profile";
 
 
 export class LockedOutput extends Bookshelf.Model<LockedOutput> {

@@ -10,7 +10,6 @@ import { LockedOutputCreateRequest } from '../requests/LockedOutputCreateRequest
 import { LockedOutputUpdateRequest } from '../requests/LockedOutputUpdateRequest';
 import * as resources from 'resources';
 import { CoreRpcService } from './CoreRpcService';
-import {Profile} from "../models/Profile";
 
 
 export class LockedOutputService {
