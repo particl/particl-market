@@ -171,7 +171,7 @@ export class BidActionService {
         }
 
         // lock the outputs
-
+        this.log.debug('locking outputs', outputs);
         const locked = await this.coreRpcService.lockUnspent(false, outputs);
         this.log.debug('outputs locked?', locked);
 
@@ -359,6 +359,11 @@ export class BidActionService {
             this.log.error(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
+
+        // lock the outputs
+        this.log.debug('locking outputs', outputs);
+        const locked = await this.coreRpcService.lockUnspent(false, outputs);
+        this.log.debug('outputs locked?', locked);
 
         const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
 
