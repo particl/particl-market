@@ -130,7 +130,6 @@ export class BidActionService {
             throw new MessageException('No unspent outputs');
         }
         this.log.debug('unspent outputs: ', unspent.length);
-
         this.log.debug('listingItem.PaymentInformation: ', JSON.stringify(listingItem.PaymentInformation, null, 2));
 
         const outputs: Output[] = [];
