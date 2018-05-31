@@ -83,6 +83,8 @@ export class ServerStartedListener implements interfaces.Listener {
                 // seed the default Profile
                 await this.defaultProfileService.seedDefaultProfile();
 
+                // relock the locked outputs
+
                 // start message polling
                 this.messageProcessor.schedulePoll();
                 this.interval = 10000;

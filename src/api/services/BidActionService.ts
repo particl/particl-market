@@ -35,8 +35,9 @@ import { Bid } from '../models/Bid';
 import { OrderFactory } from '../factories/OrderFactory';
 import { OrderService } from './OrderService';
 import { BidDataService } from './BidDataService';
-import {BidDataCreateRequest} from '../requests/BidDataCreateRequest';
-import {IsNotEmpty} from 'class-validator';
+import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
+import { IsNotEmpty } from 'class-validator';
+import { LockedOutputService } from './LockedOutputService';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
@@ -55,6 +56,7 @@ export class BidActionService {
         @inject(Types.Service) @named(Targets.Service.BidDataService) public bidDataService: BidDataService,
         @inject(Types.Service) @named(Targets.Service.OrderService) public orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -85,7 +87,7 @@ export class BidActionService {
 
         this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
 
-        // create MPA_BID
+        // create bid
         const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidDatas);
 
         const marketPlaceMessage = {
@@ -96,11 +98,20 @@ export class BidActionService {
         this.log.debug('send(), marketPlaceMessage: ', JSON.stringify(marketPlaceMessage, null, 2));
 
         // save bid locally before broadcasting
-        const createdBid = await this.createBid(bidMessage, listingItem, bidderProfile.address);
+        const createdBid: resources.Bid = await this.createBid(bidMessage, listingItem, bidderProfile.address);
         this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
 
-        // broadcast the message in to the network
-        return await this.smsgService.smsgSend(bidderProfile.address, listingItem.seller, marketPlaceMessage, false);
+        // store the selected outputs, so we can load and lock them again on mp restart
+        const selectedOutputs = this.getValueFromBidDatas('outputs', bidDatas);
+        const createdLockedOutputs = await this.lockedOutputService.createLockedOutputs(selectedOutputs, createdBid.id);
+        const success = await this.lockedOutputService.lockOutputs(createdLockedOutputs, createdBid.id);
+
+        if (success) {
+            // broadcast the message in to the network
+            return await this.smsgService.smsgSend(bidderProfile.address, listingItem.seller, marketPlaceMessage, false);
+        } else {
+            throw new MessageException('Failed to lock the selected outputs.');
+        }
     }
 
     /**
@@ -169,10 +180,7 @@ export class BidActionService {
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
-        // lock the outputs
-        this.log.debug('locking outputs', outputs);
-        const locked = await this.coreRpcService.lockUnspent(false, outputs);
-        this.log.debug('outputs locked?', locked);
+        this.log.debug('selected outputs:', JSON.stringify(outputs, null, 2));
 
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
         const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
