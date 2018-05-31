@@ -526,10 +526,17 @@ export class BidActionService {
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
             // remove lockedoutputs
-            this.lockedOutputService.lockOutputs()
+            const selectedOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
+            await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
+            const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
 
-            // broadcast the cancel bid message
-            return await this.smsgService.smsgSend(bid.bidder, listingItem.seller, marketPlaceMessage, false);
+            if (success) {
+                // broadcast the cancel bid message
+                return await this.smsgService.smsgSend(bid.bidder, listingItem.seller, marketPlaceMessage, false);
+            } else {
+                throw new MessageException('Failed to unlock the locked outputs.');
+            }
+
         } else {
             this.log.error(`Bid can not be cancelled because it was already been ${bid.action}`);
             throw new MessageException(`Bid can not be cancelled because it was already been ${bid.action}`);
@@ -814,9 +821,20 @@ export class BidActionService {
             bidder: tmpBidCreateRequest.bidder,
             bidDatas: tmpBidCreateRequest.bidDatas
         } as BidUpdateRequest;
-        const retBid = await this.bidService.update(oldBid.id, bidUpdateRequest);
+        const bidModel = await this.bidService.update(oldBid.id, bidUpdateRequest);
+        const bid = bidModel.toJSON();
 
-        return actionMessage;
+        // remove lockedoutputs
+        const selectedOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
+        await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
+        const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
+
+        if (success) {
+            return actionMessage;
+        } else {
+            throw new MessageException('Failed to unlock the locked outputs.');
+        }
+
     }
 
     private async createBid(bidMessage: BidMessage, listingItem: resources.ListingItem, bidder: string): Promise<resources.Bid> {
