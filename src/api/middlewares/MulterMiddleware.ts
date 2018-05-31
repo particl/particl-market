@@ -2,7 +2,7 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import * as multer from 'multer';
-import { DataDir } from 'src/core/helpers/DataDir';
+import { DataDir } from '../../core/helpers/DataDir';
 
 export class MulterMiddleware implements interfaces.Middleware {
 
