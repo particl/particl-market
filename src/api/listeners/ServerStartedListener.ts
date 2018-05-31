@@ -7,6 +7,7 @@ import { DefaultMarketService } from '../services/DefaultMarketService';
 import { EventEmitter } from '../../core/api/events';
 import { MessageProcessor} from '../messageprocessors/MessageProcessor';
 import { CoreRpcService } from '../services/CoreRpcService';
+import { LockedOutputService } from '../services/LockedOutputService';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -28,6 +29,7 @@ export class ServerStartedListener implements interfaces.Listener {
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
+        @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType
@@ -84,6 +86,9 @@ export class ServerStartedListener implements interfaces.Listener {
                 await this.defaultProfileService.seedDefaultProfile();
 
                 // relock the locked outputs
+                const lockedOutputsModel = await this.lockedOutputService.findAll();
+                const lockedOutputs = lockedOutputsModel.toJSON();
+                const result = await this.lockedOutputService.lockOutputs(lockedOutputs);
 
                 // start message polling
                 this.messageProcessor.schedulePoll();

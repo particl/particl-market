@@ -104,7 +104,7 @@ export class BidActionService {
         // store the selected outputs, so we can load and lock them again on mp restart
         const selectedOutputs = this.getValueFromBidDatas('outputs', bidDatas);
         const createdLockedOutputs = await this.lockedOutputService.createLockedOutputs(selectedOutputs, createdBid.id);
-        const success = await this.lockedOutputService.lockOutputs(createdLockedOutputs, createdBid.id);
+        const success = await this.lockedOutputService.lockOutputs(createdLockedOutputs);
 
         if (success) {
             // broadcast the message in to the network
@@ -529,6 +529,9 @@ export class BidActionService {
             } as MarketplaceMessage;
 
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
+
+            // remove lockedoutputs
+            this.lockedOutputService.lockOutputs()
 
             // broadcast the cancel bid message
             return await this.smsgService.smsgSend(bid.bidder, listingItem.seller, marketPlaceMessage, false);
