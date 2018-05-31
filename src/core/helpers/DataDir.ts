@@ -124,7 +124,7 @@ export class DataDir {
         const datadir = this.getDataDirPath();
         const database = this.getDatabasePath();
         const uploads = this.getUploadsPath();
-        
+
         return this.checkIfExists(datadir)
                 && this.checkIfExists(database)
                 && this.checkIfExists(uploads);
