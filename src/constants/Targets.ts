@@ -32,6 +32,7 @@ export const Targets = {
         ListingItemObjectData: 'ListingItemObjectData',
         ListingItemTemplate: 'ListingItemTemplate',
         LocationMarker: 'LocationMarker',
+        LockedOutput: 'LockedOutput',
         Market: 'Market',
         MessageData: 'MessageData',
         MessageEscrow: 'MessageEscrow',
@@ -73,6 +74,7 @@ export const Targets = {
         ListingItemRepository: 'ListingItemRepository',
         ListingItemTemplateRepository: 'ListingItemTemplateRepository',
         LocationMarkerRepository: 'LocationMarkerRepository',
+        LockedOutputRepository: 'LockedOutputRepository',
         MarketRepository: 'MarketRepository',
         MessageDataRepository: 'MessageDataRepository',
         MessageEscrowRepository: 'MessageEscrowRepository',
@@ -123,6 +125,7 @@ export const Targets = {
         ListingItemService: 'ListingItemService',
         ListingItemTemplateService: 'ListingItemTemplateService',
         LocationMarkerService: 'LocationMarkerService',
+        LockedOutputService: 'LockedOutputService',
         MarketService: 'MarketService',
         MessageDataService: 'MessageDataService',
         MessageEscrowService: 'MessageEscrowService',
@@ -208,7 +211,6 @@ export const Targets = {
             ItemImageRemoveCommand: 'ItemImageRemoveCommand',
             ItemImageRootCommand: 'ItemImageRootCommand'
         },
-        ItemImageDataContentCommand: 'ItemImageDataContentCommand',
         iteminformation: {
             ItemInformationAddCommand: 'ItemInformationAddCommand',
             ItemInformationGetCommand: 'ItemInformationGetCommand',
@@ -240,6 +242,7 @@ export const Targets = {
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
         },
+        LockedOutputCommand: 'LockedOutputCommand',
         market: {
             MarketAddCommand: 'MarketAddCommand',
             MarketListCommand: 'MarketListCommand',
