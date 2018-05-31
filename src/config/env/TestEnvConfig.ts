@@ -10,8 +10,7 @@ export class TestEnvConfig extends EnvConfig {
             envFileName || '.env.test'
         );
 
-        Environment.useExpress = false;
-        Environment.useSocketIO = false;
+        process.env.EXPRESS_ENABLED = false;
     }
 
 }
