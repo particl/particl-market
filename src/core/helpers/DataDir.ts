@@ -62,6 +62,10 @@ export class DataDir {
         return dataDir;
     }
 
+    public static getUploadsPath(): string {
+        return path.join(this.getDataDirPath(), 'uploads');
+    }
+
     public static getDatabasePath(): string {
         return path.join(this.getDataDirPath(), 'database');
     }
@@ -88,6 +92,7 @@ export class DataDir {
     public static async initialize(): Promise<boolean> {
         const datadir = this.getDataDirPath();
         const database = this.getDatabasePath();
+        const uploads = this.getUploadsPath();
 
         // may also be the particl-market/testnet
         // so check if upper directory exists.
@@ -107,6 +112,10 @@ export class DataDir {
             fs.mkdirSync(database);
         }
 
+        if (!this.checkIfExists(uploads)) {
+            fs.mkdirSync(uploads);
+        }
+
         // do a final check, doesn't hurt.
         return this.check();
     }
@@ -114,7 +123,11 @@ export class DataDir {
     public static check(): boolean {
         const datadir = this.getDataDirPath();
         const database = this.getDatabasePath();
-        return this.checkIfExists(datadir) && this.checkIfExists(database);
+        const uploads = this.getUploadsPath();
+        
+        return this.checkIfExists(datadir)
+                && this.checkIfExists(database)
+                && this.checkIfExists(uploads);
     }
 
     public static createDefaultEnvFile(): Promise<boolean> {
