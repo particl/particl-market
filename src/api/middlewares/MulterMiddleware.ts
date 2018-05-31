@@ -4,7 +4,6 @@ import { Types, Core, Targets } from '../../constants';
 import * as multer from 'multer';
 import { DataDir } from '../../core/helpers/DataDir';
 
-
 export class MulterMiddleware implements interfaces.Middleware {
 
     public log: LoggerType;
