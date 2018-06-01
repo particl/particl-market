@@ -82,7 +82,7 @@ export class BidActionService {
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
 
-        // generate bidDatas
+        // generate bidDatas for the message
         const bidDatas = await this.generateBidDatasForMPA_BID(listingItem, shippingAddress, additionalParams);
 
         this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
@@ -118,7 +118,9 @@ export class BidActionService {
 
     /**
      *
-     * @param {"resources".ListingItem} listingItem
+     * @param {module:resources.ListingItem} listingItem
+     * @param {module:resources.Address} shippingAddress
+     * @param {any[]} additionalParams
      * @returns {Promise<any[]>}
      */
     public async generateBidDatasForMPA_BID(
@@ -131,58 +133,19 @@ export class BidActionService {
         // todo: and we shouldnt even be having items without a price at the moment, validation before posting should take care of that
         // todo: this could also be caused by of some other error, while saving the item
         if (!listingItem.PaymentInformation.ItemPrice || !listingItem.PaymentInformation.ItemPrice.basePrice) {
-            this.log.error('Missing ItemPrice.');
-            throw new MessageException('Missing ItemPrice.');
+            this.log.warn(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
+            throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
-        // get unspent
-        const unspent = await this.coreRpcService.listUnspent(1, 99999999, [], false);
-
-        if (!unspent || unspent.length === 0) {
-            this.log.warn('No unspent outputs');
-            throw new MessageException('No unspent outputs');
-        }
-        this.log.debug('unspent outputs: ', unspent.length);
         this.log.debug('listingItem.PaymentInformation: ', JSON.stringify(listingItem.PaymentInformation, null, 2));
 
-        const outputs: Output[] = [];
         const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
         const basePrice = listingItemPrice.basePrice;
         const shippingPriceMax = Math.max(listingItemPrice.ShippingPrice.international, listingItemPrice.ShippingPrice.domestic);
         const totalPrice = basePrice + shippingPriceMax;
 
-        let sum = 0;
-        let change = 0;
-
-        if (basePrice) {
-            unspent.find(output => {
-                if (output.spendable && output.solvable) {
-                    sum += output.amount;
-                    outputs.push({
-                        txid: output.txid,
-                        vout: output.vout,
-                        amount: output.amount
-                    });
-                }
-
-                if (sum > (totalPrice * 2)) { // TODO: Ratio
-                    change = +(sum - (totalPrice * 2) - 0.0002).toFixed(8); // TODO: Get actual fee...
-                    return true;
-                }
-                return false;
-            });
-
-            if (sum < basePrice) {
-                this.log.warn('You are too broke...');
-                throw new MessageException('You are too broke...');
-            }
-
-        } else {
-            this.log.warn(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
-            throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
-        }
-
-        this.log.debug('selected outputs:', JSON.stringify(outputs, null, 2));
+        // TODO: outputs to selectedOutputs
+        const selectedOutputs = await this.findUnspentOutputs(totalPrice);
 
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
         const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
@@ -217,10 +180,10 @@ export class BidActionService {
 
         // convert the bid data params as bid data key value pair
         const bidDatas = this.getBidDatasFromArray(additionalParams.concat([
-            'outputs', outputs,
+            'outputs', selectedOutputs.outputs,
             'pubkeys', [pubkey],
             'changeAddr', changeAddr,
-            'change', change,
+            'change', selectedOutputs.outputsChangeAmount,
             'buyerAddress', buyerAddress
         ]));
 
@@ -238,6 +201,69 @@ export class BidActionService {
 
         return bidDatas;
     }
+
+    /**
+     * find unspent outputs for the required amount
+     *
+     * @param {number} requiredAmount
+     * @returns {Promise<any>}
+     */
+    public async findUnspentOutputs(requiredAmount: number): Promise<any> {
+
+        // get all unspent transaction outputs
+        const unspentOutputs = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+
+        if (!unspentOutputs || unspentOutputs.length === 0) {
+            this.log.warn('No unspent outputs');
+            throw new MessageException('No unspent outputs');
+        }
+
+        this.log.debug('unspent outputs amount: ', unspentOutputs.length);
+
+        const selectedOutputs: Output[] = [];
+        let selectedOutputsSum = 0;
+        let selectedOutputsChangeAmount = 0;
+
+        unspentOutputs.find(output => {
+            if (output.spendable && output.solvable) {
+                selectedOutputsSum += output.amount;
+                selectedOutputs.push({
+                    txid: output.txid,
+                    vout: output.vout,
+                    amount: output.amount
+                });
+            }
+
+            // todo: get the actual fee
+            // check whether we have collected enough outputs to pay for the item and
+            // calculate the change amount
+            // requiredAmount, for MPA_BID: (totalPrice * 2)
+            // requiredAmount, for MPA_ACCEPT: totalPrice
+
+            if (selectedOutputsSum > requiredAmount) {
+                selectedOutputsChangeAmount = +(selectedOutputsSum - requiredAmount - 0.0002).toFixed(8);
+                return true;
+            }
+            return false;
+        });
+
+        if (selectedOutputsSum < requiredAmount) {
+            this.log.warn('Not enough funds');
+            throw new MessageException('Not enough funds');
+        }
+
+        // todo: type
+        const response = {
+            outputs: selectedOutputs,
+            outputsSum: selectedOutputsSum,
+            outputsChangeAmount: selectedOutputsChangeAmount
+        };
+
+        this.log.debug('selected outputs:', JSON.stringify(response, null, 2));
+
+        return response;
+    }
+
 
     /**
      * Accept a Bid
