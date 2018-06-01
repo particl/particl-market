@@ -5,12 +5,14 @@
 
 export enum BidDataValue {
 
-    OUTPUTS = 'outputs',
-    PUBKEYS = 'pubkeys',
-
+    BUYER_PUBKEY = 'buyerPubkey',
+    BUYER_OUTPUTS = 'buyerOutputs',
     BUYER_CHANGE_ADDRESS = 'buyerChangeAddress',
     BUYER_CHANGE_AMOUNT = 'buyerChange',
     BUYER_RELEASE_ADDRESS = 'buyerAddress',
+
+    SELLER_PUBKEY = 'sellerPubkey',
+    SELLER_OUTPUTS = 'sellerOutputs',
 
     RAW_TX = 'rawtx',
     ORDER_HASH = 'orderHash',
