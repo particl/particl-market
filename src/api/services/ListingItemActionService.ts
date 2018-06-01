@@ -32,6 +32,8 @@ import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { ListingItemService } from './ListingItemService';
 import { ActionMessageService } from './ActionMessageService';
 
+import { ImageProcessing } from '../../core/helpers/ImageProcessing';
+
 export class ListingItemActionService {
 
     public log: LoggerType;
@@ -69,6 +71,67 @@ export class ListingItemActionService {
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId);
         const itemTemplate = itemTemplateModel.toJSON();
+
+        const FRACTION_TO_COMPRESS_BY = 0.6;
+        const FRACTION_TO_RESIZE_IMAGE_BY = 0.6;
+        const MAX_SMSG_SIZE = 400000; // TODO: Give these proper values and move them out of here
+        const OVERHEAD_PER_SMSG = 0;
+        const OVERHEAD_PER_IMAGE = 0;
+        const MAX_RESIZES = 20;
+        const itemImages = itemTemplate.ItemInformation.ItemImages;
+        // ItemInformation has ItemImages, which is an array.
+        // Each element in ItemImages has an array ItemImageDatas.
+        const sizePerImage = (MAX_SMSG_SIZE - OVERHEAD_PER_SMSG) / itemImages.length - OVERHEAD_PER_IMAGE;
+        for (const i in itemImages) {
+            if (i) {
+                let resizedImage;
+                let indexOfData;
+                {
+                    let foundOriginal = false;
+                    const itemImage = itemImages[i];
+                    for (const k in itemImage.ItemImageDatas) {
+                        if (k) {
+                            if (itemImage.ItemImageDatas[k].imageVersion === 'ORIGINAL') {
+                                resizedImage = itemImage.ItemImageDatas[k].data;
+                                foundOriginal = true;
+                                indexOfData = k;
+                                // this.log.error('Found original. Continuing...');
+                                break;
+                            }
+                        }
+                    }
+                    if (!foundOriginal) {
+                        // this.log.error('Couldn\'t find original. Skipping...');
+                        continue;
+                    }
+                }
+                let compressedImage = resizedImage;
+                for (let j = 0; ;) {
+                    if (compressedImage.length <= sizePerImage) {
+                        break;
+                    }
+                    const compressedImage2 = await ImageProcessing.downgradeQuality(compressedImage, FRACTION_TO_COMPRESS_BY);
+                    if (compressedImage.length !== compressedImage2.length) {
+                        /* We have not yet reached the limit of compression. */
+                        compressedImage = compressedImage2;
+                        continue;
+                    } else {
+                        ++j;
+                        if (j >= MAX_RESIZES) {
+                            /* A generous number of resizes has happened but we haven't found a solution yet. Exit incase this is an infinite loop. */
+                            throw new MessageException('After ${j} resizes we still didn\'t compress the image enough.'
+                            + ' Image size = ${compressedImage.length}.');
+                        }
+                        /* we've reached the limit of compression. We need to resize the image for further size losses. */
+                        resizedImage = await ImageProcessing.resizeImageToFraction(resizedImage, FRACTION_TO_RESIZE_IMAGE_BY);
+                        compressedImage = resizedImage;
+                        break;
+                    }
+                }
+                itemTemplate.ItemInformation.ItemImages[i].ItemImageDatas[indexOfData].data = compressedImage;
+            }
+        }
+
 
         // this.log.debug('post template: ', JSON.stringify(itemTemplate, null, 2));
         // get the templates profile address
