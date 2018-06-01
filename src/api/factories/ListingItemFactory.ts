@@ -384,7 +384,7 @@ export class ListingItemFactory {
                 imageDataArray.push({
                     protocol: imageData.protocol,
                     encoding: imageData.encoding,
-                    data: imageData.data,
+                    data: imageData.ItemImageDataContent.data,
                     id: imageData.dataId
                 });
             }
