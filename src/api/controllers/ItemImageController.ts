@@ -7,7 +7,6 @@ import {ItemImageHttpUploadService} from '../services/ItemImageHttpUploadService
 import {Logger as LoggerType} from '../../core/Logger';
 import {ImagePostUploadRequest} from '../requests/ImagePostUploadRequest';
 import * as _ from 'lodash';
-import * as Jimp from 'jimp';
 
 // Get middlewares
 const restApi = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.AuthenticateMiddleware);
@@ -52,9 +51,7 @@ export class ItemImageController {
         } else {
             const data = imgVersion.ItemImageDataContent.data || imgVersion.data;
             const dataBuffer = new Buffer(data, 'base64');
-            const imageBuffer = await Jimp.read(dataBuffer);
-            res.setHeader('Content-Disposition', 'filename=' + imageVersion + '.'
-                + imageBuffer.getExtension());
+            res.setHeader('Content-Disposition', 'filename=' + imageVersion);
             res.send(dataBuffer);
         }
     }
