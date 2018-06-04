@@ -69,7 +69,7 @@ export class ListingItemActionService {
     public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<SmsgSendResponse> {
 
         // fetch the listingItemTemplate
-        const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId);
+        const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true);
         const itemTemplate = itemTemplateModel.toJSON();
 
         const FRACTION_TO_COMPRESS_BY = 0.6;
