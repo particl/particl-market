@@ -43,6 +43,12 @@ import { BidDataValue } from '../enums/BidDataValue';
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
 
+export interface OutputData {
+    outputs: Output[];
+    outputsSum: number;
+    outputsChangeAmount: number
+}
+
 export class BidActionService {
 
     public log: LoggerType;
@@ -157,7 +163,7 @@ export class BidActionService {
         //    outputsSum
         //    outputsChangeAmount
         // }
-        const buyerSelectedOutputData = await this.findUnspentOutputs(requiredAmount);
+        const buyerSelectedOutputData: OutputData = await this.findUnspentOutputs(requiredAmount);
 
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
         const buyerEscrowPubAddress = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
@@ -217,7 +223,7 @@ export class BidActionService {
      * @param {number} requiredAmount
      * @returns {Promise<any>}
      */
-    public async findUnspentOutputs(requiredAmount: number): Promise<any> {
+    public async findUnspentOutputs(requiredAmount: number): Promise<OutputData> {
 
         // get all unspent transaction outputs
         const unspentOutputs = await this.coreRpcService.listUnspent(1, 99999999, [], false);
@@ -262,7 +268,7 @@ export class BidActionService {
         }
 
         // todo: type
-        const response = {
+        const response: OutputData = {
             outputs: selectedOutputs,
             outputsSum: selectedOutputsSum,
             outputsChangeAmount: selectedOutputsChangeAmount
@@ -371,6 +377,7 @@ export class BidActionService {
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
+        // todo: price type...
         const shippingPrice = listingItem.PaymentInformation.ItemPrice.ShippingPrice;
         const basePrice = listingItem.PaymentInformation.ItemPrice.basePrice;
         const shippingPriceMax = Math.max(shippingPrice.international, shippingPrice.domestic);
@@ -385,11 +392,27 @@ export class BidActionService {
         //    outputsSum
         //    outputsChangeAmount
         // }
-        const sellerSelectedOutputData = await this.findUnspentOutputs(requiredAmount);
+        const sellerSelectedOutputData: OutputData = await this.findUnspentOutputs(requiredAmount);
 
+        const buyerSelectedOutputs: Output[] = JSON.parse(this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, bid.BidDatas));
+        const buyerOutputsSum = buyerSelectedOutputs.reduce((acc, obj) => {const amount = obj.amount || 0; return acc + amount;}, 0);
+        const buyerRequiredAmount = totalPrice * 2;
+        const selectedOutputsChangeAmount = +(buyerOutputsSum - buyerRequiredAmount - 0.0002).toFixed(8);
+        const buyerSelectedOutputData: OutputData = {
+            outputs: buyerSelectedOutputs,
+            outputsSum: buyerOutputsSum,
+            outputsChangeAmount: selectedOutputsChangeAmount
+        };
+
+        // create seller escrow addresses
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
         const sellerEscrowPubAddress = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
         const sellerEscrowChangeAddress = await this.coreRpcService.getNewAddress(['_escrow_change'], false);
+
+        const buyerEscrowChangeAddress = this.getValueFromBidDatas(BidDataValue.BUYER_CHANGE_ADDRESS, bid.BidDatas); // TODO: Error handling - nice messagee..
+
+        this.log.debug('sellerEscrowPubAddress: ', sellerEscrowPubAddress);
+        this.log.debug('sellerEscrowChangeAddress: ', sellerEscrowChangeAddress);
 
         // TODO: this is not on 0.16.0.3 yet ...
         // const addressInfo = await this.coreRpcService.getAddressInfo(addr);
@@ -399,73 +422,32 @@ export class BidActionService {
         // 0.16.0.3
         const sellerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(sellerEscrowPubAddress);
         const sellerEscrowPubAddressPublicKey = sellerEscrowPubAddressInformation.pubkey;
-        const buyerEcrowPubAddressPublicKey = this.getValueFromBidDatas(BidDataValue.BUYER_PUBKEY, bid.BidDatas);
-
-        this.log.debug('sellerEscrowPubAddress: ', sellerEscrowPubAddress);
-        this.log.debug('sellerEscrowChangeAddress: ', sellerEscrowChangeAddress);
-        this.log.debug('sellerEscrowPubAddressPublicKey: ', sellerEscrowPubAddressPublicKey);
-        this.log.debug('buyerEcrowPubAddressPublicKey: ', buyerEcrowPubAddressPublicKey);
-        this.log.debug('listingItem.hash: ', listingItem.hash);
+        const buyerEscrowPubAddressPublicKey = this.getValueFromBidDatas(BidDataValue.BUYER_PUBKEY, bid.BidDatas);
 
         // create multisig escrow address
         // todo: replace '_escrow_' + listingItem.hash with something unique
-        const escrow = await this.coreRpcService.addMultiSigAddress(
+        const escrowMultisigAddress = await this.coreRpcService.addMultiSigAddress(
             2,
-            [sellerEscrowPubAddressPublicKey, buyerEcrowPubAddressPublicKey].sort(),
+            [sellerEscrowPubAddressPublicKey, buyerEscrowPubAddressPublicKey].sort(),
             '_escrow_' + listingItem.hash);
-        this.log.debug('escrow: ', JSON.stringify(escrow, null, 2));
 
         // txout: {
         //   escrowAddress: amount that should be escrowed
         //   sellerEscrowChangeAddress: sellers change amount
         //   buyerEscrowChangeAddress: buyers change amount
         // }
-        const txout = {};
+        const txout = await this.createTxOut(
+            escrowMultisigAddress,
+            sellerEscrowChangeAddress,
+            buyerEscrowChangeAddress,
+            sellerSelectedOutputData,
+            buyerSelectedOutputData,
+            totalPrice,
+            sellerEscrowPubAddressPublicKey,
+            buyerEscrowPubAddressPublicKey,
+            listingItem.hash);
 
-        txout[escrow.address] = +(totalPrice * 3).toFixed(8); // TODO: Shipping... ;(
-        txout[sellerEscrowChangeAddress] = sellerSelectedOutputData.outputsChangeAmount;
-
-        const buyerEscrowChangeAddress = this.getValueFromBidDatas(BidDataValue.BUYER_CHANGE_ADDRESS, bid.BidDatas); // TODO: Error handling - nice messagee..
         const buyerOutputs = JSON.parse(this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, bid.BidDatas));
-
-        this.log.debug('buyerOutputs: ', JSON.stringify(buyerOutputs, null, 2));
-
-        // TODO: Verify that buyers outputs are unspent?? :/
-        // TODO: Refactor reusable logic. and verify / validate buyer change.
-
-        if (_.isEmpty(buyerOutputs)) {
-            let buyerOutputsSum = 0;
-            let buyerOutputsChangeAmount = 0;
-
-            buyerOutputs.forEach(output => {
-                buyerOutputsSum += output.amount;
-                if (buyerOutputsSum > totalPrice * 2) { // TODO: Ratio
-                    buyerOutputsChangeAmount = +(buyerOutputsSum - (totalPrice * 2) - 0.0001).toFixed(8); // TODO: Get actual fee...
-                    return;
-                }
-            });
-
-            // todo: calculate buyers requiredAmount from Ratio
-            // check that buyers outputs contain enough funds
-            if (buyerOutputsSum < totalPrice * 2) {
-                this.log.warn('Buyers outputs do not contain enough funds!');
-                throw new MessageException('Buyers outputs do not contain enough funds!');
-            }
-            txout[buyerEscrowChangeAddress] = buyerOutputsChangeAmount;
-
-        } else {
-            this.log.error('Buyer didn\'t supply outputs!');
-            throw new MessageException('Buyer didn\'t supply outputs!'); // TODO: proper message for no outputs :P
-        }
-
-        // TODO: Decide if we want this on the blockchain or not...
-        // TODO: Think about how to recover escrow information to finalize transactions should client pc / database crash..
-
-        //
-        // txout['data'] = unescape(encodeURIComponent(data.params[0]))
-        //    .split('').map(v => v.charCodeAt(0).toString(16)).join('').substr(0, 80);
-        //
-
         const rawtx = await this.coreRpcService.createRawTransaction(sellerSelectedOutputData.outputs.concat(buyerOutputs), txout);
 
         // const rawtx = await this.coreRpcService.call('createrawtransaction', [
@@ -512,12 +494,97 @@ export class BidActionService {
             BidDataValue.SELLER_OUTPUTS, sellerSelectedOutputData.outputs,
             // 'pubkeys', [sellerEscrowPubAddressPublicKey, buyerEcrowPubAddressPublicKey].sort(),
             BidDataValue.SELLER_PUBKEY, sellerEscrowPubAddressPublicKey,
-            BidDataValue.BUYER_PUBKEY, buyerEcrowPubAddressPublicKey, // allready in BidData, not necessarily needed here
+            BidDataValue.BUYER_PUBKEY, buyerEscrowPubAddressPublicKey, // allready in BidData, not necessarily needed here
             BidDataValue.RAW_TX, signed.hex
         ]);
         this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
 
         return bidDatas;
+    }
+
+    /**
+     *
+     * @param {OutputData} sellerSelectedOutputData
+     * @param {number} itemTotalPrice
+     * @param {module:resources.BidData[]} bidDatas
+     * @param {string} listingItemHash, only used as unique id, todo: remove
+     * @returns {any}
+     */
+    public createTxOut(escrowMultisigAddress: string,
+                             sellerEscrowChangeAddress: string,
+                             buyerEscrowChangeAddress: string,
+                             sellerSelectedOutputData: OutputData,
+                             buyerSelectedOutputData: OutputData,
+                             itemTotalPrice: number,
+                             sellerEscrowPubAddressPublicKey: string,
+                             buyerEscrowPubAddressPublicKey: string,
+                             listingItemHash: string): any {
+
+        const sellerChangeAmount = sellerSelectedOutputData.outputsChangeAmount;
+
+        // txout: {
+        //   escrowMultisigAddress: amount that should be escrowed
+        //   sellerEscrowChangeAddress: sellers change amount
+        //   buyerEscrowChangeAddress: buyers change amount
+        // }
+        const txout = {};
+
+
+        this.log.debug('sellerEscrowPubAddressPublicKey: ', sellerEscrowPubAddressPublicKey);
+        this.log.debug('buyerEcrowPubAddressPublicKey: ', buyerEscrowPubAddressPublicKey);
+        this.log.debug('listingItem.hash: ', listingItemHash);
+
+
+        this.log.debug('TODO IS THIS OBJECT OR NOT?!? escrow: ', JSON.stringify(escrowMultisigAddress, null, 2));
+
+
+        // TODO: escrow or escrow.address?!?!
+        // txout[escrow.address] = +(totalPrice * 3).toFixed(8);
+        txout[escrowMultisigAddress] = +(itemTotalPrice * 3).toFixed(8); // TODO: Shipping... ;(
+        txout[sellerEscrowChangeAddress] = sellerChangeAmount;
+
+
+
+        this.log.debug('buyerOutputs: ', JSON.stringify(buyerSelectedOutputData.outputs, null, 2));
+
+        // TODO: Verify that buyers outputs are unspent?? :/
+        // TODO: Refactor reusable logic. and verify / validate buyer change.
+
+        if (_.isEmpty(buyerSelectedOutputData.outputs)) {
+            let buyerOutputsSum = 0;
+            let buyerOutputsChangeAmount = 0;
+
+            buyerSelectedOutputData.outputs.forEach(output => {
+                const amount = output.amount || 0;
+                buyerOutputsSum += amount;
+                if (buyerOutputsSum > itemTotalPrice * 2) { // TODO: Ratio
+                    buyerOutputsChangeAmount = +(buyerOutputsSum - (itemTotalPrice * 2) - 0.0001).toFixed(8); // TODO: Get actual fee...
+                    return;
+                }
+            });
+
+            // todo: calculate buyers requiredAmount from Ratio
+            // check that buyers outputs contain enough funds
+            if (buyerOutputsSum < itemTotalPrice * 2) {
+                this.log.warn('Buyers outputs do not contain enough funds!');
+                throw new MessageException('Buyers outputs do not contain enough funds!');
+            }
+            txout[buyerEscrowChangeAddress] = buyerOutputsChangeAmount;
+
+        } else {
+            this.log.error('Buyer didn\'t supply outputs!');
+            throw new MessageException('Buyer didn\'t supply outputs!'); // TODO: proper message for no outputs :P
+        }
+
+        // TODO: Decide if we want this on the blockchain or not...
+        // TODO: Think about how to recover escrow information to finalize transactions should client pc / database crash..
+
+        //
+        // txout['data'] = unescape(encodeURIComponent(data.params[0]))
+        //    .split('').map(v => v.charCodeAt(0).toString(16)).join('').substr(0, 80);
+        //
+
+        return txout;
     }
 
 
