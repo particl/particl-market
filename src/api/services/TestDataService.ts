@@ -80,6 +80,8 @@ import { OrderStatus } from '../enums/OrderStatus';
 import { OrderItemObjectCreateRequest } from '../requests/OrderItemObjectCreateRequest';
 import { OrderService } from './OrderService';
 import {OrderFactory} from '../factories/OrderFactory';
+import {ItemPriceCreateRequest} from '../requests/ItemPriceCreateRequest';
+import {EscrowCreateRequest} from '../requests/EscrowCreateRequest';
 
 export class TestDataService {
 
@@ -565,8 +567,12 @@ export class TestDataService {
         this.log.debug('bid:', JSON.stringify(bid, null, 2));
 
         // wtf why are the objects allready?
-        const listingItemTemplate = await this.listingItemTemplateService.findOne(bid.ListingItem.ListingItemTemplate.id);
-        const listingItem = await this.listingItemService.findOne(bid.ListingItem.id);
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(bid.ListingItem.ListingItemTemplate.id);
+        const listingItemModel = await this.listingItemService.findOne(bid.ListingItem.id);
+
+        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
+        const listingItem: resources.ListingItem = listingItemModel.toJSON();
+
 
         this.log.debug('bid.ListingItem.ListingItemTemplate.id:', bid.ListingItem.ListingItemTemplate.id);
         this.log.debug('listingItemTemplate.id:', listingItemTemplate.id);
@@ -599,7 +605,7 @@ export class TestDataService {
         const bid: resources.Bid = bidModel.toJSON();
 
         // then generate ordercreaterequest with some orderitems and orderitemobjects
-        const orderCreateRequest = await this.orderFactory.getModel(bid);
+        const orderCreateRequest = await this.orderFactory.getModelFromBid(bid);
 
         return orderCreateRequest;
     }
@@ -798,17 +804,17 @@ export class TestDataService {
 
         const escrow = generateParams.generateEscrow
             ? {
-                type: Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
+                type: EscrowType.MAD.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(EscrowType)),
                 ratio: {
                     buyer: _.random(1, 100),
                     seller: _.random(1, 100)
                 }
-            }
+            } as EscrowCreateRequest
             : {};
 
         const itemPrice = generateParams.generateItemPrice
             ? {
-                currency: Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
+                currency: Currency.PARTICL.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(Currency)),
                 basePrice: _.random(0.1, 1.00),
                 shippingPrice: {
                     domestic: _.random(0.01, 0.10),
@@ -818,11 +824,11 @@ export class TestDataService {
                     type: Faker.random.arrayElement(Object.getOwnPropertyNames(CryptocurrencyAddressType)),
                     address: await this.coreRpcService.getNewAddress()
                 }
-            }
+            } as ItemPriceCreateRequest
             : {};
 
         const paymentInformation = {
-            type: Faker.random.arrayElement(Object.getOwnPropertyNames(PaymentType)),
+            type: PaymentType.SALE.toString(), // Faker.random.arrayElement(Object.getOwnPropertyNames(PaymentType)),
             escrow,
             itemPrice
         } as PaymentInformationCreateRequest;

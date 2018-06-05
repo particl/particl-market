@@ -152,6 +152,8 @@ export class ListingItemActionService {
             const market = marketModel.toJSON();
 
             const listingItemMessage = message.item;
+
+            this.log.debug('listingItemMessage: ', listingItemMessage);
             // create the new custom categories in case there are some
             const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
 
@@ -167,10 +169,13 @@ export class ListingItemActionService {
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
             let listingItem = listingItemModel.toJSON();
 
+            // update the template relation
+            await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
+
             // first save it
             const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
             const actionMessage = actionMessageModel.toJSON();
-            this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
+            // this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
 
             // emit the latest message event to cli
             // this.eventEmitter.emit('cli', {
@@ -181,7 +186,7 @@ export class ListingItemActionService {
             listingItemModel = await this.listingItemService.findOne(listingItem.id);
             listingItem = listingItemModel.toJSON();
 
-            this.log.debug('listingItem with actionMessage:', JSON.stringify(listingItem, null, 2));
+            this.log.debug('saved listingItem:', JSON.stringify(listingItem, null, 2));
 
             return listingItem;
 

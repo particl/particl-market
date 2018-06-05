@@ -204,6 +204,54 @@ export class CoreRpcService {
     }
 
     /**
+     * Submits raw transaction (serialized, hex-encoded) to local node and network.
+     *
+     * @param {string} hexstring
+     * @returns {Promise<any>}
+     */
+    public async sendRawTransaction(hexstring: string, allowHighFees: boolean = false): Promise<any> {
+        const params: any[] = [];
+        params.push(hexstring);
+        params.push(allowHighFees);
+        return await this.call('sendrawtransaction', params);
+    }
+
+    /**
+     * Return a JSON object representing the serialized, hex-encoded transaction.
+     *
+     * @param {string} hexstring
+     * @returns {Promise<any>}
+     */
+    public async decodeRawTransaction(hexstring: string, isWitness?: boolean): Promise<any> {
+        const params: any[] = [];
+        params.push(hexstring);
+
+        if (isWitness !== undefined) {
+            params.push(isWitness);
+        }
+        return await this.call('decoderawtransaction', params);
+    }
+
+    /**
+     * Return the raw transaction data.
+     *
+     * @param {string} hexstring
+     * @returns {Promise<any>}
+     */
+    public async getRawTransaction(txid: string, verbose?: boolean, blockhash?: string): Promise<any> {
+        const params: any[] = [];
+        params.push(txid);
+
+        if (verbose !== undefined) {
+            params.push(verbose);
+        }
+        if (blockhash !== undefined) {
+            params.push(blockhash);
+        }
+        return await this.call('getrawtransaction', params);
+    }
+
+    /**
      * ﻿Returns array of unspent transaction outputs
      * with between minconf and maxconf (inclusive) confirmations.
      * Optionally filter to only include txouts paid to specified addresses.

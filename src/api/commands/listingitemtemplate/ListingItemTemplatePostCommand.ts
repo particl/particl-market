@@ -37,6 +37,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
+        // TODO: wheres the validation?!?
+        // TODO: if the template doesn't have all the required data, throw an exception
+
         const response = await this.listingItemActionService.post({
             listingItemTemplateId: data.params[0],
             marketId: data.params[1] || undefined

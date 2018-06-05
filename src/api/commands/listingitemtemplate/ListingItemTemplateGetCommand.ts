@@ -23,14 +23,23 @@ export class ListingItemTemplateGetCommand extends BaseCommand implements RpcCom
 
     /**
      * data.params[]:
-     *  [0]: id to fetch
+     *  [0]: id or hash
+     *
+     * when data.params[0] is number then findById, else findOneByHash
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ListingItemTemplate> {
-        return await this.listingItemTemplateService.findOne(data.params[0]);
+        let listingItemTemplate;
+
+        if (typeof data.params[0] === 'number') {
+            listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
+        } else {
+            listingItemTemplate = await this.listingItemTemplateService.findOneByHash(data.params[0]);
+        }
+        return listingItemTemplate;
     }
 
     public usage(): string {

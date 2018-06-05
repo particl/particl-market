@@ -18,7 +18,8 @@ export const exceptionHandler = (error: Exception | Error, req: myExpress.Reques
         if (Environment.isDevelopment()) {
             console.error(error.stack);
         }
-        res.failed(500, 'Something broke!', error['body'] || null);
+        console.error(error['body']);
+        res.failed(500, 'Something broke: ' + error, error['body'] || null);
         next(error);
     }
 };

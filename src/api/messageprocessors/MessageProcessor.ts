@@ -9,11 +9,11 @@ import { SmsgService } from '../services/SmsgService';
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { ListingItemService } from '../services/ListingItemService';
-import {ActionMessageInterface} from '../messages/ActionMessageInterface';
-import {BidMessageType} from '../enums/BidMessageType';
-import {EscrowMessageType} from '../enums/EscrowMessageType';
-import {InternalServerException} from '../exceptions/InternalServerException';
-import {MarketplaceEvent} from '../messages/MarketplaceEvent';
+import { ActionMessageInterface } from '../messages/ActionMessageInterface';
+import { BidMessageType } from '../enums/BidMessageType';
+import { EscrowMessageType } from '../enums/EscrowMessageType';
+import { InternalServerException } from '../exceptions/InternalServerException';
+import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -50,17 +50,21 @@ export class MessageProcessor implements MessageProcessorInterface {
             if (parsed) {
                 parsed.market = message.to;
 
+                // in case of ListingItemMessage
                 if (parsed.item) {
                     // ListingItemMessage, listingitemservice listens for this event
                     this.eventEmitter.emit(Events.ListingItemReceivedEvent, {
                         smsgMessage: message,
                         marketplaceMessage: parsed
                     } as MarketplaceEvent);
+
+                    // send event to cli
                     this.eventEmitter.emit(Events.Cli, {
                         message: Events.ListingItemReceivedEvent,
                         data: parsed
                     });
 
+                // in case of ActionMessage, which is either BidMessage or EscrowMessage
                 } else if (parsed.mpaction) {
                     // ActionMessage
                     const eventType = await this.getActionEventType(parsed.mpaction);
@@ -68,6 +72,8 @@ export class MessageProcessor implements MessageProcessorInterface {
                         smsgMessage: message,
                         marketplaceMessage: parsed
                     });
+
+                    // send event to cli
                     this.eventEmitter.emit(Events.Cli, {
                         message: eventType,
                         data: parsed

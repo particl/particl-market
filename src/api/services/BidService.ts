@@ -86,7 +86,7 @@ export class BidService {
     public async create(@request(BidCreateRequest) data: BidCreateRequest): Promise<Bid> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('BidCreateRequest:', JSON.stringify(body, null, 2));
+        // this.log.debug('BidCreateRequest:', JSON.stringify(body, null, 2));
 
         // bid needs is related to listing item
         if (body.listing_item_id == null) {
@@ -108,8 +108,6 @@ export class BidService {
 
         const addressCreateRequest = body.address;
         delete body.address;
-
-        this.log.debug('body.listing_item_id: ', body.listing_item_id);
 
         // in case there's no profile id, figure it out
         if (!addressCreateRequest.profile_id) {
@@ -179,16 +177,18 @@ export class BidService {
         const updatedBid = await this.bidRepo.update(id, bid.toJSON());
 
         // remove old BidDatas
-        const oldBidDatas = updatedBid.related('BidDatas').toJSON();
-        for (const bidData of oldBidDatas) {
-            await this.bidDataService.destroy(bidData.id);
-        }
+        if (bidDatas) {
+            const oldBidDatas = updatedBid.related('BidDatas').toJSON();
+            for (const bidData of oldBidDatas) {
+                await this.bidDataService.destroy(bidData.id);
+            }
 
-        // create new BidDatas
-        for (const bidData of bidDatas) {
-            bidData.bid_id = id;
-            bidData.dataValue = typeof (bidData.dataValue) === 'string' ? bidData.dataValue : JSON.stringify(bidData.dataValue);
-            await this.bidDataService.create(bidData);
+            // create new BidDatas
+            for (const bidData of bidDatas) {
+                bidData.bid_id = id;
+                bidData.dataValue = typeof (bidData.dataValue) === 'string' ? bidData.dataValue : JSON.stringify(bidData.dataValue);
+                await this.bidDataService.create(bidData);
+            }
         }
 
         return await this.findOne(id, true);

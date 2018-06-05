@@ -11,7 +11,7 @@ exports.up = (db: Knex): Promise<any> => {
                 .inTable('action_messages').onDelete('cascade');
 
             table.string('data_id').notNullable();
-            table.string('data_value').notNullable();
+            table.string('data_value').nullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

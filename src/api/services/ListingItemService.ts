@@ -36,6 +36,7 @@ import { EventEmitter } from 'events';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ActionMessageService } from './ActionMessageService';
+import * as resources from 'resources';
 
 export class ListingItemService {
 
@@ -160,7 +161,7 @@ export class ListingItemService {
             await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
         }
 
-        this.log.debug('create actionMessages:', JSON.stringify(actionMessages, null, 2));
+        // this.log.debug('create actionMessages:', JSON.stringify(actionMessages, null, 2));
 
         // create actionMessages, only used to create testdata
         for (const actionMessage of actionMessages) {
@@ -292,6 +293,31 @@ export class ListingItemService {
 
         // finally find and return the updated listingItem
         return await this.findOne(id);
+    }
+
+    public async updateListingItemTemplateRelation(id: number): Promise<ListingItem> {
+
+        this.log.debug('updating ListingItem relation to possible ListingItemTemplate.');
+
+        let listingItem = await this.findOne(id, false);
+        const templateId = await this.listingItemTemplateService.findOneByHash(listingItem.Hash)
+            .then(value => {
+                const template = value.toJSON();
+                this.log.debug('found ListingItemTemplate with matching hash, id:', template.id);
+                return template.id;
+            })
+            .catch(reason => {
+                this.log.debug('matching ListingItemTemplate for ListingItem not found.');
+            });
+
+        if (templateId) {
+            listingItem.set('listingItemTemplateId', templateId);
+            await this.listingItemRepo.update(id, listingItem.toJSON());
+        }
+
+        listingItem = await this.findOne(id);
+
+        return listingItem;
     }
 
     /**

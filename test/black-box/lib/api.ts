@@ -16,10 +16,11 @@ export interface ApiOptions<T, T2> {
     port?: number;
 }
 
-export const api = async <T> ( method: string, path: string, options: ApiOptions<T> = {}, instanceNumber?: number = 0) => {
+export const api = async <T> ( method: string, path: string, options: ApiOptions<T, any> = {}, instanceNumber: number = 0) => {
 
     const HOST = options.host ? options.host : process.env.APP_HOST;
-    const PORT = ((options.port ? options.port : process.env.APP_PORT) * 1) + (1000 * instanceNumber);
+
+    const PORT = parseInt((options.port ? options.port : process.env.APP_PORT), 10) + (100 * instanceNumber);
     const uri = `${HOST}:${PORT}${path}`;
     const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
 
@@ -55,9 +56,10 @@ export const api = async <T> ( method: string, path: string, options: ApiOptions
     try {
         res = await request(o);
     } catch (e) {
-        //  console.log('ERROR: ', e);
         error = e;
-/*        if (error.error) {
+
+        /*
+        if (error.error) {
             if (error.error.code) {
                 throw new HttpException(500, error.error.message);
             } else {
@@ -102,7 +104,7 @@ export const api = async <T> ( method: string, path: string, options: ApiOptions
 
 };
 
-export const rpc = async (method: string, params: any[] = [], instanceNumber: number = 0): any => {
+export const rpc = async (method: string, params: any[] = [], instanceNumber: number = 0): Promise<any> => {
     const body = { method, params, jsonrpc: '2.0' };
     return await api('POST', '/api/rpc', { body }, instanceNumber);
 };
