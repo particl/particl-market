@@ -1,5 +1,5 @@
 /**
- * BidDataValues
+ * BidDataValue
  *
  */
 
