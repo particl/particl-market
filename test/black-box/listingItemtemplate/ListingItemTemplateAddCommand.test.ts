@@ -20,7 +20,7 @@ describe('ListingItemTemplateAddCommand', () => {
     });
 
     // Command usage doesn't allow this
-    /*test('Should create a new Listing Item Template with only Profile Id', async () => {
+    /* test('Should create a new Listing Item Template with only Profile Id', async () => {
 
         const res = await rpc(method, [subCommand, profile.id]);
         res.expectJson();
