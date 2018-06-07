@@ -1,6 +1,7 @@
 import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { AddressType } from '../../../src/api/enums/AddressType';
 
 describe('AddressListCommand', () => {
 
@@ -18,7 +19,34 @@ describe('AddressListCommand', () => {
         city: 'Melbourne',
         state: 'Mel State',
         country: 'Finland',
-        zipCode: '85001'
+        zipCode: '85001',
+        type: AddressType.SHIPPING_OWN
+    };
+
+    const testDataNotOwn = {
+        firstName: 'Johnny',
+        lastName: 'Depp',
+        title: 'Work',
+        addressLine1: '123 6th St',
+        addressLine2: 'Melbourne, FL 32904',
+        city: 'Melbourne',
+        state: 'Mel State',
+        country: 'Finland',
+        zipCode: '85001',
+        type: AddressType.SHIPPING_ORDER
+    };
+
+    const testDataNoTitle = {
+        firstName: 'Johnny',
+        lastName: 'Depp',
+        title: null,
+        addressLine1: '123 6th St',
+        addressLine2: 'Melbourne, FL 32904',
+        city: 'Melbourne',
+        state: 'Mel State',
+        country: 'Finland',
+        zipCode: '85001',
+        type: AddressType.SHIPPING_OWN
     };
 
     let defaultProfile;
@@ -93,4 +121,39 @@ describe('AddressListCommand', () => {
         expect(result.length).toBe(2);
     });
 
+    test('Check against SHIPPING_OWN - should list two addresses for default profile id', async () => {
+        // add address
+        const res = await rpc(addressCommand, [Commands.ADDRESS_ADD.commandName, defaultProfileId,
+                    testDataNotOwn.firstName, testDataNotOwn.lastName, testDataNotOwn.title,
+                    testDataNotOwn.addressLine1, testDataNotOwn.addressLine2,
+                    testDataNotOwn.city, testDataNotOwn.state, testDataNotOwn.country, 
+                    testDataNotOwn.zipCode, testDataNotOwn.type]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        // list created addresses
+        const addRes = await rpc(addressCommand, [listCommand, defaultProfileId]);
+        addRes.expectJson();
+        addRes.expectStatusCode(200);
+        const result: any = addRes.getBody()['result'];
+        expect(result.length).toBe(2);
+    });
+
+    test('Check against no title - should list two addresses for default profile id', async () => {
+        // add address
+        const res = await rpc(addressCommand, [Commands.ADDRESS_ADD.commandName, defaultProfileId,
+                    testDataNoTitle.firstName, testDataNoTitle.lastName, testDataNoTitle.title,
+                    testDataNoTitle.addressLine1, testDataNoTitle.addressLine2,
+                    testDataNoTitle.city, testDataNoTitle.state, testDataNoTitle.country, 
+                    testDataNoTitle.zipCode, testDataNoTitle.type]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        // list created addresses
+        const addRes = await rpc(addressCommand, [listCommand, defaultProfileId]);
+        addRes.expectJson();
+        addRes.expectStatusCode(200);
+        const result: any = addRes.getBody()['result'];
+        expect(result.length).toBe(2);
+    });
 });
