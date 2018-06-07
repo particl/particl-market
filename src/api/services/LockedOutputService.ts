@@ -96,7 +96,9 @@ export class LockedOutputService {
     public async destroyLockedOutputs(outputs: resources.LockedOutput[]): Promise<void> {
         for (const selectedOutput of outputs) {
             const lockedOutput = await this.findOneByTxId(selectedOutput.txid);
-            await this.destroy(lockedOutput.Id);
+            if (lockedOutput) {
+                await this.destroy(lockedOutput.Id);
+            }
         }
     }
 
