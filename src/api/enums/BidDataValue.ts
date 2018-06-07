@@ -5,6 +5,8 @@
 
 export enum BidDataValue {
 
+    OUTPUTS = 'outputs',
+
     BUYER_PUBKEY = 'buyerPubkey',
     BUYER_OUTPUTS = 'buyerOutputs',
     BUYER_CHANGE_ADDRESS = 'buyerChangeAddress',

@@ -6,9 +6,7 @@ import { Types, Core, Targets, Events } from '../../constants';
 import * as resources from 'resources';
 import { MessageException } from '../exceptions/MessageException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
-
 import { EventEmitter } from 'events';
-
 import { ActionMessageService } from './ActionMessageService';
 import { BidService } from './BidService';
 import { ProfileService } from './ProfileService';
@@ -17,9 +15,7 @@ import { BidFactory } from '../factories/BidFactory';
 import { SmsgService } from './SmsgService';
 import { CoreRpcService } from './CoreRpcService';
 import { ListingItemService } from './ListingItemService';
-
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { Market } from '../models/Market';
 import { Profile } from '../models/Profile';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { BidMessageType } from '../enums/BidMessageType';
@@ -28,7 +24,6 @@ import { BidMessage } from '../messages/BidMessage';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { AddressType } from '../enums/AddressType';
 import { SearchOrder } from '../enums/SearchOrder';
-import { Environment } from '../../core/helpers/Environment';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { Bid } from '../models/Bid';
@@ -36,13 +31,10 @@ import { OrderFactory } from '../factories/OrderFactory';
 import { OrderService } from './OrderService';
 import { BidDataService } from './BidDataService';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
-import { IsNotEmpty } from 'class-validator';
 import { LockedOutputService } from './LockedOutputService';
 import { BidDataValue } from '../enums/BidDataValue';
 
-declare function escape(s: string): string;
-declare function unescape(s: string): string;
-
+// todo: move
 export interface OutputData {
     outputs: Output[];
     outputsSum: number;
@@ -86,14 +78,13 @@ export class BidActionService {
                       shippingAddress: resources.Address, additionalParams: any[]): Promise<SmsgSendResponse> {
 
         // TODO: change send params to BidSendRequest and @validate them
-
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
 
         // generate bidDatas for the message
         const bidDatas = await this.generateBidDatasForMPA_BID(listingItem, shippingAddress, additionalParams);
 
-        this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
+        // this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
 
         // create MPA_BID message
         const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidDatas);
@@ -107,7 +98,7 @@ export class BidActionService {
 
         // save bid locally before broadcasting
         const createdBid: resources.Bid = await this.createBid(bidMessage, listingItem, bidderProfile.address);
-        this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
+        // this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
 
         // store the selected outputs, so we can load and lock them again on mp restart
         let selectedOutputs = this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, createdBid.BidDatas);
@@ -146,7 +137,7 @@ export class BidActionService {
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
-        this.log.debug('listingItem.PaymentInformation: ', JSON.stringify(listingItem.PaymentInformation, null, 2));
+        // this.log.debug('listingItem.PaymentInformation: ', JSON.stringify(listingItem.PaymentInformation, null, 2));
 
         // todo: calculate correct shippingPrice
         const shippingPrice = listingItem.PaymentInformation.ItemPrice.ShippingPrice;
@@ -298,28 +289,27 @@ export class BidActionService {
 
             // create the bid accept message using the generated bidDatas
             const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidDatas);
-            this.log.debug('created bidMessage (MPA_ACCEPT):', JSON.stringify(bidMessage, null, 2));
+            // this.log.debug('accept(), created bidMessage (MPA_ACCEPT):', JSON.stringify(bidMessage, null, 2));
 
             // update the bid locally
             const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
             const updatedBidModel = await this.bidService.update(bid.id, bidUpdateRequest);
             const updatedBid = updatedBidModel.toJSON();
-            this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
+            // this.log.debug('accept(), updatedBid:', JSON.stringify(updatedBid, null, 2));
 
             // create the order
             const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
             const orderModel = await this.orderService.create(orderCreateRequest);
             const order = orderModel.toJSON();
 
-            this.log.debug('accept(), created Order: ', order);
-            this.log.debug('accept(), created bidMessage.objects: ', bidMessage.objects);
+            // this.log.debug('accept(), created Order: ', order);
+            // this.log.debug('accept(), created bidMessage.objects: ', bidMessage.objects);
 
             // put the order.hash in BidMessage and also save it
             // todo: this is here because bidMessage.objects 'possibly undefined', which it never really should be
             if (!bidMessage.objects) {
                 bidMessage.objects = [];
             }
-
             bidMessage.objects.push({id: BidDataValue.ORDER_HASH, value: order.hash});
 
             // TODO: clean this up, so that we can add this with bidService.update
@@ -329,11 +319,11 @@ export class BidActionService {
                 dataValue: order.hash
             } as BidDataCreateRequest);
 
-            this.log.debug('accept(), updatedBid.id: ', updatedBid.id);
-            this.log.debug('accept(), order.hash: ', order.hash);
-            this.log.debug('accept(), added orderHash to bidData: ', orderHashBidData.toJSON());
+            // this.log.debug('accept(), updatedBid.id: ', updatedBid.id);
+            // this.log.debug('accept(), order.hash: ', order.hash);
+            // this.log.debug('accept(), added orderHash to bidData: ', orderHashBidData.toJSON());
 
-            // store the sellers selected outputs, so we can load and lock them again on mp restart
+            // store the sellers selected outputs in db, so we can load and lock them again on mp restart
             let selectedOutputs = this.getValueFromBidDatas(BidDataValue.SELLER_OUTPUTS, updatedBid.BidDatas);
             selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
             const createdLockedOutputs = await this.lockedOutputService.createLockedOutputs(selectedOutputs, bid.id);
@@ -346,7 +336,7 @@ export class BidActionService {
 
             if (success) {
                 // broadcast the MPA_ACCEPT message
-                this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
+                this.log.debug('send(), marketPlaceMessage: ', JSON.stringify(marketPlaceMessage, null, 2));
                 return await this.smsgService.smsgSend(listingItem.seller, updatedBid.bidder, marketPlaceMessage, false);
             } else {
                 throw new MessageException('Failed to lock the selected outputs.');
@@ -363,13 +353,11 @@ export class BidActionService {
      *
      * @param {module:resources.ListingItem} listingItem
      * @param {module:resources.Bid} bid
-     * @param {boolean} testRun
      * @returns {Promise<any[]>}
      */
     public async generateBidDatasForMPA_ACCEPT(
         listingItem: resources.ListingItem,
-        bid: resources.Bid,
-        testRun: boolean = false
+        bid: resources.Bid
     ): Promise<any[]> {
 
         if (_.isEmpty(listingItem.PaymentInformation.ItemPrice)) {
@@ -394,17 +382,28 @@ export class BidActionService {
         // }
         const sellerSelectedOutputData: OutputData = await this.findUnspentOutputs(requiredAmount);
 
+        // create OutputData for buyer
         const buyerSelectedOutputs: Output[] = JSON.parse(this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, bid.BidDatas));
         const buyerOutputsSum = buyerSelectedOutputs.reduce((acc, obj) => {
             const amount = obj.amount || 0; return acc + amount;
         }, 0);
         const buyerRequiredAmount = totalPrice * 2;
-        const selectedOutputsChangeAmount = +(buyerOutputsSum - buyerRequiredAmount - 0.0002).toFixed(8);
+        const buyerSelectedOutputsChangeAmount = +(buyerOutputsSum - buyerRequiredAmount - 0.0002).toFixed(8);
+
+        // TODO: validate that the outputs are not spent
+        if (buyerOutputsSum < buyerRequiredAmount) {
+            this.log.warn('Not enough funds');
+            throw new MessageException('Not enough funds');
+        }
+
         const buyerSelectedOutputData: OutputData = {
             outputs: buyerSelectedOutputs,
             outputsSum: buyerOutputsSum,
-            outputsChangeAmount: selectedOutputsChangeAmount
+            outputsChangeAmount: buyerSelectedOutputsChangeAmount
         };
+
+        this.log.debug('sellerSelectedOutputData: ', JSON.stringify(sellerSelectedOutputData, null, 2));
+        this.log.debug('buyerSelectedOutputData: ', JSON.stringify(buyerSelectedOutputData, null, 2));
 
         // create seller escrow addresses
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
@@ -427,11 +426,16 @@ export class BidActionService {
         const buyerEscrowPubAddressPublicKey = this.getValueFromBidDatas(BidDataValue.BUYER_PUBKEY, bid.BidDatas);
 
         // create multisig escrow address
+        // escrowMultisigAddress:  0=[{
+        //   "address": "rU71DNgoAj7W6e1aQqALk66HXrUpuEbERH",
+        //   "redeemScript": "522102b3d88...c52ae"
+        // }]
         // todo: replace '_escrow_' + listingItem.hash with something unique
         const escrowMultisigAddress = await this.coreRpcService.addMultiSigAddress(
             2,
             [sellerEscrowPubAddressPublicKey, buyerEscrowPubAddressPublicKey].sort(),
             '_escrow_' + listingItem.hash);
+
 
         // txout: {
         //   escrowAddress: amount that should be escrowed
@@ -439,7 +443,7 @@ export class BidActionService {
         //   buyerEscrowChangeAddress: buyers change amount
         // }
         const txout = await this.createTxOut(
-            escrowMultisigAddress,
+            escrowMultisigAddress.address,
             sellerEscrowChangeAddress,
             buyerEscrowChangeAddress,
             sellerSelectedOutputData,
@@ -449,14 +453,13 @@ export class BidActionService {
             totalPrice,
             listingItem.hash);
 
-        const rawtx = await this.coreRpcService.createRawTransaction(sellerSelectedOutputData.outputs.concat(buyerSelectedOutputs), txout);
 
-        // const rawtx = await this.coreRpcService.call('createrawtransaction', [
-        //    outputs.concat(buyerSelectedOutputs),
-        //    txout
-        // ]);
+        const txInputs: Output[] = buyerSelectedOutputData.outputs.concat(sellerSelectedOutputData.outputs);
+        const rawtx = await this.coreRpcService.createRawTransaction(txInputs, txout);
 
-        this.log.debug('rawtx: ', rawtx);
+        this.log.debug('MPA_ACCEPT, txInputs: ', JSON.stringify(txInputs, null, 2));
+        this.log.debug('MPA_ACCEPT, txout: ', JSON.stringify(txout, null, 2));
+        this.log.debug('MPA_ACCEPT, rawtx: ', JSON.stringify(rawtx, null, 2));
 
         // TODO: At this stage we need to store the unsigned transaction, as we will need user interaction to sign the transaction
         // TODO: this is not on 0.16.0.3 yet ...
@@ -472,6 +475,7 @@ export class BidActionService {
         const signed = await this.coreRpcService.signRawTransaction(rawtx);
         this.log.debug('signed: ', JSON.stringify(signed, null, 2));
 
+        // TODO: duplicate code, use the same signRawTx function as in EscrowActionService
         if (!signed || (signed.errors && (
                 signed.errors[0].error !== 'Operation not valid with the current stack size' &&
                 signed.errors[0].error !== 'Unable to sign input, invalid stack size (possibly missing key)'))) {
@@ -479,10 +483,7 @@ export class BidActionService {
             throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
         }
 
-        // when testRun is true, we are calling this from the tests and we just skip this
-        // todo: we should have no need for the test run anymore, check and remove it
-        // todo: make it possible to run tests on one particld
-        if (signed.complete && !testRun) {
+        if (signed.complete) {
             this.log.error('Transaction should not be complete at this stage, will not send insecure message');
             throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
         }
@@ -498,7 +499,7 @@ export class BidActionService {
             BidDataValue.BUYER_PUBKEY, buyerEscrowPubAddressPublicKey, // allready in BidData, not necessarily needed here
             BidDataValue.RAW_TX, signed.hex
         ]);
-        this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
+        // this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
 
         return bidDatas;
     }
@@ -526,8 +527,6 @@ export class BidActionService {
                        itemTotalPrice: number,
                        listingItemHash: string): any {
 
-        const sellerChangeAmount = sellerSelectedOutputData.outputsChangeAmount;
-
         // txout: {
         //   escrowMultisigAddress: amount that should be escrowed
         //   sellerEscrowChangeAddress: sellers change amount
@@ -540,23 +539,17 @@ export class BidActionService {
         this.log.debug('buyerEcrowPubAddressPublicKey: ', buyerEscrowPubAddressPublicKey);
         this.log.debug('listingItem.hash: ', listingItemHash);
 
-
-        this.log.debug('TODO IS THIS OBJECT OR NOT?!? escrowMultisigAddress: ', JSON.stringify(escrowMultisigAddress, null, 2));
-
-
-        // TODO: escrowMultisigAddress or escrow.address?!?!
-        // txout[escrow.address] = +(totalPrice * 3).toFixed(8);
         txout[escrowMultisigAddress] = +(itemTotalPrice * 3).toFixed(8); // TODO: Shipping... ;(
-        txout[sellerEscrowChangeAddress] = sellerChangeAmount;
+        txout[sellerEscrowChangeAddress] = sellerSelectedOutputData.outputsChangeAmount;
+        txout[buyerEscrowChangeAddress] = buyerSelectedOutputData.outputsChangeAmount;
 
 
-
-        this.log.debug('buyerOutputs: ', JSON.stringify(buyerSelectedOutputData.outputs, null, 2));
+        // this.log.debug('buyerOutputs: ', JSON.stringify(buyerSelectedOutputData.outputs, null, 2));
 
         // TODO: Verify that buyers outputs are unspent?? :/
         // TODO: Refactor reusable logic. and verify / validate buyer change.
 
-        if (_.isEmpty(buyerSelectedOutputData.outputs)) {
+        if (!_.isEmpty(buyerSelectedOutputData.outputs)) {
             let buyerOutputsSum = 0;
             let buyerOutputsChangeAmount = 0;
 
@@ -575,7 +568,7 @@ export class BidActionService {
                 this.log.warn('Buyers outputs do not contain enough funds!');
                 throw new MessageException('Buyers outputs do not contain enough funds!');
             }
-            txout[buyerEscrowChangeAddress] = buyerOutputsChangeAmount;
+            txout[buyerEscrowChangeAddress] = buyerSelectedOutputData.outputsChangeAmount;
 
         } else {
             this.log.error('Buyer didn\'t supply outputs!');
@@ -648,8 +641,8 @@ export class BidActionService {
      * Reject a Bid
      * todo: add the bid as param, so we know whose bid we are rejecting. now supports just one bidder.
      *
-     * @param {"resources".ListingItem} listingItem
-     * @param {"resources".Bid} bid
+     * @param {module:resources.ListingItem} listingItem
+     * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
     public async reject(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
@@ -696,8 +689,8 @@ export class BidActionService {
      * - save ActionMessage
      * - create Bid
      *
-     * @param {MarketplaceMessageInterface} message
-     * @returns {Promise<"resources".ActionMessage>}
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<module:resources.Bid>}
      */
     public async processBidReceivedEvent(event: MarketplaceEvent): Promise<resources.Bid> {
         this.log.debug('Received event:', event);
@@ -707,7 +700,6 @@ export class BidActionService {
 
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
-
         const message = event.marketplaceMessage;
 
         if (!message.mpaction) {   // ACTIONEVENT
@@ -716,6 +708,8 @@ export class BidActionService {
 
         const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
         const listingItem = listingItemModel.toJSON();
+
+        // todo: check that the listingitem is yours
 
         // first save actionmessage
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
@@ -753,12 +747,10 @@ export class BidActionService {
      * - save ActionMessage
      * - update Bid
      *
-     * @param {MarketplaceMessageInterface} message
-     * @returns {Promise<"resources".ActionMessage>}
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<module:resources.Bid>}
      */
     public async processAcceptBidReceivedEvent(event: MarketplaceEvent): Promise<resources.Bid> {
-
-        this.log.debug('Received event:', event);
 
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.to; // from seller to buyer
@@ -784,7 +776,7 @@ export class BidActionService {
                 return o.action === BidMessageType.MPA_BID && o.bidder === bidder;
             });
 
-            this.log.debug('existingBid:', JSON.stringify(existingBid, null, 2));
+            // this.log.debug('existingBid:', JSON.stringify(existingBid, null, 2));
 
             if (existingBid) {
 
@@ -793,7 +785,7 @@ export class BidActionService {
                 // this.log.debug('bidUpdateRequest:', JSON.stringify(bidUpdateRequest, null, 2));
                 const updatedBidModel = await this.bidService.update(existingBid.id, bidUpdateRequest);
                 let updatedBid: resources.Bid = updatedBidModel.toJSON();
-                this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
+                // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
 
                 // create the order from the bid
                 const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
@@ -827,8 +819,8 @@ export class BidActionService {
     /**
      * process received CancelBidMessage
      *
-     * @param {MarketplaceMessageInterface} message
-     * @returns {Promise<"resources".ActionMessage>}
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<module:resources.ActionMessage>}
      */
     public async processCancelBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
         this.log.info('Received event:', event);
@@ -870,17 +862,17 @@ export class BidActionService {
         } as BidUpdateRequest;
         const retBid = await this.bidService.update(oldBid.id, bidUpdateRequest);
 
+        // todo: return Bid
         return actionMessage;
     }
 
     /**
      * process received RejectBidMessage
      *
-     * @param {MarketplaceMessageInterface} message
-     * @returns {Promise<"resources".ActionMessage>}
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<module:resources.ActionMessage>}
      */
     public async processRejectBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-        this.log.info('Received event:', event);
 
         this.log.info('Received event:', event);
         const message = event.marketplaceMessage;
@@ -923,8 +915,8 @@ export class BidActionService {
         const bidModel = await this.bidService.update(oldBid.id, bidUpdateRequest);
         const bid = bidModel.toJSON();
 
-        // remove lockedoutputs
-        let selectedOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
+        // remove buyers lockedoutputs
+        let selectedOutputs = this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, bid.BidDatas);
         selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
 
         await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
@@ -936,6 +928,7 @@ export class BidActionService {
             throw new MessageException('Failed to unlock the locked outputs.');
         }
 
+        // todo: return Bid
     }
 
     private async createBid(bidMessage: BidMessage, listingItem: resources.ListingItem, bidder: string): Promise<resources.Bid> {
@@ -981,12 +974,15 @@ export class BidActionService {
     }
 
     /**
+     *
+     * @param {string[]} data
      * data[]:
      * [0]: id, string
      * [1]: value, string
      * [2]: id, string
      * [3]: value, string
-     * ..........
+     *
+     * @returns {any[]}
      */
     private getBidDatasFromArray(data: string[]): any[] {
         const bidDatas: any[] = [];
@@ -1001,7 +997,7 @@ export class BidActionService {
     /**
      *
      * @param {string} key
-     * @param {"resources".BidData[]} bidDatas
+     * @param {module:resources.BidData[]} bidDatas
      * @returns {any}
      */
     private getValueFromBidDatas(key: string, bidDatas: resources.BidData[]): any {

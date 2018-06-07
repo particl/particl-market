@@ -66,6 +66,7 @@ export class ListingItemService {
         return await this.listingItemRepo.findAll();
     }
 
+    // TODO: we have search, remove this
     public async findByCategory(categoryId: number): Promise<Bookshelf.Collection<ListingItem>> {
         this.log.debug('find by category:', categoryId);
         return await this.listingItemRepo.findByCategory(categoryId);

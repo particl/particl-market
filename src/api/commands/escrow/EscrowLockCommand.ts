@@ -45,7 +45,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         const orderItemModel = await this.orderItemService.findOne(data.params[0]);
         const orderItem = orderItemModel.toJSON();
 
-        this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
+        // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
 
         if (orderItem.status !== OrderStatus.AWAITING_ESCROW) {
             this.log.error('Order is in invalid state');
