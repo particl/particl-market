@@ -158,7 +158,6 @@ describe('Order', () => {
     });
 
     test('Should create a new Order', async () => {
-
         const testData = JSON.parse(JSON.stringify(orderCreateRequest1));
 
         // set some order values
@@ -201,7 +200,7 @@ describe('Order', () => {
         // test the result
         expect(result.hash).toBe(ObjectHash.getHash(testData, HashableObjectType.ORDER_CREATEREQUEST));
 
-    });
+    }, 600000);
 
     test('Should throw ValidationException because we want to create a empty Order', async () => {
         expect.assertions(1);
