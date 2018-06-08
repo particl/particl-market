@@ -41,7 +41,7 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Address>> {
         const profileId = data.params[0];
         if (!profileId) {
-            throw new Error('No profileId for command');
+            throw new Error('No profileId for a command');
         }
 
         const profile = await this.profileService.findOne(profileId, true);
