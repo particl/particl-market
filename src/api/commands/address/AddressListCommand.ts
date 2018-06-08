@@ -41,18 +41,14 @@ export class AddressListCommand extends BaseCommand implements RpcCommandInterfa
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Address>> {
         const profileId = data.params[0];
         if (!profileId) {
-            // Get all addresses.
-            return this.addressService.findAll();
+            throw new Error('No profileId for command');
         }
 
         const profile = await this.profileService.findOne(profileId, true);
         const type = data.params[1] ? data.params[1] : AddressType.SHIPPING_OWN;
 
         // Return SHIPPING_OWN addresses by default
-        if (type === AddressType.SHIPPING_OWN)  {
-            return profile.toJSON().ShippingAddresses.filter((address) => address.title && address.type === 'SHIPPING_OWN');
-        }
-        return profile.toJSON().ShippingAddresses;
+        return profile.toJSON().ShippingAddresses.filter((address) => address.type === type);
     }
 
     public usage(): string {
