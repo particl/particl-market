@@ -14,6 +14,8 @@ import { SocketIoServer } from './SocketIoServer';
 import { EnvConfig } from '../config/env/EnvConfig';
 import { ProductionEnvConfig } from '../config/env/ProductionEnvConfig';
 import { Environment } from './helpers/Environment';
+import { DataDir } from './helpers/DataDir';
+import * as databaseMigrate from '../database/migrate';
 
 
 export interface Configurable {
@@ -75,6 +77,17 @@ export class App {
      */
     public async bootstrap(): Promise<any> {
         this.log.info('Configuring app...');
+
+        // Initialize the data directory
+        if (process.env.INIT) {
+            await DataDir.initialize();
+            await DataDir.createDefaultEnvFile();
+        }
+
+        // Perform database migrations
+        if (process.env.MIGRATE) {
+            await databaseMigrate.migrate();
+        }
 
         if (process.env.EXPRESS_ENABLED) {
             // Add express monitor app
