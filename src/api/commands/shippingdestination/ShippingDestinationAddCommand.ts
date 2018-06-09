@@ -11,12 +11,9 @@ import * as _ from 'lodash';
 import { MessageException } from '../../exceptions/MessageException';
 import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { ShippingAvailability } from '../../enums/ShippingAvailability';
-import { ShippingDestinationSearchParams } from '../../requests/ShippingDestinationSearchParams';
 import { ShippingDestinationCreateRequest } from '../../requests/ShippingDestinationCreateRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import {ListingItemTemplate, ShippingDestination as Destination} from 'resources';
-// TODO: ^^ import * from resources and then use like resources.Class to distinguish from the Model classes in code
 
 export class ShippingDestinationAddCommand extends BaseCommand implements RpcCommandInterface<ShippingDestination> {
 
