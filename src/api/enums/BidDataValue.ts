@@ -22,7 +22,7 @@ export enum BidDataValue {
     SHIPPING_ADDRESS_ADDRESS_LINE1 = 'ship.addressLine1',
     SHIPPING_ADDRESS_ADDRESS_LINE2 = 'ship.addressLine2',
     SHIPPING_ADDRESS_CITY = 'ship.city',
-    SHIPPING_ADDRESS_STATE= 'ship.state',
+    SHIPPING_ADDRESS_STATE = 'ship.state',
     SHIPPING_ADDRESS_ZIP_CODE = 'ship.zipCode',
     SHIPPING_ADDRESS_COUNTRY = 'ship.country'
 }

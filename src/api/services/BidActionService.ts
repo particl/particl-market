@@ -41,6 +41,11 @@ export interface OutputData {
     outputsChangeAmount: number;
 }
 
+export interface IdValuePair {
+    id: string;
+    value: any;
+}
+
 export class BidActionService {
 
     public log: LoggerType;
@@ -70,19 +75,18 @@ export class BidActionService {
      *
      * @param {module:resources.ListingItem} listingItem
      * @param {module:resources.Profile} bidderProfile
-     * @param {module:resources.Address} shippingAddress
      * @param {any[]} additionalParams
      * @returns {Promise<SmsgSendResponse>}
      */
     public async send(listingItem: resources.ListingItem, bidderProfile: resources.Profile,
-                      shippingAddress: resources.Address, additionalParams: any[]): Promise<SmsgSendResponse> {
+                      additionalParams: IdValuePair[]): Promise<SmsgSendResponse> {
 
         // TODO: change send params to BidSendRequest and @validate them
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
 
         // generate bidDatas for the message
-        const bidDatas = await this.generateBidDatasForMPA_BID(listingItem, shippingAddress, additionalParams);
+        const bidDatas = await this.generateBidDatasForMPA_BID(listingItem, additionalParams);
 
         // this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
 
@@ -119,15 +123,13 @@ export class BidActionService {
      * generate the required biddatas for MPA_BID message
      *
      * @param {module:resources.ListingItem} listingItem
-     * @param {module:resources.Address} shippingAddress
      * @param {any[]} additionalParams
-     * @returns {Promise<any[]>}
+     * @returns {Promise<IdValuePair[]>}
      */
     public async generateBidDatasForMPA_BID(
         listingItem: resources.ListingItem,
-        shippingAddress: resources.Address,
-        additionalParams: any[]
-    ): Promise<any[]> {
+        additionalParams: IdValuePair[]
+    ): Promise<IdValuePair[]> {
 
         // todo: propably something that we should check earlier
         // todo: and we shouldnt even be having items without a price at the moment, validation before posting should take care of that
@@ -184,23 +186,14 @@ export class BidActionService {
         const buyerEscrowReleaseAddress = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
 
         // convert the bid data params as bid data key value pair
-        const bidDatas = this.getBidDatasFromArray(additionalParams.concat([
+        // todo: refactor to use resources.BidData instead of this IdValuePair
+        const bidDatas = this.getIdValuePairsFromArray([
             BidDataValue.BUYER_OUTPUTS, buyerSelectedOutputData.outputs,
             BidDataValue.BUYER_PUBKEY, buyerEcrowPubAddressPublicKey,
             BidDataValue.BUYER_CHANGE_ADDRESS, buyerEscrowChangeAddress,
             BidDataValue.BUYER_CHANGE_AMOUNT, buyerSelectedOutputData.outputsChangeAmount,
             BidDataValue.BUYER_RELEASE_ADDRESS, buyerEscrowReleaseAddress
-        ]));
-
-        // store the shipping address in biddata
-        bidDatas.push({id: BidDataValue.SHIPPING_ADDRESS_FIRST_NAME, value: shippingAddress.firstName ? shippingAddress.firstName : ''});
-        bidDatas.push({id: BidDataValue.SHIPPING_ADDRESS_LAST_NAME, value: shippingAddress.lastName ? shippingAddress.lastName : ''});
-        bidDatas.push({id: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1, value: shippingAddress.addressLine1});
-        bidDatas.push({id: BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2, value: shippingAddress.addressLine2});
-        bidDatas.push({id: BidDataValue.SHIPPING_ADDRESS_CITY, value: shippingAddress.city});
-        bidDatas.push({id: BidDataValue.SHIPPING_ADDRESS_STATE, value: shippingAddress.state});
-        bidDatas.push({id: BidDataValue.SHIPPING_ADDRESS_ZIP_CODE, value: shippingAddress.zipCode});
-        bidDatas.push({id: BidDataValue.SHIPPING_ADDRESS_COUNTRY, value: shippingAddress.country});
+        ]).concat(additionalParams);
 
         this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
 
@@ -284,7 +277,7 @@ export class BidActionService {
 
             // todo: create order before biddatas so order hash can be added to biddata in generateBidDatasForMPA_ACCEPT
             // generate bidDatas for MPA_ACCEPT
-            const bidDatas = await this.generateBidDatasForMPA_ACCEPT(listingItem, bid);
+            const bidDatas: IdValuePair[] = await this.generateBidDatasForMPA_ACCEPT(listingItem, bid);
 
             // create the bid accept message using the generated bidDatas
             const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidDatas);
@@ -357,7 +350,7 @@ export class BidActionService {
     public async generateBidDatasForMPA_ACCEPT(
         listingItem: resources.ListingItem,
         bid: resources.Bid
-    ): Promise<any[]> {
+    ): Promise<IdValuePair[]> {
 
         if (_.isEmpty(listingItem.PaymentInformation.ItemPrice)) {
             this.log.warn(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
@@ -490,7 +483,7 @@ export class BidActionService {
         // - Most likely the transaction building and signing will happen in a different command that takes place before this..
         // End - Ryno Hacks
 
-        const bidDatas = this.getBidDatasFromArray([
+        const bidDatas: IdValuePair[] = this.getIdValuePairsFromArray([
             BidDataValue.SELLER_OUTPUTS, sellerSelectedOutputData.outputs,
             BidDataValue.BUYER_OUTPUTS, buyerSelectedOutputData.outputs, // allready in BidData, not necessarily needed here
             // 'pubkeys', [sellerEscrowPubAddressPublicKey, buyerEcrowPubAddressPublicKey].sort(),
@@ -859,7 +852,7 @@ export class BidActionService {
             bidder: tmpBidCreateRequest.bidder,
             bidDatas: tmpBidCreateRequest.bidDatas
         } as BidUpdateRequest;
-        const retBid = await this.bidService.update(oldBid.id, bidUpdateRequest);
+        const updatedBid = await this.bidService.update(oldBid.id, bidUpdateRequest);
 
         // todo: return Bid
         return actionMessage;
@@ -930,6 +923,46 @@ export class BidActionService {
         // todo: return Bid
     }
 
+    /**
+     *
+     * todo: should be moved to util or we should combine the bid and escrowactionservices
+     * @param {string[]} data
+     * data[]:
+     * [0]: id, string
+     * [1]: value, string
+     * [2]: id, string
+     * [3]: value, string
+     *
+     * @param {any[]} data
+     * @returns {IdValuePair[]}
+     */
+    public getIdValuePairsFromArray(data: any[]): IdValuePair[] {
+        const idValuePairs: IdValuePair[] = [];
+
+        // convert the bid data params as idValuePairs array
+        for (let i = 0; i < data.length; i += 2) {
+            idValuePairs.push({id: data[i], value: data[i + 1]});
+        }
+        return idValuePairs;
+    }
+
+    /**
+     *
+     * todo: should be moved to util or we should combine the bid and escrowactionservices
+     * @param {string} key
+     * @param {module:resources.BidData[]} bidDatas
+     * @returns {any}
+     */
+    private getValueFromBidDatas(key: string, bidDatas: resources.BidData[]): any {
+        const value = bidDatas.find(kv => kv.dataId === key);
+        if (value) {
+            return value.dataValue;
+        } else {
+            this.log.error('Missing BidData value for key: ' + key);
+            throw new MessageException('Missing BidData value for key: ' + key);
+        }
+    }
+
     private async createBid(bidMessage: BidMessage, listingItem: resources.ListingItem, bidder: string): Promise<resources.Bid> {
 
         // create a bid
@@ -970,43 +1003,6 @@ export class BidActionService {
         this.eventEmitter.on(Events.RejectBidReceivedEvent, async (event) => {
             await this.processRejectBidReceivedEvent(event);
         });
-    }
-
-    /**
-     *
-     * @param {string[]} data
-     * data[]:
-     * [0]: id, string
-     * [1]: value, string
-     * [2]: id, string
-     * [3]: value, string
-     *
-     * @returns {any[]}
-     */
-    private getBidDatasFromArray(data: string[]): any[] {
-        const bidDatas: any[] = [];
-
-        // convert the bid data params as bid data key value pair
-        for (let i = 0; i < data.length; i += 2) {
-            bidDatas.push({id: data[i], value: data[i + 1]});
-        }
-        return bidDatas;
-    }
-
-    /**
-     *
-     * @param {string} key
-     * @param {module:resources.BidData[]} bidDatas
-     * @returns {any}
-     */
-    private getValueFromBidDatas(key: string, bidDatas: resources.BidData[]): any {
-        const value = bidDatas.find(kv => kv.dataId === key);
-        if (value) {
-            return value.dataValue;
-        } else {
-            this.log.error('Missing BidData value for key: ' + key);
-            throw new MessageException('Missing BidData value for key: ' + key);
-        }
     }
 
     /**
