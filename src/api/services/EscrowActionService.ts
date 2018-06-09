@@ -31,6 +31,8 @@ import { OrderItemUpdateRequest } from '../requests/OrderItemUpdateRequest';
 import { OrderItemService } from './OrderItemService';
 import { OrderSearchParams } from '../requests/OrderSearchParams';
 import { LockedOutputService } from './LockedOutputService';
+import { BidDataValue } from '../enums/BidDataValue';
+
 
 export class EscrowActionService {
 
@@ -58,55 +60,39 @@ export class EscrowActionService {
     /**
      * Send the lock message for the given OrderItem
      *
-     * @param {"resources".OrderItem} orderItem
+     * @param {EscrowRequest} escrowRequest
      * @returns {Promise<SmsgSendResponse>}
      */
     public async lock(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
 
-        // todo: add @validate to EscrowLockRequest
+        this.validateEscrowRequest(escrowRequest);
 
-        const orderItem = escrowRequest.orderItem;
-        const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
+        // unlock and remove the locked outputs from db before sending the rawtx
+        const buyerSelectedOutputs = this.getValueFromOrderItemObjects(BidDataValue.BUYER_OUTPUTS, escrowRequest.orderItem.OrderItemObjects);
+        await this.lockedOutputService.destroyLockedOutputs(buyerSelectedOutputs);
+        const unlockSuccess = await this.lockedOutputService.unlockOutputs(buyerSelectedOutputs);
 
-        if (_.isEmpty(orderItem)) {
-            throw new MessageException('OrderItem not found!');
-        }
-
-        if (_.isEmpty(escrow)) {
-            throw new MessageException('Escrow not found!');
-        }
-
-        // unlock the locked outputs before sending the rawtx
-        let selectedOutputs = this.getValueFromOrderItemObjects('outputs', orderItem.OrderItemObjects);
-        selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
-
-        await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
-        const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
-
-        if (success) {
-            // generate rawtx
+        if (unlockSuccess) {
+            // generate rawtx and update it in the db
             const rawtx = await this.createRawTx(escrowRequest);
-            const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
+            const updatedRawTx = await this.updateRawTxOrderItemObject(escrowRequest.orderItem.OrderItemObjects, rawtx);
 
-            // update OrderItemStatus
-            const newOrderStatus = OrderStatus.ESCROW_LOCKED;
-            const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
+            await this.updateOrderItemStatus(escrowRequest.orderItem, OrderStatus.ESCROW_LOCKED);
 
-            // use escrowfactory to generate the lock message
-            const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
+            return await this.createAndSendMessage(escrowRequest, rawtx);
 
-            const marketPlaceMessage = {
-                version: process.env.MARKETPLACE_VERSION,
-                mpaction: escrowActionMessage
-            } as MarketplaceMessage;
-
-            return await this.smsgService.smsgSend(orderItem.Order.buyer, orderItem.Order.seller, marketPlaceMessage, false);
         } else {
             throw new MessageException('Failed to unlock the locked outputs.');
         }
 
     }
 
+
+    /**
+     *
+     * @param {EscrowRequest} escrowRequest
+     * @returns {Promise<SmsgSendResponse>}
+     */
     public async refund(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
 
         throw new NotImplementedException();
@@ -149,10 +135,33 @@ export class EscrowActionService {
 */
     }
 
+    /**
+     * Seller sends EscrowReleaseMessage (MPA_RELEASE) to the Buyer, indicating that the item has been sent.
+     * Buyer sends EscrowReleaseMessage (MPA_RELEASE) to the Seller, indicating that the sent item has been received.
+     *
+     * @param {EscrowRequest} escrowRequest
+     * @returns {Promise<SmsgSendResponse>}
+     */
     public async release(escrowRequest: EscrowRequest): Promise<SmsgSendResponse> {
 
-        // todo: refactor lock/refund/release since they're pretty much the same
-        // todo: add @validate to EscrowLockRequest
+        this.validateEscrowRequest(escrowRequest);
+
+        const orderItem = escrowRequest.orderItem;
+        const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
+
+        // generate rawtx and update it in the db
+        const rawtx = await this.createRawTx(escrowRequest);
+        const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
+
+        // update OrderStatus
+        const isMyListingItem = !_.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
+        const newOrderStatus = isMyListingItem ? OrderStatus.SHIPPING : OrderStatus.COMPLETE;
+        await this.updateOrderItemStatus(orderItem, newOrderStatus);
+
+        return await this.createAndSendMessage(escrowRequest, rawtx);
+    }
+
+    private validateEscrowRequest(escrowRequest: EscrowRequest): boolean {
 
         const orderItem = escrowRequest.orderItem;
         const escrow = orderItem.Bid.ListingItem.PaymentInformation.Escrow;
@@ -165,17 +174,15 @@ export class EscrowActionService {
             throw new MessageException('Escrow not found!');
         }
 
-        // generate rawtx
-        const rawtx = await this.createRawTx(escrowRequest);
+        // todo: add sanity checks and validate that values are correct and outputs unspent, etc
 
-        const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
-        // update OrderStatus
-        const isMyListingItem = !_.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
-        const newOrderStatus = isMyListingItem ? OrderStatus.SHIPPING : OrderStatus.COMPLETE;
-        const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
+        return true;
+    }
 
-        // use escrowfactory to generate the release message
+    private async createAndSendMessage(escrowRequest: EscrowRequest, rawtx: string): Promise<SmsgSendResponse> {
+
+        // use escrowfactory to generate the message
         const escrowActionMessage = await this.escrowFactory.getMessage(escrowRequest, rawtx);
 
         const marketPlaceMessage = {
@@ -183,27 +190,53 @@ export class EscrowActionService {
             mpaction: escrowActionMessage
         } as MarketplaceMessage;
 
-        this.log.debug('orderItem: ', JSON.stringify(orderItem, null, 2));
-
-        this.log.debug('isMyListingItem: ', isMyListingItem);
-
-        const sendFromAddress = isMyListingItem ? orderItem.Order.seller : orderItem.Order.buyer;
-        const sendToAddress = isMyListingItem ? orderItem.Order.buyer : orderItem.Order.seller;
+        const isMyListingItem = !_.isEmpty(escrowRequest.orderItem.Bid.ListingItem.ListingItemTemplate);
+        const sendFromAddress = isMyListingItem ? escrowRequest.orderItem.Order.seller : escrowRequest.orderItem.Order.buyer;
+        const sendToAddress = isMyListingItem ? escrowRequest.orderItem.Order.buyer : escrowRequest.orderItem.Order.seller;
 
         return await this.smsgService.smsgSend(sendFromAddress, sendToAddress, marketPlaceMessage, false);
     }
 
     /**
+     * find Order, using buyer, seller and Order.OrderItem.itemHash
+     *
+     * @param {string} listingItemHash
+     * @param {string} buyerAddress
+     * @param {string} sellerAddress
+     * @returns {Promise<module:resources.Order>}
+     */
+    private async findOrder(listingItemHash: string, buyerAddress: string, sellerAddress: string): Promise<resources.Order> {
+
+        const orderSearchParams = {
+            listingItemHash,
+            buyerAddress,
+            sellerAddress
+        } as OrderSearchParams;
+
+        const ordersModel = await this.orderService.search(orderSearchParams);
+        const orders = ordersModel.toJSON();
+
+        if (orders.length === 0) {
+            this.log.error('Order not found for EscrowMessage.');
+            throw new MessageException('Order not found for EscrowMessage.');
+        }
+
+        if (orders.length > 1) {
+            this.log.error('Multiple Orders found for EscrowMessage, this should not happen.');
+            throw new MessageException('Multiple Orders found for EscrowMessage.');
+        }
+        return orders[0];
+    }
+
+    /**
      *
      * @param {MarketplaceEvent} event
-     * @returns {Promise<"resources".ActionMessage>}
+     * @returns {Promise<module:resources.Order>}
      */
-    public async processLockEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.Order> {
+    private async processLockEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.Order> {
 
         // TODO: EscrowMessage should contain Order.hash to identify the item in case there are two different Orders
         // with the same item for same buyer. Currently, buyer can only bid once for an item, but this might not be the case always.
-
-        this.log.info('Received event:', event);
 
         const message = event.marketplaceMessage;
         if (!message.mpaction) {   // ACTIONEVENT
@@ -224,26 +257,8 @@ export class EscrowActionService {
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
-        // find Order, using buyer, seller and Order.OrderItem.itemHash
-        const ordersModel = await this.orderService.search({
-            listingItemHash,
-            buyerAddress: buyer,
-            sellerAddress: seller
-        } as OrderSearchParams);
-        const orders = ordersModel.toJSON();
-
-        if (orders.length === 0) {
-            this.log.error('Order not found for EscrowMessage.');
-            throw new MessageException('Order not found for EscrowMessage.');
-        }
-
-        if (orders.length > 1) {
-            this.log.error('Multiple Orders found for EscrowMessage, this should not happen.');
-            throw new MessageException('Multiple Orders found for EscrowMessage.');
-        }
-
-        // update OrderItemStatus
-        const order: resources.Order = orders[0];
+        // find the Order, using buyer, seller and Order.OrderItem.itemHash
+        const order: resources.Order = await this.findOrder(listingItemHash, buyer, seller);
         const orderItem = _.find(order.OrderItems, (o: resources.OrderItem) => {
             return o.itemHash === listingItemHash;
         });
@@ -253,17 +268,13 @@ export class EscrowActionService {
             // update rawtx
             const rawtx = escrowMessage.escrow.rawtx;
             const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
+            this.log.info('processLock(), rawtx:', JSON.stringify(updatedRawTx, null, 2));
 
-            const newOrderStatus = OrderStatus.ESCROW_LOCKED;
-            const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
+            const updatedOrderItem = await this.updateOrderItemStatus(orderItem, OrderStatus.ESCROW_LOCKED);
 
-            // unlock the sellers locked outputs
-            let selectedOutputs = this.getValueFromOrderItemObjects('sellerOutputs', orderItem.OrderItemObjects);
-            selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
-
+            // remove the sellers locked outputs
+            const selectedOutputs = this.getValueFromOrderItemObjects(BidDataValue.SELLER_OUTPUTS, orderItem.OrderItemObjects);
             await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
-            // Invalid parameter, expected unspent output
-            // const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
 
             // TODO: do whatever else needs to be done
 
@@ -276,9 +287,7 @@ export class EscrowActionService {
         return order;
     }
 
-    public async processReleaseEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.Order> {
-
-        this.log.info('Received event:', event);
+    private async processReleaseEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.Order> {
 
         const message = event.marketplaceMessage;
         if (!message.mpaction) {   // ACTIONEVENT
@@ -300,26 +309,8 @@ export class EscrowActionService {
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
-        // find Order, using buyer, seller and Order.OrderItem.itemHash
-        const ordersModel = await this.orderService.search({
-            listingItemHash,
-            buyerAddress: buyer,
-            sellerAddress: seller
-        } as OrderSearchParams);
-        const orders = ordersModel.toJSON();
-
-        if (orders.length === 0) {
-            this.log.error('Order not found for EscrowMessage.');
-            throw new MessageException('Order not found for EscrowMessage.');
-        }
-
-        if (orders.length > 1) {
-            this.log.error('Multiple Orders found for EscrowMessage, this should not happen.');
-            throw new MessageException('Multiple Orders found for EscrowMessage.');
-        }
-
-        // update OrderItemStatus
-        const order: resources.Order = orders[0];
+        // find the Order, using buyer, seller and Order.OrderItem.itemHash
+        const order: resources.Order = await this.findOrder(listingItemHash, buyer, seller);
         const orderItem = _.find(order.OrderItems, (o: resources.OrderItem) => {
             return o.itemHash === listingItemHash;
         });
@@ -345,9 +336,7 @@ export class EscrowActionService {
         return order;
     }
 
-    public async processRequestRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-
-        this.log.info('Received event:', event);
+    private async processRequestRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
 
         // find the ListingItem
         const message = event.marketplaceMessage;
@@ -361,14 +350,13 @@ export class EscrowActionService {
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
+        // todo: update order
         // TODO: do whatever else needs to be done
 
         return actionMessage;
     }
 
-    public async processRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-
-        this.log.info('Received event:', event);
+    private async processRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
 
         // find the ListingItem
         const message = event.marketplaceMessage;
@@ -382,6 +370,7 @@ export class EscrowActionService {
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
         const actionMessage = actionMessageModel.toJSON();
 
+        // todo: update order
         // TODO: do whatever else needs to be done
 
         return actionMessage;
@@ -394,7 +383,7 @@ export class EscrowActionService {
      * @param escrow
      * @returns {string}
      */
-    public async createRawTx(request: EscrowRequest, testRun: boolean = false): Promise<string> {
+    private async createRawTx(request: EscrowRequest): Promise<string> {
 
         // MPA_LOCK:
         //
@@ -414,13 +403,19 @@ export class EscrowActionService {
 
         const orderItem: resources.OrderItem = request.orderItem;
         const bid: resources.Bid = orderItem.Bid;
-        const isMyListingItem = !_.isEmpty(orderItem.Bid.ListingItem.ListingItemTemplate);
+        const isMyListingItem = !_.isEmpty(bid.ListingItem.ListingItemTemplate);
 
-        this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
+        // this.log.debug('createRawTx(), orderItem:', JSON.stringify(orderItem, null, 2));
+
         // rawtx is potentially the txid in case of ESCROW_LOCKED.
-        let rawtx = this.getValueFromOrderItemObjects('rawtx', orderItem.OrderItemObjects);
-        let pubkeys = this.getValueFromOrderItemObjects('pubkeys', orderItem.OrderItemObjects);
-        pubkeys = JSON.parse(pubkeys);
+        let rawtx = this.getValueFromOrderItemObjects(BidDataValue.RAW_TX, orderItem.OrderItemObjects);
+        const buyerEscrowPubAddressPublicKey = this.getValueFromOrderItemObjects(BidDataValue.BUYER_PUBKEY, orderItem.OrderItemObjects);
+        const sellerEscrowPubAddressPublicKey = this.getValueFromOrderItemObjects(BidDataValue.SELLER_PUBKEY, orderItem.OrderItemObjects);
+        const pubkeys = [sellerEscrowPubAddressPublicKey, buyerEscrowPubAddressPublicKey].sort();
+        // todo: does the order of the pubkeys matter and how?
+
+        this.log.debug('createRawTx(), rawtx:', rawtx);
+        this.log.debug('createRawTx(), pubkeys:', pubkeys);
 
         if (!bid || bid.action !== BidMessageType.MPA_ACCEPT
             || !orderItem || !orderItem.OrderItemObjects || orderItem.OrderItemObjects.length === 0
@@ -430,76 +425,56 @@ export class EscrowActionService {
             throw new MessageException('Not enough valid information to finalize escrow');
         }
 
-        switch (request.action) {
-            case EscrowMessageType.MPA_LOCK:
+        this.log.debug('createRawTx(), request.action:', request.action);
 
-                // to lock:
-                // - you need to be the bidder/buyer,
-                // - the Bid needs to be in MPA_ACCEPT state,
-                // - bidDatas, rawtx and pubkeys need to have been collected
+        switch (request.action) {
+
+            case EscrowMessageType.MPA_LOCK:
 
                 if (isMyListingItem) {
                     throw new MessageException('Seller can\'t lock an Escrow.');
                 }
 
-                // rawtx = rawtx ? rawtx.dataValue as string : '';
-                // pubkeys = pubkeys ? pubkeys.dataValue[0] === '[' ? JSON.parse(pubkeys.dataValue).sort() : pubkeys.dataValue : [];
-
                 // Add Escrow address
                 // TODO: Way to recover escrow address should we lose it
-                // TODO: add this to OrderItemObjects?
-                const escrowAddr = await this.coreRpcService.addMultiSigAddress(
+                const escrowMultisigAddress = await this.coreRpcService.addMultiSigAddress(
                     2,
-                    pubkeys.sort(),
+                    pubkeys,
                     '_escrow_' + orderItem.itemHash
                 );
-                // const escrowAddr = (await this.coreRpcService.call('addmultisigaddress', [2, pubkeys, '_escrow_' + request.item]));
+                this.log.debug('createRawTx(), escrowMultisigAddress:', JSON.stringify(escrowMultisigAddress, null, 2));
 
+                // buyer signs the escrow tx, which should complete
                 const signedForLock = await this.signRawTx(rawtx, true);
+                this.log.debug('createRawTx(), signedForLock:', JSON.stringify(signedForLock, null, 2));
 
                 // TODO: This requires user interaction, so should be elsewhere possibly?
                 // TODO: Save TXID somewhere maybe??!
                 const response = await this.coreRpcService.sendRawTransaction(signedForLock.hex);
-                // return await this.coreRpcService.call('sendrawtransaction', [signed.hex]);
 
-                this.log.debug('response:', JSON.stringify(response, null, 2));
+                this.log.debug('createRawTx(), response:', JSON.stringify(response, null, 2));
                 return response;
 
             case EscrowMessageType.MPA_RELEASE:
 
-                // to seller to release:
-                // - you need to be the seller,
-                // - orderItem.status must be ESCROW_LOCKED,
-                // - bidDatas/orderItemObjects, rawtx and pubkeys need to have been collected
-
-                // we cant fetch the messageobjects like this, seller ListingItem can have ActionMessages coming from multiple bidders/buyers
-                // const release = listing.ActionMessages.find(actionMessage => actionMessage.action === EscrowMessageType.MPA_RELEASE);
-
                 if (OrderStatus.ESCROW_LOCKED === orderItem.status && isMyListingItem) {
                     // seller sends the first MPA_RELEASE, OrderStatus.ESCROW_LOCKED
 
-                    // TODO: all keys should be enums
-                    // TODO: naming something 'address' could mean any address and 'sellerAddress' means Profile.address of the seller
+                    const buyerReleaseAddress = this.getValueFromOrderItemObjects(BidDataValue.BUYER_RELEASE_ADDRESS, orderItem.OrderItemObjects);
+                    this.log.debug('createRawTx(), buyerReleaseAddress:', buyerReleaseAddress);
 
-                    // TODO: earlier I think it was assumed that buyer releases the Escrow first,
-                    // TODO: so should we actually have buyerReleaseAddress here?
-
-                    const buyerAddress = this.getValueFromOrderItemObjects('buyerAddress', orderItem.OrderItemObjects);
-                    // let sellerAddress: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'address');
-
-                    if (!buyerAddress) {
+                    if (!buyerReleaseAddress) {
                         this.log.error('Not enough valid information to finalize escrow');
                         throw new MessageException('Not enough valid information to finalize escrow');
                     }
 
-                    const myAddress = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
-                    // const myAddress = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
+                    const sellerReleaseAddress = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
+                    this.log.debug('createRawTx(), sellerReleaseAddress:', sellerReleaseAddress);
 
                     // rawtx is the transaction id!
                     const realrawtx = await this.coreRpcService.getRawTransaction(rawtx);
-
                     const decoded = await this.coreRpcService.decodeRawTransaction(realrawtx);
-                    // const decoded = await this.coreRpcService.call('decoderawtransaction', [rawtx]);
+                    this.log.debug('createRawTx(), decoded:', JSON.stringify(decoded, null, 2));
 
                     const txid = decoded.txid;
                     const value = decoded.vout[0].value - 0.0001; // TODO: Proper TX Fee
@@ -512,98 +487,42 @@ export class EscrowActionService {
                     const txout = {};
 
                     // CRITICAL TODO: Use the right ratio's...
-                    txout[myAddress] = value / 3 * 2;   // seller gets his escrow amount + buyer payment back
-                    txout[buyerAddress] = (value / 3);  // buyer gets the escrow amount back
+                    txout[sellerReleaseAddress] = value / 3 * 2;   // seller gets his escrow amount + buyer payment back
+                    txout[buyerReleaseAddress] = (value / 3);  // buyer gets the escrow amount back
 
-                    this.log.debug('txout untruncated: ', txout);
 
-                    // Kewde: simple truncation to 8
-                    const truncateToDecimals = (int: number) => {
-                        const calcDec = Math.pow(10, 8);
-                        return Math.trunc(int * calcDec) / calcDec;
-                    };
+                    // seller gets his escrow amount + buyer payment back
+                    // buyer gets the escrow amount back
+                    txout[sellerReleaseAddress] = +(value / 3 * 2).toFixed(8);
+                    txout[buyerReleaseAddress] = +(value / 3).toFixed(8);
 
-                    txout[myAddress] = truncateToDecimals(txout[myAddress]);
-                    txout[buyerAddress] = truncateToDecimals(txout[buyerAddress]);
-                    this.log.debug('final txout: ', txout);
+                    // TODO: Make sure this is the correct vout !!!
+                    // TODO: loop through the vouts and check the value, but what if theres multiple outputs with same value?
+                    const txInputs: Output[] = [{txid, vout: 0}];
+                    rawtx = await this.coreRpcService.createRawTransaction(txInputs, txout);
+                    const signed = await this.signRawTx(rawtx, false);
 
-                    const outputs: Output[] = [{txid, vout: 0}];  // TODO: Make sure this is the correct vout
-                    this.log.debug('inputs: ', outputs);
+                    this.log.debug('createRawTx(), txInputs: ', JSON.stringify(txInputs, null, 2));
+                    this.log.debug('createRawTx(), txout: ', JSON.stringify(txout, null, 2));
+                    this.log.debug('createRawTx(), rawtx: ', JSON.stringify(rawtx, null, 2));
+                    this.log.debug('createRawTx(), signed: ', JSON.stringify(signed, null, 2));
 
-                    rawtx = await this.coreRpcService.createRawTransaction(outputs, txout);
-                    // rawtx = await this.coreRpcService.call('createrawtransaction', [
-                    //    [{txid, vout: 0}], // TODO: Make sure this is the correct vout
-                    //    txout
-                    // ]);
-
-                    // TODO: This requires user interaction, so should be elsewhere possibly?
-                    const signedForReleaseBySeller = await this.signRawTx(rawtx, false);
-                    return signedForReleaseBySeller.hex;
+                    return signed.hex;
 
                 } else if (OrderStatus.SHIPPING === orderItem.status && !isMyListingItem) {
                     // buyer sends the MPA_RELEASE, OrderStatus.SHIPPING
 
-                    const signedForReleaseByBuyer = await this.signRawTx(rawtx, true);
-                    return await this.coreRpcService.sendRawTransaction(signedForReleaseByBuyer.hex);
+                    const signed = await this.signRawTx(rawtx, true);
+                    this.log.debug('createRawTx(), signed: ', JSON.stringify(signed, null, 2));
 
-                    // return await this.coreRpcService.call('sendrawtransaction', [
-                    //    (await signTx(release.MessageObjects.find(object => object.dataId === 'rawtx'), true)).hex
-                    // ]);
+                    const txid =  await this.coreRpcService.sendRawTransaction(signed.hex);
+                    this.log.debug('createRawTx(), response:', JSON.stringify(txid, null, 2));
+                    return txid;
 
                 } else {
                     throw new MessageException('Something went wrong, MPA_RELEASE should not be sent at this point.');
                 }
 
-            /*
-            // Ryno's code
-
-            // const release = listing.ActionMessages.find(actionMessage => actionMessage.action === EscrowMessageType.MPA_RELEASE);
-
-            // First check if someone has already called release...
-            if (release) {
-                // TODO: URGENT: Make sure transaction is valid...
-                return await this.coreRpcService.call('sendrawtransaction', [
-                    (await signTx(release.MessageObjects.find(object => object.dataId === 'rawtx'), true)).hex
-                ]);
-            } else {
-                if (isMine) {
-                    // TODO: Decide if seller can or can't initiate release..
-                    // If we decide to go that route, the seller would need the buyers release address from the beginning...
-                    throw new MessageException('Seller can\'t initiate escrow release.');
-
-                }
-                let sellerAddress: string | resources.BidData | undefined = bidData.find(entry => entry.dataId === 'address');
-                if (!sellerAddress) {
-                    this.log.error('Not enough valid information to finalize escrow');
-                    throw new MessageException('Not enough valid information to finalize escrow');
-                }
-
-                sellerAddress = sellerAddress.dataValue as string;
-                const myAddress = await this.coreRpcService.call('getnewaddress', ['_escrow_release']);
-                const decoded = await this.coreRpcService.call('decoderawtransaction', [rawtx]);
-
-                const txid = decoded.txid;
-                const value = decoded.vout[0].value - 0.0001; // TODO: Proper TX Fee
-
-                if (!txid) {
-                    this.log.error(`Transaction with not found with txid: ${txid}.`);
-                    throw new MessageException(`Transaction with not found with txid: ${txid}.`);
-                }
-
-                const txout = {};
-
-                txout[myAddress] = value / 3;
-                txout[sellerAddress] = (value / 3) * 2;
-
-                rawtx = await this.coreRpcService.call('createrawtransaction', [
-                    [{txid, vout: 0}], // TODO: Make sure this is the correct vout
-                    txout
-                ]);
-
-                // TODO: This requires user interaction, so should be elsewhere possibly?
-                return (await signTx(rawtx)).hex;
-            }
-            */
             default:
                 throw new NotImplementedException();
         }
@@ -624,8 +543,17 @@ export class EscrowActionService {
         });
     }
 
+    /**
+     * signs rawtx and ignores errors in case tx shouldnt be complete yet.
+     *
+     * @param {string} rawtx
+     * @param {boolean} shouldBeComplete
+     * @returns {Promise<any>}
+     */
     private async signRawTx(rawtx: string, shouldBeComplete?: boolean): Promise<any> {
-        this.log.debug('signRawTx: signing rawtx and expecting it to be complete:', shouldBeComplete);
+
+        this.log.debug('signRawTx(): signing rawtx, shouldBeComplete:', shouldBeComplete);
+
         // This requires user interaction, so should be elsewhere possibly?
         // TODO: Verify that the transaction has the correct values! Very important!!! TODO TODO TODO
         const signed = await this.coreRpcService.signRawTransaction(rawtx);
@@ -637,15 +565,15 @@ export class EscrowActionService {
 
         if (!signed
             || signed.errors
-            && (!shouldBeComplete && ignoreErrors.indexOf(signed.errors[0].error) === -1 || shouldBeComplete)) {
-            // TODO: ^^ is this correct?!
+            && (!shouldBeComplete && ignoreErrors.indexOf(signed.errors[0].error) === -1)) {
             this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
+            this.log.error('signed: ', JSON.stringify(signed, null, 2));
             throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
         }
 
         if (shouldBeComplete) {
             if (!signed.complete) {
-                this.log.error('Transaction should be complete at this stage.', signed);
+                this.log.error('Transaction should be complete at this stage.', JSON.stringify(signed, null, 2));
                 throw new MessageException('Transaction should be complete at this stage');
             }
         } else if (signed.complete) {
@@ -653,39 +581,56 @@ export class EscrowActionService {
             throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
         }
 
+        this.log.debug('signRawTx(): signed:', JSON.stringify(signed, null, 2));
+
         return signed;
     }
 
     /**
      *
      * @param {string} key
-     * @param {"resources".OrderItemObject[]} orderItemObjects
+     * @param {module:resources.OrderItemObject[]} orderItemObjects
      * @returns {any}
      */
     private getValueFromOrderItemObjects(key: string, orderItemObjects: resources.OrderItemObject[]): any {
         const value = orderItemObjects.find(kv => kv.dataId === key);
         if (value) {
-            return value.dataValue;
+            return value.dataValue[0] === '[' ? JSON.parse(value.dataValue) : value.dataValue;
         } else {
             this.log.error('Missing OrderItemObject value for key: ' + key);
             throw new MessageException('Missing OrderItemObject value for key: ' + key);
         }
     }
 
+    /**
+     * updates rawtx
+     *
+     * @param {module:resources.OrderItemObject[]} orderItemObjects
+     * @param {string} newRawtx
+     * @returns {Promise<any>}
+     */
     private async updateRawTxOrderItemObject(orderItemObjects: resources.OrderItemObject[], newRawtx: string): Promise<any> {
         const rawtxObject = orderItemObjects.find(kv => kv.dataId === 'rawtx');
 
         if (rawtxObject) {
             const updatedOrderItemObject = await this.orderItemObjectService.update(rawtxObject.id, {
-                dataId: 'rawtx',
+                dataId: BidDataValue.RAW_TX.toString(),
                 dataValue: newRawtx
             } as OrderItemObjectUpdateRequest);
             return updatedOrderItemObject.toJSON();
         } else {
+            this.log.error('OrderItemObject for rawtx not found!');
             throw new MessageException('OrderItemObject for rawtx not found!');
         }
     }
 
+    /**
+     * updates orderitems status
+     *
+     * @param {module:resources.OrderItem} orderItem
+     * @param {OrderStatus} newOrderStatus
+     * @returns {Promise<module:resources.OrderItem>}
+     */
     private async updateOrderItemStatus(orderItem: resources.OrderItem, newOrderStatus: OrderStatus): Promise<resources.OrderItem> {
 
         const orderItemUpdateRequest = {

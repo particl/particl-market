@@ -63,12 +63,8 @@ describe('AddressRemoveCommand', () => {
 
     test('Should not contain the removed address in address list', async () => {
         // get list of already created address
-        const res = await rpc(method, [Commands.ADDRESS_LIST.commandName]);
+        const res = await rpc(method, [Commands.ADDRESS_LIST.commandName, addressId]);
         res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        _.each(result, (address) => {
-            expect(address.id).not.toBe(addressId);
-        });
+        res.expectStatusCode(404);
     });
 });

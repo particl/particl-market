@@ -39,6 +39,20 @@ export class CoreRpcService {
             });
     }
 
+    /**
+     * returns the particld version:
+     * 16000400: 0.16.0.4,
+     * 16000700: 0.16.0.7, ...
+     *
+     * @returns {Promise<number>}
+     */
+    public async getVersion(): Promise<number> {
+        return await this.getNetworkInfo()
+            .then(response => {
+                return response.version;
+            });
+    }
+
     public async getNetworkInfo(): Promise<any> {
         return await this.call('getnetworkinfo', [], false);
     }
@@ -342,11 +356,12 @@ export class CoreRpcService {
             .then( response => {
 
                 if (response.statusCode !== 200) {
-                    this.log.debug('response.headers: ', response.headers);
-                    this.log.debug('response.statusCode: ', response.statusCode);
-                    this.log.debug('response.statusMessage: ', response.statusMessage);
-                    this.log.debug('response.content: ', response.content);
-                    throw new HttpException(response.statusCode, response.statusMessage);
+                    this.log.error('response.headers: ', response.headers);
+                    this.log.error('response.statusCode: ', response.statusCode);
+                    this.log.error('response.statusMessage: ', response.statusMessage);
+                    this.log.error('response.content: ', response.content);
+                    const message = response.content ? JSON.parse(response.content) : response.statusMessage;
+                    throw new HttpException(response.statusCode, message);
                 }
 
                 const jsonRpcResponse = JSON.parse(response.content) as JsonRpc2Response;
@@ -358,7 +373,7 @@ export class CoreRpcService {
                 return jsonRpcResponse.result;
             })
             .catch(error => {
-                this.log.error('ERROR: ' + error.name + ': ' + error.message);
+                // this.log.error('ERROR: ' + JSON.stringify(error));
                 if (error instanceof HttpException || error instanceof InternalServerException) {
                     throw error;
                 } else {
