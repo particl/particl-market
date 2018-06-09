@@ -1,4 +1,5 @@
 import { inject, named } from 'inversify';
+import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
@@ -19,9 +20,10 @@ import { ShippingPriceCreateRequest } from '../requests/ShippingPriceCreateReque
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { MessagingInformationCreateRequest } from '../requests/MessagingInformationCreateRequest';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
+import { ListingItemObjectDataCreateRequest } from '../requests/ListingItemObjectDataCreateRequest';
 import { MessagingProtocolType } from '../enums/MessagingProtocolType';
 import { ImageDataProtocolType } from '../enums/ImageDataProtocolType';
-import {ItemLocationCreateRequest} from '../requests/ItemLocationCreateRequest';
+import { ItemLocationCreateRequest } from '../requests/ItemLocationCreateRequest';
 
 export class ListingItemFactory {
 
@@ -89,9 +91,45 @@ export class ListingItemFactory {
     // ---------------
     // MODEL
     // ---------------
-    private async getModelListingItemObjects(objects: any): Promise<ListingItemObjectCreateRequest[]> {
-        // TODO: impl
-        return [];
+    private async getModelListingItemObjects(objects: any[]): Promise<ListingItemObjectCreateRequest[]> {
+        const objectArray: ListingItemObjectCreateRequest[] = [];
+        this.log.debug('objectArray: ', JSON.stringify(objectArray, null, 2));
+        for (const object of objects) {
+            let objectData;
+            if ('TABLE' === object.type) {
+                objectData = await this.getModelObjectDataForTypeTable(object['table']);
+            } else if ('DROPDOWN' === object.type) {
+                objectData = await this.getModelObjectDataForTypeDropDown(object['options']);
+            }
+            objectArray.push({
+                type: object.type,
+                description: object.title,
+                listingItemObjectDatas: objectData
+            } as ListingItemObjectCreateRequest);
+        }
+        return objectArray;
+    }
+
+    private async getModelObjectDataForTypeTable(objectDatas: any): Promise<ListingItemObjectDataCreateRequest[]> {
+        const objectDataArray: ListingItemObjectDataCreateRequest[] = [];
+        for (const objectData of objectDatas) {
+            objectDataArray.push({
+                key: objectData.key,
+                value: objectData.value
+            } as ListingItemObjectDataCreateRequest);
+        }
+        return objectDataArray;
+    }
+
+    private async getModelObjectDataForTypeDropDown(objectDatas: any): Promise<ListingItemObjectDataCreateRequest[]> {
+        const objectDataArray: ListingItemObjectDataCreateRequest[] = [];
+        for (const objectData of objectDatas) {
+            objectDataArray.push({
+                key: objectData.name,
+                value: objectData.value
+            } as ListingItemObjectDataCreateRequest);
+        }
+        return objectDataArray;
     }
 
     private async getModelMessagingInformation(messaging: any): Promise<MessagingInformationCreateRequest[]> {
@@ -118,7 +156,10 @@ export class ListingItemFactory {
 
     private async getModelItemPrice(cryptocurrency: any): Promise<ItemPriceCreateRequest> {
         const shippingPrice = await this.getModelShippingPrice(cryptocurrency[0].shipping_price);
-        const cryptocurrencyAddress = await this.getModelCryptocurrencyAddress(cryptocurrency[0].address);
+        let cryptocurrencyAddress;
+        if (!_.isEmpty(cryptocurrency[0].address)) {
+            cryptocurrencyAddress = await this.getModelCryptocurrencyAddress(cryptocurrency[0].address);
+        }
         return {
             currency: cryptocurrency[0].currency,
             basePrice: cryptocurrency[0].base_price,
@@ -343,7 +384,7 @@ export class ListingItemFactory {
                 imageDataArray.push({
                     protocol: imageData.protocol,
                     encoding: imageData.encoding,
-                    data: imageData.data,
+                    data: imageData.ItemImageDataContent.data,
                     id: imageData.dataId
                 });
             }
@@ -373,20 +414,26 @@ export class ListingItemFactory {
     }
 
     private async getMessageCryptoCurrency(itemPrice: resources.ItemPrice): Promise<object> {
-        return [
-            {
-                currency: itemPrice.currency,
-                base_price: itemPrice.basePrice,
-                shipping_price: {
-                    domestic: itemPrice.ShippingPrice.domestic,
-                    international: itemPrice.ShippingPrice.international
-                },
-                address: {
-                    type: itemPrice.CryptocurrencyAddress.type,
-                    address: itemPrice.CryptocurrencyAddress.address
-                }
-            }
-        ];
+
+        let address;
+
+        // not using CryptocurrencyAddress in alpha
+        if (!_.isEmpty(itemPrice.CryptocurrencyAddress)) {
+            address = {
+                type: itemPrice.CryptocurrencyAddress.type,
+                address: itemPrice.CryptocurrencyAddress.address
+            };
+        }
+
+        return [{
+            currency: itemPrice.currency,
+            base_price: itemPrice.basePrice,
+            shipping_price: {
+                domestic: itemPrice.ShippingPrice.domestic,
+                international: itemPrice.ShippingPrice.international
+            },
+            address
+        }];
     }
 
     private async getMessageMessaging(messagingInformation: resources.MessagingInformation[]): Promise<object[]> {
@@ -442,7 +489,7 @@ export class ListingItemFactory {
 
     private async getObjectDataOptions(objectDatas: resources.ListingItemObjectData[]): Promise<any> {
         const objectDataArray: object[] = [];
-        objectDatas.forEach( async (objectValue) => {
+        objectDatas.forEach(async (objectValue) => {
             objectDataArray.push({
                 name: objectValue.key,
                 value: objectValue.value

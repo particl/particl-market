@@ -48,6 +48,10 @@ import { ItemInformation } from '../models/ItemInformation';
 import { Bid } from '../models/Bid';
 import { ItemImage } from '../models/ItemImage';
 
+import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
+import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
+import { MessageDataCreateRequest } from '../requests/MessageDataCreateRequest';
+import { MessageObjectCreateRequest } from '../requests/MessageObjectCreateRequest';
 import { ListingItemCreateRequest } from '../requests/ListingItemCreateRequest';
 import { ListingItemTemplateCreateRequest } from '../requests/ListingItemTemplateCreateRequest';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
@@ -57,6 +61,7 @@ import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
 import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
 import { CreatableModel } from '../enums/CreatableModel';
+import { GenerateActionMessageParams } from '../requests/params/GenerateActionMessageParams';
 import { GenerateListingItemTemplateParams } from '../requests/params/GenerateListingItemTemplateParams';
 import { GenerateListingItemParams } from '../requests/params/GenerateListingItemParams';
 import { GenerateProfileParams } from '../requests/params/GenerateProfileParams';
@@ -79,9 +84,9 @@ import * as resources from 'resources';
 import { OrderStatus } from '../enums/OrderStatus';
 import { OrderItemObjectCreateRequest } from '../requests/OrderItemObjectCreateRequest';
 import { OrderService } from './OrderService';
-import {OrderFactory} from '../factories/OrderFactory';
-import {ItemPriceCreateRequest} from '../requests/ItemPriceCreateRequest';
-import {EscrowCreateRequest} from '../requests/EscrowCreateRequest';
+import { OrderFactory } from '../factories/OrderFactory';
+import { ItemPriceCreateRequest } from '../requests/ItemPriceCreateRequest';
+import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
 
 export class TestDataService {
 
@@ -197,6 +202,10 @@ export class TestDataService {
             case CreatableModel.LISTINGITEMTEMPLATE: {
                 const generateParams = new GenerateListingItemTemplateParams(body.generateParams);
                 return await this.generateListingItemTemplates(body.amount, body.withRelated, generateParams);
+            }
+            case CreatableModel.ACTIONMESSAGE: {
+                const generateParams = new GenerateActionMessageParams(body.generateParams);
+                return await this.generateActionMessages(body.amount, body.withRelated, generateParams);
             }
             case CreatableModel.LISTINGITEM: {
                 const generateParams = new GenerateListingItemParams(body.generateParams);
@@ -357,6 +366,7 @@ export class TestDataService {
         generateParams: GenerateListingItemParams):
     Promise<resources.ListingItem[]> {
 
+        this.log.debug('generateListingItems start');
         const items: resources.ListingItem[] = [];
         for (let i = amount; i > 0; i--) {
 
@@ -384,7 +394,9 @@ export class TestDataService {
                 }
             }];
 
+            this.log.debug('create listingitem start');
             const savedListingItemModel = await this.listingItemService.create(listingItemCreateRequest);
+            this.log.debug('create listingitem end');
 
             // this.log.debug('savedListingItem: ', savedListingItem.toJSON());
             const result = savedListingItemModel.toJSON();
@@ -392,6 +404,8 @@ export class TestDataService {
 
         }
         // this.log.debug('items: ', items);
+
+        this.log.debug('generateListingItems end');
 
         return await this.generateResponse(items, withRelated);
     }
@@ -741,7 +755,7 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             items.push({
                 country: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
-                shippingAvailability: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingAvailability))
+                shippingAvailability: ShippingAvailability.SHIPS
             });
         }
         return items;
@@ -842,6 +856,57 @@ export class TestDataService {
             publicKey: Faker.random.uuid()
         }];
         return messagingInformation;
+    }
+
+
+    private async generateActionMessages(amount: number, withRelated: boolean = true,
+                                         generateParams: GenerateActionMessageParams): Promise<resources.ActionMessage[]> {
+        const marketModel = await this.marketService.getDefault();
+        const market = marketModel.toJSON();
+
+        const info = generateParams.generateMessageInfo ? {
+            address: generateParams.seller,
+            memo: generateParams.memo
+        } as MessageInfoCreateRequest : {};
+        const escrow = generateParams.generateMessageEscrow ? {
+            type: generateParams.type,
+            rawtx: generateParams.rawtx
+        } as MessageEscrowCreateRequest : {};
+        const data = generateParams.generateMessageData ? {
+            msgid: generateParams.msgid,
+            version: '0300',
+            received: new Date(),
+            sent: new Date(),
+            from: generateParams.seller,
+            to: market.address
+        } as MessageDataCreateRequest : {};
+        const objects: MessageObjectCreateRequest[] = [];
+        for (let i = generateParams.generateMessageObjectsAmount; i > 0; i--) {
+            const object = {
+                dataId: 'seller',
+                dataValue: generateParams.seller
+            } as MessageObjectCreateRequest;
+            objects.push(object);
+        }
+
+        const actionMessageCreateRequest = {
+            action: generateParams.action,
+            nonce: generateParams.nonce,
+            accepted: generateParams.accepted,
+            listing_item_id: generateParams.listingItemId,
+            info,
+            escrow,
+            data,
+            objects
+        } as ActionMessageCreateRequest;
+
+        const items: resources.ActionMessage[] = [];
+        for (let i = amount; i > 0; i--) {
+            const actionMessageModel = await this.actionMessageService.create(actionMessageCreateRequest);
+            const actionMessage = actionMessageModel.toJSON();
+            items.push(actionMessage);
+        }
+        return this.generateResponse(items, withRelated);
     }
 
     // listingitemobjects

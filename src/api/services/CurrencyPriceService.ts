@@ -62,7 +62,6 @@ export class CurrencyPriceService {
      *
      * @returns {Promise<CurrencyPrice[]>}
      */
-
     public async getCurrencyPrices(fromCurrency: string, toCurrencies: string[]): Promise<resources.CurrencyPrice[]> {
 
         const returnData: any = [];
@@ -110,8 +109,7 @@ export class CurrencyPriceService {
                 throw new MessageException(`Invalid currency ${toCurrency}`);
             }
         }
-        this.log.debug('currencyData: ', returnData);
-        // return all currency prices
+        // this.log.debug('currencyData: ', returnData);
         return returnData;
     }
 
@@ -184,6 +182,6 @@ export class CurrencyPriceService {
         const current: any = new Date();
         const tricker: any = new Date(currencyUpdatedAt);
         // check if the results in db are older than 60 second
-        return (((current - tricker) / 1000) > process.env.CHASING_COINS_API_DELAY);
+        return (((current - tricker) / 1000) > Number(process.env.CHASING_COINS_API_DELAY));
     }
 }

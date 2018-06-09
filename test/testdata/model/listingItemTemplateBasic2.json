@@ -16,6 +16,12 @@
                     "key": "Screensize",
                     "value": "17.8 inch",
                     "listingItemObjectId": 1
+                },
+                {
+                    "id": 2,
+                    "key": "Mouse",
+                    "value": "optical",
+                    "listingItemObjectId": 1
                 }
             ]
         },

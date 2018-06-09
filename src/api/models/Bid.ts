@@ -1,5 +1,5 @@
 import { Bookshelf } from '../../config/Database';
-import { Collection } from 'bookshelf';
+import { Collection, Model } from 'bookshelf';
 import * as _ from 'lodash';
 import { ListingItem } from './ListingItem';
 import { BidData } from './BidData';
@@ -36,7 +36,7 @@ export class Bid extends Bookshelf.Model<Bid> {
             options.ordering = SearchOrder.ASC;
         }
 
-        const bidCollection = Bid.forge<Collection<Bid>>()
+        const bidCollection = Bid.forge<Model<Bid>>()
             .query( qb => {
 
                 if (options.listingItemId) {

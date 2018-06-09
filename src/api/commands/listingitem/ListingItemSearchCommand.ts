@@ -69,6 +69,9 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             shippingCountryCode = ShippingCountries.validate(this.log, data.params[9]);
         }
 
+        // TODO: this type search does not really make sense
+        // TODO: searching for items that youre buying or selling should be done with bid or orderitem search
+        // TODO: ...so remove type
         return await this.listingItemService.search({
             page: data.params[0] || 1,
             pageLimit: data.params[1] || 5, // default page limit 5

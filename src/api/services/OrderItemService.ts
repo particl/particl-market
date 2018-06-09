@@ -39,6 +39,7 @@ export class OrderItemService {
     public async create( @request(OrderItemCreateRequest) data: OrderItemCreateRequest): Promise<OrderItem> {
 
         const body = JSON.parse(JSON.stringify(data));
+        this.log.debug('OrderItemCreateRequest: ', JSON.stringify(body, null, 2));
 
         const orderItemObjects = body.orderItemObjects;
         delete body.orderItemObjects;

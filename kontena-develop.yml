@@ -60,6 +60,7 @@ services:
       - APP_HOST=http://dev1.particl.xyz
       - APP_URL_PREFIX=/api
       - APP_PORT=3333
+      - TESTNET=true
       - RPCUSER=test
       - RPCPASSWORD=test
       - RPCHOSTNAME=particld1
@@ -77,7 +78,7 @@ services:
       - MONITOR_ENABLED=true
       - MONITOR_ROUTE=/status
       - DB_CLIENT=sqlite3
-      - DB_CONNECTION=/app/data/marketplace.db
+      - DB_CONNECTION=/app/data/database/marketplace.db
       - DB_POOL_MIN=2
       - DB_POOL_MAX=10
       - DB_MIGRATION_DIR=/app/src/database/migrations
@@ -109,6 +110,7 @@ services:
       - APP_HOST=http://dev2.particl.xyz
       - APP_URL_PREFIX=/api
       - APP_PORT=3333
+      - TESTNET=true
       - RPCUSER=test
       - RPCPASSWORD=test
       - RPCHOSTNAME=particld2
@@ -126,7 +128,7 @@ services:
       - MONITOR_ENABLED=true
       - MONITOR_ROUTE=/status
       - DB_CLIENT=sqlite3
-      - DB_CONNECTION=/app/data/marketplace.db
+      - DB_CONNECTION=/app/data/database/marketplace.db
       - DB_POOL_MIN=2
       - DB_POOL_MAX=10
       - DB_MIGRATION_DIR=/app/src/database/migrations

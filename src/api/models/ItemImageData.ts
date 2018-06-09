@@ -1,12 +1,17 @@
 import { Bookshelf } from '../../config/Database';
 import { ItemImage } from './ItemImage';
+import { ItemImageDataContent } from './ItemImageDataContent';
 
 export class ItemImageData extends Bookshelf.Model<ItemImageData> {
+
+    public static RELATIONS = [
+        'ItemImageDataContent'
+    ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ItemImageData> {
         if (withRelated) {
             return await ItemImageData.where<ItemImageData>({ id: value }).fetch({
-                withRelated: []
+                withRelated: this.RELATIONS
             });
         } else {
             return await ItemImageData.where<ItemImageData>({ id: value }).fetch();
@@ -31,8 +36,8 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
     public get DataId(): string { return this.get('dataId'); }
     public set DataId(value: string) { this.set('dataId', value); }
 
-    public get Data(): string { return this.get('data'); }
-    public set Data(value: string) { this.set('data', value); }
+    // public get Data(): string { return this.get('data'); }
+    // public set Data(value: string) { this.set('data', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
@@ -49,4 +54,9 @@ export class ItemImageData extends Bookshelf.Model<ItemImageData> {
     public ItemImage(): ItemImage {
         return this.belongsTo(ItemImage, 'item_image_id', 'id');
     }
+
+    public ItemImageDataContent(): ItemImageDataContent {
+        return this.hasOne(ItemImageDataContent);
+    }
+
 }

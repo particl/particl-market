@@ -1,4 +1,5 @@
 import { app } from '../../src/app';
+
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
@@ -73,6 +74,10 @@ describe('ActionMessage', () => {
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
+        log.debug('========================================');
+        log.debug('app bootstrap done');
+        log.debug('========================================');
+
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         actionMessageService = app.IoC.getNamed<ActionMessageService>(Types.Service, Targets.Service.ActionMessageService);
         messageInfoService = app.IoC.getNamed<MessageInfoService>(Types.Service, Targets.Service.MessageInfoService);
@@ -85,7 +90,7 @@ describe('ActionMessage', () => {
         const generateParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
-            true,   // generateItemImages
+            false,   // generateItemImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
@@ -102,7 +107,6 @@ describe('ActionMessage', () => {
         } as TestDataGenerateRequest);
         // createdListingItem = listingItems[0].toJSON();
         createdListingItem = listingItems[0];
-
         const actionMessageCollection = await actionMessageService.findAll();
         const actionMessage = actionMessageCollection.toJSON();
         startNumActionMessages = actionMessage.length;
@@ -112,47 +116,6 @@ describe('ActionMessage', () => {
         //
     });
 
-    test('Should not create a new action message without info', async () => {
-        expect.assertions(1);
-        const testData1 = JSON.parse(JSON.stringify(testData));
-
-        delete testData1.info;
-        let actionMessage: any = null;
-        try {
-            actionMessage = await actionMessageService.create(testData1);
-        } catch (e) {
-            // expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []));
-            expect(true).toEqual(true);
-        };
-    });
-
-    test('Should not create a new action message without escrow', async () => {
-        expect.assertions(1);
-        const testData1 = JSON.parse(JSON.stringify(testData));
-
-        delete testData1.escrow;
-        let actionMessage: any = null;
-        try {
-            actionMessage = await actionMessageService.create(testData1);
-        } catch (e) {
-            // expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []));
-            expect(true).toEqual(true);
-        };
-    });
-
-    test('Should not create a new action message without data', async () => {
-        expect.assertions(1);
-        const testData1 = JSON.parse(JSON.stringify(testData));
-
-        delete testData1.data;
-        let actionMessage: any = null;
-        try {
-            actionMessage = await actionMessageService.create(testData1);
-        } catch (e) {
-            // expect(e).toEqual(new ValidationException('Could not create the ActionMessage, missing data!', []));
-            expect(true).toEqual(true);
-        };
-    });
 
     test('Should create a new action message', async () => {
 
@@ -209,6 +172,7 @@ describe('ActionMessage', () => {
     });
 
     test('Should throw ValidationException because we want to create a empty action message', async () => {
+
         expect.assertions(1);
         await actionMessageService.create({} as ActionMessageCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
@@ -216,6 +180,7 @@ describe('ActionMessage', () => {
     });
 
     test('Should list action messages with our new create one', async () => {
+
         const actionMessageCollection = await actionMessageService.findAll();
         const actionMessage = actionMessageCollection.toJSON();
         expect(actionMessage.length).toBe(startNumActionMessages + 1);
@@ -232,6 +197,7 @@ describe('ActionMessage', () => {
     });
 
     test('Should return one action message', async () => {
+
         const actionMessageModel: ActionMessage = await actionMessageService.findOne(createdActionMessage.id);
         const result = actionMessageModel.toJSON();
 
@@ -324,8 +290,8 @@ describe('ActionMessage', () => {
         );
 
         // MessageObjects
-        await messageDataService.findOne(createdActionMessage.MessageObjects[startNumActionMessages].id).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdActionMessage.MessageObjects[startNumActionMessages].id))
+        await messageDataService.findOne(createdActionMessage.MessageObjects[0].id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdActionMessage.MessageObjects[0].id))
         );
     });
 
