@@ -5,8 +5,6 @@
 
 export enum BidDataValue {
 
-    OUTPUTS = 'outputs',
-
     BUYER_PUBKEY = 'buyerPubkey',
     BUYER_OUTPUTS = 'buyerOutputs',
     BUYER_CHANGE_ADDRESS = 'buyerChangeAddress',
@@ -18,7 +16,6 @@ export enum BidDataValue {
 
     RAW_TX = 'rawtx',
     ORDER_HASH = 'orderHash',
-    TX_HASH = 'txHash',
 
     SHIPPING_ADDRESS_FIRST_NAME = 'ship.firstName',
     SHIPPING_ADDRESS_LAST_NAME = 'ship.lastName',

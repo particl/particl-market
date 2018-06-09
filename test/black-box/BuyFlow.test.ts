@@ -446,6 +446,8 @@ describe('Happy BuyFlow', () => {
         log.debug('BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT');
         log.debug('========================================================================================');
 
+        await testUtilBuyerNode.waitFor(10);
+
         // TODO: when we first get the template hash, store it in originalTemplateHash and use that for searches and expects
         // same for other similar cases...
 

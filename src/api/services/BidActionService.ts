@@ -184,7 +184,6 @@ export class BidActionService {
         const buyerEscrowReleaseAddress = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
 
         // convert the bid data params as bid data key value pair
-        // todo: separate values for pubkeys
         const bidDatas = this.getBidDatasFromArray(additionalParams.concat([
             BidDataValue.BUYER_OUTPUTS, buyerSelectedOutputData.outputs,
             BidDataValue.BUYER_PUBKEY, buyerEcrowPubAddressPublicKey,
