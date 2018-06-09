@@ -16,7 +16,8 @@ import { MessageException } from '../exceptions/MessageException';
 import { OrderItemService } from './OrderItemService';
 import { AddressService } from './AddressService';
 import { ListingItemService } from './ListingItemService';
-import { AddressType } from '../enums/AddressType';
+import {AddressType} from '../enums/AddressType';
+import {ProfileService} from './ProfileService';
 import * as resources from 'resources';
 
 
@@ -28,6 +29,7 @@ export class OrderService {
         @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.OrderItemService) public orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Repository) @named(Targets.Repository.OrderRepository) public orderRepo: OrderRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
