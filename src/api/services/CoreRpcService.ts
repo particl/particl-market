@@ -296,7 +296,7 @@ export class CoreRpcService {
      */
     public async lockUnspent(unlock: boolean, outputs: Output[]): Promise<any> {
 
-        const params: any[] = [unlock, outputs];
+        const params: any[] = [unlock, outputs, true];
         return await this.call('lockunspent', params);
     }
 

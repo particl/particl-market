@@ -85,11 +85,6 @@ export class ServerStartedListener implements interfaces.Listener {
                 // seed the default Profile
                 await this.defaultProfileService.seedDefaultProfile();
 
-                // relock the locked outputs
-                const lockedOutputsModel = await this.lockedOutputService.findAll();
-                const lockedOutputs = lockedOutputsModel.toJSON();
-                const result = await this.lockedOutputService.lockOutputs(lockedOutputs);
-
                 // start message polling
                 this.messageProcessor.schedulePoll();
                 this.interval = 10000;
