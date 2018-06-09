@@ -39,6 +39,20 @@ export class CoreRpcService {
             });
     }
 
+    /**
+     * returns the particld version:
+     * 16000400: 0.16.0.4,
+     * 16000700: 0.16.0.7, ...
+     *
+     * @returns {Promise<number>}
+     */
+    public async getVersion(): Promise<number> {
+        return await this.getNetworkInfo()
+            .then(response => {
+                return response.version;
+            });
+    }
+
     public async getNetworkInfo(): Promise<any> {
         return await this.call('getnetworkinfo', [], false);
     }
