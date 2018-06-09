@@ -6,9 +6,7 @@ import { Types, Core, Targets, Events } from '../../constants';
 import * as resources from 'resources';
 import { MessageException } from '../exceptions/MessageException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
-
 import { EventEmitter } from 'events';
-
 import { ActionMessageService } from './ActionMessageService';
 import { BidService } from './BidService';
 import { ProfileService } from './ProfileService';
@@ -17,9 +15,7 @@ import { BidFactory } from '../factories/BidFactory';
 import { SmsgService } from './SmsgService';
 import { CoreRpcService } from './CoreRpcService';
 import { ListingItemService } from './ListingItemService';
-
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
-import { Market } from '../models/Market';
 import { Profile } from '../models/Profile';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { BidMessageType } from '../enums/BidMessageType';
@@ -28,7 +24,6 @@ import { BidMessage } from '../messages/BidMessage';
 import { BidSearchParams } from '../requests/BidSearchParams';
 import { AddressType } from '../enums/AddressType';
 import { SearchOrder } from '../enums/SearchOrder';
-import { Environment } from '../../core/helpers/Environment';
 import { BidUpdateRequest } from '../requests/BidUpdateRequest';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
 import { Bid } from '../models/Bid';
@@ -36,11 +31,20 @@ import { OrderFactory } from '../factories/OrderFactory';
 import { OrderService } from './OrderService';
 import { BidDataService } from './BidDataService';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
-import { IsNotEmpty } from 'class-validator';
 import { LockedOutputService } from './LockedOutputService';
+import { BidDataValue } from '../enums/BidDataValue';
 
-declare function escape(s: string): string;
-declare function unescape(s: string): string;
+// todo: move
+export interface OutputData {
+    outputs: Output[];
+    outputsSum: number;
+    outputsChangeAmount: number;
+}
+
+export interface IdValuePair {
+    id: string;
+    value: any;
+}
 
 export class BidActionService {
 
@@ -67,27 +71,26 @@ export class BidActionService {
     }
 
     /**
+     * Send a Bid
      *
-     * @param {"resources".ListingItem} listingItem
-     * @param {"resources".Profile} bidderProfile
-     * @param {"resources".Address} shippingAddress
+     * @param {module:resources.ListingItem} listingItem
+     * @param {module:resources.Profile} bidderProfile
      * @param {any[]} additionalParams
      * @returns {Promise<SmsgSendResponse>}
      */
     public async send(listingItem: resources.ListingItem, bidderProfile: resources.Profile,
-                      shippingAddress: resources.Address, additionalParams: any[]): Promise<SmsgSendResponse> {
+                      additionalParams: IdValuePair[]): Promise<SmsgSendResponse> {
 
         // TODO: change send params to BidSendRequest and @validate them
-
         // TODO: some of this stuff could propably be moved to the factory
         // TODO: Create new unspent RPC call for unspent outputs that came out of a RingCT transaction
 
-        // generate bidDatas
-        const bidDatas = await this.generateBidDatasForMPA_BID(listingItem, shippingAddress, additionalParams);
+        // generate bidDatas for the message
+        const bidDatas = await this.generateBidDatasForMPA_BID(listingItem, additionalParams);
 
-        this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
+        // this.log.debug('bidder profile: ', JSON.stringify(bidderProfile, null, 2));
 
-        // create bid
+        // create MPA_BID message
         const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_BID, listingItem.hash, bidDatas);
 
         const marketPlaceMessage = {
@@ -99,17 +102,17 @@ export class BidActionService {
 
         // save bid locally before broadcasting
         const createdBid: resources.Bid = await this.createBid(bidMessage, listingItem, bidderProfile.address);
-        this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
+        // this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
 
         // store the selected outputs, so we can load and lock them again on mp restart
-        let selectedOutputs = this.getValueFromBidDatas('outputs', createdBid.BidDatas);
+        let selectedOutputs = this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, createdBid.BidDatas);
         selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
 
         const createdLockedOutputs = await this.lockedOutputService.createLockedOutputs(selectedOutputs, createdBid.id);
         const success = await this.lockedOutputService.lockOutputs(createdLockedOutputs);
 
         if (success) {
-            // broadcast the message in to the network
+            // broadcast the message to the network
             return await this.smsgService.smsgSend(bidderProfile.address, listingItem.seller, marketPlaceMessage, false);
         } else {
             throw new MessageException('Failed to lock the selected outputs.');
@@ -117,82 +120,50 @@ export class BidActionService {
     }
 
     /**
+     * generate the required biddatas for MPA_BID message
      *
-     * @param {"resources".ListingItem} listingItem
-     * @returns {Promise<any[]>}
+     * @param {module:resources.ListingItem} listingItem
+     * @param {any[]} additionalParams
+     * @returns {Promise<IdValuePair[]>}
      */
     public async generateBidDatasForMPA_BID(
         listingItem: resources.ListingItem,
-        shippingAddress: resources.Address,
-        additionalParams: any[]
-    ): Promise<any[]> {
+        additionalParams: IdValuePair[]
+    ): Promise<IdValuePair[]> {
 
         // todo: propably something that we should check earlier
         // todo: and we shouldnt even be having items without a price at the moment, validation before posting should take care of that
         // todo: this could also be caused by of some other error, while saving the item
         if (!listingItem.PaymentInformation.ItemPrice || !listingItem.PaymentInformation.ItemPrice.basePrice) {
-            this.log.error('Missing ItemPrice.');
-            throw new MessageException('Missing ItemPrice.');
-        }
-
-        // get unspent
-        const unspent = await this.coreRpcService.listUnspent(1, 99999999, [], false);
-
-        if (!unspent || unspent.length === 0) {
-            this.log.warn('No unspent outputs');
-            throw new MessageException('No unspent outputs');
-        }
-        this.log.debug('unspent outputs: ', unspent.length);
-        this.log.debug('listingItem.PaymentInformation: ', JSON.stringify(listingItem.PaymentInformation, null, 2));
-
-        const outputs: Output[] = [];
-        const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
-        const basePrice = listingItemPrice.basePrice;
-        const shippingPriceMax = Math.max(listingItemPrice.ShippingPrice.international, listingItemPrice.ShippingPrice.domestic);
-        const totalPrice = basePrice + shippingPriceMax;
-
-        let sum = 0;
-        let change = 0;
-
-        if (basePrice) {
-            unspent.find(output => {
-                if (output.spendable && output.solvable) {
-                    sum += output.amount;
-                    outputs.push({
-                        txid: output.txid,
-                        vout: output.vout,
-                        amount: output.amount
-                    });
-                }
-
-                if (sum > (totalPrice * 2)) { // TODO: Ratio
-                    change = +(sum - (totalPrice * 2) - 0.0002).toFixed(8); // TODO: Get actual fee...
-                    return true;
-                }
-                return false;
-            });
-
-            if (sum < basePrice) {
-                this.log.warn('You are too broke...');
-                throw new MessageException('You are too broke...');
-            }
-
-        } else {
             this.log.warn(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
-        this.log.debug('selected outputs:', JSON.stringify(outputs, null, 2));
+        // this.log.debug('listingItem.PaymentInformation: ', JSON.stringify(listingItem.PaymentInformation, null, 2));
+
+        // todo: calculate correct shippingPrice
+        const shippingPrice = listingItem.PaymentInformation.ItemPrice.ShippingPrice;
+        const basePrice = listingItem.PaymentInformation.ItemPrice.basePrice;
+        const shippingPriceMax = Math.max(shippingPrice.international, shippingPrice.domestic);
+        const totalPrice = basePrice + shippingPriceMax; // TODO: Determine if local or international...
+        const requiredAmount = totalPrice * 2; // todo: bidders required amount
+        // todo: calculate totalprice using the items escrowratio
+
+        this.log.debug('totalPrice: ', totalPrice);
+
+        // returns: {
+        //    outputs
+        //    outputsSum
+        //    outputsChangeAmount
+        // }
+        const buyerSelectedOutputData: OutputData = await this.findUnspentOutputs(requiredAmount);
 
         // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
-        const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
-        // const addr = await this.coreRpcService.getAccountAddress('_escrow_pub_' + listingItem.hash);
-        // const addr = await this.coreRpcService.call('getaccountaddress', ['_escrow_pub_' + listingItem.hash]);
-        this.log.debug('addr: ', addr);
+        const buyerEscrowPubAddress = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
+        const buyerEscrowChangeAddress = await this.coreRpcService.getNewAddress(['_escrow_change'], false);
 
-        const changeAddr = await this.coreRpcService.getNewAddress(['_escrow_change'], false);
-        // const changeAddr = await this.coreRpcService.call('getnewaddress', ['_escrow_change']);
-        this.log.debug('changeAddr: ', changeAddr);
+        this.log.debug('buyerEscrowPubAddress: ', buyerEscrowPubAddress);
+        this.log.debug('buyerEscrowChangeAddress: ', buyerEscrowChangeAddress);
 
         // TODO: this is not on 0.16.0.3 yet ...
         // const addressInfo = await this.coreRpcService.getAddressInfo(addr);
@@ -200,106 +171,153 @@ export class BidActionService {
         // const pubkey = addressInfo.pubkey;
 
         // 0.16.0.3
-        const validateAddress = await this.coreRpcService.validateAddress(addr);
-        this.log.debug('validateAddress: ', JSON.stringify(validateAddress, null, 2));
-        const pubkey = validateAddress.pubkey;
+        const buyerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(buyerEscrowPubAddress);
+        const buyerEcrowPubAddressPublicKey = buyerEscrowPubAddressInformation.pubkey;
 
-        // const pubkey = (await this.coreRpcService.call('validateaddress', [addr])).pubkey;
+        this.log.debug('buyerEscrowPubAddressInformation: ', JSON.stringify(buyerEscrowPubAddressInformation, null, 2));
 
-        if (!pubkey) {
-            throw new MessageException('Could not get public key for address!');
+        if (!buyerEcrowPubAddressPublicKey) {
+            throw new MessageException('Could not get public key for buyerEscrowPubAddress!');
         }
 
         // TODO: We need to send a refund / release address
         // TODO: address should be named releaseAddress or sellerReleaseAddress and all keys should be enums,
         // it's confusing when on escrowactionservice this 'address' is referred to as sellers address which it is not
-        const buyerAddress = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
+        const buyerEscrowReleaseAddress = await this.coreRpcService.getNewAddress(['_escrow_release'], false);
 
         // convert the bid data params as bid data key value pair
-        const bidDatas = this.getBidDatasFromArray(additionalParams.concat([
-            'outputs', outputs,
-            'pubkeys', [pubkey],
-            'changeAddr', changeAddr,
-            'change', change,
-            'buyerAddress', buyerAddress
-        ]));
+        // todo: refactor to use resources.BidData instead of this IdValuePair
+        const bidDatas = this.getIdValuePairsFromArray([
+            BidDataValue.BUYER_OUTPUTS, buyerSelectedOutputData.outputs,
+            BidDataValue.BUYER_PUBKEY, buyerEcrowPubAddressPublicKey,
+            BidDataValue.BUYER_CHANGE_ADDRESS, buyerEscrowChangeAddress,
+            BidDataValue.BUYER_CHANGE_AMOUNT, buyerSelectedOutputData.outputsChangeAmount,
+            BidDataValue.BUYER_RELEASE_ADDRESS, buyerEscrowReleaseAddress
+        ]).concat(additionalParams);
 
         this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
-
-        // store the shipping address in biddata
-        bidDatas.push({id: 'ship.firstName', value: shippingAddress.firstName ? shippingAddress.firstName : ''});
-        bidDatas.push({id: 'ship.lastName', value: shippingAddress.lastName ? shippingAddress.lastName : ''});
-        bidDatas.push({id: 'ship.addressLine1', value: shippingAddress.addressLine1});
-        bidDatas.push({id: 'ship.addressLine2', value: shippingAddress.addressLine2});
-        bidDatas.push({id: 'ship.city', value: shippingAddress.city});
-        bidDatas.push({id: 'ship.state', value: shippingAddress.state});
-        bidDatas.push({id: 'ship.zipCode', value: shippingAddress.zipCode});
-        bidDatas.push({id: 'ship.country', value: shippingAddress.country});
 
         return bidDatas;
     }
 
     /**
+     * find unspent outputs for the required amount
+     *
+     * @param {number} requiredAmount
+     * @returns {Promise<any>}
+     */
+    public async findUnspentOutputs(requiredAmount: number): Promise<OutputData> {
+
+        // get all unspent transaction outputs
+        const unspentOutputs = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+
+        if (!unspentOutputs || unspentOutputs.length === 0) {
+            this.log.warn('No unspent outputs');
+            throw new MessageException('No unspent outputs');
+        }
+
+        this.log.debug('unspent outputs amount: ', unspentOutputs.length);
+
+        const selectedOutputs: Output[] = [];
+        let selectedOutputsSum = 0;
+        let selectedOutputsChangeAmount = 0;
+
+        unspentOutputs.find(output => {
+            if (output.spendable && output.solvable) {
+                selectedOutputsSum += output.amount;
+                selectedOutputs.push({
+                    txid: output.txid,
+                    vout: output.vout,
+                    amount: output.amount
+                });
+            }
+
+            // todo: get the actual fee
+            // check whether we have collected enough outputs to pay for the item and
+            // calculate the change amount
+            // requiredAmount, for MPA_BID: (totalPrice * 2)
+            // requiredAmount, for MPA_ACCEPT: totalPrice
+
+            if (selectedOutputsSum > requiredAmount) {
+                selectedOutputsChangeAmount = +(selectedOutputsSum - requiredAmount - 0.0002).toFixed(8);
+                return true;
+            }
+            return false;
+        });
+
+        if (selectedOutputsSum < requiredAmount) {
+            this.log.warn('Not enough funds');
+            throw new MessageException('Not enough funds');
+        }
+
+        // todo: type
+        const response: OutputData = {
+            outputs: selectedOutputs,
+            outputsSum: selectedOutputsSum,
+            outputsChangeAmount: selectedOutputsChangeAmount
+        };
+
+        this.log.debug('selected outputs:', JSON.stringify(response, null, 2));
+
+        return response;
+    }
+
+
+    /**
      * Accept a Bid
      *
-     * @param {"resources".ListingItem} listingItem
-     * @param {"resources".Bid} bid
+     * @param {module:resources.ListingItem} listingItem
+     * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
     public async accept(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
 
-        // last bids action needs to be MPA_BID
+        // previous bids action needs to be MPA_BID
         if (bid.action === BidMessageType.MPA_BID) {
 
             // todo: create order before biddatas so order hash can be added to biddata in generateBidDatasForMPA_ACCEPT
-            // generate bidDatas
-            const bidDatas = await this.generateBidDatasForMPA_ACCEPT(listingItem, bid);
+            // generate bidDatas for MPA_ACCEPT
+            const bidDatas: IdValuePair[] = await this.generateBidDatasForMPA_ACCEPT(listingItem, bid);
 
-            // create the bid accept message
+            // create the bid accept message using the generated bidDatas
             const bidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_ACCEPT, listingItem.hash, bidDatas);
-            this.log.debug('created bidMessage (MPA_ACCEPT):', JSON.stringify(bidMessage, null, 2));
+            // this.log.debug('accept(), created bidMessage (MPA_ACCEPT):', JSON.stringify(bidMessage, null, 2));
 
             // update the bid locally
             const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bid.bidder, bid);
             const updatedBidModel = await this.bidService.update(bid.id, bidUpdateRequest);
             const updatedBid = updatedBidModel.toJSON();
-            this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
+            // this.log.debug('accept(), updatedBid:', JSON.stringify(updatedBid, null, 2));
 
             // create the order
             const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
             const orderModel = await this.orderService.create(orderCreateRequest);
             const order = orderModel.toJSON();
 
-            this.log.debug('accept(), created Order: ', order);
-            this.log.debug('accept(), created bidMessage.objects: ', bidMessage.objects);
+            // this.log.debug('accept(), created Order: ', order);
+            // this.log.debug('accept(), created bidMessage.objects: ', bidMessage.objects);
 
-            // add Order.hash to bidData
-            // bidMessage.objects = !_.isEmpty(bidMessage.objects) ? bidMessage.objects : [];
-
+            // put the order.hash in BidMessage and also save it
+            // todo: this is here because bidMessage.objects 'possibly undefined', which it never really should be
             if (!bidMessage.objects) {
                 bidMessage.objects = [];
             }
-            // TODO: ENUM
-            bidMessage.objects.push({id: 'orderHash', value: order.hash});
-
-            this.log.debug('accept(), updatedBid.id: ', updatedBid.id);
-            this.log.debug('accept(), order.hash: ', order.hash);
+            bidMessage.objects.push({id: BidDataValue.ORDER_HASH, value: order.hash});
 
             // TODO: clean this up, so that we can add this with bidService.update
-            // not necessarily needed, but
             const orderHashBidData = await this.bidDataService.create({
                 bid_id: updatedBid.id,
-                dataId: 'orderHash',
+                dataId: BidDataValue.ORDER_HASH.toString(),
                 dataValue: order.hash
             } as BidDataCreateRequest);
 
-            this.log.debug('accept(), added orderHash to bidData: ', orderHashBidData.toJSON());
-            this.log.debug('accept(), bidDatas: ', JSON.stringify(bidDatas, null, 2));
+            // this.log.debug('accept(), updatedBid.id: ', updatedBid.id);
+            // this.log.debug('accept(), order.hash: ', order.hash);
+            // this.log.debug('accept(), added orderHash to bidData: ', orderHashBidData.toJSON());
 
-            // store the selected outputs, so we can load and lock them again on mp restart
-            let selectedOutputs = this.getValueFromBidDatas('sellerOutputs', updatedBid.BidDatas);
+            // store the sellers selected outputs in db, so we can load and lock them again on mp restart
+            let selectedOutputs = this.getValueFromBidDatas(BidDataValue.SELLER_OUTPUTS, updatedBid.BidDatas);
             selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
-
             const createdLockedOutputs = await this.lockedOutputService.createLockedOutputs(selectedOutputs, bid.id);
             const success = await this.lockedOutputService.lockOutputs(createdLockedOutputs);
 
@@ -309,8 +327,8 @@ export class BidActionService {
             } as MarketplaceMessage;
 
             if (success) {
-                // broadcast the accepted bid message
-                this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
+                // broadcast the MPA_ACCEPT message
+                this.log.debug('send(), marketPlaceMessage: ', JSON.stringify(marketPlaceMessage, null, 2));
                 return await this.smsgService.smsgSend(listingItem.seller, updatedBid.bidder, marketPlaceMessage, false);
             } else {
                 throw new MessageException('Failed to lock the selected outputs.');
@@ -323,69 +341,71 @@ export class BidActionService {
     }
 
     /**
+     * generate the required biddatas for MPA_ACCEPT message
      *
-     * @param {"resources".ListingItem} listingItem
-     * @param {"resources".Bid} bid
-     * @param {boolean} testRun
+     * @param {module:resources.ListingItem} listingItem
+     * @param {module:resources.Bid} bid
      * @returns {Promise<any[]>}
      */
     public async generateBidDatasForMPA_ACCEPT(
         listingItem: resources.ListingItem,
-        bid: resources.Bid,
-        testRun: boolean = false
-    ): Promise<any[]> {
+        bid: resources.Bid
+    ): Promise<IdValuePair[]> {
 
-        // TODO: Ryno Hacks - Refactor code below...
-        // This is a copy and paste - hacks hacks hacks ;(
-        // Get unspent
-        const unspent = await this.coreRpcService.listUnspent(1, 99999999, [], false);
-        // const unspent = await this.coreRpcService.call('listunspent', [1, 99999999, [], false]);
-
-        const sellerOutputs: Output[] = [];
-        const listingItemPrice = listingItem.PaymentInformation.ItemPrice;
-        const basePrice = listingItemPrice.basePrice;
-        const shippingPriceMax = Math.max(
-            listingItemPrice.ShippingPrice.international,
-            listingItemPrice.ShippingPrice.domestic);
-        const totalPrice = basePrice + shippingPriceMax; // TODO: Determine if local or international...
-        let sum = 0;
-        let change = 0;
-
-        this.log.debug('totalPrice: ', totalPrice);
-
-        if (basePrice) {
-            unspent.find(output => {
-                if (output.spendable && output.solvable) {
-                    sum += output.amount;
-                    sellerOutputs.push({
-                        txid: output.txid,
-                        vout: output.vout,
-                        amount: output.amount
-                    });
-                }
-
-                if (sum > totalPrice) { // TODO: Ratio
-                    change = +(sum - totalPrice - 0.0001).toFixed(8); // TODO: Get actual fee...
-                    return true;
-                }
-                return false;
-            });
-
-            if (sum < basePrice) {
-                this.log.error('Not enough funds');
-                throw new MessageException('You are too broke...');
-            }
-        } else {
-            this.log.error(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
+        if (_.isEmpty(listingItem.PaymentInformation.ItemPrice)) {
+            this.log.warn(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
             throw new MessageException(`ListingItem with the hash=${listingItem.hash} does not have a price!`);
         }
 
-        this.log.debug('selected outputs:', JSON.stringify(sellerOutputs, null, 2));
+        // todo: price type...
+        const shippingPrice = listingItem.PaymentInformation.ItemPrice.ShippingPrice;
+        const basePrice = listingItem.PaymentInformation.ItemPrice.basePrice;
+        const shippingPriceMax = Math.max(shippingPrice.international, shippingPrice.domestic);
+        const totalPrice = basePrice + shippingPriceMax; // TODO: Determine if local or international...
+        const requiredAmount = totalPrice; // todo: sellers required amount
+        // todo: calculate totalprice using the items escrowratio
 
-        const addr = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
+        this.log.debug('totalPrice: ', totalPrice);
 
-        // TODO: Proper change address?!?!
-        const changeAddr = await this.coreRpcService.getNewAddress(['_escrow_change'], false);
+        // returns: {
+        //    outputs: Output[]
+        //    outputsSum
+        //    outputsChangeAmount
+        // }
+        const sellerSelectedOutputData: OutputData = await this.findUnspentOutputs(requiredAmount);
+
+        // create OutputData for buyer
+        const buyerSelectedOutputs: Output[] = JSON.parse(this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, bid.BidDatas));
+        const buyerOutputsSum = buyerSelectedOutputs.reduce((acc, obj) => {
+            const amount = obj.amount || 0; return acc + amount;
+        }, 0);
+        const buyerRequiredAmount = totalPrice * 2;
+        const buyerSelectedOutputsChangeAmount = +(buyerOutputsSum - buyerRequiredAmount - 0.0002).toFixed(8);
+
+        // TODO: validate that the outputs are not spent
+        if (buyerOutputsSum < buyerRequiredAmount) {
+            this.log.warn('Not enough funds');
+            throw new MessageException('Not enough funds');
+        }
+
+        const buyerSelectedOutputData: OutputData = {
+            outputs: buyerSelectedOutputs,
+            outputsSum: buyerOutputsSum,
+            outputsChangeAmount: buyerSelectedOutputsChangeAmount
+        };
+
+        this.log.debug('sellerSelectedOutputData: ', JSON.stringify(sellerSelectedOutputData, null, 2));
+        this.log.debug('buyerSelectedOutputData: ', JSON.stringify(buyerSelectedOutputData, null, 2));
+
+        // create seller escrow addresses
+        // changed to getNewAddress, since getaccountaddress doesn't return address which we can get the pubkey from
+        const sellerEscrowPubAddress = await this.coreRpcService.getNewAddress(['_escrow_pub_' + listingItem.hash], false);
+        const sellerEscrowChangeAddress = await this.coreRpcService.getNewAddress(['_escrow_change'], false);
+
+        const buyerEscrowChangeAddress = this.getValueFromBidDatas(BidDataValue.BUYER_CHANGE_ADDRESS, bid.BidDatas); // TODO: Error handling - nice messagee..
+
+        this.log.debug('sellerEscrowPubAddress: ', sellerEscrowPubAddress);
+        this.log.debug('sellerEscrowChangeAddress: ', sellerEscrowChangeAddress);
 
         // TODO: this is not on 0.16.0.3 yet ...
         // const addressInfo = await this.coreRpcService.getAddressInfo(addr);
@@ -393,83 +413,47 @@ export class BidActionService {
         // const pubkey = addressInfo.pubkey;
 
         // 0.16.0.3
-        const validateAddress = await this.coreRpcService.validateAddress(addr);
-        this.log.debug('validateAddress: ', JSON.stringify(validateAddress, null, 2));
-        const pubkey = validateAddress.pubkey;
+        const sellerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(sellerEscrowPubAddress);
+        const sellerEscrowPubAddressPublicKey = sellerEscrowPubAddressInformation.pubkey;
+        const buyerEscrowPubAddressPublicKey = this.getValueFromBidDatas(BidDataValue.BUYER_PUBKEY, bid.BidDatas);
 
-        let buyerPubkey = this.getValueFromBidDatas('pubkeys', bid.BidDatas);
-        buyerPubkey = buyerPubkey[0] === '[' ? JSON.parse(buyerPubkey)[0] : buyerPubkey;
+        // create multisig escrow address
+        // escrowMultisigAddress:  0=[{
+        //   "address": "rU71DNgoAj7W6e1aQqALk66HXrUpuEbERH",
+        //   "redeemScript": "522102b3d88...c52ae"
+        // }]
+        // todo: replace '_escrow_' + listingItem.hash with something unique
+        const escrowMultisigAddress = await this.coreRpcService.addMultiSigAddress(
+            2,
+            [sellerEscrowPubAddressPublicKey, buyerEscrowPubAddressPublicKey].sort(),
+            '_escrow_' + listingItem.hash);
 
-        if (!buyerPubkey) {
-            throw new MessageException('Buyer public key was null!');
-        }
 
-        this.log.debug('addr: ', addr);
-        this.log.debug('changeAddr: ', changeAddr);
-        this.log.debug('pubkey: ', pubkey);
-        this.log.debug('buyerPubkey: ', buyerPubkey);
-        this.log.debug('listingItem.hash: ', listingItem.hash);
+        // txout: {
+        //   escrowAddress: amount that should be escrowed
+        //   sellerEscrowChangeAddress: sellers change amount
+        //   buyerEscrowChangeAddress: buyers change amount
+        // }
+        const txout = await this.createTxOut(
+            escrowMultisigAddress.address,
+            sellerEscrowChangeAddress,
+            buyerEscrowChangeAddress,
+            sellerSelectedOutputData,
+            buyerSelectedOutputData,
+            sellerEscrowPubAddressPublicKey,
+            buyerEscrowPubAddressPublicKey,
+            totalPrice,
+            listingItem.hash);
 
-        // dataToSave.dataValue = typeof (dataToSave.dataValue) === 'string' ? dataToSave.dataValue : JSON.stringify(dataToSave.dataValue);
 
-        // create Escrow address
-        const escrow = await this.coreRpcService.addMultiSigAddress(2, [pubkey, buyerPubkey].sort(), '_escrow_' + listingItem.hash);
-        this.log.debug('escrow: ', JSON.stringify(escrow, null, 2));
+        const txInputs: Output[] = buyerSelectedOutputData.outputs.concat(sellerSelectedOutputData.outputs);
+        const rawtx = await this.coreRpcService.createRawTransaction(txInputs, txout);
 
-        // const escrow = (await this.coreRpcService.call('addmultisigaddress', [
-        //    2, [pubkey, buyerPubkey].sort(), '_escrow_' + listingItem.hash  // TODO: Something unique??
-        //    ]));
+        this.log.debug('MPA_ACCEPT, txInputs: ', JSON.stringify(txInputs, null, 2));
+        this.log.debug('MPA_ACCEPT, txout: ', JSON.stringify(txout, null, 2));
+        this.log.debug('MPA_ACCEPT, rawtx: ', JSON.stringify(rawtx, null, 2));
 
-        const txout = {};
-
-        txout[escrow.address] = +(totalPrice * 3).toFixed(8); // TODO: Shipping... ;(
-        txout[changeAddr] = change;
-
-        const buyerChangeAddr = this.getValueFromBidDatas('changeAddr', bid.BidDatas); // TODO: Error handling - nice messagee..
-        let buyerOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
-
-        this.log.debug('buyerOutputs: ', buyerOutputs);
-
-        // TODO: Verify that buyers outputs are unspent?? :/
-        if (buyerOutputs) {
-            sum = 0;
-            change = 0;
-            buyerOutputs = JSON.parse(buyerOutputs);
-            buyerOutputs.forEach(output => {
-                sum += output.amount;
-                // TODO: Refactor reusable logic. and verify / validate buyer change.
-                if (sum > totalPrice * 2) { // TODO: Ratio
-                    change = +(sum - (totalPrice * 2) - 0.0001).toFixed(8); // TODO: Get actual fee...
-                    return;
-                }
-            });
-            txout[buyerChangeAddr] = change;
-        } else {
-            this.log.error('Buyer didn\'t supply outputs!');
-            throw new MessageException('Buyer didn\'t supply outputs!'); // TODO: proper message for no outputs :P
-        }
-
-        // TODO: Decide if we want this on the blockchain or not...
-        // TODO: Think about how to recover escrow information to finalize transactions should
-        // client pc / database crash..
-
-        //
-        // txout['data'] = unescape(encodeURIComponent(data.params[0]))
-        //    .split('').map(v => v.charCodeAt(0).toString(16)).join('').substr(0, 80);
-        //
-
-        const rawtx = await this.coreRpcService.createRawTransaction(sellerOutputs.concat(buyerOutputs), txout);
-
-        // const rawtx = await this.coreRpcService.call('createrawtransaction', [
-        //    outputs.concat(buyerOutputs),
-        //    txout
-        // ]);
-
-        this.log.debug('rawtx: ', rawtx);
-
-        // TODO: At this stage we need to store the unsigned transaction, as we will need user interaction to sign
-        // the transaction
-
+        // TODO: At this stage we need to store the unsigned transaction, as we will need user interaction to sign the transaction
         // TODO: this is not on 0.16.0.3 yet ...
         // let signed;
         // if (Environment.isDevelopment() || Environment.isTest()) {
@@ -481,10 +465,9 @@ export class BidActionService {
 
         // 0.16.0.3
         const signed = await this.coreRpcService.signRawTransaction(rawtx);
-        // const signed = await this.coreRpcService.call('signrawtransaction', [rawtx]);
-
         this.log.debug('signed: ', JSON.stringify(signed, null, 2));
 
+        // TODO: duplicate code, use the same signRawTx function as in EscrowActionService
         if (!signed || (signed.errors && (
                 signed.errors[0].error !== 'Operation not valid with the current stack size' &&
                 signed.errors[0].error !== 'Unable to sign input, invalid stack size (possibly missing key)'))) {
@@ -492,32 +475,115 @@ export class BidActionService {
             throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
         }
 
-        // when testRun is true, we are calling this from the tests and we just skip this
-        // todo: make it possible to run tests on one particld
-        if (signed.complete && testRun === false) {
+        if (signed.complete) {
             this.log.error('Transaction should not be complete at this stage, will not send insecure message');
             throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
         }
 
-        // - Most likely the transaction building and signing will happen in a different command that takes place
-        // before this..
+        // - Most likely the transaction building and signing will happen in a different command that takes place before this..
         // End - Ryno Hacks
 
-        const bidDatas = this.getBidDatasFromArray([
-            'sellerOutputs', sellerOutputs,
-            'pubkeys', [pubkey, buyerPubkey].sort(),
-            'rawtx', signed.hex
+        const bidDatas: IdValuePair[] = this.getIdValuePairsFromArray([
+            BidDataValue.SELLER_OUTPUTS, sellerSelectedOutputData.outputs,
+            BidDataValue.BUYER_OUTPUTS, buyerSelectedOutputData.outputs, // allready in BidData, not necessarily needed here
+            // 'pubkeys', [sellerEscrowPubAddressPublicKey, buyerEcrowPubAddressPublicKey].sort(),
+            BidDataValue.SELLER_PUBKEY, sellerEscrowPubAddressPublicKey,
+            BidDataValue.BUYER_PUBKEY, buyerEscrowPubAddressPublicKey, // allready in BidData, not necessarily needed here
+            BidDataValue.RAW_TX, signed.hex
         ]);
+        // this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
 
         return bidDatas;
+    }
+
+    /**
+     *
+     * @param {string} escrowMultisigAddress
+     * @param {string} sellerEscrowChangeAddress
+     * @param {string} buyerEscrowChangeAddress
+     * @param {OutputData} sellerSelectedOutputData
+     * @param {OutputData} buyerSelectedOutputData
+     * @param {string} sellerEscrowPubAddressPublicKey
+     * @param {string} buyerEscrowPubAddressPublicKey
+     * @param {number} itemTotalPrice
+     * @param {string} listingItemHash
+     * @returns {any}
+     */
+    public createTxOut(escrowMultisigAddress: string,
+                       sellerEscrowChangeAddress: string,
+                       buyerEscrowChangeAddress: string,
+                       sellerSelectedOutputData: OutputData,
+                       buyerSelectedOutputData: OutputData,
+                       sellerEscrowPubAddressPublicKey: string,
+                       buyerEscrowPubAddressPublicKey: string,
+                       itemTotalPrice: number,
+                       listingItemHash: string): any {
+
+        // txout: {
+        //   escrowMultisigAddress: amount that should be escrowed
+        //   sellerEscrowChangeAddress: sellers change amount
+        //   buyerEscrowChangeAddress: buyers change amount
+        // }
+        const txout = {};
+
+
+        this.log.debug('sellerEscrowPubAddressPublicKey: ', sellerEscrowPubAddressPublicKey);
+        this.log.debug('buyerEcrowPubAddressPublicKey: ', buyerEscrowPubAddressPublicKey);
+        this.log.debug('listingItem.hash: ', listingItemHash);
+
+        txout[escrowMultisigAddress] = +(itemTotalPrice * 3).toFixed(8); // TODO: Shipping... ;(
+        txout[sellerEscrowChangeAddress] = sellerSelectedOutputData.outputsChangeAmount;
+        txout[buyerEscrowChangeAddress] = buyerSelectedOutputData.outputsChangeAmount;
+
+
+        // this.log.debug('buyerOutputs: ', JSON.stringify(buyerSelectedOutputData.outputs, null, 2));
+
+        // TODO: Verify that buyers outputs are unspent?? :/
+        // TODO: Refactor reusable logic. and verify / validate buyer change.
+
+        if (!_.isEmpty(buyerSelectedOutputData.outputs)) {
+            let buyerOutputsSum = 0;
+            let buyerOutputsChangeAmount = 0;
+
+            buyerSelectedOutputData.outputs.forEach(output => {
+                const amount = output.amount || 0;
+                buyerOutputsSum += amount;
+                if (buyerOutputsSum > itemTotalPrice * 2) { // TODO: Ratio
+                    buyerOutputsChangeAmount = +(buyerOutputsSum - (itemTotalPrice * 2) - 0.0001).toFixed(8); // TODO: Get actual fee...
+                    return;
+                }
+            });
+
+            // todo: calculate buyers requiredAmount from Ratio
+            // check that buyers outputs contain enough funds
+            if (buyerOutputsSum < itemTotalPrice * 2) {
+                this.log.warn('Buyers outputs do not contain enough funds!');
+                throw new MessageException('Buyers outputs do not contain enough funds!');
+            }
+            txout[buyerEscrowChangeAddress] = buyerSelectedOutputData.outputsChangeAmount;
+
+        } else {
+            this.log.error('Buyer didn\'t supply outputs!');
+            throw new MessageException('Buyer didn\'t supply outputs!'); // TODO: proper message for no outputs :P
+        }
+
+        // TODO: Decide if we want this on the blockchain or not...
+        // TODO: Think about how to recover escrow information to finalize transactions should client pc / database crash..
+
+        //
+        // txout['data'] = unescape(encodeURIComponent(data.params[0]))
+        //    .split('').map(v => v.charCodeAt(0).toString(16)).join('').substr(0, 80);
+        //
+
+        return txout;
     }
 
 
     /**
      * Cancel a Bid
      *
-     * @param {"resources".ListingItem} listingItem
-     * @param {"resources".Bid} bid
+     * @param {module:resources.ListingItem} listingItem
+     * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
     public async cancel(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
@@ -535,7 +601,7 @@ export class BidActionService {
                 bidder: tmpBidCreateRequest.bidder,
                 bidDatas: tmpBidCreateRequest.bidDatas
             } as BidUpdateRequest;
-            const retBid = await this.bidService.update(bid.id, bidUpdateRequest);
+            await this.bidService.update(bid.id, bidUpdateRequest);
 
             const marketPlaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,
@@ -544,10 +610,9 @@ export class BidActionService {
 
             this.log.debug('send(), marketPlaceMessage: ', marketPlaceMessage);
 
-            // remove lockedoutputs
-            let selectedOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
+            // remove buyers lockedoutputs
+            let selectedOutputs = this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, bid.BidDatas);
             selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
-
             await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
             const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
 
@@ -568,8 +633,8 @@ export class BidActionService {
      * Reject a Bid
      * todo: add the bid as param, so we know whose bid we are rejecting. now supports just one bidder.
      *
-     * @param {"resources".ListingItem} listingItem
-     * @param {"resources".Bid} bid
+     * @param {module:resources.ListingItem} listingItem
+     * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
     public async reject(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
@@ -594,7 +659,7 @@ export class BidActionService {
                 bidder: tmpBidCreateRequest.bidder,
                 bidDatas: tmpBidCreateRequest.bidDatas
             } as BidUpdateRequest;
-            const retBid = await this.bidService.update(bid.id, bidUpdateRequest);
+            await this.bidService.update(bid.id, bidUpdateRequest);
 
             const marketPlaceMessage = {
                 version: process.env.MARKETPLACE_VERSION,
@@ -616,8 +681,8 @@ export class BidActionService {
      * - save ActionMessage
      * - create Bid
      *
-     * @param {MarketplaceMessageInterface} message
-     * @returns {Promise<"resources".ActionMessage>}
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<module:resources.Bid>}
      */
     public async processBidReceivedEvent(event: MarketplaceEvent): Promise<resources.Bid> {
         this.log.debug('Received event:', event);
@@ -627,7 +692,6 @@ export class BidActionService {
 
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
-
         const message = event.marketplaceMessage;
 
         if (!message.mpaction) {   // ACTIONEVENT
@@ -636,6 +700,8 @@ export class BidActionService {
 
         const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
         const listingItem = listingItemModel.toJSON();
+
+        // todo: check that the listingitem is yours
 
         // first save actionmessage
         const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
@@ -673,12 +739,10 @@ export class BidActionService {
      * - save ActionMessage
      * - update Bid
      *
-     * @param {MarketplaceMessageInterface} message
-     * @returns {Promise<"resources".ActionMessage>}
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<module:resources.Bid>}
      */
     public async processAcceptBidReceivedEvent(event: MarketplaceEvent): Promise<resources.Bid> {
-
-        this.log.debug('Received event:', event);
 
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.to; // from seller to buyer
@@ -690,10 +754,6 @@ export class BidActionService {
         }
         const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
         const listingItem = listingItemModel.toJSON();
-
-        // delete listingItem.ItemInformation.ItemImages;
-        // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
-        // this.log.debug('bidder:', bidder);
 
         // TODO: save incoming and outgoing actionmessages
         // TODO: ... and do it in one place
@@ -708,17 +768,16 @@ export class BidActionService {
                 return o.action === BidMessageType.MPA_BID && o.bidder === bidder;
             });
 
-            this.log.debug('existingBid:', JSON.stringify(existingBid, null, 2));
+            // this.log.debug('existingBid:', JSON.stringify(existingBid, null, 2));
 
             if (existingBid) {
-                // create a bid
-                const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, existingBid);
-                // this.log.debug('bidUpdateRequest:', JSON.stringify(bidUpdateRequest, null, 2));
 
                 // update the bid locally
+                const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, existingBid);
+                // this.log.debug('bidUpdateRequest:', JSON.stringify(bidUpdateRequest, null, 2));
                 const updatedBidModel = await this.bidService.update(existingBid.id, bidUpdateRequest);
                 let updatedBid: resources.Bid = updatedBidModel.toJSON();
-                this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
+                // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
 
                 // create the order from the bid
                 const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
@@ -727,10 +786,13 @@ export class BidActionService {
 
                 this.log.debug('processAcceptBidReceivedEvent(), created Order: ', JSON.stringify(order, null, 2));
 
-                const orderHash = this.getValueFromBidDatas('orderHash', updatedBid.BidDatas);
+                const orderHash = this.getValueFromBidDatas(BidDataValue.ORDER_HASH, updatedBid.BidDatas);
                 this.log.debug('seller orderHash: ', orderHash);
                 this.log.debug('local orderHash: ', order.hash);
 
+                if (orderHash !== order.hash) {
+                    throw new MessageException('Created Order.hash does not match with the received orderHash.');
+                }
                 await updatedBidModel.fetch({withRelated: ['OrderItem']});
                 updatedBid = updatedBidModel.toJSON();
                 // TODO: do whatever else needs to be done
@@ -749,8 +811,8 @@ export class BidActionService {
     /**
      * process received CancelBidMessage
      *
-     * @param {MarketplaceMessageInterface} message
-     * @returns {Promise<"resources".ActionMessage>}
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<module:resources.ActionMessage>}
      */
     public async processCancelBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
         this.log.info('Received event:', event);
@@ -790,19 +852,19 @@ export class BidActionService {
             bidder: tmpBidCreateRequest.bidder,
             bidDatas: tmpBidCreateRequest.bidDatas
         } as BidUpdateRequest;
-        const retBid = await this.bidService.update(oldBid.id, bidUpdateRequest);
+        const updatedBid = await this.bidService.update(oldBid.id, bidUpdateRequest);
 
+        // todo: return Bid
         return actionMessage;
     }
 
     /**
      * process received RejectBidMessage
      *
-     * @param {MarketplaceMessageInterface} message
-     * @returns {Promise<"resources".ActionMessage>}
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<module:resources.ActionMessage>}
      */
     public async processRejectBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-        this.log.info('Received event:', event);
 
         this.log.info('Received event:', event);
         const message = event.marketplaceMessage;
@@ -845,8 +907,8 @@ export class BidActionService {
         const bidModel = await this.bidService.update(oldBid.id, bidUpdateRequest);
         const bid = bidModel.toJSON();
 
-        // remove lockedoutputs
-        let selectedOutputs = this.getValueFromBidDatas('outputs', bid.BidDatas);
+        // remove buyers lockedoutputs
+        let selectedOutputs = this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, bid.BidDatas);
         selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
 
         await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
@@ -858,6 +920,47 @@ export class BidActionService {
             throw new MessageException('Failed to unlock the locked outputs.');
         }
 
+        // todo: return Bid
+    }
+
+    /**
+     *
+     * todo: should be moved to util or we should combine the bid and escrowactionservices
+     * @param {string[]} data
+     * data[]:
+     * [0]: id, string
+     * [1]: value, string
+     * [2]: id, string
+     * [3]: value, string
+     *
+     * @param {any[]} data
+     * @returns {IdValuePair[]}
+     */
+    public getIdValuePairsFromArray(data: any[]): IdValuePair[] {
+        const idValuePairs: IdValuePair[] = [];
+
+        // convert the bid data params as idValuePairs array
+        for (let i = 0; i < data.length; i += 2) {
+            idValuePairs.push({id: data[i], value: data[i + 1]});
+        }
+        return idValuePairs;
+    }
+
+    /**
+     *
+     * todo: should be moved to util or we should combine the bid and escrowactionservices
+     * @param {string} key
+     * @param {module:resources.BidData[]} bidDatas
+     * @returns {any}
+     */
+    private getValueFromBidDatas(key: string, bidDatas: resources.BidData[]): any {
+        const value = bidDatas.find(kv => kv.dataId === key);
+        if (value) {
+            return value.dataValue;
+        } else {
+            this.log.error('Missing BidData value for key: ' + key);
+            throw new MessageException('Missing BidData value for key: ' + key);
+        }
     }
 
     private async createBid(bidMessage: BidMessage, listingItem: resources.ListingItem, bidder: string): Promise<resources.Bid> {
@@ -900,40 +1003,6 @@ export class BidActionService {
         this.eventEmitter.on(Events.RejectBidReceivedEvent, async (event) => {
             await this.processRejectBidReceivedEvent(event);
         });
-    }
-
-    /**
-     * data[]:
-     * [0]: id, string
-     * [1]: value, string
-     * [2]: id, string
-     * [3]: value, string
-     * ..........
-     */
-    private getBidDatasFromArray(data: string[]): any[] {
-        const bidDatas: any[] = [];
-
-        // convert the bid data params as bid data key value pair
-        for (let i = 0; i < data.length; i += 2) {
-            bidDatas.push({id: data[i], value: data[i + 1]});
-        }
-        return bidDatas;
-    }
-
-    /**
-     *
-     * @param {string} key
-     * @param {"resources".BidData[]} bidDatas
-     * @returns {any}
-     */
-    private getValueFromBidDatas(key: string, bidDatas: resources.BidData[]): any {
-        const value = bidDatas.find(kv => kv.dataId === key);
-        if (value) {
-            return value.dataValue;
-        } else {
-            this.log.error('Missing BidData value for key: ' + key);
-            throw new MessageException('Missing BidData value for key: ' + key);
-        }
     }
 
     /**

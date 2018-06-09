@@ -204,61 +204,66 @@ export class BlackBoxTestUtil {
         let errorCount = 0;
 
         for (let i = 0; i < maxSeconds; i++) {
-            const response: any = await this.rpc(method, params, false);
 
-            if (response.error) {
-                errorCount++;
-                if (errorCount < 5 || errorCount % 15 === 0) {
-                    this.log.error(response.error.error.message);
-                }
-                if (errorCount === 5) {
-                    this.log.error('... posting every 15th from now on...');
-                }
+            // call every 5 seconds
+            if (i % 5 === 0) {
+                const response: any = await this.rpc(method, params, false);
 
-            } else if (waitForStatusCode === response.res.statusCode) {
-                if (waitForObjectProperty) {
-                    const result = response.getBody()['result'];
+                if (response.error) {
+                    errorCount++;
+                    if (errorCount < 5 || errorCount % 15 === 0) {
+                        this.log.error(response.error.error.message);
+                    }
+                    if (errorCount === 5) {
+                        this.log.error('... posting every 15th from now on...');
+                    }
 
-                    // this.log.debug('result: ' + JSON.stringify(result, null, 2));
+                } else if (waitForStatusCode === response.res.statusCode) {
+                    if (waitForObjectProperty) {
+                        const result = response.getBody()['result'];
 
-                    const objectPropertyValue = !_.isEmpty(result) ? _.get(result, waitForObjectProperty) : null;
+                        // this.log.debug('result: ' + JSON.stringify(result, null, 2));
 
-                    // this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
-                    // this.log.debug('waitForObjectPropertyValue.toString(): ' + waitForObjectPropertyValue.toString());
-                    // this.log.debug('objectPropertyValue: ' + objectPropertyValue);
+                        const objectPropertyValue = !_.isEmpty(result) ? _.get(result, waitForObjectProperty) : null;
 
-                    if (objectPropertyValue === waitForObjectPropertyValue) {
-                        this.log.debug('success! statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
-                        return response;
+                        // this.log.debug('typeof waitForObjectPropertyValue: ' + typeof waitForObjectPropertyValue);
+                        // this.log.debug('waitForObjectPropertyValue.toString(): ' + waitForObjectPropertyValue.toString());
+                        // this.log.debug('objectPropertyValue: ' + objectPropertyValue);
+
+                        if (objectPropertyValue === waitForObjectPropertyValue) {
+                            this.log.debug('success! statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
+                            return response;
+                        } else {
+
+                            errorCount++;
+
+                            if (errorCount < 5 || errorCount % 15 === 0) {
+                                this.log.error(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !== ' + waitForObjectPropertyValue);
+                            }
+                            if (errorCount === 5) {
+                                this.log.error('... posting every 15th from now on...');
+                            }
+
+                            // do not throw here for now.
+                            // for example bid search will not throw an exception like findOne so the statusCode === 200,
+                            // but we need to keep on querying until correct value is returned.
+                            // todo: it should be configurable how this works
+                            // throw new MessageException('rpcWaitFor received non-matching waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
+                        }
                     } else {
-
-                        errorCount++;
-
-                        if (errorCount < 5 || errorCount % 15 === 0) {
-                            this.log.error(waitForObjectProperty + ': ' + objectPropertyValue + ' ' + ' !== ' + waitForObjectPropertyValue);
-                        }
-                        if (errorCount === 5) {
-                            this.log.error('... posting every 15th from now on...');
-                        }
-
-                        // do not throw here for now.
-                        // for example bid search will not throw an exception like findOne so the statusCode === 200,
-                        // but we need to keep on querying until correct value is returned.
-                        // todo: it should be configurable how this works
-                        // throw new MessageException('rpcWaitFor received non-matching waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
+                        this.log.debug('success! statusCode === ' + waitForStatusCode);
+                        return response;
                     }
                 } else {
-                    this.log.debug('success! statusCode === ' + waitForStatusCode);
-                    return response;
+                    this.log.debug('wtf?! not expecting this: ', response);
                 }
-            } else {
-                this.log.debug('wtf?! not expecting this: ', response);
             }
 
             // try again
             await this.waitTimeOut(1000);
         }
 
+        this.log.error('rpcWaitFor did not receive expected response within given time.');
         throw new MessageException('rpcWaitFor did not receive expected response within given time.');
     }
 

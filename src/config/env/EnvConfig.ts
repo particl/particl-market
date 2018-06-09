@@ -27,6 +27,8 @@ export class EnvConfig {
         MARKET_RPC_AUTH_DISABLED: false,
         MARKET_RPC_USER: 'test',
         MARKET_RPC_PASSWORD: 'test',
+        EXPRESS_ENABLED: true,
+        SOCKETIO_ENABLED: true,
         LOG_LEVEL: 'debug',
         LOG_PATH:  './data/marketplace.log',
         LOG_ADAPTER: 'winston',

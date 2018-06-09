@@ -20,7 +20,6 @@ export class MulterMiddleware implements interfaces.Middleware {
     }
 
     public use = (req: myExpress.Request, res: myExpress.Response, next: myExpress.NextFunction): void => {
-        this.log.debug('multerMiddleware start');
         const multerMiddleware = this.upload.any();
         multerMiddleware(req, res, next);
     }

@@ -96,19 +96,28 @@ export class LockedOutputService {
     public async destroyLockedOutputs(outputs: resources.LockedOutput[]): Promise<void> {
         for (const selectedOutput of outputs) {
             const lockedOutput = await this.findOneByTxId(selectedOutput.txid);
-            await this.destroy(lockedOutput.Id);
+            if (lockedOutput) {
+                await this.destroy(lockedOutput.Id);
+            }
         }
     }
 
     public async lockOutputs(outputs: resources.LockedOutput[]): Promise<boolean> {
-        this.log.debug('locking outputs:', outputs);
-        const locked = await this.coreRpcService.lockUnspent(false, outputs);
+        this.log.debug('locking outputs:', JSON.stringify(outputs));
+        const locked = await this.coreRpcService.lockUnspent(false, outputs)
+            .catch(reason => {
+                if (reason.body.error.code === -8) {
+                    // "message": "Invalid parameter, output already locked"
+                    return true;
+                }
+                throw reason;
+            });
         this.log.debug('outputs locked?', locked);
         return locked;
     }
 
     public async unlockOutputs(outputs: resources.LockedOutput[]): Promise<boolean> {
-        this.log.debug('unlocking outputs:', outputs);
+        this.log.debug('unlocking outputs:', JSON.stringify(outputs));
         const unlocked = await this.coreRpcService.lockUnspent(true, outputs);
         this.log.debug('outputs unlocked?', unlocked);
         return unlocked;

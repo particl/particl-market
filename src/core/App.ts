@@ -44,7 +44,7 @@ export class App {
         const loggerConfig = new LoggerConfig();
         loggerConfig.configure();
 
-        if (Environment.useExpress) {
+        if (process.env.EXPRESS_ENABLED) {
             this.log.info('Defining app...');
             this.bootstrapApp.defineExpressApp(this.express);
         }
@@ -89,7 +89,7 @@ export class App {
             await databaseMigrate.migrate();
         }
 
-        if (Environment.useExpress) {
+        if (process.env.EXPRESS_ENABLED) {
             // Add express monitor app
             this.bootstrapApp.setupMonitor(this.express);
             // Configure the app config for all the middlewares
@@ -103,7 +103,7 @@ export class App {
         this.log.info('Binding IoC modules...');
         await this.ioc.bindModules();
 
-        if (Environment.useExpress) {
+        if (process.env.EXPRESS_ENABLED) {
             this.log.info('Setting up IoC...');
             this.inversifyExpressServer = this.bootstrapApp.setupInversifyExpressServer(this.express, this.ioc);
             this.express = this.bootstrapApp.bindInversifyExpressServer(this.express, this.inversifyExpressServer);
@@ -114,7 +114,7 @@ export class App {
             this.server.use(this.express);
         }
 
-        if (Environment.useSocketIO) {
+        if (process.env.SOCKETIO_ENABLED) {
             // create our socketioserver
             this.socketIoServer = this.bootstrapApp.createSocketIoServer(this.server, this.ioc);
         }
