@@ -1,6 +1,5 @@
 import * as _ from 'lodash';
 import { EnvConfig } from './EnvConfig';
-import {Environment} from '../../core/helpers/Environment';
 
 export class TestEnvConfig extends EnvConfig {
 
