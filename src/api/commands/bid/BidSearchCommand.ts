@@ -90,7 +90,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public usage(): string {
-        return this.getName() + ' <itemhash>|*> [status>|* [ordering [<bidderAddress...]]] ';
+        return this.getName() + ' (<itemhash>|*) [(<status>|*) [<ordering> [<bidderAddress> ...]]] ';
     }
 
     public help(): string {

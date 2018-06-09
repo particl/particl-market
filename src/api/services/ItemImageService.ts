@@ -85,7 +85,6 @@ export class ItemImageService {
             data: [itemImageDataCreateRequest]
         } as ItemImageCreateRequest;
 
-        this.log.debug(JSON.stringify(itemImageCreateRequest));
         return await this.create(itemImageCreateRequest);
     }
 
