@@ -43,6 +43,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'ActionMessages.MessageData',
         'Bids',
         'Bids.BidDatas',
+        'Bids.OrderItem',
+        'Bids.OrderItem.Order',
         'Market',
         'FlaggedItem',
         'ListingItemTemplate',
@@ -91,6 +93,23 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public static async searchBy(options: ListingItemSearchParams, withRelated: boolean = false): Promise<Collection<ListingItem>> {
         const listingCollection = ListingItem.forge<Collection<ListingItem>>()
             .query(qb => {
+                // search by itemHash
+                if (options.itemHash && typeof options.itemHash === 'string' && options.itemHash !== '*') {
+                    qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
+                    qb.where('listing_item_templates.hash', '=', options.itemHash);
+                }
+
+                // search by buyer [TODO: SQL error here for ambiguous column]
+                if (options.buyer && typeof options.buyer === 'string' && options.buyer !== '*') {
+                    qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
+                    qb.where('bids.bidder', '=', options.buyer);
+                }
+
+                // search by seller
+                if (options.seller && typeof options.seller === 'string' && options.seller !== '*') {
+                    qb.where('listing_items.seller', '=', options.seller);
+                }
+
                 if (typeof options.category === 'number') {
                     qb.where('item_informations.item_category_id', '=', options.category);
                 } else if (options.category && typeof options.category === 'string') {
@@ -128,6 +147,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 }
 
                 qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
+                if (options.withBids) {
+                    qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
+                }
                 qb.groupBy('listing_items.id');
 
             })
