@@ -100,8 +100,12 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                 }
 
                 // search by buyer [TODO: SQL error here for ambiguous column]
+                let joinedBids = false;
                 if (options.buyer && typeof options.buyer === 'string' && options.buyer !== '*') {
-                    qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
+                    if (!joinedBids) {
+                        qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
+                        joinedBids = true;
+                    }
                     qb.where('bids.bidder', '=', options.buyer);
                 }
 
@@ -148,7 +152,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
                 qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 if (options.withBids) {
-                    qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
+                    if (!joinedBids) { // Don't want to join twice or we'll get errors.
+                        qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
+                    }
                 }
                 qb.groupBy('listing_items.id');
 
