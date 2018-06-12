@@ -116,6 +116,7 @@ export class ActionMessageService {
      * save the received ActionMessage to the database
      *
      * @param {MarketplaceEvent} event
+     * @param {"resources".ListingItem} listingItem
      * @returns {Promise<ActionMessage>}
      */
     public async createFromMarketplaceEvent(event: MarketplaceEvent, listingItem: resources.ListingItem): Promise<ActionMessage> {
@@ -148,7 +149,6 @@ export class ActionMessageService {
             // const listingItemModel = await this.listingItemService.findOneByHash(message.item.hash);
             // const listingItem = listingItemModel.toJSON();
 
-            // TODO: hack
             const listingItemAddMessage = {
                 action: ListingItemMessageType.MP_ITEM_ADD,
                 item: listingItem.hash,
@@ -167,32 +167,6 @@ export class ActionMessageService {
         } else {
             throw new MessageException('Marketplace message missing market.');
         }
-    }
-
-    @validate()
-    public async update(id: number, @request(ActionMessageUpdateRequest) body: ActionMessageUpdateRequest): Promise<ActionMessage> {
-
-        throw new NotImplementedException();
-/*
-        // find the existing one without related
-        const actionMessage = await this.findOne(id, false);
-
-        // set new values
-        actionMessage.Action = body.action;
-        actionMessage.Nonce = body.nonce;
-        actionMessage.Accepted = body.accepted;
-
-        // update actionMessage record
-        const updatedActionMessage = await this.actionMessageRepo.update(id, actionMessage.toJSON());
-
-        // TODO: find related record and update it
-
-        // TODO: finally find and return the updated actionMessage
-        // const newActionMessage = await this.findOne(id);
-        // return newActionMessage;
-
-        return updatedActionMessage;
-*/
     }
 
     public async destroy(id: number): Promise<void> {
