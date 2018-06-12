@@ -444,6 +444,11 @@ export class EscrowActionService {
                 );
                 this.log.debug('createRawTx(), escrowMultisigAddress:', JSON.stringify(escrowMultisigAddress, null, 2));
 
+                // validate the escrow amounts
+                const decodedTx = await this.coreRpcService.decodeRawTransaction(rawtx);
+                this.log.debug('createRawTx(), decoded:', JSON.stringify(decodedTx, null, 2));
+                // TODO: validation
+
                 // buyer signs the escrow tx, which should complete
                 const signedForLock = await this.signRawTx(rawtx, true);
                 this.log.debug('createRawTx(), signedForLock:', JSON.stringify(signedForLock, null, 2));
@@ -487,9 +492,6 @@ export class EscrowActionService {
                     const txout = {};
 
                     // CRITICAL TODO: Use the right ratio's...
-                    txout[sellerReleaseAddress] = value / 3 * 2;   // seller gets his escrow amount + buyer payment back
-                    txout[buyerReleaseAddress] = (value / 3);  // buyer gets the escrow amount back
-
 
                     // seller gets his escrow amount + buyer payment back
                     // buyer gets the escrow amount back
