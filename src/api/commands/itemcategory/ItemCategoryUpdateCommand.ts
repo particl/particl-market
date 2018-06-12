@@ -86,7 +86,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
      * function to check category is default, check category is not associated with listing-item
      * TODO: NOTE: This function may be duplicated between commands.
      *
-     * @param data
+     * @param {number} categoryId
      * @returns {Promise<boolean>}
      */
     private async isDoable(categoryId: number): Promise<boolean> {
@@ -109,7 +109,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
      * function to return category id
      * TODO: NOTE: This function may be duplicated between commands.
      *
-     * @param data
+     * @param parentItemCategory
      * @returns {Promise<number>}
      */
     private async getCategoryIdByKey(parentItemCategory: any): Promise<number> {

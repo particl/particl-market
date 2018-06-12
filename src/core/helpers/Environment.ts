@@ -2,16 +2,15 @@
  * core.Environment
  * ------------------------------------
  *
- * Helps us to simplify 'process.env' and also provide
- * the content of the package.json.
+ * Helps us to simplify 'process.env'.
  */
-import * as packageInfo from '../../../package.json';
-
 
 export enum EnvironmentType {
     ALL = 'ALL',
     PRODUCTION = 'PRODUCTION',
     TEST = 'TEST',
+    BLACKBOX = 'BLACKBOX',
+    ALPHA = 'ALPHA',
     DEVELOPMENT = 'DEVELOPMENT',
     DEFAULT = DEVELOPMENT
 }
@@ -26,6 +25,14 @@ export class Environment {
         const nodeEnv = this.getNodeEnv();
         if ( nodeEnv ) {
             return nodeEnv.toUpperCase() === EnvironmentType.TEST.toString();
+        }
+        return false;
+    }
+
+    public static isBlackBoxTest(): boolean {
+        const nodeEnv = this.getNodeEnv();
+        if ( nodeEnv ) {
+            return nodeEnv.toUpperCase() === EnvironmentType.BLACKBOX.toString();
         }
         return false;
     }
@@ -46,8 +53,16 @@ export class Environment {
         return false;
     }
 
-    public static getPkg(): any {
-        return packageInfo;
+    public static isAlpha(): boolean {
+        const nodeEnv = this.getNodeEnv();
+        if ( nodeEnv ) {
+            return nodeEnv.toUpperCase() === EnvironmentType.ALPHA.toString();
+        }
+        return false;
+    }
+
+    public static isTestnet(): boolean {
+        return this.isTruthy(process.env.TESTNET) || this.isAlpha();
     }
 
     public static isTruthy(bool: string): boolean {

@@ -45,6 +45,8 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
         const orderItemModel = await this.orderItemService.findOne(data.params[0]);
         const orderItem = orderItemModel.toJSON();
 
+        // this.log.debug('orderItem:', JSON.stringify(orderItem, null, 2));
+
         if (orderItem.status !== OrderStatus.AWAITING_ESCROW) {
             this.log.error('Order is in invalid state');
             throw new MessageException('Order is in invalid state');
@@ -90,7 +92,7 @@ export class EscrowLockCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public usage(): string {
-        return this.getName() + ' [<itemhash> [<nonce> [<memo>]]] '; // TODO...
+        return this.getName() + ' [<itemhash> [<nonce> [<memo>]]] ';
     }
 
     public help(): string {

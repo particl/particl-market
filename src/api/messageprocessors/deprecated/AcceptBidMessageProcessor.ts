@@ -30,7 +30,7 @@ export class AcceptBidMessageProcessor implements MessageProcessorInterface {
      *
      * message:
      *  action: action of the BidMessage
-     *  listing: item hash
+     *  item: item hash
      *
      * @returns {Promise<Bid>}
      */

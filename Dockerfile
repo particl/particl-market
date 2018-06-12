@@ -8,11 +8,12 @@ RUN npm install -g ts-node
 RUN npm install -g typescript
 #RUN npm install sqlite3 --save
 
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data/database
 WORKDIR /app/
 COPY package.json /app
 COPY yarn.lock /app
-RUN yarn install
+
+#RUN yarn install
 
 #COPY . /app/
 #RUN bin/ci-create-dbs.sh

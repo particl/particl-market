@@ -85,12 +85,12 @@ export class ItemImageService {
             data: [itemImageDataCreateRequest]
         } as ItemImageCreateRequest;
 
-        this.log.debug(JSON.stringify(itemImageCreateRequest));
         return await this.create(itemImageCreateRequest);
     }
 
     @validate()
     public async create( @request(ItemImageCreateRequest) data: ItemImageCreateRequest): Promise<ItemImage> {
+        const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -123,12 +123,6 @@ export class ItemImageService {
                 throw new MessageException('Invalid image protocol.');
             }
 
-            // TODO: THIS
-            /* if ( !_.isEmpty(itemImageDatas.encoding) && !?????[itemImageDatas.encoding] ) {
-                this.log.warn(`Invalid encoding <${itemImageDatas.encoding}> encountered.`);
-                throw new NotFoundException('Invalid encoding.');
-            } */
-
             // then create the imageDatas from the given original data
             if (!_.isEmpty(itemImageDataOriginal.data)) {
                 const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
@@ -142,8 +136,11 @@ export class ItemImageService {
                 // finally find and return the created itemImage
                 const newItemImage = await this.findOne(itemImage.Id);
                 // this.log.debug('saved image:', JSON.stringify(newItemImage.toJSON(), null, 2));
+
+                this.log.debug('itemImageService.create: ' + (new Date().getTime() - startTime) + 'ms');
                 return newItemImage;
             } else {
+                this.log.debug('itemImageService.create: ' + (new Date().getTime() - startTime) + 'ms');
                 return itemImage;
             }
         } else {

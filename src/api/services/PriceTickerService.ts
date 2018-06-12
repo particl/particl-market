@@ -176,7 +176,7 @@ export class PriceTickerService {
      */
     private async needTobeUpdate(priceTicker: PriceTicker): Promise<boolean> {
         const diffMint = await this.checkDiffBtwDate(priceTicker.UpdatedAt);
-        return (diffMint > process.env.DATA_CHECK_DELAY) ? true : false;
+        return (diffMint > Number(process.env.DATA_CHECK_DELAY)) ? true : false;
     }
 
     /**

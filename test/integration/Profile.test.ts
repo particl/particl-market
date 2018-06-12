@@ -100,11 +100,22 @@ describe('Profile', () => {
         await testDataService.clean();
 
         // create ListingItem
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,   // generateItemInformation
+            false,   // generateShippingDestinations
+            false,   // generateItemImages
+            false,   // generatePaymentInformation
+            false,   // generateEscrow
+            false,   // generateItemPrice
+            false,   // generateMessagingInformation
+            false    // generateListingItemObjects
+        ]).toParamsArray();
+
         const listingItems = await testDataService.generate({
             model: CreatableModel.LISTINGITEM,  // what to generate
             amount: 1,                          // how many to generate
             withRelated: true,                  // return model
-            generateParams: new GenerateListingItemParams().toParamsArray() // what kind of data to generate
+            generateParams: generateListingItemParams // what kind of data to generate
         } as TestDataGenerateRequest);
         createdListingItem = listingItems[0];
 
@@ -204,7 +215,7 @@ describe('Profile', () => {
         });
     });
 
-    test('Should create a new profile with delivery addresses and cryptoaddresses', async () => {
+    test('Should create and delete a new profile with delivery addresses and cryptoaddresses', async () => {
         // TODO: use CreateableModel everywhere
         const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
             model: 'profile',
@@ -243,7 +254,7 @@ describe('Profile', () => {
 
     });
 
-    test('Should create a new profile with delivery addresses and cryptoaddresses and FavoriteItems', async () => {
+    test('Should create and delete a new profile with delivery addresses and cryptoaddresses and FavoriteItems', async () => {
         const profiles: Bookshelf.Collection<Profile> = await testDataService.generate<Profile>({
             model: 'profile',
             amount: 1,

@@ -27,10 +27,13 @@ export class ItemImageRepository {
     }
 
     public async create(data: any): Promise<ItemImage> {
+        const startTime = new Date().getTime();
         const itemImage = this.ItemImageModel.forge<ItemImage>(data);
         try {
             const itemImageCreated = await itemImage.save();
-            return this.ItemImageModel.fetchById(itemImageCreated.id);
+            const result = this.ItemImageModel.fetchById(itemImageCreated.id);
+            this.log.debug('itemImageRepository.create: ' + (new Date().getTime() - startTime) + 'ms');
+            return result;
         } catch (error) {
             throw new DatabaseException('Could not create the itemImage!', error);
         }

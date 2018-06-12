@@ -71,6 +71,7 @@ describe('ItemCategoryRemoveCommand', () => {
         const listingitemData = {
             market_id: marketId,
             hash,
+            seller: 'seller',
             itemInformation: {
                 title: 'item title',
                 shortDescription: 'item short desc',

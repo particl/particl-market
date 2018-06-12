@@ -42,6 +42,7 @@ export class PaymentInformationService {
 
     @validate()
     public async create( @request(PaymentInformationCreateRequest) data: PaymentInformationCreateRequest): Promise<PaymentInformation> {
+        const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -72,7 +73,11 @@ export class PaymentInformationService {
         }
 
         // finally find and return the created paymentInformation
-        return await this.findOne(paymentInformation.Id);
+        const result = await this.findOne(paymentInformation.Id);
+
+        this.log.debug('paymentInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
+
+        return result;
     }
 
     @validate()
