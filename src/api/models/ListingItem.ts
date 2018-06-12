@@ -1,5 +1,5 @@
 import { Bookshelf } from '../../config/Database';
-import { Collection } from 'bookshelf';
+import { Collection, Model } from 'bookshelf';
 import { ItemInformation } from './ItemInformation';
 import { PaymentInformation } from './PaymentInformation';
 import { MessagingInformation } from './MessagingInformation';
@@ -73,7 +73,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public static async fetchByCategory(categoryId: number, withRelated: boolean = true): Promise<Collection<ListingItem>> {
 
-        const listingCollection = ListingItem.forge<Collection<ListingItem>>()
+        const listingCollection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {
                 qb.innerJoin('item_informations', 'listing_items.id', 'item_informations.listing_item_id');
                 qb.where('item_informations.item_category_id', '=', categoryId);
@@ -91,7 +91,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     }
 
     public static async searchBy(options: ListingItemSearchParams, withRelated: boolean = false): Promise<Collection<ListingItem>> {
-        const listingCollection = ListingItem.forge<Collection<ListingItem>>()
+        const listingCollection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {
                 // search by itemHash
                 if (options.itemHash && typeof options.itemHash === 'string' && options.itemHash !== '*') {

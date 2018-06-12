@@ -63,13 +63,17 @@ export class IoC {
         await this.bindListeners();
 
         if (!Environment.isTest()) {
+            this.log.info('binding middlewares');
             await this.bindMiddlewares();
+            this.log.info('binding controllers');
             await this.bindControllers();
         }
 
         if (this.customConfiguration) {
             this.container = this.customConfiguration(this.container);
         }
+        this.log.info('binding done.');
+
     }
 
     private bindCore(): void {

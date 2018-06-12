@@ -21,7 +21,7 @@ export class OrderItemCreateRequest extends RequestBody {
 
     public orderItemObjects: OrderItemObjectCreateRequest[];
 
-    // @IsNotEmpty()
+    @IsNotEmpty()
     public order_id: number;
 
 }

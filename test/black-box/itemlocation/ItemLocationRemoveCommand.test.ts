@@ -32,6 +32,28 @@ describe('/ItemLocationRemoveCommand', () => {
             }
         }
     };
+    const testDataListingItemTemplate2 = {
+        profile_id: 0,
+        itemInformation: {
+            title: 'Title2',
+            shortDescription: 'SDescription2',
+            longDescription: 'LDescription2',
+            itemCategory: {
+                key: 'cat_high_luxyry_items'
+            },
+            listingItemId: null,
+            itemLocation: {
+                region: 'Australia',
+                address: 'fdsa fdsa fdsa fdsa',
+                locationMarker: {
+                    markerTitle: 'Adelaide',
+                    markerText: 'Adelaide',
+                    lat: 34.9228,
+                    lng: 138.6019
+                }
+            }
+        }
+    };
 
     let createdTemplateId;
     let createdlistingitemId;
@@ -85,11 +107,15 @@ describe('/ItemLocationRemoveCommand', () => {
     test('Should not remove item location because item information is related with listing item', async () => {
         // set listing item id in item information
         testDataListingItemTemplate.itemInformation.listingItemId = createdlistingitemId;
+
+        testDataListingItemTemplate2.profile_id = testDataListingItemTemplate.profile_id;
+        testDataListingItemTemplate2.itemInformation.listingItemId = createdlistingitemId;
+
         // create new item template
-        const newListingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-        const newTemplateId = newListingItemTemplate.id;
+        const newListingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate2);
+
         // remove item location
-        const addDataRes: any = await rpc(method, [subCommand, newTemplateId]);
+        const addDataRes: any = await rpc(method, [subCommand, newListingItemTemplate.id]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
@@ -99,6 +125,7 @@ describe('/ItemLocationRemoveCommand', () => {
     test('Should fail to remove item location if Item-information not exist', async () => {
         // create new item template
         delete testDataListingItemTemplate.itemInformation;
+        // const addListingItemTempRes = await testUtil.generateData(CreatableModel.LISTINGITEMTEMPLATE, 1, true);
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
         const templateId = addListingItemTempRes.id;
         // remove item location

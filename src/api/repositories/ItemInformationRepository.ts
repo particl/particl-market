@@ -31,10 +31,13 @@ export class ItemInformationRepository {
     }
 
     public async create(data: any): Promise<ItemInformation> {
+        const startTime = new Date().getTime();
         const itemInformation = this.ItemInformationModel.forge<ItemInformation>(data);
         try {
             const itemInformationCreated = await itemInformation.save();
-            return this.ItemInformationModel.fetchById(itemInformationCreated.id);
+            const result = this.ItemInformationModel.fetchById(itemInformationCreated.id);
+            this.log.debug('itemInformationRepository.create: ' + (new Date().getTime() - startTime) + 'ms');
+            return result;
         } catch (error) {
             throw new DatabaseException('Could not create the itemInformation!', error);
         }

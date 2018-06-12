@@ -1,4 +1,5 @@
 import { app } from '../../src/app';
+
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import * as _ from 'lodash';
@@ -52,8 +53,10 @@ import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updatereque
 import * as resources from 'resources';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { CustomConfig } from '../../src/config/CustomConfig';
+import { App } from '../../src/core/App';
 
-describe('ListingItemTemplate', () => {
+describe('ListingItemTemplate', async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
@@ -92,6 +95,7 @@ describe('ListingItemTemplate', () => {
     let defaultMarket: resources.Market;
 
     beforeAll(async () => {
+
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);

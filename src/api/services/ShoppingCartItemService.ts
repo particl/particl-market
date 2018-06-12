@@ -50,8 +50,8 @@ export class ShoppingCartItemService {
         const isItemExistOnCart = await this.findOneByListingItemOnCart(body.shopping_cart_id, body.listing_item_id);
 
         if (isItemExistOnCart !== null) {
-            this.log.warn(`listing item already exist on shopping cart`);
-            throw new MessageException(`listing item already exist on shopping cart`);
+            this.log.warn(`ListingItem already exist in ShoppingCart`);
+            throw new MessageException(`ListingItem already exist in ShoppingCart`);
         }
 
         // If the request body was valid we will create the shoppingCartItem

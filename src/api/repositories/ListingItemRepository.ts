@@ -49,14 +49,17 @@ export class ListingItemRepository {
      */
     public async search(options: ListingItemSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<ListingItem>> {
         return this.ListingItemModel.searchBy(options, withRelated);
-
     }
 
     public async create(data: any): Promise<ListingItem> {
+        const startTime = new Date().getTime();
         const listingItem = this.ListingItemModel.forge<ListingItem>(data);
         try {
             const listingItemCreated = await listingItem.save();
-            return this.ListingItemModel.fetchById(listingItemCreated.id);
+            const result = this.ListingItemModel.fetchById(listingItemCreated.id);
+
+            this.log.debug('listingItemRepository.create: ' + (new Date().getTime() - startTime) + 'ms');
+            return result;
         } catch (error) {
             this.log.error(error);
             throw new DatabaseException('Could not create the listingItem!', error);

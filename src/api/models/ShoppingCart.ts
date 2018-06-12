@@ -1,5 +1,5 @@
-import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
+import { Collection, Model } from 'bookshelf';
 import { Profile } from './Profile';
 import { ShoppingCartItem } from './ShoppingCartItem';
 
@@ -19,7 +19,7 @@ export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
     }
 
     public static async fetchAllByProfile(value: number): Promise<Collection<ShoppingCart>> {
-        const shoppingCart = ShoppingCart.forge<Collection<ShoppingCart>>()
+        const shoppingCart = ShoppingCart.forge<Model<ShoppingCart>>()
             .query(qb => {
                 qb.where('profile_id', '=', value);
             }).orderBy('id', 'ASC');

@@ -22,7 +22,7 @@ describe('ImageProcessing', () => {
     test('convertToJPEG() should complain of invalid format', async () => {
         expect.assertions(1);
         await ImageProcessing.convertToJPEG(ImageProcessing.milkcatBroken).catch(e =>
-            expect(e).toEqual(new MessageException('Image data was an unknown format. Supports: JPEG, PNG, GIF.'))
+            expect(e).toEqual('unknown JPEG marker 0')
         );
     });
 
@@ -54,7 +54,7 @@ describe('ImageProcessing', () => {
         expect(mediumData).not.toEqual('');
 
         let dataBuffer = Buffer.from(mediumData, 'base64');
-        let imageBuffer = Jimp(dataBuffer);
+        let imageBuffer = await Jimp.read(dataBuffer);
 
         expect(imageBuffer.bitmap.height).toBe(ImageVersions.MEDIUM.imageHeight);
         expect(imageBuffer.bitmap.width).toBeLessThanOrEqual(ImageVersions.MEDIUM.imageWidth);
@@ -65,7 +65,7 @@ describe('ImageProcessing', () => {
         expect(mediumData).not.toEqual('');
 
         dataBuffer = Buffer.from(thumbData, 'base64');
-        imageBuffer = Jimp(dataBuffer);
+        imageBuffer = await Jimp.read(dataBuffer);
 
         expect(imageBuffer.bitmap.height).toBe(ImageVersions.THUMBNAIL.imageHeight);
         expect(imageBuffer.bitmap.width).toBeLessThanOrEqual(ImageVersions.THUMBNAIL.imageWidth);
@@ -87,10 +87,10 @@ describe('ImageProcessing', () => {
         expect(largeData).not.toEqual('');
 
         let dataBuffer = Buffer.from(largeData, 'base64');
-        let imageBuffer = Jimp(dataBuffer);
+        let imageBuffer = await Jimp.read(dataBuffer);
 
         const dataBufferOriginal = Buffer.from(rawImage, 'base64');
-        const imageBufferOriginal = Jimp(dataBufferOriginal);
+        const imageBufferOriginal = await Jimp.read(dataBufferOriginal);
 
         expect(imageBuffer.bitmap.width).toBe(ImageVersions.LARGE.imageWidth);
         expect(imageBuffer.bitmap.height).toBe(ImageVersions.LARGE.imageHeight);
@@ -101,7 +101,7 @@ describe('ImageProcessing', () => {
         expect(mediumData).not.toEqual('');
 
         dataBuffer = Buffer.from(mediumData, 'base64');
-        imageBuffer = Jimp(dataBuffer);
+        imageBuffer = await Jimp.read(dataBuffer);
 
         expect(imageBuffer.bitmap.width).toBe(ImageVersions.MEDIUM.imageWidth);
         expect(imageBuffer.bitmap.height).toBeLessThanOrEqual(ImageVersions.MEDIUM.imageHeight);
@@ -112,7 +112,7 @@ describe('ImageProcessing', () => {
         expect(mediumData).not.toEqual('');
 
         dataBuffer = Buffer.from(thumbData, 'base64');
-        imageBuffer = Jimp(dataBuffer);
+        imageBuffer = await Jimp.read(dataBuffer);
 
         expect(imageBuffer.bitmap.width).toBe(ImageVersions.THUMBNAIL.imageWidth);
         expect(imageBuffer.bitmap.height).toBeLessThanOrEqual(ImageVersions.THUMBNAIL.imageHeight);
@@ -128,7 +128,7 @@ describe('ImageProcessing', () => {
         expect(resizedImage).not.toEqual(null);
 
         const dataBuffer = Buffer.from(resizedImage, 'base64');
-        const imageBuffer = Jimp(dataBuffer);
+        const imageBuffer = await Jimp.read(dataBuffer);
 
         expect(imageBuffer.bitmap.height).toBe(ImageVersions.THUMBNAIL.imageHeight);
         expect(imageBuffer.bitmap.width).toBeLessThanOrEqual(ImageVersions.THUMBNAIL.imageWidth);
@@ -143,7 +143,7 @@ describe('ImageProcessing', () => {
         expect(resizedImage).not.toEqual(null);
 
         const dataBuffer = Buffer.from(resizedImage, 'base64');
-        const imageBuffer = Jimp(dataBuffer);
+        const imageBuffer = await Jimp.read(dataBuffer);
 
         expect(imageBuffer.bitmap.width).toBe(ImageVersions.THUMBNAIL.imageWidth);
         expect(imageBuffer.bitmap.height).toBeLessThanOrEqual(ImageVersions.THUMBNAIL.imageHeight);

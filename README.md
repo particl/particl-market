@@ -101,7 +101,7 @@ Integration tests start the application container and do not require the applica
 ### Scaffolding Commands
 All the templates for the commands are located in `src/console/templates`.
 
-* `npm run console make:resource` - Generates a controller, service, requests, repo, model and a migration with CRUD operations.
+* `npm run console make:resource` - Generates a command, service, requests, repo, model and a migration with CRUD operations.
 * `npm run console make:controller` - Generates a controller.
 * `npm run console make:service` - Generates a service.
 * `npm run console make:command` - Generates a command.

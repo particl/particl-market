@@ -7,6 +7,8 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 import { ListingItem } from 'resources';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
+import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
+import { MessageException } from '../../../src/api/exceptions/MessageException';
 
 describe('/ItemLocationUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -129,6 +131,7 @@ describe('/ItemLocationUpdateCommand', () => {
         testDataListingItemTemplate.itemInformation.listingItemId = listingItemId;
 
         // set hash
+        testDataListingItemTemplate.itemInformation.title = 'New title';
         testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
 
         // create new item template

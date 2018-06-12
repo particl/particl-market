@@ -1,12 +1,9 @@
 import * as dotenv from 'dotenv';
-dotenv.config({ path: './test/.env.blackbox' });
+dotenv.config({ path: './.env.blackbox' });
 import * as _ from 'lodash';
 import * as request from 'request-promise';
 import { Options } from 'request-promise';
 import { ApiResponseTest } from './ApiResponseTest';
-import { HttpException } from '../../../src/api/exceptions/HttpException';
-import { RequestError, StatusCodeError, TransformError } from 'request-promise/errors';
-import * as FormData from 'form-data';
 
 export interface ApiOptions<T, T2> {
     body?: T;

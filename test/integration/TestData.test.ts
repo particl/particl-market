@@ -11,26 +11,28 @@ import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { MessageException } from '../../src/api/exceptions/MessageException';
 
+import { ListingItemMessageType } from '../../src/api/enums/ListingItemMessageType';
+import { ListingItem } from '../../src/api/models/ListingItem';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 
+import { ActionMessage } from '../../src/api/models/ActionMessage';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
 import { Profile } from '../../src/api/models/Profile';
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
+import { GenerateActionMessageParams } from '../../src/api/requests/params/GenerateActionMessageParams';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 
+import { ListingItemMessageType } from '../../src/api/enums/ListingItemMessageType';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
-import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
-import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
 import * as resources from 'resources';
-import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
-import {GenerateOrderParams} from '../../src/api/requests/params/GenerateOrderParams';
-import {OrderStatus} from '../../src/api/enums/OrderStatus';
-
+import { OrderStatus } from '../../src/api/enums/OrderStatus';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { GenerateActionMessageParams } from '../../src/api/requests/params/GenerateActionMessageParams';
+import { GenerateOrderParams } from '../../src/api/requests/params/GenerateOrderParams'
 
 describe('TestDataService', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -338,6 +340,64 @@ describe('TestDataService', () => {
 
     });
 
+
+    test('Check generateActionMessages from ListingItem', async () => {
+        await testDataService.clean();
+
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        const defaultProfile: resources.Profile = defaultProfileModel.toJSON();
+
+        const generateListingItemParams = new GenerateListingItemParams().toParamsArray();
+        const listingItems: resources.ListingItem[] = await testDataService.generate<ListingItem>({
+            model: CreatableModel.LISTINGITEM,
+            amount: 1,
+            withRelated: true,
+            generateParams: generateListingItemParams
+        } as TestDataGenerateRequest);
+
+        const generateActionMessageParams = new GenerateActionMessageParams([
+            true,
+            true,
+            true,
+            ListingItemMessageType.MP_ITEM_ADD,
+            'nonce',
+            true,
+            listingItems[0].id,
+            defaultProfile.address,
+            1,
+            'actionmessage',
+            '0xf0afa0dbb1312410adaebccc12320567',
+            'dadadafgagag',
+            'testdatanotsorandommsgidfrom_generateListingItems'
+        ]).toParamsArray();
+
+        const actionMessages: resources.ActionMessage[] = await testDataService.generate<ActionMessage>({
+            model: CreatableModel.ACTIONMESSAGE,
+            amount: 1,
+            withRelated: true,
+            generateParams: generateActionMessageParams
+        } as TestDataGenerateRequest);
+
+        expect(actionMessages).toHaveLength(1);
+        expect(actionMessages[0].listingItemId).toBe(listingItems[0].id);
+        expect(actionMessages[0].nonce).toBe('nonce');
+        expect(actionMessages[0].action).toBe(ListingItemMessageType.MP_ITEM_ADD);
+        expect(actionMessages[0].MessageInfo.address).toBe(defaultProfile.address);
+        expect(actionMessages[0].MessageInfo.memo).toBe('dadadafgagag');
+        expect(actionMessages[0].MessageInfo.actionMessageId).toBe(actionMessages[0].id);
+        expect(actionMessages[0].MessageEscrow.actionMessageId).toBe(actionMessages[0].id);
+        expect(actionMessages[0].MessageEscrow.type).toBe('actionmessage');
+        expect(actionMessages[0].MessageEscrow.rawtx).toBe('0xf0afa0dbb1312410adaebccc12320567');
+        expect(actionMessages[0].MessageData.actionMessageId).toBe(actionMessages[0].id);
+        expect(actionMessages[0].MessageData.msgid).toBe('testdatanotsorandommsgidfrom_generateListingItems');
+        expect(actionMessages[0].MessageData.version).toBe('0300');
+        expect(actionMessages[0].MessageObjects).toHaveLength(1);
+        expect(actionMessages[0].MessageObjects[0].actionMessageId).toBe(actionMessages[0].id);
+        expect(actionMessages[0].MessageObjects[0].dataId).toBe('seller');
+        expect(actionMessages[0].MessageObjects[0].dataValue).toBe(defaultProfile.address);
+    });
+
     test('Should generate three Profiles', async () => {
         await testDataService.clean(false);
 
@@ -357,7 +417,7 @@ describe('TestDataService', () => {
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
-            true,   // generateItemImages
+            false,   // generateItemImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
@@ -454,7 +514,6 @@ describe('TestDataService', () => {
         // expect(bid.ListingItem.seller).toBe(defaultProfile.address);
 
     });
-
 
     test('Should generate Order using GenerateOrderParams, with a relation to existing ListingItem', async () => {
         await testDataService.clean(true);

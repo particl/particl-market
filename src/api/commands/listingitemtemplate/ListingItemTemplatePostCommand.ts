@@ -39,6 +39,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         // TODO: wheres the validation?!?
         // TODO: if the template doesn't have all the required data, throw an exception
+        // TODO: check escrow
 
         const response = await this.listingItemActionService.post({
             listingItemTemplateId: data.params[0],
