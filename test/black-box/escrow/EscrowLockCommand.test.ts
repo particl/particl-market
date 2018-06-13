@@ -10,7 +10,7 @@ import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 
 describe('EscrowLockCommand', () => {
 
-    const testUtil = new BlackBoxTestUtil();
+    const testUtilNode1 = new BlackBoxTestUtil(1);
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const lockCommand = Commands.ESCROW_LOCK.commandName;
     // let defaultProfile;
@@ -19,12 +19,9 @@ describe('EscrowLockCommand', () => {
 
 
     beforeAll(async () => {
-        // IDK Why this is crashing here...
-        try {
-            await testUtil.cleanDb();
-        } catch (e) {
-            //
-        }
+
+        await testUtilNode1.cleanDb();
+
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
@@ -36,7 +33,7 @@ describe('EscrowLockCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        const listingItem = await testUtil.generateData(
+        const listingItem = await testUtilNode1.generateData(
             CreatableModel.LISTINGITEM, // what to generate
             1,                          // how many to generate
             true,                       // return model
@@ -52,12 +49,19 @@ describe('EscrowLockCommand', () => {
             memo: 'TEST MEMO'
         };
 
-        const escrowLockRes = await rpc('escrow', [
-            'lock',
+        const escrowLockRes: any = await testUtilNode1.rpc(escrowCommand, [
+            lockCommand,
             createdListingItem.hash,
             escrowLockTestData.nonce,
             escrowLockTestData.memo
         ]);
+
+//        const escrowLockRes = await rpc('escrow', [
+//            'lock',
+//            createdListingItem.hash,
+//            escrowLockTestData.nonce,
+//            escrowLockTestData.memo
+//        ]);
 
         escrowLockRes.expectJson();
         // TODO: Proper way of checking error??
@@ -100,4 +104,6 @@ describe('EscrowLockCommand', () => {
 
         escrowLockRes.expectStatusCode(200);
     });
+
+
 });
