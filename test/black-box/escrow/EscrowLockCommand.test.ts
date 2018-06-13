@@ -353,6 +353,13 @@ describe('OrderItemStatusCommand', () => {
             escrowLockTestData.memo
         ]);
 
+//        const escrowLockRes = await rpc('escrow', [
+//            'lock',
+//            createdListingItem.hash,
+//            escrowLockTestData.nonce,
+//            escrowLockTestData.memo
+//        ]);
+
         escrowLockRes.expectJson();
         // TODO: Proper way of checking error??
         expect(escrowLockRes.getBody().error.message).toBe('No valid information to finalize escrow');
@@ -403,4 +410,6 @@ describe('OrderItemStatusCommand', () => {
 
         escrowLockRes.expectStatusCode(200);
     });
+
+
 });
