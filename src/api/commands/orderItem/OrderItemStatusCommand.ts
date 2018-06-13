@@ -112,7 +112,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
         for (const orderItem of orderItemsJson) {
             delete(orderItem.ItemInformation.ItemImages);
             const listingItemHash = orderItem.hash;
-            const seller = orderItem.seller;
+            const tmpSeller = orderItem.seller;
 
             for (const i in orderItem.Bids) {
                 if (i) {
@@ -120,7 +120,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
                     if (!buyer || buyer === '*' || tmpBuyer === buyer) {
                         const bidType = orderItem.Bids[i].action;
                         const orderStatus = orderItem.Bids[i].OrderItem.status;
-                        const orderItemStatus = new OrderItemStatus(listingItemHash, bidType, orderStatus, tmpBuyer, seller);
+                        const orderItemStatus = new OrderItemStatus(listingItemHash, bidType, orderStatus, tmpBuyer, tmpSeller);
                         orderItemStatuses.push(orderItemStatus);
                     }
                 }
