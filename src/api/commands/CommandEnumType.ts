@@ -146,6 +146,10 @@ export class CommandEnumType extends Enum<Command> {
     public ORDER_ROOT: Command           = new Command('order', 'order', true,
         [this.ORDER_SEARCH], EnvironmentType.ALL);
 
+    public ORDERITEM_STATUS: Command         = new Command('orderitemstatus', 'status', false);
+    public ORDERITEM_ROOT: Command           = new Command('orderitem', 'orderitem', true,
+        [this.ORDERITEM_STATUS], EnvironmentType.ALL);
+
     public PRICETICKER_ROOT: Command           = new Command('priceticker', 'priceticker', true);
 
     public CURRENCYPRICE_ROOT: Command        = new Command('currencyprice', 'currencyprice', true);
