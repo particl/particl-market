@@ -16,7 +16,8 @@ import { MessageException } from '../exceptions/MessageException';
 import { OrderItemService } from './OrderItemService';
 import { AddressService } from './AddressService';
 import { ListingItemService } from './ListingItemService';
-import { AddressType } from '../enums/AddressType';
+import {AddressType} from '../enums/AddressType';
+import {ProfileService} from './ProfileService';
 import * as resources from 'resources';
 
 
@@ -28,6 +29,7 @@ export class OrderService {
         @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.OrderItemService) public orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Repository) @named(Targets.Repository.OrderRepository) public orderRepo: OrderRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -68,7 +70,7 @@ export class OrderService {
     public async create( @request(OrderCreateRequest) data: OrderCreateRequest): Promise<Order> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('OrderCreateRequest: ', JSON.stringify(body, null, 2));
+        // this.log.debug('OrderCreateRequest: ', JSON.stringify(body, null, 2));
 
         // you need at least one order item to create an order
         body.hash = ObjectHash.getHash(body, HashableObjectType.ORDER_CREATEREQUEST);
@@ -93,14 +95,14 @@ export class OrderService {
         // make sure the Orders shipping address has the correct type
         addressCreateRequest.type = AddressType.SHIPPING_ORDER;
 
-        this.log.debug('OrderCreateRequest body:', JSON.stringify(body, null, 2));
-        this.log.debug('addressCreateRequest for ORDER: ', JSON.stringify(addressCreateRequest, null, 2));
+        // this.log.debug('OrderCreateRequest body:', JSON.stringify(body, null, 2));
+        // this.log.debug('addressCreateRequest for ORDER: ', JSON.stringify(addressCreateRequest, null, 2));
 
         // save shipping address
         const addressModel = await this.addressService.create(addressCreateRequest);
         const address = addressModel.toJSON();
 
-        this.log.debug('created address: ', JSON.stringify(address, null, 2));
+        // this.log.debug('created address: ', JSON.stringify(address, null, 2));
 
         // set the address_id for order
         body.address_id = address.id;
@@ -111,7 +113,7 @@ export class OrderService {
         const orderModel = await this.orderRepo.create(body);
         const order = orderModel.toJSON();
 
-        this.log.debug('created order: ', JSON.stringify(order, null, 2));
+        // this.log.debug('created order: ', JSON.stringify(order, null, 2));
         // this.log.debug('orderItemCreateRequests: ', JSON.stringify(orderItemCreateRequests, null, 2));
 
         // then create the OrderItems
@@ -119,7 +121,7 @@ export class OrderService {
             orderItemCreateRequest.order_id = order.id;
             const orderItemModel = await this.orderItemService.create(orderItemCreateRequest);
             const orderItem = orderItemModel.toJSON();
-            this.log.debug('created orderItem: ', JSON.stringify(orderItem, null, 2));
+            // this.log.debug('created orderItem: ', JSON.stringify(orderItem, null, 2));
         }
 
         // finally find and return the created order

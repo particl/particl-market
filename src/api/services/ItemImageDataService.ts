@@ -9,9 +9,8 @@ import { ItemImageDataRepository } from '../repositories/ItemImageDataRepository
 import { ItemImageData } from '../models/ItemImageData';
 import { ItemImageDataCreateRequest } from '../requests/ItemImageDataCreateRequest';
 import { ItemImageDataUpdateRequest } from '../requests/ItemImageDataUpdateRequest';
-import { RpcRequest } from '../requests/RpcRequest';
-import { ImageProcessing } from '../../core/helpers/ImageProcessing';
-import { ImageTriplet } from '../../core/helpers/ImageTriplet';
+import { ItemImageDataContentCreateRequest } from '../requests/ItemImageDataContentCreateRequest';
+import { ItemImageDataContentService } from './ItemImageDataContentService';
 
 export class ItemImageDataService {
 
@@ -19,6 +18,7 @@ export class ItemImageDataService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ItemImageDataRepository) public itemImageDataRepo: ItemImageDataRepository,
+        @inject(Types.Service) @named(Targets.Service.ItemImageDataContentService) public itemImageDataContentService: ItemImageDataContentService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -45,8 +45,16 @@ export class ItemImageDataService {
             throw new ValidationException('Request body is not valid', ['dataId, protocol, encoding and data cannot all be null']);
         }
 
-        // Save original
+        const imageContent = body.data;
+        delete body.data;
+
         const itemImageData = await this.itemImageDataRepo.create(body);
+
+        const itemImageDataContent = {
+            item_image_data_id: itemImageData.id,
+            data: imageContent
+        } as ItemImageDataContentCreateRequest;
+        await this.itemImageDataContentService.create(itemImageDataContent);
 
         // finally find and return the created itemImageData
         const newItemImageData = await this.findOne(itemImageData.Id);
@@ -57,6 +65,7 @@ export class ItemImageDataService {
     @validate()
     public async update(id: number, @request(ItemImageDataUpdateRequest) body: ItemImageDataCreateRequest): Promise<ItemImageData> {
 
+        // todo: data will not be required later
         if (body.dataId == null && body.protocol == null && body.encoding == null && body.data == null ) {
             throw new ValidationException('Request body is not valid', ['dataId, protocol, encoding and data cannot all be null']);
         }
@@ -66,7 +75,13 @@ export class ItemImageDataService {
         }
 
         // find the existing one without related
-        const itemImageData = await this.findOne(id, false);
+        const itemImageData = await this.findOne(id, true);
+
+        // todo: update
+        if ( itemImageData.ItemImageDataContent ) {
+            const oldContent = itemImageData.toJSON();
+            await this.itemImageDataContentService.destroy(oldContent.ItemImageDataContent.id);
+        }
 
         // set new values
         if ( body.dataId ) {
@@ -82,7 +97,11 @@ export class ItemImageDataService {
             itemImageData.Encoding = body.encoding;
         }
         if ( body.data ) {
-            itemImageData.Data = body.data;
+            const itemImageDataContent = {
+                item_image_data_id: itemImageData.id,
+                data: body.data
+            } as ItemImageDataContentCreateRequest;
+            await this.itemImageDataContentService.create(itemImageDataContent);
         }
         if ( body.originalMime ) {
             itemImageData.OriginalMime = body.originalMime;

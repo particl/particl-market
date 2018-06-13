@@ -6,11 +6,7 @@ export class ListingItemObjectData extends Bookshelf.Model<ListingItemObjectData
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItemObjectData> {
         if (withRelated) {
             return await ListingItemObjectData.where<ListingItemObjectData>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'ListingItemObject',
-                    // 'ListingItemObjectDataRelated.Related'
-                ]
+                withRelated: []
             });
         } else {
             return await ListingItemObjectData.where<ListingItemObjectData>({ id: value }).fetch();

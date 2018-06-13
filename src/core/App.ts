@@ -14,6 +14,8 @@ import { SocketIoServer } from './SocketIoServer';
 import { EnvConfig } from '../config/env/EnvConfig';
 import { ProductionEnvConfig } from '../config/env/ProductionEnvConfig';
 import { Environment } from './helpers/Environment';
+import { DataDir } from './helpers/DataDir';
+import * as databaseMigrate from '../database/migrate';
 
 
 export interface Configurable {
@@ -42,7 +44,7 @@ export class App {
         const loggerConfig = new LoggerConfig();
         loggerConfig.configure();
 
-        if (Environment.useExpress) {
+        if (process.env.EXPRESS_ENABLED) {
             this.log.info('Defining app...');
             this.bootstrapApp.defineExpressApp(this.express);
         }
@@ -76,7 +78,18 @@ export class App {
     public async bootstrap(): Promise<any> {
         this.log.info('Configuring app...');
 
-        if (Environment.useExpress) {
+        // Initialize the data directory
+        if (process.env.INIT) {
+            await DataDir.initialize();
+            await DataDir.createDefaultEnvFile();
+        }
+
+        // Perform database migrations
+        if (process.env.MIGRATE) {
+            await databaseMigrate.migrate();
+        }
+
+        if (process.env.EXPRESS_ENABLED) {
             // Add express monitor app
             this.bootstrapApp.setupMonitor(this.express);
             // Configure the app config for all the middlewares
@@ -90,7 +103,7 @@ export class App {
         this.log.info('Binding IoC modules...');
         await this.ioc.bindModules();
 
-        if (Environment.useExpress) {
+        if (process.env.EXPRESS_ENABLED) {
             this.log.info('Setting up IoC...');
             this.inversifyExpressServer = this.bootstrapApp.setupInversifyExpressServer(this.express, this.ioc);
             this.express = this.bootstrapApp.bindInversifyExpressServer(this.express, this.inversifyExpressServer);
@@ -101,7 +114,7 @@ export class App {
             this.server.use(this.express);
         }
 
-        if (Environment.useSocketIO) {
+        if (process.env.SOCKETIO_ENABLED) {
             // create our socketioserver
             this.socketIoServer = this.bootstrapApp.createSocketIoServer(this.server, this.ioc);
         }

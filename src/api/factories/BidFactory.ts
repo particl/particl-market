@@ -9,6 +9,7 @@ import { BidCreateRequest } from '../requests/BidCreateRequest';
 import * as resources from 'resources';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
+import { IdValuePair } from '../services/BidActionService';
 
 export class BidFactory {
 
@@ -24,10 +25,10 @@ export class BidFactory {
      *
      * @param {BidMessageType} bidMessageType
      * @param {string} itemHash
-     * @param {any[]} idValuePairObjects { id: 'objectid', value: 'objectvalue' }
+     * @param {IdValuePair[]} idValuePairObjects
      * @returns {Promise<BidMessage>}
      */
-    public async getMessage(bidMessageType: BidMessageType, itemHash: string, idValuePairObjects?: any[]): Promise<BidMessage> {
+    public async getMessage(bidMessageType: BidMessageType, itemHash: string, idValuePairObjects?: IdValuePair[]): Promise<BidMessage> {
 
         const message = {
             action: bidMessageType,

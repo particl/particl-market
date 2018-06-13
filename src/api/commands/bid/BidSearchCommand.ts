@@ -48,7 +48,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
         const ordering = data.params[2] ? data.params[2] : SearchOrder.ASC;
 
         // TODO: ordering is by createdAt, but perhaps updatedAt would be better
-        // TODO: add and set publishedAt to sellet publish time
+        // TODO: add and set publishedAt to seller publish time
 
         if (data.params.length >= 3) {
             // shift so that data.params contains only the bidders
@@ -90,7 +90,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public usage(): string {
-        return this.getName() + ' <itemhash>|*> [status>|* [ordering [<bidderAddress...]]] ';
+        return this.getName() + ' (<itemhash>|*) [(<status>|*) [<ordering> [<bidderAddress> ...]]] ';
     }
 
     public help(): string {

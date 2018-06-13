@@ -7,6 +7,7 @@ import { DefaultMarketService } from '../services/DefaultMarketService';
 import { EventEmitter } from '../../core/api/events';
 import { MessageProcessor} from '../messageprocessors/MessageProcessor';
 import { CoreRpcService } from '../services/CoreRpcService';
+import { LockedOutputService } from '../services/LockedOutputService';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -21,13 +22,12 @@ export class ServerStartedListener implements interfaces.Listener {
     private timeout: any;
     private interval = 1000;
 
-    // TODO: this class needs to be refactored
-
     constructor(
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
+        @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) Logger: typeof LoggerType

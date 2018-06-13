@@ -38,7 +38,6 @@ export class ListingItemTemplateRepository {
     }
 
     /**
-     * todo: optionally fetch withRelated
      *
      * @param options, ListingItemSearchParams
      * @returns {Promise<Bookshelf.Collection<ListingItemTemplate>>}
