@@ -6,11 +6,7 @@ export class EscrowRatio extends Bookshelf.Model<EscrowRatio> {
     public static async fetchById(value: number, withRelated: boolean = true): Promise<EscrowRatio> {
         if (withRelated) {
             return await EscrowRatio.where<EscrowRatio>({ id: value }).fetch({
-                withRelated: [
-                    // TODO:
-                    // 'EscrowRatioRelated',
-                    // 'EscrowRatioRelated.Related'
-                ]
+                withRelated: []
             });
         } else {
             return await EscrowRatio.where<EscrowRatio>({ id: value }).fetch();

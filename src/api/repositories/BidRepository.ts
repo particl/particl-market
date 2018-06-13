@@ -28,18 +28,12 @@ export class BidRepository {
     }
 
     /**
-     * todo: optionally fetch withRelated
      *
      * @param options, BidSearchParams
      * @returns {Promise<Bookshelf.Collection<Bid>>}
      */
     public async search(options: BidSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Bid>> {
         return this.BidModel.search(options, withRelated);
-    }
-
-    // todo: add orderby option to BidSearchParams and get rid of this
-    public async getLatestBid(listingItemId: number, bidder: string): Promise<Bid> {
-        return this.BidModel.getLatestBid(listingItemId, bidder);
     }
 
     public async create(data: any): Promise<Bid> {

@@ -41,6 +41,7 @@ export interface OutputData {
     outputsChangeAmount: number;
 }
 
+// todo: move
 export interface IdValuePair {
     id: string;
     value: any;
