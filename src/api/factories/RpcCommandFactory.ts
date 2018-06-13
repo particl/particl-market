@@ -93,6 +93,9 @@ import { MessagingInformationRootCommand } from '../commands/messaginginformatio
 import { OrderRootCommand } from '../commands/order/OrderRootCommand';
 import { OrderSearchCommand } from '../commands/order/OrderSearchCommand';
 
+import { OrderItemRootCommand } from '../commands/orderItem/OrderItemRootCommand';
+import { OrderItemStatusCommand } from '../commands/orderItem/OrderItemStatusCommand';
+
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
 import { PaymentInformationRootCommand } from '../commands/paymentinformation/PaymentInformationRootCommand';
 
@@ -202,6 +205,9 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.order.OrderRootCommand) private orderRootCommand: OrderRootCommand,
         @inject(Types.Command) @named(Targets.Command.order.OrderSearchCommand) private orderSearchCommand: OrderSearchCommand,
+
+        @inject(Types.Command) @named(Targets.Command.orderItem.OrderItemRootCommand) private orderItemRootCommand: OrderItemRootCommand,
+        @inject(Types.Command) @named(Targets.Command.orderItem.OrderItemStatusCommand) private orderItemStatusCommand: OrderItemStatusCommand,
 
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationRootCommand) private paymentInformationRootCommand: PaymentInformationRootCommand,
@@ -326,6 +332,9 @@ export class RpcCommandFactory {
 
         this.commands.push(orderRootCommand);
         this.commands.push(orderSearchCommand);
+
+        this.commands.push(orderItemRootCommand);
+        this.commands.push(orderItemStatusCommand);
 
         this.commands.push(paymentInformationUpdateCommand);
         this.commands.push(paymentInformationRootCommand);

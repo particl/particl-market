@@ -256,6 +256,10 @@ export const Targets = {
             OrderRootCommand: 'OrderRootCommand',
             OrderSearchCommand: 'OrderSearchCommand'
         },
+        orderItem: {
+            OrderItemRootCommand: 'OrderItemRootCommand',
+            OrderItemStatusCommand: 'OrderItemStatusCommand'
+        },
         paymentinformation: {
             PaymentInformationRootCommand: 'PaymentInformationRootCommand',
             PaymentInformationUpdateCommand: 'PaymentInformationUpdateCommand'

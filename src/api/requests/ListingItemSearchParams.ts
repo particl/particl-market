@@ -77,5 +77,12 @@ export class ListingItemSearchParams extends RequestBody {
         ];
     }
 
+    public itemHash: string;
+
+    public seller: string;
+
+    public buyer: string;
+
+    public withBids: boolean;
 }
 // tslint:enable:variable-name
