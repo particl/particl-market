@@ -20,7 +20,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/par
 
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 
-describe('OrderItemStatusCommand', () => {
+describe('OrderItemStatus', () => {
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtil1 = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
     const testUtil2 = new BlackBoxTestUtil(randomBoolean ? 2 : 1);
@@ -43,7 +43,6 @@ describe('OrderItemStatusCommand', () => {
     
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const escrowAddSubCommand = Commands.ESCROW_ADD.commandName;
-    const escrowLockSubCommand = Commands.ESCROW_LOCK.commandName;
 
     const addressCommand = Commands.ADDRESS_ROOT.commandName;
     const addressSubCommand = Commands.ADDRESS_ADD.commandName;
@@ -55,6 +54,9 @@ describe('OrderItemStatusCommand', () => {
 
     const orderCommand = Commands.ORDER_ROOT.commandName;
     const orderSearchSubCommand = Commands.ORDER_SEARCH.commandName;
+
+    const orderItemCommand = Commands.ORDERITEM_ROOT.commandName;
+    const orderItemStatusSubCommand = Commands.ORDERITEM_STATUS.commandName;
     
     let profileId1;
     let profileId2;
@@ -69,6 +71,11 @@ describe('OrderItemStatusCommand', () => {
     let myBid;
     let myOrder;
     let myAddress;
+
+    let defaultProfile1;
+    let defaultProfile2;
+    let defaultMarket1;
+    let defaultMarket2;
 
     const shippingAddress = {
         firstName: 'Johnny',
@@ -88,19 +95,20 @@ describe('OrderItemStatusCommand', () => {
 
         // IDK Why this is crashing here...
         try {
+            await testUtil1.cleanDb();
             await testUtil2.cleanDb();
         } catch (e) {
             //
         }
 
-        const defaultProfile1 = await testUtil1.getDefaultProfile();
+        defaultProfile1 = await testUtil1.getDefaultProfile();
         profileId1 = defaultProfile1.id;
-        const defaultProfile2 = await testUtil2.getDefaultProfile();
+        defaultProfile2 = await testUtil2.getDefaultProfile();
         profileId2 = defaultProfile2.id;
         // throw new MessageException('defaultProfile2 = ' + JSON.stringify(defaultProfile2));
-        const defaultMarket1 = await testUtil1.getDefaultMarket();
+        defaultMarket1 = await testUtil1.getDefaultMarket();
         marketId1 = defaultProfile1.id;
-        const defaultMarket2 = await testUtil2.getDefaultMarket();
+        defaultMarket2 = await testUtil2.getDefaultMarket();
         marketId2 = defaultProfile2.id;
 
         // Get category
@@ -111,7 +119,6 @@ describe('OrderItemStatusCommand', () => {
         myCategory = myCategory.getBody()['result'][0];
 
         // Create template
-        // TODO: Gotta generate a listing item template somehow
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,       // generateItemInformation
             true,       // generateShippingDestinations
@@ -146,42 +153,6 @@ describe('OrderItemStatusCommand', () => {
             templateGetRes.expectStatusCode(200);
             const result: resources.ListingItemTemplate = templateGetRes.getBody()['result'];
         }
-
-        // add image
-        /*{
-            const base64Image = await testUtil1.getRandomBase64Image();
-            const imageAddRes: any = await testUtil1.rpc(imageCommand, [
-                imageAddCommand,
-                myTemplate.id,
-                'uniqueid',
-                ImageDataProtocolType.LOCAL,
-                'BASE64',
-                base64Image
-            ]);
-            imageAddRes.expectJson();
-            imageAddRes.expectStatusCode(200);
-            const imageResult: resources.ListingItemTemplate = imageAddRes.getBody()['result'];
-        }*/
-
-        //  throw new MessageException('myTemplate = ' + JSON.stringify(myTemplate, null, 2));
-
-        // Create escrow
-        // Not required because data generate creates escrow
-        /*escrow = await testUtil1.rpc(escrowCommand, [escrowAddSubCommand, myTemplate.id, EscrowType.MAD, 1.0, 1.0])
-        escrow.expectJson();
-        expect(escrow.error).toBe(null);
-        escrow.expectStatusCode(200);
-        escrow = escrow.getBody()['result'];*/
-
-        // Create post template to create listing item
-        /*let templatePostRes = await testUtil1.rpc(templateCommand, [templatePostSubCommand, myTemplate.id, marketId1]);
-        templatePostRes.expectJson();
-        expect(templatePostRes.error).toBe(null);
-        templatePostRes.expectStatusCode(200);
-        {
-            const result: any = templatePostRes.getBody()['result'];
-            expect(result.result).toBe('Sent.');
-        }*/
 
         // Post template to create listing item [copied/modified from buy flow]
         const templatePostRes: any = await testUtil1.rpc(templateCommand, [templatePostCommand, myTemplate.id, marketId1]);
@@ -218,22 +189,32 @@ describe('OrderItemStatusCommand', () => {
         expect(myAddress.error).toBe(null);
         myAddress.expectStatusCode(200);
         myAddress = myAddress.getBody()['result'];
+    });
 
-        // throw new MessageException('createdListingItem = ' + JSON.stringify(createdListingItem, null, 2));
-
-        // Create a bid
-        let bidSendRes = await testUtil2.rpc(bidCommand, [bidSubCommand, /*createdListingItem.hash,*/ myTemplate.hash, profileId2, myAddress.id // ,
-            // 'rawtx', 'a00000000000020c7333168e97e67bf278e04343178b2c368f4fba0b07cdc213bacc3e3845adb70100000000ffffffff5c70bd29c6a2049781907d7920d20b1e3ffb76f1d44d121eb07e198995bdac910000000000ffffffff0301375c8c610100000017a9143a8b5e616edc983a94a8ecd4b16b17c6180478e28701e36350bf390000001976a9142208a47ce301330b8dd9598880336cecff6a003f88ac01cb1097bdd00100001976a9142740d5e099f5542f64748cf7ef6a138d753aa38188ac0248304502210097acb0245bb135d02d2277ce7182ec2f41cb8830d6681caf288ac47ce3465fd402203122066499ea901673fe0adfcb0ea64e9e33584f864134a7d9cac2b5cc9c3727012103fb1823abc67cd8ed769d03d59fc0c8fc39f7d8455d98e09cc7d8b41a7e0d83a200',
-            // 'address', 'pejYH4pzr6WV7VDJ243KQywNsPaqZwDWbv'
+    test('Should return an empty list', async () => {
+        const orderItemStatusRes = await testUtil2.rpc(orderItemCommand, [
+            orderItemStatusSubCommand
         ]);
+
+        orderItemStatusRes.expectJson();
+        expect(orderItemStatusRes.error).toBe(null);
+        orderItemStatusRes.expectStatusCode(200);
+        const myOrderItems = orderItemStatusRes.getBody()['result'];
+
+        // throw new MessageException('myOrderItems = ' + JSON.stringify(myOrderItems, null, 2));
+
+        // Check we receive nothing
+        expect(myOrderItems.length).toBe(0);
+    });
+
+    test('Should show order that has been bidded upon', async () => {
+        // Create a bid
+        let bidSendRes = await testUtil2.rpc(bidCommand, [bidSubCommand, /*createdListingItem.hash,*/ myTemplate.hash, profileId2, myAddress.id]);
         bidSendRes.expectJson();
         expect(bidSendRes.error).toBe(null);
         bidSendRes.expectStatusCode(200);
         bidSendRes = bidSendRes.getBody()['result'];
         expect(bidSendRes.result).toBe('Sent.');
-
-
-        // RPC waitfor again here?
 
         // Check for bid locally
         myBid = await testUtil2.rpc(bidCommand, [bidSearchSubCommand, /*createdListingItem.hash,*/ myTemplate.hash, BidMessageType.MPA_BID, SearchOrder.ASC, defaultProfile2.address]);
@@ -257,13 +238,22 @@ describe('OrderItemStatusCommand', () => {
         myBid = myBid.getBody()['result'][0];
         expect(myBid.ListingItem.hash).toBe(myTemplate.hash);
 
-        // throw new MessageException('myBid = ' + JSON.stringify(myBid, null, 2));
+        const orderItemStatusRes = await testUtil2.rpc(orderItemCommand, [
+            orderItemStatusSubCommand
+        ]);
 
-        // throw new MessageException('myBid = ' + JSON.stringify(myBid.id, null, 2));
-        // throw new MessageException('myBid = ' + bidCommand + ' ' + bidAcceptSubCommand + ' ' + createdListingItem.hash);
+        orderItemStatusRes.expectJson();
+        expect(orderItemStatusRes.error).toBe(null);
+        orderItemStatusRes.expectStatusCode(200);
+        const myOrderItems = orderItemStatusRes.getBody()['result'];
 
-        // TODO: Figure out why it says not my item
+        // Check we receive order that was bid upon
+        expect(myOrderItems.length).toBe(1);
+        expect(myOrderItems[0].listingItemHash).toBe(myTemplate.hash);
+        expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_BID);
+    });
 
+    test('Should show order that has been accepted', async () => {
         // Create an order from the bid
         const myOrderSend = await testUtil1.rpc(bidCommand, [bidAcceptSubCommand, /*createdListingItem.hash,*/ myTemplate.hash, myBid.id]);
         myOrderSend.expectJson();
@@ -288,128 +278,18 @@ describe('OrderItemStatusCommand', () => {
 
         // throw new MessageException('myOrder = ' + JSON.stringify(myOrder, null, 2));
 
-        // const generateOrderParams = new GenerateOrderParams([
-        //     true,   // generate generateListingItemTemplate, generate a ListingItemTemplate
-        //     true,   // generate generateListingItem, generate a ListingItem
-        //     true,   // generate generateBid, generate a Bid
-        //     createdListingItem.id,   // generate listingItemhash, attach bid to existing ListingItem
-        //     bidSendRes.id // true,   // generate bidId, attach Order to existing Bid
-        //     // bid.address, // true,   // generate bidder, bidders address
-        //     // createdListingItem.seller // true,   // generate listingItemSeller, ListingItem sellers address
-        // ]).toParamsArray();
-
-        // const orders = await testUtil2.generateData(
-        //     CreatableModel.ORDER,       // what to generate
-        //     1,                          // how many to generate
-        //     true,                       // return model
-        //     generateOrderParams   // what kind of data to generate
-        // ) as Order[];
-        // order = orders[0];
-    });
-
-    test('Should fail Escrow Lock because missing params', async () => {
-        const escrowLockRes = await testUtil2.rpc(escrowCommand, [
-            escrowLockSubCommand
+        const orderItemStatusRes = await testUtil2.rpc(orderItemCommand, [
+            orderItemStatusSubCommand
         ]);
 
-        escrowLockRes.expectJson();
-        escrowLockRes.expectStatusCode(500);
+        orderItemStatusRes.expectJson();
+        expect(orderItemStatusRes.error).toBe(null);
+        orderItemStatusRes.expectStatusCode(200);
+        const myOrderItems = orderItemStatusRes.getBody()['result'];
+
+        // Check we receive order that was accepted
+        expect(myOrderItems.length).toBe(1);
+        expect(myOrderItems[0].listingItemHash).toBe(myTemplate.hash);
+        expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_ACCEPT);
     });
-
-    test('Should fail Escrow Lock because non-existent bid', async () => {
-        const escrowLockRes = await testUtil2.rpc(escrowCommand, [
-            escrowLockSubCommand,
-            'someFakeHash'
-        ]);
-
-        escrowLockRes.expectJson();
-        escrowLockRes.expectStatusCode(404);
-    });
-
-    test('Should fail Escrow Lock because non-existent bid', async () => {
-        const escrowLockRes = await testUtil2.rpc(escrowCommand, [
-            escrowLockSubCommand,
-            1234
-        ]);
-
-        escrowLockRes.expectJson();
-        escrowLockRes.expectStatusCode(404);
-    });
-
-    // test('Should fail Escrow Lock', async () => {
-       // throw new MessageException('createdListingItem = ' + JSON.stringify(createdListingItem, null, 2));
-       /*const escrowLockTestData = {
-            itemhash: createdListingItem.hash,
-            nonce: 'TEST NONCE',
-            memo: 'TEST MEMO'
-        };
-
-        const escrowLockRes = await testUtil2.rpc('escrow', [
-            'lock',
-            // createdListingItem.ItemInformation.id,
-            // createdListingItem.hash,
-            myOrder.hash,
-            escrowLockTestData.nonce,
-            escrowLockTestData.memo
-        ]);
-
-//        const escrowLockRes = await rpc('escrow', [
-//            'lock',
-//            createdListingItem.hash,
-//            escrowLockTestData.nonce,
-//            escrowLockTestData.memo
-//        ]);
-
-        escrowLockRes.expectJson();
-        // TODO: Proper way of checking error??
-        expect(escrowLockRes.getBody().error.message).toBe('No valid information to finalize escrow');
-
-        escrowLockRes.expectStatusCode(404);*/
-        // throw new MessageException('myOrder = ' + JSON.stringify(myOrder, null, 2));
-    // });
-
-    // TODO: Maybe a test where seller tries to lock escrow?
-
-    test('Should lock Escrow', async () => {
-        const escrowLockTestData = {
-            itemhash: createdListingItem.hash,
-            nonce: 'TEST NONCE',
-            memo: 'TEST MEMO'
-        };
-
-        // tslint:disable:max-line-length
-        // create bid
-        /*const bid = await testUtil1.addData(CreatableModel.BID, {
-            action: BidMessageType.MPA_ACCEPT,
-            bidDatas: [
-                // TODO: Move to test data file
-                { dataId: 'pubkeys', dataValue: [
-                    '02dcd01e1c1bde4d5f8eff82cde60017f81ac1c2888d04f47a31660004fe8d4bb7',
-                    '035059134217aec66013c46db3ef62a1e7523fc962d2560858cd16d9c0032b113f'
-                ] },
-                { dataId: 'rawtx', dataValue: 'a00000000000020c7333168e97e67bf278e04343178b2c368f4fba0b07cdc213bacc3e3845adb70100000000ffffffff5c70bd29c6a2049781907d7920d20b1e3ffb76f1d44d121eb07e198995bdac910000000000ffffffff0301375c8c610100000017a9143a8b5e616edc983a94a8ecd4b16b17c6180478e28701e36350bf390000001976a9142208a47ce301330b8dd9598880336cecff6a003f88ac01cb1097bdd00100001976a9142740d5e099f5542f64748cf7ef6a138d753aa38188ac0248304502210097acb0245bb135d02d2277ce7182ec2f41cb8830d6681caf288ac47ce3465fd402203122066499ea901673fe0adfcb0ea64e9e33584f864134a7d9cac2b5cc9c3727012103fb1823abc67cd8ed769d03d59fc0c8fc39f7d8455d98e09cc7d8b41a7e0d83a200' },
-                { dataId: 'address', dataValue: 'pejYH4pzr6WV7VDJ243KQywNsPaqZwDWbv' }
-            ],
-            bidder: 'Anything',
-            address: shippingAddress,
-            listing_item_id: createdListingItem.id
-        });
-        bid.expectJson();
-        expect(bid.error).toBe(null);
-        bid.expectStatusCode(200);*/
-        // tslint:enable:max-line-length
-
-        const escrowLockRes = await testUtil2.rpc(escrowCommand, [
-            escrowLockSubCommand,
-            // myOrder.OrderItems[0].itemHash
-            myOrder.id
-            // myOrder.hash
-            /*,escrowLockTestData.nonce,
-            escrowLockTestData.memo*/
-        ]);
-
-        escrowLockRes.expectStatusCode(200);
-    });
-
-
 });

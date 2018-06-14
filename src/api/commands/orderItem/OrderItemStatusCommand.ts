@@ -8,6 +8,8 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
+import { ListingItemSearchType } from '../../enums/ListingItemSearchType';
+import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
@@ -110,7 +112,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
         for (const orderItem of orderItemsJson) {
             delete(orderItem.ItemInformation.ItemImages);
             const listingItemHash = orderItem.hash;
-            const orderItemSeller = orderItem.seller;
+            const tmpSeller = orderItem.seller;
 
             for (const i in orderItem.Bids) {
                 if (i) {
@@ -118,7 +120,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
                     if (!buyer || buyer === '*' || tmpBuyer === buyer) {
                         const bidType = orderItem.Bids[i].action;
                         const orderStatus = orderItem.Bids[i].OrderItem.status;
-                        const orderItemStatus = new OrderItemStatus(listingItemHash, bidType, orderStatus, tmpBuyer, orderItemSeller);
+                        const orderItemStatus = new OrderItemStatus(listingItemHash, bidType, orderStatus, tmpBuyer, tmpSeller);
                         orderItemStatuses.push(orderItemStatus);
                     }
                 }

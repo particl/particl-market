@@ -23,6 +23,8 @@ import { ListingItemService } from './ListingItemService';
 import { AddressService } from './AddressService';
 import { ProfileService } from './ProfileService';
 
+import { SearchOrder } from '../enums/SearchOrder';
+
 export class BidService {
 
     public log: LoggerType;
@@ -79,7 +81,13 @@ export class BidService {
 
     @validate()
     public async getLatestBid(listingItemId: number, bidder: string): Promise<Bid> {
-        return await this.bidRepo.getLatestBid(listingItemId, bidder);
+        // return await this.bidRepo.getLatestBid(listingItemId, bidder);
+        return await this.search(
+            {
+                listingItemId,
+                bidders: [ bidder ],
+                ordering: SearchOrder.DESC
+            } as BidSearchParams, true)[0];
     }
 
     @validate()
