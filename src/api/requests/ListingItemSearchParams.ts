@@ -28,11 +28,8 @@ export class ListingItemSearchParams extends RequestBody {
     public withRelated: boolean;
 
     public itemHash: string | null;
-
     public seller: string | null;
-
     public buyer: string | null;
-
     public withBids: boolean;
 
     /*
