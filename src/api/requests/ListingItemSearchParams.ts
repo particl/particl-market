@@ -27,6 +27,11 @@ export class ListingItemSearchParams extends RequestBody {
     public searchString: string;
     public withRelated: boolean;
 
+    public itemHash: string;
+    public seller: string;
+    public buyer: string;
+    public withBids: boolean;
+
     /*
      *  [0]: page, number
      *  [1]: pageLimit, number
@@ -76,13 +81,5 @@ export class ListingItemSearchParams extends RequestBody {
             this.withRelated
         ];
     }
-
-    public itemHash: string;
-
-    public seller: string;
-
-    public buyer: string;
-
-    public withBids: boolean;
 }
 // tslint:enable:variable-name
