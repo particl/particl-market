@@ -33,6 +33,12 @@ export class DataDir {
             return this.datadir;
         }
 
+        // in dev/test environment
+        if (!Environment.isAlpha() && !Environment.isProduction()) {
+            this.datadir = './data/';
+            return this.datadir;
+        }
+
         const homeDir: string = os.homedir ? os.homedir() : process.env['HOME'];
 
         let dir = '';

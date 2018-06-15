@@ -37,6 +37,8 @@ if (Environment.isProduction() || Environment.isAlpha()) {
 }
 
 
+
+console.log('!Environment.isAlpha() && !Environment.isProduction():', !Environment.isAlpha() && !Environment.isProduction());
 console.log('envConfig.envFileName:', envConfig.envFile);
 console.log('DataDir.getDataDirPath():', DataDir.getDataDirPath());
 console.log('DataDir.getDatabaseFile():', DataDir.getDatabaseFile());
