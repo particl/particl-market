@@ -5,16 +5,18 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
+import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
+import { AddressType } from '../../enums/AddressType';
 import { BidActionService } from '../../services/BidActionService';
 import { AddressService } from '../../services/AddressService';
 import { ProfileService } from '../../services/ProfileService';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 import * as resources from 'resources';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -31,14 +33,35 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         this.log = new Logger(__filename);
     }
 
+    public bidDataIds: string[] = [
+        'SHIPPING_ADDRESS_FIRST_NAME',
+        'SHIPPING_ADDRESS_LAST_NAME',
+        'SHIPPING_ADDRESS_ADDRESS_LINE1',
+        'SHIPPING_ADDRESS_ADDRESS_LINE2',
+        'SHIPPING_ADDRESS_CITY',
+        'SHIPPING_ADDRESS_STATE',
+        'SHIPPING_ADDRESS_COUNTRY',
+        'SHIPPING_ADDRESS_ZIP_CODE'
+    ];
+
     /**
      * Posts a Bid to the network
+     * If addressId is null then one of bidDataId must be equal to addressId 
+     * and its bidDataId = bidDataValue should have following format:
+     * SHIPPING_ADDRESS_FIRST_NAME = 'ship.firstName',
+     * SHIPPING_ADDRESS_LAST_NAME = 'ship.lastName',
+     * SHIPPING_ADDRESS_ADDRESS_LINE1 = 'ship.addressLine1',
+     * SHIPPING_ADDRESS_ADDRESS_LINE2 = 'ship.addressLine2',
+     * SHIPPING_ADDRESS_CITY = 'ship.city',
+     * SHIPPING_ADDRESS_STATE = 'ship.state',
+     * SHIPPING_ADDRESS_COUNTRY = 'ship.country'
+     * SHIPPING_ADDRESS_ZIP_CODE = 'ship.zipCode',
      *
      * data.params[]:
      * [0]: itemhash, string
      * [1]: profileId, number
-     * [2]: addressId (from profile shipping addresses), number
-     * [3]: bidDataId, string
+     * [2]: addressId (from profile shipping addresses), number | null
+     * [3]: bidDataId, string 
      * [4]: bidDataValue, string
      * [5]: bidDataId, string
      * [6]: bidDataValue, string
@@ -69,26 +92,56 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
         // profile that is doing the bidding
         const profileId = data.params.shift();
-        let profile: any = await this.profileService.findOne(profileId);
-        profile = profile.toJSON();
-
-        // todo: profile is never null, findOne is throwing an exception, which we should be catching
-        // if profile not found
-        if (profile === null) {
-            this.log.warn(`Profile with the id=${profileId} was not found!`);
-            throw new NotFoundException(profileId);
+        let profile: any;
+        try {
+            profile = await this.profileService.findOne(profileId);
+            profile = profile.toJSON();
+        } catch ( ex ) {
+            this.log.error(ex);
+            throw new MessageException('No correct profile id.');    
         }
 
-        // find address by id
+        // find address by id if not null
         const addressId = data.params.shift();
-        const address: any = _.find(profile.ShippingAddresses, (addr: any) => {
-            return addr.id === addressId;
-        });
-
-        // if address not found
-        if (address === null) {
-            this.log.warn(`address with the id=${addressId} was not found!`);
-            throw new NotFoundException(addressId);
+        let address: any;
+        if (!addressId) {
+            let curField = 0;
+            let bidDataId: string;
+            let bidDataValue: string;
+            const bidDataValues: string[] = [];
+            while (bidDataId = data.params.shift()) {
+                bidDataValue = data.params.shift();
+                if (bidDataId != this.bidDataIds[curField]) {
+                    continue;
+                } else {
+                    bidDataValues.push(bidDataValue);
+                    ++curField;
+                }
+            }
+            if (bidDataValues.length < this.bidDataIds.length) {
+                throw new MessageException('Incorrect address data in bidData.');
+            }
+            address = this.addressService.create(new AddressCreateRequest({
+                profile_id: profile.id,
+                firstName: bidDataValues[0],
+                lastName: bidDataValues[1],
+                addressLine1: bidDataValues[2],
+                addressLine2: bidDataValues[3],
+                city: bidDataValues[4],
+                state: bidDataValues[5],
+                country: bidDataValues[6],
+                zipCode: bidDataValues[7],
+                type: AddressType.SHIPPING_OWN
+            }));    
+        } else {
+            address = _.find(profile.ShippingAddresses, (addr: any) => {
+                return addr.id === addressId;
+            });
+            // if address not found
+            if (address === null) {
+                this.log.warn(`address with the id=${addressId} was not found!`);
+                throw new NotFoundException(addressId);
+            }
         }
 
         return this.bidActionService.send(listingItem, profile, address, data.params);
