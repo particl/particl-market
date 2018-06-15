@@ -20,6 +20,17 @@ import { MessageException } from '../../exceptions/MessageException';
 
 export class BidSendCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
+    public bidDataIds: string[] = [
+        'SHIPPING_ADDRESS_FIRST_NAME',
+        'SHIPPING_ADDRESS_LAST_NAME',
+        'SHIPPING_ADDRESS_ADDRESS_LINE1',
+        'SHIPPING_ADDRESS_ADDRESS_LINE2',
+        'SHIPPING_ADDRESS_CITY',
+        'SHIPPING_ADDRESS_STATE',
+        'SHIPPING_ADDRESS_COUNTRY',
+        'SHIPPING_ADDRESS_ZIP_CODE'
+    ];
+
     public log: LoggerType;
 
     constructor(
@@ -33,20 +44,9 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         this.log = new Logger(__filename);
     }
 
-    public bidDataIds: string[] = [
-        'SHIPPING_ADDRESS_FIRST_NAME',
-        'SHIPPING_ADDRESS_LAST_NAME',
-        'SHIPPING_ADDRESS_ADDRESS_LINE1',
-        'SHIPPING_ADDRESS_ADDRESS_LINE2',
-        'SHIPPING_ADDRESS_CITY',
-        'SHIPPING_ADDRESS_STATE',
-        'SHIPPING_ADDRESS_COUNTRY',
-        'SHIPPING_ADDRESS_ZIP_CODE'
-    ];
-
     /**
      * Posts a Bid to the network
-     * If addressId is null then one of bidDataId must be equal to addressId 
+     * If addressId is null then one of bidDataId must be equal to addressId
      * and its bidDataId = bidDataValue should have following format:
      * SHIPPING_ADDRESS_FIRST_NAME = 'ship.firstName',
      * SHIPPING_ADDRESS_LAST_NAME = 'ship.lastName',
@@ -60,8 +60,8 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
      * data.params[]:
      * [0]: itemhash, string
      * [1]: profileId, number
-     * [2]: addressId (from profile shipping addresses), number | null
-     * [3]: bidDataId, string 
+     * [2]: addressId (from profile shipping addresses), number || boolean
+     * [3]: bidDataId, string
      * [4]: bidDataValue, string
      * [5]: bidDataId, string
      * [6]: bidDataValue, string
@@ -81,7 +81,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             throw new MessageException('Invalid hash.');
         }
 
-        if (typeof data.params[1] !== 'number' && typeof data.params[2] !== 'number') {
+        if (typeof data.params[1] !== 'number' || (typeof data.params[2] !== 'number' && typeof data.params[2] !== 'boolean')) {
             throw new MessageException('Invalid profileId or addressId.');
         }
 
@@ -98,7 +98,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             profile = profile.toJSON();
         } catch ( ex ) {
             this.log.error(ex);
-            throw new MessageException('No correct profile id.');    
+            throw new MessageException('No correct profile id.');
         }
 
         // find address by id if not null
@@ -109,9 +109,10 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             let bidDataId: string;
             let bidDataValue: string;
             const bidDataValues: string[] = [];
-            while (bidDataId = data.params.shift()) {
+            while (data.params.length) {
+                bidDataId = data.params.shift();
                 bidDataValue = data.params.shift();
-                if (bidDataId != this.bidDataIds[curField]) {
+                if (bidDataId !== this.bidDataIds[curField]) {
                     continue;
                 } else {
                     bidDataValues.push(bidDataValue);
@@ -132,7 +133,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
                 country: bidDataValues[6],
                 zipCode: bidDataValues[7],
                 type: AddressType.SHIPPING_OWN
-            }));    
+            }));
         } else {
             address = _.find(profile.ShippingAddresses, (addr: any) => {
                 return addr.id === addressId;

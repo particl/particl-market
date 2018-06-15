@@ -131,7 +131,7 @@ describe('BidSendCommand', () => {
             sendCommand,
             listingItem.hash,
             defaultProfile.id,
-            null,
+            false,
             'SHIPPING_ADDRESS_FIRST_NAME',
             'Johnny',
             'SHIPPING_ADDRESS_LAST_NAME',
@@ -171,7 +171,7 @@ describe('BidSendCommand', () => {
             sendCommand,
             listingItem.hash,
             defaultProfile.id,
-            null,
+            false,
             'SHIPPING_ADDRESS_FIRST_NAME',
             'Johnny',
             'SHIPPING_ADDRESS_LAST_NAME',
@@ -198,7 +198,7 @@ describe('BidSendCommand', () => {
 
 
 
-    test('Should throw exception for null profile', async () => {
+    test('Should throw exception for incorrect profile', async () => {
 
         log.debug('listingItem.hash: ', listingItem.hash);
         // log.debug('createdListingItems[0].ActionMessages: ', JSON.stringify(createdListingItems[0].ActionMessages, null, 2));
@@ -207,7 +207,7 @@ describe('BidSendCommand', () => {
         const bidSendCommandParams = [
             sendCommand,
             listingItem.hash,
-            null,
+            7,
             defaultProfile.ShippingAddresses[0].id,
             'colour',
             'black',
@@ -220,7 +220,7 @@ describe('BidSendCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('No correct profile id');
+        expect(res.error.error.message).toBe('No correct profile id.');
     });
 
     test('Should find Bid after posting', async () => {
