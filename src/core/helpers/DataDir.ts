@@ -71,9 +71,8 @@ export class DataDir {
     }
 
     public static getDatabaseFile(): string {
-        const dbPath = path.join(this.getDatabasePath(), !Environment.isTest() ? 'marketplace.db' : 'marketplace-test.db');
-        console.log('getDatabaseFile(), path:', dbPath);
-        return dbPath;
+        const dbPath = (Environment.isAlpha() || Environment.isProduction()) ? this.getDatabasePath() : './data/database/';
+        return path.join(dbPath, !Environment.isTest() ? 'marketplace.db' : 'marketplace-test.db');
     }
 
     public static getLogFile(): string {
