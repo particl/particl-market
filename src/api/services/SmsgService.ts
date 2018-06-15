@@ -78,18 +78,9 @@ export class SmsgService {
                           paidMessage: boolean = true,
                           daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)): Promise<SmsgSendResponse> {
 
-        // TODO: REMOVE!
-        // if (Environment.isDevelopment() || Environment.isTest()) {
-        //    paidMessage = false;
-        // }
-
         this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
-        // this.log.debug('smsgSend, message: ' + JSON.stringify(message, null, 2));
-        // const messageStr = JSON.stringify(message);
-        // this.log.debug('smsgSend, messageStr: ' + JSON.stringify(message));
         const params: any[] = [profileAddress, marketAddress, JSON.stringify(message), paidMessage, daysRetention];
         const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params);
-
         this.log.debug('smsgSend, response: ' + JSON.stringify(response, null, 2));
         return response;
     }

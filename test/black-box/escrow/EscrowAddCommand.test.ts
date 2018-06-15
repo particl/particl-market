@@ -73,6 +73,6 @@ describe('EscrowAddCommand', () => {
         // create escrow
         const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
         addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
+        addDataRes.expectStatusCode(400);
     });
 });

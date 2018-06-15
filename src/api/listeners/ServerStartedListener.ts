@@ -22,8 +22,6 @@ export class ServerStartedListener implements interfaces.Listener {
     private timeout: any;
     private interval = 1000;
 
-    // TODO: this class needs to be refactored
-
     constructor(
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
@@ -84,11 +82,6 @@ export class ServerStartedListener implements interfaces.Listener {
 
                 // seed the default Profile
                 await this.defaultProfileService.seedDefaultProfile();
-
-                // relock the locked outputs
-                const lockedOutputsModel = await this.lockedOutputService.findAll();
-                const lockedOutputs = lockedOutputsModel.toJSON();
-                const result = await this.lockedOutputService.lockOutputs(lockedOutputs);
 
                 // start message polling
                 this.messageProcessor.schedulePoll();

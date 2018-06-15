@@ -114,6 +114,10 @@ describe('BidSendCommand', () => {
         // send bid
         const res: any = await rpc(bidCommand, bidSendCommandParams);
         res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('No correct profile id.');
+        res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
@@ -132,26 +136,30 @@ describe('BidSendCommand', () => {
             listingItem.hash,
             defaultProfile.id,
             false,
-            'SHIPPING_ADDRESS_FIRST_NAME',
+            'ship.firstName',
             'Johnny',
-            'SHIPPING_ADDRESS_LAST_NAME',
+            'ship.lastName',
             'Depp',
-            'SHIPPING_ADDRESS_ADDRESS_LINE1',
+            'ship.addressLine1',
             '123 6th St',
-            'SHIPPING_ADDRESS_ADDRESS_LINE2',
+            'ship.addressLine2',
             'Melbourne, FL 32904',
-            'SHIPPING_ADDRESS_CITY',
+            'ship.city',
             'Melbourne',
-            'SHIPPING_ADDRESS_STATE',
+            'ship.state',
             'Mel State',
-            'SHIPPING_ADDRESS_COUNTRY',
+            'ship.country',
             'Finland',
-            'SHIPPING_ADDRESS_ZIP_CODE',
+            'ship.zipCode',
             '85001'
         ];
 
         // send bid
         const res: any = await rpc(bidCommand, bidSendCommandParams);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('No correct profile id.');
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -172,19 +180,19 @@ describe('BidSendCommand', () => {
             listingItem.hash,
             defaultProfile.id,
             false,
-            'SHIPPING_ADDRESS_FIRST_NAME',
+            'ship.firstName',
             'Johnny',
-            'SHIPPING_ADDRESS_LAST_NAME',
+            'ship.lastName',
             'Depp',
-            'SHIPPING_ADDRESS_ADDRESS_LINE2',
+            'ship.addressLine2',
             'Melbourne, FL 32904',
-            'SHIPPING_ADDRESS_CITY',
+            'ship.city',
             'Melbourne',
-            'SHIPPING_ADDRESS_STATE',
+            'ship.state',
             'Mel State',
-            'SHIPPING_ADDRESS_COUNTRY',
+            'ship.country',
             'Finland',
-            'SHIPPING_ADDRESS_ZIP_CODE',
+            'ship.zipCode',
             '85001'
         ];
 
@@ -193,7 +201,7 @@ describe('BidSendCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Incorrect address data in bidData.');
+        expect(res.error.error.message).toBe('Missing required param: ship.addressLine1');
     });
 
 

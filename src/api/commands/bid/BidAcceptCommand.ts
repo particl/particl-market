@@ -38,7 +38,6 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
         const itemHash = data.params[0];
         const bidId = data.params[1];
 
@@ -46,7 +45,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
         const listingItemModel = await this.listingItemService.findOneByHash(itemHash);
         const listingItem = listingItemModel.toJSON();
 
-        this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
+        // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
         // make sure we have a ListingItemTemplate, so we know it's our item
         if (_.isEmpty(listingItem.ListingItemTemplate)) {
