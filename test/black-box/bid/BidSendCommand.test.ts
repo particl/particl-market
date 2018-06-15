@@ -114,10 +114,6 @@ describe('BidSendCommand', () => {
         // send bid
         const res: any = await rpc(bidCommand, bidSendCommandParams);
         res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('No correct profile id.');
-        res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
@@ -156,10 +152,6 @@ describe('BidSendCommand', () => {
 
         // send bid
         const res: any = await rpc(bidCommand, bidSendCommandParams);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('No correct profile id.');
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
