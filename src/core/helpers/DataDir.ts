@@ -33,6 +33,12 @@ export class DataDir {
             return this.datadir;
         }
 
+        // in dev/test environment
+        if (!Environment.isAlpha() && !Environment.isProduction()) {
+            this.datadir = './data/';
+            return this.datadir;
+        }
+
         const homeDir: string = os.homedir ? os.homedir() : process.env['HOME'];
 
         let dir = '';
@@ -71,8 +77,7 @@ export class DataDir {
     }
 
     public static getDatabaseFile(): string {
-        const dbPath = (Environment.isAlpha() || Environment.isProduction()) ? this.getDatabasePath() : './data/database/';
-        return path.join(dbPath, !Environment.isTest() ? 'marketplace.db' : 'marketplace-test.db');
+        return path.join(this.getDatabasePath(), !Environment.isTest() ? 'marketplace.db' : 'marketplace-test.db');
     }
 
     public static getLogFile(): string {
