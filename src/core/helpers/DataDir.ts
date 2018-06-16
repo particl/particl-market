@@ -84,12 +84,14 @@ export class DataDir {
             // console.log('found:', dir);
             return true;
         } catch (err) {
-            console.error('Could not find path:', dir);
+            console.error('DataDir: Could not find path:', dir);
+            console.error(err);
         }
         return false;
     }
 
     public static async initialize(): Promise<boolean> {
+        console.log("DataDir: initializing folder structure..");
         const datadir = this.getDataDirPath();
         const database = this.getDatabasePath();
         const uploads = this.getUploadsPath();
@@ -116,6 +118,7 @@ export class DataDir {
             fs.mkdirSync(uploads);
         }
 
+        console.log("DataDir: should've created all folder, checking..");
         // do a final check, doesn't hurt.
         return this.check();
     }
@@ -155,10 +158,10 @@ export class DataDir {
                 dir = path.dirname(dir);
                 const try2 = path.join(dir, '.env');
                 if (this.checkIfExists(try2)) {
-                    console.log('found the local .env', try2);
+                    console.log('DataDir: found the local .env', try2);
                     dotenv = try2;
                 } else {
-                    console.error('src .env not found');
+                    console.error('DataDir: src .env not found');
                     reject('src .env not found');
                 }
             }
