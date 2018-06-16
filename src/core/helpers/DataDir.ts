@@ -21,7 +21,7 @@ export class DataDir {
 
     public static set(dir?: string): void {
         if (dir) {
-            this.datadir = dir;
+            this.datadir = path.resolve(dir);
         }
     }
 
