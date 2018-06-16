@@ -79,8 +79,8 @@ export class App {
         this.log.info('Configuring app...');
 
         // Initialize the data directory
+        await DataDir.initialize();
         if (process.env.INIT) {
-            await DataDir.initialize();
             await DataDir.createDefaultEnvFile();
         }
 
