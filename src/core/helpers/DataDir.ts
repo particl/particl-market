@@ -91,7 +91,7 @@ export class DataDir {
     }
 
     public static async initialize(): Promise<boolean> {
-        console.log("DataDir: initializing folder structure..");
+        console.log('DataDir: initializing folder structure..');
         const datadir = this.getDataDirPath();
         const database = this.getDatabasePath();
         const uploads = this.getUploadsPath();
@@ -118,7 +118,7 @@ export class DataDir {
             fs.mkdirSync(uploads);
         }
 
-        console.log("DataDir: should've created all folder, checking..");
+        console.log('DataDir: shouldve created all folder, checking..');
         // do a final check, doesn't hurt.
         return this.check();
     }
