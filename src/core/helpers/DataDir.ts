@@ -80,7 +80,7 @@ export class DataDir {
 
     public static checkIfExists(dir: string): boolean {
         try {
-            fs.accessSync(dir, fs.constants.R_OK);
+            fs.accessSync(dir, (fs.constants || fs).R_OK);
             // console.log('found:', dir);
             return true;
         } catch (err) {
