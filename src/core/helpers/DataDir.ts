@@ -121,8 +121,11 @@ export class DataDir {
         }
 
         console.log('DataDir: shouldve created all folder, checking..');
+        
         // do a final check, doesn't hurt.
-        return this.check();
+        const ok = this.check();
+        console.log('DataDir: is initialized: ', ok);
+        return ok;
     }
 
     public static check(): boolean {
