@@ -78,14 +78,16 @@ export class DataDir {
         return path.join(this.getDataDirPath(), 'marketplace.log');
     }
 
-    public static checkIfExists(dir: string): boolean {
+    public static checkIfExists(dir: string, expectFailure?: boolean): boolean {
         try {
             fs.accessSync(dir, (fs.constants || fs).R_OK);
             // console.log('found:', dir);
             return true;
         } catch (err) {
-            console.error('DataDir: Could not find path:', dir);
-            console.error(err);
+            if(!expectFailure) {
+                console.error('DataDir: Could not find path:', dir);
+                console.error(err);
+            }
         }
         return false;
     }
@@ -101,20 +103,20 @@ export class DataDir {
         // TODO: might not be the best check
         if (datadir.endsWith('testnet') || datadir.endsWith('tesnet/')) {
             const dir = path.dirname(datadir); // pop the 'testnet' folder name
-            if (!this.checkIfExists(dir)) {
+            if (!this.checkIfExists(dir, true)) {
                 fs.mkdirSync(dir);
             }
         }
 
-        if (!this.checkIfExists(datadir)) {
+        if (!this.checkIfExists(datadir, true)) {
             fs.mkdirSync(datadir);
         }
 
-        if (!this.checkIfExists(database)) {
+        if (!this.checkIfExists(database, true)) {
             fs.mkdirSync(database);
         }
 
-        if (!this.checkIfExists(uploads)) {
+        if (!this.checkIfExists(uploads, true)) {
             fs.mkdirSync(uploads);
         }
 
