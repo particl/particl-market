@@ -84,7 +84,7 @@ export class DataDir {
             // console.log('found:', dir);
             return true;
         } catch (err) {
-            if(!expectFailure) {
+            if (!expectFailure) {
                 console.error('DataDir: Could not find path:', dir);
                 console.error(err);
             }
