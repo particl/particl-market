@@ -5,11 +5,13 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
+import { AddressCreateRequest } from '../../requests/AddressCreateRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
-import {BidActionService, IdValuePair} from '../../services/BidActionService';
+import { AddressType } from '../../enums/AddressType';
+import { BidActionService, IdValuePair } from '../../services/BidActionService';
 import { AddressService } from '../../services/AddressService';
 import { ProfileService } from '../../services/ProfileService';
 import { NotFoundException } from '../../exceptions/NotFoundException';
@@ -31,6 +33,17 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         BidDataValue.SHIPPING_ADDRESS_COUNTRY.toString()
     ];
 
+    private PARAMS_ADDRESS_KEYS: string[] = [
+        BidDataValue.SHIPPING_ADDRESS_FIRST_NAME.toString(),
+        BidDataValue.SHIPPING_ADDRESS_LAST_NAME.toString(),
+        BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE1.toString(),
+        BidDataValue.SHIPPING_ADDRESS_ADDRESS_LINE2.toString(),
+        BidDataValue.SHIPPING_ADDRESS_CITY.toString(),
+        BidDataValue.SHIPPING_ADDRESS_STATE.toString(),
+        BidDataValue.SHIPPING_ADDRESS_ZIP_CODE.toString(),
+        BidDataValue.SHIPPING_ADDRESS_COUNTRY.toString()
+    ];
+
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
@@ -44,12 +57,22 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
     /**
      * Posts a Bid to the network
+     * If addressId is null then one of bidDataId must be equal to addressId
      *
      * data.params[]:
      * [0]: itemhash, string
      * [1]: profileId, number
      * [2]: addressId (from profile shipping addresses), number|false
-     *                      if false, the address must be passed as bidData id/value pairs
+     *                         if false, the address must be passed as bidData id/value pairs
+     *                         in following format:
+     *                         'ship.firstName',
+     *                         'ship.lastName',
+     *                         'ship.addressLine1',
+     *                         'ship.addressLine2', (not required)
+     *                         'ship.city',
+     *                         'ship.state',
+     *                         'ship.country'
+     *                         'ship.zipCode',
      * [3]: bidDataId, string
      * [4]: bidDataValue, string
      * [5]: bidDataId, string
@@ -63,7 +86,6 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
         this.validateParams(data.params);
-
         // listingitem we are bidding for
         const listingItemHash = data.params.shift();
         const listingItemModel = await this.listingItemService.findOneByHash(listingItemHash);
@@ -71,12 +93,17 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
         // profile that is doing the bidding
         const profileId = data.params.shift();
-        let profile: any = await this.profileService.findOne(profileId);
-        profile = profile.toJSON();
+        let profile: any;
+        try {
+            profile = await this.profileService.findOne(profileId);
+            profile = profile.toJSON();
+        } catch ( ex ) {
+            this.log.error(ex);
+            throw new MessageException('No correct profile id.');
+        }
 
-        // find address by id
         const addressId = data.params.shift();
-        const additionalParams: IdValuePair[] = this.bidActionService.getIdValuePairsFromArray(data.params);
+        const additionalParams: IdValuePair[] = [];
 
         if (typeof addressId === 'number') {
             const address = _.find(profile.ShippingAddresses, (addr: any) => {
@@ -96,6 +123,17 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
             } else {
                 this.log.warn(`address with the id=${addressId} was not found!`);
                 throw new NotFoundException(addressId);
+            }
+        } else {
+            // add all first entries of PARAMS_ADDRESS_KEYS and their values if values not PARAMS_ADDRESS_KEYS themselves
+            for (const paramsAddressKey of this.PARAMS_ADDRESS_KEYS) {
+                for (let j = 0; j < data.params.length - 1; ++j) {
+                    if (paramsAddressKey === data.params[j]) {
+                        additionalParams.push({id:  paramsAddressKey, value:
+                        !_.includes(this.PARAMS_ADDRESS_KEYS, data.params[j + 1]) ? data.params[j + 1] : ''});
+                        break;
+                    }
+                }
             }
         }
 
@@ -141,7 +179,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         if (typeof params[2] === 'boolean' && params[2] === false) {
             // make sure that required keys are there
             for (const addressKey of this.REQUIRED_ADDRESS_KEYS) {
-                if (!_.includes(params, addressKey) ) {
+                if (!_.includes(params, addressKey.toString()) ) {
                     throw new MessageException('Missing required param: ' + addressKey);
                 }
             }
