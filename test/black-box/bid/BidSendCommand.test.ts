@@ -121,6 +121,108 @@ describe('BidSendCommand', () => {
         expect(result.result).toBe('Sent.');
     });
 
+    test('Should create bid with address from bidData without addressId', async () => {
+
+        log.debug('listingItem.hash: ', listingItem.hash);
+        // log.debug('createdListingItems[0].ActionMessages: ', JSON.stringify(createdListingItems[0].ActionMessages, null, 2));
+        log.debug('profile.shippingAddress:', JSON.stringify(defaultProfile.ShippingAddresses[0], null, 2));
+
+        const bidSendCommandParams = [
+            sendCommand,
+            listingItem.hash,
+            defaultProfile.id,
+            false,
+            'ship.firstName',
+            'Johnny',
+            'ship.lastName',
+            'Depp',
+            'ship.addressLine1',
+            '123 6th St',
+            'ship.addressLine2',
+            'Melbourne, FL 32904',
+            'ship.city',
+            'Melbourne',
+            'ship.state',
+            'Mel State',
+            'ship.country',
+            'Finland',
+            'ship.zipCode',
+            '85001'
+        ];
+
+        // send bid
+        const res: any = await rpc(bidCommand, bidSendCommandParams);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+
+        log.debug('result', result);
+        expect(result.result).toBe('Sent.');
+    });
+
+
+    test('Should not create bid with address from bidData without addressId', async () => {
+
+        log.debug('listingItem.hash: ', listingItem.hash);
+        // log.debug('createdListingItems[0].ActionMessages: ', JSON.stringify(createdListingItems[0].ActionMessages, null, 2));
+        log.debug('profile.shippingAddress:', JSON.stringify(defaultProfile.ShippingAddresses[0], null, 2));
+
+        const bidSendCommandParams = [
+            sendCommand,
+            listingItem.hash,
+            defaultProfile.id,
+            false,
+            'ship.firstName',
+            'Johnny',
+            'ship.lastName',
+            'Depp',
+            'ship.addressLine2',
+            'Melbourne, FL 32904',
+            'ship.city',
+            'Melbourne',
+            'ship.state',
+            'Mel State',
+            'ship.country',
+            'Finland',
+            'ship.zipCode',
+            '85001'
+        ];
+
+        // send bid
+        const res: any = await rpc(bidCommand, bidSendCommandParams);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Missing required param: ship.addressLine1');
+    });
+
+
+
+    test('Should throw exception for incorrect profile', async () => {
+
+        log.debug('listingItem.hash: ', listingItem.hash);
+        // log.debug('createdListingItems[0].ActionMessages: ', JSON.stringify(createdListingItems[0].ActionMessages, null, 2));
+        log.debug('profile.shippingAddress:', JSON.stringify(defaultProfile.ShippingAddresses[0], null, 2));
+
+        const bidSendCommandParams = [
+            sendCommand,
+            listingItem.hash,
+            7,
+            defaultProfile.ShippingAddresses[0].id,
+            'colour',
+            'black',
+            'size',
+            'xl'
+        ];
+
+        // send bid
+        const res: any = await rpc(bidCommand, bidSendCommandParams);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('No correct profile id.');
+    });
+
     test('Should find Bid after posting', async () => {
 
         log.debug('createdListingItems[0].hash: ', listingItem.hash);
