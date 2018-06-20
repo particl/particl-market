@@ -3,6 +3,7 @@ import { EnvConfig } from './env/EnvConfig';
 import { ProductionEnvConfig } from './env/ProductionEnvConfig';
 import { DevelopmentEnvConfig } from './env/DevelopmentEnvConfig';
 import { TestEnvConfig } from './env/TestEnvConfig';
+import { AlphaEnvConfig } from './env/AlphaEnvConfig';
 
 let config;
 
@@ -15,7 +16,7 @@ export const envConfig = (): EnvConfig => {
     if (Environment.isProduction()) {
         config = new ProductionEnvConfig();
     } else if (Environment.isAlpha()) {
-        config = new EnvConfig();
+        config = new AlphaEnvConfig();
     } else if (Environment.isDevelopment()) {
         config = new DevelopmentEnvConfig();
     } else if (Environment.isTest()) {

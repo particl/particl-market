@@ -55,7 +55,6 @@ export class DataDir {
         // return path to datadir (mainnet vs testnet)
         // and set the main datadir variable.
         const dataDir = path.join(dir, (Environment.isTestnet() ? 'testnet' : ''));
-        this.datadir = dataDir;
         return dataDir;
     }
 

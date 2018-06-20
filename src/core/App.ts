@@ -15,6 +15,7 @@ import { EnvConfig } from '../config/env/EnvConfig';
 import { ProductionEnvConfig } from '../config/env/ProductionEnvConfig';
 import { DataDir } from './helpers/DataDir';
 import * as databaseMigrate from '../database/migrate';
+import {Environment} from './helpers/Environment';
 
 
 export interface Configurable {
@@ -77,7 +78,7 @@ export class App {
     public async bootstrap(): Promise<any> {
         this.log.info('Configuring app...');
 
-        if (process.env.INIT) {
+        if (Environment.isTruthy(process.env.INIT)) {
             await DataDir.createDefaultEnvFile()
                 .catch(reason => {
                     this.log.error('Error: ', JSON.stringify(reason, null, 2));
@@ -87,12 +88,15 @@ export class App {
         }
 
         // Perform database migrations
-        if (process.env.MIGRATE) {
+        // TODO: migrate fails when db is created from the desktop and when run from the marketplace project and vice versa
+        if (Environment.isTruthy(process.env.MIGRATE)) {
             const result = await databaseMigrate.migrate();
-            this.log.error('migrate result: ', JSON.stringify(result, null, 2));
+            this.log.error('migration result: ', JSON.stringify(result, null, 2));
+        } else {
+            this.log.debug('Skipping database migration.');
         }
 
-        if (process.env.EXPRESS_ENABLED) {
+        if (Environment.isTruthy(process.env.EXPRESS_ENABLED)) {
             // Add express monitor app
             this.bootstrapApp.setupMonitor(this.express);
             // Configure the app config for all the middlewares
@@ -106,7 +110,7 @@ export class App {
         this.log.info('Binding IoC modules...');
         await this.ioc.bindModules();
 
-        if (process.env.EXPRESS_ENABLED) {
+        if (Environment.isTruthy(process.env.EXPRESS_ENABLED)) {
             this.log.info('Setting up IoC...');
             this.inversifyExpressServer = this.bootstrapApp.setupInversifyExpressServer(this.express, this.ioc);
             this.express = this.bootstrapApp.bindInversifyExpressServer(this.express, this.inversifyExpressServer);
@@ -117,7 +121,7 @@ export class App {
             this.server.use(this.express);
         }
 
-        if (process.env.SOCKETIO_ENABLED) {
+        if (Environment.isTruthy(process.env.SOCKETIO_ENABLED)) {
             // create our socketioserver
             this.socketIoServer = this.bootstrapApp.createSocketIoServer(this.server, this.ioc);
         }
