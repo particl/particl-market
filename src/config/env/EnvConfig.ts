@@ -19,6 +19,8 @@ export class EnvConfig {
         MAINNET_PORT: 51738,
         TESTNET_PORT: 51935,
         TESTNET: true,
+        INIT: true,
+        MIGRATE: true,
         JASMINE_TIMEOUT: 100000,
         DEFAULT_MARKETPLACE_NAME: 'DEFAULT',
         DEFAULT_MARKETPLACE_PRIVATE_KEY: '2Zc2pc9jSx2qF5tpu25DCZEr1Dwj8JBoVL5WP4H1drJsX9sP4ek',
@@ -61,6 +63,7 @@ export class EnvConfig {
     constructor(dataDirLocation?: string, envFileName?: string) {
 
         if (dataDirLocation) {
+            console.log('EnvConfig: setting DataDir:', dataDirLocation);
             DataDir.set(dataDirLocation);
         }
 
@@ -70,10 +73,11 @@ export class EnvConfig {
             this.envFile = path.join(DataDir.getDataDirPath(), this.envFile);
         }
 
-        this.defaultEnv.LOG_PATH = DataDir.getLogFile();
+
+        // this.defaultEnv.LOG_PATH = DataDir.getLogFile();
 
         console.log('EnvConfig: env file path:', this.envFile);
-        console.log('EnvConfig: log file:', this.defaultEnv.LOG_PATH);
+        // console.log('EnvConfig: log file:', this.defaultEnv.LOG_PATH);
 
         // loads the .env file into the 'process.env' variable.
         dotenv.config({ path: this.envFile });

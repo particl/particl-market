@@ -1,9 +1,8 @@
 import { Environment } from '../../core/helpers/Environment';
-
 import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
-
+import { envConfig } from '../../config/EnvironmentConfig';
 
 /**
  * core.DataDir
@@ -27,8 +26,12 @@ export class DataDir {
 
     public static getDataDirPath(): string {
 
-        // if custom configured or previously loaded, return it.
-        // else compose it.
+        // make sure environment is configured, will set the datadir if development
+        if (!this.datadir) {
+            envConfig();
+        }
+
+        // if custom configured or previously loaded, return it. else compose it.
         if (this.datadir) {
             return this.datadir;
         }
@@ -71,7 +74,8 @@ export class DataDir {
     }
 
     public static getDatabaseFile(): string {
-        return path.join(this.getDatabasePath(), 'marketplace.db');
+        const databaseFile = path.join(this.getDatabasePath(), 'marketplace.db');
+        return databaseFile;
     }
 
     public static getLogFile(): string {
@@ -98,6 +102,10 @@ export class DataDir {
         const database = this.getDatabasePath();
         const uploads = this.getUploadsPath();
 
+        console.log('initialize, datadir: ', datadir);
+        console.log('initialize, database: ', database);
+        console.log('initialize, uploads: ', uploads);
+
         // may also be the particl-market/testnet
         // so check if upper directory exists.
         // TODO: might not be the best check
@@ -120,7 +128,7 @@ export class DataDir {
             fs.mkdirSync(uploads);
         }
 
-        console.log('DataDir: shouldve created all folder, checking..');
+        console.log('DataDir: shouldve created all folders, checking..');
 
         // do a final check, doesn't hurt.
         const ok = this.check();
@@ -196,4 +204,5 @@ export class DataDir {
     }
 
     private static datadir: string;
+
 }

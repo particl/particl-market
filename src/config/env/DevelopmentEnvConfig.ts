@@ -9,5 +9,4 @@ export class DevelopmentEnvConfig extends EnvConfig {
             '.env'
         );
     }
-
 }

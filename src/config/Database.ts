@@ -1,5 +1,3 @@
-import { DataDir } from '../core/helpers/DataDir';
-
 /**
  * config.Database
  * ------------------------------------
@@ -12,6 +10,7 @@ import { DataDir } from '../core/helpers/DataDir';
 
 import * as knex from 'knex';
 import * as bookshelf from 'bookshelf';
+import { DataDir } from '../core/helpers/DataDir';
 
 export const DatabaseConfig = {
     client: process.env.DB_CLIENT || 'sqlite3',
@@ -37,10 +36,12 @@ export const DatabaseConfig = {
     useNullAsDefault: true,
     // debug: true
     debug: false
-
 };
 
-export const Knex = (): knex => knex(DatabaseConfig);
+export const Knex = (): knex => {
+    console.log('knex config:', JSON.stringify(DatabaseConfig, null, 2));
+    return knex(DatabaseConfig);
+};
 
 export const Bookshelf: bookshelf = bookshelf(Knex() as any);
 Bookshelf.plugin(['bookshelf-camelcase']);

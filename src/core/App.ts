@@ -13,7 +13,6 @@ import { ServerStartedListener } from '../api/listeners/ServerStartedListener';
 import { SocketIoServer } from './SocketIoServer';
 import { EnvConfig } from '../config/env/EnvConfig';
 import { ProductionEnvConfig } from '../config/env/ProductionEnvConfig';
-import { Environment } from './helpers/Environment';
 import { DataDir } from './helpers/DataDir';
 import * as databaseMigrate from '../database/migrate';
 
@@ -79,14 +78,30 @@ export class App {
         this.log.info('Configuring app...');
 
         // Initialize the data directory
-        await DataDir.initialize();
+        await DataDir.initialize()
+            .catch(reason => {
+                this.log.error('Error: ', JSON.stringify(reason, null, 2));
+                // TODO: exit codes for different problems
+                return process.exit(1);
+            });
+
         if (process.env.INIT) {
-            await DataDir.createDefaultEnvFile();
+            await DataDir.createDefaultEnvFile()
+                .catch(reason => {
+                    this.log.error('Error: ', JSON.stringify(reason, null, 2));
+                    // TODO: exit codes for different problems
+                    return process.exit(1);
+                });
         }
 
         // Perform database migrations
         if (process.env.MIGRATE) {
-            await databaseMigrate.migrate();
+            await databaseMigrate.migrate()
+                .catch(reason => {
+                    this.log.error('Error: ', JSON.stringify(reason, null, 2));
+                    // TODO: exit codes for different problems
+                    return process.exit(1);
+                });
         }
 
         if (process.env.EXPRESS_ENABLED) {

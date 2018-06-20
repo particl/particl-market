@@ -18,7 +18,7 @@ exports.start = () => {
         ELECTRON_RUN_AS_NODE: true
     };
 
-    proc = spawn(process.execPath, [p], { env: environment});
+    proc = spawn(process.execPath, [p], { env: environment });
     return proc;
 };
 

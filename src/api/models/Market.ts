@@ -1,7 +1,4 @@
 import { Bookshelf } from '../../config/Database';
-import { Collection } from 'bookshelf';
-import { ListingItem } from './ListingItem';
-
 
 export class Market extends Bookshelf.Model<Market> {
 
