@@ -29,7 +29,7 @@ if (Environment.isProduction() || Environment.isAlpha()) {
 } else if (Environment.isDevelopment()) {
     envConfig = new DevelopmentEnvConfig();
 } else if (Environment.isTest()) {
-    envConfig = new TestEnvConfig(process.env.MP_DATA_FOLDER || './data', process.env.MP_DOTENV_FILE || '.env.test');
+    envConfig = new TestEnvConfig(process.env.MP_DATA_FOLDER || './data/tests', process.env.MP_DOTENV_FILE || '.env.test');
 } else if (Environment.isBlackBoxTest()) {
     envConfig = new TestEnvConfig(process.env.MP_DATA_FOLDER || './data', process.env.MP_DOTENV_FILE || '.env.blackbox');
 } else {

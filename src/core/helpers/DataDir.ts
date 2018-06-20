@@ -21,7 +21,7 @@ export class DataDir {
 
     public static set(dir?: string): void {
         if (dir) {
-            this.datadir = dir;
+            this.datadir = path.resolve(dir);
         }
     }
 
@@ -30,12 +30,6 @@ export class DataDir {
         // if custom configured or previously loaded, return it.
         // else compose it.
         if (this.datadir) {
-            return this.datadir;
-        }
-
-        // in dev/test environment
-        if (!Environment.isAlpha() && !Environment.isProduction()) {
-            this.datadir = './data/';
             return this.datadir;
         }
 
@@ -77,25 +71,29 @@ export class DataDir {
     }
 
     public static getDatabaseFile(): string {
-        return path.join(this.getDatabasePath(), !Environment.isTest() ? 'marketplace.db' : 'marketplace-test.db');
+        return path.join(this.getDatabasePath(), 'marketplace.db');
     }
 
     public static getLogFile(): string {
         return path.join(this.getDataDirPath(), 'marketplace.log');
     }
 
-    public static checkIfExists(dir: string): boolean {
+    public static checkIfExists(dir: string, expectFailure?: boolean): boolean {
         try {
-            fs.accessSync(dir, fs.constants.R_OK);
+            fs.accessSync(dir, (fs.constants || fs).R_OK);
             // console.log('found:', dir);
             return true;
         } catch (err) {
-            console.error('Could not find path:', dir);
+            if (!expectFailure) {
+                console.error('DataDir: Could not find path:', dir);
+                console.error(err);
+            }
         }
         return false;
     }
 
     public static async initialize(): Promise<boolean> {
+        console.log('DataDir: initializing folder structure..');
         const datadir = this.getDataDirPath();
         const database = this.getDatabasePath();
         const uploads = this.getUploadsPath();
@@ -105,25 +103,29 @@ export class DataDir {
         // TODO: might not be the best check
         if (datadir.endsWith('testnet') || datadir.endsWith('tesnet/')) {
             const dir = path.dirname(datadir); // pop the 'testnet' folder name
-            if (!this.checkIfExists(dir)) {
+            if (!this.checkIfExists(dir, true)) {
                 fs.mkdirSync(dir);
             }
         }
 
-        if (!this.checkIfExists(datadir)) {
+        if (!this.checkIfExists(datadir, true)) {
             fs.mkdirSync(datadir);
         }
 
-        if (!this.checkIfExists(database)) {
+        if (!this.checkIfExists(database, true)) {
             fs.mkdirSync(database);
         }
 
-        if (!this.checkIfExists(uploads)) {
+        if (!this.checkIfExists(uploads, true)) {
             fs.mkdirSync(uploads);
         }
 
+        console.log('DataDir: shouldve created all folder, checking..');
+
         // do a final check, doesn't hurt.
-        return this.check();
+        const ok = this.check();
+        console.log('DataDir: is initialized: ', ok);
+        return ok;
     }
 
     public static check(): boolean {
@@ -161,10 +163,10 @@ export class DataDir {
                 dir = path.dirname(dir);
                 const try2 = path.join(dir, '.env');
                 if (this.checkIfExists(try2)) {
-                    console.log('found the local .env', try2);
+                    console.log('DataDir: found the local .env', try2);
                     dotenv = try2;
                 } else {
-                    console.error('src .env not found');
+                    console.error('DataDir: src .env not found');
                     reject('src .env not found');
                 }
             }
