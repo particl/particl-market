@@ -77,14 +77,6 @@ export class App {
     public async bootstrap(): Promise<any> {
         this.log.info('Configuring app...');
 
-        // Initialize the data directory
-        await DataDir.initialize()
-            .catch(reason => {
-                this.log.error('Error: ', JSON.stringify(reason, null, 2));
-                // TODO: exit codes for different problems
-                return process.exit(1);
-            });
-
         if (process.env.INIT) {
             await DataDir.createDefaultEnvFile()
                 .catch(reason => {
@@ -96,12 +88,8 @@ export class App {
 
         // Perform database migrations
         if (process.env.MIGRATE) {
-            await databaseMigrate.migrate()
-                .catch(reason => {
-                    this.log.error('Error: ', JSON.stringify(reason, null, 2));
-                    // TODO: exit codes for different problems
-                    return process.exit(1);
-                });
+            const result = await databaseMigrate.migrate();
+            this.log.error('migrate result: ', JSON.stringify(result, null, 2));
         }
 
         if (process.env.EXPRESS_ENABLED) {

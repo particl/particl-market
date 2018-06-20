@@ -3,6 +3,8 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import { envConfig } from '../../config/EnvironmentConfig';
+import {EnvConfig} from '../../config/env/EnvConfig';
+import {MessageException} from '../../api/exceptions/MessageException';
 
 /**
  * core.DataDir
@@ -18,23 +20,15 @@ import { envConfig } from '../../config/EnvironmentConfig';
  */
 export class DataDir {
 
-    public static set(dir?: string): void {
-        if (dir) {
-            this.datadir = path.resolve(dir);
+    public static getDataDirPath(): string {
+        if (!this.datadir) {
+            console.log('DataDir: not yet initialized.');
+            this.initialize(envConfig());
         }
+        return this.datadir;
     }
 
-    public static getDataDirPath(): string {
-
-        // make sure environment is configured, will set the datadir if development
-        if (!this.datadir) {
-            envConfig();
-        }
-
-        // if custom configured or previously loaded, return it. else compose it.
-        if (this.datadir) {
-            return this.datadir;
-        }
+    public static getDefaultDataDirPath(): string {
 
         const homeDir: string = os.homedir ? os.homedir() : process.env['HOME'];
 
@@ -96,28 +90,36 @@ export class DataDir {
         return false;
     }
 
-    public static async initialize(): Promise<boolean> {
+    public static initialize(env: EnvConfig): boolean {
         console.log('DataDir: initializing folder structure..');
-        const datadir = this.getDataDirPath();
+
+        // if env contains custom datadir, use that. else use default.
+        if (env && env.dataDir) {
+            this.datadir = env.dataDir;
+        } else {
+            this.datadir = this.getDefaultDataDirPath();
+            env.dataDir = this.datadir;
+        }
+
         const database = this.getDatabasePath();
         const uploads = this.getUploadsPath();
 
-        console.log('initialize, datadir: ', datadir);
+        console.log('initialize, datadir: ', this.datadir);
         console.log('initialize, database: ', database);
         console.log('initialize, uploads: ', uploads);
 
         // may also be the particl-market/testnet
         // so check if upper directory exists.
-        // TODO: might not be the best check
-        if (datadir.endsWith('testnet') || datadir.endsWith('tesnet/')) {
-            const dir = path.dirname(datadir); // pop the 'testnet' folder name
+        // TODO: what is this tesnet?!
+        if (this.datadir.endsWith('testnet') || this.datadir.endsWith('tesnet/')) {
+            const dir = path.dirname(this.datadir); // pop the 'testnet' folder name
             if (!this.checkIfExists(dir, true)) {
                 fs.mkdirSync(dir);
             }
         }
 
-        if (!this.checkIfExists(datadir, true)) {
-            fs.mkdirSync(datadir);
+        if (!this.checkIfExists(this.datadir, true)) {
+            fs.mkdirSync(this.datadir);
         }
 
         if (!this.checkIfExists(database, true)) {
@@ -128,11 +130,12 @@ export class DataDir {
             fs.mkdirSync(uploads);
         }
 
-        console.log('DataDir: shouldve created all folders, checking..');
+        console.log('DataDir: should have created all folders, checking..');
 
         // do a final check, doesn't hurt.
         const ok = this.check();
         console.log('DataDir: is initialized: ', ok);
+
         return ok;
     }
 

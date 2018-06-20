@@ -10,6 +10,7 @@
 
 import * as winston from 'winston';
 import { Environment } from '../../core/helpers/Environment';
+import { DataDir } from '../../core/helpers/DataDir';
 
 
 export class WinstonAdapter implements interfaces.LoggerAdapter {
@@ -31,7 +32,7 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
             logs.push(
                 new winston.transports.File({
                     level: process.env.LOG_LEVEL,
-                    filename: process.env.LOG_PATH,
+                    filename: process.env.LOG_PATH || DataDir.getLogFile(),
                     handleExceptions: Environment.isProduction(),
                     json: Environment.isProduction(),
                     maxsize: 52428800, // 50MB
@@ -39,7 +40,6 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
                     colorize: false
                 }));
         }
-
 
         this.logger = new winston.Logger({
             transports: logs,

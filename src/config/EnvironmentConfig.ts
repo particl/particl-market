@@ -12,8 +12,10 @@ export const envConfig = (): EnvConfig => {
         return config;
     }
 
-    if (Environment.isProduction() || Environment.isAlpha()) {
+    if (Environment.isProduction()) {
         config = new ProductionEnvConfig();
+    } else if (Environment.isAlpha()) {
+        config = new EnvConfig();
     } else if (Environment.isDevelopment()) {
         config = new DevelopmentEnvConfig();
     } else if (Environment.isTest()) {

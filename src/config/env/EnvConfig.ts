@@ -6,6 +6,7 @@ import { Environment, EnvironmentType } from '../../core/helpers/Environment';
 
 export class EnvConfig {
 
+    public dataDir: string;
     public envFile = '.env';
 
     private defaultEnv = {
@@ -63,21 +64,17 @@ export class EnvConfig {
     constructor(dataDirLocation?: string, envFileName?: string) {
 
         if (dataDirLocation) {
-            console.log('EnvConfig: setting DataDir:', dataDirLocation);
-            DataDir.set(dataDirLocation);
+            // console.log('EnvConfig: setting DataDir:', dataDirLocation);
+            // DataDir.set(dataDirLocation);
+            this.dataDir = dataDirLocation;
         }
 
-        if (envFileName && DataDir.checkIfExists(envFileName)) {
+        if (envFileName) {
             this.envFile = envFileName;
-        } else {
-            this.envFile = path.join(DataDir.getDataDirPath(), this.envFile);
         }
 
-
-        // this.defaultEnv.LOG_PATH = DataDir.getLogFile();
-
-        console.log('EnvConfig: env file path:', this.envFile);
-        // console.log('EnvConfig: log file:', this.defaultEnv.LOG_PATH);
+        console.log('EnvConfig: envFile:', this.envFile);
+        console.log('EnvConfig: dataDir:', this.dataDir);
 
         // loads the .env file into the 'process.env' variable.
         dotenv.config({ path: this.envFile });
