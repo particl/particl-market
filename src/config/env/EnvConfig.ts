@@ -74,7 +74,7 @@ export class EnvConfig {
         }
 
         console.log('EnvConfig: envFile:', this.envFile);
-        console.log('EnvConfig: dataDir:', this.dataDir);
+        console.log('EnvConfig: dataDir:', this.envFile);
 
         // loads the .env file into the 'process.env' variable.
         dotenv.config({ path: this.envFile });
