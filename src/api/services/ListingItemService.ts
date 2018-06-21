@@ -154,6 +154,9 @@ export class ListingItemService {
 
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_id = listingItem.Id;
+
+            this.log.debug('listingItemService.create, msgInfo: ', JSON.stringify(msgInfo, null, 2));
+
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
         }
 

@@ -38,15 +38,18 @@ coverage/
 test/testdata/test.json
 
 data/database/*
-data/particl1
-data/particl2
-data/app1
-data/app2
-data/app1_node_modules
-data/app2_node_modules
-data/gui1_node_modules
-data/gui2_node_modules
-data/uploads
+data/uploads/*
+data/tests/*
+data/particl1/*
+data/particl2/*
+data/app1/*
+data/app1_dist/*
+data/app2/*
+data/app2_dist/*
+data/app1_node_modules/*
+data/app2_node_modules/*
+data/gui1_node_modules/*
+data/gui2_node_modules/*
 
 *.paw
 
