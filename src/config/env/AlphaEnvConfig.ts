@@ -6,6 +6,6 @@ export class AlphaEnvConfig extends EnvConfig {
         super();
 
         process.env.SWAGGER_ENABLED = false;
-        process.env.MIGRATE = false; // TODO: skipped for now
+        // process.env.MIGRATE = false;
     }
 }
