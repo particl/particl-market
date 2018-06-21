@@ -139,30 +139,32 @@ export class ListingItemService {
         delete body.actionMessages;
 
         // If the request body was valid we will create the listingItem
-        const listingItem = await this.listingItemRepo.create(body);
+        const listingItemModel = await this.listingItemRepo.create(body);
+        const listingItem = listingItemModel.toJSON();
 
         // create related models
         if (!_.isEmpty(itemInformation)) {
-            itemInformation.listing_item_id = listingItem.Id;
+            itemInformation.listing_item_id = listingItem.id;
             await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
         }
 
         if (!_.isEmpty(paymentInformation)) {
-            paymentInformation.listing_item_id = listingItem.Id;
+            paymentInformation.listing_item_id = listingItem.id;
             await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
         }
 
         for (const msgInfo of messagingInformation) {
-            msgInfo.listing_item_id = listingItem.Id;
-
+            msgInfo.listing_item_id = listingItem.id;
             this.log.debug('listingItemService.create, msgInfo: ', JSON.stringify(msgInfo, null, 2));
-
-            await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
+            await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest)
+                .catch(reason => {
+                    this.log.error('Error:', JSON.stringify(reason, null, 2));
+                });
         }
 
         // create listingItemObjects
         for (const object of listingItemObjects) {
-            object.listing_item_id = listingItem.Id;
+            object.listing_item_id = listingItem.id;
             await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
         }
 
@@ -170,12 +172,12 @@ export class ListingItemService {
 
         // create actionMessages, only used to create testdata
         for (const actionMessage of actionMessages) {
-            actionMessage.listing_item_id = listingItem.Id;
+            actionMessage.listing_item_id = listingItem.id;
             await this.actionMessageService.create(actionMessage);
         }
 
         // finally find and return the created listingItem
-        const result = await this.findOne(listingItem.Id);
+        const result = await this.findOne(listingItem.id);
 
         this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
 

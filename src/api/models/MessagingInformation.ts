@@ -1,13 +1,11 @@
 import { Bookshelf } from '../../config/Database';
 
-
 export class MessagingInformation extends Bookshelf.Model<MessagingInformation> {
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<MessagingInformation> {
         if (withRelated) {
             return await MessagingInformation.where<MessagingInformation>({ id: value }).fetch({
-                withRelated: [
-                ]
+                withRelated: []
             });
         } else {
             return await MessagingInformation.where<MessagingInformation>({ id: value }).fetch();
