@@ -11,6 +11,7 @@ let proc: ChildProcess;
 exports.start = () => {
     const p = path.join(__dirname, 'app.js');
     const environment = {
+        APPDATA: process.env.APPDATA,
         NODE_ENV: 'alpha',
         TESTNET: true,
         INIT: true,
