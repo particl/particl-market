@@ -1,6 +1,6 @@
 {
   "name": "particl-marketplace",
-  "version": "0.0.35",
+  "version": "0.0.37",
   "description": "",
   "main": "dist/module.js",
   "scripts": {
@@ -63,7 +63,6 @@
     "dist/**/*"
   ],
   "dependencies": {
-    "babel-loader": "7.0",
     "basic-auth": "^2.0.0",
     "body-parser": "^1.17.2",
     "bookshelf": "^0.10.3",

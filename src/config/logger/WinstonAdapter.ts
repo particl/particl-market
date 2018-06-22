@@ -32,7 +32,7 @@ export class WinstonAdapter implements interfaces.LoggerAdapter {
             logs.push(
                 new winston.transports.File({
                     level: process.env.LOG_LEVEL,
-                    filename: process.env.LOG_PATH || DataDir.getLogFile(),
+                    filename: DataDir.getLogFile(),
                     handleExceptions: Environment.isProduction(),
                     json: Environment.isProduction(),
                     maxsize: 52428800, // 50MB

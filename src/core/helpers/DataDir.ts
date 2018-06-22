@@ -72,7 +72,7 @@ export class DataDir {
     }
 
     public static getLogFile(): string {
-        return path.join(this.getDataDirPath(), 'marketplace.log');
+        return path.join(this.getDataDirPath(), process.env.LOG_PATH || 'marketplace.log');
     }
 
     public static checkIfExists(dir: string, expectFailure?: boolean): boolean {
