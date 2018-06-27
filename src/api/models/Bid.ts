@@ -61,7 +61,7 @@ export class Bid extends Bookshelf.Model<Bid> {
                     }
 */
                 }
-            }).orderBy('bids.created_at', options.ordering);
+            }).orderBy('bids.updated_at', options.ordering);
 
         if (withRelated) {
             return await bidCollection.fetchAll({
