@@ -45,11 +45,16 @@ export const Targets = {
         PaymentInformation: 'PaymentInformation',
         PriceTicker: 'PriceTicker',
         Profile: 'Profile',
+        Proposal: 'Proposal',
+        ProposalOption: 'ProposalOption',
+        ProposalOptionResult: 'ProposalOptionResult',
+        ProposalResult: 'ProposalResult',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
         ShoppingCart: 'ShoppingCart',
         ShoppingCartItem: 'ShoppingCartItem',
-        User: 'User'
+        User: 'User',
+        Vote: 'Vote'
     },
     Repository:     {
         ActionMessageRepository: 'ActionMessageRepository',
@@ -87,11 +92,16 @@ export const Targets = {
         PaymentInformationRepository: 'PaymentInformationRepository',
         PriceTickerRepository: 'PriceTickerRepository',
         ProfileRepository: 'ProfileRepository',
+        ProposalOptionRepository: 'ProposalOptionRepository',
+        ProposalOptionResultRepository: 'ProposalOptionResultRepository',
+        ProposalRepository: 'ProposalRepository',
+        ProposalResultRepository: 'ProposalResultRepository',
         ShippingDestinationRepository: 'ShippingDestinationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
         ShoppingCartItemRepository: 'ShoppingCartItemRepository',
         ShoppingCartRepository: 'ShoppingCartRepository',
-        UserRepository: 'UserRepository'
+        UserRepository: 'UserRepository',
+        VoteRepository: 'VoteRepository'
     },
     Service:     {
         ActionMessageService: 'ActionMessageService',
@@ -138,13 +148,18 @@ export const Targets = {
         PaymentInformationService: 'PaymentInformationService',
         PriceTickerService: 'PriceTickerService',
         ProfileService: 'ProfileService',
+        ProposalOptionResultService: 'ProposalOptionResultService',
+        ProposalOptionService: 'ProposalOptionService',
+        ProposalResultService: 'ProposalResultService',
+        ProposalService: 'ProposalService',
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
         ShoppingCartItemService: 'ShoppingCartItemService',
         ShoppingCartService: 'ShoppingCartService',
         SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
-        UserService: 'UserService'
+        UserService: 'UserService',
+        VoteService: 'VoteService'
     },
     Command:     {
         address: {
@@ -242,7 +257,6 @@ export const Targets = {
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
         },
-        LockedOutputCommand: 'LockedOutputCommand',
         market: {
             MarketAddCommand: 'MarketAddCommand',
             MarketListCommand: 'MarketListCommand',
@@ -275,6 +289,12 @@ export const Targets = {
             ProfileRootCommand: 'ProfileRootCommand',
             ProfileUpdateCommand: 'ProfileUpdateCommand'
         },
+        proposal: {
+            ProposalGetCommand: 'ProposalGetCommand',
+            ProposalPostCommand: 'ProposalPostCommand',
+            ProposalRootCommand: 'ProposalRootCommand'
+        },
+        ProposalCommand: 'ProposalCommand',
         RpcCommandInterface: 'RpcCommandInterface',
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
@@ -296,7 +316,8 @@ export const Targets = {
             ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
-        }
+        },
+        VoteCommand: 'VoteCommand'
     },
     Factory:     {
         ActionMessageFactory: 'ActionMessageFactory',
