@@ -12,7 +12,7 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
 import { ProposalCreateRequest } from '../../requests/ProposalCreateRequest';
 
-export class ProposalProposalPostCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
+export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
 
     public log: LoggerType;
 

@@ -31,9 +31,9 @@ export class ProposalRootCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
-        throw new NotImplementedException();
+        // throw new NotImplementedException();
         // root commands:
-        // return await this.executeNext(data, rpcCommandFactory);
+        return await this.executeNext(data, rpcCommandFactory);
     }
 
     public help(): string {
