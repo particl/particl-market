@@ -101,6 +101,11 @@ import { PaymentInformationRootCommand } from '../commands/paymentinformation/Pa
 
 import { PriceTickerRootCommand } from '../commands/priceticker/PriceTickerRootCommand';
 
+import { ProposalGetCommand } from '../commands/proposal/ProposalGetCommand';
+import { ProposalPostCommand } from '../commands/proposal/ProposalPostCommand';
+import { ProposalListCommand } from '../commands/proposal/ProposalListCommand';
+import { ProposalRootCommand } from '../commands/proposal/ProposalRootCommand';
+
 import { ProfileAddCommand } from '../commands/profile/ProfileAddCommand';
 import { ProfileRemoveCommand } from '../commands/profile/ProfileRemoveCommand';
 import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
@@ -254,6 +259,11 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.priceticker.PriceTickerRootCommand) private priceTickerRootCommand: PriceTickerRootCommand,
         @inject(Types.Command) @named(Targets.Command.currencyprice.CurrencyPriceRootCommand) private currencyPriceRootCommand: CurrencyPriceRootCommand,
 
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalGetCommand) private proposalGetCommand: ProposalGetCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalPostCommand) private proposalPostCommand: ProposalPostCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalListCommand) private proposalListCommand: ProposalListCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalRootCommand) private proposalRootCommand: ProposalRootCommand,
+
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
 
@@ -379,6 +389,11 @@ export class RpcCommandFactory {
         this.commands.push(shoppingCartItemRootCommand);
 
         this.commands.push(priceTickerRootCommand);
+
+        this.commands.push(proposalGetCommand);
+        this.commands.push(proposalPostCommand);
+        this.commands.push(proposalListCommand);
+        this.commands.push(proposalRootCommand);
 
         this.commands.push(currencyPriceRootCommand);
 

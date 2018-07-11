@@ -291,10 +291,10 @@ export const Targets = {
         },
         proposal: {
             ProposalGetCommand: 'ProposalGetCommand',
+            ProposalListCommand: 'ProposalListCommand',
             ProposalPostCommand: 'ProposalPostCommand',
             ProposalRootCommand: 'ProposalRootCommand'
         },
-        ProposalCommand: 'ProposalCommand',
         RpcCommandInterface: 'RpcCommandInterface',
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
