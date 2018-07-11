@@ -14,9 +14,6 @@ export class ProposalCreateRequest extends RequestBody {
     public blockEnd: number;
 
     @IsNotEmpty()
-    public createdAt: Date;
-
-    @IsNotEmpty()
     public hash: string;
 
     @IsNotEmpty()

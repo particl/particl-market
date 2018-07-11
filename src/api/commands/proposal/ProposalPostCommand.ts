@@ -37,9 +37,16 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException('Expected <TODO> but recieved no params.');
         }
 
-        return this.proposalService.create({
-
-        } as ProposalCreateRequest);
+        const createRequest: ProposalCreateRequest = {
+            submitter: 'submitter',
+            blockStart: 1,
+            blockEnd: 2,
+            hash: 'hash',
+            type: 'type',
+            description: 'description'
+        } as ProposalCreateRequest;
+        let createdProposal = this.proposalService.create(createRequest);
+        return createdProposal;
     }
 
     public help(): string {
