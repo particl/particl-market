@@ -329,6 +329,7 @@ export const Targets = {
         ListingItemFactory: 'ListingItemFactory',
         MessagingInformationFactory: 'MessagingInformationFactory',
         OrderFactory: 'OrderFactory',
+        ProposalFactory: 'ProposalFactory',
         RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {

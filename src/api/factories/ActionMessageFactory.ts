@@ -16,8 +16,10 @@ import { InternalServerException } from '../exceptions/InternalServerException';
 import { BidMessage } from '../messages/BidMessage';
 import { EscrowMessage } from '../messages/EscrowMessage';
 import { SmsgMessage } from '../messages/SmsgMessage';
-import {ListingItemMessageType} from '../enums/ListingItemMessageType';
-import {ListingItemAddMessage} from '../messages/ListingItemAddMessage';
+import { ListingItemMessageType } from '../enums/ListingItemMessageType';
+import { ListingItemAddMessage } from '../messages/ListingItemAddMessage';
+import { ProposalMessageType } from '../enums/ProposalMessageType';
+import { ProposalMessage } from '../messages/ProposalMessage';
 
 export class ActionMessageFactory {
 
@@ -84,7 +86,11 @@ export class ActionMessageFactory {
                     data
                 } as ActionMessageCreateRequest;
                 break;
-
+            case ProposalMessageType.MP_PROPOSAL_ADD:
+                const proposalMessage = message as ProposalMessage;
+                actionMessageCreateRequest = {
+                } as ActionMessageCreateRequest;
+                break;
             default:
                 throw new InternalServerException('Unknown message action type.');
         }

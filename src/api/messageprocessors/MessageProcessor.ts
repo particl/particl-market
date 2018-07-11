@@ -14,6 +14,8 @@ import { EscrowMessageType } from '../enums/EscrowMessageType';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 
+import { ProposalMessageType } from '../enums/ProposalMessageType';
+
 export class MessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
@@ -193,6 +195,8 @@ export class MessageProcessor implements MessageProcessorInterface {
                 return Events.RejectBidReceivedEvent;
             case BidMessageType.MPA_CANCEL:
                 return Events.CancelBidReceivedEvent;
+            case ProposalMessageType.MP_PROPOSAL_ADD:
+                return Events.ProposalReceivedEvent;
             default:
                 throw new InternalServerException('Unknown action message.');
         }
