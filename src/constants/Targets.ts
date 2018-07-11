@@ -148,6 +148,7 @@ export const Targets = {
         PaymentInformationService: 'PaymentInformationService',
         PriceTickerService: 'PriceTickerService',
         ProfileService: 'ProfileService',
+        ProposalActionService: 'ProposalActionService',
         ProposalOptionResultService: 'ProposalOptionResultService',
         ProposalOptionService: 'ProposalOptionService',
         ProposalResultService: 'ProposalResultService',

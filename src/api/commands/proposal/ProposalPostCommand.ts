@@ -11,6 +11,11 @@ import { BaseCommand } from './../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
 import { ProposalCreateRequest } from '../../requests/ProposalCreateRequest';
+import { ProposalActionService } from '../../services/ProposalActionService';
+import { ProfileService } from '../../services/ProfileService';
+import { Profile } from '../../models/Profile';
+import { MarketService } from '../../services/MarketService';
+import { Market } from '../../models/Market';
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
 
@@ -18,7 +23,9 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService
+        @inject(Types.Service) @named(Targets.Service.ProposalActionService) public proposalActionService: ProposalActionService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService
     ) {
         super(Commands.PROPOSAL_POST);
         this.log = new Logger(__filename);
@@ -26,6 +33,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * command description
+     * [0] profileId
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -33,20 +41,44 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
-        if (data.params.length < -1) {
-            throw new MessageException('Expected <TODO> but recieved no params.');
-        }
+        try {
+            if (data.params.length < 1) {
+                throw new MessageException('Expected <TODO> but recieved no params.');
+            }
 
-        const createRequest: ProposalCreateRequest = {
-            submitter: 'submitter',
-            blockStart: 1,
-            blockEnd: 2,
-            hash: 'hash',
-            type: 'type',
-            description: 'description'
-        } as ProposalCreateRequest;
-        let createdProposal = this.proposalService.create(createRequest);
-        return createdProposal;
+            // profile that is doing the bidding
+            const profileId = data.params.shift();
+            let profile: Profile;
+            try {
+                profile = await this.profileService.findOne(profileId);
+            } catch ( ex ) {
+                this.log.error(ex);
+                throw new MessageException(`Profile with profileId = ${profileId} not found.`);
+            }
+
+            const marketId = data.params.shift();
+            let market: Market;
+            try {
+                market = await this.marketService.findOne(marketId);
+            } catch ( ex ) {
+                this.log.error(ex);
+                throw new MessageException(`Market with marketId = ${marketId} not found.`);
+            }
+
+            const createRequest: ProposalCreateRequest = {
+                submitter: 'submitter',
+                blockStart: 1,
+                blockEnd: 2,
+                hash: 'hash',
+                type: 'type',
+                description: 'description'
+            } as ProposalCreateRequest;
+            const createdProposal = this.proposalActionService.send(createRequest, profile, market);
+            return createdProposal;
+        } catch ( ex ) {
+            this.log.error('proposal post ex = ' + ex);
+            throw ex;
+        }
     }
 
     public help(): string {

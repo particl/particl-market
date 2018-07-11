@@ -9,7 +9,6 @@ import { Proposal } from '../models/Proposal';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
 
-
 export class ProposalService {
 
     public log: LoggerType;
