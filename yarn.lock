@@ -4585,6 +4585,10 @@ prepend-http@^1.0.0, prepend-http@^1.0.1:
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/prepend-http/-/prepend-http-1.0.4.tgz#d4f4562b0ce3696e41ac52d0e002e57a635dc6dc"
 
+prepend@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/prepend/-/prepend-1.0.2.tgz#38ec726ab82c2f8a5880c70c1d2f831bb538faf9"
+
 preserve@^0.2.0:
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/preserve/-/preserve-0.2.0.tgz#815ed1f6ebc65926f865b310c0713bcb3315ce4b"
@@ -5576,6 +5580,10 @@ swagger-ui-express@^2.0.1:
 "symbol-tree@>= 3.1.0 < 4.0.0", symbol-tree@^3.2.1:
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/symbol-tree/-/symbol-tree-3.2.2.tgz#ae27db38f660a7ae2e1c3b7d1bc290819b8519e6"
+
+sync-fs@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/sync-fs/-/sync-fs-1.0.1.tgz#98cd6d5ddfec05da8fc21055eb36b5fa777b5fca"
 
 tar-pack@^3.4.0:
   version "3.4.0"
