@@ -3,6 +3,7 @@ import { HashableObjectType } from '../../api/enums/HashableObjectType';
 import { HashableListingItem } from './HashableListingItem';
 import { HashableItemImage } from './HashableItemImage';
 import { HashableOrder } from './HashableOrder';
+import { HashableProposal } from './HashableProposal';
 import { Logger as LoggerType } from '../Logger';
 
 export class ObjectHash {
@@ -37,6 +38,10 @@ export class ObjectHash {
             }
             case HashableObjectType.ORDER_CREATEREQUEST: {
                 hashableObject = new HashableOrder(objectToHash);
+                break;
+            }
+            case HashableObjectType.PROPOSAL_CREATEREQUEST: {
+                hashableObject = new HashableProposal(objectToHash);
                 break;
             }
             case HashableObjectType.DEFAULT: {

@@ -69,7 +69,6 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
                 submitter: 'submitter',
                 blockStart: 1,
                 blockEnd: 2,
-                hash: 'hash',
                 type: 'type',
                 description: 'description'
             } as ProposalCreateRequest;

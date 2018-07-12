@@ -5,8 +5,6 @@ declare module 'resources' {
         submitter: string;
         blockStart: number;
         blockEnd: number;
-        createdAt: Date;
-        submitter: string;
         hash: string;
         type: string;
         description: string;

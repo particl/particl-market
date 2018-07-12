@@ -1,4 +1,5 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
@@ -20,6 +21,10 @@ import * as resources from 'resources';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { ProposalFactory } from '../factories/ProposalFactory';
+import { ProposalService } from '../services/ProposalService';
+import { MessageException } from '../exceptions/MessageException';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { HashableObjectType } from '../../api/enums/HashableObjectType';
 
 export class ProposalActionService {
 
@@ -27,8 +32,9 @@ export class ProposalActionService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ProposalRepository) public proposalRepo: ProposalRepository,
-         @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
+        @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -41,6 +47,9 @@ export class ProposalActionService {
         const senderProfileJson = senderProfile.toJSON();
         const marketplaceJson = marketplace.toJSON();
 
+        if (_.isEmpty(data.hash)) {
+            data.hash = ObjectHash.getHash(data, HashableObjectType.PROPOSAL_CREATEREQUEST, false);
+        }
         const proposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, [ data ]);
         try {
             const msg: MarketplaceMessage = {
@@ -62,9 +71,22 @@ export class ProposalActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.Bid>}
      */
-    public async processProposalReceivedEvent(event: MarketplaceEvent): Promise<resources.Proposal> {
+    public async processProposalReceivedEvent(event: MarketplaceEvent): Promise<Proposal> {
         this.log.debug('processProposalReceivedEvent, event= ' + JSON.stringify(event, null, 2));
-        return {} as resources.Proposal;
+
+        const receivedMpaction: any = event.marketplaceMessage.mpaction;
+        const receivedProposals: any = receivedMpaction.objects;
+        const receivedProposal: ProposalCreateRequest = receivedProposals[0];
+        const receivedProposalHash = receivedProposal.hash;
+        delete receivedProposal.hash;
+        const receivedProposalRealHash = ObjectHash.getHash(receivedProposal, HashableObjectType.PROPOSAL_CREATEREQUEST, false);
+        if (receivedProposalHash !== receivedProposalRealHash) {
+            throw new MessageException(`Received proposal hash <${receivedProposalHash}> doesn't match actual hash <${receivedProposalRealHash}>.`);
+        }
+
+        const createdProposal: Proposal = await this.proposalService.create(receivedProposal);
+
+        return createdProposal;
     }
 
     private configureEventListeners(): void {

@@ -23,7 +23,6 @@ export class ProposalFactory {
      * @returns {Promise<BidMessage>}
      */
     public async getMessage(proposalMessageType: ProposalMessageType, data?: any[]): Promise<ProposalMessage> {
-
         const message = {
             action: proposalMessageType,
             objects: data

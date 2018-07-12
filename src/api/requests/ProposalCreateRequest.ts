@@ -13,7 +13,7 @@ export class ProposalCreateRequest extends RequestBody {
     @IsNotEmpty()
     public blockEnd: number;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public hash: string;
 
     @IsNotEmpty()

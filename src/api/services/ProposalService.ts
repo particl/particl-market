@@ -1,4 +1,5 @@
 import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -8,6 +9,8 @@ import { ProposalRepository } from '../repositories/ProposalRepository';
 import { Proposal } from '../models/Proposal';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
+import { ObjectHash } from '../../core/helpers/ObjectHash';
+import { HashableObjectType } from '../../api/enums/HashableObjectType';
 
 export class ProposalService {
 
@@ -35,8 +38,11 @@ export class ProposalService {
 
     @validate()
     public async create( @request(ProposalCreateRequest) data: ProposalCreateRequest): Promise<Proposal> {
-
+        if (_.isEmpty(data.hash)) {
+            data.hash = ObjectHash.getHash(data, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST, false);
+        }
         const body = JSON.parse(JSON.stringify(data));
+
         // this.log.debug('create Proposal, body: ', JSON.stringify(body, null, 2));
 
         // TODO: extract and remove related models from request
