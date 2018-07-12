@@ -4,9 +4,9 @@
   "description": "",
   "main": "dist/module.js",
   "scripts": {
+    "setup": "yarn install && npm run banner setup && npm run db:migrate && npm run db:seed",
     "license:add": "node license.js add $FILE",
     "license:update": "node license.js update $FILE",
-    "setup": "yarn install && npm run banner setup && npm run db:migrate && npm run db:seed",
     "serve": "npm run banner serve && cross-env NODE_ENV=development \"./node_modules/.bin/nodemon\" --watch src --watch .env -- ./src/app.ts",
     "serveProd": "npm run banner serve && cross-env NODE_ENV=production \"./node_modules/.bin/nodemon\" --watch src --watch .env -- ./src/app.ts",
     "desktop": "npm run banner serve && cross-env NODE_ENV=alpha \"./node_modules/.bin/nodemon\" --watch src --watch .env -- ./src/app.ts",
