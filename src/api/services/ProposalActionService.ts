@@ -22,6 +22,7 @@ import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { ProposalFactory } from '../factories/ProposalFactory';
 import { ProposalService } from '../services/ProposalService';
+import { ProposalOptionService } from '../services/ProposalOptionService';
 import { MessageException } from '../exceptions/MessageException';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../../api/enums/HashableObjectType';
@@ -35,6 +36,7 @@ export class ProposalActionService {
         @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.ProposalOptionService) public proposalOptionService: ProposalOptionService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -72,8 +74,6 @@ export class ProposalActionService {
      * @returns {Promise<module:resources.Bid>}
      */
     public async processProposalReceivedEvent(event: MarketplaceEvent): Promise<Proposal> {
-        this.log.debug('processProposalReceivedEvent, event= ' + JSON.stringify(event, null, 2));
-
         const receivedMpaction: any = event.marketplaceMessage.mpaction;
         const receivedProposals: any = receivedMpaction.objects;
         const receivedProposal: ProposalCreateRequest = receivedProposals[0];

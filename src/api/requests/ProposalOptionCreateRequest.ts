@@ -4,7 +4,7 @@ import { RequestBody } from '../../core/api/RequestBody';
 // tslint:disable:variable-name
 export class ProposalOptionCreateRequest extends RequestBody {
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public proposalId: number;
 
     @IsNotEmpty()
@@ -12,9 +12,6 @@ export class ProposalOptionCreateRequest extends RequestBody {
 
     @IsNotEmpty()
     public description: string;
-
-    @IsNotEmpty()
-    public hash: string;
 
 }
 // tslint:enable:variable-name

@@ -11,11 +11,13 @@ import { BaseCommand } from './../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
 import { ProposalCreateRequest } from '../../requests/ProposalCreateRequest';
+import { ProposalOptionCreateRequest } from '../../requests/ProposalOptionCreateRequest';
 import { ProposalActionService } from '../../services/ProposalActionService';
 import { ProfileService } from '../../services/ProfileService';
 import { Profile } from '../../models/Profile';
 import { MarketService } from '../../services/MarketService';
 import { Market } from '../../models/Market';
+import { ProposalType } from '../../enums/ProposalType';
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
 
@@ -33,7 +35,10 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * command description
-     * [0] profileId
+     * [0] proposalDescription
+     * [1] blockStart
+     * [2] blockEnd
+     * [3] option1Description option2Description optionNDescription
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -42,35 +47,48 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
         try {
-            if (data.params.length < 1) {
+            if (data.params.length < 3) {
                 throw new MessageException('Expected <TODO> but recieved no params.');
             }
 
-            // profile that is doing the bidding
-            const profileId = data.params.shift();
-            let profile: Profile;
-            try {
-                profile = await this.profileService.findOne(profileId);
-            } catch ( ex ) {
-                this.log.error(ex);
-                throw new MessageException(`Profile with profileId = ${profileId} not found.`);
+            const description = data.params.shift();
+            const blockStart = data.params.shift();
+            const blockEnd = data.params.shift();
+
+            // Get profile from address.
+            // Profile that is doing the bidding.
+            const profileAddress = data.params.shift();
+            const profile = await this.profileService.findOneByAddress(profileAddress);
+            if (!profile) {
+                throw new MessageException(`Profile with address <${profileAddress}> doesn't exist or doesn't belong to us.`);
+            }
+            
+            // Get the default market.
+            // TODO: Might want to let users specify this later.
+            const market = await this.marketService.getDefault();
+            if (!market) {
+                throw new MessageException(`Default market doesn't exist!`);
             }
 
-            const marketId = data.params.shift();
-            let market: Market;
-            try {
-                market = await this.marketService.findOne(marketId);
-            } catch ( ex ) {
-                this.log.error(ex);
-                throw new MessageException(`Market with marketId = ${marketId} not found.`);
+            const optionsList: ProposalOptionCreateRequest[] = new Array(data.params.length);
+            {
+                let optionDesc
+                for (let i = 0; optionDesc = data.params.shift(); ++i) {
+                    let optionCreateRequest = {
+                        optionId: i,
+                        description: optionDesc
+                    } as ProposalOptionCreateRequest;
+                    optionsList[i] = optionCreateRequest;
+                }
             }
 
             const createRequest: ProposalCreateRequest = {
                 submitter: 'submitter',
-                blockStart: 1,
-                blockEnd: 2,
-                type: 'type',
-                description: 'description'
+                blockStart,
+                blockEnd,
+                description,
+                options: optionsList,
+                type: ProposalType.PUBLIC_VOTE,
             } as ProposalCreateRequest;
             const createdProposal = this.proposalActionService.send(createRequest, profile, market);
             return createdProposal;

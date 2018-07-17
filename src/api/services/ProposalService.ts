@@ -6,6 +6,7 @@ import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ProposalRepository } from '../repositories/ProposalRepository';
+import { ProposalOptionRepository } from '../repositories/ProposalOptionRepository';
 import { Proposal } from '../models/Proposal';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
@@ -18,6 +19,7 @@ export class ProposalService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ProposalRepository) public proposalRepo: ProposalRepository,
+        @inject(Types.Repository) @named(Targets.Repository.ProposalOptionRepository) public proposalOptionRepository: ProposalOptionRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -41,23 +43,30 @@ export class ProposalService {
         if (_.isEmpty(data.hash)) {
             data.hash = ObjectHash.getHash(data, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST, false);
         }
+        this.log.debug('data = ' + JSON.stringify(data, null, 2));
+        let options = data.options;
+        delete data.options;
+
         const body = JSON.parse(JSON.stringify(data));
-
-        // this.log.debug('create Proposal, body: ', JSON.stringify(body, null, 2));
-
-        // TODO: extract and remove related models from request
-        // const proposalRelated = body.related;
-        // delete body.related;
 
         // If the request body was valid we will create the proposal
         const proposal = await this.proposalRepo.create(body);
 
-        // TODO: create related models
-        // proposalRelated._id = proposal.Id;
-        // await this.proposalRelatedService.create(proposalRelated);
+        // Create options
+        this.log.debug('ABC');
+        this.log.debug(`options = ` + JSON.stringify(options, null, 2));
+        this.log.debug(`options.length = ${options.length}`);
+        for (let i in options) {
+            if (i) {
+                options[i].proposalId = proposal.id;
+                this.log.debug(`option[${i}] = ` + JSON.stringify(options[i], null, 2));
+                await this.proposalOptionRepository.create(options[i]);
+            }
+        }
+        this.log.debug('CBA');
 
         // finally find and return the created proposal
-        const newProposal = await this.findOne(proposal.id);
+        const newProposal = await this.findOne(proposal.id, true);
         return newProposal;
     }
 
