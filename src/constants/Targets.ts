@@ -318,7 +318,10 @@ export const Targets = {
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         },
-        VoteCommand: 'VoteCommand'
+        vote: {
+            VotePostCommand: 'VotePostCommand',
+            VoteRootCommand: 'VoteRootCommand'
+        }
     },
     Factory:     {
         ActionMessageFactory: 'ActionMessageFactory',

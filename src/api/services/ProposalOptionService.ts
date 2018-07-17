@@ -5,6 +5,8 @@ import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ProposalOptionRepository } from '../repositories/ProposalOptionRepository';
+import { ProposalRepository } from '../repositories/ProposalRepository';
+import { Proposal } from '../models/Proposal';
 import { ProposalOption } from '../models/ProposalOption';
 import { ProposalOptionCreateRequest } from '../requests/ProposalOptionCreateRequest';
 import { ProposalOptionUpdateRequest } from '../requests/ProposalOptionUpdateRequest';
@@ -16,6 +18,7 @@ export class ProposalOptionService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ProposalOptionRepository) public proposalOptionRepo: ProposalOptionRepository,
+        @inject(Types.Repository) @named(Targets.Repository.ProposalRepository) public proposalRepository: ProposalRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -23,6 +26,20 @@ export class ProposalOptionService {
 
     public async findAll(): Promise<Bookshelf.Collection<ProposalOption>> {
         return this.proposalOptionRepo.findAll();
+    }
+
+    public async findOneFromHashAndOptionId(proposalHash: string, optionId: number, withRelated: boolean = true): Promise<ProposalOption> {
+        let proposal: any = await this.proposalRepository.findOneByHash(proposalHash, true);
+        if (proposal === null) {
+            this.log.warn(`Proposal with the hash=${proposalHash} was not found!`);
+            throw new NotFoundException(proposalHash);
+        }
+        proposal = proposal.toJSON();
+        if (!proposal.options || !proposal.options[optionId]) {
+            this.log.warn(`Proposal option with the hash=${proposalHash} and optionId = ${optionId} was not found!`);
+            throw new NotFoundException(proposalHash);
+        }
+        return proposal.options[optionId];
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ProposalOption> {

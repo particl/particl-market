@@ -134,6 +134,9 @@ import { ShoppingCartItemRemoveCommand } from '../commands/shoppingcartitem/Shop
 import { ShoppingCartItemListCommand } from '../commands/shoppingcartitem/ShoppingCartItemListCommand';
 import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitem/ShoppingCartItemRootCommand';
 
+import { VotePostCommand } from '../commands/vote/VotePostCommand';
+import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
+
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -264,8 +267,10 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.proposal.ProposalListCommand) private proposalListCommand: ProposalListCommand,
         @inject(Types.Command) @named(Targets.Command.proposal.ProposalRootCommand) private proposalRootCommand: ProposalRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
+        @inject(Types.Command) @named(Targets.Command.vote.VotePostCommand) private votePostCommand: VotePostCommand,
+        @inject(Types.Command) @named(Targets.Command.vote.VoteRootCommand) private voteRootCommand: VoteRootCommand,
 
+        @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
         //  ---
         // @multiInject(Types.Command) public commands: RpcCommand<any>[],
@@ -396,6 +401,9 @@ export class RpcCommandFactory {
         this.commands.push(proposalRootCommand);
 
         this.commands.push(currencyPriceRootCommand);
+
+        this.commands.push(votePostCommand);
+        this.commands.push(voteRootCommand);
 
         this.commands.push(helpCommand);
 

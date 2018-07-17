@@ -20,6 +20,16 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         }
     }
 
+    public static async fetchByHash(value: string, withRelated: boolean = true): Promise<Proposal> {
+        if (withRelated) {
+            return await Proposal.where<Proposal>({ hash: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Proposal.where<Proposal>({ hash: value }).fetch();
+        }
+    }
+
     public get tableName(): string { return 'proposals'; }
     public get hasTimestamps(): boolean { return true; }
 

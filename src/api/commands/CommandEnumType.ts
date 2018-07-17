@@ -160,6 +160,10 @@ export class CommandEnumType extends Enum<Command> {
 
     public CURRENCYPRICE_ROOT: Command        = new Command('currencyprice', 'currencyprice', true);
 
+    public VOTE_POST: Command         = new Command('votepost', 'post', false);
+    public VOTE_ROOT: Command           = new Command('vote', 'vote', true,
+        [this.VOTE_POST], EnvironmentType.ALL);
+
     constructor() {
         super();
         this.initEnum('Command');

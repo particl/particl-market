@@ -38,7 +38,8 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      * [0] proposalDescription
      * [1] blockStart
      * [2] blockEnd
-     * [3] option1Description option2Description optionNDescription
+     * [3] submitterAddress
+     * [4] option1Description option2Description optionNDescription
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory

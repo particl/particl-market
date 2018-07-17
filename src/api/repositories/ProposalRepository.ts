@@ -22,6 +22,10 @@ export class ProposalRepository {
         return list as Bookshelf.Collection<Proposal>;
     }
 
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Proposal> {
+        return this.ProposalModel.fetchByHash(hash, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Proposal> {
         return this.ProposalModel.fetchById(id, withRelated);
     }
