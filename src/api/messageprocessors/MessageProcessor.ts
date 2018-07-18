@@ -15,6 +15,7 @@ import { InternalServerException } from '../exceptions/InternalServerException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 
 import { ProposalMessageType } from '../enums/ProposalMessageType';
+import { VoteMessageType } from '../enums/VoteMessageType';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -197,6 +198,8 @@ export class MessageProcessor implements MessageProcessorInterface {
                 return Events.CancelBidReceivedEvent;
             case ProposalMessageType.MP_PROPOSAL_ADD:
                 return Events.ProposalReceivedEvent;
+            case VoteMessageType.MP_VOTE:
+                return Events.VoteReceivedEvent;
             default:
                 throw new InternalServerException('Unknown action message.');
         }

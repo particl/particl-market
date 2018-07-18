@@ -53,9 +53,6 @@ export class ProposalService {
         const proposal = await this.proposalRepo.create(body);
 
         // Create options
-        this.log.debug('ABC');
-        this.log.debug(`options = ` + JSON.stringify(options, null, 2));
-        this.log.debug(`options.length = ${options.length}`);
         for (let i in options) {
             if (i) {
                 options[i].proposalId = proposal.id;
@@ -63,7 +60,6 @@ export class ProposalService {
                 await this.proposalOptionRepository.create(options[i]);
             }
         }
-        this.log.debug('CBA');
 
         // finally find and return the created proposal
         const newProposal = await this.findOne(proposal.id, true);

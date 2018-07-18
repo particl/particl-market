@@ -2,7 +2,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { VoteService } from '../../services/VoteService';
+import { VoteActionService } from '../../services/VoteActionService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Vote } from '../../models/Vote';
 import { RpcCommandInterface } from './../RpcCommandInterface';
@@ -25,7 +25,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
+        @inject(Types.Service) @named(Targets.Service.VoteActionService) public voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionService) public proposalOptionService: ProposalOptionService
@@ -76,17 +76,13 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
             throw new MessageException(`Default market doesn't exist!`);
         }
 
-        // get proposal by hash
-        // get id of proposal
-        // Create vote with given proposalId and optionId
-
         const voteCreateRequest = {
             proposalOptionId: proposalOption.id,
             voter: profileAddress,
             block: 0,
             weight: 1.0
         } as VoteCreateRequest;
-        return await this.voteService.create(voteCreateRequest);
+        return await this.voteActionService.send(voteCreateRequest, profile, market)
     }
 
     public help(): string {

@@ -160,7 +160,8 @@ export const Targets = {
         SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
         UserService: 'UserService',
-        VoteService: 'VoteService'
+        VoteService: 'VoteService',
+        VoteActionService: 'VoteActionService'
     },
     Command:     {
         address: {
@@ -333,6 +334,7 @@ export const Targets = {
         MessagingInformationFactory: 'MessagingInformationFactory',
         OrderFactory: 'OrderFactory',
         ProposalFactory: 'ProposalFactory',
+        VoteFactory: 'VoteFactory',
         RpcCommandFactory: 'RpcCommandFactory'
     },
     MessageProcessor:     {
