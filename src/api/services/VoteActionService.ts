@@ -75,7 +75,7 @@ export class VoteActionService {
         const receivedMpaction: any = event.marketplaceMessage.mpaction;
         const receivedVotes: VoteCreateRequest[] = receivedMpaction.objects;
         const receivedVote: VoteCreateRequest = receivedVotes[0];
-        
+
         // TODO: Validation, if needed
 
         const createdProposal: Vote = await this.voteService.create(receivedVote);

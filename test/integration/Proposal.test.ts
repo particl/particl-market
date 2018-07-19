@@ -10,6 +10,9 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Proposal } from '../../src/api/models/Proposal';
 
 import { ProposalService } from '../../src/api/services/ProposalService';
+import {ProposalType} from '../../src/api/enums/ProposalType';
+import {ProposalCreateRequest} from '../../src/api/requests/ProposalCreateRequest';
+import {ProposalUpdateRequest} from '../../src/api/requests/ProposalUpdateRequest';
 
 describe('Proposal', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -23,26 +26,22 @@ describe('Proposal', () => {
     let createdId;
 
     const testData = {
-        submitter: undefined, // TODO: Add test value
-        blockStart: undefined, // TODO: Add test value
-        blockEnd: undefined, // TODO: Add test value
-        createdAt: undefined, // TODO: Add test value
-        submitter: undefined, // TODO: Add test value
-        hash: undefined, // TODO: Add test value
-        type: undefined, // TODO: Add test value
-        description: undefined // TODO: Add test value
-    };
+        submitter: 'pasdfasfsdfad',
+        blockStart: 1000,
+        blockEnd: 1010,
+        hash: 'asdf',
+        type: ProposalType.PUBLIC_VOTE,
+        description: 'proposal to x'
+    } as ProposalCreateRequest;
 
     const testDataUpdated = {
-        submitter: undefined, // TODO: Add test value
-        blockStart: undefined, // TODO: Add test value
-        blockEnd: undefined, // TODO: Add test value
-        createdAt: undefined, // TODO: Add test value
-        submitter: undefined, // TODO: Add test value
-        hash: undefined, // TODO: Add test value
-        type: undefined, // TODO: Add test value
-        description: undefined // TODO: Add test value
-    };
+        submitter: 'pqwer',
+        blockStart: 1212,
+        blockEnd: 1313,
+        hash: 'newhash',
+        type: ProposalType.PUBLIC_VOTE,
+        description: 'proposal to y'
+    } as ProposalUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -58,14 +57,12 @@ describe('Proposal', () => {
         //
     });
 
-    /*
-    test('Should throw ValidationException because there is no related_id', async () => {
+    test('Should throw ValidationException because we want to create a empty proposal', async () => {
         expect.assertions(1);
-        await proposalService.create(testData).catch(e =>
+        await proposalService.create({}).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
-    */
 
     test('Should create a new proposal', async () => {
         // testData['related_id'] = 0;
@@ -74,23 +71,14 @@ describe('Proposal', () => {
 
         const result = proposalModel.toJSON();
 
-        // test the values
-        // expect(result.value).toBe(testData.value);
         expect(result.submitter).toBe(testData.submitter);
         expect(result.blockStart).toBe(testData.blockStart);
         expect(result.blockEnd).toBe(testData.blockEnd);
-        expect(result.createdAt).toBe(testData.createdAt);
-        expect(result.submitter).toBe(testData.submitter);
         expect(result.hash).toBe(testData.hash);
         expect(result.type).toBe(testData.type);
         expect(result.description).toBe(testData.description);
-    });
 
-    test('Should throw ValidationException because we want to create a empty proposal', async () => {
-        expect.assertions(1);
-        await proposalService.create({}).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
+        // todo: should test that creating proposal with options works too..
     });
 
     test('Should list proposals with our new create one', async () => {
@@ -105,7 +93,6 @@ describe('Proposal', () => {
         expect(result.submitter).toBe(testData.submitter);
         expect(result.blockStart).toBe(testData.blockStart);
         expect(result.blockEnd).toBe(testData.blockEnd);
-        expect(result.createdAt).toBe(testData.createdAt);
         expect(result.submitter).toBe(testData.submitter);
         expect(result.hash).toBe(testData.hash);
         expect(result.type).toBe(testData.type);
@@ -121,21 +108,11 @@ describe('Proposal', () => {
         expect(result.submitter).toBe(testData.submitter);
         expect(result.blockStart).toBe(testData.blockStart);
         expect(result.blockEnd).toBe(testData.blockEnd);
-        expect(result.createdAt).toBe(testData.createdAt);
         expect(result.submitter).toBe(testData.submitter);
         expect(result.hash).toBe(testData.hash);
         expect(result.type).toBe(testData.type);
         expect(result.description).toBe(testData.description);
     });
-
-    /*
-    test('Should throw ValidationException because there is no related_id', async () => {
-        expect.assertions(1);
-        await proposalService.update(createdId, testDataUpdated).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-    */
 
     test('Should update the proposal', async () => {
         // testDataUpdated['related_id'] = 0;
@@ -143,15 +120,16 @@ describe('Proposal', () => {
         const result = proposalModel.toJSON();
 
         // test the values
-        // expect(result.value).toBe(testDataUpdated.value);
         expect(result.submitter).toBe(testDataUpdated.submitter);
         expect(result.blockStart).toBe(testDataUpdated.blockStart);
         expect(result.blockEnd).toBe(testDataUpdated.blockEnd);
-        expect(result.createdAt).toBe(testDataUpdated.createdAt);
         expect(result.submitter).toBe(testDataUpdated.submitter);
         expect(result.hash).toBe(testDataUpdated.hash);
         expect(result.type).toBe(testDataUpdated.type);
         expect(result.description).toBe(testDataUpdated.description);
+
+        // todo: should test that updating proposal with options works too..
+
     });
 
     test('Should delete the proposal', async () => {

@@ -1,12 +1,14 @@
 import { Bookshelf } from '../../config/Database';
+import { Collection } from 'bookshelf';
+import { Proposal } from './Proposal';
+import { ProposalOptionResult } from './ProposalOptionResult';
 
 
 export class ProposalResult extends Bookshelf.Model<ProposalResult> {
 
     public static RELATIONS = [
-        // TODO:
-        // 'ProposalResultRelated',
-        // 'ProposalResultRelated.Related'
+        'Proposal',
+        'ProposalOptionResult'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ProposalResult> {
@@ -25,9 +27,6 @@ export class ProposalResult extends Bookshelf.Model<ProposalResult> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get ProposalId(): number { return this.get('proposalId'); }
-    public set ProposalId(value: number) { this.set('proposalId', value); }
-
     public get Block(): number { return this.get('block'); }
     public set Block(value: number) { this.set('block', value); }
 
@@ -37,8 +36,12 @@ export class ProposalResult extends Bookshelf.Model<ProposalResult> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public ProposalResultRelated(): ProposalResultRelated {
-    //    return this.hasOne(ProposalResultRelated);
-    // }
+    public Proposal(): Proposal {
+        return this.belongsTo(Proposal, 'proposal_id', 'id');
+    }
+
+    public ProposalOptionResults(): Collection<ProposalOptionResult> {
+        return this.hasMany(ProposalOptionResult, 'proposal_result_id', 'id');
+    }
+
 }

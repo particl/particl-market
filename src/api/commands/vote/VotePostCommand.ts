@@ -82,7 +82,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
             block: 0,
             weight: 1.0
         } as VoteCreateRequest;
-        return await this.voteActionService.send(voteCreateRequest, profile, market)
+        return await this.voteActionService.send(voteCreateRequest, profile, market);
     }
 
     public help(): string {

@@ -6,8 +6,14 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('proposal_option_results', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.integer('proposalResultId').notNullable();
-            table.integer('proposalOptionId').notNullable();
+            table.integer('proposal_result_id').unsigned().notNullable();
+            table.foreign('proposal_result_id').references('id')
+                .inTable('proposal_results').onDelete('cascade');
+
+            table.integer('proposal_option_id').unsigned().notNullable();
+            table.foreign('proposal_option_id').references('id')
+                .inTable('proposal_options').onDelete('cascade');
+
             table.decimal('weight').notNullable();
             table.integer('voterCount').notNullable();
 

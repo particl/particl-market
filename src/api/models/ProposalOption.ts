@@ -1,12 +1,11 @@
 import { Bookshelf } from '../../config/Database';
+import { Proposal } from './Proposal';
 
 
 export class ProposalOption extends Bookshelf.Model<ProposalOption> {
 
     public static RELATIONS = [
-        // TODO:
-        // 'ProposalOptionRelated',
-        // 'ProposalOptionRelated.Related'
+        'Proposal'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ProposalOption> {
@@ -25,9 +24,6 @@ export class ProposalOption extends Bookshelf.Model<ProposalOption> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get ProposalId(): number { return this.get('proposalId'); }
-    public set ProposalId(value: number) { this.set('proposalId', value); }
-
     public get OptionId(): number { return this.get('optionId'); }
     public set OptionId(value: number) { this.set('optionId', value); }
 
@@ -43,8 +39,8 @@ export class ProposalOption extends Bookshelf.Model<ProposalOption> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public ProposalOptionRelated(): ProposalOptionRelated {
-    //    return this.hasOne(ProposalOptionRelated);
-    // }
+    public Proposal(): Proposal {
+        return this.belongsTo(Proposal, 'proposal_id', 'id');
+    }
+
 }

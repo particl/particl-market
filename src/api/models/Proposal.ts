@@ -6,7 +6,7 @@ import { ProposalResult } from './ProposalResult';
 export class Proposal extends Bookshelf.Model<Proposal> {
 
     public static RELATIONS = [
-        'ProposalOption',
+        'ProposalOptions',
         'ProposalResult'
     ];
 
@@ -45,9 +45,6 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get BlockEnd(): number { return this.get('blockEnd'); }
     public set BlockEnd(value: number) { this.set('blockEnd', value); }
 
-    public get CreatedAt(): Date { return this.get('createdAt'); }
-    public set CreatedAt(value: Date) { this.set('createdAt', value); }
-
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
@@ -57,14 +54,17 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
 
+    public get CreatedAt(): Date { return this.get('createdAt'); }
+    public set CreatedAt(value: Date) { this.set('createdAt', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
-    public ProposalOption(): Collection<ProposalOption> {
-        return this.hasMany(ProposalOption, 'proposalId', 'id');
+    public ProposalOptions(): Collection<ProposalOption> {
+        return this.hasMany(ProposalOption, 'proposal_id', 'id');
     }
 
     public ProposalResult(): ProposalResult {
-       return this.hasOne(ProposalResult, 'proposalId', 'id');
+       return this.hasOne(ProposalResult);
     }
 }

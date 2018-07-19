@@ -1,12 +1,12 @@
 import { Bookshelf } from '../../config/Database';
+import { ProposalResult } from './ProposalResult';
+import { ProposalOption } from './ProposalOption';
 
 
 export class ProposalOptionResult extends Bookshelf.Model<ProposalOptionResult> {
 
     public static RELATIONS = [
-        // TODO:
-        // 'ProposalOptionResultRelated',
-        // 'ProposalOptionResultRelated.Related'
+        'ProposalResult'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ProposalOptionResult> {
@@ -25,12 +25,6 @@ export class ProposalOptionResult extends Bookshelf.Model<ProposalOptionResult> 
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get ProposalResultId(): number { return this.get('proposalResultId'); }
-    public set ProposalResultId(value: number) { this.set('proposalResultId', value); }
-
-    public get ProposalOptionId(): number { return this.get('proposalOptionId'); }
-    public set ProposalOptionId(value: number) { this.set('proposalOptionId', value); }
-
     public get Weight(): number { return this.get('weight'); }
     public set Weight(value: number) { this.set('weight', value); }
 
@@ -43,8 +37,12 @@ export class ProposalOptionResult extends Bookshelf.Model<ProposalOptionResult> 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public ProposalOptionResultRelated(): ProposalOptionResultRelated {
-    //    return this.hasOne(ProposalOptionResultRelated);
-    // }
+    public ProposalResult(): ProposalResult {
+        return this.belongsTo(ProposalResult, 'proposal_result_id', 'id');
+    }
+
+    public ProposalOption(): ProposalOption {
+        return this.belongsTo(ProposalOption, 'proposal_option_id', 'id');
+    }
+
 }

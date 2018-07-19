@@ -1,29 +1,19 @@
-import { IsNotEmpty } from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import { ProposalType } from '../enums/ProposalType';
+import { ProposalOptionCreateRequest } from './ProposalOptionCreateRequest';
 
 // tslint:disable:variable-name
 export class ProposalUpdateRequest extends RequestBody {
 
-    @IsNotEmpty()
     public submitter: string;
-
-    @IsNotEmpty()
     public blockStart: number;
-
-    @IsNotEmpty()
     public blockEnd: number;
-
-    @IsNotEmpty()
-    public createdAt: Date;
-
-    @IsNotEmpty()
     public hash: string;
-
-    @IsNotEmpty()
+    @IsEnum(ProposalType)
     public type: string;
-
-    @IsNotEmpty()
     public description: string;
+    public options: ProposalOptionCreateRequest[];
 
 }
 // tslint:enable:variable-name

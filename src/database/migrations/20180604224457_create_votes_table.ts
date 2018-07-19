@@ -6,7 +6,10 @@ exports.up = (db: Knex): Promise<any> => {
         db.schema.createTable('votes', (table: Knex.CreateTableBuilder) => {
             table.increments('id').primary();
 
-            table.integer('proposalOptionId').notNullable();
+            table.integer('proposal_option_id').unsigned().notNullable();
+            table.foreign('proposal_option_id').references('id')
+                .inTable('proposal_options').onDelete('cascade');
+
             table.string('voter').notNullable();
             table.integer('block').notNullable();
             table.integer('weight').notNullable();

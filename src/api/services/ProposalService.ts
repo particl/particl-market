@@ -12,6 +12,7 @@ import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../../api/enums/HashableObjectType';
+import {ProposalOptionCreateRequest} from '../requests/ProposalOptionCreateRequest';
 
 export class ProposalService {
 
@@ -40,30 +41,35 @@ export class ProposalService {
 
     @validate()
     public async create( @request(ProposalCreateRequest) data: ProposalCreateRequest): Promise<Proposal> {
-        if (_.isEmpty(data.hash)) {
-            data.hash = ObjectHash.getHash(data, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST, false);
-        }
-        this.log.debug('data = ' + JSON.stringify(data, null, 2));
-        let options = data.options;
-        delete data.options;
+        const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
+        this.log.debug('create Proposal, body: ', JSON.stringify(body, null, 2));
 
-        // If the request body was valid we will create the proposal
+        if (_.isEmpty(data.hash)) {
+            body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST, false);
+        }
+
+        // extract and remove related models from request
+        const options = body.options || [];
+        delete body.options;
+
+        // if the request body was valid we will create the proposal
         const proposal = await this.proposalRepo.create(body);
 
-        // Create options
-        for (let i in options) {
-            if (i) {
-                options[i].proposalId = proposal.id;
-                this.log.debug(`option[${i}] = ` + JSON.stringify(options[i], null, 2));
-                await this.proposalOptionRepository.create(options[i]);
-            }
+        // create related options
+        for (const optionCreateRequest of options) {
+            optionCreateRequest.proposal_id = proposal.id;
+            this.log.debug('optionCreateRequest: ' + JSON.stringify(optionCreateRequest, null, 2));
+            await this.proposalOptionRepository.create(optionCreateRequest);
         }
 
         // finally find and return the created proposal
-        const newProposal = await this.findOne(proposal.id, true);
-        return newProposal;
+        const result = await this.findOne(proposal.id, true);
+
+        this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
+
+        return result;
     }
 
     @validate()
