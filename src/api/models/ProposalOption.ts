@@ -24,8 +24,8 @@ export class ProposalOption extends Bookshelf.Model<ProposalOption> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get OptionId(): number { return this.get('optionId'); }
-    public set OptionId(value: number) { this.set('optionId', value); }
+    public get OptionId(): number { return this.get('option_id'); }
+    public set OptionId(value: number) { this.set('option_id', value); }
 
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
