@@ -82,7 +82,7 @@ export class ProposalService {
         proposal.Submitter = body.submitter;
         proposal.BlockStart = body.blockStart;
         proposal.BlockEnd = body.blockEnd;
-        proposal.CreatedAt = body.createdAt;
+        // proposal.CreatedAt = body.createdAt;
         proposal.Submitter = body.submitter;
         proposal.Hash = body.hash;
         proposal.Type = body.type;
