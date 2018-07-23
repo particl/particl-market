@@ -86,6 +86,7 @@ export class ProposalService {
         proposal.Submitter = body.submitter;
         proposal.Hash = body.hash;
         proposal.Type = body.type;
+        proposal.Title = body.title;
         proposal.Description = body.description;
 
         // update proposal record
