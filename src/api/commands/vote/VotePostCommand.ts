@@ -1,3 +1,4 @@
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -18,6 +19,8 @@ import { Market } from '../../models/Market';
 import { MessageException } from '../../exceptions/MessageException';
 import { VoteCreateRequest } from '../../requests/VoteCreateRequest';
 import { ProposalOptionService } from '../../services/ProposalOptionService';
+import { ProposalService } from '../../services/ProposalService';
+import * as resources from 'resources';
 
 export class VotePostCommand extends BaseCommand implements RpcCommandInterface<Vote> {
 
@@ -28,6 +31,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         @inject(Types.Service) @named(Targets.Service.VoteActionService) public voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionService) public proposalOptionService: ProposalOptionService
     ) {
         super(Commands.VOTE_POST);
@@ -54,11 +58,18 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         // TODO: for now we'll say this is optionId, but it may not be. May need to change it later to be something else like hash
         const proposalOptionId = data.params.shift();
 
-        // TODO: Get proposal option by proposalHash and proposalOptionId
-        // TODO: Extract id from proposalOption
-        const proposalOption: ProposalOption = await this.proposalOptionService.findOneFromHashAndOptionId(proposalHash, proposalOptionId);
-        if (!proposalOption) {
-            throw new MessageException(`Proposal option with proposal hash ${proposalHash} and optionId ${proposalOptionId} not found.`);
+        const proposalModel = await this.proposalService.findOneByHash(proposalHash);
+        const proposal: resources.Proposal = proposalModel.toJSON();
+
+        let foundProposalOption;
+        for (const option of proposal.ProposalOptions) {
+            if (option.optionId === proposalOptionId) {
+                foundProposalOption = option;
+            }
+        }
+
+        if (_.isEmpty(foundProposalOption)) {
+            throw new MessageException(`ProposalOption with proposal hash ${proposalHash} and optionId ${proposalOptionId} not found.`);
         }
 
         // Get profile from address.
@@ -77,7 +88,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         }
 
         const voteCreateRequest = {
-            proposalOptionId: proposalOption.id,
+            proposalOptionId: foundProposalOption.optionId,
             voter: profileAddress,
             block: 0,
             weight: 1.0

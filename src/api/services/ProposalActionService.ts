@@ -87,7 +87,7 @@ export class ProposalActionService {
         const receivedProposal: ProposalCreateRequest = receivedProposals[0];
         const receivedProposalHash = receivedProposal.hash;
         delete receivedProposal.hash;
-        const receivedProposalRealHash = ObjectHash.getHash(receivedProposal, HashableObjectType.PROPOSAL_CREATEREQUEST, false);
+        const receivedProposalRealHash = ObjectHash.getHash(receivedProposal, HashableObjectType.PROPOSAL_CREATEREQUEST, [false]);
         if (receivedProposalHash !== receivedProposalRealHash) {
             throw new MessageException(`Received proposal hash <${receivedProposalHash}> doesn't match actual hash <${receivedProposalRealHash}>.`);
         }

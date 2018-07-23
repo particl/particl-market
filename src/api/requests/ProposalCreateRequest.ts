@@ -23,10 +23,10 @@ export class ProposalCreateRequest extends RequestBody {
     public type: ProposalType;
 
     @IsNotEmpty()
-    public description: string;
+    public title: string;
 
     @IsNotEmpty()
-    public title: string;
+    public description: string;
 
     public options: ProposalOptionCreateRequest[];
 

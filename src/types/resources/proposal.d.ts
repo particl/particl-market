@@ -10,6 +10,8 @@ declare module 'resources' {
         description: string;
         createdAt: Date;
         updatedAt: Date;
+        ProposalOptions: ProposalOption[];
+        ProposalResult: ProposalResult;
     }
 
 }

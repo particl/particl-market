@@ -6,13 +6,12 @@ import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ProposalRepository } from '../repositories/ProposalRepository';
-import { ProposalOptionRepository } from '../repositories/ProposalOptionRepository';
 import { Proposal } from '../models/Proposal';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../../api/enums/HashableObjectType';
-import {ProposalOptionCreateRequest} from '../requests/ProposalOptionCreateRequest';
+import { ProposalOptionRepository } from '../repositories/ProposalOptionRepository';
 
 export class ProposalService {
 
@@ -39,35 +38,49 @@ export class ProposalService {
         return proposal;
     }
 
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Proposal> {
+        const proposal = await this.proposalRepo.findOneByHash(hash, withRelated);
+        if (proposal === null) {
+            this.log.warn(`Proposal with the hash=${hash} was not found!`);
+            throw new NotFoundException(hash);
+        }
+        return proposal;
+    }
+
     @validate()
-    public async create( @request(ProposalCreateRequest) data: ProposalCreateRequest): Promise<Proposal> {
+    public async create( @request(ProposalCreateRequest) data: ProposalCreateRequest, skipOptions: boolean = false): Promise<Proposal> {
         const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
         this.log.debug('create Proposal, body: ', JSON.stringify(body, null, 2));
 
-        if (_.isEmpty(data.hash)) {
-            body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST, false);
-        }
-
         // extract and remove related models from request
         const options = body.options || [];
         delete body.options;
 
+        body.hash = ObjectHash.getHash(body, HashableObjectType.PROPOSAL_CREATEREQUEST);
+
         // if the request body was valid we will create the proposal
         const proposal = await this.proposalRepo.create(body);
 
-        // create related options
-        for (const optionCreateRequest of options) {
-            optionCreateRequest.proposal_id = proposal.id;
-            this.log.debug('optionCreateRequest: ' + JSON.stringify(optionCreateRequest, null, 2));
-            await this.proposalOptionRepository.create(optionCreateRequest);
+        // skipOptions is just for tests
+        if (!skipOptions) {
+            // create related options
+            for (const optionCreateRequest of options) {
+                optionCreateRequest.proposal_id = proposal.id;
+                optionCreateRequest.proposalHash = body.hash;
+
+                this.log.debug('optionCreateRequest: ', JSON.stringify(optionCreateRequest, null, 2));
+                await this.proposalOptionService.create(optionCreateRequest);
+            }
+        } else {
+            this.log.debug('skipping creation of ProposalOptions...');
         }
 
         // finally find and return the created proposal
         const result = await this.findOne(proposal.id, true);
 
-        this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        this.log.debug('ProposalService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         return result;
     }

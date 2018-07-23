@@ -96,7 +96,7 @@ export class ListingItemTemplateService {
 
         const body = JSON.parse(JSON.stringify(data));
 
-        body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST, timestampedHash);
+        body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST, [timestampedHash]);
 
         this.log.debug('create template, body:', JSON.stringify(body, null, 2));
 

@@ -12,5 +12,8 @@ export class ProposalOptionUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public description: string;
 
+    // @IsNotEmpty()
+    public hash: string;
+    public proposalHash: string;
 }
 // tslint:enable:variable-name

@@ -12,6 +12,7 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.integer('option_id').notNullable();
             table.string('description').notNullable();
+            table.string('hash').notNullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

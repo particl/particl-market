@@ -13,6 +13,8 @@ import { ProposalService } from '../../src/api/services/ProposalService';
 import {ProposalType} from '../../src/api/enums/ProposalType';
 import {ProposalCreateRequest} from '../../src/api/requests/ProposalCreateRequest';
 import {ProposalUpdateRequest} from '../../src/api/requests/ProposalUpdateRequest';
+import {HashableObjectType} from '../../src/api/enums/HashableObjectType';
+import {ObjectHash} from '../../src/core/helpers/ObjectHash';
 
 describe('Proposal', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -29,7 +31,7 @@ describe('Proposal', () => {
         submitter: 'pasdfasfsdfad',
         blockStart: 1000,
         blockEnd: 1010,
-        hash: 'asdf',
+        // hash: 'asdf',
         type: ProposalType.PUBLIC_VOTE,
         title:  'proposal x title',
         description: 'proposal to x'
@@ -39,11 +41,13 @@ describe('Proposal', () => {
         submitter: 'pqwer',
         blockStart: 1212,
         blockEnd: 1313,
-        hash: 'newhash',
+        // hash: 'newhash',
         type: ProposalType.PUBLIC_VOTE,
         title:  'proposal y title',
         description: 'proposal to y'
     } as ProposalUpdateRequest;
+
+    let testDataHash;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -67,7 +71,9 @@ describe('Proposal', () => {
     });
 
     test('Should create a new proposal', async () => {
-        // testData['related_id'] = 0;
+
+        testDataHash = ObjectHash.getHash(testData, HashableObjectType.PROPOSAL_CREATEREQUEST);
+
         const proposalModel: Proposal = await proposalService.create(testData);
         createdId = proposalModel.Id;
 
@@ -76,7 +82,7 @@ describe('Proposal', () => {
         expect(result.submitter).toBe(testData.submitter);
         expect(result.blockStart).toBe(testData.blockStart);
         expect(result.blockEnd).toBe(testData.blockEnd);
-        expect(result.hash).toBe(testData.hash);
+        expect(result.hash).toBe(testDataHash);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
@@ -97,7 +103,7 @@ describe('Proposal', () => {
         expect(result.blockStart).toBe(testData.blockStart);
         expect(result.blockEnd).toBe(testData.blockEnd);
         expect(result.submitter).toBe(testData.submitter);
-        expect(result.hash).toBe(testData.hash);
+        expect(result.hash).toBe(testDataHash);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
@@ -113,14 +119,15 @@ describe('Proposal', () => {
         expect(result.blockStart).toBe(testData.blockStart);
         expect(result.blockEnd).toBe(testData.blockEnd);
         expect(result.submitter).toBe(testData.submitter);
-        expect(result.hash).toBe(testData.hash);
+        expect(result.hash).toBe(testDataHash);
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
     });
 
     test('Should update the proposal', async () => {
-        // testDataUpdated['related_id'] = 0;
+
+        testDataHash = ObjectHash.getHash(testData, HashableObjectType.PROPOSAL_CREATEREQUEST);
         const proposalModel: Proposal = await proposalService.update(createdId, testDataUpdated);
         const result = proposalModel.toJSON();
 
@@ -129,7 +136,7 @@ describe('Proposal', () => {
         expect(result.blockStart).toBe(testDataUpdated.blockStart);
         expect(result.blockEnd).toBe(testDataUpdated.blockEnd);
         expect(result.submitter).toBe(testDataUpdated.submitter);
-        expect(result.hash).toBe(testDataUpdated.hash);
+        expect(result.hash).toBe(testDataHash);
         expect(result.type).toBe(testDataUpdated.type);
         expect(result.title).toBe(testDataUpdated.title);
         expect(result.description).toBe(testDataUpdated.description);
