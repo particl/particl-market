@@ -31,6 +31,7 @@ describe('Proposal', () => {
         blockEnd: 1010,
         hash: 'asdf',
         type: ProposalType.PUBLIC_VOTE,
+        title:  'proposal x title',
         description: 'proposal to x'
     } as ProposalCreateRequest;
 
@@ -40,6 +41,7 @@ describe('Proposal', () => {
         blockEnd: 1313,
         hash: 'newhash',
         type: ProposalType.PUBLIC_VOTE,
+        title:  'proposal y title',
         description: 'proposal to y'
     } as ProposalUpdateRequest;
 
@@ -76,6 +78,7 @@ describe('Proposal', () => {
         expect(result.blockEnd).toBe(testData.blockEnd);
         expect(result.hash).toBe(testData.hash);
         expect(result.type).toBe(testData.type);
+        expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
 
         // todo: should test that creating proposal with options works too..
@@ -96,6 +99,7 @@ describe('Proposal', () => {
         expect(result.submitter).toBe(testData.submitter);
         expect(result.hash).toBe(testData.hash);
         expect(result.type).toBe(testData.type);
+        expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
     });
 
@@ -111,6 +115,7 @@ describe('Proposal', () => {
         expect(result.submitter).toBe(testData.submitter);
         expect(result.hash).toBe(testData.hash);
         expect(result.type).toBe(testData.type);
+        expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
     });
 
@@ -126,6 +131,7 @@ describe('Proposal', () => {
         expect(result.submitter).toBe(testDataUpdated.submitter);
         expect(result.hash).toBe(testDataUpdated.hash);
         expect(result.type).toBe(testDataUpdated.type);
+        expect(result.title).toBe(testDataUpdated.title);
         expect(result.description).toBe(testDataUpdated.description);
 
         // todo: should test that updating proposal with options works too..

@@ -12,6 +12,7 @@ export class ProposalUpdateRequest extends RequestBody {
     public hash: string;
     @IsEnum(ProposalType)
     public type: string;
+    public title: string;
     public description: string;
     public options: ProposalOptionCreateRequest[];
 

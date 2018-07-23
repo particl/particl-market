@@ -51,6 +51,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }
 
+    public get Title(): string { return this.get('title'); }
+    public set Title(value: string) { this.set('title', value); }
+
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
 

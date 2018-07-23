@@ -25,6 +25,9 @@ export class ProposalCreateRequest extends RequestBody {
     @IsNotEmpty()
     public description: string;
 
+    @IsNotEmpty()
+    public title: string;
+
     public options: ProposalOptionCreateRequest[];
 
 }
