@@ -160,8 +160,8 @@ export const Targets = {
         SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
         UserService: 'UserService',
-        VoteService: 'VoteService',
-        VoteActionService: 'VoteActionService'
+        VoteActionService: 'VoteActionService',
+        VoteService: 'VoteService'
     },
     Command:     {
         address: {
@@ -295,6 +295,7 @@ export const Targets = {
             ProposalGetCommand: 'ProposalGetCommand',
             ProposalListCommand: 'ProposalListCommand',
             ProposalPostCommand: 'ProposalPostCommand',
+            ProposalResultsCommand: 'ProposalResultsCommand',
             ProposalRootCommand: 'ProposalRootCommand'
         },
         RpcCommandInterface: 'RpcCommandInterface',
@@ -334,8 +335,8 @@ export const Targets = {
         MessagingInformationFactory: 'MessagingInformationFactory',
         OrderFactory: 'OrderFactory',
         ProposalFactory: 'ProposalFactory',
-        VoteFactory: 'VoteFactory',
-        RpcCommandFactory: 'RpcCommandFactory'
+        RpcCommandFactory: 'RpcCommandFactory',
+        VoteFactory: 'VoteFactory'
     },
     MessageProcessor:     {
         deprecated: {

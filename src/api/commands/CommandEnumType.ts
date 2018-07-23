@@ -118,10 +118,11 @@ export class CommandEnumType extends Enum<Command> {
             this.ADDRESS_ROOT, this.FAVORITE_ROOT], EnvironmentType.ALL);
 
     public PROPOSAL_GET: Command         = new Command('proposalget', 'get', false);
-    public PROPOSAL_POST: Command         = new Command('proposalpost', 'post', false);
-    public PROPOSAL_LIST: Command         = new Command('proposallist', 'list', false);
+    public PROPOSAL_POST: Command        = new Command('proposalpost', 'post', false);
+    public PROPOSAL_LIST: Command        = new Command('proposallist', 'list', false);
+    public PROPOSAL_RESULTS: Command     = new Command('proposalresults', 'list', false);
     public PROPOSAL_ROOT: Command        = new Command('proposal', 'proposal', true,
-        [this.PROPOSAL_GET, this.PROPOSAL_POST, this.PROPOSAL_LIST], EnvironmentType.ALL);
+        [this.PROPOSAL_GET, this.PROPOSAL_POST, this.PROPOSAL_LIST, this.PROPOSAL_RESULTS], EnvironmentType.ALL);
 
     public MARKET_LIST: Command         = new Command('marketlist', 'list', false);
     public MARKET_ADD: Command          = new Command('marketadd', 'add', false);

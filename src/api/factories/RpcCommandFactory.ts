@@ -104,6 +104,7 @@ import { PriceTickerRootCommand } from '../commands/priceticker/PriceTickerRootC
 import { ProposalGetCommand } from '../commands/proposal/ProposalGetCommand';
 import { ProposalPostCommand } from '../commands/proposal/ProposalPostCommand';
 import { ProposalListCommand } from '../commands/proposal/ProposalListCommand';
+import { ProposalResultsCommand } from '../commands/proposal/ProposalResultsCommand';
 import { ProposalRootCommand } from '../commands/proposal/ProposalRootCommand';
 
 import { ProfileAddCommand } from '../commands/profile/ProfileAddCommand';
@@ -265,6 +266,7 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.proposal.ProposalGetCommand) private proposalGetCommand: ProposalGetCommand,
         @inject(Types.Command) @named(Targets.Command.proposal.ProposalPostCommand) private proposalPostCommand: ProposalPostCommand,
         @inject(Types.Command) @named(Targets.Command.proposal.ProposalListCommand) private proposalListCommand: ProposalListCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalResultsCommand) private proposalResultsCommand: ProposalResultsCommand,
         @inject(Types.Command) @named(Targets.Command.proposal.ProposalRootCommand) private proposalRootCommand: ProposalRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.vote.VotePostCommand) private votePostCommand: VotePostCommand,
@@ -398,6 +400,7 @@ export class RpcCommandFactory {
         this.commands.push(proposalGetCommand);
         this.commands.push(proposalPostCommand);
         this.commands.push(proposalListCommand);
+        this.commands.push(proposalResultsCommand);
         this.commands.push(proposalRootCommand);
 
         this.commands.push(currencyPriceRootCommand);
