@@ -6,6 +6,6 @@ import { VoteMessageType } from '../enums/VoteMessageType';
 
 export interface ActionMessageInterface {
     action: EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType;
-    item: string;
+    item?: string;
     objects?: any;
 }

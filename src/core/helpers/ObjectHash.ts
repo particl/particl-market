@@ -12,6 +12,7 @@ export class ObjectHash {
      *
      * @param objectToHash
      * @param {HashableObjectType} type
+     * @param {boolean} timestampedHash
      * @returns {string}
      */
     public static getHash(

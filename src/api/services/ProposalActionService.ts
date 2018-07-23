@@ -26,6 +26,8 @@ import { ProposalOptionService } from '../services/ProposalOptionService';
 import { MessageException } from '../exceptions/MessageException';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../../api/enums/HashableObjectType';
+import {SmsgSendResponse} from '../responses/SmsgSendResponse';
+import {ProposalType} from '../enums/ProposalType';
 
 export class ProposalActionService {
 
@@ -44,25 +46,31 @@ export class ProposalActionService {
         this.configureEventListeners();
     }
 
-    @validate()
-    public async send( @request(ProposalCreateRequest) data: ProposalCreateRequest, senderProfile: Profile, marketplace: Market): Promise<Proposal> {
-        const senderProfileJson = senderProfile.toJSON();
-        const marketplaceJson = marketplace.toJSON();
+    /**
+     * create ProposalMessage (of type MP_PROPOSAL_ADD) and post it
+     *
+     * @param {ProposalType} proposalType
+     * @param {string} proposalTitle
+     * @param {string} proposalDescription
+     * @param {number} blockStart
+     * @param {number} blockEnd
+     * @param {string[]} options
+     * @param {"resources".Profile} senderProfile
+     * @param {"resources".Market} marketplace
+     * @returns {Promise<SmsgSendResponse>}
+     */
+    public async send(proposalType: ProposalType, proposalTitle: string, proposalDescription: string, blockStart: number, blockEnd: number,
+                      options: string[], senderProfile: resources.Profile, marketplace: resources.Market): Promise<SmsgSendResponse> {
 
-        if (_.isEmpty(data.hash)) {
-            data.hash = ObjectHash.getHash(data, HashableObjectType.PROPOSAL_CREATEREQUEST, false);
-        }
-        const proposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, [ data ]);
-        try {
-            const msg: MarketplaceMessage = {
-                version: process.env.MARKETPLACE_VERSION,
-                mpaction: proposalMessage
-            } as MarketplaceMessage;
-            this.smsgService.smsgSend(senderProfileJson.address, marketplaceJson.address, msg, true);
-            return Proposal.forge<Proposal>(data); // TODO: replace this
-        } catch (error) {
-            throw new DatabaseException('Could not create the proposal!', error);
-        }
+        const proposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, proposalType,
+            proposalTitle, proposalDescription, blockStart, blockEnd, options, senderProfile, marketplace);
+
+        const msg: MarketplaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: proposalMessage
+        } as MarketplaceMessage;
+
+        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, true);
     }
 
     /**

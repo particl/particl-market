@@ -4,6 +4,10 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { ProposalMessage } from '../messages/ProposalMessage';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
+import * as resources from 'resources';
+import {ProposalType} from '../enums/ProposalType';
+import {ObjectHash} from '../../core/helpers/ObjectHash';
+import {HashableObjectType} from '../enums/HashableObjectType';
 
 export class ProposalFactory {
 
@@ -22,10 +26,33 @@ export class ProposalFactory {
      * @param {IdValuePair[]} idValuePairObjects
      * @returns {Promise<BidMessage>}
      */
-    public async getMessage(proposalMessageType: ProposalMessageType, data?: any[]): Promise<ProposalMessage> {
-        const message = {
+    public async getMessage(proposalMessageType: ProposalMessageType, proposalType: ProposalType, proposalTitle: string,
+                            proposalDescription: string, blockStart: number, blockEnd: number, options: string[],
+                            senderProfile: resources.Profile, marketplace: resources.Market): Promise<ProposalMessage> {
+
+        const submitter = senderProfile.address;
+
+        const optionsList: any[] = [];
+        let optionId = 0;
+
+        for (const description of options) {
+            const option = {
+                optionId,
+                description
+            };
+            optionsList.push(option);
+            optionId++;
+        }
+
+        const message: ProposalMessage = {
             action: proposalMessageType,
-            objects: data
+            submitter,
+            blockStart,
+            blockEnd,
+            title: proposalTitle,
+            description: proposalDescription,
+            options: optionsList,
+            type: proposalType
         } as ProposalMessage;
 
         return message;

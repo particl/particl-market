@@ -58,7 +58,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         return this.usage() + ' -  ' + this.description() + ' \n'
             + '    <listingTemplateId>           - Numeric - The ID of the listing item template that we \n'
             + '                                     want to post. \n'
-            + '    <marketId>                    - Numeric - The ID of the markte id. ';
+            + '    <marketId>                    - Numeric - The ID of the market id. ';
     }
 
     public description(): string {

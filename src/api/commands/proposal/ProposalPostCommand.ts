@@ -18,6 +18,8 @@ import { Profile } from '../../models/Profile';
 import { MarketService } from '../../services/MarketService';
 import { Market } from '../../models/Market';
 import { ProposalType } from '../../enums/ProposalType';
+import * as resources from 'resources';
+import {SmsgSendResponse} from '../../responses/SmsgSendResponse';
 
 export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
 
@@ -35,67 +37,57 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * command description
-     * [0] proposalDescription
-     * [1] blockStart
-     * [2] blockEnd
-     * [3] submitterAddress
-     * [4] option1Description option2Description optionNDescription
+     * [0] profileId
+     * [1] proposalTitle
+     * [2] proposalDescription
+     * [3] blockStart
+     * [4] blockEnd
+     * [5] option1Description
+     * [n...] optionNDescription
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
-        try {
-            if (data.params.length < 3) {
-                throw new MessageException('Expected <TODO> but received no params.');
-            }
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
-            const proposalDescription = data.params.shift();
-            const blockStart = data.params.shift();
-            const blockEnd = data.params.shift();
-
-            // Get profile from address.
-            // Profile that is doing the bidding.
-            const profileAddress = data.params.shift();
-            const profile = await this.profileService.findOneByAddress(profileAddress);
-            if (!profile) {
-                throw new MessageException(`Profile with address <${profileAddress}> doesn't exist or doesn't belong to us.`);
-            }
-
-            // Get the default market.
-            // TODO: Might want to let users specify this later.
-            const market = await this.marketService.getDefault();
-            if (!market) {
-                throw new MessageException(`Default market doesn't exist!`);
-            }
-
-            const optionsList: ProposalOptionCreateRequest[] = [];
-            const optionId = 0;
-
-            for (const description of data.params) {
-                const optionCreateRequest = {
-                    optionId,
-                    description
-                } as ProposalOptionCreateRequest;
-                optionsList.push(optionCreateRequest);
-            }
-
-            const createRequest: ProposalCreateRequest = {
-                submitter: 'submitter',
-                blockStart,
-                blockEnd,
-                description: proposalDescription,
-                options: optionsList,
-                type: ProposalType.PUBLIC_VOTE
-            } as ProposalCreateRequest;
-            const createdProposal = this.proposalActionService.send(createRequest, profile, market);
-            return createdProposal;
-        } catch ( ex ) {
-            this.log.error('proposal post ex = ' + ex);
-            throw ex;
+        // todo add validation in separate function..
+        if (data.params.length < 5) {
+            throw new MessageException('Expected <TODO> but received no params.');
         }
+
+        const type = ProposalType.PUBLIC_VOTE;
+        const profileId = data.params.shift();
+        const proposalTitle = data.params.shift();
+        const proposalDescription = data.params.shift();
+        const blockStart = data.params.shift();
+        const blockEnd = data.params.shift();
+
+        // profile that is doing the bidding
+        let profile: resources.Profile;
+        try {
+            const profileModel = await this.profileService.findOne(profileId);
+            profile = profileModel.toJSON();
+        } catch ( ex ) {
+            this.log.error(ex);
+            throw new MessageException('Profile not found.');
+        }
+
+        // Get the default market.
+        // TODO: Might want to let users specify this later.
+        let market: resources.Market;
+        const marketModel = await this.marketService.getDefault();
+        if (!marketModel) {
+            throw new MessageException(`Default market doesn't exist!`);
+        }
+        market = marketModel.toJSON();
+
+        // rest of the data.params are option descriptions
+        const optionsList: string[] = data.params;
+
+        return this.proposalActionService.send(type, proposalTitle, proposalDescription, blockStart,
+            blockEnd, optionsList, profile, market);
     }
 
     public help(): string {
@@ -103,7 +95,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public description(): string {
-        return 'TODO: Commands for managing ProposalProposalPostCommand.';
+        return 'TODO: Commands for posting Proposals.';
     }
 
     public example(): string {
