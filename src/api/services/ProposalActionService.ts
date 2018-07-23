@@ -63,7 +63,7 @@ export class ProposalActionService {
                       options: string[], senderProfile: resources.Profile, marketplace: resources.Market): Promise<SmsgSendResponse> {
 
         const proposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, proposalType,
-            proposalTitle, proposalDescription, blockStart, blockEnd, options, senderProfile, marketplace);
+            proposalTitle, proposalDescription, blockStart, blockEnd, options, senderProfile);
 
         const msg: MarketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,

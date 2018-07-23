@@ -28,7 +28,7 @@ export class ProposalFactory {
      */
     public async getMessage(proposalMessageType: ProposalMessageType, proposalType: ProposalType, proposalTitle: string,
                             proposalDescription: string, blockStart: number, blockEnd: number, options: string[],
-                            senderProfile: resources.Profile, marketplace: resources.Market): Promise<ProposalMessage> {
+                            senderProfile: resources.Profile): Promise<ProposalMessage> {
 
         const submitter = senderProfile.address;
 

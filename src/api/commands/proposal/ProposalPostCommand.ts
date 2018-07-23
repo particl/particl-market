@@ -2,26 +2,20 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ProposalService } from '../../services/ProposalService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { Proposal } from '../../models/Proposal';
 import { RpcCommandInterface } from './../RpcCommandInterface';
 import { Commands } from './../CommandEnumType';
 import { BaseCommand } from './../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
-import { ProposalCreateRequest } from '../../requests/ProposalCreateRequest';
-import { ProposalOptionCreateRequest } from '../../requests/ProposalOptionCreateRequest';
 import { ProposalActionService } from '../../services/ProposalActionService';
 import { ProfileService } from '../../services/ProfileService';
-import { Profile } from '../../models/Profile';
 import { MarketService } from '../../services/MarketService';
-import { Market } from '../../models/Market';
 import { ProposalType } from '../../enums/ProposalType';
 import * as resources from 'resources';
-import {SmsgSendResponse} from '../../responses/SmsgSendResponse';
+import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 
-export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
+export class ProposalPostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
     public log: LoggerType;
 
@@ -64,7 +58,6 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         const blockStart = data.params.shift();
         const blockEnd = data.params.shift();
 
-        // profile that is doing the bidding
         let profile: resources.Profile;
         try {
             const profileModel = await this.profileService.findOne(profileId);
@@ -86,8 +79,8 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         // rest of the data.params are option descriptions
         const optionsList: string[] = data.params;
 
-        return this.proposalActionService.send(type, proposalTitle, proposalDescription, blockStart,
-            blockEnd, optionsList, profile, market);
+        return this.proposalActionService.send(type, proposalTitle, proposalDescription, blockStart, blockEnd,
+            optionsList, profile, market);
     }
 
     public help(): string {
