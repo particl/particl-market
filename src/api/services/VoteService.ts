@@ -34,6 +34,15 @@ export class VoteService {
         return vote;
     }
 
+    public async findForOption(optionId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
+        const votes = await this.voteRepo.findForOption(optionId, withRelated);
+        if (votes === null) {
+            this.log.warn(`No votes with the optionId=${optionId} were found!`);
+            throw new NotFoundException(optionId);
+        }
+        return votes;
+    }
+
     @validate()
     public async create( @request(VoteCreateRequest) data: VoteCreateRequest): Promise<Vote> {
 

@@ -312,6 +312,16 @@ export class CoreRpcService {
     }
 
     /**
+     * ﻿Get the current block number
+     *
+     * @param {string} account
+     * @returns {Promise<any>}
+     */
+    public async getblockcount(): Promise<any> {
+        return await this.call('getblockcount', []);
+    }
+
+    /**
      * ﻿Reveals the private key corresponding to 'address'.
      *
      * @param {string} address

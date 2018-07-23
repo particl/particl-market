@@ -78,7 +78,13 @@ export class VoteActionService {
 
         // TODO: Validation, if needed
 
+        // TODO: Ignore vote if we're past the final block of the proposal
+
         const createdProposal: Vote = await this.voteService.create(receivedVote);
+
+        /*
+         * TODO: Update the proposal result stuff.
+         */
 
         return createdProposal;
     }

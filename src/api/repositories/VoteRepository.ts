@@ -26,6 +26,10 @@ export class VoteRepository {
         return this.VoteModel.fetchById(id, withRelated);
     }
 
+    public async findForOption(optionId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
+        return this.VoteModel.fetchByOptionId(optionId, withRelated);
+    }
+
     public async create(data: any): Promise<Vote> {
         const vote = this.VoteModel.forge<Vote>(data);
         try {
