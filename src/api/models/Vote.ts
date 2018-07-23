@@ -19,6 +19,16 @@ export class Vote extends Bookshelf.Model<Vote> {
         }
     }
 
+    public static async fetchByOptionId(optionId: number, withRelated: boolean = true): Promise<Vote> {
+        if (withRelated) {
+            return await Vote.where<Vote>({ proposalOptionId: optionId }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Vote.where<Vote>({ proposalOptionId: optionId }).fetch();
+        }
+    }
+
     public get tableName(): string { return 'votes'; }
     public get hasTimestamps(): boolean { return true; }
 

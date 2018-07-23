@@ -9,6 +9,8 @@ import { ProposalRepository } from '../repositories/ProposalRepository';
 import { Proposal } from '../models/Proposal';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
+import { ProposalResultCreateRequest } from '../requests/ProposalResultCreateRequest';
+import { ProposalOptionResultCreateRequest } from '../requests/ProposalOptionResultCreateRequest';
 
 import { SmsgService } from '../services/SmsgService';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
@@ -23,6 +25,10 @@ import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { ProposalFactory } from '../factories/ProposalFactory';
 import { ProposalService } from '../services/ProposalService';
 import { ProposalOptionService } from '../services/ProposalOptionService';
+import { VoteService } from '../services/VoteService';
+import { ProposalResultService } from '../services/ProposalResultService';
+import { ProposalOptionResultService } from '../services/ProposalOptionResultService';
+import { CoreRpcService } from '../services/CoreRpcService';
 import { MessageException } from '../exceptions/MessageException';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../../api/enums/HashableObjectType';
@@ -36,9 +42,13 @@ export class ProposalActionService {
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ProposalRepository) public proposalRepo: ProposalRepository,
         @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionService) public proposalOptionService: ProposalOptionService,
+        @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
+        @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
+        @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -93,6 +103,30 @@ export class ProposalActionService {
         }
 
         const createdProposal: Proposal = await this.proposalService.create(receivedProposal);
+
+        /*
+         * Set up the proposal result stuff for later.
+         */
+        const blockCount = this.coreRpcService.getblockcount();
+        this.log.debug('processProposalReceivedEvent.blockCount = ' + JSON.stringify(blockCount, null, 2));
+        const currentBlock = 1; // TODO: get actual current block
+
+        const proposalResult = await this.proposalResultService.create({
+            block: currentBlock,
+            proposalId: createdProposal.id
+        } as ProposalResultCreateRequest);
+        this.log.debug('processProposalReceivedEvent.proposalResult = ' + JSON.stringify(proposalResult, null, 2));
+
+        const options: any = createdProposal.ProposalOptions;
+        for (let option of options) {
+            const votes = await this.voteService.findForOption(option.id);
+            const proposalOptionResult = this.proposalOptionResultService.create({
+                weight: votes.length,
+                proposalOptionId: option.id,
+                proposalResultId: proposalResult.id
+            } as ProposalOptionResultCreateRequest);
+            this.log.debug('processProposalReceivedEvent.proposalOptionResult = ' + JSON.stringify(proposalOptionResult, null, 2));
+        }
 
         return createdProposal;
     }
