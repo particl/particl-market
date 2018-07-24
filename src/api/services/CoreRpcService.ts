@@ -317,7 +317,7 @@ export class CoreRpcService {
      * @param {string} account
      * @returns {Promise<any>}
      */
-    public async getblockcount(): Promise<any> {
+    public async getBlockCount(): Promise<number> {
         return await this.call('getblockcount', []);
     }
 

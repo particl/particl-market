@@ -4,6 +4,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { VoteMessage } from '../messages/VoteMessage';
 import { VoteMessageType } from '../enums/VoteMessageType';
+import * as resources from 'resources';
 
 export class VoteFactory {
 
@@ -22,12 +23,22 @@ export class VoteFactory {
      * @param {IdValuePair[]} idValuePairObjects
      * @returns {Promise<VoteMessage>}
      */
-    public async getMessage(voteMessageType: VoteMessageType, data?: any[]): Promise<VoteMessage> {
-        const message = {
-            action: voteMessageType,
-            objects: data
-        } as VoteMessage;
+    public async getMessage(voteMessageType: VoteMessageType, proposal: resources.Proposal, proposalOption: resources.ProposalOption,
+                            senderProfile: resources.Profile, currentBlock: number): Promise<VoteMessage> {
 
-        return message;
+        const proposalHash = proposal.hash;
+        const optionId = proposalOption.optionId;
+        const voter = senderProfile.address;
+        const block = currentBlock;
+        const weight = 1;
+
+        return {
+            action: voteMessageType,
+            proposalHash,
+            optionId,
+            voter,
+            block,
+            weight
+        } as VoteMessage;
     }
 }

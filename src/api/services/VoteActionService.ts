@@ -13,15 +13,17 @@ import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { VoteFactory } from '../factories/VoteFactory';
 import { VoteService } from './VoteService';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import { VoteMessageType } from '../enums/VoteMessageType';
+import { CoreRpcService } from './CoreRpcService';
 
 export class VoteActionService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Repository) @named(Targets.Repository.VoteRepository) public voteRepo: VoteRepository,
         @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -33,16 +35,17 @@ export class VoteActionService {
     public async send( proposal: resources.Proposal, proposalOption: resources.ProposalOption,
                        senderProfile: resources.Profile, marketplace: resources.Market): Promise<SmsgSendResponse> {
 
-        // TODO: create proper VoteMessage
-        // TODO: then implement the factory method to create the message
-        // const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, [ data ]);
+
+        const currentBlock: number = await this.coreRpcService.getBlockCount();
+        const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
+            senderProfile, currentBlock);
 
         const msg: MarketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
-            mpaction: {} // voteMessage
-        } as MarketplaceMessage;
+            mpaction: voteMessage
+        };
 
-        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, true);
+        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false);
 
     }
 

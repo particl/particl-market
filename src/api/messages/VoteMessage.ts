@@ -11,7 +11,7 @@ export class VoteMessage extends MessageBody implements VoteMessageInterface {
     public proposalHash: string;
     public optionId: number;
     // public optionHash: string; // todo: use hash instead?
-    public voter: string;
+    public voter: string; // todo: will be removed later
     public block: number;
     public weight: number;
 

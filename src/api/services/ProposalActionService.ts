@@ -15,7 +15,6 @@ import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { ProposalFactory } from '../factories/ProposalFactory';
 import { ProposalService } from './ProposalService';
-// import { VoteService } from './VoteService';
 import { ProposalResultService } from './ProposalResultService';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
 import { CoreRpcService } from './CoreRpcService';
@@ -35,7 +34,6 @@ export class ProposalActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
-        // @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -66,7 +64,7 @@ export class ProposalActionService {
         const msg: MarketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             mpaction: proposalMessage
-        } as MarketplaceMessage;
+        };
 
         return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, true);
     }
@@ -95,7 +93,7 @@ export class ProposalActionService {
         /*
          * Set up the proposal result stuff for later.
          */
-        const blockCount = this.coreRpcService.getblockcount();
+        const blockCount: number = await this.coreRpcService.getBlockCount();
         this.log.debug('processProposalReceivedEvent.blockCount = ' + JSON.stringify(blockCount, null, 2));
         const currentBlock = 1; // TODO: get actual current block
 
