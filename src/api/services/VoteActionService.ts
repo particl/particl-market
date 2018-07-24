@@ -77,7 +77,7 @@ export class VoteActionService {
         if (voteMessage.voter !== event.smsgMessage.from) {
             throw new MessageException('Voter does not match with sender.');
         }
-        // TODO: Validation, if needed
+        // TODO: Validation??
 
         // get proposal and ignore vote if we're past the final block of the proposal
         const proposalModel = await this.proposalService.findOneByHash(voteMessage.proposalHash);

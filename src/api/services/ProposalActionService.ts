@@ -23,6 +23,7 @@ import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import {SmsgSendResponse} from '../responses/SmsgSendResponse';
 import {ProposalType} from '../enums/ProposalType';
+import {ProposalMessage} from '../messages/ProposalMessage';
 
 export class ProposalActionService {
 
@@ -77,47 +78,60 @@ export class ProposalActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.Bid>}
      */
-    public async processProposalReceivedEvent(event: MarketplaceEvent): Promise<Proposal> {
-        const receivedMpaction: any = event.marketplaceMessage.mpaction;
-        const receivedProposals: any = receivedMpaction.objects;
-        const receivedProposal: ProposalCreateRequest = receivedProposals[0];
-        const receivedProposalHash = receivedProposal.hash;
-        delete receivedProposal.hash;
-        const receivedProposalRealHash = ObjectHash.getHash(receivedProposal, HashableObjectType.PROPOSAL_CREATEREQUEST, [false]);
-        if (receivedProposalHash !== receivedProposalRealHash) {
-            throw new MessageException(`Received proposal hash <${receivedProposalHash}> doesn't match actual hash <${receivedProposalRealHash}>.`);
+    public async processProposalReceivedEvent(event: MarketplaceEvent): Promise<resources.Proposal> {
+
+        this.log.debug('Received event:', event);
+
+        const message = event.marketplaceMessage;
+        if (!message.mpaction || !message.mpaction.item) {
+            throw new MessageException('Missing mpaction.');
         }
 
-        const createdProposal: Proposal = await this.proposalService.create(receivedProposal);
+        const proposalMessage: ProposalMessage = event.marketplaceMessage.mpaction as ProposalMessage;
 
-        /*
-         * Set up the proposal result stuff for later.
-         */
-        const blockCount: number = await this.coreRpcService.getBlockCount();
-        this.log.debug('processProposalReceivedEvent.blockCount = ' + JSON.stringify(blockCount, null, 2));
-        const currentBlock = 1; // TODO: get actual current block
+        // create the proposal
+        const proposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
+        let createdProposalModel: Proposal = await this.proposalService.create(proposalCreateRequest);
+        const createdProposal: resources.Proposal = createdProposalModel.toJSON();
 
-        const proposalResult = await this.proposalResultService.create({
+        // TODO: Validation??
+        // - sanity check for proposal start/end blocks vs current one
+
+        // Set up the proposal result stuff for later.
+        const proposalResult = await this.createProposalResult(createdProposal);
+
+        createdProposalModel = await this.proposalService.findOne(createdProposal.id);
+        return createdProposalModel.toJSON();
+    }
+
+    /**
+     * creates empty ProposalResult for the Proposal
+     *
+     * @param {"resources".Proposal} proposal
+     * @returns {Promise<"resources".ProposalResult>}
+     */
+    private async createProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
+        const currentBlock: number = await this.coreRpcService.getBlockCount();
+
+        let proposalResultModel = await this.proposalResultService.create({
             block: currentBlock,
-            proposal_id: createdProposal.id
+            proposal_id: proposal.id
         } as ProposalResultCreateRequest);
-        this.log.debug('processProposalReceivedEvent.proposalResult = ' + JSON.stringify(proposalResult, null, 2));
+        const proposalResult = proposalResultModel.toJSON();
 
-        const options: any = createdProposal.ProposalOptions;
-        for (const option of options) {
-            // TODO: unnecessary, remove, just fetch the ProposalOption.Votes
-            /*
-            const votes = await this.voteService.findForOption(option.id);
+        const proposalOptions: any = proposal.ProposalOptions;
+        for (const proposalOption of proposalOptions) {
             const proposalOptionResult = this.proposalOptionResultService.create({
-                weight: votes.length,
-                proposal_option_id: option.id,
+                weight: 0,
+                voters: 0,
+                proposal_option_id: proposalOption.id,
                 proposal_result_id: proposalResult.id
             } as ProposalOptionResultCreateRequest);
             this.log.debug('processProposalReceivedEvent.proposalOptionResult = ' + JSON.stringify(proposalOptionResult, null, 2));
-            */
         }
 
-        return createdProposal;
+        proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
+        return proposalResultModel.toJSON();
     }
 
     private configureEventListeners(): void {

@@ -8,14 +8,15 @@ import * as resources from 'resources';
 import {ProposalType} from '../enums/ProposalType';
 import {ObjectHash} from '../../core/helpers/ObjectHash';
 import {HashableObjectType} from '../enums/HashableObjectType';
+import {ProposalCreateRequest} from '../requests/ProposalCreateRequest';
+import {ProposalOptionCreateRequest} from '../requests/ProposalOptionCreateRequest';
+import {MessageException} from '../exceptions/MessageException';
 
 export class ProposalFactory {
 
     public log: LoggerType;
 
-    constructor(
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
-    ) {
+    constructor(@inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
     }
 
@@ -57,4 +58,31 @@ export class ProposalFactory {
 
         return message;
     }
+
+    /**
+     *
+     * @param {ProposalMessage} proposalMessage
+     * @returns {Promise<ProposalCreateRequest>}
+     */
+    public async getModel(proposalMessage: ProposalMessage): Promise<ProposalCreateRequest> {
+
+        const proposalCreateRequest = {
+            submitter: proposalMessage.submitter,
+            blockStart: proposalMessage.blockStart,
+            blockEnd: proposalMessage.blockEnd,
+            hash: proposalMessage.hash,
+            type: proposalMessage.type,
+            title: proposalMessage.title,
+            description: proposalMessage.description,
+            options: proposalMessage.options as ProposalOptionCreateRequest[]
+        } as ProposalCreateRequest;
+
+        const correctHash = ObjectHash.getHash(proposalCreateRequest, HashableObjectType.PROPOSAL_CREATEREQUEST);
+        if (correctHash !== proposalCreateRequest.hash) {
+            throw new MessageException(`Received proposal hash <${proposalCreateRequest.hash}> doesn't match actual hash <${correctHash}>.`);
+        }
+
+        return proposalCreateRequest;
+    }
+
 }

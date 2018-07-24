@@ -44,6 +44,15 @@ export class VoteFactory {
         } as VoteMessage;
     }
 
+    /**
+     *
+     * @param {VoteMessage} voteMessage
+     * @param {"resources".Proposal} proposal
+     * @param {number} block
+     * @param {number} weight
+     * @param {boolean} create
+     * @returns {Promise<VoteCreateRequest | VoteUpdateRequest>}
+     */
     public async getModel(voteMessage: VoteMessage, proposal: resources.Proposal, block: number, weight: number,
                           create: boolean): Promise<VoteCreateRequest | VoteUpdateRequest> {
 
