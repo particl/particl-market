@@ -8,7 +8,7 @@ import { ProposalResultRepository } from '../repositories/ProposalResultReposito
 import { ProposalResult } from '../models/ProposalResult';
 import { ProposalResultCreateRequest } from '../requests/ProposalResultCreateRequest';
 import { ProposalResultUpdateRequest } from '../requests/ProposalResultUpdateRequest';
-
+import { ProposalService } from '../services/ProposalService';
 
 export class ProposalResultService {
 
@@ -16,6 +16,7 @@ export class ProposalResultService {
 
     constructor(
         @inject(Types.Repository) @named(Targets.Repository.ProposalResultRepository) public proposalResultRepo: ProposalResultRepository,
+        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -60,10 +61,10 @@ export class ProposalResultService {
     public async update(id: number, @request(ProposalResultUpdateRequest) body: ProposalResultUpdateRequest): Promise<ProposalResult> {
 
         // find the existing one without related
-        const proposalResult = await this.findOne(id, false);
+        const proposalResult: any = await this.findOne(id, false);
+        // proposalResult = proposalResult.toJSON();
 
         // set new values
-        proposalResult.ProposalId = body.proposalId;
         proposalResult.Block = body.block;
 
         // update proposalResult record

@@ -16,7 +16,7 @@ export class ProposalResultsCommand extends BaseCommand implements RpcCommandInt
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultsService: ProposalResultService
+        @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultsService: ProposalResultService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         super(Commands.PROPOSAL_RESULTS);

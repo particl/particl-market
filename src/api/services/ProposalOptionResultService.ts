@@ -63,8 +63,8 @@ export class ProposalOptionResultService {
         const proposalOptionResult = await this.findOne(id, false);
 
         // set new values
-        proposalOptionResult.ProposalResultId = body.proposalResultId;
-        proposalOptionResult.ProposalOptionId = body.proposalOptionId;
+        // proposalOptionResult.ProposalResultId = body.proposalResultId;
+        // proposalOptionResult.ProposalOptionId = body.proposalOptionId;
         proposalOptionResult.Weight = body.weight;
         proposalOptionResult.VoterCount = body.voterCount;
 

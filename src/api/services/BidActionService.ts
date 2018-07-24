@@ -695,7 +695,7 @@ export class BidActionService {
         const bidder = event.smsgMessage.from;
         const message = event.marketplaceMessage;
 
-        if (!message.mpaction) {   // ACTIONEVENT
+        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
 
@@ -750,7 +750,7 @@ export class BidActionService {
 
         // find the ListingItem
         const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
+        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
         const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
@@ -821,7 +821,7 @@ export class BidActionService {
         const bidder = event.smsgMessage.from;
         // find the ListingItem
         const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
+        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
         const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);

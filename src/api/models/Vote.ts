@@ -1,5 +1,4 @@
-import { Bookshelf } from '../../config/Database';
-
+import * as Bookshelf from 'bookshelf';
 
 export class Vote extends Bookshelf.Model<Vote> {
 
@@ -19,13 +18,13 @@ export class Vote extends Bookshelf.Model<Vote> {
         }
     }
 
-    public static async fetchByOptionId(optionId: number, withRelated: boolean = true): Promise<Vote> {
+    public static async fetchByOptionId(optionId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
         if (withRelated) {
-            return await Vote.where<Vote>({ proposalOptionId: optionId }).fetch({
+            return await Vote.where<Vote>({ proposalOptionId: optionId }).fetchAll({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await Vote.where<Vote>({ proposalOptionId: optionId }).fetch();
+            return await Vote.where<Vote>({ proposalOptionId: optionId }).fetchAll();
         }
     }
 

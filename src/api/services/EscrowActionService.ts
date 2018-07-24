@@ -340,7 +340,7 @@ export class EscrowActionService {
 
         // find the ListingItem
         const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
+        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
         const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
@@ -360,7 +360,7 @@ export class EscrowActionService {
 
         // find the ListingItem
         const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
+        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
         const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);

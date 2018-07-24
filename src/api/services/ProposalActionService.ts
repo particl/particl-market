@@ -118,7 +118,7 @@ export class ProposalActionService {
         this.log.debug('processProposalReceivedEvent.proposalResult = ' + JSON.stringify(proposalResult, null, 2));
 
         const options: any = createdProposal.ProposalOptions;
-        for (let option of options) {
+        for (const option of options) {
             const votes = await this.voteService.findForOption(option.id);
             const proposalOptionResult = this.proposalOptionResultService.create({
                 weight: votes.length,
