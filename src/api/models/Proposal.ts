@@ -7,6 +7,7 @@ export class Proposal extends Bookshelf.Model<Proposal> {
 
     public static RELATIONS = [
         'ProposalOptions',
+        // 'ProposalOptions.Votes',
         'ProposalResult'
     ];
 

@@ -18,7 +18,12 @@ import { CoreRpcService } from './CoreRpcService';
 import { MessageException } from '../exceptions/MessageException';
 import { VoteMessage } from '../messages/VoteMessage';
 import { ProposalService } from './ProposalService';
-import {VoteUpdateRequest} from '../requests/VoteUpdateRequest';
+import { VoteUpdateRequest } from '../requests/VoteUpdateRequest';
+import { ProposalResultService } from './ProposalResultService';
+import { ProposalResultUpdateRequest } from '../requests/ProposalResultUpdateRequest';
+import { ProposalOptionResultUpdateRequest } from '../requests/ProposalOptionResultUpdateRequest';
+import { ProposalOptionService } from './ProposalOptionService';
+import { ProposalOptionResultService } from './ProposalOptionResultService';
 
 export class VoteActionService {
 
@@ -29,6 +34,9 @@ export class VoteActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.ProposalOptionService) public proposalOptionService: ProposalOptionService,
+        @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
+        @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
         @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -37,9 +45,16 @@ export class VoteActionService {
         this.configureEventListeners();
     }
 
+    /**
+     * 
+     * @param {"resources".Proposal} proposal
+     * @param {"resources".ProposalOption} proposalOption
+     * @param {"resources".Profile} senderProfile
+     * @param {"resources".Market} marketplace
+     * @returns {Promise<SmsgSendResponse>}
+     */
     public async send( proposal: resources.Proposal, proposalOption: resources.ProposalOption,
                        senderProfile: resources.Profile, marketplace: resources.Market): Promise<SmsgSendResponse> {
-
 
         const currentBlock: number = await this.coreRpcService.getBlockCount();
         const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
@@ -51,7 +66,6 @@ export class VoteActionService {
         };
 
         return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, false);
-
     }
 
     /**
@@ -89,6 +103,7 @@ export class VoteActionService {
             const createdVote = await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
             this.log.debug('createdVote:', JSON.stringify(createdVote, null, 2));
 
+            const proposalResult: resources.ProposalResult = await this.updateProposalResult(proposal.ProposalResult.id);
             // TODO: do whatever else needs to be done
 
             // todo: return ActionMessages from all actionservice.process functions
@@ -98,6 +113,53 @@ export class VoteActionService {
         }
     }
 
+    /**
+     *
+     * @param {number} proposalResultId
+     * @returns {Promise<"resources".ProposalResult>}
+     */
+    private async updateProposalResult(proposalResultId: number): Promise<resources.ProposalResult> {
+
+        const currentBlock: number = await this.coreRpcService.getBlockCount();
+
+        // get the proposal
+        // const proposalModel = await this.proposalService.findOne(proposalId);
+        // const proposal = proposalModel.toJSON();
+
+        let proposalResultModel = await this.proposalResultService.findOne(proposalResultId);
+        let proposalResult = proposalResultModel.toJSON();
+
+        // first update the block in ProposalResult
+        proposalResultModel = await this.proposalResultService.update(proposalResult.id, {
+            block: currentBlock
+        } as ProposalResultUpdateRequest);
+        proposalResult = proposalResultModel.toJSON();
+
+        // then loop through ProposalOptionResults and update values
+        for (const proposalOptionResult of proposalResult.ProposalOptionResults) {
+            // get the votes
+            const proposalOptionModel = await this.proposalOptionService.findOne(proposalOptionResult.ProposalOption.id);
+            const proposalOption = proposalOptionModel.toJSON();
+
+            // update
+            this.proposalOptionResultService.update(proposalOptionResult.id, {
+                weight: proposalOption.Votes.length,
+                voters: proposalOption.Votes.length
+            } as ProposalOptionResultUpdateRequest);
+        }
+
+        proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
+        return proposalResultModel.toJSON();
+    }
+
+    /**
+     *
+     * @param {VoteMessage} voteMessage
+     * @param {"resources".Proposal} proposal
+     * @param {number} currentBlock
+     * @param {number} weight
+     * @returns {Promise<"resources".Vote>}
+     */
     private async createOrUpdateVote(voteMessage: VoteMessage, proposal: resources.Proposal, currentBlock: number,
                                      weight: number): Promise<resources.Vote> {
 

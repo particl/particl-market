@@ -1,11 +1,14 @@
 import { Bookshelf } from '../../config/Database';
 import { Proposal } from './Proposal';
+import {Collection} from 'bookshelf';
+import {Vote} from './Vote';
 
 
 export class ProposalOption extends Bookshelf.Model<ProposalOption> {
 
     public static RELATIONS = [
-        'Proposal'
+        'Proposal',
+        'Votes'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ProposalOption> {
@@ -41,6 +44,10 @@ export class ProposalOption extends Bookshelf.Model<ProposalOption> {
 
     public Proposal(): Proposal {
         return this.belongsTo(Proposal, 'proposal_id', 'id');
+    }
+
+    public Votes(): Collection<Vote> {
+        return this.hasMany(Vote, 'proposal_option_id', 'id');
     }
 
 }
