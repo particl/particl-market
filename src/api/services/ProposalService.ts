@@ -11,7 +11,6 @@ import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../../api/enums/HashableObjectType';
-import { ProposalOptionRepository } from '../repositories/ProposalOptionRepository';
 import { ProposalOptionService } from '../services/ProposalOptionService';
 
 export class ProposalService {
@@ -19,9 +18,8 @@ export class ProposalService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Repository) @named(Targets.Repository.ProposalRepository) public proposalRepo: ProposalRepository,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionService) public proposalOptionService: ProposalOptionService,
-        @inject(Types.Repository) @named(Targets.Repository.ProposalOptionRepository) public proposalOptionRepository: ProposalOptionRepository,
+        @inject(Types.Repository) @named(Targets.Repository.ProposalRepository) public proposalRepo: ProposalRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);

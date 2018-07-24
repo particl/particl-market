@@ -6,7 +6,9 @@ import { ProposalOption } from './ProposalOption';
 export class ProposalOptionResult extends Bookshelf.Model<ProposalOptionResult> {
 
     public static RELATIONS = [
-        'ProposalResult'
+        'ProposalOption',
+        'ProposalResult',
+        'ProposalResult.Proposal'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ProposalOptionResult> {

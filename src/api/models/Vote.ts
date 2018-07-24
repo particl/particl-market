@@ -1,11 +1,11 @@
 import * as Bookshelf from 'bookshelf';
+import {ProposalOption} from './ProposalOption';
 
 export class Vote extends Bookshelf.Model<Vote> {
 
     public static RELATIONS = [
-        // TODO:
-        // 'VoteRelated',
-        // 'VoteRelated.Related'
+        'ProposalOption',
+        'ProposalOption.Proposal'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Vote> {
@@ -34,9 +34,6 @@ export class Vote extends Bookshelf.Model<Vote> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get ProposalOptionId(): number { return this.get('proposalOptionId'); }
-    public set ProposalOptionId(value: number) { this.set('proposalOptionId', value); }
-
     public get Voter(): string { return this.get('voter'); }
     public set Voter(value: string) { this.set('voter', value); }
 
@@ -52,8 +49,7 @@ export class Vote extends Bookshelf.Model<Vote> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public VoteRelated(): VoteRelated {
-    //    return this.hasOne(VoteRelated);
-    // }
+    public ProposalOption(): ProposalOption {
+        return this.belongsTo(ProposalOption, 'proposal_option_id', 'id');
+    }
 }

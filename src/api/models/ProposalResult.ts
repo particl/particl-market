@@ -8,7 +8,7 @@ export class ProposalResult extends Bookshelf.Model<ProposalResult> {
 
     public static RELATIONS = [
         'Proposal',
-        'ProposalOptionResult'
+        'ProposalOptionResults'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ProposalResult> {

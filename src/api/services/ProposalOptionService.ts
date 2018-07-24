@@ -6,16 +6,12 @@ import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ProposalOptionRepository } from '../repositories/ProposalOptionRepository';
-import { ProposalRepository } from '../repositories/ProposalRepository';
-import { Proposal } from '../models/Proposal';
 import { ProposalOption } from '../models/ProposalOption';
 import { ProposalOptionCreateRequest } from '../requests/ProposalOptionCreateRequest';
 import { ProposalOptionUpdateRequest } from '../requests/ProposalOptionUpdateRequest';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
-import { MessageException } from '../exceptions/MessageException';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
-import { ProposalService } from './ProposalService';
 
 
 export class ProposalOptionService {

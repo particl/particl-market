@@ -8,15 +8,15 @@ import { ProposalResultRepository } from '../repositories/ProposalResultReposito
 import { ProposalResult } from '../models/ProposalResult';
 import { ProposalResultCreateRequest } from '../requests/ProposalResultCreateRequest';
 import { ProposalResultUpdateRequest } from '../requests/ProposalResultUpdateRequest';
-import { ProposalService } from '../services/ProposalService';
+// import { ProposalService } from '../services/ProposalService';
 
 export class ProposalResultService {
 
     public log: LoggerType;
 
     constructor(
+        // @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Repository) @named(Targets.Repository.ProposalResultRepository) public proposalResultRepo: ProposalResultRepository,
-        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
