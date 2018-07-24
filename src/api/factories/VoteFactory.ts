@@ -5,6 +5,8 @@ import { Types, Core, Targets } from '../../constants';
 import { VoteMessage } from '../messages/VoteMessage';
 import { VoteMessageType } from '../enums/VoteMessageType';
 import * as resources from 'resources';
+import {VoteCreateRequest} from '../requests/VoteCreateRequest';
+import {VoteUpdateRequest} from '../requests/VoteUpdateRequest';
 
 export class VoteFactory {
 
@@ -41,4 +43,22 @@ export class VoteFactory {
             weight
         } as VoteMessage;
     }
+
+    public async getModel(voteMessage: VoteMessage, proposal: resources.Proposal, block: number, weight: number,
+                          create: boolean): Promise<VoteCreateRequest | VoteUpdateRequest> {
+
+        const voteRequest = {
+            voter: voteMessage.voter,
+            block,
+            weight
+        } as VoteCreateRequest;
+
+        if (create) {
+            voteRequest.proposal_option_id = proposal.id;
+            return voteRequest as VoteCreateRequest;
+        } else {
+            return voteRequest as VoteUpdateRequest;
+        }
+    }
+
 }
