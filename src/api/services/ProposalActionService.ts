@@ -101,17 +101,18 @@ export class ProposalActionService {
 
         const proposalResult = await this.proposalResultService.create({
             block: currentBlock,
-            proposalId: createdProposal.id
+            proposal_id: createdProposal.id
         } as ProposalResultCreateRequest);
         this.log.debug('processProposalReceivedEvent.proposalResult = ' + JSON.stringify(proposalResult, null, 2));
 
         const options: any = createdProposal.ProposalOptions;
         for (const option of options) {
+            // TODO: unnecessary, remove, just fetch the Option.Votes
             const votes = await this.voteService.findForOption(option.id);
             const proposalOptionResult = this.proposalOptionResultService.create({
                 weight: votes.length,
-                proposalOptionId: option.id,
-                proposalResultId: proposalResult.id
+                proposal_option_id: option.id,
+                proposal_result_id: proposalResult.id
             } as ProposalOptionResultCreateRequest);
             this.log.debug('processProposalReceivedEvent.proposalOptionResult = ' + JSON.stringify(proposalOptionResult, null, 2));
         }

@@ -17,6 +17,7 @@ import { ProposalType } from '../../src/api/enums/ProposalType';
 import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequest';
 import { Proposal } from '../../src/api/models/Proposal';
 import * as resources from 'resources';
+import {ProposalOptionCreateRequest} from '../../src/api/requests/ProposalOptionCreateRequest';
 
 describe('ProposalResult', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -49,6 +50,16 @@ describe('ProposalResult', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
+        const proposalOptions = [{
+            optionId: 0,
+            // hash: 'asdf',
+            description: 'Yes'
+        }, {
+            optionId: 1,
+            // hash: 'asdf',
+            description: 'No'
+        }];
+
         // create proposal
         const proposalTestData = {
             submitter: 'psubmitter',
@@ -58,7 +69,7 @@ describe('ProposalResult', () => {
             type: ProposalType.PUBLIC_VOTE,
             title: 'titlex',
             description: 'proposal to x',
-            options: [testData]
+            options: proposalOptions
         } as ProposalCreateRequest;
 
         const proposalModel: Proposal = await proposalService.create(proposalTestData, true);

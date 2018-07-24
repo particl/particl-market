@@ -38,7 +38,7 @@ export class ProposalOptionResultService {
     public async create( @request(ProposalOptionResultCreateRequest) data: ProposalOptionResultCreateRequest): Promise<ProposalOptionResult> {
 
         const body = JSON.parse(JSON.stringify(data));
-        // this.log.debug('create ProposalOptionResult, body: ', JSON.stringify(body, null, 2));
+        this.log.debug('create ProposalOptionResult, body: ', JSON.stringify(body, null, 2));
 
         // TODO: extract and remove related models from request
         // const proposalOptionResultRelated = body.related;
@@ -66,7 +66,7 @@ export class ProposalOptionResultService {
         // proposalOptionResult.ProposalResultId = body.proposalResultId;
         // proposalOptionResult.ProposalOptionId = body.proposalOptionId;
         proposalOptionResult.Weight = body.weight;
-        proposalOptionResult.VoterCount = body.voterCount;
+        proposalOptionResult.Voters = body.voters;
 
         // update proposalOptionResult record
         const updatedProposalOptionResult = await this.proposalOptionResultRepo.update(id, proposalOptionResult.toJSON());

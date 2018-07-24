@@ -1,11 +1,11 @@
 import * as Bookshelf from 'bookshelf';
-import {ProposalOption} from './ProposalOption';
+import { ProposalOption } from './ProposalOption';
 
 export class Vote extends Bookshelf.Model<Vote> {
 
     public static RELATIONS = [
-        'ProposalOption',
-        'ProposalOption.Proposal'
+        'ProposalOption' // ,
+        // 'ProposalOption.Proposal'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Vote> {
@@ -20,11 +20,11 @@ export class Vote extends Bookshelf.Model<Vote> {
 
     public static async fetchByOptionId(optionId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
         if (withRelated) {
-            return await Vote.where<Vote>({ proposalOptionId: optionId }).fetchAll({
+            return await Vote.where<Vote>({ proposal_option_id: optionId }).fetchAll({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await Vote.where<Vote>({ proposalOptionId: optionId }).fetchAll();
+            return await Vote.where<Vote>({ proposal_option_id: optionId }).fetchAll();
         }
     }
 

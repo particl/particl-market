@@ -87,8 +87,12 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
             throw new MessageException(`Default market doesn't exist!`);
         }
 
+        // TODO: pass the values to send() and create a message, not a votecreaterequest..
+        // ...were not creating a vote here
+        // vote does not contain the optionId, it has a relation to proposaloption so
+        // what we have below is incorrect
         const voteCreateRequest = {
-            proposalOptionId: foundProposalOption.optionId,
+            proposal_option_id: foundProposalOption.optionId,
             voter: profileAddress,
             block: 0,
             weight: 1.0

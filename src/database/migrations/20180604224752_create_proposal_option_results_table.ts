@@ -12,10 +12,11 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.integer('proposal_option_id').unsigned().notNullable();
             table.foreign('proposal_option_id').references('id')
-                .inTable('proposal_options').onDelete('cascade');
+                .inTable('proposal_options');
 
-            table.decimal('weight').notNullable();
-            table.integer('voterCount').notNullable();
+            // todo: should be decimal later, but that didnt work
+            table.integer('weight').notNullable();
+            table.integer('voters').notNullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

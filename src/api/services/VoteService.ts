@@ -34,6 +34,7 @@ export class VoteService {
         return vote;
     }
 
+    // TODO: unnecessary, remove, just fetch the Option.Votes
     public async findForOption(optionId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Vote>> {
         const votes = await this.voteRepo.findForOption(optionId, withRelated);
         if (votes === null) {
@@ -72,7 +73,6 @@ export class VoteService {
         const vote = await this.findOne(id, false);
 
         // set new values
-        vote.ProposalOptionId = body.proposalOptionId;
         vote.Voter = body.voter;
         vote.Block = body.block;
         vote.Weight = body.weight;

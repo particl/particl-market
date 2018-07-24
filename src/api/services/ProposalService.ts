@@ -10,8 +10,8 @@ import { Proposal } from '../models/Proposal';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
-import { HashableObjectType } from '../../api/enums/HashableObjectType';
-import { ProposalOptionService } from '../services/ProposalOptionService';
+import { HashableObjectType } from '../enums/HashableObjectType';
+import { ProposalOptionService } from './ProposalOptionService';
 
 export class ProposalService {
 

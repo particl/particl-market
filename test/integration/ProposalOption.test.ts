@@ -27,8 +27,8 @@ describe('ProposalOption', () => {
     const testUtil = new TestUtil();
 
     let testDataService: TestDataService;
-    let proposalOptionService: ProposalOptionService;
     let proposalService: ProposalService;
+    let proposalOptionService: ProposalOptionService;
 
     let createdProposal: resources.Proposal;
     let createdProposalOption: resources.ProposalOption;

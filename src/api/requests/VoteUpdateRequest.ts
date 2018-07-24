@@ -5,9 +5,6 @@ import { RequestBody } from '../../core/api/RequestBody';
 export class VoteUpdateRequest extends RequestBody {
 
     @IsNotEmpty()
-    public proposalOptionId: number;
-
-    @IsNotEmpty()
     public voter: string;
 
     @IsNotEmpty()

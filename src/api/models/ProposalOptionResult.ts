@@ -2,7 +2,6 @@ import { Bookshelf } from '../../config/Database';
 import { ProposalResult } from './ProposalResult';
 import { ProposalOption } from './ProposalOption';
 
-
 export class ProposalOptionResult extends Bookshelf.Model<ProposalOptionResult> {
 
     public static RELATIONS = [
@@ -30,8 +29,8 @@ export class ProposalOptionResult extends Bookshelf.Model<ProposalOptionResult> 
     public get Weight(): number { return this.get('weight'); }
     public set Weight(value: number) { this.set('weight', value); }
 
-    public get VoterCount(): number { return this.get('voterCount'); }
-    public set VoterCount(value: number) { this.set('voterCount', value); }
+    public get Voters(): number { return this.get('voters'); }
+    public set Voters(value: number) { this.set('voters', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

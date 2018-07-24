@@ -5,16 +5,10 @@ import { RequestBody } from '../../core/api/RequestBody';
 export class ProposalOptionResultUpdateRequest extends RequestBody {
 
     @IsNotEmpty()
-    public proposalResultId: number;
-
-    @IsNotEmpty()
-    public proposalOptionId: number;
-
-    @IsNotEmpty()
     public weight: number;
 
     @IsNotEmpty()
-    public voterCount: number;
+    public voters: number;
 
 }
 // tslint:enable:variable-name
