@@ -1,18 +1,18 @@
-import { IsEnum, IsNotEmpty } from 'class-validator';
-import { ActionMessageInterface } from './ActionMessageInterface';
 import { VoteMessageType } from '../enums/VoteMessageType';
 import { MessageBody } from '../../core/api/MessageBody';
+import { VoteMessageInterface } from './VoteMessageInterface';
 
-export class VoteMessage extends MessageBody implements ActionMessageInterface {
+export class VoteMessage extends MessageBody implements VoteMessageInterface {
 
     // @IsNotEmpty()
     // @IsEnum(VoteMessageType)
     public action: VoteMessageType;
 
-    @IsNotEmpty()
-    public item: string;
-
-    // todo: objects
-    public objects?: any[];
+    public proposalHash: string;
+    public optionId: number;
+    // public optionHash: string; // todo: use hash instead?
+    public voter: string;
+    public block: number;
+    public weight: number;
 
 }
