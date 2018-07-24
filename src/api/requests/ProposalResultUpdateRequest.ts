@@ -4,8 +4,8 @@ import { RequestBody } from '../../core/api/RequestBody';
 // tslint:disable:variable-name
 export class ProposalResultUpdateRequest extends RequestBody {
 
-    @IsNotEmpty()
-    public proposalId: number;
+    // @IsNotEmpty()
+    // public proposal_id: number;
 
     @IsNotEmpty()
     public block: number;

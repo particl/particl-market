@@ -5,7 +5,7 @@ import { RequestBody } from '../../core/api/RequestBody';
 export class ProposalResultCreateRequest extends RequestBody {
 
     @IsNotEmpty()
-    public proposalId: number;
+    public proposal_id: number;
 
     @IsNotEmpty()
     public block: number;
