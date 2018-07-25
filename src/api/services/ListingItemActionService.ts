@@ -3,7 +3,6 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
-import { ListingItemRepository } from '../repositories/ListingItemRepository';
 import { ListingItem } from '../models/ListingItem';
 
 import { MessagingInformationService } from './MessagingInformationService';
@@ -33,6 +32,12 @@ import { ListingItemService } from './ListingItemService';
 import { ActionMessageService } from './ActionMessageService';
 
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
+import { ProposalFactory } from '../factories/ProposalFactory';
+import { ProposalMessageType } from '../enums/ProposalMessageType';
+import { ProposalType } from '../enums/ProposalType';
+import { CoreRpcService } from './CoreRpcService';
+import {ProposalMessage} from '../messages/ProposalMessage';
+import {Proposal} from '../models/Proposal';
 
 export class ListingItemActionService {
     private static FRACTION_TO_COMPRESS_BY = 0.6;
@@ -57,7 +62,9 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
+        @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -90,22 +97,77 @@ export class ListingItemActionService {
             : await this.marketService.findOne(data.marketId);
         const market = marketModel.toJSON();
 
+        // todo: reason for this? to throw an exception unless category exists?!
         // find itemCategory with related
         const itemCategoryModel = await this.itemCategoryService.findOneByKey(itemTemplate.ItemInformation.ItemCategory.key, true);
         const itemCategory = itemCategoryModel.toJSON();
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
-        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate);
 
+        // create and post a proposal for the item to be voted off the marketplace
+        const daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
+        const proposalMessage = await this.createProposalMessage(itemTemplate, daysRetention, itemTemplate.Profile);
+        this.log.debug('post(), proposalMessage: ', proposalMessage);
+        const response: SmsgSendResponse = await this.postProposal(proposalMessage, daysRetention, itemTemplate.Profile, market);
+
+        // create and post the itemmessage
+        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, proposalMessage.hash);
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             item: listingItemMessage
         } as MarketplaceMessage;
 
         this.log.debug('post(), marketPlaceMessage: ', marketPlaceMessage);
-        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage);
+        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, daysRetention);
     }
 
+    /**
+     *
+     * @param {"resources".ListingItemTemplate} itemTemplate
+     * @param {number} daysRetention
+     * @param {"resources".Profile} profile
+     * @returns {Promise<ProposalMessage>}
+     */
+    private async createProposalMessage(itemTemplate: resources.ListingItemTemplate, daysRetention: number,
+                                        profile: resources.Profile): Promise<ProposalMessage> {
+
+        const blockStart: number = await this.coreRpcService.getBlockCount();
+        const blockEnd: number = blockStart + (daysRetention * 24 * 30);
+
+        const proposalMessage: ProposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, ProposalType.ITEM_VOTE,
+            itemTemplate.hash, '', blockStart, blockEnd, ['OK', 'Remove'], profile);
+
+        return proposalMessage;
+
+    }
+
+    /**
+     *
+     * @param {ProposalMessage} proposalMessage
+     * @param {number} daysRetention
+     * @param {"resources".Profile} profile
+     * @param {"resources".Market} market
+     * @returns {Promise<SmsgSendResponse>}
+     */
+    private async postProposal(proposalMessage: ProposalMessage, daysRetention: number, profile: resources.Profile,
+                               market: resources.Market): Promise<SmsgSendResponse> {
+
+        const msg: MarketplaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: proposalMessage
+        };
+
+        const response = this.smsgService.smsgSend(profile.address, market.address, msg, false, daysRetention);
+        this.log.debug('postProposal(), response: ', response);
+        return response;
+
+    }
+
+    /**
+     *
+     * @param {"resources".ListingItemTemplate} itemTemplate
+     * @returns {Promise<"resources".ListingItemTemplate>}
+     */
     private async resizeTemplateImages(itemTemplate: resources.ListingItemTemplate): Promise<resources.ListingItemTemplate> {
 
         const itemImages = itemTemplate.ItemInformation.ItemImages;
@@ -238,8 +300,14 @@ export class ListingItemActionService {
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
             let listingItem = listingItemModel.toJSON();
 
+            // todo: no need for these two updates, set the relations up in the createRequest
             // update the template relation
             await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
+
+            // update the proposal relation
+            if (listingItemMessage.proposalHash) {
+                await this.listingItemService.updateProposalRelation(listingItem.id, listingItemMessage.proposalHash);
+            }
 
             // first save it
             const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);

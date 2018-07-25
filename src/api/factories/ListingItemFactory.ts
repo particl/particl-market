@@ -39,11 +39,11 @@ export class ListingItemFactory {
     /**
      * Creates a ListingItemMessage from given data
      *
-     * @param {'resources'.ListingItemTemplate} listingItemTemplate
-     * @param {'resources'.ItemCategory} listingItemCategory
+     * @param {"resources".ListingItemTemplate} listingItemTemplate
+     * @param {string} proposalHash
      * @returns {Promise<ListingItemMessage>}
      */
-    public async getMessage(listingItemTemplate: resources.ListingItemTemplate): Promise<ListingItemMessage> {
+    public async getMessage(listingItemTemplate: resources.ListingItemTemplate, proposalHash: string = ''): Promise<ListingItemMessage> {
 
         const information = await this.getMessageInformation(listingItemTemplate.ItemInformation);
         const payment = await this.getMessagePayment(listingItemTemplate.PaymentInformation);
@@ -55,7 +55,8 @@ export class ListingItemFactory {
             information,
             payment,
             messaging,
-            objects
+            objects,
+            proposalHash    // todo: this does not exist in OMP
         } as ListingItemMessage;
 
         return message;

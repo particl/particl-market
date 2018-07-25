@@ -12,6 +12,7 @@ import { FlaggedItem } from './FlaggedItem';
 import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
 import { ActionMessage } from './ActionMessage';
+import {Proposal} from './Proposal';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -215,6 +216,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public ListingItemTemplate(): ListingItemTemplate {
         return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
+    }
+
+    public Proposal(): Proposal {
+        return this.belongsTo(Proposal, 'proposal_id', 'id');
     }
 
     public Bids(): Collection<Bid> {

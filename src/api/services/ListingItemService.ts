@@ -37,6 +37,7 @@ import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ActionMessageService } from './ActionMessageService';
 import * as resources from 'resources';
+import { ProposalService } from './ProposalService';
 
 export class ListingItemService {
 
@@ -54,6 +55,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
+        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -324,6 +326,31 @@ export class ListingItemService {
 
         if (templateId) {
             listingItem.set('listingItemTemplateId', templateId);
+            await this.listingItemRepo.update(id, listingItem.toJSON());
+        }
+
+        listingItem = await this.findOne(id);
+
+        return listingItem;
+    }
+
+    public async updateProposalRelation(id: number, proposalHash: string): Promise<ListingItem> {
+
+        this.log.debug('updating ListingItem relation to Proposal.');
+
+        let listingItem = await this.findOne(id, false);
+        const proposalId = await this.proposalService.findOneByHash(proposalHash)
+            .then(value => {
+                const proposal = value.toJSON();
+                this.log.debug('found Proposal with matching hash, id:', proposal.id);
+                return proposal.id;
+            })
+            .catch(reason => {
+                this.log.debug('matching Proposal for ListingItem not found.');
+            });
+
+        if (proposalId) {
+            listingItem.set('proposalId', proposalId);
             await this.listingItemRepo.update(id, listingItem.toJSON());
         }
 
