@@ -56,8 +56,13 @@ export class ProposalFactory {
             type: proposalType
         } as ProposalMessage;
 
-        message.hash = ObjectHash.getHash(message, HashableObjectType.PROPOSAL);
+        message.hash = ObjectHash.getHash(message, HashableObjectType.PROPOSAL_MESSAGE);
 
+        // add hashes for the options too
+        for (const option of message.options) {
+            option.proposalHash = message.hash;
+            option.hash = ObjectHash.getHash(option, HashableObjectType.PROPOSALOPTION_CREATEREQUEST);
+        }
         return message;
     }
 
