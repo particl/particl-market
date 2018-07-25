@@ -1,3 +1,5 @@
+import {ProposalType} from '../../api/enums/ProposalType';
+
 declare module 'resources' {
 
     interface Proposal {
@@ -6,7 +8,7 @@ declare module 'resources' {
         blockStart: number;
         blockEnd: number;
         hash: string;
-        type: string;
+        type: ProposalType;
         description: string;
         createdAt: Date;
         updatedAt: Date;

@@ -46,6 +46,7 @@ export class ObjectHash {
                 hashableObject = new HashableOrder(objectToHash);
                 break;
             }
+            case HashableObjectType.PROPOSAL:
             case HashableObjectType.PROPOSAL_CREATEREQUEST: {
                 hashableObject = new HashableProposal(objectToHash);
                 break;

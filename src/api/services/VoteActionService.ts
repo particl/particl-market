@@ -24,6 +24,7 @@ import { ProposalResultUpdateRequest } from '../requests/ProposalResultUpdateReq
 import { ProposalOptionResultUpdateRequest } from '../requests/ProposalOptionResultUpdateRequest';
 import { ProposalOptionService } from './ProposalOptionService';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
+import {ProposalType} from '../enums/ProposalType';
 
 export class VoteActionService {
 
@@ -46,7 +47,7 @@ export class VoteActionService {
     }
 
     /**
-     * 
+     *
      * @param {"resources".Proposal} proposal
      * @param {"resources".ProposalOption} proposalOption
      * @param {"resources".Profile} senderProfile
@@ -104,6 +105,16 @@ export class VoteActionService {
             this.log.debug('createdVote:', JSON.stringify(createdVote, null, 2));
 
             const proposalResult: resources.ProposalResult = await this.updateProposalResult(proposal.ProposalResult.id);
+
+            // todo: extract method
+            if (proposal.type === ProposalType.ITEM_VOTE) {
+                // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
+                // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
+                // at minimum, a total of 10 votes
+                // at minimum, 30% of votes saying remove
+
+                // TODO
+            }
             // TODO: do whatever else needs to be done
 
             // todo: return ActionMessages from all actionservice.process functions

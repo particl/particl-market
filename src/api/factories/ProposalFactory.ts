@@ -56,6 +56,8 @@ export class ProposalFactory {
             type: proposalType
         } as ProposalMessage;
 
+        message.hash = ObjectHash.getHash(message, HashableObjectType.PROPOSAL);
+
         return message;
     }
 

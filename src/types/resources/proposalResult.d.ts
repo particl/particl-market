@@ -1,3 +1,5 @@
+import * as resources from 'resources';
+
 declare module 'resources' {
 
     interface ProposalResult {
@@ -6,6 +8,7 @@ declare module 'resources' {
         block: number;
         createdAt: Date;
         updatedAt: Date;
+        ProposalOptionResults: resources.ProposalOptionResult[];
     }
 
 }

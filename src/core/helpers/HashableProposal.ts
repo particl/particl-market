@@ -10,6 +10,7 @@ export class HashableProposal {
     public blockStart: number;
     public blockEnd: number;
     public type: string;
+    public title: string;
     public description: string;
     public options: string;
 
@@ -21,6 +22,7 @@ export class HashableProposal {
             this.blockStart = input.blockStart;
             this.blockEnd = input.blockEnd;
             this.type = input.type;
+            this.title = input.title;
             this.description = input.description;
 
             this.options = '';

@@ -1,3 +1,5 @@
+import * as resources from 'resources';
+
 declare module 'resources' {
 
     interface ProposalOptionResult {
@@ -8,6 +10,7 @@ declare module 'resources' {
         voterCount: number;
         createdAt: Date;
         updatedAt: Date;
+        ProposalOption: resources.ProposalOption;
     }
 
 }
