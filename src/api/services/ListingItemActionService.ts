@@ -76,13 +76,43 @@ export class ListingItemActionService {
 
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true);
-        const itemTemplate = itemTemplateModel.toJSON();
+        let itemTemplate = itemTemplateModel.toJSON();
+
+        itemTemplate = await this.resizeTemplateImages(itemTemplate);
+
+        // this.log.debug('post template: ', JSON.stringify(itemTemplate, null, 2));
+        // get the templates profile address
+        const profileAddress = itemTemplate.Profile.address;
+
+        // fetch the market, will be used later with the broadcast
+        const marketModel: Market = await _.isEmpty(data.marketId)
+            ? await this.marketService.getDefault()
+            : await this.marketService.findOne(data.marketId);
+        const market = marketModel.toJSON();
+
+        // find itemCategory with related
+        const itemCategoryModel = await this.itemCategoryService.findOneByKey(itemTemplate.ItemInformation.ItemCategory.key, true);
+        const itemCategory = itemCategoryModel.toJSON();
+        // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
+
+        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate);
+
+        const marketPlaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            item: listingItemMessage
+        } as MarketplaceMessage;
+
+        this.log.debug('post(), marketPlaceMessage: ', marketPlaceMessage);
+        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage);
+    }
+
+    private async resizeTemplateImages(itemTemplate: resources.ListingItemTemplate): Promise<resources.ListingItemTemplate> {
 
         const itemImages = itemTemplate.ItemInformation.ItemImages;
         // ItemInformation has ItemImages, which is an array.
         // Each element in ItemImages has an array ItemImageDatas.
         const sizePerImage = (ListingItemActionService.MAX_SMSG_SIZE - ListingItemActionService.OVERHEAD_PER_SMSG)
-                             / itemImages.length - ListingItemActionService.OVERHEAD_PER_IMAGE;
+            / itemImages.length - ListingItemActionService.OVERHEAD_PER_IMAGE;
         for (const tmpIndexOfImages in itemImages) {
             if (tmpIndexOfImages) {
                 let resizedImage;
@@ -121,7 +151,7 @@ export class ListingItemActionService {
                         if (numResizings >= ListingItemActionService.MAX_RESIZES) {
                             /* A generous number of resizes has happened but we haven't found a solution yet. Exit incase this is an infinite loop. */
                             throw new MessageException('After ${numResizings} resizes we still didn\'t compress the image enough.'
-                            + ' Image size = ${compressedImage.length}.');
+                                + ' Image size = ${compressedImage.length}.');
                         }
                         /* we've reached the limit of compression. We need to resize the image for further size losses. */
                         resizedImage = await ImageProcessing.resizeImageToFraction(resizedImage, ListingItemActionService.FRACTION_TO_RESIZE_IMAGE_BY);
@@ -133,31 +163,7 @@ export class ListingItemActionService {
             }
         }
 
-
-        // this.log.debug('post template: ', JSON.stringify(itemTemplate, null, 2));
-        // get the templates profile address
-        const profileAddress = itemTemplate.Profile.address;
-
-        // fetch the market, will be used later with the broadcast
-        const marketModel: Market = await _.isEmpty(data.marketId)
-            ? await this.marketService.getDefault()
-            : await this.marketService.findOne(data.marketId);
-        const market = marketModel.toJSON();
-
-        // find itemCategory with related
-        const itemCategoryModel = await this.itemCategoryService.findOneByKey(itemTemplate.ItemInformation.ItemCategory.key, true);
-        const itemCategory = itemCategoryModel.toJSON();
-        // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
-
-        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate);
-
-        const marketPlaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            item: listingItemMessage
-        } as MarketplaceMessage;
-
-        this.log.debug('post(), marketPlaceMessage: ', marketPlaceMessage);
-        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage);
+        return itemTemplate;
     }
 
     /**
