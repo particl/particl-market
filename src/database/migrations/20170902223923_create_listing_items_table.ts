@@ -18,6 +18,10 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('listing_item_template_id').references('id')
                 .inTable('listing_item_templates').onDelete('cascade');
 
+            table.integer('proposal_id').unsigned().nullable();
+            table.foreign('proposal_id').references('id')
+                .inTable('proposals');
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })
