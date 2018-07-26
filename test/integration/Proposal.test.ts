@@ -149,9 +149,6 @@ describe('Proposal', () => {
         expect(result.type).toBe(testDataUpdated.type);
         expect(result.title).toBe(testDataUpdated.title);
         expect(result.description).toBe(testDataUpdated.description);
-
-        // todo: should test that updating proposal with options works too..
-
     });
 
     test('Should delete the proposal', async () => {
@@ -179,7 +176,8 @@ describe('Proposal', () => {
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
 
-        // todo: should test that creating proposal with options works too..
+        expect(result.ProposalOptions).toBeDefined();
+        expect(result.ProposalOptions).toHaveLength(3);
     });
 
 });
