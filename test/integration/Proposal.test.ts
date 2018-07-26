@@ -15,6 +15,7 @@ import {ProposalCreateRequest} from '../../src/api/requests/ProposalCreateReques
 import {ProposalUpdateRequest} from '../../src/api/requests/ProposalUpdateRequest';
 import {HashableObjectType} from '../../src/api/enums/HashableObjectType';
 import {ObjectHash} from '../../src/core/helpers/ObjectHash';
+import {ProposalOptionCreateRequest} from '../../src/api/requests/ProposalOptionCreateRequest';
 
 describe('Proposal', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -36,6 +37,14 @@ describe('Proposal', () => {
         title:  'proposal x title',
         description: 'proposal to x'
     } as ProposalCreateRequest;
+
+    const testDataOptions = [{
+        description: 'one'
+    }, {
+        description: 'two'
+    }, {
+        description: 'three'
+    }] as ProposalOptionCreateRequest[];
 
     const testDataUpdated = {
         submitter: 'pqwer',
@@ -151,6 +160,26 @@ describe('Proposal', () => {
         await proposalService.findOne(createdId).catch(e =>
             expect(e).toEqual(new NotFoundException(createdId))
         );
+    });
+
+    test('Should create a new Proposal with ProposalOptions', async () => {
+
+        testData.options = testDataOptions;
+
+        const proposalModel: Proposal = await proposalService.create(testData);
+        createdId = proposalModel.Id;
+
+        const result = proposalModel.toJSON();
+
+        expect(result.submitter).toBe(testData.submitter);
+        expect(result.blockStart).toBe(testData.blockStart);
+        expect(result.blockEnd).toBe(testData.blockEnd);
+        expect(result.hash).toBe(testDataHash);
+        expect(result.type).toBe(testData.type);
+        expect(result.title).toBe(testData.title);
+        expect(result.description).toBe(testData.description);
+
+        // todo: should test that creating proposal with options works too..
     });
 
 });

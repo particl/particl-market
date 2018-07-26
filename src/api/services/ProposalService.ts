@@ -65,11 +65,16 @@ export class ProposalService {
 
         // skipOptions is just for tests
         if (!skipOptions) {
+            let optionId = 0;
             // create related options
             for (const optionCreateRequest of options) {
                 optionCreateRequest.proposal_id = proposal.id;
                 optionCreateRequest.proposalHash = body.hash;
 
+                if (!optionCreateRequest.optionId) {
+                    optionCreateRequest.optionId = optionId;
+                    optionId++;
+                }
                 this.log.debug('optionCreateRequest: ', JSON.stringify(optionCreateRequest, null, 2));
                 await this.proposalOptionService.create(optionCreateRequest);
             }

@@ -122,6 +122,110 @@ export class ListingItemActionService {
     }
 
     /**
+     * update a ListingItem based on a given ListingItem as ListingItemUpdateMessage
+     *
+     * @param data
+     * @returns {Promise<void>}
+     */
+    @validate()
+    public async updatePostItem( @request(ListingItemUpdatePostRequest) data: ListingItemUpdatePostRequest): Promise<void> {
+
+        // TODO: update not implemented/supported yet
+
+        throw new NotImplementedException();
+        /*
+        // fetch the listingItemTemplate
+        const itemTemplateModel = await this.findOne(data.listingItemTemplateId);
+        const itemTemplate = itemTemplateModel.toJSON();
+
+        // get the templates profile address
+        const profileAddress = itemTemplate.Profile.address;
+
+        // check listing-item
+        const listingItems = itemTemplateModel.related('ListingItem').toJSON() || [];
+        if (listingItems.length > 0) {
+            // ListingItemMessage for update
+            const rootCategoryWithRelated: any = await this.itemCategoryService.findRoot();
+            const updateItemMessage = await this.listingItemFactory.getMessage(itemTemplate, rootCategoryWithRelated);
+            updateItemMessage.hash = data.hash; // replace with param hash of listing-item
+
+            // TODO: Need to update broadcast message return after broadcast functionality will be done.
+            this.smsgService.broadcast(profileAddress, market.address, updateItemMessage as ListingItemMessage);
+        } else {
+            this.log.warn(`No listingItem related with listing_item_template_id=${data.hash}!`);
+            throw new MessageException(`No listingItem related with listing_item_template_id=${data.hash}!`);
+        }
+        */
+    }
+
+    /**
+     * processes received ListingItemMessage
+     *
+     * @param {MarketplaceEvent} event
+     * @returns {Promise<"resources".ListingItem>}
+     */
+    public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<resources.ListingItem> {
+        // todo: this returns ListingItem and processed BidMessages return ActionMessage's
+
+        this.log.info('Received event, msgid:', event.smsgMessage.msgid);
+
+        const message = event.marketplaceMessage;
+
+        if (message.market && message.item) {
+            // get market
+            const marketModel = await this.marketService.findByAddress(message.market);
+            const market = marketModel.toJSON();
+
+            const listingItemMessage = message.item;
+
+            // create the new custom categories in case there are some
+            const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
+
+            // find the categories/get the root category with related
+            const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
+            const rootCategory = rootCategoryWithRelatedModel.toJSON();
+
+            // create ListingItem
+            const seller = event.smsgMessage.from;
+            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory);
+            // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
+
+            let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
+            let listingItem = listingItemModel.toJSON();
+
+            // todo: no need for these two updates, set the relations up in the createRequest
+            // update the template relation
+            await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
+
+            // update the proposal relation
+            if (listingItemMessage.proposalHash) {
+                await this.listingItemService.updateProposalRelation(listingItem.id, listingItemMessage.proposalHash);
+            }
+
+            // first save it
+            const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+            const actionMessage = actionMessageModel.toJSON();
+            // this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
+
+            // emit the latest message event to cli
+            // this.eventEmitter.emit('cli', {
+            //    message: 'new ListingItem received: ' + JSON.stringify(listingItem)
+            // });
+
+            // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
+            listingItemModel = await this.listingItemService.findOne(listingItem.id);
+            listingItem = listingItemModel.toJSON();
+
+            this.log.debug('saved listingItem:', listingItem.hash);
+
+            return listingItem;
+
+        } else {
+            throw new MessageException('Marketplace message missing market.');
+        }
+    }
+
+    /**
      *
      * @param {"resources".ListingItemTemplate} itemTemplate
      * @param {number} daysRetention
@@ -226,110 +330,6 @@ export class ListingItemActionService {
         }
 
         return itemTemplate;
-    }
-
-    /**
-     * update a ListingItem based on a given ListingItem as ListingItemUpdateMessage
-     *
-     * @param data
-     * @returns {Promise<void>}
-     */
-    @validate()
-    public async updatePostItem( @request(ListingItemUpdatePostRequest) data: ListingItemUpdatePostRequest): Promise<void> {
-
-        // TODO: update not implemented/supported yet
-
-        throw new NotImplementedException();
-        /*
-        // fetch the listingItemTemplate
-        const itemTemplateModel = await this.findOne(data.listingItemTemplateId);
-        const itemTemplate = itemTemplateModel.toJSON();
-
-        // get the templates profile address
-        const profileAddress = itemTemplate.Profile.address;
-
-        // check listing-item
-        const listingItems = itemTemplateModel.related('ListingItem').toJSON() || [];
-        if (listingItems.length > 0) {
-            // ListingItemMessage for update
-            const rootCategoryWithRelated: any = await this.itemCategoryService.findRoot();
-            const updateItemMessage = await this.listingItemFactory.getMessage(itemTemplate, rootCategoryWithRelated);
-            updateItemMessage.hash = data.hash; // replace with param hash of listing-item
-
-            // TODO: Need to update broadcast message return after broadcast functionality will be done.
-            this.smsgService.broadcast(profileAddress, market.address, updateItemMessage as ListingItemMessage);
-        } else {
-            this.log.warn(`No listingItem related with listing_item_template_id=${data.hash}!`);
-            throw new MessageException(`No listingItem related with listing_item_template_id=${data.hash}!`);
-        }
-        */
-    }
-
-    /**
-     * processes received ListingItemMessage
-     *
-     * @param {MarketplaceEvent} event
-     * @returns {Promise<"resources".ListingItem>}
-     */
-    public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<resources.ListingItem> {
-        // todo: this returns ListingItem and processed BidMessages return ActionMessage's
-
-        this.log.info('Received event, msgid:', event.smsgMessage.msgid);
-
-        const message = event.marketplaceMessage;
-
-        if (message.market && message.item) {
-            // get market
-            const marketModel = await this.marketService.findByAddress(message.market);
-            const market = marketModel.toJSON();
-
-            const listingItemMessage = message.item;
-
-            // create the new custom categories in case there are some
-            const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
-
-            // find the categories/get the root category with related
-            const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
-            const rootCategory = rootCategoryWithRelatedModel.toJSON();
-
-            // create ListingItem
-            const seller = event.smsgMessage.from;
-            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory);
-            // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
-
-            let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
-            let listingItem = listingItemModel.toJSON();
-
-            // todo: no need for these two updates, set the relations up in the createRequest
-            // update the template relation
-            await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
-
-            // update the proposal relation
-            if (listingItemMessage.proposalHash) {
-                await this.listingItemService.updateProposalRelation(listingItem.id, listingItemMessage.proposalHash);
-            }
-
-            // first save it
-            const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-            const actionMessage = actionMessageModel.toJSON();
-            // this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
-
-            // emit the latest message event to cli
-            // this.eventEmitter.emit('cli', {
-            //    message: 'new ListingItem received: ' + JSON.stringify(listingItem)
-            // });
-
-            // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
-            listingItemModel = await this.listingItemService.findOne(listingItem.id);
-            listingItem = listingItemModel.toJSON();
-
-            this.log.debug('saved listingItem:', listingItem.hash);
-
-            return listingItem;
-
-        } else {
-            throw new MessageException('Marketplace message missing market.');
-        }
     }
 
     private configureEventListeners(): void {

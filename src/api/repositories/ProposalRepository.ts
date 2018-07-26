@@ -36,6 +36,7 @@ export class ProposalRepository {
             const proposalCreated = await proposal.save();
             return this.ProposalModel.fetchById(proposalCreated.id);
         } catch (error) {
+            this.log.error('error:', error);
             throw new DatabaseException('Could not create the proposal!', error);
         }
     }
