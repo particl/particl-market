@@ -32,7 +32,7 @@ export class ProposalOptionResultRepository {
             const proposalOptionResultCreated = await proposalOptionResult.save();
             return this.ProposalOptionResultModel.fetchById(proposalOptionResultCreated.id);
         } catch (error) {
-            throw new DatabaseException('Could not create the proposalOptionResult!', error);
+            throw new DatabaseException('Could not create the proposalOptionResult! ' + error, error);
         }
     }
 

@@ -83,7 +83,7 @@ export class ProposalActionService {
         this.log.debug('Received event:', event);
 
         const message = event.marketplaceMessage;
-        if (!message.mpaction || !message.mpaction.item) {
+        if (!message.mpaction) {
             throw new MessageException('Missing mpaction.');
         }
 
