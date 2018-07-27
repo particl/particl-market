@@ -356,6 +356,20 @@ export class ListingItemService {
     }
 
     /**
+     * delete expired listing items
+     */
+    public async deleteExpiredListingItems(): Promise<void> {
+       const listingItemsModel = await this.findAll();
+       const listingItems = listingItemsModel.toJSON();
+       for (const listingItem of listingItems) {
+           if (listingItem.expiredAt <= Date()) {
+               await this.destroy(listingItem.id);
+           }
+       }
+    }
+
+
+    /**
      * check if ListingItem already Flagged
      *
      * @param {ListingItem} listingItem
@@ -392,5 +406,4 @@ export class ListingItemService {
         });
         return highestOrder ? highestOrder['order'] : 0;
     }
-
 }

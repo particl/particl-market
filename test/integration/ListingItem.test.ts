@@ -129,6 +129,9 @@ describe('ListingItem', () => {
         expect(result.hash).not.toBeNull();
         expect(result.seller).toBe(createRequest.seller);
         expect(result.Market.id).toBe(createRequest.market_id);
+        expect(result.expiredAt).toBe(createRequest.expiredAt);
+        expect(result.postedAt).toBe(createRequest.postedAt);
+        expect(result.expiryTime).toBe(createRequest.expiryTime);
 
         if (!_.isEmpty(createRequest.itemInformation)) {
             expectItemInformationFromCreateRequest(result.ItemInformation, createRequest.itemInformation);

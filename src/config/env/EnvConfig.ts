@@ -50,7 +50,8 @@ export class EnvConfig {
         DB_MIGRATION_TABLE: 'version',
         DATA_CHECK_DELAY: 60,
         CHASING_COINS_API: 'https://chasing-coins.com/api/v1/convert',
-        CHASING_COINS_API_DELAY: 60
+        CHASING_COINS_API_DELAY: 60,
+        LISTING_ITEMS_EXPIRED_INTERVAL: 10 // minutes
     };
 
     /**

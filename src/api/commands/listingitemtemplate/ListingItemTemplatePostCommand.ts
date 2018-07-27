@@ -29,7 +29,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *
      * data.params[]:
      *  [0]: listingItemTemplateId
-     *  [1]: marketId, may be optional
+     *  [1]: daysRetention, default is 4 and set in SmsgService.smsgsend, may be optional.
+     *  [2]: marketId, may be optional
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -43,7 +44,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         const response = await this.listingItemActionService.post({
             listingItemTemplateId: data.params[0],
-            marketId: data.params[1] || undefined
+            daysRetention: data.params[1] || undefined,
+            postedAt: new Date(),
+            marketId: data.params[2] || undefined
         } as ListingItemTemplatePostRequest);
 
         this.log.debug('ListingItemTemplatePostCommand.post, response: ', response);

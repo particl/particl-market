@@ -157,7 +157,7 @@ export class ListingItemActionService {
         } as MarketplaceMessage;
 
         this.log.debug('post(), marketPlaceMessage: ', marketPlaceMessage);
-        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage);
+        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, data.daysRetention, data.postedAt);
     }
 
     /**

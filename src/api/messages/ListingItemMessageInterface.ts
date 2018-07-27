@@ -6,5 +6,7 @@ export interface ListingItemMessageInterface {
     information: any;
     payment: any;
     messaging: any;
+    daysRetention: number;
+    postedAt: Date;
     objects?: any;
 }

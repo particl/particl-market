@@ -76,11 +76,15 @@ export class ListingItemFactory {
         const paymentInformation = await this.getModelPaymentInformation(listingItemMessage.payment);
         const messagingInformation = await this.getModelMessagingInformation(listingItemMessage.messaging);
         const listingItemObjects = await this.getModelListingItemObjects(listingItemMessage.objects);
-
+        const expired = new Date(listingItemMessage.postedAt);
+        expired.setDate(expired.getTime() + listingItemMessage.daysRetention);
         return {
-            seller,
             hash: listingItemMessage.hash,
+            seller,
             market_id: marketId,
+            expiryTime: listingItemMessage.daysRetention,
+            postedAt: listingItemMessage.postedAt,
+            expiredAt: expired,
             itemInformation,
             paymentInformation,
             messagingInformation,
