@@ -157,7 +157,7 @@ export class ListingItemActionService {
         } as MarketplaceMessage;
 
         this.log.debug('post(), marketPlaceMessage: ', marketPlaceMessage);
-        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, data.daysRetention, data.postedAt);
+        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, data.daysRetention);
     }
 
     /**
@@ -226,7 +226,8 @@ export class ListingItemActionService {
 
             // create ListingItem
             const seller = event.smsgMessage.from;
-            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory);
+            const postedAt = new Date(event.smsgMessage.sent);
+            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, postedAt, rootCategory);
             // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);

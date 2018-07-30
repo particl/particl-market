@@ -45,7 +45,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         const response = await this.listingItemActionService.post({
             listingItemTemplateId: data.params[0],
             daysRetention: data.params[1] || undefined,
-            postedAt: new Date(),
             marketId: data.params[2] || undefined
         } as ListingItemTemplatePostRequest);
 

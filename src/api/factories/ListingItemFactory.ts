@@ -66,25 +66,26 @@ export class ListingItemFactory {
      * @param {ListingItemMessage} listingItemMessage
      * @param {number} marketId
      * @param {string} seller
+     * @param {Date} postedAt
      * @param {"resources".ItemCategory} rootCategory
      * @returns {Promise<ListingItemCreateRequest>}
      */
-    public async getModel(listingItemMessage: ListingItemMessage, marketId: number, seller: string,
+    public async getModel(listingItemMessage: ListingItemMessage, marketId: number, seller: string, postedAt: Date,
                           rootCategory: resources.ItemCategory): Promise<ListingItemCreateRequest> {
 
         const itemInformation = await this.getModelItemInformation(listingItemMessage.information, rootCategory);
         const paymentInformation = await this.getModelPaymentInformation(listingItemMessage.payment);
         const messagingInformation = await this.getModelMessagingInformation(listingItemMessage.messaging);
         const listingItemObjects = await this.getModelListingItemObjects(listingItemMessage.objects);
-        const expired = new Date(listingItemMessage.postedAt);
-        expired.setDate(expired.getTime() + listingItemMessage.daysRetention);
+        const expiredAt = new Date(postedAt);
+        expiredAt.setDate(expiredAt.getTime() + listingItemMessage.expiryTime);
         return {
             hash: listingItemMessage.hash,
             seller,
             market_id: marketId,
-            expiryTime: listingItemMessage.daysRetention,
-            postedAt: listingItemMessage.postedAt,
-            expiredAt: expired,
+            expiryTime: listingItemMessage.expiryTime,
+            postedAt,
+            expiredAt,
             itemInformation,
             paymentInformation,
             messagingInformation,

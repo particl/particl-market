@@ -9,6 +9,5 @@ export class ListingItemTemplatePostRequest extends RequestBody {
     public marketId: number;
     // expiry time in days
     public daysRetention: number;
-    public postedAt: Date;
 }
 // tslint:enable:variable-name

@@ -76,12 +76,11 @@ export class SmsgService {
      * @returns {Promise<any>}
      */
     public async smsgSend(profileAddress: string, marketAddress: string, message: MarketplaceMessage,
-                          paidMessage: boolean = true,
-                          daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10),
-                          postedAt: Date = new Date()): Promise<SmsgSendResponse> {
+                          paidMessage: boolean = true, daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)
+                          ): Promise<SmsgSendResponse> {
 
         this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
-        const params: any[] = [profileAddress, marketAddress, JSON.stringify(message), paidMessage, daysRetention, postedAt];
+        const params: any[] = [profileAddress, marketAddress, JSON.stringify(message), paidMessage, daysRetention];
         const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params);
         this.log.debug('smsgSend, response: ' + JSON.stringify(response, null, 2));
         return response;
