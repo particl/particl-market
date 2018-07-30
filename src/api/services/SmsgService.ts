@@ -72,7 +72,6 @@ export class SmsgService {
      * @param {MarketplaceMessage} message
      * @param {boolean} paidMessage
      * @param {number} daysRetention
-     * @param {Date} postedAt
      * @returns {Promise<any>}
      */
     public async smsgSend(profileAddress: string, marketAddress: string, message: MarketplaceMessage,
