@@ -149,7 +149,7 @@ export class ListingItemActionService {
         const itemCategory = itemCategoryModel.toJSON();
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
-        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate);
+        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, data.daysRetention);
 
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
@@ -227,7 +227,7 @@ export class ListingItemActionService {
             // create ListingItem
             const seller = event.smsgMessage.from;
             const postedAt = new Date(event.smsgMessage.sent);
-            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, postedAt, rootCategory);
+            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory, postedAt);
             // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);

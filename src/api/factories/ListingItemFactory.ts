@@ -43,7 +43,9 @@ export class ListingItemFactory {
      * @param {'resources'.ItemCategory} listingItemCategory
      * @returns {Promise<ListingItemMessage>}
      */
-    public async getMessage(listingItemTemplate: resources.ListingItemTemplate): Promise<ListingItemMessage> {
+    public async getMessage(listingItemTemplate: resources.ListingItemTemplate,
+                            expiryTime: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10),
+                            postedAt: Date = new Date()): Promise<ListingItemMessage> {
 
         const information = await this.getMessageInformation(listingItemTemplate.ItemInformation);
         const payment = await this.getMessagePayment(listingItemTemplate.PaymentInformation);
@@ -55,7 +57,9 @@ export class ListingItemFactory {
             information,
             payment,
             messaging,
-            objects
+            objects,
+            expiryTime,
+            postedAt
         } as ListingItemMessage;
 
         return message;
@@ -70,8 +74,8 @@ export class ListingItemFactory {
      * @param {"resources".ItemCategory} rootCategory
      * @returns {Promise<ListingItemCreateRequest>}
      */
-    public async getModel(listingItemMessage: ListingItemMessage, marketId: number, seller: string, postedAt: Date,
-                          rootCategory: resources.ItemCategory): Promise<ListingItemCreateRequest> {
+    public async getModel(listingItemMessage: ListingItemMessage, marketId: number, seller: string,
+                          rootCategory: resources.ItemCategory, postedAt: Date = new Date()): Promise<ListingItemCreateRequest> {
 
         const itemInformation = await this.getModelItemInformation(listingItemMessage.information, rootCategory);
         const paymentInformation = await this.getModelPaymentInformation(listingItemMessage.payment);
