@@ -2,13 +2,15 @@ import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
 import { ProposalOption } from './ProposalOption';
 import { ProposalResult } from './ProposalResult';
+import {ListingItem} from './ListingItem';
 
 export class Proposal extends Bookshelf.Model<Proposal> {
 
     public static RELATIONS = [
         'ProposalOptions',
         // 'ProposalOptions.Votes',
-        'ProposalResult'
+        'ProposalResult',
+        'ListingItem'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Proposal> {
@@ -71,4 +73,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public ProposalResult(): ProposalResult {
        return this.hasOne(ProposalResult);
     }
+
+    public ListingItem(): ListingItem {
+        return this.hasOne(ListingItem);
+    }
+
 }

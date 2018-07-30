@@ -24,7 +24,9 @@ import { ProposalResultUpdateRequest } from '../requests/ProposalResultUpdateReq
 import { ProposalOptionResultUpdateRequest } from '../requests/ProposalOptionResultUpdateRequest';
 import { ProposalOptionService } from './ProposalOptionService';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
-import {ProposalType} from '../enums/ProposalType';
+import { ProposalType } from '../enums/ProposalType';
+import { ProposalOptionResult } from '../models/ProposalOptionResult';
+import { ListingItemService } from './ListingItemService';
 
 export class VoteActionService {
 
@@ -39,6 +41,7 @@ export class VoteActionService {
         @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
         @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -112,8 +115,19 @@ export class VoteActionService {
                 // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
                 // at minimum, a total of 10 votes
                 // at minimum, 30% of votes saying remove
+                const okOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
+                    return proposalOptionResult.ProposalOption.optionId === 0;
+                });
+                const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
+                    return proposalOptionResult.ProposalOption.optionId === 1; // 1 === REMOVE
+                });
 
-                // TODO
+                if (removeOptionResult && okOptionResult && removeOptionResult.weight > 10
+                    && (removeOptionResult.weight / (removeOptionResult.weight + okOptionResult.weight) > 0.3)) {
+                    // TODO: REMOVE
+                    // this.listingItemService.destroy(ProposalOption.Proposal.ListingItem)
+                }
+
             }
             // TODO: do whatever else needs to be done
 
