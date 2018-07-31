@@ -120,7 +120,7 @@ export class CommandEnumType extends Enum<Command> {
     public PROPOSAL_GET: Command         = new Command('proposalget', 'get', false);
     public PROPOSAL_POST: Command        = new Command('proposalpost', 'post', false);
     public PROPOSAL_LIST: Command        = new Command('proposallist', 'list', false);
-    public PROPOSAL_RESULTS: Command     = new Command('proposalresults', 'list', false);
+    public PROPOSAL_RESULTS: Command     = new Command('proposalresults', 'results', false);
     public PROPOSAL_ROOT: Command        = new Command('proposal', 'proposal', true,
         [this.PROPOSAL_GET, this.PROPOSAL_POST, this.PROPOSAL_LIST, this.PROPOSAL_RESULTS], EnvironmentType.ALL);
 
@@ -162,8 +162,10 @@ export class CommandEnumType extends Enum<Command> {
     public CURRENCYPRICE_ROOT: Command        = new Command('currencyprice', 'currencyprice', true);
 
     public VOTE_POST: Command         = new Command('votepost', 'post', false);
+    public VOTE_GET: Command         = new Command('voteget', 'get', false);
+    public VOTE_LIST: Command         = new Command('votelist', 'list', false);
     public VOTE_ROOT: Command           = new Command('vote', 'vote', true,
-        [this.VOTE_POST], EnvironmentType.ALL);
+        [this.VOTE_POST, this.VOTE_GET, this.VOTE_LIST], EnvironmentType.ALL);
 
     constructor() {
         super();

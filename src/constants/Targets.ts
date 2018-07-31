@@ -321,6 +321,8 @@ export const Targets = {
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         },
         vote: {
+            VoteGetCommand: 'VoteGetCommand',
+            VoteListCommand: 'VoteListCommand',
             VotePostCommand: 'VotePostCommand',
             VoteRootCommand: 'VoteRootCommand'
         }

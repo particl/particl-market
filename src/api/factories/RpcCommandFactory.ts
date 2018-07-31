@@ -136,6 +136,8 @@ import { ShoppingCartItemListCommand } from '../commands/shoppingcartitem/Shoppi
 import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitem/ShoppingCartItemRootCommand';
 
 import { VotePostCommand } from '../commands/vote/VotePostCommand';
+import { VoteGetCommand } from '../commands/vote/VoteGetCommand';
+import { VoteListCommand } from '../commands/vote/VoteListCommand';
 import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
 
 
@@ -270,6 +272,8 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.proposal.ProposalRootCommand) private proposalRootCommand: ProposalRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.vote.VotePostCommand) private votePostCommand: VotePostCommand,
+        @inject(Types.Command) @named(Targets.Command.vote.VoteGetCommand) private voteGetCommand: VoteGetCommand,
+        @inject(Types.Command) @named(Targets.Command.vote.VoteListCommand) private voteListCommand: VoteListCommand,
         @inject(Types.Command) @named(Targets.Command.vote.VoteRootCommand) private voteRootCommand: VoteRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
@@ -406,6 +410,8 @@ export class RpcCommandFactory {
         this.commands.push(currencyPriceRootCommand);
 
         this.commands.push(votePostCommand);
+        this.commands.push(voteGetCommand);
+        this.commands.push(voteListCommand);
         this.commands.push(voteRootCommand);
 
         this.commands.push(helpCommand);

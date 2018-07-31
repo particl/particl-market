@@ -87,7 +87,7 @@ export class VoteActionService {
         event.smsgMessage.received = new Date().toISOString();
 
         const message = event.marketplaceMessage;
-        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
+        if (!message.mpaction) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
 
@@ -188,8 +188,13 @@ export class VoteActionService {
     private async createOrUpdateVote(voteMessage: VoteMessage, proposal: resources.Proposal, currentBlock: number,
                                      weight: number): Promise<resources.Vote> {
 
-        const lastVoteModel = await this.voteService.findOneByVoterAndProposal(voteMessage.voter, proposal.id);
-        const lastVote: resources.Vote = lastVoteModel.toJSON();
+        let lastVote: any;
+        try {
+            const lastVoteModel = await this.voteService.findOneByVoterAndProposal(voteMessage.voter, proposal.id);
+            lastVote = lastVoteModel.toJSON();
+        } catch (ex) {
+            lastVote = null;
+        }
         const create: boolean = lastVote == null;
 
         // create a vote
