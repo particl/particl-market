@@ -29,6 +29,8 @@ export class ListingItemFactory {
 
     public log: LoggerType;
 
+    private dayMilliseconds = 24 * 60 * 60 * 1000;
+
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory
@@ -41,11 +43,12 @@ export class ListingItemFactory {
      *
      * @param {'resources'.ListingItemTemplate} listingItemTemplate
      * @param {'resources'.ItemCategory} listingItemCategory
+     * @param {number} expiryTime
+     * @param {Date} postedAt
      * @returns {Promise<ListingItemMessage>}
      */
     public async getMessage(listingItemTemplate: resources.ListingItemTemplate,
-                            expiryTime: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10),
-                            postedAt: Date = new Date()): Promise<ListingItemMessage> {
+                            expiryTime: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)): Promise<ListingItemMessage> {
 
         const information = await this.getMessageInformation(listingItemTemplate.ItemInformation);
         const payment = await this.getMessagePayment(listingItemTemplate.PaymentInformation);
@@ -58,8 +61,7 @@ export class ListingItemFactory {
             payment,
             messaging,
             objects,
-            expiryTime,
-            postedAt
+            expiryTime
         } as ListingItemMessage;
 
         return message;
@@ -81,8 +83,9 @@ export class ListingItemFactory {
         const paymentInformation = await this.getModelPaymentInformation(listingItemMessage.payment);
         const messagingInformation = await this.getModelMessagingInformation(listingItemMessage.messaging);
         const listingItemObjects = await this.getModelListingItemObjects(listingItemMessage.objects);
-        const expiredAt = new Date(postedAt);
-        expiredAt.setDate(expiredAt.getTime() + listingItemMessage.expiryTime);
+        // create expiredAt from postedAt and increate it by expiryTime days * dayMilliseconds
+        const expiredAt = new Date(postedAt.getTime());
+        expiredAt.setDate(expiredAt.getTime() + listingItemMessage.expiryTime * this.dayMilliseconds);
         return {
             hash: listingItemMessage.hash,
             seller,

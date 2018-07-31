@@ -202,11 +202,11 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public get ExpiryTime(): number { return this.get('expiryTime'); }
     public set ExpiryTime(value: number) { this.set('expiryTime', value); }
 
-    public get ExpiredAt(): Date { return this.get('expiredAt'); }
-    public set ExpiredAt(value: Date) { this.set('expiredAt', value); }
-
     public get PostedAt(): Date { return this.get('postedAt'); }
     public set PostedAt(value: Date) { this.set('postedAt', value); }
+
+    public get ExpiredAt(): Date { return this.get('expiredAt'); }
+    public set ExpiredAt(value: Date) { this.set('expiredAt', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
