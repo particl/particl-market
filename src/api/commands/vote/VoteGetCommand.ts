@@ -29,6 +29,8 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<V
 
     /**
      * command description
+     * [0] profileId
+     * [1] proposalHash
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -65,11 +67,11 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<V
     }
 
     public help(): string {
-        return this.getName() + ' TODO: (command param help)';
+        return this.getName() + ' <profileId> <proposalHash> ';
     }
 
     public description(): string {
-        return 'Commands for managing VoteVoteGetCommand.';
+        return 'Get votes on a given proposal by a given submitter. ';
     }
 
     public example(): string {
