@@ -30,10 +30,9 @@ export class ProposalRepository {
 
     public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
         if (withRelated) {
-            return this.search({} as ProposalSearchParams, withRelated);
+            return await this.search({} as ProposalSearchParams, withRelated);
         } else {
-            const list = await this.ProposalModel.fetchAll(withRelated);
-            return list as Bookshelf.Collection<Proposal>;
+            return await this.search({} as ProposalSearchParams, false);
         }
     }
 
