@@ -85,11 +85,11 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
     }
 
     public help(): string {
-        return this.getName() + ' TODO: (command param help)';
+        return this.getName() + ' <proposalHash> <proposalOption> <submitterAddress> ';
     }
 
     public description(): string {
-        return 'TODO: Commands for managing VotePostCommand.';
+        return 'TODO: ';
     }
 
     public example(): string {

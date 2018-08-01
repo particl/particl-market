@@ -24,7 +24,7 @@ export class VoteListCommand extends BaseCommand implements RpcCommandInterface<
     }
 
     /**
-     * command description
+     * List votes
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -36,14 +36,14 @@ export class VoteListCommand extends BaseCommand implements RpcCommandInterface<
     }
 
     public help(): string {
-        return this.getName() + ' TODO: (command param help)';
+        return this.getName() + ' ';
     }
 
     public description(): string {
-        return 'Commands for managing VoteVoteListCommand.';
+        return 'List votes.';
     }
 
     public example(): string {
-        return this.getName() + ' TODO: example';
+        return this.getName() + ' ';
     }
 }

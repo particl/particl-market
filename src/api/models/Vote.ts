@@ -22,17 +22,21 @@ export class Vote extends Bookshelf.Model<Vote> {
 
     public static async fetchByVoterAndProposal(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {
         if (withRelated) {
-            return await Vote.where<Vote>({
-                voter,
-                proposal_id: proposalId
-            }).fetch({
+            const vote = Vote.forge<Vote>()
+            .query(qb => {
+                qb.innerJoin('proposal_options', 'proposal_options.id', 'votes.proposal_option_id');
+                qb.where('voter', '=', voter);
+            });
+            return await vote.fetch({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await Vote.where<Vote>({
-                voter,
-                proposal_id: proposalId
-            }).fetch();
+            const vote = Vote.forge<Vote>()
+            .query(qb => {
+                qb.innerJoin('proposal_options', 'proposal_options.id', 'votes.proposal_option_id');
+                qb.where('voter', '=', voter);
+            });
+            return await vote.fetch();
         }
     }
 

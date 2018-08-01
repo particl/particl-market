@@ -21,6 +21,16 @@ export class ProposalOption extends Bookshelf.Model<ProposalOption> {
         }
     }
 
+    public static async fetchByProposalAndOptionId(proposalId: number, optionId: number, withRelated: boolean = true): Promise<ProposalOption> {
+        if (withRelated) {
+            return await ProposalOption.where<ProposalOption>({ proposal_id: proposalId, option_id: optionId }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await ProposalOption.where<ProposalOption>({ proposal_id: proposalId, option_id: optionId }).fetch();
+        }
+    }
+
     public get tableName(): string { return 'proposal_options'; }
     public get hasTimestamps(): boolean { return true; }
 
