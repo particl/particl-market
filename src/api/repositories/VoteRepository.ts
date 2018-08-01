@@ -36,7 +36,7 @@ export class VoteRepository {
             const voteCreated = await vote.save();
             return this.VoteModel.fetchById(voteCreated.id);
         } catch (error) {
-            throw new DatabaseException('Could not create the vote!', error);
+            throw new DatabaseException('Could not create the vote! ' + error, error);
         }
     }
 
@@ -46,7 +46,7 @@ export class VoteRepository {
             const voteUpdated = await vote.save(data, { patch: true });
             return this.VoteModel.fetchById(voteUpdated.id);
         } catch (error) {
-            throw new DatabaseException('Could not update the vote!', error);
+            throw new DatabaseException('Could not update the vote! ' + error, error);
         }
     }
 
@@ -62,7 +62,7 @@ export class VoteRepository {
             await vote.destroy();
             return;
         } catch (error) {
-            throw new DatabaseException('Could not delete the vote!', error);
+            throw new DatabaseException('Could not delete the vote! ' + error, error);
         }
     }
 

@@ -26,6 +26,10 @@ export class ProposalOptionRepository {
         return this.ProposalOptionModel.fetchById(id, withRelated);
     }
 
+    public async findOneByProposalAndOptionId(proposalId: number, optionId: number, withRelated: boolean = true): Promise<ProposalOption> {
+        return this.ProposalOptionModel.fetchByProposalAndOptionId(proposalId, optionId);
+    }
+
     public async create(data: any): Promise<ProposalOption> {
         const proposalOption = this.ProposalOptionModel.forge<ProposalOption>(data);
         try {

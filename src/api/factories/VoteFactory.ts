@@ -7,12 +7,14 @@ import { VoteMessageType } from '../enums/VoteMessageType';
 import * as resources from 'resources';
 import {VoteCreateRequest} from '../requests/VoteCreateRequest';
 import {VoteUpdateRequest} from '../requests/VoteUpdateRequest';
+import {ProposalOptionService} from '../services/ProposalOptionService';
 
 export class VoteFactory {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.ProposalOptionService) public proposalOptionService: ProposalOptionService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -63,7 +65,8 @@ export class VoteFactory {
         } as VoteCreateRequest;
 
         if (create) {
-            voteRequest.proposal_option_id = proposal.id;
+            const option = await this.proposalOptionService.findOneByProposalAndOptionId(proposal.id, voteMessage.optionId);
+            voteRequest.proposal_option_id = option.id;
             return voteRequest as VoteCreateRequest;
         } else {
             return voteRequest as VoteUpdateRequest;
