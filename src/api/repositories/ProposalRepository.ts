@@ -2,6 +2,7 @@ import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
 import { Proposal } from '../models/Proposal';
+import { ProposalSearchParams } from '../requests/ProposalSearchParams';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -17,9 +18,22 @@ export class ProposalRepository {
         this.log = new Logger(__filename);
     }
 
-    public async findAll(): Promise<Bookshelf.Collection<Proposal>> {
-        const list = await this.ProposalModel.fetchAll();
-        return list as Bookshelf.Collection<Proposal>;
+    /**
+     *
+     * @param {ListingItemSearchParams} options
+     * @param {boolean} withRelated
+     * @returns {Promise<Bookshelf.Collection<ListingItem>>}
+     */
+    public async search(options: ProposalSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Proposal>> {
+        return this.ProposalModel.searchBy(options, withRelated);
+    }
+
+    public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
+        if (withRelated) {
+            return await this.search({} as ProposalSearchParams, withRelated);
+        } else {
+            return await this.search({} as ProposalSearchParams, false);
+        }
     }
 
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Proposal> {

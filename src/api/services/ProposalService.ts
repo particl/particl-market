@@ -25,8 +25,8 @@ export class ProposalService {
         this.log = new Logger(__filename);
     }
 
-    public async findAll(): Promise<Bookshelf.Collection<Proposal>> {
-        return this.proposalRepo.findAll();
+    public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
+        return this.proposalRepo.findAll(withRelated);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<Proposal> {

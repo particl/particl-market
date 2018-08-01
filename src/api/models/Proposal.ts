@@ -1,8 +1,9 @@
-import { Collection } from 'bookshelf';
 import { Bookshelf } from '../../config/Database';
+import { Collection, Model } from 'bookshelf';
 import { ProposalOption } from './ProposalOption';
 import { ProposalResult } from './ProposalResult';
-import {ListingItem} from './ListingItem';
+import { ListingItem } from './ListingItem';
+import { ProposalSearchParams } from '../requests/ProposalSearchParams';
 
 export class Proposal extends Bookshelf.Model<Proposal> {
 
@@ -12,6 +13,21 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         'ProposalResult',
         'ListingItem'
     ];
+
+    public static async searchBy(options: ProposalSearchParams, withRelated: boolean = false): Promise<Collection<Proposal>> {
+        const proposalCollection = Proposal.forge<Model<Proposal>>()
+            .query(qb => {
+                const placeholder = 0;
+            })
+            .orderBy('id', options.order);
+        if (withRelated) {
+            return await proposalCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await proposalCollection.fetchAll();
+        }
+    }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Proposal> {
         if (withRelated) {
