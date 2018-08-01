@@ -32,7 +32,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
-        return await this.proposalService.findAll();
+        return await this.proposalService.findAll(true);
     }
 
     public help(): string {

@@ -35,9 +35,9 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
 
     /**
      * command description
+     * [0] profileId
      * [0] proposalHash
-     * [1] proposalOption
-     * [2] submitterAddress
+     * [1] proposalOptionId
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -49,6 +49,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
             throw new MessageException('Expected <TODO> but recieved no params.');
         }
 
+        const profileId = data.params.shift();
         const proposalHash = data.params.shift();
         // TODO: for now we'll say this is optionId, but it may not be. May need to change it later to be something else like hash
         const proposalOptionId = data.params.shift();
@@ -66,10 +67,9 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
 
         // Get profile from address.
         // Profile that is doing the bidding.
-        const profileAddress = data.params.shift();
-        const profileModel = await this.profileService.findOneByAddress(profileAddress);
+        const profileModel = await this.profileService.findOne(profileId);
         if (!profileModel) {
-            throw new MessageException(`Profile with address <${profileAddress}> doesn't exist or doesn't belong to us.`);
+            throw new MessageException(`Profile with profileId <${profileId}> doesn't exist or doesn't belong to us.`);
         }
         const profile: resources.Profile = profileModel.toJSON();
 
@@ -85,7 +85,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
     }
 
     public help(): string {
-        return this.getName() + ' <proposalHash> <proposalOption> <submitterAddress> ';
+        return this.getName() + ' <profileId> <proposalHash> <proposalOptionId> ';
     }
 
     public description(): string {
