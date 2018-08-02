@@ -35,6 +35,15 @@ export class ProposalResultService {
         return proposalResult;
     }
 
+    public async findOneFromHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
+        const proposalResult = await this.proposalResultRepo.findOneFromHash(hash, withRelated);
+        if (proposalResult === null) {
+            this.log.warn(`ProposalResult with the hash=${hash} was not found!`);
+            throw new NotFoundException(hash);
+        }
+        return proposalResult;
+    }
+
     @validate()
     public async create( @request(ProposalResultCreateRequest) data: ProposalResultCreateRequest): Promise<ProposalResult> {
 
