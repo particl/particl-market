@@ -50,7 +50,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'FlaggedItem',
         'ListingItemTemplate',
         'ListingItemTemplate.Profile',
-        'Proposal'
+        'Proposal',
+        'Proposal.ProposalResult'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {
