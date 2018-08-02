@@ -44,7 +44,6 @@ export class ListingItemFactory {
      * @param {'resources'.ListingItemTemplate} listingItemTemplate
      * @param {'resources'.ItemCategory} listingItemCategory
      * @param {number} expiryTime
-     * @param {Date} postedAt
      * @returns {Promise<ListingItemMessage>}
      */
     public async getMessage(listingItemTemplate: resources.ListingItemTemplate,

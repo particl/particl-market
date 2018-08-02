@@ -6,5 +6,4 @@ export class ListingItemMessage {
     public messaging: any;
     public objects?: any;
     public expiryTime: number; // expiry time measured in days
-    public postedAt: Date;
 }
