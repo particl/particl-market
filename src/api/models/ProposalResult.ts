@@ -1,5 +1,5 @@
 import { Bookshelf } from '../../config/Database';
-import { Collection } from 'bookshelf';
+import { Collection, Model } from 'bookshelf';
 import { Proposal } from './Proposal';
 import { ProposalOptionResult } from './ProposalOptionResult';
 
@@ -20,6 +20,22 @@ export class ProposalResult extends Bookshelf.Model<ProposalResult> {
             });
         } else {
             return await ProposalResult.where<ProposalResult>({ id: value }).fetch();
+        }
+    }
+
+    public static async fetchByHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
+        const proposalResultCollection = ProposalResult.forge<Model<ProposalResult>>()
+        .query(qb => {
+            qb.innerJoin('proposals', 'proposals.id', 'proposal_results.proposal_id');
+            qb.where('proposals.hash', '=', hash);
+        }).orderBy('proposals.id', 'ASC');
+
+        if (withRelated) {
+            return await proposalResultCollection.fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await proposalResultCollection.fetch();
         }
     }
 

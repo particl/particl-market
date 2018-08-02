@@ -37,7 +37,7 @@ export class ProposalResultsCommand extends BaseCommand implements RpcCommandInt
             throw new MessageException('Expected <TODO> but received no params.');
         }
         const proposalHash = data.params[0];
-        return await this.proposalResultsService.findOne(proposalHash, true);
+        return await this.proposalResultsService.findOneFromHash(proposalHash, true);
     }
 
     public help(): string {

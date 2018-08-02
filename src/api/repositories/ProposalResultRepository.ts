@@ -26,6 +26,10 @@ export class ProposalResultRepository {
         return this.ProposalResultModel.fetchById(id, withRelated);
     }
 
+    public async findOneFromHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
+        return this.ProposalResultModel.fetchByHash(hash, withRelated);
+    }
+
     public async create(data: any): Promise<ProposalResult> {
         const proposalResult = this.ProposalResultModel.forge<ProposalResult>(data);
         try {
