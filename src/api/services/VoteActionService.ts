@@ -135,6 +135,7 @@ export class VoteActionService {
     }
 
     /**
+     * todo: move to listingItemService
      *
      * @param {"resources".ProposalResult} proposalResult
      * @returns {Promise<boolean>}
