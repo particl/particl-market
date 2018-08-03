@@ -39,6 +39,112 @@ describe('ProposalPost', () => {
         }
     });
 
+    test('Should fail to post a proposal because it has too few args (0)', async () => {
+        {
+            const response: any = await testUtil.rpc(proposalMethod, [
+                proposalPostSubCommand
+            ]);
+            response.expectJson();
+            response.expectStatusCode(404);
+        }
+    });
+
+    test('Should fail to post a proposal because it has too few args (1)', async () => {
+        {
+            const response: any = await testUtil.rpc(proposalMethod, [
+                proposalPostSubCommand,
+                defaultProfile.id
+            ]);
+            response.expectJson();
+            response.expectStatusCode(404);
+        }
+    });
+
+        test('Should fail to post a proposal because it has too few args (2)', async () => {
+        const title = Faker.lorem.words();
+        {
+            const response: any = await testUtil.rpc(proposalMethod, [
+                proposalPostSubCommand,
+                defaultProfile.id,
+                title
+            ]);
+            response.expectJson();
+            response.expectStatusCode(404);
+        }
+    });
+
+    test('Should fail to post a proposal because it has too few args (3)', async () => {
+        const title = Faker.lorem.words();
+        const description = Faker.lorem.paragraph();
+        {
+            const response: any = await testUtil.rpc(proposalMethod, [
+                proposalPostSubCommand,
+                defaultProfile.id,
+                title,
+                description
+            ]);
+            response.expectJson();
+            response.expectStatusCode(404);
+        }
+    });
+
+    test('Should fail to post a proposal because it has too few args (4)', async () => {
+        const title = Faker.lorem.words();
+        const description = Faker.lorem.paragraph();
+        const blockStart = currentBlockNumber - 1;
+        {
+            const response: any = await testUtil.rpc(proposalMethod, [
+                proposalPostSubCommand,
+                defaultProfile.id,
+                title,
+                description,
+                blockStart
+            ]);
+            response.expectJson();
+            response.expectStatusCode(404);
+        }
+    });
+
+    test('Should fail to post a proposal because it has too few args (5)', async () => {
+        const title = Faker.lorem.words();
+        const description = Faker.lorem.paragraph();
+        const blockStart = currentBlockNumber - 1;
+        const blockEnd = currentBlockNumber + 100;
+        {
+            const response: any = await testUtil.rpc(proposalMethod, [
+                proposalPostSubCommand,
+                defaultProfile.id,
+                title,
+                description,
+                blockStart,
+                blockEnd
+            ]);
+            response.expectJson();
+            response.expectStatusCode(404);
+        }
+    });
+
+    test('Should fail to post a proposal because it has too few args (6)', async () => {
+        const title = Faker.lorem.words();
+        const description = Faker.lorem.paragraph();
+        const blockStart = currentBlockNumber - 1;
+        const blockEnd = currentBlockNumber + 100;
+        const optionA = 'optionA';
+        {
+            const response: any = await testUtil.rpc(proposalMethod, [
+                proposalPostSubCommand,
+                defaultProfile.id,
+                title,
+                description,
+                blockStart,
+                blockEnd,
+                optionA
+            ]);
+            response.expectJson();
+            response.expectStatusCode(404);
+        }
+    });
+
     test('Should post a proposal', async () => {
         const title = Faker.lorem.words();
         const description = Faker.lorem.paragraph();
