@@ -47,7 +47,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
         // todo add validation in separate function..
-        if (data.params.length < 5) {
+        if (data.params.length < 7) {
             throw new MessageException('Expected <TODO> but received no params.');
         }
 
