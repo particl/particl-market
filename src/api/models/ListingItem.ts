@@ -12,7 +12,7 @@ import { FlaggedItem } from './FlaggedItem';
 import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
 import { ActionMessage } from './ActionMessage';
-import {Proposal} from './Proposal';
+import { Proposal } from './Proposal';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -49,7 +49,9 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'Market',
         'FlaggedItem',
         'ListingItemTemplate',
-        'ListingItemTemplate.Profile'
+        'ListingItemTemplate.Profile',
+        'Proposal',
+        'Proposal.ProposalResult'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {

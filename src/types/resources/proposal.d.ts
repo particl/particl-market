@@ -1,4 +1,4 @@
-import {ProposalType} from '../../api/enums/ProposalType';
+import { ProposalType } from '../../api/enums/ProposalType';
 
 declare module 'resources' {
 
@@ -14,6 +14,7 @@ declare module 'resources' {
         updatedAt: Date;
         ProposalOptions: ProposalOption[];
         ProposalResult: ProposalResult;
+        ListingItem: ListingItem;
     }
 
 }

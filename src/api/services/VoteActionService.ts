@@ -24,7 +24,9 @@ import { ProposalResultUpdateRequest } from '../requests/ProposalResultUpdateReq
 import { ProposalOptionResultUpdateRequest } from '../requests/ProposalOptionResultUpdateRequest';
 import { ProposalOptionService } from './ProposalOptionService';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
-import {ProposalType} from '../enums/ProposalType';
+import { ProposalType } from '../enums/ProposalType';
+import { ProposalOptionResult } from '../models/ProposalOptionResult';
+import { ListingItemService } from './ListingItemService';
 
 export class VoteActionService {
 
@@ -39,6 +41,7 @@ export class VoteActionService {
         @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
         @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -108,12 +111,19 @@ export class VoteActionService {
 
             // todo: extract method
             if (proposal.type === ProposalType.ITEM_VOTE) {
-                // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
-                // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
-                // at minimum, a total of 10 votes
-                // at minimum, 30% of votes saying remove
-
-                // TODO
+                if (await this.shouldRemoveListingItem(proposalResult)) {
+                    // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
+                    const listingItemId = await this.listingItemService.findOne(proposal.ListingItem.id, false)
+                        .then(value => {
+                            return value.Id;
+                        }).catch(reason => {
+                            // ignore
+                            return null;
+                        });
+                    if (listingItemId) {
+                        await this.listingItemService.destroy(listingItemId);
+                    }
+                }
             }
             // TODO: do whatever else needs to be done
 
@@ -121,6 +131,32 @@ export class VoteActionService {
             return createdVote;
         } else {
             throw new MessageException('Missing VoteMessage');
+        }
+    }
+
+    /**
+     * todo: move to listingItemService
+     *
+     * @param {"resources".ProposalResult} proposalResult
+     * @returns {Promise<boolean>}
+     */
+    private async shouldRemoveListingItem(proposalResult: resources.ProposalResult): Promise<boolean> {
+        const okOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
+            return proposalOptionResult.ProposalOption.optionId === 0;
+        });
+        const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
+            return proposalOptionResult.ProposalOption.optionId === 1; // 1 === REMOVE
+        });
+
+        // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
+        // at minimum, a total of 10 votes
+        // at minimum, 30% of votes saying remove
+
+        if (removeOptionResult && okOptionResult && removeOptionResult.weight > 10
+            && (removeOptionResult.weight / (removeOptionResult.weight + okOptionResult.weight) > 0.3)) {
+            return true;
+        } else {
+            return false;
         }
     }
 

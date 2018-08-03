@@ -2,6 +2,7 @@ import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { ProposalOption } from './ProposalOption';
 import { ProposalResult } from './ProposalResult';
+import { ListingItem } from './ListingItem';
 import { ProposalSearchParams } from '../requests/ProposalSearchParams';
 
 export class Proposal extends Bookshelf.Model<Proposal> {
@@ -9,7 +10,8 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public static RELATIONS = [
         'ProposalOptions',
         // 'ProposalOptions.Votes',
-        'ProposalResult'
+        'ProposalResult',
+        'ListingItem'
     ];
 
     public static async searchBy(options: ProposalSearchParams, withRelated: boolean = false): Promise<Collection<Proposal>> {
@@ -87,4 +89,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public ProposalResult(): ProposalResult {
        return this.hasOne(ProposalResult);
     }
+
+    public ListingItem(): ListingItem {
+        return this.hasOne(ListingItem);
+    }
+
 }

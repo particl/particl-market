@@ -9,7 +9,6 @@ import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemInformationService } from './ItemInformationService';
 import { ItemCategoryService } from './ItemCategoryService';
-import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { MarketService } from './MarketService';
 
 import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplatePostRequest';
@@ -20,7 +19,6 @@ import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { SmsgService } from './SmsgService';
 import { Market } from '../models/Market';
 import { ListingItemObjectService } from './ListingItemObjectService';
-import { FlaggedItemService } from './FlaggedItemService';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import * as resources from 'resources';
 import { EventEmitter } from 'events';
@@ -36,8 +34,12 @@ import { ProposalFactory } from '../factories/ProposalFactory';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { ProposalType } from '../enums/ProposalType';
 import { CoreRpcService } from './CoreRpcService';
-import {ProposalMessage} from '../messages/ProposalMessage';
-import {Proposal} from '../models/Proposal';
+import { ProposalMessage } from '../messages/ProposalMessage';
+import { ProposalService } from './ProposalService';
+import { ListingItemMessage } from '../messages/ListingItemMessage';
+import { ProfileService } from './ProfileService';
+import { VoteMessageType } from '../enums/VoteMessageType';
+import { VoteFactory } from '../factories/VoteFactory';
 
 export class ListingItemActionService {
     private static FRACTION_TO_COMPRESS_BY = 0.6;
@@ -51,7 +53,6 @@ export class ListingItemActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
@@ -60,11 +61,13 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
+        @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -176,52 +179,123 @@ export class ListingItemActionService {
             const marketModel = await this.marketService.findByAddress(message.market);
             const market = marketModel.toJSON();
 
-            const listingItemMessage = message.item;
+            const listingItemMessage: ListingItemMessage = message.item;
 
-            // create the new custom categories in case there are some
-            const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
-
-            // find the categories/get the root category with related
-            const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
-            const rootCategory = rootCategoryWithRelatedModel.toJSON();
-
-            // create ListingItem
-            const seller = event.smsgMessage.from;
-            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory);
-            // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
-
-            let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
-            let listingItem = listingItemModel.toJSON();
-
-            // todo: no need for these two updates, set the relations up in the createRequest
-            // update the template relation
-            await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
-
-            // update the proposal relation
             if (listingItemMessage.proposalHash) {
-                await this.listingItemService.updateProposalRelation(listingItem.id, listingItemMessage.proposalHash);
+                throw new MessageException('ListingItem is missing proposals hash.');
             }
 
-            // first save it
-            const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-            const actionMessage = actionMessageModel.toJSON();
-            // this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
+            // get proposal and ignore listingitem if its allready voted off
+            const proposalModel = await this.proposalService.findOneByHash(listingItemMessage.proposalHash || '');
+            const proposal: resources.Proposal = proposalModel.toJSON();
 
-            // emit the latest message event to cli
-            // this.eventEmitter.emit('cli', {
-            //    message: 'new ListingItem received: ' + JSON.stringify(listingItem)
-            // });
+            if (await this.shouldAddListingItem(proposal.ProposalResult)) {
 
-            // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
-            listingItemModel = await this.listingItemService.findOne(listingItem.id);
-            listingItem = listingItemModel.toJSON();
+                // create the new custom categories in case there are some
+                const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
 
-            this.log.debug('saved listingItem:', listingItem.hash);
+                // find the categories/get the root category with related
+                const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
+                const rootCategory = rootCategoryWithRelatedModel.toJSON();
 
-            return listingItem;
+                // create ListingItem
+                const seller = event.smsgMessage.from;
+                const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory);
+                // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
+                let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
+                let listingItem = listingItemModel.toJSON();
+
+                // todo: no need for these two updates, set the relations up in the createRequest
+                // update the template relation
+                await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
+
+                // update the proposal relation
+                if (listingItemMessage.proposalHash) {
+                    await this.listingItemService.updateProposalRelation(listingItem.id, listingItemMessage.proposalHash);
+                }
+
+                // first save it
+                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+                const actionMessage = actionMessageModel.toJSON();
+                // this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
+
+                // emit the latest message event to cli
+                // this.eventEmitter.emit('cli', {
+                //    message: 'new ListingItem received: ' + JSON.stringify(listingItem)
+                // });
+
+                // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
+                listingItemModel = await this.listingItemService.findOne(listingItem.id);
+                listingItem = listingItemModel.toJSON();
+
+                await this.voteForListingItemProposal(proposal, market);
+
+                this.log.debug('saved listingItem:', listingItem.hash);
+                return listingItem;
+
+            } else {
+                throw new MessageException('ListingItem is allready voted off the market.');
+            }
         } else {
             throw new MessageException('Marketplace message missing market.');
+        }
+    }
+
+    /**
+     *
+     * @param {"resources".ProposalResult} proposalResult
+     * @returns {Promise<boolean>}
+     */
+    private async voteForListingItemProposal(proposal: resources.Proposal, market: resources.Market): Promise<boolean> {
+
+        // todo: remove this later
+        const profileModel = await this.profileService.getDefault();
+        const profile: resources.Profile = profileModel.toJSON();
+
+        const proposalOption = _.find(proposal.ProposalOptions, (option: resources.ProposalOption) => {
+            return option.optionId === 1;
+        });
+
+        if (proposalOption) {
+            const currentBlock: number = await this.coreRpcService.getBlockCount();
+            const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
+                profile, currentBlock);
+
+            const msg: MarketplaceMessage = {
+                version: process.env.MARKETPLACE_VERSION,
+                mpaction: voteMessage
+            };
+
+            const smsgSendResponse: SmsgSendResponse = await this.smsgService.smsgSend(profile.address, market.address, msg, false);
+            return smsgSendResponse.error === undefined ? false : true;
+        } else {
+            throw new MessageException('Could not find ProposalOption to vote for.');
+        }
+    }
+
+    /**
+     *
+     * @param {"resources".ProposalResult} proposalResult
+     * @returns {Promise<boolean>}
+     */
+    private async shouldAddListingItem(proposalResult: resources.ProposalResult): Promise<boolean> {
+        const okOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
+            return proposalOptionResult.ProposalOption.optionId === 0;
+        });
+        const removeOptionResult = _.find(proposalResult.ProposalOptionResults, (proposalOptionResult: resources.ProposalOptionResult) => {
+            return proposalOptionResult.ProposalOption.optionId === 1; // 1 === REMOVE
+        });
+
+        // Requirements to remove the ListingItem from the testnet marketplace, these should also be configurable:
+        // at minimum, a total of 10 votes
+        // at minimum, 30% of votes saying remove
+
+        if (removeOptionResult && okOptionResult && removeOptionResult.weight > 10
+            && (removeOptionResult.weight / (removeOptionResult.weight + okOptionResult.weight) > 0.3)) {
+            return false;
+        } else {
+            return true;
         }
     }
 

@@ -121,7 +121,7 @@ export class ProposalActionService {
 
         const proposalOptions: any = proposal.ProposalOptions;
         for (const proposalOption of proposalOptions) {
-            const proposalOptionResult = this.proposalOptionResultService.create({
+            const proposalOptionResult = await this.proposalOptionResultService.create({
                 weight: 0,
                 voters: 0,
                 proposal_option_id: proposalOption.id,
