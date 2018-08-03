@@ -34,7 +34,7 @@ describe('ListingItemSearchCommand', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+            false    // generateListingItemObjects
         ]).toParamsArray();
 
         // get default profile

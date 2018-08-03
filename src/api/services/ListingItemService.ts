@@ -167,7 +167,10 @@ export class ListingItemService {
         // create listingItemObjects
         for (const object of listingItemObjects) {
             object.listing_item_id = listingItem.id;
-            await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
+            await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest)
+                .catch(reason => {
+                    this.log.error('Error:', JSON.stringify(reason, null, 2));
+                });
         }
 
         // this.log.debug('create actionMessages:', JSON.stringify(actionMessages, null, 2));
@@ -175,7 +178,10 @@ export class ListingItemService {
         // create actionMessages, only used to create testdata
         for (const actionMessage of actionMessages) {
             actionMessage.listing_item_id = listingItem.id;
-            await this.actionMessageService.create(actionMessage);
+            await this.actionMessageService.create(actionMessage)
+                .catch(reason => {
+                    this.log.error('Error:', JSON.stringify(reason, null, 2));
+                });
         }
 
         // finally find and return the created listingItem
