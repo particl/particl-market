@@ -36,6 +36,7 @@ import { ItemCategoryService } from './ItemCategoryService';
 import { FavoriteItemService } from './FavoriteItemService';
 import { ItemInformationService } from './ItemInformationService';
 import { BidService } from './BidService';
+import { ProposalService } from './ProposalService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemImageService } from './ItemImageService';
 import { ActionMessageService } from './ActionMessageService';
@@ -66,6 +67,7 @@ import { GenerateListingItemTemplateParams } from '../requests/params/GenerateLi
 import { GenerateListingItemParams } from '../requests/params/GenerateListingItemParams';
 import { GenerateProfileParams } from '../requests/params/GenerateProfileParams';
 import { GenerateBidParams } from '../requests/params/GenerateBidParams';
+import { GenerateProposalParams } from '../requests/params/GenerateProposalParams';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { BidMessageType } from '../enums/BidMessageType';
 import { SearchOrder } from '../enums/SearchOrder';
@@ -85,6 +87,8 @@ import { OrderStatus } from '../enums/OrderStatus';
 import { OrderItemObjectCreateRequest } from '../requests/OrderItemObjectCreateRequest';
 import { OrderService } from './OrderService';
 import { OrderFactory } from '../factories/OrderFactory';
+import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
+import { ProposalOptionCreateRequest } from '../requests/ProposalOptionCreateRequest';
 import { ItemPriceCreateRequest } from '../requests/ItemPriceCreateRequest';
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
 
@@ -106,6 +110,7 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService,
+        @inject(Types.Service) @named(Targets.Service.ProposalService) private proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) private actionMessageService: ActionMessageService,
@@ -223,6 +228,10 @@ export class TestDataService {
                 const generateParams = new GenerateOrderParams(body.generateParams);
                 return await this.generateOrders(body.amount, body.withRelated, generateParams);
             }
+            case CreatableModel.PROPOSAL: {
+                const generateParams = new GenerateProposalParams(body.generateParams);
+                return await this.generateProposals(body.amount, body.withRelated, generateParams);
+            }
             default: {
                 throw new MessageException('Not implemented');
             }
@@ -282,7 +291,8 @@ export class TestDataService {
             'proposal_option_results',
             'proposal_results',
             'proposal_options',
-            'proposals'
+            'proposals',
+            'votes'
         ];
 
         for (const table of tablesToClean) {
@@ -640,6 +650,94 @@ export class TestDataService {
         } as OrderItemCreateRequest;
     }
     */
+
+    // -------------------
+    // Proposals
+    private async generateProposals(
+        amount: number, withRelated: boolean = true, generateParams: GenerateProposalParams):
+    Promise<resources.Proposal[]> {
+
+        /*this.log.debug('generateProposals, generateParams: ', generateParams);
+
+        const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams();
+        const listingItemGenerateParams = new GenerateListingItemParams();
+
+        let listingItemTemplate: resources.ListingItemTemplate;
+        let listingItem: resources.ListingItem;
+
+        // generate template
+        if (generateParams.generateListingItemTemplate) {
+            const listingItemTemplates = await this.generateListingItemTemplates(1, true, listingItemTemplateGenerateParams);
+            listingItemTemplate = listingItemTemplates[0];
+
+            this.log.debug('templates generated:', listingItemTemplates.length);
+            this.log.debug('listingItemTemplates[0].id:', listingItemTemplates[0].id);
+            this.log.debug('listingItemTemplates[0].hash:', listingItemTemplates[0].hash);
+
+            // set the hash for listing item generation
+            listingItemGenerateParams.listingItemTemplateHash = listingItemTemplates[0].hash;
+        }
+
+        // generate item
+        if (generateParams.generateListingItem) {
+
+            // set the seller for listing item generation
+            listingItemGenerateParams.seller = generateParams.listingItemSeller ? generateParams.listingItemSeller : null;
+
+            this.log.debug('listingItemGenerateParams:', listingItemGenerateParams);
+
+            const listingItems = await this.generateListingItems(1, true, listingItemGenerateParams);
+            listingItem = listingItems[0];
+
+            this.log.debug('listingItems generated:', listingItems.length);
+            this.log.debug('listingItem.id:', listingItem.id);
+            this.log.debug('listingItem.hash:', listingItem.hash);
+
+            // set the hash for bid generation
+            generateParams.listingItemHash = listingItem.hash;
+        }
+
+        this.log.debug('generateParams:', generateParams);
+
+        const items: resources.Proposal[] = [];
+        for (let i = amount; i > 0; i--) {
+            const proposal = await this.generateProposalData(generateParams);
+            const savedProposalModel = await this.proposalService.create(proposal);
+            const result = savedProposalModel.toJSON();
+            items.push(result);
+        }
+        return this.generateResponse(items, withRelated);*/
+        return [];
+    }
+
+    private async generateProposalData(generateParams: GenerateProposalParams): Promise<ProposalCreateRequest> {
+        // TODO: defaultProfile might not be the correct one
+        const defaultProfile = await this.profileService.getDefault();
+
+        const proposalCreateRequest = {
+            submitter: defaultProfile.Address,
+            blockStart: 0, // TODO: Generate
+            blockEnd: 0, // TODO: Generate
+            title: 'title1', // TODO: Generate
+            description: 'desc1' // TODO: Generate
+        } as ProposalCreateRequest;
+        // this.log.debug('Generated bid = ' + JSON.stringify(retval, null, 2));
+
+        // if we have a hash, fetch the listingItem and set the relation
+        if (generateParams.listingItemHash) {
+            proposalCreateRequest.hash = generateParams.listingItemHash;
+        }
+
+        const options: ProposalOptionCreateRequest[] = [];
+        options.push({
+            optionId: 1, // AUTOINCREMEMENT
+            description: 'optDesc1'
+        } as ProposalOptionCreateRequest); // TODO: Generate this automatically
+        // TODO: Generate a random number of proposal options, or a number specified in the generateParams
+        proposalCreateRequest.options = options;
+
+        return proposalCreateRequest;
+    }
 
     // -------------------
     // profiles
