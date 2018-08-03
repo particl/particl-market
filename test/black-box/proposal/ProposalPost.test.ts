@@ -42,8 +42,8 @@ describe('ProposalPost', () => {
     test('Should post a proposal', async () => {
         const title = Faker.lorem.words();
         const description = Faker.lorem.paragraph();
-        const startBlockNumber = currentBlockNumber - 1;
-        const endtBlockNumber = currentBlockNumber + 100;
+        const blockStart = currentBlockNumber - 1;
+        const blockEnd = currentBlockNumber + 100;
         const optionA = 'optionA';
         const optionB = 'optionB';
         {
@@ -52,8 +52,8 @@ describe('ProposalPost', () => {
                 defaultProfile.id,
                 title,
                 description,
-                startBlockNumber,
-                endtBlockNumber, // TODO: This needs to be made dynamic
+                blockStart,
+                blockEnd,
                 optionA,
                 optionB
             ]);
@@ -73,8 +73,12 @@ describe('ProposalPost', () => {
             description // created proposal hash
         );
         response.expectJson();
-        response.expectStatusCode(200);
+        const result: any = response.getBody()['result'][0];
 
-        // expect(result.shippingAvailability).toBe(ShippingAvailability.SHIPS);
-    });
+        expect(result.title).toBe(title);
+        expect(result.blockStart).toBe(blockStart);
+        expect(result.blockEnd).toBe(blockEnd);
+        expect(result.ProposalOptions[0].description).toBe(optionA);
+        expect(result.ProposalOptions[1].description).toBe(optionB);
+    }, 600000); // timeout to 600s
 });
