@@ -18,9 +18,16 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         const proposalCollection = Proposal.forge<Model<Proposal>>()
             .query(qb => {
                 const placeholder = 0;
+
+                if (options.startBlock) {
+                    qb.where('proposals.block_start', '>', options.startBlock - 1);
+                }
+                if (options.endBlock) {
+                    qb.where('proposals.block_end', '<', options.endBlock + 1);
+                }
             })
             .orderBy('id', options.order);
-        if (withRelated) {
+        if (options.withRelated) {
             return await proposalCollection.fetchAll({
                 withRelated: this.RELATIONS
             });

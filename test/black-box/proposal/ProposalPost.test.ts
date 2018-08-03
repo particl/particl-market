@@ -145,6 +145,98 @@ describe('ProposalPost', () => {
         }
     });
 
+    test('Should fail to post a proposal because it has an invalid (string) arg (profileId)', async () => {
+        const title = Faker.lorem.words();
+        const description = Faker.lorem.paragraph();
+        const blockStart = currentBlockNumber - 1;
+        const blockEnd = currentBlockNumber + 100;
+        const optionA = 'optionA';
+        const optionB = 'optionB';
+        {
+            const response: any = await testUtil.rpc(proposalMethod, [
+                proposalPostSubCommand,
+                'invalid proposal ID',
+                title,
+                description,
+                blockStart,
+                blockEnd,
+                optionA,
+                optionB
+            ]);
+            response.expectJson();
+            response.expectStatusCode(404);
+        }
+    });
+
+    test('Should fail to post a proposal because it has an invalid (non-existent) arg (profileId)', async () => {
+        const title = Faker.lorem.words();
+        const description = Faker.lorem.paragraph();
+        const blockStart = currentBlockNumber - 1;
+        const blockEnd = currentBlockNumber + 100;
+        const optionA = 'optionA';
+        const optionB = 'optionB';
+        {
+            const response: any = await testUtil.rpc(proposalMethod, [
+                proposalPostSubCommand,
+                9999999999999999,
+                title,
+                description,
+                blockStart,
+                blockEnd,
+                optionA,
+                optionB
+            ]);
+            response.expectJson();
+            response.expectStatusCode(404);
+        }
+    });
+
+    test('Should fail to post a proposal because it has an invalid arg (blockStart)', async () => {
+        const title = Faker.lorem.words();
+        const description = Faker.lorem.paragraph();
+        const blockStart = 'Invalid blockStart';
+        const blockEnd = currentBlockNumber + 100;
+        const optionA = 'optionA';
+        const optionB = 'optionB';
+        {
+            const response: any = await testUtil.rpc(proposalMethod, [
+                proposalPostSubCommand,
+                defaultProfile.id,
+                title,
+                description,
+                blockStart,
+                blockEnd,
+                optionA,
+                optionB
+            ]);
+            response.expectJson();
+            response.expectStatusCode(404);
+        }
+    });
+
+    test('Should fail to post a proposal because it has an invalid arg (blockEnd)', async () => {
+        const title = Faker.lorem.words();
+        const description = Faker.lorem.paragraph();
+        const blockStart = currentBlockNumber - 1;
+        const blockEnd = 'Invalid blockEnd';
+        const optionA = 'optionA';
+        const optionB = 'optionB';
+        {
+            const response: any = await testUtil.rpc(proposalMethod, [
+                proposalPostSubCommand,
+                defaultProfile.id,
+                title,
+                description,
+                blockStart,
+                blockEnd,
+                optionA,
+                optionB
+            ]);
+            response.expectJson();
+            response.expectStatusCode(404);
+        }
+    });
+
     test('Should post a proposal', async () => {
         const title = Faker.lorem.words();
         const description = Faker.lorem.paragraph();
