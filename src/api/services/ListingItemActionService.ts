@@ -181,7 +181,7 @@ export class ListingItemActionService {
 
             const listingItemMessage: ListingItemMessage = message.item;
 
-            if (listingItemMessage.proposalHash) {
+            if (!listingItemMessage.proposalHash) {
                 this.log.error('ListingItem is missing proposals hash.', JSON.stringify(listingItemMessage, null, 2));
                 throw new MessageException('ListingItem is missing proposals hash.');
             }
