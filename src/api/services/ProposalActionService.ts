@@ -91,6 +91,7 @@ export class ProposalActionService {
 
         // create the proposal
         const proposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
+        this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest));
         let createdProposalModel: Proposal = await this.proposalService.create(proposalCreateRequest);
         const createdProposal: resources.Proposal = createdProposalModel.toJSON();
 
@@ -118,6 +119,8 @@ export class ProposalActionService {
             proposal_id: proposal.id
         } as ProposalResultCreateRequest);
         const proposalResult = proposalResultModel.toJSON();
+
+        this.log.debug('proposalResult: ', JSON.stringify(proposalResult));
 
         const proposalOptions: any = proposal.ProposalOptions;
         for (const proposalOption of proposalOptions) {
