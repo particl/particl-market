@@ -182,7 +182,8 @@ export class ListingItemActionService {
             const listingItemMessage: ListingItemMessage = message.item;
 
             if (listingItemMessage.proposalHash) {
-                throw new MessageException('ListingItem is missing proposals hash.');
+                this.log.error('ListingItem is missing proposals hash.');
+                // throw new MessageException('ListingItem is missing proposals hash.');
             }
 
             // get proposal and ignore listingitem if its allready voted off
