@@ -9,7 +9,9 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from './../CommandEnumType';
 import { BaseCommand } from './../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { NotImplementedException } from '../../exceptions/NotImplementedException';
+import { MessageException } from '../../exceptions/MessageException';
+import { ProposalSearchParams } from '../../requests/ProposalSearchParams';
+import { SearchOrder } from '../../enums/SearchOrder';
 
 export class ProposalListCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
 
@@ -25,6 +27,9 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * command description
+     * [0] startBlock
+     * [1] endBlock
+     * [2] order
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -32,18 +37,44 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
-        return await this.proposalService.findAll(true);
+        const startBlock = data.params.shift();
+        const endBlock = data.params.shift();
+        let order = data.params.shift();
+
+        if (typeof startBlock !== 'number') {
+            throw new MessageException(`startBlock must be a number. Received: <${startBlock}>.`);
+        }
+
+        if (typeof endBlock !== 'number') {
+            throw new MessageException(`endBlock must be a number. Received: <${endBlock}>.`);
+        }
+
+        if (order === SearchOrder.ASC) {
+            order = SearchOrder.ASC;
+        } else if (order === SearchOrder.DESC) {
+            order = SearchOrder.DESC;
+        } else {
+            order = SearchOrder.ASC;
+        }
+
+        const searchParams = {
+            order,
+            withRelated: true,
+            startBlock,
+            endBlock
+        } as ProposalSearchParams;
+        return await this.proposalService.searchBy(searchParams);
     }
 
     public help(): string {
-        return this.getName() + ' TODO: (command param help)';
+        return this.getName() + ' <startBlock> <endBlock> <order> ';
     }
 
     public description(): string {
-        return 'TODO: Commands for managing ProposalProposalListCommand.';
+        return 'Command for retrieving proposals. ';
     }
 
     public example(): string {
-        return this.getName() + ' TODO: example';
+        return this.getName() + ' 1 100000000 ASC ';
     }
 }

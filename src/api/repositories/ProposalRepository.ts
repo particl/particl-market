@@ -24,15 +24,15 @@ export class ProposalRepository {
      * @param {boolean} withRelated
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */
-    public async search(options: ProposalSearchParams, withRelated: boolean): Promise<Bookshelf.Collection<Proposal>> {
-        return this.ProposalModel.searchBy(options, withRelated);
+    public async searchBy(options: ProposalSearchParams): Promise<Bookshelf.Collection<Proposal>> {
+        return this.ProposalModel.searchBy(options);
     }
 
     public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
         if (withRelated) {
-            return await this.search({} as ProposalSearchParams, withRelated);
+            return await this.searchBy({withRelated} as ProposalSearchParams);
         } else {
-            return await this.search({} as ProposalSearchParams, false);
+            return await this.searchBy({withRelated: false} as ProposalSearchParams);
         }
     }
 

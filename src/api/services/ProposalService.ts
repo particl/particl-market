@@ -12,6 +12,7 @@ import { ProposalUpdateRequest } from '../requests/ProposalUpdateRequest';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ProposalOptionService } from './ProposalOptionService';
+import { ProposalSearchParams } from '../requests/ProposalSearchParams';
 
 export class ProposalService {
 
@@ -23,6 +24,10 @@ export class ProposalService {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
+    }
+
+    public async searchBy(options: ProposalSearchParams): Promise<Bookshelf.Collection<Proposal>> {
+        return this.proposalRepo.searchBy(options);
     }
 
     public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
