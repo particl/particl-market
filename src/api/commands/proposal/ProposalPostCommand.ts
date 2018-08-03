@@ -58,6 +58,14 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         const blockStart = data.params.shift();
         const blockEnd = data.params.shift();
 
+        if (typeof profileId !== 'number') {
+            throw new MessageException('profileId needs to be a number.');
+        } else if (typeof blockStart !== 'number') {
+            throw new MessageException('blockStart needs to be a number.');
+        } else if (typeof blockEnd !== 'number') {
+            throw new MessageException('blockEnd needs to be a number.');
+        }
+
         let profile: resources.Profile;
         try {
             const profileModel = await this.profileService.findOne(profileId);
