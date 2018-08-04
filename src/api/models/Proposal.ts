@@ -31,9 +31,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
                     qb.where('proposals.block_end', '<', options.endBlock + 1);
 
                 } else if (typeof options.startBlock === 'number' && typeof options.endBlock === 'number') {
-                    // search all started and ended between
-                    qb.where('proposals.block_start', '>', options.startBlock - 1);
-                    qb.andWhere('proposals.block_end', '<', options.endBlock + 1);
+                    // search all ending after startBlock, starting before endBlock
+                    qb.where('proposals.block_start', '<', options.endBlock + 1);
+                    qb.andWhere('proposals.block_end', '>', options.startBlock - 1);
                 }
 
             })

@@ -91,6 +91,7 @@ import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalOptionCreateRequest } from '../requests/ProposalOptionCreateRequest';
 import { ItemPriceCreateRequest } from '../requests/ItemPriceCreateRequest';
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
+import {ProposalType} from '../enums/ProposalType';
 
 export class TestDataService {
 
@@ -526,50 +527,7 @@ export class TestDataService {
 
         this.log.debug('generateOrders, generateParams: ', generateParams);
 
-        // const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams();
-        // const listingItemGenerateParams = new GenerateListingItemParams();
         const bidGenerateParams = new GenerateBidParams();
-
-        // let listingItemTemplate: resources.ListingItemTemplate;
-        // let listingItem: resources.ListingItem;
-
-/*
-        // generate template
-        if (generateParams.generateListingItemTemplate) {
-            const listingItemTemplates = await this.generateListingItemTemplates(1, true, listingItemTemplateGenerateParams);
-            listingItemTemplate = listingItemTemplates[0];
-
-            this.log.debug('templates generated:', listingItemTemplates.length);
-            this.log.debug('listingItemTemplates[0].id:', listingItemTemplates[0].id);
-            this.log.debug('listingItemTemplates[0].hash:', listingItemTemplates[0].hash);
-
-            // set the hash for listing item generation
-            listingItemGenerateParams.listingItemTemplateHash = listingItemTemplates[0].hash;
-        } else {
-            listingItemTemplate = {} as resources.ListingItemTemplate;
-        }
-
-        // generate listingitem
-        if (generateParams.generateListingItem) {
-
-            // set the seller for listing item generation
-            listingItemGenerateParams.seller = generateParams.listingItemSeller ? generateParams.listingItemSeller : null;
-
-            this.log.debug('listingItemGenerateParams:', listingItemGenerateParams);
-
-            const listingItems = await this.generateListingItems(1, true, listingItemGenerateParams);
-            listingItem = listingItems[0];
-
-            this.log.debug('listingItems generated:', listingItems.length);
-            this.log.debug('listingItem.id:', listingItem.id);
-            this.log.debug('listingItem.hash:', listingItem.hash);
-
-            // set the hash for bid generation
-            bidGenerateParams.listingItemHash = listingItem.hash;
-        } else {
-            listingItem = {} as resources.ListingItem;
-        }
-*/
         let bid: resources.Bid;
 
         // generate bid
@@ -654,10 +612,13 @@ export class TestDataService {
     // -------------------
     // Proposals
     private async generateProposals(
-        amount: number, withRelated: boolean = true, generateParams: GenerateProposalParams):
-    Promise<resources.Proposal[]> {
+        amount: number, withRelated: boolean = true,
+        generateParams: GenerateProposalParams): Promise<resources.Proposal[]> {
 
-        /*this.log.debug('generateProposals, generateParams: ', generateParams);
+        this.log.debug('generateProposals, generateParams: ', generateParams);
+
+        /*
+        TODO: LATER
 
         const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams();
         const listingItemGenerateParams = new GenerateListingItemParams();
@@ -696,6 +657,8 @@ export class TestDataService {
             // set the hash for bid generation
             generateParams.listingItemHash = listingItem.hash;
         }
+        // TODO: proposalHash is not set to listingitem
+         */
 
         this.log.debug('generateParams:', generateParams);
 
@@ -706,36 +669,53 @@ export class TestDataService {
             const result = savedProposalModel.toJSON();
             items.push(result);
         }
-        return this.generateResponse(items, withRelated);*/
-        return [];
+
+        return this.generateResponse(items, withRelated);
     }
 
     private async generateProposalData(generateParams: GenerateProposalParams): Promise<ProposalCreateRequest> {
         // TODO: defaultProfile might not be the correct one
         const defaultProfile = await this.profileService.getDefault();
+        const currentblock: number = await this.coreRpcService.getBlockCount();
+
+/*
+    public generateListingItemTemplate = true;
+    public generateListingItem = true;
+    public listingItemHash: string;
+    public generatePastProposal = false;
+*/
+        const blockStart = generateParams.generatePastProposal
+            ? _.random(1, (currentblock / 2))
+            : _.random(currentblock, currentblock + 100);
+
+        const blockEnd = generateParams.generatePastProposal
+            ? _.random((currentblock / 2) + 1, currentblock)
+            : _.random(currentblock + 101, currentblock + 200);
 
         const proposalCreateRequest = {
             submitter: defaultProfile.Address,
-            blockStart: 0, // TODO: Generate
-            blockEnd: 0, // TODO: Generate
-            title: 'title1', // TODO: Generate
-            description: 'desc1' // TODO: Generate
+            blockStart,
+            blockEnd,
+            type: ProposalType.PUBLIC_VOTE,
+            title: Faker.lorem.words(4),
+            description: Faker.lorem.words(40)
         } as ProposalCreateRequest;
-        // this.log.debug('Generated bid = ' + JSON.stringify(retval, null, 2));
-
-        // if we have a hash, fetch the listingItem and set the relation
-        if (generateParams.listingItemHash) {
-            proposalCreateRequest.hash = generateParams.listingItemHash;
-        }
 
         const options: ProposalOptionCreateRequest[] = [];
         options.push({
-            optionId: 1, // AUTOINCREMEMENT
-            description: 'optDesc1'
+            optionId: 0,
+            description: 'YES'
         } as ProposalOptionCreateRequest); // TODO: Generate this automatically
+
+        options.push({
+            optionId: 1,
+            description: 'NO'
+        } as ProposalOptionCreateRequest); // TODO: Generate this automatically
+
         // TODO: Generate a random number of proposal options, or a number specified in the generateParams
         proposalCreateRequest.options = options;
 
+        this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
         return proposalCreateRequest;
     }
 
