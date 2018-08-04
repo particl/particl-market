@@ -39,7 +39,7 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<V
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
         if (data.params.length < 2) {
-            throw new MessageException('Expected <TODO> but recieved no params.');
+            throw new MessageException('Expected <TODO> but received no params.');
         }
 
         // Get profile address from profile id

@@ -6,6 +6,8 @@ import { ProposalSearchParams } from '../requests/ProposalSearchParams';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { SearchOrder } from '../enums/SearchOrder';
+import { ProposalType } from '../enums/ProposalType';
 
 export class ProposalRepository {
 
@@ -24,16 +26,18 @@ export class ProposalRepository {
      * @param {boolean} withRelated
      * @returns {Promise<Bookshelf.Collection<ListingItem>>}
      */
-    public async searchBy(options: ProposalSearchParams): Promise<Bookshelf.Collection<Proposal>> {
-        return this.ProposalModel.searchBy(options);
+    public async searchBy(options: ProposalSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
+        return this.ProposalModel.searchBy(options, withRelated);
     }
 
     public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
-        if (withRelated) {
-            return await this.searchBy({withRelated} as ProposalSearchParams);
-        } else {
-            return await this.searchBy({withRelated: false} as ProposalSearchParams);
-        }
+        const searchParams = {
+            startBlock: '*',
+            endBlock: '*',
+            order: SearchOrder.ASC,
+            type: ProposalType.PUBLIC_VOTE
+        } as ProposalSearchParams;
+        return await this.searchBy(searchParams, withRelated);
     }
 
     public async findOneByHash(hash: string, withRelated: boolean = true): Promise<Proposal> {

@@ -10,12 +10,14 @@ import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { Proposal } from '../../src/api/models/Proposal';
 
 import { ProposalService } from '../../src/api/services/ProposalService';
-import {ProposalType} from '../../src/api/enums/ProposalType';
-import {ProposalCreateRequest} from '../../src/api/requests/ProposalCreateRequest';
-import {ProposalUpdateRequest} from '../../src/api/requests/ProposalUpdateRequest';
-import {HashableObjectType} from '../../src/api/enums/HashableObjectType';
-import {ObjectHash} from '../../src/core/helpers/ObjectHash';
-import {ProposalOptionCreateRequest} from '../../src/api/requests/ProposalOptionCreateRequest';
+import { ProposalType } from '../../src/api/enums/ProposalType';
+import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequest';
+import { ProposalUpdateRequest } from '../../src/api/requests/ProposalUpdateRequest';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
+import {ProposalSearchParams} from '../../src/api/requests/ProposalSearchParams';
+import {SearchOrder} from '../../src/api/enums/SearchOrder';
 
 describe('Proposal', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -162,6 +164,7 @@ describe('Proposal', () => {
     test('Should create a new Proposal with ProposalOptions', async () => {
 
         testData.options = testDataOptions;
+        testDataHash = ObjectHash.getHash(testData, HashableObjectType.PROPOSAL_CREATEREQUEST);
 
         const proposalModel: Proposal = await proposalService.create(testData);
         createdId = proposalModel.Id;
@@ -178,6 +181,122 @@ describe('Proposal', () => {
 
         expect(result.ProposalOptions).toBeDefined();
         expect(result.ProposalOptions).toHaveLength(3);
+    });
+
+    test('Should create another Proposal with different blockStart and blockEnd', async () => {
+
+        testData.options = testDataOptions;
+        testData.blockStart = 1005;
+        testData.blockEnd = 1015;
+        testDataHash = ObjectHash.getHash(testData, HashableObjectType.PROPOSAL_CREATEREQUEST);
+
+        const proposalModel: Proposal = await proposalService.create(testData);
+        createdId = proposalModel.Id;
+
+        const result = proposalModel.toJSON();
+
+        expect(result.submitter).toBe(testData.submitter);
+        expect(result.blockStart).toBe(testData.blockStart);
+        expect(result.blockEnd).toBe(testData.blockEnd);
+        expect(result.hash).toBe(testDataHash);
+        expect(result.type).toBe(testData.type);
+        expect(result.title).toBe(testData.title);
+        expect(result.description).toBe(testData.description);
+
+        expect(result.ProposalOptions).toBeDefined();
+        expect(result.ProposalOptions).toHaveLength(3);
+    });
+
+    test('Should search proposals open after block 1000', async () => {
+
+        const searchParams = {
+            startBlock: 1000,
+            endBlock: '*',
+            order: SearchOrder.ASC,
+            type: ProposalType.PUBLIC_VOTE
+        } as ProposalSearchParams;
+
+        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposals = proposalCollection.toJSON();
+        expect(proposals).toHaveLength(2);
+    });
+
+    test('Should search proposals open after and at block 1010', async () => {
+
+        const searchParams = {
+            startBlock: 1010,
+            endBlock: '*',
+            order: SearchOrder.ASC,
+            type: ProposalType.PUBLIC_VOTE
+        } as ProposalSearchParams;
+
+        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposals = proposalCollection.toJSON();
+        expect(proposals).toHaveLength(2);
+    });
+
+    test('Should search proposals open after and at block 1011', async () => {
+
+        const searchParams = {
+            startBlock: 1011,
+            endBlock: '*',
+            order: SearchOrder.ASC,
+            type: ProposalType.PUBLIC_VOTE
+        } as ProposalSearchParams;
+
+        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposals = proposalCollection.toJSON();
+        expect(proposals).toHaveLength(1);
+    });
+
+    test('Should search proposals closed before or at block 1010', async () => {
+
+        const searchParams = {
+            startBlock: '*',
+            endBlock: 1010,
+            order: SearchOrder.ASC,
+            type: ProposalType.PUBLIC_VOTE
+        } as ProposalSearchParams;
+
+        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposals = proposalCollection.toJSON();
+        expect(proposals).toHaveLength(1);
+    });
+
+    test('Should create another Proposal with type ITEM_VOTE', async () => {
+
+        testData.type = ProposalType.ITEM_VOTE;
+        testDataHash = ObjectHash.getHash(testData, HashableObjectType.PROPOSAL_CREATEREQUEST);
+
+        const proposalModel: Proposal = await proposalService.create(testData);
+        createdId = proposalModel.Id;
+
+        const result = proposalModel.toJSON();
+
+        expect(result.submitter).toBe(testData.submitter);
+        expect(result.blockStart).toBe(testData.blockStart);
+        expect(result.blockEnd).toBe(testData.blockEnd);
+        expect(result.hash).toBe(testDataHash);
+        expect(result.type).toBe(testData.type);
+        expect(result.title).toBe(testData.title);
+        expect(result.description).toBe(testData.description);
+
+        expect(result.ProposalOptions).toBeDefined();
+        expect(result.ProposalOptions).toHaveLength(3);
+    });
+
+    test('Should search proposals with type ITEM_VOTE', async () => {
+
+        const searchParams = {
+            startBlock: '*',
+            endBlock: '*',
+            order: SearchOrder.ASC,
+            type: ProposalType.ITEM_VOTE
+        } as ProposalSearchParams;
+
+        const proposalCollection = await proposalService.searchBy(searchParams, true);
+        const proposals = proposalCollection.toJSON();
+        expect(proposals).toHaveLength(1);
     });
 
 });

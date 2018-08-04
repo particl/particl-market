@@ -26,8 +26,8 @@ export class ProposalService {
         this.log = new Logger(__filename);
     }
 
-    public async searchBy(options: ProposalSearchParams): Promise<Bookshelf.Collection<Proposal>> {
-        return this.proposalRepo.searchBy(options);
+    public async searchBy(options: ProposalSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
+        return this.proposalRepo.searchBy(options, withRelated);
     }
 
     public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {

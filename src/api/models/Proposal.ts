@@ -17,17 +17,29 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public static async searchBy(options: ProposalSearchParams, withRelated: boolean = false): Promise<Collection<Proposal>> {
         const proposalCollection = Proposal.forge<Model<Proposal>>()
             .query(qb => {
-                const placeholder = 0;
 
-                if (options.startBlock) {
-                    qb.where('proposals.block_start', '>', options.startBlock - 1);
-                }
-                if (options.endBlock) {
+                if (options.startBlock === '*' && options.endBlock === '*') {
+                    // search all
+                    qb.where('proposals.type', '=', options.type.toString());
+
+                } else if (typeof options.startBlock === 'number' && options.endBlock === '*') {
+                    // search all ending after options.startBlock
+                    qb.where('proposals.block_end', '>', options.startBlock - 1);
+
+                } else if (options.startBlock === '*' && typeof options.endBlock === 'number') {
+                    // search all ending before block
                     qb.where('proposals.block_end', '<', options.endBlock + 1);
+
+                } else if (typeof options.startBlock === 'number' && typeof options.endBlock === 'number') {
+                    // search all started and ended between
+                    qb.where('proposals.block_start', '>', options.startBlock - 1);
+                    qb.andWhere('proposals.block_end', '<', options.endBlock + 1);
                 }
+
             })
-            .orderBy('id', options.order);
-        if (options.withRelated) {
+            .orderBy('block_start', options.order);
+
+        if (withRelated) {
             return await proposalCollection.fetchAll({
                 withRelated: this.RELATIONS
             });

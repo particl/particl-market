@@ -1,10 +1,6 @@
-import { rpc, api } from '../lib/api';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
 import { Profile } from '../../../src/api/models/Profile';
 import * as Faker from 'faker';
 

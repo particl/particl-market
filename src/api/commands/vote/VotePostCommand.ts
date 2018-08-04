@@ -46,7 +46,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
         if (data.params.length < 2) {
-            throw new MessageException('Expected <TODO> but recieved no params.');
+            throw new MessageException('Expected <TODO> but received no params.');
         }
 
         const profileId = data.params.shift();

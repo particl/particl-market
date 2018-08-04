@@ -14,8 +14,8 @@ describe('ListingItemSearchCommand', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     const testUtil = new BlackBoxTestUtil();
-    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const templatePostCommand = Commands.TEMPLATE_POST.commandName;
+    const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
+    const proposalResultCommand = Commands.PROPOSAL_RESULTS.commandName;
 
     let defaultProfile;
     let defaultMarket;
