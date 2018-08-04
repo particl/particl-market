@@ -59,11 +59,12 @@ export class ProposalService {
         const body = JSON.parse(JSON.stringify(data));
         this.log.debug('create Proposal, body: ', JSON.stringify(body, null, 2));
 
+        body.hash = ObjectHash.getHash(body, HashableObjectType.PROPOSAL_CREATEREQUEST);
+
         // extract and remove related models from request
         const options = body.options || [];
         delete body.options;
 
-        body.hash = ObjectHash.getHash(body, HashableObjectType.PROPOSAL_CREATEREQUEST);
 
         // if the request body was valid we will create the proposal
         const proposal = await this.proposalRepo.create(body);

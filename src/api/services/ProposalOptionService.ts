@@ -52,7 +52,7 @@ export class ProposalOptionService {
         const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('create ProposalOption, body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create ProposalOption, body: ', JSON.stringify(body, null, 2));
 
         body.hash = ObjectHash.getHash(body, HashableObjectType.PROPOSALOPTION_CREATEREQUEST);
 
@@ -64,7 +64,7 @@ export class ProposalOptionService {
         // finally find and return the created proposal
         const result = await this.findOne(proposalOption.id, true);
 
-        this.log.debug('ProposalOption.create, result:', JSON.stringify(result, null, 2));
+        // this.log.debug('ProposalOption.create, result:', JSON.stringify(result, null, 2));
 
         this.log.debug('ProposalOptionService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return result;

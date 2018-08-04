@@ -130,7 +130,7 @@ export class ProposalActionService {
                 proposal_option_id: proposalOption.id,
                 proposal_result_id: proposalResult.id
             } as ProposalOptionResultCreateRequest);
-            this.log.debug('processProposalReceivedEvent.proposalOptionResult = ' + JSON.stringify(proposalOptionResult, null, 2));
+            // this.log.debug('processProposalReceivedEvent.proposalOptionResult = ' + JSON.stringify(proposalOptionResult, null, 2));
         }
 
         proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
