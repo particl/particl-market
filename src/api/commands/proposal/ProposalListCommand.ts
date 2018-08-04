@@ -41,11 +41,11 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
         const endBlock = data.params.shift();
         let order = data.params.shift();
 
-        if (typeof startBlock !== 'number') {
+        if (startBlock && typeof startBlock !== 'number') {
             throw new MessageException(`startBlock must be a number. Received: <${startBlock}>.`);
         }
 
-        if (typeof endBlock !== 'number') {
+        if (endBlock && typeof endBlock !== 'number') {
             throw new MessageException(`endBlock must be a number. Received: <${endBlock}>.`);
         }
 
