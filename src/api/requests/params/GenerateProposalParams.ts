@@ -34,7 +34,8 @@ export class GenerateProposalParams implements GenerateProposalParamsInterface {
         return [
             this.generateListingItemTemplate,
             this.generateListingItem,
-            this.listingItemHash
+            this.listingItemHash,
+            this.generatePastProposal
         ];
     }
 }
