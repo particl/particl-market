@@ -72,27 +72,26 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
      * @returns {ProposalSearchParams}
      */
     private getSearchParams(params: any[]): ProposalSearchParams {
-
         let order: SearchOrder = SearchOrder.ASC;
         let type: ProposalType = ProposalType.PUBLIC_VOTE;
         let startBlock: number | string = '*';
         let endBlock: number | string = '*';
 
-        if (!_.isEmpty(params[0])) {
+        if (!_.isEmpty(params)) {
             startBlock = params.shift();
             if (typeof startBlock === 'string' && startBlock !== '*') {
                 throw new MessageException('startBlock must be a number or *.');
             }
         }
 
-        if (!_.isEmpty(params[1])) {
+        if (!_.isEmpty(params)) {
             endBlock = params.shift();
             if (typeof endBlock === 'string' && endBlock !== '*') {
                 throw new MessageException('endBlock must be a number or *.');
             }
         }
 
-        if (!_.isEmpty(params[2])) {
+        if (!_.isEmpty(params)) {
             order = params.shift();
             if (order.toUpperCase() === SearchOrder.DESC.toString()) {
                 order = SearchOrder.DESC;
@@ -101,7 +100,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             }
         }
 
-        if (!_.isEmpty(params[3])) {
+        if (!_.isEmpty(params)) {
             type = params.shift();
             if (type.toUpperCase() === ProposalType.ITEM_VOTE.toString()) {
                 type = ProposalType.ITEM_VOTE;
