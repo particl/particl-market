@@ -44,7 +44,7 @@ describe('ListingItemSearchCommand', () => {
             true    // generatePastProposal
         ]).toParamsArray();
 
-        // generate proposals
+        // generate past proposals
         pastProposals = await testUtil.generateData(
             CreatableModel.PROPOSAL,    // what to generate
             2,                  // how many to generate
@@ -59,7 +59,7 @@ describe('ListingItemSearchCommand', () => {
             false   // generatePastProposal
         ]).toParamsArray();
 
-        // generate proposals
+        // generate active proposals
         activeProposals = await testUtil.generateData(
             CreatableModel.PROPOSAL,        // what to generate
             1,                      // how many to generate
@@ -87,6 +87,8 @@ describe('ListingItemSearchCommand', () => {
 
     test('Should list past proposals', async () => {
 
+        log.debug('search * -> ' + currentBlock);
+
         const res: any = await rpc(proposalCommand, [proposalListCommand, '*', currentBlock]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -98,6 +100,8 @@ describe('ListingItemSearchCommand', () => {
     });
 
     test('Should list active proposals', async () => {
+
+        log.debug('search ' + currentBlock + ' -> *');
 
         const res: any = await rpc(proposalCommand, [proposalListCommand, currentBlock, '*']);
         res.expectJson();

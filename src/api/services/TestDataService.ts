@@ -660,8 +660,6 @@ export class TestDataService {
         // TODO: proposalHash is not set to listingitem
          */
 
-        this.log.debug('generateParams:', generateParams);
-
         const items: resources.Proposal[] = [];
         for (let i = amount; i > 0; i--) {
             const proposal = await this.generateProposalData(generateParams);
@@ -678,12 +676,6 @@ export class TestDataService {
         const defaultProfile = await this.profileService.getDefault();
         const currentblock: number = await this.coreRpcService.getBlockCount();
 
-/*
-    public generateListingItemTemplate = true;
-    public generateListingItem = true;
-    public listingItemHash: string;
-    public generatePastProposal = false;
-*/
         const blockStart = generateParams.generatePastProposal
             ? _.random(1, (currentblock / 2))
             : _.random(currentblock, currentblock + 100);
@@ -691,6 +683,11 @@ export class TestDataService {
         const blockEnd = generateParams.generatePastProposal
             ? _.random((currentblock / 2) + 1, currentblock)
             : _.random(currentblock + 101, currentblock + 200);
+
+        this.log.debug('generateParams.generatePastProposal: ', generateParams.generatePastProposal);
+        this.log.debug('currentblock: ', currentblock);
+        this.log.debug('blockStart: ', blockStart);
+        this.log.debug('blockEnd: ', blockEnd);
 
         const proposalCreateRequest = {
             submitter: defaultProfile.Address,
