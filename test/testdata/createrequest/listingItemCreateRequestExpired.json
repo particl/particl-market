@@ -1,15 +1,18 @@
-{ 
+{
+    "postedAt": "2018-03-31T04:00:00+0200",
+    "expiryTime": "0",
+    "expiredAt": "2018-03-31T04:00:00+0200",
     "itemInformation": {
-        "title": "Different Soft Gloves",
+        "title": "Small Soft Gloves",
         "shortDescription": "Ergonomic Tuna",
-        "longDescription": "really long description.",
+        "longDescription": "Eaque placeat odit et voluptas nesciunt non in laboriosam. Qui quod deleniti suscipit voluptatem ducimus. Explicabo ipsa repellat vero quis tempore in aut distinctio et. Neque praesentium praesentium asperiores minima sed dolorem deserunt fuga nemo. Velit eum eaque sed. Est consequatur dolorem quia culpa omnis id temporibus beatae ducimus.",
         "itemCategory": {
             "key": "cat_high_luxyry_items",
             "name": "Luxury Items",
             "description": ""
         },
         "itemLocation": {
-            "region": "ZA",
+            "region": "FI",
             "address": "92656 Morar Turnpike",
             "locationMarker": {
                 "markerTitle": "saepe",
@@ -22,7 +25,7 @@
             "country": "MA",
             "shippingAvailability": "DOES_NOT_SHIP"
         }, {
-            "country": "ZA",
+            "country": "FI",
             "shippingAvailability": "SHIPS"
         }, {
             "country": "AM",
@@ -86,7 +89,7 @@
         },
         "itemPrice": {
             "currency": "PARTICL",
-            "basePrice": 66.31903702293027,
+            "basePrice": 76.31903702293027,
             "shippingPrice": {
                 "domestic": 2.13268661244928,
                 "international": 8.76915941696489
@@ -160,8 +163,8 @@
             "data": {
                 "msgid": "fceabe5a000000002cc363a3bc350d6bca87b1977335deeba5a554f6",
                 "version": "0300",
-                "sent": "2018-03-31T03:57:16+0200",
                 "received": "2018-03-31T03:57:16+0200",
+                "sent": "2018-03-31T03:57:16+0200",
                 "from": "prW9s2UgmRaUjffBoaeMhiHWf3aMABBgLx",
                 "to": "pmktyVZshdMAQ6DPbbRXEFNGuzMbTMkqAA"
             }
