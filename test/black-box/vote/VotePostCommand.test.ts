@@ -14,257 +14,214 @@ describe('VotePostCommand', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     const testUtil = new BlackBoxTestUtil();
-    const voteMethod = Commands.VOTE_ROOT.commandName;
-    const votePostSubCommand = Commands.VOTE_POST.commandName;
-    const voteGetSubCommand = Commands.VOTE_GET.commandName;
-    const proposalGetSubCommand = Commands.PROPOSAL_GET.commandName;
-    const daemonMethod = Commands.DAEMON_ROOT.commandName;
+    const voteCommand = Commands.VOTE_ROOT.commandName;
+    const votePostCommand = Commands.VOTE_POST.commandName;
+    const voteGetCommand = Commands.VOTE_GET.commandName;
+    const proposalGetCommand = Commands.PROPOSAL_GET.commandName;
+    const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let defaultProfile: Profile;
-    let currentBlockNumber;
-    let createdProposal: Proposal;
-    let createVote: resources.Vote = {};
-    let updateVote: resources.Vote = {};
+
+    let currentBlock: number;
+    let proposal: resources.Proposal;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // TODO: defaultProfile might not be the correct one
         defaultProfile = await testUtil.getDefaultProfile();
-        {
-            const response: any = await testUtil.rpc(daemonMethod, [
-                'getblockcount'
-            ]);
-            response.expectJson();
-            response.expectStatusCode(200);
-            const result: any = response.getBody()['result'];
-            currentBlockNumber = result;
-        }
 
-        // Generate a proposal
-        const generateProposalsParams = new GenerateProposalParams([
-            true, // generateListingItemTemplate = true;
-    		true, // generateListingItem = true;
-    		null, // listingItemHash: string;
-    		false // generatePastProposal = false;
+        const generateProposalParams = new GenerateProposalParams([
+            false,      // generateListingItemTemplate
+            false,      // generateListingItem
+            null,       // listingItemHash,
+            false,      // generatePastProposal,
+            2           // voteCount
         ]).toParamsArray();
 
-        // create listing item for testing
+        // generate proposals
         const proposals = await testUtil.generateData(
-            CreatableModel.PROPOSAL,     // what to generate
-            1,                           // how many to generate
-            true,                        // return model
-        	generateProposalsParams      // what kind of data to generate
-        ) as Proposal[];
-        createdProposal = proposals[0];
-        // log.error('ADSASDDAS = ' + JSON.stringify(createdProposal, null, 2));
+            CreatableModel.PROPOSAL,    // what to generate
+            1,                  // how many to generate
+            true,            // return model
+            generateProposalParams      // what kind of data to generate
+        ) as resources.Proposal[];
+
+        proposal = proposals[0];
+
+        // get current block
+        const currentBlockRes: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
+        currentBlockRes.expectStatusCode(200);
+        currentBlock = currentBlockRes.getBody()['result'];
+        log.debug('currentBlock:', currentBlock);
     });
 
     test('Should fail to post a vote because it has too few args (0)', async () => {
-        createVote.profileId = defaultProfile.id;
-        createVote.address = defaultProfile.address;
-        createVote.hash = createdProposal.hash;
-        createVote.optionId = createdProposal.ProposalOptions.length - 1;
-
-        updateVote.profileId = createVote.profileId;
-        updateVote.address = createVote.address;
-        updateVote.hash = createVote.hash;
-        updateVote.optionId = createVote.optionId - 1;
-
-        {
-            const response: any = await testUtil.rpc(voteMethod, [
-                votePostSubCommand
-            ]);
-            response.expectJson();
-            response.expectStatusCode(404);
-        }
+        const response: any = await testUtil.rpc(voteCommand, [votePostCommand]);
+        response.expectJson();
+        response.expectStatusCode(404);
     });
 
     test('Should fail to post a vote because it has too few args (1)', async () => {
-        {
-            const response: any = await testUtil.rpc(voteMethod, [
-                votePostSubCommand,
-                createVote.profileId
-            ]);
-            response.expectJson();
-            response.expectStatusCode(404);
-        }
+        const response: any = await testUtil.rpc(voteCommand, [
+            votePostCommand,
+            defaultProfile.id
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
     });
 
-        test('Should fail to post a vote because it has too few args (2)', async () => {
-        {
-            const response: any = await testUtil.rpc(voteMethod, [
-                votePostSubCommand,
-                createVote.profileId,
-                createVote.hash
-            ]);
-            response.expectJson();
-            response.expectStatusCode(404);
-        }
+    test('Should fail to post a vote because it has too few args (2)', async () => {
+        const response: any = await testUtil.rpc(voteCommand, [
+            votePostCommand,
+            defaultProfile.id,
+            proposal.hash
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
     });
 
     test('Should fail to post a vote because it has an invalid (string) arg (profileId)', async () => {
-        const invalidProfileId = 'invalid proposal ID';
-        {
-            const response: any = await testUtil.rpc(voteMethod, [
-                votePostSubCommand,
-                invalidProfileId,
-                createVote.hash,
-                createVote.optionId
-            ]);
-            response.expectJson();
-            response.expectStatusCode(404);
-        }
+
+        const invalidProfileId = 'invalid profile id';
+        const response: any = await testUtil.rpc(voteCommand, [
+            votePostCommand,
+            invalidProfileId,
+            proposal.hash,
+            proposal.ProposalOptions[0].optionId
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
     });
 
     test('Should fail to post a vote because it has an invalid (non-existent) arg (profileId)', async () => {
         const invalidProfileId = 9999999999999999;
-        {
-            const response: any = await testUtil.rpc(voteMethod, [
-                votePostSubCommand,
-                invalidProfileId,
-                createVote.hash,
-                createVote.optionId
-            ]);
-            response.expectJson();
-            response.expectStatusCode(404);
-        }
+
+        const response: any = await testUtil.rpc(voteCommand, [
+            votePostCommand,
+            invalidProfileId,
+            proposal.hash,
+            proposal.ProposalOptions[0].optionId
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
     });
 
     test('Should fail to post a vote because it has an invalid (non-existent) arg (proposalHash)', async () => {
         const invalidProposalHash = 'Invalid proposalHash';
-        {
-            const response: any = await testUtil.rpc(voteMethod, [
-                votePostSubCommand,
-				createVote.profileId,
-                invalidProposalHash,
-                createVote.optionId
-            ]);
-            response.expectJson();
-            response.expectStatusCode(404);
-        }
+
+        const response: any = await testUtil.rpc(voteCommand, [
+            votePostCommand,
+            defaultProfile.id,
+            invalidProposalHash,
+            proposal.ProposalOptions[0].optionId
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+
     });
 
     test('Should fail to post a vote because it has an invalid (non-numeric) arg (proposalOptionId)', async () => {
-        const invalidProposalOptionId = 'Invalid proposalOptionId';
-        {
-            const response: any = await testUtil.rpc(voteMethod, [
-                votePostSubCommand,
-                createVote.profileId,
-                createVote.hash,
-                invalidProposalOptionId
-            ]);
-            response.expectJson();
-            response.expectStatusCode(404);
-        }
+
+        const invalidProposalOptionId = 'Invalid proposal optionId';
+        const response: any = await testUtil.rpc(voteCommand, [
+            votePostCommand,
+            defaultProfile.id,
+            proposal.hash,
+            invalidProposalOptionId
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
     });
 
     test('Should fail to post a vote because it has an invalid (non-existent) arg (proposalOptionId)', async () => {
         const invalidProposalOptionId = 999999999999999999;
-        {
-            const response: any = await testUtil.rpc(voteMethod, [
-                votePostSubCommand,
-                createVote.profileId,
-                createVote.hash,
-                invalidProposalOptionId
-            ]);
-            response.expectJson();
-            response.expectStatusCode(404);
-        }
+
+        const response: any = await testUtil.rpc(voteCommand, [
+            votePostCommand,
+            defaultProfile.id,
+            proposal.hash,
+            invalidProposalOptionId
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
     });
 
-    test('Should post a vote', async () => {
-        {
-            const response: any = await testUtil.rpc(voteMethod, [
-                votePostSubCommand,
-                createVote.profileId,
-                createVote.hash,
-                createVote.optionId
-            ]);
-            response.expectJson();
-            response.expectStatusCode(200);
-            const result: any = response.getBody()['result'];
-            expect(result.result).toEqual('Sent.');
-        }
+    test('Should post a Vote', async () => {
 
-        const response = await testUtil.rpcWaitFor(voteMethod,
-            [
-                voteGetSubCommand,
-                createVote.profileId,
-                createVote.hash
-            ],
-            30 * 60, // maxSeconds
-            200, // waitForStatusCode
-            'voter', // property name
-            createVote.address // value to match
-        );
+        const response: any = await testUtil.rpc(voteCommand, [
+            votePostCommand,
+            defaultProfile.id,
+            proposal.hash,
+            proposal.ProposalOptions[0].optionId
+        ]);
         response.expectJson();
+        response.expectStatusCode(200);
         const result: any = response.getBody()['result'];
-        log.error('result = ' + JSON.stringify(result, null, 2));
+        expect(result.result).toEqual('Sent.');
+    });
 
-        // TODO: validation
-        expect(result.voter).toBe(createVote.address);
+    test('Should find the posted Vote', async () => {
+        // wait for some time to make sure vote is received
+        await testUtil.waitFor(5);
+
+        const voteGetRes: any = await testUtil.rpcWaitFor(
+            voteCommand,
+            [voteGetCommand, defaultProfile.id, proposal.hash],
+            8 * 60,
+            200,
+            'ProposalOption.optionId',
+            proposal.ProposalOptions[0].optionId
+        );
+        voteGetRes.expectJson();
+        voteGetRes.expectStatusCode(200);
+
+        const result: resources.Vote = voteGetRes.getBody()['result'];
+        log.debug('result:', JSON.stringify(result, null, 2));
+
+        expect(result).hasOwnProperty('ProposalOption');
+        expect(result.block).toBe(currentBlock);
         expect(result.weight).toBe(1);
-        expect(result.ProposalOption.optionId).toBe(createVote.optionId);
-        expect(result.ProposalOption.Proposal.hash).toBe(createVote.hash);
-    }, 600000); // timeout to 600s
+        expect(result.voter).toBe(defaultProfile.address);
+        expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
+    });
 
-    test('Should update a vote', async () => {
-        {
-            const response: any = await testUtil.rpc(voteMethod, [
-                votePostSubCommand,
-                updateVote.profileId,
-                updateVote.hash,
-                updateVote.optionId
-            ]);
-            response.expectJson();
-            response.expectStatusCode(200);
-            const result: any = response.getBody()['result'];
-            expect(result.result).toEqual('Sent.');
-        }
+    test('Should post a new Vote with different optionId', async () => {
 
-        // Get created. Check its been updated and matches updated.
-        {
-	        const response = await testUtil.rpcWaitFor(voteMethod,
-	            [
-	                voteGetSubCommand,
-	                createVote.profileId,
-	                createVote.hash
-	            ],
-	            30 * 60, // maxSeconds
-	            200, // waitForStatusCode
-	            'ProposalOption.optionId', // property name
-	            updateVote.optionId // value to match
-	        );
-	        response.expectJson();
-	        const result: any = response.getBody()['result'];
+        const response: any = await testUtil.rpc(voteCommand, [
+            votePostCommand,
+            defaultProfile.id,
+            proposal.hash,
+            proposal.ProposalOptions[1].optionId
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+        const result: any = response.getBody()['result'];
+        expect(result.result).toEqual('Sent.');
+    });
 
-	        expect(result.voter).toBe(updateVote.address);
-	        expect(result.weight).toBe(1);
-	        expect(result.ProposalOption.optionId).toBe(updateVote.optionId);
-	        expect(result.ProposalOption.Proposal.hash).toBe(updateVote.hash);
-	    }
+    test('Should find the updated vote with different optionI', async () => {
+        // wait for some time to make sure vote is received
+        await testUtil.waitFor(5);
 
-	    // Now try it the other way. Get updated, check it matches updated.
-	    {
-	        const response = await testUtil.rpcWaitFor(voteMethod,
-	            [
-	                voteGetSubCommand,
-	                updateVote.profileId,
-	                updateVote.hash
-	            ],
-	            30 * 60, // maxSeconds
-	            200, // waitForStatusCode
-	            'ProposalOption.optionId', // property name
-	            updateVote.optionId // value to match
-	        );
-	        response.expectJson();
-	        const result: any = response.getBody()['result'];
+        const voteGetRes: any = await testUtil.rpcWaitFor(
+            voteCommand,
+            [voteGetCommand, defaultProfile.id, proposal.hash],
+            8 * 60,
+            200,
+            'ProposalOption.optionId',
+            proposal.ProposalOptions[1].optionId
+        );
+        voteGetRes.expectJson();
+        voteGetRes.expectStatusCode(200);
 
-	        expect(result.voter).toBe(createVote.address);
-	        expect(result.weight).toBe(1);
-	        expect(result.ProposalOption.optionId).toBe(updateVote.optionId);
-	        expect(result.ProposalOption.Proposal.hash).toBe(createVote.hash);
-	    }
+        const result: resources.Vote = voteGetRes.getBody()['result'];
+        log.debug('result:', JSON.stringify(result, null, 2));
+
+        expect(result).hasOwnProperty('ProposalOption');
+        expect(result.block).toBe(currentBlock);
+        expect(result.weight).toBe(1);
+        expect(result.voter).toBe(defaultProfile.address);
+        expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);
+
     }, 600000); // timeout to 600s
 });

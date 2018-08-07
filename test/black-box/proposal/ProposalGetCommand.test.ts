@@ -19,6 +19,7 @@ describe('ListingItemSearchCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalGetCommand = Commands.PROPOSAL_GET.commandName;
+    const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let defaultProfile: Profile;
     let createdProposal: Proposal;

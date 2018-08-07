@@ -49,7 +49,7 @@ describe('ProposalPostCommand', () => {
 
     });
 
-    test('Should fail to post a proposal because it has too few args (0)', async () => {
+    test('Should fail to post a Proposal because it has too few args (0)', async () => {
 
         // <profileId> <proposalTitle> <proposalDescription> <blockStart> <blockEnd> <option1Description> <option2Description> [optionNDescription...]
         const response: any = await testUtil.rpc(proposalCommand, [proposalPostCommand]);
@@ -57,7 +57,7 @@ describe('ProposalPostCommand', () => {
         response.expectStatusCode(404);
     });
 
-    test('Should fail to post a proposal because it has too few args (1)', async () => {
+    test('Should fail to post a Proposal because it has too few args (1)', async () => {
         const response: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id
@@ -66,7 +66,7 @@ describe('ProposalPostCommand', () => {
         response.expectStatusCode(404);
     });
 
-    test('Should fail to post a proposal because it has too few args (2)', async () => {
+    test('Should fail to post a Proposal because it has too few args (2)', async () => {
         const response: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
@@ -74,9 +74,9 @@ describe('ProposalPostCommand', () => {
         ]);
         response.expectJson();
         response.expectStatusCode(404);
-});
+    });
 
-    test('Should fail to post a proposal because it has too few args (3)', async () => {
+    test('Should fail to post a Proposal because it has too few args (3)', async () => {
         const response: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
@@ -87,7 +87,7 @@ describe('ProposalPostCommand', () => {
         response.expectStatusCode(404);
     });
 
-    test('Should fail to post a proposal because it has too few args (4)', async () => {
+    test('Should fail to post a Proposal because it has too few args (4)', async () => {
         const response: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
@@ -99,7 +99,7 @@ describe('ProposalPostCommand', () => {
         response.expectStatusCode(404);
     });
 
-    test('Should fail to post a proposal because it has too few args (5)', async () => {
+    test('Should fail to post a Proposal because it has too few args (5)', async () => {
         const response: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
@@ -112,7 +112,7 @@ describe('ProposalPostCommand', () => {
         response.expectStatusCode(404);
     });
 
-    test('Should fail to post a proposal because it has too few args (6)', async () => {
+    test('Should fail to post a Proposal because it has too few args (6)', async () => {
         const response: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
@@ -126,7 +126,7 @@ describe('ProposalPostCommand', () => {
         response.expectStatusCode(404);
     });
 
-    test('Should fail to post a proposal because it has an invalid (string) arg (profileId)', async () => {
+    test('Should fail to post a Proposal because it has an invalid (string) arg (profileId)', async () => {
 
         const invalidProfileId = 'invalid profile id';
         const response: any = await testUtil.rpc(proposalCommand, [
@@ -143,7 +143,7 @@ describe('ProposalPostCommand', () => {
         response.expectStatusCode(404);
     });
 
-    test('Should fail to post a proposal because it has an invalid (non-existent) arg (profileId)', async () => {
+    test('Should fail to post a Proposal because it has an invalid (non-existent) arg (profileId)', async () => {
 
         const invalidProfileId = 9999999999999999;
         const response: any = await testUtil.rpc(proposalCommand, [
@@ -160,7 +160,7 @@ describe('ProposalPostCommand', () => {
         response.expectStatusCode(404);
     });
 
-    test('Should fail to post a proposal because it has an invalid arg (blockStart)', async () => {
+    test('Should fail to post a Proposal because it has an invalid arg (blockStart)', async () => {
 
         const invalidBlockStart = 'Invalid blockStart';
         const response: any = await testUtil.rpc(proposalCommand, [
@@ -177,7 +177,7 @@ describe('ProposalPostCommand', () => {
         response.expectStatusCode(404);
     });
 
-    test('Should fail to post a proposal because it has an invalid arg (blockEnd)', async () => {
+    test('Should fail to post a Proposal because it has an invalid arg (blockEnd)', async () => {
 
         const invalidBlockEnd = 'Invalid blockEnd';
         const response: any = await testUtil.rpc(proposalCommand, [
@@ -194,7 +194,7 @@ describe('ProposalPostCommand', () => {
         response.expectStatusCode(404);
     });
 
-    test('Should post a proposal', async () => {
+    test('Should post a Proposal', async () => {
         const response: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
@@ -212,7 +212,7 @@ describe('ProposalPostCommand', () => {
         expect(result.result).toEqual('Sent.');
     });
 
-    test('Should receive the posted proposal', async () => {
+    test('Should receive the posted Proposal', async () => {
 
         const response = await testUtil.rpcWaitFor(proposalCommand,
             [proposalListCommand, '*', '*'],

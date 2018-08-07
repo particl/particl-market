@@ -45,7 +45,7 @@ describe('ProposalResultCommand', () => {
             voteCount       // voteCount
         ]).toParamsArray();
 
-        // generate past proposals
+        // generate proposals
         const proposals = await testUtil.generateData(
             CreatableModel.PROPOSAL,    // what to generate
             1,                  // how many to generate
