@@ -41,14 +41,14 @@ export class ProposalGetCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public help(): string {
-        return this.getName() + ' TODO: (command param help)';
+        return this.getName() + ' <proposalHash> ';
     }
 
     public description(): string {
-        return 'TODO: Commands for managing ProposalProposalGetCommand.';
+        return 'Get a proposal by its hash. ';
     }
 
     public example(): string {
-        return this.getName() + ' TODO: example';
+        return this.getName() + ' 392fc0687405099ad71319686aa421b65e262f10f9c2caed181ae81d23d52236 ';
     }
 }
