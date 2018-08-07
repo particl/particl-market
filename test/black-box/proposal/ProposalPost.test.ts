@@ -208,7 +208,7 @@ describe('ProposalPostCommand', () => {
         response.expectJson();
         response.expectStatusCode(200);
 
-        let result: any = response.getBody()['result'];
+        const result: any = response.getBody()['result'];
         expect(result.result).toEqual('Sent.');
     });
 
@@ -222,6 +222,7 @@ describe('ProposalPostCommand', () => {
             title
         );
         response.expectJson();
+        response.expectStatusCode(200);
         const result: resources.Proposal = response.getBody()['result'][0];
 
         expect(result.title).toBe(title);

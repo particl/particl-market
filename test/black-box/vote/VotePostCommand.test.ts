@@ -20,10 +20,9 @@ describe('VotePostCommand', () => {
     const proposalGetCommand = Commands.PROPOSAL_GET.commandName;
     const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
-    let defaultProfile: Profile;
-
-    let currentBlock: number;
+    let defaultProfile: resources.Profile;
     let proposal: resources.Proposal;
+    let currentBlock: number;
 
     beforeAll(async () => {
         await testUtil.cleanDb();

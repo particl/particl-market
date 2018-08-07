@@ -12,7 +12,7 @@ import { OrderStatus } from '../../src/api/enums/OrderStatus';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 // tslint:enable:max-line-length
 
-describe('Happy BuyFlow', () => {
+describe('Happy Buy Flow', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
