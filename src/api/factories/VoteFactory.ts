@@ -64,9 +64,9 @@ export class VoteFactory {
             weight
         } as VoteCreateRequest;
 
+        const option = await this.proposalOptionService.findOneByProposalAndOptionId(proposal.id, voteMessage.optionId);
+        voteRequest.proposal_option_id = option.id;
         if (create) {
-            const option = await this.proposalOptionService.findOneByProposalAndOptionId(proposal.id, voteMessage.optionId);
-            voteRequest.proposal_option_id = option.id;
             return voteRequest as VoteCreateRequest;
         } else {
             return voteRequest as VoteUpdateRequest;
