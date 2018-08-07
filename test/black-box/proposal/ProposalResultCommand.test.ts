@@ -22,7 +22,7 @@ describe('ProposalResultCommand', () => {
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
 
-    let proposal: resources.ListingItemTemplate;
+    let proposal: resources.Proposal;
 
     let currentBlock: 0;
     const voteCount = 50;
@@ -37,9 +37,9 @@ describe('ProposalResultCommand', () => {
         // fetch default market
         defaultMarket = await testUtil.getDefaultMarket();
 
-        const generatePastProposalParams = new GenerateProposalParams([
-            true,   // generateListingItemTemplate
-            true,   // generateListingItem
+        const generateProposalParams = new GenerateProposalParams([
+            false,   // generateListingItemTemplate
+            false,   // generateListingItem
             null,   // listingItemHash,
             false,  // generatePastProposal,
             voteCount       // voteCount
@@ -50,7 +50,7 @@ describe('ProposalResultCommand', () => {
             CreatableModel.PROPOSAL,    // what to generate
             1,                  // how many to generate
             true,            // return model
-            generatePastProposalParams      // what kind of data to generate
+            generateProposalParams      // what kind of data to generate
         ) as resources.Proposal[];
 
         proposal = proposals[0];

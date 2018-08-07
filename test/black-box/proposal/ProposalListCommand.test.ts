@@ -9,7 +9,7 @@ import * as resources from 'resources';
 import {GenerateProposalParams} from '../../../src/api/requests/params/GenerateProposalParams';
 // tslint:enable:max-line-length
 
-describe('ListingItemSearchCommand', () => {
+describe('ProposalListCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);

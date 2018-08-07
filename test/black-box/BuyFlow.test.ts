@@ -146,7 +146,11 @@ describe('Happy BuyFlow', () => {
 
         await testUtilSellerNode.waitFor(5);
 
-        const templatePostRes: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand, listingItemTemplatesSellerNode[0].id, defaultMarket.id]);
+        const templatePostRes: any = await testUtilSellerNode.rpc(templateCommand, [
+            templatePostCommand,
+            listingItemTemplatesSellerNode[0].id,
+            defaultMarket.id
+        ]);
         templatePostRes.expectJson();
         templatePostRes.expectStatusCode(200);
 

@@ -117,20 +117,6 @@ describe('Vote', () => {
         expect(result.weight).toBe(testData.weight);
     });
 
-    test('Should get a vote by proposal id and voter address', async () => {
-        const voteModel: Vote = await voteService.findOneByVoterAndProposal(testData.voter, createdProposal.id);
-        const result = voteModel.toJSON();
-
-        // test the values
-        expect(result).toBeDefined();
-        expect(result.id).toBe(createdId);
-        expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);
-        expect(result.ProposalOption.optionId).toBe(createdProposal.ProposalOptions[0].optionId);
-        expect(result.voter).toBe(testData.voter);
-        expect(result.block).toBe(testData.block);
-        expect(result.weight).toBe(testData.weight);
-    });
-
     test('Should list votes with our new create one', async () => {
         const voteCollection = await voteService.findAll();
         const vote = voteCollection.toJSON();
@@ -156,6 +142,31 @@ describe('Vote', () => {
         expect(result.voter).toBe(testData.voter);
         expect(result.block).toBe(testData.block);
         expect(result.weight).toBe(testData.weight);
+    });
+
+
+    test('Should get a vote by proposal id and voter address', async () => {
+
+        const voter = 'voteraddress2';
+        // create another vote
+        const anotherVoteCreateRequest = {
+            proposal_option_id: createdProposal.ProposalOptions[0].id,
+            voter,
+            block: 1,
+            weight: 1
+        } as VoteCreateRequest;
+        const anotherVoteModel: Vote = await voteService.create(anotherVoteCreateRequest);
+
+        const voteModel: Vote = await voteService.findOneByVoterAndProposal(voter, createdProposal.id);
+        const result = voteModel.toJSON();
+
+        // test the values
+        expect(result).toBeDefined();
+        expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);
+        expect(result.ProposalOption.optionId).toBe(createdProposal.ProposalOptions[0].optionId);
+        expect(result.voter).toBe(anotherVoteCreateRequest.voter);
+        expect(result.block).toBe(anotherVoteCreateRequest.block);
+        expect(result.weight).toBe(anotherVoteCreateRequest.weight);
     });
 
     test('Should update the vote', async () => {

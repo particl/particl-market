@@ -25,7 +25,8 @@ export class Vote extends Bookshelf.Model<Vote> {
             const vote = Vote.forge<Vote>()
             .query(qb => {
                 qb.innerJoin('proposal_options', 'proposal_options.id', 'votes.proposal_option_id');
-                qb.where('voter', '=', voter);
+                qb.where('proposal_options.proposal_id', '=', proposalId);
+                qb.andWhere('voter', '=', voter);
             });
             return await vote.fetch({
                 withRelated: this.RELATIONS
@@ -34,7 +35,8 @@ export class Vote extends Bookshelf.Model<Vote> {
             const vote = Vote.forge<Vote>()
             .query(qb => {
                 qb.innerJoin('proposal_options', 'proposal_options.id', 'votes.proposal_option_id');
-                qb.where('voter', '=', voter);
+                qb.where('proposal_options.proposal_id', '=', proposalId);
+                qb.andWhere('voter', '=', voter);
             });
             return await vote.fetch();
         }

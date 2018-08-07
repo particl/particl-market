@@ -8,7 +8,7 @@ import * as resources from 'resources';
 import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
-describe('ProposalPost', () => {
+describe('VotePostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 100 * process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);

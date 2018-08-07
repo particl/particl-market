@@ -5,7 +5,7 @@ import { Profile } from '../../../src/api/models/Profile';
 import * as Faker from 'faker';
 import * as resources from 'resources';
 
-describe('ProposalPost', () => {
+describe('ProposalPostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 100 * process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);

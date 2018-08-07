@@ -28,7 +28,8 @@ export class ProposalResult extends Bookshelf.Model<ProposalResult> {
             .query(qb => {
                 qb.innerJoin('proposals', 'proposals.id', 'proposal_results.proposal_id');
                 qb.where('proposals.hash', '=', hash);
-            }).orderBy('proposals.id', 'ASC');
+            })
+            .orderBy('proposals.id', 'ASC');
 
         if (withRelated) {
             return await proposalResultCollection.fetchAll({

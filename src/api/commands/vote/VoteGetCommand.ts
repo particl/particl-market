@@ -12,6 +12,7 @@ import { Commands } from './../CommandEnumType';
 import { BaseCommand } from './../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
+import * as resources from 'resources';
 
 export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<Vote> {
 
@@ -44,26 +45,14 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<V
 
         // Get profile address from profile id
         const profileId = data.params.shift();
-        const profile = await this.profileService.findOne(profileId);
-        if (!profile) {
-            throw new MessageException(`Couldn't find profile with profile id ${profileId}.`);
-        }
-        const profileAddr = profile.Address;
-        if (!profileAddr) {
-            throw new MessageException(`Couldn't find profile address with in profile with id ${profileId}.`);
-        }
+        const profileModel = await this.profileService.findOne(profileId);
+        const profile: resources.Profile = profileModel.toJSON();
 
         // Get proposal id from proposal hash
         const proposalHash = data.params.shift();
         const proposal = await this.proposalService.findOneByHash(proposalHash);
-        if (!proposal) {
-            throw new MessageException(`Couldn't find proposal with proposal hash ${proposalHash}.`);
-        }
-        const proposalId = proposal.id;
-        if (!proposalId) {
-            throw new MessageException(`Couldn't find proposal ud with in proposal with hash ${proposalHash}.`);
-        }
-        return await this.voteService.findOneByVoterAndProposal(profileAddr, proposalId);
+
+        return await this.voteService.findOneByVoterAndProposal(profile.address, proposal.id);
     }
 
     public help(): string {

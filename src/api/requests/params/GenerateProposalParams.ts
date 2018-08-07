@@ -12,7 +12,7 @@ export class GenerateProposalParams implements GenerateProposalParamsInterface {
     public generateListingItem = true;
     public listingItemHash: string;
     public generatePastProposal = false;
-    public voteCount = 10;
+    public voteCount = 0;
 
     /**
      * generateParams[]:
@@ -25,7 +25,7 @@ export class GenerateProposalParams implements GenerateProposalParamsInterface {
             this.generateListingItem = generateParams[1] ? true : false;
             this.listingItemHash = generateParams[2] ? generateParams[2] : null;
             this.generatePastProposal = generateParams[3] ? generateParams[3] : false;
-            this.voteCount = generateParams[4] ? generateParams[4] : this.voteCount;
+            this.voteCount = generateParams[4] ? generateParams[4] : 0;
 
             // if item hash was given, set generateListingItem to false
             this.generateListingItem = this.listingItemHash ? false : true;

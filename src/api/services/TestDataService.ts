@@ -682,14 +682,16 @@ export class TestDataService {
             if (generateParams.voteCount > 0) {
                 const votes = await this.generateVotesForProposal(generateParams.voteCount, proposal);
                 this.log.debug('GENERATED VOTES: ', JSON.stringify(votes, null, 2));
-
-                // create and update ProposalResult
-                let proposalResult = await this.proposalActionService.createProposalResult(proposal);
-                this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
-
-                proposalResult = await this.voteActionService.updateProposalResult(proposalResult.id);
-                this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
             }
+
+
+            // create and update ProposalResult
+            let proposalResult = await this.proposalActionService.createProposalResult(proposal);
+            // this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
+
+            proposalResult = await this.voteActionService.updateProposalResult(proposalResult.id);
+            // this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
+
             items.push(proposal);
         }
 
@@ -733,10 +735,10 @@ export class TestDataService {
             ? _.random((currentblock / 2) + 1, currentblock)
             : _.random(currentblock + 101, currentblock + 200);
 
-        this.log.debug('generateParams.generatePastProposal: ', generateParams.generatePastProposal);
-        this.log.debug('currentblock: ', currentblock);
-        this.log.debug('blockStart: ', blockStart);
-        this.log.debug('blockEnd: ', blockEnd);
+        // this.log.debug('generateParams.generatePastProposal: ', generateParams.generatePastProposal);
+        // this.log.debug('currentblock: ', currentblock);
+        // this.log.debug('blockStart: ', blockStart);
+        // this.log.debug('blockEnd: ', blockEnd);
 
         const proposalCreateRequest = {
             submitter: defaultProfile.Address,
@@ -761,7 +763,7 @@ export class TestDataService {
         // TODO: Generate a random number of proposal options, or a number specified in the generateParams
         proposalCreateRequest.options = options;
 
-        this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
+        // this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
         return proposalCreateRequest;
     }
 

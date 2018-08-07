@@ -95,17 +95,21 @@ export class VoteActionService {
         if (voteMessage.voter !== event.smsgMessage.from) {
             throw new MessageException('Voter does not match with sender.');
         }
-        // TODO: Validation??
 
         // get proposal and ignore vote if we're past the final block of the proposal
         const proposalModel = await this.proposalService.findOneByHash(voteMessage.proposalHash);
         const proposal: resources.Proposal = proposalModel.toJSON();
 
+        if (_.isEmpty(proposal.ProposalResult)) {
+            throw new MessageException('ProposalResult should not be empty!');
+        }
+
         const currentBlock: number = await this.coreRpcService.getBlockCount();
+        this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
 
         if (voteMessage && proposal.blockEnd >= currentBlock) {
             const createdVote = await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
-            this.log.debug('createdVote:', JSON.stringify(createdVote, null, 2));
+            this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
             const proposalResult: resources.ProposalResult = await this.updateProposalResult(proposal.ProposalResult.id);
 
@@ -146,6 +150,8 @@ export class VoteActionService {
         // get the proposal
         // const proposalModel = await this.proposalService.findOne(proposalId);
         // const proposal = proposalModel.toJSON();
+
+        this.log.debug('updateProposalResult(), proposalResultId: ', proposalResultId);
 
         let proposalResultModel = await this.proposalResultService.findOne(proposalResultId);
         let proposalResult = proposalResultModel.toJSON();
