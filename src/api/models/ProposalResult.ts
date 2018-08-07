@@ -23,19 +23,13 @@ export class ProposalResult extends Bookshelf.Model<ProposalResult> {
         }
     }
 
-    public static async fetchByHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
-        const proposalResultCollection = ProposalResult.forge<Model<ProposalResult>>()
-        .query(qb => {
-            qb.innerJoin('proposals', 'proposals.id', 'proposal_results.proposal_id');
-            qb.where('proposals.hash', '=', hash);
-        }).orderBy('proposals.id', 'ASC');
-
+    public static async fetchByHash(value: string, withRelated: boolean = true): Promise<ProposalResult> {
         if (withRelated) {
-            return await proposalResultCollection.fetch({
+            return await ProposalResult.where<ProposalResult>({ hash: value }).fetch({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await proposalResultCollection.fetch();
+            return await ProposalResult.where<ProposalResult>({ hash: value }).fetch();
         }
     }
 

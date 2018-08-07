@@ -295,7 +295,7 @@ export const Targets = {
             ProposalGetCommand: 'ProposalGetCommand',
             ProposalListCommand: 'ProposalListCommand',
             ProposalPostCommand: 'ProposalPostCommand',
-            ProposalResultsCommand: 'ProposalResultsCommand',
+            ProposalResultCommand: 'ProposalResultCommand',
             ProposalRootCommand: 'ProposalRootCommand'
         },
         RpcCommandInterface: 'RpcCommandInterface',

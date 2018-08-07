@@ -111,7 +111,7 @@ export class ProposalActionService {
      * @param {"resources".Proposal} proposal
      * @returns {Promise<"resources".ProposalResult>}
      */
-    private async createProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
+    public async createProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
         const currentBlock: number = await this.coreRpcService.getBlockCount();
 
         let proposalResultModel = await this.proposalResultService.create({

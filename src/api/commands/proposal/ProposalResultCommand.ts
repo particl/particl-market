@@ -11,15 +11,15 @@ import { BaseCommand } from './../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
 
-export class ProposalResultsCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
+export class ProposalResultCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultsService: ProposalResultService,
+        @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(Commands.PROPOSAL_RESULTS);
+        super(Commands.PROPOSAL_RESULT);
         this.log = new Logger(__filename);
     }
 
@@ -34,10 +34,10 @@ export class ProposalResultsCommand extends BaseCommand implements RpcCommandInt
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
         if (data.params.length < 1) {
-            throw new MessageException('Expected <TODO> but received no params.');
+            throw new MessageException('Expected proposalHash but received no params.');
         }
         const proposalHash = data.params[0];
-        return await this.proposalResultsService.findOneFromHash(proposalHash, true);
+        return await this.proposalResultService.findOneByHash(proposalHash, true);
     }
 
     public help(): string {

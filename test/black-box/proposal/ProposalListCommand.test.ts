@@ -17,13 +17,13 @@ describe('ListingItemSearchCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalListCommand = Commands.PROPOSAL_LIST.commandName;
-    const daemonCommand = Commands.DAEMON_ROOT.commandName;
+    const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
-    let defaultProfile;
-    let defaultMarket;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
 
-    let pastProposals: resources.ListingItemTemplate[];
-    let activeProposals: resources.ListingItemTemplate[];
+    let pastProposals: resources.Proposal[];
+    let activeProposals: resources.Proposal[];
 
     let currentBlock: 0;
 

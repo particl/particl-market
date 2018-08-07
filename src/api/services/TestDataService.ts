@@ -91,7 +91,15 @@ import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
 import { ProposalOptionCreateRequest } from '../requests/ProposalOptionCreateRequest';
 import { ItemPriceCreateRequest } from '../requests/ItemPriceCreateRequest';
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
-import {ProposalType} from '../enums/ProposalType';
+import { ProposalType } from '../enums/ProposalType';
+import { VoteCreateRequest } from '../requests/VoteCreateRequest';
+import { VoteService } from './VoteService';
+import { VoteActionService } from './VoteActionService';
+import { ProposalResultService } from './ProposalResultService';
+import { ProposalResultCreateRequest } from '../requests/ProposalResultCreateRequest';
+import { ProposalOptionResultService } from './ProposalOptionResultService';
+import { ProposalOptionResultCreateRequest } from '../requests/ProposalOptionResultCreateRequest';
+import { ProposalActionService } from './ProposalActionService';
 
 export class TestDataService {
 
@@ -112,6 +120,11 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) private proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.ProposalActionService) private proposalActionService: ProposalActionService,
+        @inject(Types.Service) @named(Targets.Service.ProposalResultService) private proposalResultService: ProposalResultService,
+        @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) private proposalOptionResultService: ProposalOptionResultService,
+        @inject(Types.Service) @named(Targets.Service.VoteService) private voteService: VoteService,
+        @inject(Types.Service) @named(Targets.Service.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) private actionMessageService: ActionMessageService,
@@ -662,13 +675,49 @@ export class TestDataService {
 
         const items: resources.Proposal[] = [];
         for (let i = amount; i > 0; i--) {
-            const proposal = await this.generateProposalData(generateParams);
-            const savedProposalModel = await this.proposalService.create(proposal);
-            const result = savedProposalModel.toJSON();
-            items.push(result);
+            const proposalCreateRequest = await this.generateProposalData(generateParams);
+            const savedProposalModel = await this.proposalService.create(proposalCreateRequest);
+            const proposal = savedProposalModel.toJSON();
+
+            if (generateParams.voteCount > 0) {
+                const votes = await this.generateVotesForProposal(generateParams.voteCount, proposal);
+                this.log.debug('GENERATED VOTES: ', JSON.stringify(votes, null, 2));
+
+                // create and update ProposalResult
+                let proposalResult = await this.proposalActionService.createProposalResult(proposal);
+                this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
+
+                proposalResult = await this.voteActionService.updateProposalResult(proposalResult.id);
+                this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
+            }
+            items.push(proposal);
         }
 
         return this.generateResponse(items, withRelated);
+    }
+
+    private async generateVotesForProposal(
+        amount: number, proposal: resources.Proposal): Promise<resources.Vote[]> {
+
+        const items: resources.Vote[] = [];
+        for (let i = amount; i > 0; i--) {
+            const randomBoolean: boolean = Math.random() >= 0.5;
+            const voter = Faker.finance.bitcoinAddress(); // await this.coreRpcService.getNewAddress();
+            const block = _.random(proposal.blockStart, proposal.blockEnd);
+            const proposalOptionId = proposal.ProposalOptions[randomBoolean ? 0 : 1].id;
+
+            const voteCreateRequest = {
+                proposal_option_id: proposalOptionId,
+                voter,
+                block,
+                weight: 1
+            } as VoteCreateRequest;
+
+            const voteModel = await this.voteService.create(voteCreateRequest);
+            const vote = voteModel.toJSON();
+            items.push(vote);
+        }
+        return items;
     }
 
     private async generateProposalData(generateParams: GenerateProposalParams): Promise<ProposalCreateRequest> {

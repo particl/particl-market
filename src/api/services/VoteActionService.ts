@@ -135,6 +135,47 @@ export class VoteActionService {
     }
 
     /**
+     *
+     * @param {number} proposalResultId
+     * @returns {Promise<"resources".ProposalResult>}
+     */
+    public async updateProposalResult(proposalResultId: number): Promise<resources.ProposalResult> {
+
+        const currentBlock: number = await this.coreRpcService.getBlockCount();
+
+        // get the proposal
+        // const proposalModel = await this.proposalService.findOne(proposalId);
+        // const proposal = proposalModel.toJSON();
+
+        let proposalResultModel = await this.proposalResultService.findOne(proposalResultId);
+        let proposalResult = proposalResultModel.toJSON();
+
+        // first update the block in ProposalResult
+        proposalResultModel = await this.proposalResultService.update(proposalResult.id, {
+            block: currentBlock
+        } as ProposalResultUpdateRequest);
+        proposalResult = proposalResultModel.toJSON();
+
+        // then loop through ProposalOptionResults and update values
+        for (const proposalOptionResult of proposalResult.ProposalOptionResults) {
+            // get the votes
+            const proposalOptionModel = await this.proposalOptionService.findOne(proposalOptionResult.ProposalOption.id);
+            const proposalOption = proposalOptionModel.toJSON();
+
+            this.log.debug('updateProposalResult, proposalOption: ', JSON.stringify(proposalOption, null, 2));
+
+            // update
+            this.proposalOptionResultService.update(proposalOptionResult.id, {
+                weight: proposalOption.Votes.length,
+                voters: proposalOption.Votes.length
+            } as ProposalOptionResultUpdateRequest);
+        }
+
+        proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
+        return proposalResultModel.toJSON();
+    }
+
+    /**
      * todo: move to listingItemService
      *
      * @param {"resources".ProposalResult} proposalResult
@@ -158,45 +199,6 @@ export class VoteActionService {
         } else {
             return false;
         }
-    }
-
-    /**
-     *
-     * @param {number} proposalResultId
-     * @returns {Promise<"resources".ProposalResult>}
-     */
-    private async updateProposalResult(proposalResultId: number): Promise<resources.ProposalResult> {
-
-        const currentBlock: number = await this.coreRpcService.getBlockCount();
-
-        // get the proposal
-        // const proposalModel = await this.proposalService.findOne(proposalId);
-        // const proposal = proposalModel.toJSON();
-
-        let proposalResultModel = await this.proposalResultService.findOne(proposalResultId);
-        let proposalResult = proposalResultModel.toJSON();
-
-        // first update the block in ProposalResult
-        proposalResultModel = await this.proposalResultService.update(proposalResult.id, {
-            block: currentBlock
-        } as ProposalResultUpdateRequest);
-        proposalResult = proposalResultModel.toJSON();
-
-        // then loop through ProposalOptionResults and update values
-        for (const proposalOptionResult of proposalResult.ProposalOptionResults) {
-            // get the votes
-            const proposalOptionModel = await this.proposalOptionService.findOne(proposalOptionResult.ProposalOption.id);
-            const proposalOption = proposalOptionModel.toJSON();
-
-            // update
-            this.proposalOptionResultService.update(proposalOptionResult.id, {
-                weight: proposalOption.Votes.length,
-                voters: proposalOption.Votes.length
-            } as ProposalOptionResultUpdateRequest);
-        }
-
-        proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
-        return proposalResultModel.toJSON();
     }
 
     /**

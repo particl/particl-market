@@ -26,7 +26,7 @@ export class ProposalResultRepository {
         return this.ProposalResultModel.fetchById(id, withRelated);
     }
 
-    public async findOneFromHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
+    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
         return this.ProposalResultModel.fetchByHash(hash, withRelated);
     }
 
