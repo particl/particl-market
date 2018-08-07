@@ -17,7 +17,7 @@ describe('ProposalListCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalListCommand = Commands.PROPOSAL_LIST.commandName;
-    const daemonCommand = Commands.DAEMON_ROOT.commandName;
+    const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
