@@ -69,7 +69,7 @@ describe('VotePostCommand', () => {
         updateVote.profileId = createVote.profileId;
         updateVote.address = createVote.address;
         updateVote.hash = createVote.hash;
-        updateVote.optionId = createdProposal.ProposalOptions.length - 2;
+        updateVote.optionId = createVote.optionId - 1;
 
         {
             const response: any = await testUtil.rpc(voteMethod, [
@@ -196,7 +196,7 @@ describe('VotePostCommand', () => {
             30 * 60, // maxSeconds
             200, // waitForStatusCode
             'voter', // property name
-            createVote.address // created proposal hash
+            createVote.address // value to match
         );
         response.expectJson();
         const result: any = response.getBody()['result'];
@@ -233,8 +233,8 @@ describe('VotePostCommand', () => {
 	            ],
 	            30 * 60, // maxSeconds
 	            200, // waitForStatusCode
-	            'voter', // property name
-	            createVote.address // created proposal hash
+	            'ProposalOption.optionId', // property name
+	            updateVote.optionId // value to match
 	        );
 	        response.expectJson();
 	        const result: any = response.getBody()['result'];
@@ -242,7 +242,6 @@ describe('VotePostCommand', () => {
 	        expect(result.voter).toBe(updateVote.address);
 	        expect(result.weight).toBe(1);
 	        expect(result.ProposalOption.optionId).toBe(updateVote.optionId);
-	        expect(result.ProposalOption.optionId).not.toBe(createVote.optionId);
 	        expect(result.ProposalOption.Proposal.hash).toBe(updateVote.hash);
 	    }
 
@@ -256,8 +255,8 @@ describe('VotePostCommand', () => {
 	            ],
 	            30 * 60, // maxSeconds
 	            200, // waitForStatusCode
-	            'voter', // property name
-	            createVote.address // created proposal hash
+	            'ProposalOption.optionId', // property name
+	            updateVote.optionId // value to match
 	        );
 	        response.expectJson();
 	        const result: any = response.getBody()['result'];
@@ -265,7 +264,6 @@ describe('VotePostCommand', () => {
 	        expect(result.voter).toBe(createVote.address);
 	        expect(result.weight).toBe(1);
 	        expect(result.ProposalOption.optionId).toBe(updateVote.optionId);
-	        expect(result.ProposalOption.optionId).not.toBe(createVote.optionId);
 	        expect(result.ProposalOption.Proposal.hash).toBe(createVote.hash);
 	    }
     }, 600000); // timeout to 600s
