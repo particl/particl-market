@@ -227,8 +227,10 @@ export class VoteActionService {
             this.log.debug('Creating vote request = ' + JSON.stringify(voteRequest, null, 2));
             voteModel = await this.voteService.create(voteRequest as VoteCreateRequest);
         } else {
-            this.log.debug('Updating vote with id = ${lastVote.id}, vote request = ' + JSON.stringify(voteRequest, null, 2));
+            this.log.debug(`Updating vote with id = ${lastVote.id}, vote request = ` + JSON.stringify(voteRequest, null, 2));
             voteModel = await this.voteService.update(lastVote.id, voteRequest as VoteUpdateRequest);
+            // this.voteService.destroy(lastVote.id);
+            // voteModel = await this.voteService.create(voteRequest as VoteCreateRequest);
         }
         if (!voteModel) {
             this.log.error('VoteActionService.createOrUpdateVote(): Vote wasn\'t saved or updated properly. Return val is empty.');

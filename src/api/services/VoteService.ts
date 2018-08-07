@@ -70,16 +70,21 @@ export class VoteService {
         // find the existing one without related
         const vote = await this.findOne(id, false);
 
-        // set new values
-        vote.Voter = body.voter;
-        vote.Block = body.block;
-        vote.Weight = body.weight;
+        if (!body.voter) {
+            body.voter = vote.Voter;
+        }
+        if (!body.block) {
+            body.block = vote.Block;
+        }
+        if (!body.weight) {
+            body.weight = vote.Weight;
+        }
+        if (!body.proposal_option_id) {
+            body.proposal_option_id = vote.toJSON().ProposalOption.id;
+        }
 
         // update vote record
-        const updatedVote = await this.voteRepo.update(id, vote.toJSON());
-
-        // const newVote = await this.findOne(id);
-        // return newVote;
+        const updatedVote = await this.voteRepo.update(id, body);
 
         return updatedVote;
     }
