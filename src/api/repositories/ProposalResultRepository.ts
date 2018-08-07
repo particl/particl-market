@@ -22,12 +22,13 @@ export class ProposalResultRepository {
         return list as Bookshelf.Collection<ProposalResult>;
     }
 
-    public async findOne(id: number, withRelated: boolean = true): Promise<ProposalResult> {
-        return this.ProposalResultModel.fetchById(id, withRelated);
+    // we can have multiple of these in the future
+    public async findAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ProposalResult>> {
+        return this.ProposalResultModel.fetchByProposalHash(hash, withRelated);
     }
 
-    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
-        return this.ProposalResultModel.fetchByHash(hash, withRelated);
+    public async findOne(id: number, withRelated: boolean = true): Promise<ProposalResult> {
+        return this.ProposalResultModel.fetchById(id, withRelated);
     }
 
     public async create(data: any): Promise<ProposalResult> {

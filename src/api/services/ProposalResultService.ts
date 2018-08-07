@@ -35,13 +35,15 @@ export class ProposalResultService {
         return proposalResult;
     }
 
-    public async findOneByHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
-        const proposalResult = await this.proposalResultRepo.findOneByHash(hash, withRelated);
+    public async findOneByProposalHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
+        const proposalResult = await this.proposalResultRepo.findAllByProposalHash(hash, withRelated);
+        this.log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
+
         if (proposalResult === null) {
             this.log.warn(`ProposalResult with the hash=${hash} was not found!`);
             throw new NotFoundException(hash);
         }
-        return proposalResult;
+        return proposalResult.first();
     }
 
     @validate()

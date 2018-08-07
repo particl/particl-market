@@ -37,7 +37,7 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
             throw new MessageException('Expected proposalHash but received no params.');
         }
         const proposalHash = data.params[0];
-        return await this.proposalResultService.findOneByHash(proposalHash, true);
+        return await this.proposalResultService.findOneByProposalHash(proposalHash, true);
     }
 
     public help(): string {

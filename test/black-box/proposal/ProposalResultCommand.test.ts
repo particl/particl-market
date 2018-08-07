@@ -18,8 +18,6 @@ describe('ProposalResultCommand', () => {
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalResultCommand = Commands.PROPOSAL_RESULT.commandName;
     const daemonCommand = Commands.DAEMON_ROOT.commandName;
-    const voteCommand = Commands.VOTE_ROOT.commandName;
-    const votePostCommand = Commands.VOTE_POST.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -27,6 +25,7 @@ describe('ProposalResultCommand', () => {
     let proposal: resources.ListingItemTemplate;
 
     let currentBlock: 0;
+    const voteCount = 50;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -43,7 +42,7 @@ describe('ProposalResultCommand', () => {
             true,   // generateListingItem
             null,   // listingItemHash,
             false,  // generatePastProposal,
-            5       // voteCount
+            voteCount       // voteCount
         ]).toParamsArray();
 
         // generate past proposals
@@ -71,15 +70,14 @@ describe('ProposalResultCommand', () => {
         const result: any = res.getBody()['result'];
 
         log.debug('result:', JSON.stringify(result, null, 2));
-        expect(result).toHaveLength(2);
+        expect(result).hasOwnProperty('Proposal');
+        expect(result).hasOwnProperty('ProposalOptionResults');
 
-        expect(result.result).toBe('Sent.');
-        expect(result.txid).toBeDefined();
-        expect(result.fee).toBeGreaterThan(0);
-
+        expect(result.block).toBe(currentBlock);
+        expect(result.ProposalOptionResults[0].voters).toBeGreaterThan(0);
+        expect(result.ProposalOptionResults[0].weight).toBeGreaterThan(0);
+        expect(result.ProposalOptionResults[0].voters + result.ProposalOptionResults[1].voters).toBe(voteCount);
 
     });
-
-
 
 });

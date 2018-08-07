@@ -162,10 +162,11 @@ export class VoteActionService {
             const proposalOptionModel = await this.proposalOptionService.findOne(proposalOptionResult.ProposalOption.id);
             const proposalOption = proposalOptionModel.toJSON();
 
-            this.log.debug('updateProposalResult, proposalOption: ', JSON.stringify(proposalOption, null, 2));
+            this.log.debug('updateProposalResult(), proposalOption: ', JSON.stringify(proposalOption, null, 2));
+            this.log.debug('updateProposalResult(), proposalOption.Votes.length: ', proposalOption.Votes.length);
 
             // update
-            this.proposalOptionResultService.update(proposalOptionResult.id, {
+            const updatedProposalOptionResultModel = await this.proposalOptionResultService.update(proposalOptionResult.id, {
                 weight: proposalOption.Votes.length,
                 voters: proposalOption.Votes.length
             } as ProposalOptionResultUpdateRequest);
