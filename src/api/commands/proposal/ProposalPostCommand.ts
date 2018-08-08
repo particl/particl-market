@@ -92,14 +92,14 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return this.getName() + ' TODO: (command param help)';
+        return this.getName() + ' <profileId> <proposalTitle> <proposalDescription> <blockStart> <blockEnd> <option1Description> ... <optionNDescription> ';
     }
 
     public description(): string {
-        return 'TODO: Commands for posting Proposals.';
+        return ' Post a proposal.';
     }
 
     public example(): string {
-        return this.getName() + ' TODO: example';
+        return this.getName() + ' proposal post 1 "A question of sets" "The set of all sets contains itself?" 0 1000000 YES NO';
     }
 }

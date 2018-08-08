@@ -64,6 +64,6 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<V
     }
 
     public example(): string {
-        return this.getName() + ' TODO: example';
+        return this.getName() + ' 1 392fc0687405099ad71319686aa421b65e262f10f9c2caed181ae81d23d52236 ';
     }
 }

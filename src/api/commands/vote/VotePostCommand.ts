@@ -89,10 +89,10 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
     }
 
     public description(): string {
-        return 'TODO: ';
+        return 'Vote on a proposal specified via hash. ';
     }
 
     public example(): string {
-        return this.getName() + ' TODO: example';
+        return this.getName() + ' 1 392fc0687405099ad71319686aa421b65e262f10f9c2caed181ae81d23d52236 0';
     }
 }

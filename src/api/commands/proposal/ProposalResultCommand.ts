@@ -45,10 +45,10 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
     }
 
     public description(): string {
-        return 'TODO: Commands for managing ProposalResultsCommand.';
+        return ' Command for checking the results of a proposal.';
     }
 
     public example(): string {
-        return this.getName() + ' TODO: example';
+        return this.getName() + ' 392fc0687405099ad71319686aa421b65e262f10f9c2caed181ae81d23d52236 ';
     }
 }

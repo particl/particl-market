@@ -40,7 +40,7 @@ export class VoteListCommand extends BaseCommand implements RpcCommandInterface<
     }
 
     public description(): string {
-        return 'List votes.';
+        return 'List votes. ';
     }
 
     public example(): string {

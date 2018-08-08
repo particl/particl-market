@@ -29,8 +29,8 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
 
     /**
      * command description
-     * [0] startBlock |*, optional
-     * [1] endBlock |*, optional
+     * [0] startBlock | *, optional
+     * [1] endBlock | *, optional
      * [2] order, optional
      * [3] type, optional
      *
@@ -46,7 +46,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return this.getName() + ' <startBlock> <endBlock> <order> ';
+        return this.getName() + ' <startBlock> <endBlock> <order> <type> ';
     }
 
     public description(): string {
