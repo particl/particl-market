@@ -60,8 +60,8 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
         const pageLimit = data.params[4] ? data.params[4] : this.PAGE_LIMIT;
         const page = data.params[5] ? data.params[5] : 0;
         const title = data.params[6] ? data.params[6] : undefined;
-        const shortDec = data.params[7] ? data.params[7] : undefined;
-        const longDec = data.params[8] ? data.params[7] : undefined;
+        const shortDescription = data.params[7] ? data.params[7] : undefined;
+        const longDescription = data.params[8] ? data.params[7] : undefined;
 
         // TODO: ordering is by createdAt, but perhaps updatedAt would be better
         // TODO: add and set publishedAt to seller publish time
@@ -84,8 +84,8 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
             pageLimit,
             page,
             title,
-            shortDec,
-            longDec,
+            shortDescription,
+            longDescription,
             bidders: data.params
         } as BidSearchParams;
 

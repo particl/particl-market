@@ -57,16 +57,16 @@ export class Bid extends Bookshelf.Model<Bid> {
                     qb.where('order_items.status', '=', options.orderStatus);
                 }
 
-                if (options.title || options.shortDec || options.longDec) {
+                if (options.title || options.shortDescription || options.longDescription) {
                     qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'bids.listing_item_id');
                     if (options.title) {
                         qb.where('item_informations.title', '=', options.title);
                     }
-                    if (options.shortDec) {
-                        qb.where('item_informations.short_description', '=', options.shortDec);
+                    if (options.shortDescription) {
+                        qb.where('item_informations.short_description', '=', options.shortDescription);
                     }
-                    if (options.longDec) {
-                        qb.where('item_informations.long_description', '=', options.longDec);
+                    if (options.longDescription) {
+                        qb.where('item_informations.long_description', '=', options.longDescription);
                     }
                 }
 

@@ -30,8 +30,8 @@ export class BidSearchParams extends RequestBody {
 
     // search by description and title
     public title: string;
-    public shortDec: string;
-    public longDec: string;
+    public shortDescription: string;
+    public longDescription: string;
     // pagination
     public pageLimit: number;
     public page: number;
