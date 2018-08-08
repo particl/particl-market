@@ -40,6 +40,8 @@ import { ListingItemObjectDataService } from '../../src/api/services/ListingItem
 
 import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
 import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
+import * as listingItemCreateRequestExpired from '../testdata/createrequest/listingItemCreateRequestExpired.json';
+
 
 import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
 
@@ -486,6 +488,25 @@ describe('ListingItem', () => {
         expect.assertions(22);
         await listingItemService.destroy(createdListingItem3.id);
         await expectListingItemWasDeleted(createdListingItem3);
+    });
+
+    test('Should delete expired ListingItem', async () => {
+        const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestExpired));
+
+        delete testDataToSave.itemInformation;
+        delete testDataToSave.paymentInformation;
+        delete testDataToSave.messagingInformation;
+        delete testDataToSave.listingItemObjects;
+
+        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.seller = defaultProfile.address;
+
+        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
+        const expiredListingItem = listingItemModel.toJSON();
+        await listingItemService.deleteExpiredListingItems();
+        await listingItemService.findOne(expiredListingItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(expiredListingItem.id))
+        );
     });
 
     /*

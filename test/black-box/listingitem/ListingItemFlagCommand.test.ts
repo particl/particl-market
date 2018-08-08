@@ -33,7 +33,7 @@ describe('ListingItemFlagCommand', () => {
             CreatableModel.LISTINGITEM,     // what to generate
             2,                      // how many to generate
             true,                   // return model
-        generateListingItemParams           // what kind of data to generate
+            generateListingItemParams    // what kind of data to generate
         ) as ListingItem[];
         createdListingItem = listingItems[0];
         createdNewListingItem = listingItems[1];

@@ -7,5 +7,7 @@ export class ListingItemTemplatePostRequest extends RequestBody {
     @IsNotEmpty()
     public listingItemTemplateId: number;
     public marketId: number;
+    // expiry time in days
+    public daysRetention: number;
 }
 // tslint:enable:variable-name

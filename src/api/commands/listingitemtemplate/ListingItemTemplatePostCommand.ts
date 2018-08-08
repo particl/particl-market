@@ -29,7 +29,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *
      * data.params[]:
      *  [0]: listingItemTemplateId
-     *  [1]: marketId, may be optional
+     *  [1]: daysRetention, default is 4 and set in SmsgService.smsgsend, may be optional.
+     *  [2]: marketId, may be optional
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -43,7 +44,8 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         const response = await this.listingItemActionService.post({
             listingItemTemplateId: data.params[0],
-            marketId: data.params[1] || undefined
+            daysRetention: data.params[1] || undefined,
+            marketId: data.params[2] || undefined
         } as ListingItemTemplatePostRequest);
 
         this.log.debug('ListingItemTemplatePostCommand.post, response: ', response);
@@ -51,14 +53,14 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     }
 
     public usage(): string {
-        return this.getName() + ' <listingTemplateId> <marketId> ';
+        return this.getName() + ' <listingTemplateId> [daysRetention] [marketId] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingTemplateId>           - Numeric - The ID of the listing item template that we \n'
-            + '                                     want to post. \n'
-            + '    <marketId>                    - Numeric - The ID of the markte id. ';
+            + '    <listingTemplateId>           - Number - The ID of the listing item template that we want to post. \n'
+            + '    <daysRetention>               - [optional] Number - Days the listing will be retained by network.\n'
+            + '    <marketId>                    - [optional] Number - Market id. ';
     }
 
     public description(): string {

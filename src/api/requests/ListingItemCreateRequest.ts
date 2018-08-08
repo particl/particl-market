@@ -15,6 +15,12 @@ export class ListingItemCreateRequest extends RequestBody {
 
     public listing_item_template_id: number;
 
+    // in days
+    public expiryTime: number;
+
+    public postedAt: Date;
+    public expiredAt: Date;
+
     public itemInformation;
     public paymentInformation;
     public messagingInformation;

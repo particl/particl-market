@@ -31,6 +31,11 @@ export class ListingItemRepository {
         return this.ListingItemModel.fetchById(id, withRelated);
     }
 
+    public async findExpired(): Promise<Bookshelf.Collection<ListingItem>> {
+        return this.ListingItemModel.fetchExpired();
+    }
+
+
     /**
      *
      * @param {string} hash

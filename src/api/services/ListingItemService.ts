@@ -66,6 +66,11 @@ export class ListingItemService {
         return await this.listingItemRepo.findAll();
     }
 
+    public async findExpired(): Promise<Bookshelf.Collection<ListingItem>> {
+        return await this.listingItemRepo.findExpired();
+    }
+
+
     // TODO: we have search, remove this
     public async findByCategory(categoryId: number): Promise<Bookshelf.Collection<ListingItem>> {
         this.log.debug('find by category:', categoryId);
@@ -356,6 +361,20 @@ export class ListingItemService {
     }
 
     /**
+     * delete expired listing items
+     */
+    public async deleteExpiredListingItems(): Promise<void> {
+       const listingItemsModel = await this.findExpired();
+       const listingItems = listingItemsModel.toJSON();
+       for (const listingItem of listingItems) {
+           if (listingItem.expiredAt <= Date()) {
+               await this.destroy(listingItem.id);
+           }
+       }
+    }
+
+
+    /**
      * check if ListingItem already Flagged
      *
      * @param {ListingItem} listingItem
@@ -392,5 +411,4 @@ export class ListingItemService {
         });
         return highestOrder ? highestOrder['order'] : 0;
     }
-
 }
