@@ -38,7 +38,7 @@ export class ProposalGetCommand extends BaseCommand implements RpcCommandInterfa
         }
         const proposalHash = data.params[0];
 
-        return this.proposalService.findOneByHash(proposalHash);
+        return await this.proposalService.findOneByHash(proposalHash);
     }
 
     public help(): string {

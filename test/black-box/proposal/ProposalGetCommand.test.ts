@@ -6,7 +6,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
-import {GenerateProposalParams} from '../../../src/api/requests/params/GenerateProposalParams';
+import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
 import { Proposal } from '../../../src/api/models/Proposal';
 import { Profile } from '../../../src/api/models/Profile';
 // tslint:enable:max-line-length
@@ -21,8 +21,8 @@ describe('ListingItemSearchCommand', () => {
     const proposalGetCommand = Commands.PROPOSAL_GET.commandName;
     const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
-    let defaultProfile: Profile;
-    let createdProposal: Proposal;
+    let defaultProfile: resources.Profile;
+    let createdProposal: resources.Proposal;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -32,8 +32,8 @@ describe('ListingItemSearchCommand', () => {
 
         // Generate a proposal
         const generateProposalsParams = new GenerateProposalParams([
-            true, // generateListingItemTemplate = true;
-            true, // generateListingItem = true;
+            false, // generateListingItemTemplate = true;
+            false, // generateListingItem = true;
             null, // listingItemHash: string;
             false // generatePastProposal = false;
         ]).toParamsArray();
