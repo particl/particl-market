@@ -13,6 +13,7 @@ import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ProposalOptionService } from './ProposalOptionService';
 import { ProposalSearchParams } from '../requests/ProposalSearchParams';
+import {Collection} from "bookshelf";
 
 export class ProposalService {
 
@@ -27,8 +28,8 @@ export class ProposalService {
     }
 
     public async searchBy(options: ProposalSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
-        const result = this.proposalRepo.searchBy(options, withRelated);
-        this.log.debug('searchBy, result: ', JSON.stringify(result, null, 2));
+        const result = await this.proposalRepo.searchBy(options, withRelated);
+        this.log.debug('searchBy, result: ', JSON.stringify(result.toJSON(), null, 2));
         return result;
     }
 

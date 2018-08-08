@@ -106,9 +106,9 @@ services:
     volumes:
       - ./data/particl1:/root/.particl
     ports:
-#      - 52738:51738
       - 52935:51935
       - 52936:51936
+      - 52938:51938
 #    network_mode: "host"
 #    networks:
 #      - partnet
@@ -140,9 +140,9 @@ services:
     volumes:
       - ./data/particl2:/root/.particl
     ports:
-#      - 53738:51738
       - 53935:51935
       - 53936:51936
+      - 53938:51938
 #    network_mode: "host"
 #    networks:
 #      - partnet

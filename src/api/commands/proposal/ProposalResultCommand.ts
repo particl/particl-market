@@ -4,14 +4,14 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ProposalResultService } from '../../services/ProposalResultService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { Proposal } from '../../models/Proposal';
 import { RpcCommandInterface } from './../RpcCommandInterface';
 import { Commands } from './../CommandEnumType';
 import { BaseCommand } from './../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
+import { ProposalResult } from "../../models/ProposalResult";
 
-export class ProposalResultCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
+export class ProposalResultCommand extends BaseCommand implements RpcCommandInterface<ProposalResult> {
 
     public log: LoggerType;
 
@@ -32,7 +32,7 @@ export class ProposalResultCommand extends BaseCommand implements RpcCommandInte
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<ProposalResult> {
         if (data.params.length < 1) {
             throw new MessageException('Expected proposalHash but received no params.');
         }

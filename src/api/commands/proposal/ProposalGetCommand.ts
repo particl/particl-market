@@ -32,7 +32,7 @@ export class ProposalGetCommand extends BaseCommand implements RpcCommandInterfa
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Proposal> {
         if (data.params.length < 1) {
             throw new MessageException('Expected proposal hash but recieved no params.');
         }

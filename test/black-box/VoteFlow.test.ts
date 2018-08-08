@@ -104,6 +104,8 @@ describe('Happy Vote Flow', () => {
         log.debug('Node1 RECEIVES MP_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
+        await testUtilNode1.waitFor(5);
+
         const response = await testUtilNode1.rpcWaitFor(proposalCommand,
             [proposalListCommand, '*', '*'],
             30 * 60,            // maxSeconds
@@ -129,7 +131,7 @@ describe('Happy Vote Flow', () => {
         log.debug('Node2 RECEIVES MP_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
-        await testUtilNode2.waitFor(3);
+        await testUtilNode2.waitFor(5);
 
         // TODO: change this to 'proposal get' since we now know the hash
         const response = await testUtilNode2.rpcWaitFor(proposalCommand,

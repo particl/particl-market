@@ -38,7 +38,7 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<V
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Vote> {
         if (data.params.length < 2) {
             throw new MessageException('Expected <TODO> but received no params.');
         }
