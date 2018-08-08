@@ -9,6 +9,7 @@ declare module 'resources' {
         blockEnd: number;
         hash: string;
         type: ProposalType;
+        title: string;
         description: string;
         createdAt: Date;
         updatedAt: Date;
