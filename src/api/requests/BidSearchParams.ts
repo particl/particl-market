@@ -1,7 +1,12 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { ValidateIf, IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { BidMessageType } from '../enums/BidMessageType';
 import { SearchOrder } from '../enums/SearchOrder';
+import { OrderStatus } from '../enums/OrderStatus';
 
 // tslint:disable:variable-name
 export class BidSearchParams extends RequestBody {
@@ -19,6 +24,17 @@ export class BidSearchParams extends RequestBody {
     // @ValidateIf(o => o.action)
     // @IsEnum(SearchOrder)
     public ordering: SearchOrder;
+
+    // order status filtering
+    public orderStatus: OrderStatus;
+
+    // search by description and title
+    public title: string;
+    public shortDec: string;
+    public longDec: string;
+    // pagination
+    public pageLimit: number;
+    public page: number;
 
     public bidders: string[];
 

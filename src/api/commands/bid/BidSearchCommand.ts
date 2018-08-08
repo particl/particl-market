@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -15,10 +19,13 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { BidMessageType } from '../../enums/BidMessageType';
+import { OrderStatus} from '../../enums/OrderStatus';
 
 export class BidSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Bid>> {
 
     public log: LoggerType;
+    private PAGE_LIMIT = 100000;
+    private REQUEST_PARAMS = 9;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -35,7 +42,10 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
      * [0]: ListingItem hash, string, * for all
      * [1]: status/action, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}, * for all
      * [2]: ordering ASC/DESC, orders by createdAt
-     * [3...]: bidder: particl address
+     * [3]: order status filtering
+     * [4]: pageLimit to show
+     * [5]: page number, which page to show
+     * [5...]: bidder: particl address
      *
      * @param data
      * @returns {Promise<Bookshelf.Collection<Bid>>}
@@ -46,15 +56,21 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
         const listingItemHash = data.params[0] !== '*' ? data.params[0] : undefined;
         const action = data.params[1] !== '*' ? data.params[1] : undefined;
         const ordering = data.params[2] ? data.params[2] : SearchOrder.ASC;
+        const orderStatus = data.params[3] ? data.params[3] : OrderStatus.SHIPPING;
+        const pageLimit = data.params[4] ? data.params[4] : this.PAGE_LIMIT;
+        const page = data.params[5] ? data.params[5] : 0;
+        const title = data.params[6] ? data.params[6] : undefined;
+        const shortDec = data.params[7] ? data.params[7] : undefined;
+        const longDec = data.params[8] ? data.params[7] : undefined;
 
         // TODO: ordering is by createdAt, but perhaps updatedAt would be better
         // TODO: add and set publishedAt to seller publish time
 
-        if (data.params.length >= 3) {
+        if (data.params.length >= this.REQUEST_PARAMS) {
             // shift so that data.params contains only the bidders
-            data.params.shift();
-            data.params.shift();
-            data.params.shift();
+            for (let i = 0; i < this.REQUEST_PARAMS; ++i) {
+                data.params.shift();
+            }
         } else {
             // no bidders
             data.params = [];
@@ -64,6 +80,12 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
             listingItemHash,
             action,
             ordering,
+            orderStatus,
+            pageLimit,
+            page,
+            title,
+            shortDec,
+            longDec,
             bidders: data.params
         } as BidSearchParams;
 
@@ -83,6 +105,15 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
                 SearchOrder.ASC,
                 SearchOrder.DESC
             ], bidSearchParams.ordering)) {
+            throw new MessageException('Invalid SearchOrder: ' + bidSearchParams.ordering);
+        }
+
+        if (!_.includes([
+                OrderStatus.SHIPPING,
+                OrderStatus.AWAITING_ESCROW,
+                OrderStatus.ESCROW_LOCKED,
+                OrderStatus.COMPLETE
+            ], bidSearchParams.orderStatus)) {
             throw new MessageException('Invalid SearchOrder: ' + bidSearchParams.ordering);
         }
 

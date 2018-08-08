@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { rpc, api } from '../lib/api';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
@@ -9,7 +13,9 @@ import { GenerateBidParams } from '../../../src/api/requests/params/GenerateBidP
 
 import * as resources from 'resources';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import {SearchOrder} from '../../../src/api/enums/SearchOrder';
+import { SearchOrder } from '../../../src/api/enums/SearchOrder';
+import { OrderStatus } from '../../../src/api/enums/OrderStatus';
+import { BidSearchParams } from '../../../src/api/requests/BidSearchParams';
 
 describe('BidSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
