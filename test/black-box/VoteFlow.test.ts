@@ -143,7 +143,7 @@ describe('Happy Vote Flow', () => {
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: resources.Proposal = response.getBody()['result'][0];
+        const result: resources.Proposal = response.getBody()['result'];
 
         log.debug('result', JSON.stringify(result, null, 2))
 
