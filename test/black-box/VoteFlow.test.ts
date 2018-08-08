@@ -14,9 +14,11 @@ describe('Happy Vote Flow', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     // const testUtilNode0 = new BlackBoxTestUtil(0);
-    const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtilNode1 = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
-    const testUtilNode2 = new BlackBoxTestUtil(randomBoolean ? 2 : 1);  // BUYER
+    // const randomBoolean: boolean = Math.random() >= 0.5;
+    // const testUtilNode1 = new BlackBoxTestUtil(randomBoolean ? 1 : 2);
+    // const testUtilNode2 = new BlackBoxTestUtil(randomBoolean ? 2 : 1);
+    const testUtilNode1 = new BlackBoxTestUtil(1);
+    const testUtilNode2 = new BlackBoxTestUtil(2);
 
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalPostCommand = Commands.PROPOSAL_POST.commandName;
@@ -131,11 +133,11 @@ describe('Happy Vote Flow', () => {
 
         // TODO: change this to 'proposal get' since we now know the hash
         const response = await testUtilNode2.rpcWaitFor(proposalCommand,
-            [proposalListCommand, '*', '*'],
+            [proposalGetCommand, proposal.hash],
             30 * 60,            // maxSeconds
             200,            // waitForStatusCode
-            '[0].title', // property name
-            proposalTitle                   // value
+            'hash',     // property name
+            proposal.hash                   // value
         );
         response.expectJson();
         response.expectStatusCode(200);

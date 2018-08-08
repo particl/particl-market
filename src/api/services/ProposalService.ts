@@ -27,7 +27,9 @@ export class ProposalService {
     }
 
     public async searchBy(options: ProposalSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
-        return this.proposalRepo.searchBy(options, withRelated);
+        const result = this.proposalRepo.searchBy(options, withRelated);
+        this.log.debug('searchBy, result: ', JSON.stringify(result, null, 2));
+        return result;
     }
 
     public async findAll(withRelated: boolean = true): Promise<Bookshelf.Collection<Proposal>> {
