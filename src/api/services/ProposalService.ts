@@ -13,7 +13,6 @@ import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ProposalOptionService } from './ProposalOptionService';
 import { ProposalSearchParams } from '../requests/ProposalSearchParams';
-import {Collection} from "bookshelf";
 
 export class ProposalService {
 

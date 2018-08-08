@@ -9,7 +9,7 @@ import { Commands } from './../CommandEnumType';
 import { BaseCommand } from './../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
-import { ProposalResult } from "../../models/ProposalResult";
+import { ProposalResult } from '../../models/ProposalResult';
 
 export class ProposalResultCommand extends BaseCommand implements RpcCommandInterface<ProposalResult> {
 
