@@ -158,7 +158,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     }
 
     public example(): string {
-        return '';
+        return 'bid send 6e8c05ef939b1e30267a9912ecfe7560d758739c126f61926b956c087a1fedfe 1 1 ';
         // return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb 1 [TODO] ';
     }
 
