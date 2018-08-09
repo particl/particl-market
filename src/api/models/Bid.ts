@@ -38,9 +38,10 @@ export class Bid extends Bookshelf.Model<Bid> {
     }
 
     public static async search(options: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
-        if (!options.ordering) {
-            options.ordering = SearchOrder.ASC;
-        }
+
+        options.ordering = options.ordering ? options.ordering : SearchOrder.ASC;
+        options.page = options.page ? options.page : 0;
+        options.pageLimit = options.pageLimit ? options.pageLimit : 0;
 
         const bidCollection = Bid.forge<Model<Bid>>()
             .query( qb => {

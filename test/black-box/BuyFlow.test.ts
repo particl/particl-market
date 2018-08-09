@@ -63,6 +63,10 @@ describe('Happy Buy Flow', () => {
     let orderOnSellerNode: resources.Order;
     let orderOnBuyerNode: resources.Order;
 
+    const PAGE = 0;
+    const PAGE_LIMIT = 10;
+    const ORDERING = SearchOrder.ASC;
+
     beforeAll(async () => {
 
         // await testUtilNode0.cleanDb();
@@ -279,9 +283,10 @@ describe('Happy Buy Flow', () => {
 
         const bidSearchCommandParams = [
             bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
             listingItemReceivedBuyerNode.hash,
             BidMessageType.MPA_BID,
-            SearchOrder.ASC,
+            '*',
             buyerProfile.address
         ];
 
@@ -310,9 +315,10 @@ describe('Happy Buy Flow', () => {
 
         const bidSearchCommandParams = [
             bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
             listingItemReceivedBuyerNode.hash,
             BidMessageType.MPA_BID,
-            SearchOrder.ASC,
+            '*',
             buyerProfile.address
         ];
 
@@ -389,9 +395,10 @@ describe('Happy Buy Flow', () => {
 
         const bidSearchCommandParams = [
             bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
             bidOnSellerNode.ListingItem.hash,
             BidMessageType.MPA_ACCEPT,
-            SearchOrder.ASC,
+            '*',
             buyerProfile.address
         ];
 
@@ -459,9 +466,10 @@ describe('Happy Buy Flow', () => {
 
         const bidSearchCommandParams = [
             bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
             bidOnBuyerNode.ListingItem.hash,
             BidMessageType.MPA_ACCEPT,
-            SearchOrder.ASC,
+            '*',
             buyerProfile.address
         ];
 
