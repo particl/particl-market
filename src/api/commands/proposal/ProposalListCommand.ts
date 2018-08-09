@@ -1,3 +1,4 @@
+import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import * as _ from 'lodash';
@@ -7,15 +8,15 @@ import { ProposalService } from '../../services/ProposalService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Proposal } from '../../models/Proposal';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { Commands } from './../CommandEnumType';
-import { BaseCommand } from './../BaseCommand';
+import { Commands } from '../CommandEnumType';
+import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
 import { ProposalSearchParams } from '../../requests/ProposalSearchParams';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { ProposalType } from '../../enums/ProposalType';
 
-export class ProposalListCommand extends BaseCommand implements RpcCommandInterface<Proposal> {
+export class ProposalListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Proposal>> {
 
     public log: LoggerType;
 
@@ -39,7 +40,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Proposal>> {
         const withRelated = true;
         const searchParams = this.getSearchParams(data.params);
         return await this.proposalService.searchBy(searchParams, withRelated);

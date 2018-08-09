@@ -51,6 +51,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'ListingItemTemplate',
         'ListingItemTemplate.Profile',
         'Proposal',
+        'Proposal.ProposalOptions',
         'Proposal.ProposalResult'
     ];
 

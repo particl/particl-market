@@ -38,8 +38,8 @@ describe('ProposalListCommand', () => {
         defaultMarket = await testUtil.getDefaultMarket();
 
         const generatePastProposalParams = new GenerateProposalParams([
-            true,   // generateListingItemTemplate
-            true,   // generateListingItem
+            false,   // generateListingItemTemplate
+            false,   // generateListingItem
             null,   // listingItemHash,
             true    // generatePastProposal
         ]).toParamsArray();
@@ -53,8 +53,8 @@ describe('ProposalListCommand', () => {
         ) as resources.Proposal[];
 
         const generateActiveProposalParams = new GenerateProposalParams([
-            true,   // generateListingItemTemplate
-            true,   // generateListingItem
+            false,   // generateListingItemTemplate
+            false,   // generateListingItem
             null,   // listingItemHash,
             false   // generatePastProposal
         ]).toParamsArray();

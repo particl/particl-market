@@ -1,3 +1,4 @@
+import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -9,9 +10,8 @@ import { RpcCommandInterface } from './../RpcCommandInterface';
 import { Commands } from './../CommandEnumType';
 import { BaseCommand } from './../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
-import { MessageException } from '../../exceptions/MessageException';
 
-export class VoteListCommand extends BaseCommand implements RpcCommandInterface<Vote> {
+export class VoteListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Vote>> {
 
     public log: LoggerType;
 
@@ -31,7 +31,7 @@ export class VoteListCommand extends BaseCommand implements RpcCommandInterface<
      * @returns {Promise<any>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Vote>> {
         return await this.voteService.findAll();
     }
 

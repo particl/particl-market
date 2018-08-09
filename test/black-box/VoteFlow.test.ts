@@ -104,6 +104,8 @@ describe('Happy Vote Flow', () => {
         log.debug('Node1 RECEIVES MP_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
+        await testUtilNode1.waitFor(5);
+
         const response = await testUtilNode1.rpcWaitFor(proposalCommand,
             [proposalListCommand, '*', '*'],
             30 * 60,            // maxSeconds
@@ -129,9 +131,8 @@ describe('Happy Vote Flow', () => {
         log.debug('Node2 RECEIVES MP_PROPOSAL_ADD');
         log.debug('========================================================================================');
 
-        await testUtilNode2.waitFor(3);
+        await testUtilNode2.waitFor(5);
 
-        // TODO: change this to 'proposal get' since we now know the hash
         const response = await testUtilNode2.rpcWaitFor(proposalCommand,
             [proposalGetCommand, proposal.hash],
             30 * 60,            // maxSeconds
@@ -142,7 +143,10 @@ describe('Happy Vote Flow', () => {
         response.expectJson();
         response.expectStatusCode(200);
 
-        const result: resources.Proposal = response.getBody()['result'][0];
+        const result: resources.Proposal = response.getBody()['result'];
+
+        log.debug('result', JSON.stringify(result, null, 2))
+
         expect(result.title).toBe(proposal.title);
         expect(result.description).toBe(proposal.description);
         expect(result.blockStart).toBe(proposal.blockStart);
@@ -169,6 +173,13 @@ describe('Happy Vote Flow', () => {
 
         const result: any = response.getBody()['result'];
         expect(result.result).toEqual('Sent.');
+
+        // update currentBlock
+        const currentBlockRes: any = await testUtilNode1.rpc(daemonCommand, ['getblockcount']);
+        currentBlockRes.expectStatusCode(200);
+        currentBlock = currentBlockRes.getBody()['result'];
+        log.debug('currentBlock:', currentBlock);
+
     });
 
     test('Receive Vote1 on node1', async () => {
@@ -209,7 +220,7 @@ describe('Happy Vote Flow', () => {
             [proposalResultCommand, proposal.hash],
             8 * 60,
             200,
-            'ProposalOptionResult.voters',
+            'ProposalOptionResults[0].voters',
             1
         );
         response.expectJson();
@@ -239,6 +250,12 @@ describe('Happy Vote Flow', () => {
 
         const result: any = response.getBody()['result'];
         expect(result.result).toEqual('Sent.');
+
+        // update currentBlock
+        const currentBlockRes: any = await testUtilNode1.rpc(daemonCommand, ['getblockcount']);
+        currentBlockRes.expectStatusCode(200);
+        currentBlock = currentBlockRes.getBody()['result'];
+        log.debug('currentBlock:', currentBlock);
     });
 
     test('Receive Vote2 on node2', async () => {
@@ -279,8 +296,8 @@ describe('Happy Vote Flow', () => {
             [proposalResultCommand, proposal.hash],
             8 * 60,
             200,
-            'ProposalOptionResult.voters',
-            1
+            'ProposalOptionResults[0].voters',
+            2
         );
         response.expectJson();
         response.expectStatusCode(200);
@@ -330,7 +347,7 @@ describe('Happy Vote Flow', () => {
             [proposalResultCommand, proposal.hash],
             8 * 60,
             200,
-            'ProposalOptionResult.voters',
+            'ProposalOptionResults[0].voters',
             1
         );
         response.expectJson();
