@@ -58,7 +58,6 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
     }
 
     public example(): string {
-        return '';
-        // return 'bid ' + this.getName() + ' [TODO] ';
+        return 'data add profile \'{"name":"someChangeFoundBetweenTwoCouchSeats","address":"1EBHA1ckUWzNKN7BMfDwGTx6GKEbADUozX"}\'';
     }
 }
