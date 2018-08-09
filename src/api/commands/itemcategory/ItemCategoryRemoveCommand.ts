@@ -41,20 +41,16 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         const categoryId = data.params[0];
-        const isDelete = await this.itemCategoryService.isDoable(categoryId);
-        if (isDelete) {
-            // check listingItemTemplate related with category
-            const listingItemTemplates = await this.listingItemTemplateService.search({
-                page: 1, pageLimit: 10, order: 'ASC', category: categoryId, profileId: 0
-            } as ListingItemTemplateSearchParams);
-            if (listingItemTemplates.toJSON().length > 0) {
-                // not be delete its a associated with listingItemTemplate
-                throw new MessageException(`Category associated with listing-item-template can't be delete. id= ${categoryId}`);
-            }
-            return await this.itemCategoryService.destroy(categoryId);
-        } else {
-            throw new MessageException(`category can't be delete. id= ${categoryId}`);
+
+        // check listingItemTemplate related with category
+        const listingItemTemplates = await this.listingItemTemplateService.search({
+            page: 1, pageLimit: 10, order: 'ASC', category: categoryId, profileId: 0
+        } as ListingItemTemplateSearchParams);
+        if (listingItemTemplates.toJSON().length > 0) {
+            // not be delete its a associated with listingItemTemplate
+            throw new MessageException(`Category associated with listing-item-template can't be delete. id= ${categoryId}`);
         }
+        return await this.itemCategoryService.destroy(categoryId);
     }
 
     public usage(): string {
