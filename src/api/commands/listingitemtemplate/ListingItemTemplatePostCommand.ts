@@ -2,19 +2,19 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplatePostRequest } from '../../requests/ListingItemTemplatePostRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { MarketplaceMessage } from '../../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ListingItemActionService } from '../../services/ListingItemActionService';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -46,11 +46,21 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
         // TODO: if the template doesn't have all the required data, throw an exception
         // TODO: check escrow
 
-        const response = await this.listingItemActionService.post({
-            listingItemTemplateId: data.params[0],
-            daysRetention: data.params[1] || undefined,
-            marketId: data.params[2] || undefined
-        } as ListingItemTemplatePostRequest);
+        if (_.isEmpty(data.params[0])) {
+            throw new MessageException('Missing listingItemTemplateId');
+        }
+
+        const listingItemTemplateId: number = data.params[0];
+        const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
+        const marketId: number = data.params[2] || undefined;
+
+        const postRequest = {
+            listingItemTemplateId,
+            daysRetention,
+            marketId
+        } as ListingItemTemplatePostRequest;
+
+        const response = await this.listingItemActionService.post(postRequest);
 
         this.log.debug('ListingItemTemplatePostCommand.post, response: ', response);
         return response;

@@ -111,14 +111,12 @@ export class ListingItemActionService {
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
         // create and post a proposal for the item to be voted off the marketplace
-        const daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
-        const proposalMessage = await this.createProposalMessage(itemTemplate, daysRetention, itemTemplate.Profile);
+        const proposalMessage = await this.createProposalMessage(itemTemplate, data.daysRetention, itemTemplate.Profile);
         this.log.debug('post(), proposalMessage: ', proposalMessage);
-        const response: SmsgSendResponse = await this.postProposal(proposalMessage, daysRetention, itemTemplate.Profile, market);
+        const response: SmsgSendResponse = await this.postProposal(proposalMessage, data.daysRetention, itemTemplate.Profile, market);
 
         // create and post the itemmessage
-        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, data.daysRetention);
-        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, proposalMessage.hash);
+        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, proposalMessage.hash, data.daysRetention);
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             item: listingItemMessage
@@ -126,7 +124,6 @@ export class ListingItemActionService {
 
         this.log.debug('post(), marketPlaceMessage: ', marketPlaceMessage);
 
-        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, daysRetention);
         return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, data.daysRetention);
     }
 
@@ -208,10 +205,7 @@ export class ListingItemActionService {
                 // create ListingItem
                 const seller = event.smsgMessage.from;
                 const postedAt = new Date(event.smsgMessage.sent);
-                const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory);
-                
-                // todo: posted at is now part of the message, check that its taken from there
-                // const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory, postedAt);
+                const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory, postedAt);
                 // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
                 let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
