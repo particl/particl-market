@@ -9,6 +9,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { MessageException } from '../exceptions/MessageException';
 import { ItemCategoryRepository } from '../repositories/ItemCategoryRepository';
 import { ItemCategory } from '../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
@@ -158,5 +159,22 @@ export class ItemCategoryService {
                 return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);
             });
         }
+    }
+
+    /**
+     * function to return category id
+     *
+     * @param data
+     * @returns {Promise<number>}
+     */
+    public async getCategoryIdByKey(parentItemCategory: any): Promise<number> {
+        let parentItemCategoryId;
+        if (typeof parentItemCategory === 'number') {
+            parentItemCategoryId = parentItemCategory;
+        } else { // get category id by key
+            parentItemCategory = await this.findOneByKey(parentItemCategory);
+            parentItemCategoryId = parentItemCategory.id;
+        }
+        return parentItemCategoryId;
     }
 }

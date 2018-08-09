@@ -16,7 +16,6 @@ import { ListingItemUpdateRequest } from '../requests/ListingItemUpdateRequest';
 import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemInformationService } from './ItemInformationService';
-import { ItemCategoryService } from './ItemCategoryService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { MarketService } from './MarketService';
 import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
@@ -51,7 +50,6 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
