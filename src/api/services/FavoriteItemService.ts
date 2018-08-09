@@ -94,35 +94,6 @@ export class FavoriteItemService {
     }
 
     /**
-     * search favorite item using given FavoriteSearchParams
-     * when itemId is string then find by item hash
-     * when profileId is string then find by profile name
-     *
-     * @param options
-     * @returns {Promise<FavoriteSearchParams> }
-     */
-
-    private async checkSearchByItemHashOrProfileName(options: FavoriteSearchParams): Promise<FavoriteSearchParams> {
-
-        // if options.itemId is string then find by hash
-        if (typeof options.itemId === 'string') {
-            const listingItem = await this.listingItemService.findOneByHash(options.itemId);
-            options.itemId = listingItem.id;
-        }
-        // if options.profileId is string then find by profile name
-        if (typeof options.profileId === 'string') {
-            const profile = await this.profileService.findOneByName(options.profileId);
-            if (profile === null) {
-                throw new MessageException(`Profile not found for the given name = ${options.profileId}`);
-            }
-            options.profileId = profile.id;
-        }
-
-        return options;
-    }
-
-    /**
-     * TODO: NOTE: This function may be duplicated between commands.
      * data.params[]:
      *  [0]: item_id or hash
      *  [1]: profile_id or null
@@ -152,5 +123,32 @@ export class FavoriteItemService {
             throw new NotFoundException(itemId);
         }
         return [profileId, item.id];
+    }
+
+    /**
+     * search favorite item using given FavoriteSearchParams
+     * when itemId is string then find by item hash
+     * when profileId is string then find by profile name
+     *
+     * @param options
+     * @returns {Promise<FavoriteSearchParams> }
+     */
+    private async checkSearchByItemHashOrProfileName(options: FavoriteSearchParams): Promise<FavoriteSearchParams> {
+
+        // if options.itemId is string then find by hash
+        if (typeof options.itemId === 'string') {
+            const listingItem = await this.listingItemService.findOneByHash(options.itemId);
+            options.itemId = listingItem.id;
+        }
+        // if options.profileId is string then find by profile name
+        if (typeof options.profileId === 'string') {
+            const profile = await this.profileService.findOneByName(options.profileId);
+            if (profile === null) {
+                throw new MessageException(`Profile not found for the given name = ${options.profileId}`);
+            }
+            options.profileId = profile.id;
+        }
+
+        return options;
     }
 }
