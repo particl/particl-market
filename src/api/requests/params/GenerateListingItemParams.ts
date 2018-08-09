@@ -50,6 +50,8 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
      * [9]: listingItemTemplateHash
      * [10]: seller
      *
+     * TODO: add proposal generation
+     *
      * @param generateParams
      */
     constructor(generateParams: any[] = []) {

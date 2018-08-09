@@ -13,7 +13,6 @@ import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemInformationService } from './ItemInformationService';
 import { ItemCategoryService } from './ItemCategoryService';
-import { MarketService } from './MarketService';
 
 import { ListingItemTemplatePostRequest } from '../requests/ListingItemTemplatePostRequest';
 import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostRequest';
@@ -21,7 +20,6 @@ import { ListingItemUpdatePostRequest } from '../requests/ListingItemUpdatePostR
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { SmsgService } from './SmsgService';
-import { Market } from '../models/Market';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { NotImplementedException } from '../exceptions/NotImplementedException';
 import * as resources from 'resources';
@@ -44,6 +42,8 @@ import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ProfileService } from './ProfileService';
 import { VoteMessageType } from '../enums/VoteMessageType';
 import { VoteFactory } from '../factories/VoteFactory';
+import { Market } from '../models/Market';
+import { MarketService } from './MarketService';
 
 export class ListingItemActionService {
     private static FRACTION_TO_COMPRESS_BY = 0.6;
@@ -56,7 +56,6 @@ export class ListingItemActionService {
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
@@ -69,6 +68,7 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
         @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
@@ -88,21 +88,28 @@ export class ListingItemActionService {
     @validate()
     public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<SmsgSendResponse> {
 
+        this.log.debug('post()');
+
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true);
         let itemTemplate = itemTemplateModel.toJSON();
 
         itemTemplate = await this.resizeTemplateImages(itemTemplate);
+        this.log.debug('images resized');
 
         // this.log.debug('post template: ', JSON.stringify(itemTemplate, null, 2));
         // get the templates profile address
         const profileAddress = itemTemplate.Profile.address;
 
-        // fetch the market, will be used later with the broadcast
-        const marketModel: Market = await _.isEmpty(data.marketId)
-            ? await this.marketService.getDefault()
-            : await this.marketService.findOne(data.marketId);
-        const market = marketModel.toJSON();
+        let marketModel;
+        if (!data.marketId) {
+            // fetch the market, will be used later with the broadcast
+            marketModel = await this.marketService.getDefault();
+        } else {
+            marketModel = await this.marketService.findOne(data.marketId);
+        }
+        const market: resources.Market = marketModel.toJSON();
+        this.log.debug('market:', market.id);
 
         // todo: reason for this? to throw an exception unless category exists?!
         // find itemCategory with related

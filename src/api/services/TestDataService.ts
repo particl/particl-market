@@ -844,6 +844,12 @@ export class TestDataService {
         return cryptoAddresses;
     }
 
+    /**
+     * TODO: create a Proposal
+     *
+     * @param {GenerateListingItemParams} generateParams
+     * @returns {Promise<ListingItemCreateRequest>}
+     */
     private async generateListingItemData(generateParams: GenerateListingItemParams): Promise<ListingItemCreateRequest> {
 
         // get default profile
