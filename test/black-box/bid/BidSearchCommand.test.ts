@@ -6,16 +6,12 @@ import { rpc, api } from '../lib/api';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
-import { BidCreateRequest } from '../../../src/api/requests/BidCreateRequest';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { GenerateBidParams } from '../../../src/api/requests/params/GenerateBidParams';
-
 import * as resources from 'resources';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
-import { OrderStatus } from '../../../src/api/enums/OrderStatus';
-import { BidSearchParams } from '../../../src/api/requests/BidSearchParams';
 
 describe('BidSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -50,7 +46,7 @@ describe('BidSearchCommand', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+            false    // generateListingItemObjects
         ]).toParamsArray();
 
         // create listing item for testing
@@ -63,7 +59,7 @@ describe('BidSearchCommand', () => {
 
     });
 
-    test('Should return empty bid search result because Bids do not exist for the given ListingItem', async () => {
+    test('Should return empty result because Bids do not exist for the given ListingItem', async () => {
         const res: any = await rpc(bidCommand, [searchCommand, listingItems[0].hash]);
         res.expectJson();
         res.expectStatusCode(200);

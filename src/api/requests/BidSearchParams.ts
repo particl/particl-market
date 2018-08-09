@@ -11,30 +11,20 @@ import { OrderStatus } from '../enums/OrderStatus';
 // tslint:disable:variable-name
 export class BidSearchParams extends RequestBody {
 
-    // TODO: add validation back
-    // @ValidateIf(o => o.action)
-    // @IsEnum(BidMessageType)
-    public action: BidMessageType;
-
     // @IsNotEmpty()
     public listingItemId: number;
     public listingItemHash: string; // if hash is given, the service will fetch the id
-
-    // TODO: add validation back
-    // @ValidateIf(o => o.action)
-    // @IsEnum(SearchOrder)
     public ordering: SearchOrder;
 
     // order status filtering
-    public orderStatus: OrderStatus;
+    public status: BidMessageType | OrderStatus;
 
-    // search by description and title
-    public title: string;
-    public shortDescription: string;
-    public longDescription: string;
+    // search by string
+    public searchString: string;
+
     // pagination
-    public pageLimit: number;
     public page: number;
+    public pageLimit: number;
 
     public bidders: string[];
 
