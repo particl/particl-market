@@ -76,5 +76,4 @@ export class FavoriteItemRepository {
             throw new DatabaseException('Could not delete the favoriteItem!', error);
         }
     }
-
 }
