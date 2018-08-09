@@ -3,6 +3,7 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Types, Core, Targets } from '../../../constants';
 import { ItemCategoryService } from '../../services/ItemCategoryService';
+import { CategoryIsDoableService } from '../../services/CategoryIsDoableService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { ItemCategoryCreateRequest } from '../../requests/ItemCategoryCreateRequest';
 import { ItemCategory } from '../../models/ItemCategory';
@@ -17,7 +18,8 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService
+        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
+        @inject(Types.Service) @named(Targets.Service.CategoryIsDoableService) private categoryIsDoableService: CategoryIsDoableService
     ) {
         super(Commands.CATEGORY_ADD);
         this.log = new Logger(__filename);
@@ -38,7 +40,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
         if (data.params[2]) {
             const parentItemCategory = data.params[2];
-            const parentItemCategoryId = await this.getCategoryIdByKey(parentItemCategory);
+            const parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);
             return await this.itemCategoryService.create({
                 name: data.params[0],
                 description: data.params[1],
@@ -70,23 +72,5 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
 
     public example(): string {
         return 'category ' + this.getName() + ' newCategory \'description of the new category\' cat_wholesale_other ';
-    }
-
-    /**
-     * function to return category id
-     * TODO: NOTE: This function may be duplicated between commands.
-     *
-     * @param data
-     * @returns {Promise<number>}
-     */
-    private async getCategoryIdByKey(parentItemCategory: any): Promise<number> {
-        let parentItemCategoryId;
-        if (typeof parentItemCategory === 'number') {
-            parentItemCategoryId = parentItemCategory;
-        } else { // get category id by key
-            parentItemCategory = await this.itemCategoryService.findOneByKey(parentItemCategory);
-            parentItemCategoryId = parentItemCategory.id;
-        }
-        return parentItemCategoryId;
     }
 }

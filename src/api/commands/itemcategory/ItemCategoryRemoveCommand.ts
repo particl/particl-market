@@ -37,7 +37,7 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         const categoryId = data.params[0];
-        const isDelete = await this.isDoable(categoryId);
+        const isDelete = await this.itemCategoryService.isDoable(categoryId);
         if (isDelete) {
             // check listingItemTemplate related with category
             const listingItemTemplates = await this.listingItemTemplateService.search({
@@ -69,27 +69,5 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
 
     public example(): string {
         return 'category ' + this.getName() + ' 81 ';
-    }
-
-    /**
-     * function to check category is default, check category is not associated with listing-item
-     *
-     * @param data
-     * @returns {Promise<boolean>}
-     */
-    private async isDoable(categoryId: number): Promise<boolean> {
-        const itemCategory = await this.itemCategoryService.findOne(categoryId);
-        // check category has key
-        if (itemCategory.Key != null) {
-            // not be update/delete its a default category
-            throw new MessageException(`Default category can't be update or delete. id= ${categoryId}`);
-        }
-        // check listingItem realted with category id
-        const listingItem = await this.listingItemService.findByCategory(categoryId);
-        if (listingItem.toJSON().length > 0) {
-            // not be update/delete its a related with listing-items
-            throw new MessageException(`Category related with listing-items can't be update or delete. id= ${categoryId}`);
-        }
-        return true;
     }
 }

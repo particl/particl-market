@@ -122,6 +122,7 @@ export const Targets = {
         FavoriteItemService: 'FavoriteItemService',
         FlaggedItemService: 'FlaggedItemService',
         ItemCategoryService: 'ItemCategoryService',
+        CategoryIsDoableService: 'CategoryIsDoableService',
         ItemImageDataContentService: 'ItemImageDataContentService',
         ItemImageDataService: 'ItemImageDataService',
         ItemImageHttpUploadService: 'ItemImageHttpUploadService',
