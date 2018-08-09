@@ -240,6 +240,7 @@ describe('ListingItemFactory', () => {
     const expectListingItemFromMessage = (result: ListingItemCreateRequest, message: ListingItemMessage) => {
 
         expect(result.hash).toBe(message.hash);
+        expect(result.postedAt).toBeDefined();
 
         // fields from message that we dont want to see
         expect(result).not.toHaveProperty('information');

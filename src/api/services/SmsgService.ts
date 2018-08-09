@@ -79,8 +79,8 @@ export class SmsgService {
      * @returns {Promise<any>}
      */
     public async smsgSend(profileAddress: string, marketAddress: string, message: MarketplaceMessage,
-                          paidMessage: boolean = true,
-                          daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)): Promise<SmsgSendResponse> {
+                          paidMessage: boolean = true, daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)
+                          ): Promise<SmsgSendResponse> {
 
         this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
         const params: any[] = [profileAddress, marketAddress, JSON.stringify(message), paidMessage, daysRetention];

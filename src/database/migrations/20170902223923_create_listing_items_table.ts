@@ -22,6 +22,12 @@ exports.up = (db: Knex): Promise<any> => {
             table.foreign('listing_item_template_id').references('id')
                 .inTable('listing_item_templates').onDelete('cascade');
 
+
+            table.integer('expiry_time').unsigned();
+
+            table.timestamp('posted_at');
+            table.timestamp('expired_at').defaultTo(new Date(Date.now() + 24 * 60 * 60 * 1000));
+
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
         })
