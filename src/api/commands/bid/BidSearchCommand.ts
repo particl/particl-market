@@ -53,8 +53,18 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Bid>> {
 
-        const page = data.params[0] ? data.params[0] : 0;
-        const pageLimit = data.params[1] ? data.params[1] : this.DEFAULT_PAGE_LIMIT;
+        // todo: function to get and validate each paramater: const page = this.getPage(data.params)
+        data.params[0] = data.params[0] ? data.params[0] : 0;
+        if (typeof data.params[0] !== 'number') {
+            throw new MessageException('parameter page should be a number.');
+        }
+        const page = data.params[0];
+
+        data.params[1] = data.params[1] ? data.params[1] : this.DEFAULT_PAGE_LIMIT;
+        if (typeof data.params[0] !== 'number') {
+            throw new MessageException('parameter pageLimit should be a number.');
+        }
+        const pageLimit = data.params[1];
 
         let ordering: SearchOrder;
         if (data.params[2] === 'DESC') {
@@ -158,8 +168,9 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
             case 'COMPLETE':
                 return OrderStatus.COMPLETE;
             case '*':
-            default:
                 return undefined;
+            default:
+                throw new MessageException('Invalid status.');
         }
     }
 }
