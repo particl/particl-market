@@ -52,7 +52,12 @@ export class VoteGetCommand extends BaseCommand implements RpcCommandInterface<V
         const proposalHash = data.params.shift();
         const proposal = await this.proposalService.findOneByHash(proposalHash);
 
-        return await this.voteService.findOneByVoterAndProposal(profile.address, proposal.id);
+        const vote = await this.voteService.findOneByVoterAndProposal(profile.address, proposal.id)
+            .catch(reason => {
+                throw new MessageException('User has not voted for that Proposal yet.');
+            });
+
+        return vote;
     }
 
     public help(): string {

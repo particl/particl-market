@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -75,8 +79,8 @@ export class SmsgService {
      * @returns {Promise<any>}
      */
     public async smsgSend(profileAddress: string, marketAddress: string, message: MarketplaceMessage,
-                          paidMessage: boolean = true,
-                          daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)): Promise<SmsgSendResponse> {
+                          paidMessage: boolean = true, daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)
+                          ): Promise<SmsgSendResponse> {
 
         this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
         const params: any[] = [profileAddress, marketAddress, JSON.stringify(message), paidMessage, daysRetention];

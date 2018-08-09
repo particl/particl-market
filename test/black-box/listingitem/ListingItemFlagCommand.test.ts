@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
@@ -33,7 +37,7 @@ describe('ListingItemFlagCommand', () => {
             CreatableModel.LISTINGITEM,     // what to generate
             2,                      // how many to generate
             true,                   // return model
-        generateListingItemParams           // what kind of data to generate
+            generateListingItemParams    // what kind of data to generate
         ) as ListingItem[];
         createdListingItem = listingItems[0];
         createdNewListingItem = listingItems[1];
