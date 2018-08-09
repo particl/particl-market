@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
 import { Logger as LoggerType } from '../../core/Logger';
