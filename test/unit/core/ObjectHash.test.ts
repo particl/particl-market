@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as listingItemTemplateBasic1 from '../../testdata/model/listingItemTemplateBasic1.json';
 import * as listingItemTemplateBasic2 from '../../testdata/model/listingItemTemplateBasic2.json';
 import * as listingItemTemplateBasic3 from '../../testdata/model/listingItemTemplateBasic3.json';

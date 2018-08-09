@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { LogMock } from '../../lib/LogMock';
 import * as resources from 'resources';
 
@@ -236,6 +240,7 @@ describe('ListingItemFactory', () => {
     const expectListingItemFromMessage = (result: ListingItemCreateRequest, message: ListingItemMessage) => {
 
         expect(result.hash).toBe(message.hash);
+        expect(result.postedAt).toBeDefined();
 
         // fields from message that we dont want to see
         expect(result).not.toHaveProperty('information');

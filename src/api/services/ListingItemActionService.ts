@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -106,7 +110,6 @@ export class ListingItemActionService {
         const itemCategory = itemCategoryModel.toJSON();
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
-
         // create and post a proposal for the item to be voted off the marketplace
         const daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
         const proposalMessage = await this.createProposalMessage(itemTemplate, daysRetention, itemTemplate.Profile);
@@ -114,6 +117,7 @@ export class ListingItemActionService {
         const response: SmsgSendResponse = await this.postProposal(proposalMessage, daysRetention, itemTemplate.Profile, market);
 
         // create and post the itemmessage
+        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, data.daysRetention);
         const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, proposalMessage.hash);
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
@@ -121,7 +125,9 @@ export class ListingItemActionService {
         } as MarketplaceMessage;
 
         this.log.debug('post(), marketPlaceMessage: ', marketPlaceMessage);
+
         return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, daysRetention);
+        return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, data.daysRetention);
     }
 
     /**
@@ -201,7 +207,11 @@ export class ListingItemActionService {
 
                 // create ListingItem
                 const seller = event.smsgMessage.from;
+                const postedAt = new Date(event.smsgMessage.sent);
                 const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory);
+                
+                // todo: posted at is now part of the message, check that its taken from there
+                // const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory, postedAt);
                 // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
                 let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);

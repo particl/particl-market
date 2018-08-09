@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
@@ -67,6 +71,11 @@ export class ListingItemService {
     public async findAll(): Promise<Bookshelf.Collection<ListingItem>> {
         return await this.listingItemRepo.findAll();
     }
+
+    public async findExpired(): Promise<Bookshelf.Collection<ListingItem>> {
+        return await this.listingItemRepo.findExpired();
+    }
+
 
     // TODO: we have search, remove this
     public async findByCategory(categoryId: number): Promise<Bookshelf.Collection<ListingItem>> {
@@ -389,6 +398,20 @@ export class ListingItemService {
     }
 
     /**
+     * delete expired listing items
+     */
+    public async deleteExpiredListingItems(): Promise<void> {
+       const listingItemsModel = await this.findExpired();
+       const listingItems = listingItemsModel.toJSON();
+       for (const listingItem of listingItems) {
+           if (listingItem.expiredAt <= Date()) {
+               await this.destroy(listingItem.id);
+           }
+       }
+    }
+
+
+    /**
      * check if ListingItem already Flagged
      *
      * @param {ListingItem} listingItem
@@ -425,5 +448,4 @@ export class ListingItemService {
         });
         return highestOrder ? highestOrder['order'] : 0;
     }
-
 }

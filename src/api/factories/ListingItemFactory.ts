@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -29,6 +33,8 @@ export class ListingItemFactory {
 
     public log: LoggerType;
 
+    private dayMilliseconds = 24 * 60 * 60 * 1000;
+
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory
@@ -39,11 +45,13 @@ export class ListingItemFactory {
     /**
      * Creates a ListingItemMessage from given data
      *
-     * @param {"resources".ListingItemTemplate} listingItemTemplate
-     * @param {string} proposalHash
+     * @param {'resources'.ListingItemTemplate} listingItemTemplate
+     * @param {'resources'.ItemCategory} listingItemCategory
+     * @param {number} expiryTime
      * @returns {Promise<ListingItemMessage>}
      */
-    public async getMessage(listingItemTemplate: resources.ListingItemTemplate, proposalHash: string = ''): Promise<ListingItemMessage> {
+    public async getMessage(listingItemTemplate: resources.ListingItemTemplate,
+                            expiryTime: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)): Promise<ListingItemMessage> {
 
         const information = await this.getMessageInformation(listingItemTemplate.ItemInformation);
         const payment = await this.getMessagePayment(listingItemTemplate.PaymentInformation);
@@ -57,6 +65,7 @@ export class ListingItemFactory {
             messaging,
             objects,
             proposalHash    // todo: this does not exist in OMP
+            expiryTime
         } as ListingItemMessage;
 
         return message;
@@ -67,21 +76,27 @@ export class ListingItemFactory {
      * @param {ListingItemMessage} listingItemMessage
      * @param {number} marketId
      * @param {string} seller
+     * @param {Date} postedAt
      * @param {"resources".ItemCategory} rootCategory
      * @returns {Promise<ListingItemCreateRequest>}
      */
     public async getModel(listingItemMessage: ListingItemMessage, marketId: number, seller: string,
-                          rootCategory: resources.ItemCategory): Promise<ListingItemCreateRequest> {
+                          rootCategory: resources.ItemCategory, postedAt: Date = new Date()): Promise<ListingItemCreateRequest> {
 
         const itemInformation = await this.getModelItemInformation(listingItemMessage.information, rootCategory);
         const paymentInformation = await this.getModelPaymentInformation(listingItemMessage.payment);
         const messagingInformation = await this.getModelMessagingInformation(listingItemMessage.messaging);
         const listingItemObjects = await this.getModelListingItemObjects(listingItemMessage.objects);
-
+        // create expiredAt from postedAt and increate it by expiryTime days * dayMilliseconds
+        const expiredAt = new Date(postedAt.getTime());
+        expiredAt.setDate(expiredAt.getTime() + listingItemMessage.expiryTime * this.dayMilliseconds);
         return {
-            seller,
             hash: listingItemMessage.hash,
+            seller,
             market_id: marketId,
+            expiryTime: listingItemMessage.expiryTime,
+            postedAt,
+            expiredAt,
             itemInformation,
             paymentInformation,
             messagingInformation,

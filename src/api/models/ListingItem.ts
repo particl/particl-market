@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { ItemInformation } from './ItemInformation';
@@ -81,6 +85,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             .query(qb => {
                 qb.innerJoin('item_informations', 'listing_items.id', 'item_informations.listing_item_id');
                 qb.where('item_informations.item_category_id', '=', categoryId);
+                // ignore expired items
+                qb.andWhere('expired_at', '>', Date.now());
                 qb.andWhere('item_informations.item_category_id', '>', 0);
             })
             .orderBy('item_informations.title', 'ASC');
@@ -94,9 +100,20 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         }
     }
 
+    public static async fetchExpired(): Promise<Collection<ListingItem>> {
+        const listingCollection = ListingItem.forge<Model<ListingItem>>()
+            .query(qb => {
+                qb.where('expired_at', '<=', Date.now());
+                qb.groupBy('listing_items.id');
+            });
+        return await listingCollection.fetchAll();
+    }
+
     public static async searchBy(options: ListingItemSearchParams, withRelated: boolean = false): Promise<Collection<ListingItem>> {
         const listingCollection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {
+                // ignore expired items
+                qb.where('expired_at', '>', Date.now());
                 // search by itemHash
                 if (options.itemHash && typeof options.itemHash === 'string' && options.itemHash !== '*') {
                     qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
@@ -112,7 +129,6 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     }
                     qb.where('bids.bidder', '=', options.buyer);
                 }
-
                 // search by seller
                 if (options.seller && typeof options.seller === 'string' && options.seller !== '*') {
                     qb.where('listing_items.seller', '=', options.seller);
@@ -190,6 +206,15 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public get Seller(): string { return this.get('seller'); }
     public set Seller(value: string) { this.set('seller', value); }
+
+    public get ExpiryTime(): number { return this.get('expiryTime'); }
+    public set ExpiryTime(value: number) { this.set('expiryTime', value); }
+
+    public get PostedAt(): Date { return this.get('postedAt'); }
+    public set PostedAt(value: Date) { this.set('postedAt', value); }
+
+    public get ExpiredAt(): Date { return this.get('expiredAt'); }
+    public set ExpiredAt(value: Date) { this.set('expiredAt', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

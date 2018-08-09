@@ -1,9 +1,14 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import * as _ from 'lodash';
 import { ListingItem } from './ListingItem';
 import { BidData } from './BidData';
 import { BidSearchParams } from '../requests/BidSearchParams';
+import { BidMessageType } from '../enums/BidMessageType';
 import { SearchOrder } from '../enums/SearchOrder';
 import { Address } from './Address';
 import { OrderItem } from './OrderItem';
@@ -47,6 +52,24 @@ export class Bid extends Bookshelf.Model<Bid> {
                     qb.where('bids.action', '=', options.action);
                 }
 
+                if (options.action === BidMessageType.MPA_ACCEPT && options.orderStatus && typeof options.orderStatus === 'string') {
+                    qb.innerJoin('order_items', 'order_items.bid_id', 'bids.id');
+                    qb.where('order_items.status', '=', options.orderStatus);
+                }
+
+                if (options.title || options.shortDescription || options.longDescription) {
+                    qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'bids.listing_item_id');
+                    if (options.title) {
+                        qb.where('item_informations.title', '=', options.title);
+                    }
+                    if (options.shortDescription) {
+                        qb.where('item_informations.short_description', '=', options.shortDescription);
+                    }
+                    if (options.longDescription) {
+                        qb.where('item_informations.long_description', '=', options.longDescription);
+                    }
+                }
+
                 if (!_.isEmpty(options.bidders)) {
                     qb.whereIn('bids.bidder', options.bidders);
 /*
@@ -61,7 +84,12 @@ export class Bid extends Bookshelf.Model<Bid> {
                     }
 */
                 }
-            }).orderBy('bids.updated_at', options.ordering);
+            })
+            .orderBy('bids.updated_at', options.ordering)
+            .query({
+                limit: options.pageLimit,
+                offset: (options.page - 1) * options.pageLimit
+            });
 
         if (withRelated) {
             return await bidCollection.fetchAll({

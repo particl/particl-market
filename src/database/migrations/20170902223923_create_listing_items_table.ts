@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Knex from 'knex';
 
 
@@ -21,6 +25,11 @@ exports.up = (db: Knex): Promise<any> => {
             table.integer('proposal_id').unsigned().nullable();
             table.foreign('proposal_id').references('id')
                 .inTable('proposals');
+
+            table.integer('expiry_time').unsigned();
+
+            table.timestamp('posted_at');
+            table.timestamp('expired_at').defaultTo(new Date(Date.now() + 24 * 60 * 60 * 1000));
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());
