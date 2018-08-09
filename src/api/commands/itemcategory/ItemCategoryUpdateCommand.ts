@@ -16,6 +16,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { CategoryIsDoableService } from '../../services/CategoryIsDoableService';
 
 export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -26,7 +27,8 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.CategoryIsDoableService) private categoryIsDoableService: CategoryIsDoableService
     ) {
         super(Commands.CATEGORY_UPDATE);
         this.log = new Logger(__filename);
@@ -46,7 +48,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
-        const isUpdateable = await this.itemCategoryService.isDoable(data.params[0]);
+        const isUpdateable = await this.categoryIsDoableService.isDoable(data.params[0]);
         if (isUpdateable) {
             const parentItemCategory = data.params[3] || 'cat_ROOT'; // if null then default_category will be parent
             const parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);

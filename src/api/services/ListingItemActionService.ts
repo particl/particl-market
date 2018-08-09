@@ -209,7 +209,7 @@ export class ListingItemActionService {
                 const seller = event.smsgMessage.from;
                 const postedAt = new Date(event.smsgMessage.sent);
                 const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory);
-                
+
                 // todo: posted at is now part of the message, check that its taken from there
                 // const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory, postedAt);
                 // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));

@@ -9,7 +9,7 @@ import { ListingItemService } from '../../api/services/ListingItemService';
 import { ItemCategoryService } from '../../api/services/ItemCategoryService';
 import { MessageException } from '../../api/exceptions/MessageException';
 
-export class CateogryIsDoableService {
+export class CategoryIsDoableService {
 
     public log: LoggerType;
 
