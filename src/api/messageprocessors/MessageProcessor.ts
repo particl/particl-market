@@ -93,9 +93,9 @@ export class MessageProcessor implements MessageProcessorInterface {
 
                 // in case of ActionMessage, which is either BidMessage or EscrowMessage
                 } else if (parsed.mpaction) {
-                    const messageForLogging = JSON.parse(JSON.stringify(parsed.mpaction));
+                    // const messageForLogging = JSON.parse(JSON.stringify(parsed.mpaction));
                     this.log.debug('==] poll(), new ActionMessage [===============================================');
-                    this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
+                    // this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
                     this.log.debug('from:', message.from);
                     this.log.debug('to:', message.to);
                     this.log.debug('sent:', message.sent);

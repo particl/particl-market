@@ -200,7 +200,7 @@ export class BidActionService {
             BidDataValue.BUYER_RELEASE_ADDRESS, buyerEscrowReleaseAddress
         ]).concat(additionalParams);
 
-        this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
+        // this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
 
         return bidDatas;
     }
@@ -299,7 +299,7 @@ export class BidActionService {
             const orderModel = await this.orderService.create(orderCreateRequest);
             const order = orderModel.toJSON();
 
-            // this.log.debug('accept(), created Order: ', order);
+            this.log.debug('accept(), created Order: ', JSON.stringify(order, null, 2));
             // this.log.debug('accept(), created bidMessage.objects: ', bidMessage.objects);
 
             // put the order.hash in BidMessage and also save it
@@ -484,7 +484,27 @@ export class BidActionService {
             this.log.error('Transaction should not be complete at this stage, will not send insecure message');
             throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
         }
+/*
 
+
+app2_1       | 2018-08-10T14:59:37.387Z - debug: [api/services/BidActionService] signed:  0=[{
+app2_1       |   "hex": "a0000000000003174cea277cd292f72b4905d6c27b96b154a29486ec54c5b813355a54a9d23c920100000000ffffffff048074110f8fca26d65d765a6b5bb4ba77854d787e0e6ed76371858b0c4b88fc0100000000ffffffff570b5443c930818c294b1b980d962bcfb13c8e5fd698e67d50de0da1611dc7100200000000ffffffff0301c57f940f0000000017a914b719d75539346d6fef3159628a4a8552e625bb118701542efa490a0000001976a914e9460bc0106406c07955d97b2daaa490ff884b1b88ac013ac24d44170000001976a9146e379824ef2051a88f024b4d427a41d22ca5d69088ac0002473044022002e7f9a9e4e33284413602f7026b29241206c8af0b6ca2fa8af17b6686834c29022011eb65cb5045a0545d5e5fe371cf9c2cbd901e990ff97100641629d10757732e012103585674f67cc9b47d4ced0aef20e1dd3aec22f2389c5324613e619f8e3c7ba94e024830450221008252fdee38a172979b590c501143f72ea1e7fa3c68b7f152793996a6d1d37c3602205588dcfa4e884624cdc74f481e52debaacb5ad66adf3f8a81a649f3e2d31ed62012102669491ef021dd64ea19e49dbb5c8587b491567a45351f64a5e73ed1a35d02710",
+app2_1       |   "complete": false,
+app2_1       |   "errors": [
+app2_1       |     {
+app2_1       |       "txid": "923cd2a9545a3513b8c554ec8694a254b1967bc2d605492bf792d27c27ea4c17",
+app2_1       |       "vout": 1,
+app2_1       |       "witness": [],
+app2_1       |       "scriptSig": "",
+app2_1       |       "sequence": 4294967295,
+app2_1       |       "error": "Input not found or already spent"
+app2_1       |     }
+app2_1       |   ]
+app2_1       | }]
+
+
+
+ */
         // - Most likely the transaction building and signing will happen in a different command that takes place before this..
         // End - Ryno Hacks
 

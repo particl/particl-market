@@ -419,7 +419,7 @@ export class ListingItemActionService {
     private configureEventListeners(): void {
         this.eventEmitter.on(Events.ListingItemReceivedEvent, async (event) => {
             // this.log.info('Received event, msgid:', event.smsgMessage.msgid);
-            this.log.info('Received event:', event);
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processListingItemReceivedEvent(event);
         });
 
