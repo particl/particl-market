@@ -65,7 +65,6 @@ export class ItemInformationService {
     @validate()
     public async create( @request(ItemInformationCreateRequest) data: ItemInformationCreateRequest): Promise<ItemInformation> {
         const startTime = new Date().getTime();
-        this.log.debug('--------------------------------------------------');
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -112,7 +111,6 @@ export class ItemInformationService {
         // finally find and return the created itemInformation
         const result = await this.findOne(itemInformation.Id);
         this.log.debug('itemInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
-        this.log.debug('--------------------------------------------------');
 
         return result;
     }
@@ -211,13 +209,10 @@ export class ItemInformationService {
 
         let result;
         if (itemCategory.key) {
-            this.log.debug('findOneByKey');
             result = await this.itemCategoryService.findOneByKey(itemCategory.key);
         } else if (itemCategory.id) {
-            this.log.debug('findOne');
             result = await this.itemCategoryService.findOne(itemCategory.id);
         } else {
-            this.log.debug('create');
             result = await this.itemCategoryService.create(itemCategory);
         }
 

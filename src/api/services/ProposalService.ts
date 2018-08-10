@@ -59,7 +59,7 @@ export class ProposalService {
         const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('create Proposal, body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create Proposal, body: ', JSON.stringify(body, null, 2));
 
         body.hash = ObjectHash.getHash(body, HashableObjectType.PROPOSAL_CREATEREQUEST);
 
@@ -83,7 +83,7 @@ export class ProposalService {
                     optionCreateRequest.optionId = optionId;
                     optionId++;
                 }
-                this.log.debug('optionCreateRequest: ', JSON.stringify(optionCreateRequest, null, 2));
+                // this.log.debug('optionCreateRequest: ', JSON.stringify(optionCreateRequest, null, 2));
                 await this.proposalOptionService.create(optionCreateRequest);
             }
         } else {

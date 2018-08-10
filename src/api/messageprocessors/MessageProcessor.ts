@@ -68,10 +68,10 @@ export class MessageProcessor implements MessageProcessorInterface {
                 // in case of ListingItemMessage
                 if (parsed.item) {
 
-                    const messageForLogging = JSON.parse(JSON.stringify(parsed.item));
-                    delete messageForLogging.information.images;
+                    // const messageForLogging = JSON.parse(JSON.stringify(parsed.item));
+                    // delete messageForLogging.information.images;
                     this.log.debug('==] poll(), new ListingItemMessage [============================================');
-                    this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
+                    // this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
                     this.log.debug('from:', message.from);
                     this.log.debug('to:', message.to);
                     this.log.debug('sent:', message.sent);

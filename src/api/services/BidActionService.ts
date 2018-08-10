@@ -690,7 +690,6 @@ export class BidActionService {
      * @returns {Promise<module:resources.Bid>}
      */
     public async processBidReceivedEvent(event: MarketplaceEvent): Promise<resources.Bid> {
-        this.log.debug('Received event:', event);
 
         // todo: fix
         event.smsgMessage.received = new Date().toISOString();
@@ -820,7 +819,7 @@ export class BidActionService {
      * @returns {Promise<module:resources.ActionMessage>}
      */
     public async processCancelBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-        this.log.info('Received event:', event);
+
         const bidMessage: any = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
         // find the ListingItem
@@ -871,7 +870,6 @@ export class BidActionService {
      */
     public async processRejectBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
 
-        this.log.info('Received event:', event);
         const message = event.marketplaceMessage;
         const bidMessage: any = message.mpaction as BidMessage;
         const bidder = event.smsgMessage.to;
@@ -997,15 +995,19 @@ export class BidActionService {
 
     private configureEventListeners(): void {
         this.eventEmitter.on(Events.BidReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processBidReceivedEvent(event);
         });
         this.eventEmitter.on(Events.AcceptBidReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processAcceptBidReceivedEvent(event);
         });
         this.eventEmitter.on(Events.CancelBidReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processCancelBidReceivedEvent(event);
         });
         this.eventEmitter.on(Events.RejectBidReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processRejectBidReceivedEvent(event);
         });
     }

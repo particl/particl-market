@@ -164,7 +164,7 @@ export class ListingItemService {
 
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_id = listingItem.id;
-            this.log.debug('listingItemService.create, msgInfo: ', JSON.stringify(msgInfo, null, 2));
+            // this.log.debug('listingItemService.create, msgInfo: ', JSON.stringify(msgInfo, null, 2));
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest)
                 .catch(reason => {
                     this.log.error('Error:', JSON.stringify(reason, null, 2));

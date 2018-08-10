@@ -180,8 +180,6 @@ export class ListingItemActionService {
     public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<resources.ListingItem> {
         // todo: this returns ListingItem and processed BidMessages return ActionMessage's
 
-        this.log.info('Received event, msgid:', event.smsgMessage.msgid);
-
         const message = event.marketplaceMessage;
 
         if (message.market && message.item) {
@@ -420,6 +418,8 @@ export class ListingItemActionService {
 
     private configureEventListeners(): void {
         this.eventEmitter.on(Events.ListingItemReceivedEvent, async (event) => {
+            // this.log.info('Received event, msgid:', event.smsgMessage.msgid);
+            this.log.info('Received event:', event);
             await this.processListingItemReceivedEvent(event);
         });
 

@@ -113,7 +113,6 @@ export class ListingItemFactory {
     // ---------------
     private async getModelListingItemObjects(objects: any[]): Promise<ListingItemObjectCreateRequest[]> {
         const objectArray: ListingItemObjectCreateRequest[] = [];
-        this.log.debug('objectArray: ', JSON.stringify(objectArray, null, 2));
         for (const object of objects) {
             let objectData;
             if ('TABLE' === object.type) {

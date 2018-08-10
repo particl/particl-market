@@ -44,7 +44,7 @@ export class SocketIoServer {
 
             // listen to messages for cli
             this.eventEmitter.on('cli', (event) => {
-                this.log.debug('message for cli', JSON.stringify(event, null, 2));
+                // this.log.debug('message for cli', JSON.stringify(event, null, 2));
                 client.emit('cli', event);
             });
 

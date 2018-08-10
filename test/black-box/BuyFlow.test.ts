@@ -49,6 +49,8 @@ describe('Happy Buy Flow', () => {
     const escrowLockCommand = Commands.ESCROW_LOCK.commandName;
     const escrowReleaseCommand = Commands.ESCROW_RELEASE.commandName;
 
+    const daemonCommand = Commands.DAEMON_ROOT.commandName;
+
     let sellerProfile: resources.Profile;
     let buyerProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -66,6 +68,7 @@ describe('Happy Buy Flow', () => {
     const PAGE = 0;
     const PAGE_LIMIT = 10;
     const ORDERING = SearchOrder.ASC;
+    const DAYS_RETENTION = 2;
 
     beforeAll(async () => {
 
@@ -145,6 +148,23 @@ describe('Happy Buy Flow', () => {
 
     });
 
+    afterAll(async () => {
+        // incase something went wrong.. unlock the locked outputs
+        let response: any = await testUtilSellerNode.rpc(daemonCommand, [
+            'lockunspent',
+            true
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        response = await testUtilBuyerNode.rpc(daemonCommand, [
+            'lockunspent',
+            true
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+    });
+
     // test('Should post a ListingItemTemplate (ListingItemMessage, MP_ITEM_ADD) to the default marketplace from seller node', async () => {
     test('SELLER POSTS MP_ITEM_ADD to the default marketplace', async () => {
 
@@ -157,7 +177,7 @@ describe('Happy Buy Flow', () => {
         const templatePostRes: any = await testUtilSellerNode.rpc(templateCommand, [
             templatePostCommand,
             listingItemTemplatesSellerNode[0].id,
-
+            DAYS_RETENTION,
             defaultMarket.id
         ]);
         templatePostRes.expectJson();
@@ -291,7 +311,14 @@ describe('Happy Buy Flow', () => {
             buyerProfile.address
         ];
 
-        const bidSearchRes: any = await testUtilBuyerNode.rpc(bidCommand, bidSearchCommandParams);
+        const bidSearchRes: any = await testUtilBuyerNode.rpcWaitFor(
+            bidCommand,
+            bidSearchCommandParams,
+            8 * 60,
+            200,
+            '[0].action',
+            BidMessageType.MPA_BID.toString()
+        );
         bidSearchRes.expectJson();
         bidSearchRes.expectStatusCode(200);
 
@@ -839,6 +866,31 @@ describe('Happy Buy Flow', () => {
         expect(result[0].seller).toBe(sellerProfile.address);
 
         orderOnBuyerNode = result[0];
+
+    }, 600000); // timeout to 600s
+
+
+    test('Should have no locked outputs left', async () => {
+
+        // incase something went wrong.. unlock the locked outputs
+        let response: any = await testUtilSellerNode.rpc(daemonCommand, [
+            'listlockunspent',
+            true
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+        let result = response.getBody()['result'];
+        expect(result.length).toBe(0);
+
+        response = await testUtilBuyerNode.rpc(daemonCommand, [
+            'listlockunspent',
+            true
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+        result = response.getBody()['result'];
+        expect(result.length).toBe(0);
+
 
     }, 600000); // timeout to 600s
 

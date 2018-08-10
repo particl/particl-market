@@ -80,8 +80,6 @@ export class ProposalActionService {
      */
     public async processProposalReceivedEvent(event: MarketplaceEvent): Promise<resources.Proposal> {
 
-        this.log.debug('Received event:', event);
-
         const message = event.marketplaceMessage;
         if (!message.mpaction) {
             throw new MessageException('Missing mpaction.');
@@ -91,7 +89,7 @@ export class ProposalActionService {
 
         // create the proposal
         const proposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
-        this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest));
+        // this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest));
         let createdProposalModel: Proposal = await this.proposalService.create(proposalCreateRequest);
         const createdProposal: resources.Proposal = createdProposalModel.toJSON();
 
@@ -120,7 +118,7 @@ export class ProposalActionService {
         } as ProposalResultCreateRequest);
         const proposalResult = proposalResultModel.toJSON();
 
-        this.log.debug('proposalResult: ', JSON.stringify(proposalResult));
+        // this.log.debug('proposalResult: ', JSON.stringify(proposalResult));
 
         const proposalOptions: any = proposal.ProposalOptions;
         for (const proposalOption of proposalOptions) {
@@ -139,6 +137,7 @@ export class ProposalActionService {
 
     private configureEventListeners(): void {
         this.eventEmitter.on(Events.ProposalReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processProposalReceivedEvent(event);
         });
     }

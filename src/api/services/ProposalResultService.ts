@@ -50,7 +50,7 @@ export class ProposalResultService {
     public async create( @request(ProposalResultCreateRequest) data: ProposalResultCreateRequest): Promise<ProposalResult> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('create ProposalResult, body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create ProposalResult, body: ', JSON.stringify(body, null, 2));
 
         // TODO: extract and remove related models from request
         // const proposalResultRelated = body.related;

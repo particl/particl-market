@@ -536,15 +536,19 @@ export class EscrowActionService {
 
     private configureEventListeners(): void {
         this.eventEmitter.on(Events.LockEscrowReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processLockEscrowReceivedEvent(event);
         });
         this.eventEmitter.on(Events.ReleaseEscrowReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processReleaseEscrowReceivedEvent(event);
         });
         this.eventEmitter.on(Events.RequestRefundEscrowReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processRequestRefundEscrowReceivedEvent(event);
         });
         this.eventEmitter.on(Events.RefundEscrowReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processRefundEscrowReceivedEvent(event);
         });
     }

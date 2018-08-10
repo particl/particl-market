@@ -82,8 +82,6 @@ export class VoteActionService {
      */
     public async processVoteReceivedEvent(event: MarketplaceEvent): Promise<resources.Vote> {
 
-        this.log.debug('Received event:', event);
-
         event.smsgMessage.received = new Date().toISOString();
 
         const message = event.marketplaceMessage;
@@ -105,11 +103,11 @@ export class VoteActionService {
         }
 
         const currentBlock: number = await this.coreRpcService.getBlockCount();
-        this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
+        // this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
 
         if (voteMessage && proposal.blockEnd >= currentBlock) {
             const createdVote = await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
-            this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
+            // this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
             const proposalResult: resources.ProposalResult = await this.updateProposalResult(proposal.ProposalResult.id);
 
@@ -151,7 +149,7 @@ export class VoteActionService {
         // const proposalModel = await this.proposalService.findOne(proposalId);
         // const proposal = proposalModel.toJSON();
 
-        this.log.debug('updateProposalResult(), proposalResultId: ', proposalResultId);
+        // this.log.debug('updateProposalResult(), proposalResultId: ', proposalResultId);
 
         let proposalResultModel = await this.proposalResultService.findOne(proposalResultId);
         let proposalResult = proposalResultModel.toJSON();
@@ -168,8 +166,8 @@ export class VoteActionService {
             const proposalOptionModel = await this.proposalOptionService.findOne(proposalOptionResult.ProposalOption.id);
             const proposalOption = proposalOptionModel.toJSON();
 
-            this.log.debug('updateProposalResult(), proposalOption: ', JSON.stringify(proposalOption, null, 2));
-            this.log.debug('updateProposalResult(), proposalOption.Votes.length: ', proposalOption.Votes.length);
+            // this.log.debug('updateProposalResult(), proposalOption: ', JSON.stringify(proposalOption, null, 2));
+            // this.log.debug('updateProposalResult(), proposalOption.Votes.length: ', proposalOption.Votes.length);
 
             // update
             const updatedProposalOptionResultModel = await this.proposalOptionResultService.update(proposalOptionResult.id, {
@@ -233,10 +231,10 @@ export class VoteActionService {
 
         let voteModel;
         if (create) {
-            this.log.debug('Creating vote request = ' + JSON.stringify(voteRequest, null, 2));
+            // this.log.debug('Creating vote request = ' + JSON.stringify(voteRequest, null, 2));
             voteModel = await this.voteService.create(voteRequest as VoteCreateRequest);
         } else {
-            this.log.debug(`Updating vote with id = ${lastVote.id}, vote request = ` + JSON.stringify(voteRequest, null, 2));
+            // this.log.debug(`Updating vote with id = ${lastVote.id}, vote request = ` + JSON.stringify(voteRequest, null, 2));
             voteModel = await this.voteService.update(lastVote.id, voteRequest as VoteUpdateRequest);
             // this.voteService.destroy(lastVote.id);
             // voteModel = await this.voteService.create(voteRequest as VoteCreateRequest);
@@ -251,6 +249,7 @@ export class VoteActionService {
 
     private configureEventListeners(): void {
         this.eventEmitter.on(Events.VoteReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processVoteReceivedEvent(event);
         });
     }

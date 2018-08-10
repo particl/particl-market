@@ -27,6 +27,9 @@ describe('ListingItemFactory', () => {
     let createdListingItemMessage2: ListingItemMessage;
     let createdListingItemMessage3: ListingItemMessage;
 
+    const PROPOSAL_HASH = 'proposalHash';
+    const DAYS_RETENTION = 1;
+
     beforeEach(() => {
         //
     });
@@ -364,7 +367,7 @@ describe('ListingItemFactory', () => {
 
     test('Should create ListingItemMessage', async () => {
 
-        createdListingItemMessage = await listingItemFactory.getMessage(listingItemTemplateBasic1);
+        createdListingItemMessage = await listingItemFactory.getMessage(listingItemTemplateBasic1, PROPOSAL_HASH, DAYS_RETENTION);
 
         // console.log('message: ', JSON.stringify(createdListingItemMessage, null, 2));
 
@@ -379,7 +382,7 @@ describe('ListingItemFactory', () => {
         const sellerAddress = 'asdf';
 
         const listingItemCreateRequest: ListingItemCreateRequest =
-            await listingItemFactory.getModel(createdListingItemMessage, marketId, sellerAddress, listingItemCategoryRootWithRelated);
+            await listingItemFactory.getModel(createdListingItemMessage, marketId, sellerAddress, listingItemCategoryRootWithRelated, new Date());
 
         // console.log('message: ', JSON.stringify(listingItemCreateRequest, null, 2));
 
@@ -389,7 +392,7 @@ describe('ListingItemFactory', () => {
 
     test('Should create ListingItemMessage with listingItemTemplateBasic1 data', async () => {
 
-        createdListingItemMessage1 = await listingItemFactory.getMessage(listingItemTemplateBasic1);
+        createdListingItemMessage1 = await listingItemFactory.getMessage(listingItemTemplateBasic1, PROPOSAL_HASH, DAYS_RETENTION);
 
         // console.log('message: ', JSON.stringify(createdListingItemMessage1, null, 2));
 
@@ -404,7 +407,7 @@ describe('ListingItemFactory', () => {
         const sellerAddress = 'asdf';
 
         const listingItemCreateRequest: ListingItemCreateRequest =
-            await listingItemFactory.getModel(createdListingItemMessage1, marketId, sellerAddress, listingItemCategoryRootWithRelated);
+            await listingItemFactory.getModel(createdListingItemMessage1, marketId, sellerAddress, listingItemCategoryRootWithRelated, new Date());
 
         // console.log('message: ', JSON.stringify(listingItemCreateRequest, null, 2));
 
@@ -415,7 +418,7 @@ describe('ListingItemFactory', () => {
 
     test('Should create ListingItemMessage with listingItemTemplateBasic2 data', async () => {
 
-        createdListingItemMessage2 = await listingItemFactory.getMessage(listingItemTemplateBasic2);
+        createdListingItemMessage2 = await listingItemFactory.getMessage(listingItemTemplateBasic2, PROPOSAL_HASH, DAYS_RETENTION);
 
         // console.log('message: ', JSON.stringify(createdListingItemMessage2, null, 2));
 
@@ -430,7 +433,7 @@ describe('ListingItemFactory', () => {
         const sellerAddress = 'asdf';
 
         const listingItemCreateRequest: ListingItemCreateRequest =
-            await listingItemFactory.getModel(createdListingItemMessage2, marketId, sellerAddress, listingItemCategoryRootWithRelated);
+            await listingItemFactory.getModel(createdListingItemMessage2, marketId, sellerAddress, listingItemCategoryRootWithRelated, new Date());
 
         // console.log('message: ', JSON.stringify(listingItemCreateRequest, null, 2));
 
@@ -441,7 +444,7 @@ describe('ListingItemFactory', () => {
 
     test('Should create ListingItemMessage with listingItemTemplateBasic3 data', async () => {
 
-        createdListingItemMessage3 = await listingItemFactory.getMessage(listingItemTemplateBasic3);
+        createdListingItemMessage3 = await listingItemFactory.getMessage(listingItemTemplateBasic3, PROPOSAL_HASH, DAYS_RETENTION);
 
         // console.log('message: ', JSON.stringify(createdListingItemMessage3, null, 2));
 
@@ -456,7 +459,7 @@ describe('ListingItemFactory', () => {
         const sellerAddress = 'asdf';
 
         const listingItemCreateRequest: ListingItemCreateRequest =
-            await listingItemFactory.getModel(createdListingItemMessage3, marketId, sellerAddress, listingItemCategoryRootWithRelated);
+            await listingItemFactory.getModel(createdListingItemMessage3, marketId, sellerAddress, listingItemCategoryRootWithRelated, new Date());
 
         // console.log('message: ', JSON.stringify(listingItemCreateRequest, null, 2));
 
