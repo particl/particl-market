@@ -157,6 +157,7 @@ describe('Happy Buy Flow', () => {
         const templatePostRes: any = await testUtilSellerNode.rpc(templateCommand, [
             templatePostCommand,
             listingItemTemplatesSellerNode[0].id,
+
             defaultMarket.id
         ]);
         templatePostRes.expectJson();

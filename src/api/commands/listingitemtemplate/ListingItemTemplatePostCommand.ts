@@ -52,7 +52,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         const listingItemTemplateId: number = data.params[0];
         const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
-        const marketId = data.params[1] || undefined;
+        const marketId = data.params[2] || undefined;
 
         const postRequest = {
             listingItemTemplateId,
