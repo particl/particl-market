@@ -103,6 +103,8 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             } else {
                 order = SearchOrder.ASC;
             }
+        } else {
+            order = SearchOrder.ASC;
         }
 
         if (!_.isEmpty(params)) {
@@ -112,6 +114,8 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
             } else {
                 type = ProposalType.PUBLIC_VOTE;
             }
+        } else {
+            type = ProposalType.PUBLIC_VOTE;
         }
 
         const searchParams = {
