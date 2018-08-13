@@ -18,6 +18,9 @@ import { EscrowMessageType } from '../enums/EscrowMessageType';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 
+import { ProposalMessageType } from '../enums/ProposalMessageType';
+import { VoteMessageType } from '../enums/VoteMessageType';
+
 export class MessageProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
@@ -65,10 +68,10 @@ export class MessageProcessor implements MessageProcessorInterface {
                 // in case of ListingItemMessage
                 if (parsed.item) {
 
-                    const messageForLogging = JSON.parse(JSON.stringify(parsed.item));
-                    delete messageForLogging.information.images;
+                    // const messageForLogging = JSON.parse(JSON.stringify(parsed.item));
+                    // delete messageForLogging.information.images;
                     this.log.debug('==] poll(), new ListingItemMessage [============================================');
-                    this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
+                    // this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
                     this.log.debug('from:', message.from);
                     this.log.debug('to:', message.to);
                     this.log.debug('sent:', message.sent);
@@ -90,9 +93,9 @@ export class MessageProcessor implements MessageProcessorInterface {
 
                 // in case of ActionMessage, which is either BidMessage or EscrowMessage
                 } else if (parsed.mpaction) {
-                    const messageForLogging = JSON.parse(JSON.stringify(parsed.mpaction));
+                    // const messageForLogging = JSON.parse(JSON.stringify(parsed.mpaction));
                     this.log.debug('==] poll(), new ActionMessage [===============================================');
-                    this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
+                    // this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
                     this.log.debug('from:', message.from);
                     this.log.debug('to:', message.to);
                     this.log.debug('sent:', message.sent);
@@ -197,6 +200,10 @@ export class MessageProcessor implements MessageProcessorInterface {
                 return Events.RejectBidReceivedEvent;
             case BidMessageType.MPA_CANCEL:
                 return Events.CancelBidReceivedEvent;
+            case ProposalMessageType.MP_PROPOSAL_ADD:
+                return Events.ProposalReceivedEvent;
+            case VoteMessageType.MP_VOTE:
+                return Events.VoteReceivedEvent;
             default:
                 throw new InternalServerException('Unknown action message.');
         }

@@ -97,10 +97,10 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
         // profile that is doing the bidding
         const profileId = data.params.shift();
-        let profile: any;
+        let profile: resources.Profile;
         try {
-            profile = await this.profileService.findOne(profileId);
-            profile = profile.toJSON();
+            const profileModel = await this.profileService.findOne(profileId);
+            profile = profileModel.toJSON();
         } catch ( ex ) {
             this.log.error(ex);
             throw new MessageException('No correct profile id.');
@@ -162,7 +162,7 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     }
 
     public example(): string {
-        return '';
+        return 'bid send 6e8c05ef939b1e30267a9912ecfe7560d758739c126f61926b956c087a1fedfe 1 1 ';
         // return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb 1 [TODO] ';
     }
 

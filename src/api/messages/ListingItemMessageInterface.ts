@@ -12,4 +12,5 @@ export interface ListingItemMessageInterface {
     messaging: any;
     expiryTime: number;
     objects?: any;
+    proposalHash?: string;
 }

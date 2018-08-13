@@ -30,11 +30,12 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
 
     /**
      * data.params[]:
-     * [0]: <itemhash>|*
-     * [1]: (<status>|*)
-     * [2]: (<buyerAddress>|*)
-     * [3]: (<sellerAddress>|*)
-     * [4]: <ordering>
+     * [0]: itemhash
+     * [1]: status
+     * [2]: buyerAddress
+     * [3]: sellerAddress
+     * [4]: ordering
+     *
      * @param {RpcRequest} data
      * @returns {Promise<Bookshelf.Collection<Order>>}
      */

@@ -49,11 +49,16 @@ export const Targets = {
         PaymentInformation: 'PaymentInformation',
         PriceTicker: 'PriceTicker',
         Profile: 'Profile',
+        Proposal: 'Proposal',
+        ProposalOption: 'ProposalOption',
+        ProposalOptionResult: 'ProposalOptionResult',
+        ProposalResult: 'ProposalResult',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
         ShoppingCart: 'ShoppingCart',
         ShoppingCartItem: 'ShoppingCartItem',
-        User: 'User'
+        User: 'User',
+        Vote: 'Vote'
     },
     Repository:     {
         ActionMessageRepository: 'ActionMessageRepository',
@@ -91,11 +96,16 @@ export const Targets = {
         PaymentInformationRepository: 'PaymentInformationRepository',
         PriceTickerRepository: 'PriceTickerRepository',
         ProfileRepository: 'ProfileRepository',
+        ProposalOptionRepository: 'ProposalOptionRepository',
+        ProposalOptionResultRepository: 'ProposalOptionResultRepository',
+        ProposalRepository: 'ProposalRepository',
+        ProposalResultRepository: 'ProposalResultRepository',
         ShippingDestinationRepository: 'ShippingDestinationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
         ShoppingCartItemRepository: 'ShoppingCartItemRepository',
         ShoppingCartRepository: 'ShoppingCartRepository',
-        UserRepository: 'UserRepository'
+        UserRepository: 'UserRepository',
+        VoteRepository: 'VoteRepository'
     },
     Service:     {
         ActionMessageService: 'ActionMessageService',
@@ -116,6 +126,7 @@ export const Targets = {
         FavoriteItemService: 'FavoriteItemService',
         FlaggedItemService: 'FlaggedItemService',
         ItemCategoryService: 'ItemCategoryService',
+        CategoryIsDoableService: 'CategoryIsDoableService',
         ItemImageDataContentService: 'ItemImageDataContentService',
         ItemImageDataService: 'ItemImageDataService',
         ItemImageHttpUploadService: 'ItemImageHttpUploadService',
@@ -142,13 +153,20 @@ export const Targets = {
         PaymentInformationService: 'PaymentInformationService',
         PriceTickerService: 'PriceTickerService',
         ProfileService: 'ProfileService',
+        ProposalActionService: 'ProposalActionService',
+        ProposalOptionResultService: 'ProposalOptionResultService',
+        ProposalOptionService: 'ProposalOptionService',
+        ProposalResultService: 'ProposalResultService',
+        ProposalService: 'ProposalService',
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
         ShoppingCartItemService: 'ShoppingCartItemService',
         ShoppingCartService: 'ShoppingCartService',
         SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
-        UserService: 'UserService'
+        UserService: 'UserService',
+        VoteActionService: 'VoteActionService',
+        VoteService: 'VoteService'
     },
     Command:     {
         address: {
@@ -246,7 +264,6 @@ export const Targets = {
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
         },
-        LockedOutputCommand: 'LockedOutputCommand',
         market: {
             MarketAddCommand: 'MarketAddCommand',
             MarketListCommand: 'MarketListCommand',
@@ -279,6 +296,13 @@ export const Targets = {
             ProfileRootCommand: 'ProfileRootCommand',
             ProfileUpdateCommand: 'ProfileUpdateCommand'
         },
+        proposal: {
+            ProposalGetCommand: 'ProposalGetCommand',
+            ProposalListCommand: 'ProposalListCommand',
+            ProposalPostCommand: 'ProposalPostCommand',
+            ProposalResultCommand: 'ProposalResultCommand',
+            ProposalRootCommand: 'ProposalRootCommand'
+        },
         RpcCommandInterface: 'RpcCommandInterface',
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
@@ -300,6 +324,12 @@ export const Targets = {
             ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
+        },
+        vote: {
+            VoteGetCommand: 'VoteGetCommand',
+            VoteListCommand: 'VoteListCommand',
+            VotePostCommand: 'VotePostCommand',
+            VoteRootCommand: 'VoteRootCommand'
         }
     },
     Factory:     {
@@ -311,7 +341,9 @@ export const Targets = {
         ListingItemFactory: 'ListingItemFactory',
         MessagingInformationFactory: 'MessagingInformationFactory',
         OrderFactory: 'OrderFactory',
-        RpcCommandFactory: 'RpcCommandFactory'
+        ProposalFactory: 'ProposalFactory',
+        RpcCommandFactory: 'RpcCommandFactory',
+        VoteFactory: 'VoteFactory'
     },
     MessageProcessor:     {
         deprecated: {

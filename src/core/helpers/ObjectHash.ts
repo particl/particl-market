@@ -3,11 +3,15 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as crypto from 'crypto-js';
+import * as _ from 'lodash';
 import { HashableObjectType } from '../../api/enums/HashableObjectType';
 import { HashableListingItem } from './HashableListingItem';
 import { HashableItemImage } from './HashableItemImage';
 import { HashableOrder } from './HashableOrder';
+import { HashableProposal } from './HashableProposal';
+import { HashableProposalOption } from './HashableProposalOption';
 import { Logger as LoggerType } from '../Logger';
+import {MessageException} from '../../api/exceptions/MessageException';
 
 export class ObjectHash {
 
@@ -15,12 +19,14 @@ export class ObjectHash {
      *
      * @param objectToHash
      * @param {HashableObjectType} type
+     * @param {string[]} extraData
+     * @param {boolean} timestampedHash
      * @returns {string}
      */
     public static getHash(
         objectToHash: any,
         type: HashableObjectType,
-        timestampedHash: boolean = false
+        extraData: any[] = []
     ): string {
 
         const log: LoggerType = new LoggerType(__filename);
@@ -31,6 +37,7 @@ export class ObjectHash {
             case HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST:
             case HashableObjectType.LISTINGITEM:
             case HashableObjectType.LISTINGITEMTEMPLATE: {
+                const timestampedHash = extraData[0] || false;
                 hashableObject = new HashableListingItem(objectToHash, timestampedHash);
                 break;
             }
@@ -41,6 +48,15 @@ export class ObjectHash {
             }
             case HashableObjectType.ORDER_CREATEREQUEST: {
                 hashableObject = new HashableOrder(objectToHash);
+                break;
+            }
+            case HashableObjectType.PROPOSAL_MESSAGE:
+            case HashableObjectType.PROPOSAL_CREATEREQUEST: {
+                hashableObject = new HashableProposal(objectToHash);
+                break;
+            }
+            case HashableObjectType.PROPOSALOPTION_CREATEREQUEST: {
+                hashableObject = new HashableProposalOption(objectToHash);
                 break;
             }
             case HashableObjectType.DEFAULT: {

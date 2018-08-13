@@ -41,7 +41,7 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        const favoriteParams = await this.getSearchParams(data);
+        const favoriteParams = await this.favoriteItemService.getSearchParams(data);
         const favoriteItem = await this.favoriteItemService.search({profileId: favoriteParams[0], itemId: favoriteParams[1] } as FavoriteSearchParams);
         if (favoriteItem === null) {
             this.log.warn(`FavoriteItem with the item id=${favoriteParams[1]} was not found!`);
@@ -70,38 +70,5 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
 
     public example(): string {
         return 'favorite ' + this.getName() + ' 1 1 b90cee25-036b-4dca-8b17-0187ff325dbb ';
-    }
-
-    /**
-     * TODO: NOTE: This function may be duplicated between commands.
-     * data.params[]:
-     *  [0]: item_id or hash
-     *  [1]: profile_id or null
-     *
-     * when data.params[0] is number then findById, else findOneByHash
-     *
-     */
-    private async getSearchParams(data: any): Promise<any> {
-        let profileId = data.params[0];
-        let itemId = data.params[1] || 0;
-
-        // if item hash is in the params
-        if (itemId && typeof itemId === 'string') {
-            const listingItem = await this.listingItemService.findOneByHash(data.params[1]);
-            itemId = listingItem.id;
-        }
-        // find listing item by id
-        const item = await this.listingItemService.findOne(itemId);
-
-        // if profile id not found in the params then find default profile
-        if (!profileId || typeof profileId !== 'number') {
-            const profile = await this.profileService.findOneByName('DEFAULT');
-            profileId = profile.id;
-        }
-        if (item === null) {
-            this.log.warn(`ListingItem with the id=${itemId} was not found!`);
-            throw new NotFoundException(itemId);
-        }
-        return [profileId, item.id];
     }
 }

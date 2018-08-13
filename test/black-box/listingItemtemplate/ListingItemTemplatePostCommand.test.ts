@@ -3,6 +3,7 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 // tslint:disable:max-line-length
+import * from 'jest';
 import { rpc, api } from '../lib/api';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
@@ -12,7 +13,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/par
 import * as resources from 'resources';
 // tslint:enable:max-line-length
 
-describe('ListingItemSearchCommand', () => {
+describe('ListingItemPostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
@@ -20,12 +21,13 @@ describe('ListingItemSearchCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
+    const listingItemCommand = Commands.ITEM_ROOT.commandName;
+    const listingItemGetCommand = Commands.ITEM_GET.commandName;
 
     let defaultProfile;
     let defaultMarket;
 
-    let listingItemTemplates: resources.ListingItemTemplate[];
-    let postedTemplateId;
+    let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -38,7 +40,7 @@ describe('ListingItemSearchCommand', () => {
             true,   // generateEscrow
             true,   // generateItemPrice
             true,   // generateMessagingInformation
-            true    // generateListingItemObjects
+            false    // generateListingItemObjects
         ]).toParamsArray();
 
         // get default profile
@@ -49,18 +51,18 @@ describe('ListingItemSearchCommand', () => {
         defaultMarket = await testUtil.getDefaultMarket();
 
         // generate listingItemTemplate
-        listingItemTemplates = await testUtil.generateData(
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
-            2,                          // how many to generate
+            1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
-
+        listingItemTemplate = listingItemTemplates[0];
     });
 
     test('Should post a ListingItem in to the default marketplace', async () => {
-        postedTemplateId = listingItemTemplates[0].id;
-        const res: any = await rpc(templateCommand, [templatePostCommand, postedTemplateId, defaultMarket.id]);
+
+        const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplate.id, defaultMarket.id]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -70,15 +72,42 @@ describe('ListingItemSearchCommand', () => {
         expect(result.fee).toBeGreaterThan(0);
 
         log.debug('==[ POSTED ITEM ]=============================================================================');
-        log.debug('id: ' + listingItemTemplates[0].id + ', ' + listingItemTemplates[0].ItemInformation.title);
-        log.debug('desc: ' + listingItemTemplates[0].ItemInformation.shortDescription);
-        log.debug('category: ' + listingItemTemplates[0].ItemInformation.ItemCategory.id + ', '
-            + listingItemTemplates[0].ItemInformation.ItemCategory.name);
-        log.debug('hash: ' + listingItemTemplates[0].hash);
+        log.debug('id: ' + listingItemTemplate.id + ', ' + listingItemTemplate.ItemInformation.title);
+        log.debug('desc: ' + listingItemTemplate.ItemInformation.shortDescription);
+        log.debug('category: ' + listingItemTemplate.ItemInformation.ItemCategory.id + ', '
+            + listingItemTemplate.ItemInformation.ItemCategory.name);
+        log.debug('hash: ' + listingItemTemplate.hash);
         log.debug('==============================================================================================');
 
     });
 
+    test('Should receive MP_ITEM_ADD message, create a ListingItem and matched with the existing ListingItemTemplate', async () => {
 
+        // wait for some time to make sure it's received
+        await testUtil.waitFor(5);
+
+        const response: any = await testUtil.rpcWaitFor(
+            listingItemCommand,
+            [listingItemGetCommand, listingItemTemplate.hash],
+            8 * 60,
+            200,
+            'hash',
+            listingItemTemplate.hash
+        );
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        // make sure we got the expected result from seller node
+        // -> meaning item hash was matched with the existing template hash
+        const result: resources.ListingItem = response.getBody()['result'];
+
+        delete result.ItemInformation.ItemImages;
+        log.debug('listingItem: ', JSON.stringify(result, null, 2));
+
+        expect(result.hash).toBe(listingItemTemplate.hash);
+        expect(result.ListingItemTemplate.hash).toBe(listingItemTemplate.hash);
+        expect(result.Proposal.title).toBe(listingItemTemplate.hash);
+
+    }, 600000); // timeout to 600s
 
 });

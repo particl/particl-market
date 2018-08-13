@@ -98,6 +98,38 @@ export class FavoriteItemService {
     }
 
     /**
+     * data.params[]:
+     *  [0]: item_id or hash
+     *  [1]: profile_id or null
+     *
+     * when data.params[0] is number then findById, else findOneByHash
+     *
+     */
+    public async getSearchParams(data: any): Promise<any> {
+        let profileId = data.params[0];
+        let itemId = data.params[1] || 0;
+
+        // if item hash is in the params
+        if (itemId && typeof itemId === 'string') {
+            const listingItem = await this.listingItemService.findOneByHash(data.params[1]);
+            itemId = listingItem.id;
+        }
+        // find listing item by id
+        const item = await this.listingItemService.findOne(itemId);
+
+        // if profile id not found in the params then find default profile
+        if (!profileId || typeof profileId !== 'number') {
+            const profile = await this.profileService.findOneByName('DEFAULT');
+            profileId = profile.id;
+        }
+        if (item === null) {
+            this.log.warn(`ListingItem with the id=${itemId} was not found!`);
+            throw new NotFoundException(itemId);
+        }
+        return [profileId, item.id];
+    }
+
+    /**
      * search favorite item using given FavoriteSearchParams
      * when itemId is string then find by item hash
      * when profileId is string then find by profile name
@@ -105,7 +137,6 @@ export class FavoriteItemService {
      * @param options
      * @returns {Promise<FavoriteSearchParams> }
      */
-
     private async checkSearchByItemHashOrProfileName(options: FavoriteSearchParams): Promise<FavoriteSearchParams> {
 
         // if options.itemId is string then find by hash

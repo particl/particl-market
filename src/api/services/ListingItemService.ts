@@ -16,7 +16,6 @@ import { ListingItemUpdateRequest } from '../requests/ListingItemUpdateRequest';
 import { MessagingInformationService } from './MessagingInformationService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemInformationService } from './ItemInformationService';
-import { ItemCategoryService } from './ItemCategoryService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { MarketService } from './MarketService';
 import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
@@ -41,6 +40,7 @@ import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ActionMessageService } from './ActionMessageService';
 import * as resources from 'resources';
+import { ProposalService } from './ProposalService';
 
 export class ListingItemService {
 
@@ -50,7 +50,6 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) public itemInformationService: ItemInformationService,
-        @inject(Types.Service) @named(Targets.Service.ItemCategoryService) public itemCategoryService: ItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) public paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.MessagingInformationService) public messagingInformationService: MessagingInformationService,
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
@@ -58,6 +57,7 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
+        @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
         @inject(Types.Repository) @named(Targets.Repository.ListingItemRepository) public listingItemRepo: ListingItemRepository,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
@@ -164,7 +164,7 @@ export class ListingItemService {
 
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_id = listingItem.id;
-            this.log.debug('listingItemService.create, msgInfo: ', JSON.stringify(msgInfo, null, 2));
+            // this.log.debug('listingItemService.create, msgInfo: ', JSON.stringify(msgInfo, null, 2));
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest)
                 .catch(reason => {
                     this.log.error('Error:', JSON.stringify(reason, null, 2));
@@ -174,7 +174,10 @@ export class ListingItemService {
         // create listingItemObjects
         for (const object of listingItemObjects) {
             object.listing_item_id = listingItem.id;
-            await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
+            await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest)
+                .catch(reason => {
+                    this.log.error('Error:', JSON.stringify(reason, null, 2));
+                });
         }
 
         // this.log.debug('create actionMessages:', JSON.stringify(actionMessages, null, 2));
@@ -182,7 +185,10 @@ export class ListingItemService {
         // create actionMessages, only used to create testdata
         for (const actionMessage of actionMessages) {
             actionMessage.listing_item_id = listingItem.id;
-            await this.actionMessageService.create(actionMessage);
+            await this.actionMessageService.create(actionMessage)
+                .catch(reason => {
+                    this.log.error('Error:', JSON.stringify(reason, null, 2));
+                });
         }
 
         // finally find and return the created listingItem
@@ -333,6 +339,31 @@ export class ListingItemService {
 
         if (templateId) {
             listingItem.set('listingItemTemplateId', templateId);
+            await this.listingItemRepo.update(id, listingItem.toJSON());
+        }
+
+        listingItem = await this.findOne(id);
+
+        return listingItem;
+    }
+
+    public async updateProposalRelation(id: number, proposalHash: string): Promise<ListingItem> {
+
+        this.log.debug('updating ListingItem relation to Proposal.');
+
+        let listingItem = await this.findOne(id, false);
+        const proposalId = await this.proposalService.findOneByHash(proposalHash)
+            .then(value => {
+                const proposal = value.toJSON();
+                this.log.debug('found Proposal with matching hash, id:', proposal.id);
+                return proposal.id;
+            })
+            .catch(reason => {
+                this.log.debug('matching Proposal for ListingItem not found.');
+            });
+
+        if (proposalId) {
+            listingItem.set('proposalId', proposalId);
             await this.listingItemRepo.update(id, listingItem.toJSON());
         }
 

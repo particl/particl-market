@@ -93,7 +93,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
 
     // tslint:disable:max-line-length
     public usage(): string {
-        return this.getName() + ' [<page> [<pageLimit> [<order> ' +
+        return this.getName() + ' [<page> [<pageLimit> [<ordering> ' +
         '[(<categoryId> | <categoryName>)[ <type> [(<profileId>| OWN | ALL) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]]]';
     }
 
@@ -102,7 +102,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '    <page>                   - [optional] Numeric - The number page we want to \n'
             + '                                view of search listing item results. \n'
             + '    <pageLimit>              - [optional] Numeric - The number of results per page. \n'
-            + '    <order>                  - [optional] ENUM{ASC} - The order of the returned results. \n'
+            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the search results. \n'
             + '    <categoryId>             - [optional] Numeric - The ID identifying the category associated \n'
             + '                                with the listing items we want to search for. \n'
             + '    <categoryName>           - [optional] String - The key identifying the category associated \n'

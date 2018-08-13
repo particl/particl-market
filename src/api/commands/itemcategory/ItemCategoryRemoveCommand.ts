@@ -41,20 +41,16 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         const categoryId = data.params[0];
-        const isDelete = await this.isDoable(categoryId);
-        if (isDelete) {
-            // check listingItemTemplate related with category
-            const listingItemTemplates = await this.listingItemTemplateService.search({
-                page: 1, pageLimit: 10, order: 'ASC', category: categoryId, profileId: 0
-            } as ListingItemTemplateSearchParams);
-            if (listingItemTemplates.toJSON().length > 0) {
-                // not be delete its a associated with listingItemTemplate
-                throw new MessageException(`Category associated with listing-item-template can't be delete. id= ${categoryId}`);
-            }
-            return await this.itemCategoryService.destroy(categoryId);
-        } else {
-            throw new MessageException(`category can't be delete. id= ${categoryId}`);
+
+        // check listingItemTemplate related with category
+        const listingItemTemplates = await this.listingItemTemplateService.search({
+            page: 1, pageLimit: 10, order: 'ASC', category: categoryId, profileId: 0
+        } as ListingItemTemplateSearchParams);
+        if (listingItemTemplates.toJSON().length > 0) {
+            // not be delete its a associated with listingItemTemplate
+            throw new MessageException(`Category associated with listing-item-template can't be delete. id= ${categoryId}`);
         }
+        return await this.itemCategoryService.destroy(categoryId);
     }
 
     public usage(): string {
@@ -73,27 +69,5 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
 
     public example(): string {
         return 'category ' + this.getName() + ' 81 ';
-    }
-
-    /**
-     * function to check category is default, check category is not associated with listing-item
-     *
-     * @param data
-     * @returns {Promise<boolean>}
-     */
-    private async isDoable(categoryId: number): Promise<boolean> {
-        const itemCategory = await this.itemCategoryService.findOne(categoryId);
-        // check category has key
-        if (itemCategory.Key != null) {
-            // not be update/delete its a default category
-            throw new MessageException(`Default category can't be update or delete. id= ${categoryId}`);
-        }
-        // check listingItem realted with category id
-        const listingItem = await this.listingItemService.findByCategory(categoryId);
-        if (listingItem.toJSON().length > 0) {
-            // not be update/delete its a related with listing-items
-            throw new MessageException(`Category related with listing-items can't be update or delete. id= ${categoryId}`);
-        }
-        return true;
     }
 }

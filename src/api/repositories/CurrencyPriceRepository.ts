@@ -46,7 +46,7 @@ export class CurrencyPriceRepository {
             const currencyPriceCreated = await currencyPrice.save();
             return this.CurrencyPriceModel.fetchById(currencyPriceCreated.id);
         } catch (error) {
-            throw new DatabaseException('Could not create the currencyPrice!', error);
+            throw new DatabaseException('Could not create the currencyPrice!' + error, error);
         }
     }
 
@@ -56,7 +56,7 @@ export class CurrencyPriceRepository {
             const currencyPriceUpdated = await currencyPrice.save(data, { patch: true });
             return this.CurrencyPriceModel.fetchById(currencyPriceUpdated.id);
         } catch (error) {
-            throw new DatabaseException('Could not update the currencyPrice!', error);
+            throw new DatabaseException('Could not update the currencyPrice! ' + error, error);
         }
     }
 
@@ -72,7 +72,7 @@ export class CurrencyPriceRepository {
             await currencyPrice.destroy();
             return;
         } catch (error) {
-            throw new DatabaseException('Could not delete the currencyPrice!', error);
+            throw new DatabaseException('Could not delete the currencyPrice!' + error, error);
         }
     }
 

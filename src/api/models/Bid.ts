@@ -12,6 +12,7 @@ import { BidMessageType } from '../enums/BidMessageType';
 import { SearchOrder } from '../enums/SearchOrder';
 import { Address } from './Address';
 import { OrderItem } from './OrderItem';
+import {OrderStatus} from '../enums/OrderStatus';
 
 export class Bid extends Bookshelf.Model<Bid> {
 
@@ -37,9 +38,10 @@ export class Bid extends Bookshelf.Model<Bid> {
     }
 
     public static async search(options: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
-        if (!options.ordering) {
-            options.ordering = SearchOrder.ASC;
-        }
+
+        options.ordering = options.ordering ? options.ordering : SearchOrder.ASC;
+        options.page = options.page ? options.page : 0;
+        options.pageLimit = options.pageLimit ? options.pageLimit : 0;
 
         const bidCollection = Bid.forge<Model<Bid>>()
             .query( qb => {
@@ -48,41 +50,32 @@ export class Bid extends Bookshelf.Model<Bid> {
                     qb.where('bids.listing_item_id', '=', options.listingItemId);
                 }
 
-                if (options.action && typeof options.action === 'string') {
-                    qb.where('bids.action', '=', options.action);
+                if (options.status
+                    && (options.status === BidMessageType.MPA_ACCEPT
+                        || options.status === BidMessageType.MPA_BID
+                        || options.status === BidMessageType.MPA_CANCEL
+                        || options.status === BidMessageType.MPA_REJECT)) {
+                    qb.where('bids.action', '=', options.status);
                 }
 
-                if (options.action === BidMessageType.MPA_ACCEPT && options.orderStatus && typeof options.orderStatus === 'string') {
+                if (options.status
+                    && (options.status === OrderStatus.AWAITING_ESCROW
+                        || options.status === OrderStatus.COMPLETE
+                        || options.status === OrderStatus.ESCROW_LOCKED
+                        || options.status === OrderStatus.SHIPPING)) {
                     qb.innerJoin('order_items', 'order_items.bid_id', 'bids.id');
-                    qb.where('order_items.status', '=', options.orderStatus);
+                    qb.where('order_items.status', '=', options.status);
                 }
 
-                if (options.title || options.shortDescription || options.longDescription) {
+                if (options.searchString) {
                     qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'bids.listing_item_id');
-                    if (options.title) {
-                        qb.where('item_informations.title', '=', options.title);
-                    }
-                    if (options.shortDescription) {
-                        qb.where('item_informations.short_description', '=', options.shortDescription);
-                    }
-                    if (options.longDescription) {
-                        qb.where('item_informations.long_description', '=', options.longDescription);
-                    }
+                    qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
+                    qb.orWhere('item_informations.short_description', 'LIKE', '%' + options.searchString + '%');
+                    qb.orWhere('item_informations.long_description', 'LIKE', '%' + options.searchString + '%');
                 }
 
                 if (!_.isEmpty(options.bidders)) {
                     qb.whereIn('bids.bidder', options.bidders);
-/*
-                    let firstIteration = true;
-                    for (const bidder of options.bidders) {
-                        if (firstIteration) {
-                            qb.where('bids.bidder', '=', bidder);
-                        } else {
-                            firstIteration = false;
-                            qb.orWhere('bids.bidder', '=', bidder);
-                        }
-                    }
-*/
                 }
             })
             .orderBy('bids.updated_at', options.ordering)

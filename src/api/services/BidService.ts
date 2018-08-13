@@ -86,12 +86,11 @@ export class BidService {
     @validate()
     public async getLatestBid(listingItemId: number, bidder: string): Promise<Bid> {
         // return await this.bidRepo.getLatestBid(listingItemId, bidder);
-        return await this.search(
-            {
-                listingItemId,
-                bidders: [ bidder ],
-                ordering: SearchOrder.DESC
-            } as BidSearchParams, true)[0];
+        return await this.search({
+            listingItemId,
+            bidders: [ bidder ],
+            ordering: SearchOrder.DESC
+        } as BidSearchParams, true)[0];
     }
 
     @validate()

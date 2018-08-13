@@ -48,14 +48,14 @@ export class CurrencyPriceRootCommand extends BaseCommand implements RpcCommandI
 
         // todo: better errors
         if (data.params.length < 2) {
-            throw new MessageException('Invalid params');
+            throw new MessageException(`Requires at least two parameters, but only ${data.params.length} were found.`);
         }
 
         const fromCurrency = data.params.shift().toUpperCase();
 
         // throw exception if fromCurrency is not a PART or toCurrencies has length 0
         if (fromCurrency !== 'PART') {
-            throw new MessageException('Invalid params');
+            throw new MessageException(`fromCurrency must be PART, but was ${fromCurrency}.`);
         } else {
             // convert params to uppercase
             const toCurrencies: string[] = [];

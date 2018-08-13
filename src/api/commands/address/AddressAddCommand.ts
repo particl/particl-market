@@ -69,9 +69,9 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
 
         const newAddress = {
             profile_id: data.params[0],
-            firstName: data.params[1],
-            lastName: data.params[2],
-            title: data.params[3],
+            title: data.params[1],
+            firstName: data.params[2],
+            lastName: data.params[3],
             addressLine1: data.params[4],
             addressLine2: data.params[5],
             city: data.params[6],
@@ -98,9 +98,9 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <profileId>              - Numeric - The ID of the profile we want to associate \n'
             + '                                this address with. \n'
+            + '    <title>                  - String - A short identifier for the address. \n'
             + '    <firstName>              - String - First Name of user. \n'
             + '    <lastName>               - String - Last Name of user. \n'
-            + '    <title>                  - String - A short identifier for the address. \n'
             + '    <addressLine1>           - String - The first line of the address. \n'
             + '    <addressLine2>           - String - The second line of the address. \n'
             + '    <city>                   - String - The city of the address. \n'
@@ -115,6 +115,6 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public example(): string {
-        return 'address ' + this.getName() + ' 1 \'Johnny\' \'Deep\' myLocation \'123 Fake St\' \'\' Springfield NT \'United States\' 90701';
+        return 'address ' + this.getName() + ' 1 myLocation \'Johnny\' \'Deep\' \'123 Fake St\' \'\' Springfield NT \'United States\' 90701';
     }
 }

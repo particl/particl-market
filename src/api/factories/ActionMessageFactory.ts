@@ -20,8 +20,13 @@ import { InternalServerException } from '../exceptions/InternalServerException';
 import { BidMessage } from '../messages/BidMessage';
 import { EscrowMessage } from '../messages/EscrowMessage';
 import { SmsgMessage } from '../messages/SmsgMessage';
-import {ListingItemMessageType} from '../enums/ListingItemMessageType';
-import {ListingItemAddMessage} from '../messages/ListingItemAddMessage';
+import { ListingItemMessageType } from '../enums/ListingItemMessageType';
+import { ListingItemAddMessage } from '../messages/ListingItemAddMessage';
+import { ProposalMessageType } from '../enums/ProposalMessageType';
+import { ProposalMessage } from '../messages/ProposalMessage';
+import { ProposalMessageInterface } from '../messages/ProposalMessageInterface';
+import { VoteMessageInterface } from '../messages/VoteMessageInterface';
+import {VoteMessageType} from '../enums/VoteMessageType';
 
 export class ActionMessageFactory {
 
@@ -33,7 +38,8 @@ export class ActionMessageFactory {
         this.log = new Logger(__filename);
     }
 
-    public async getModel(message: ActionMessageInterface, listingItemId: number, smsgMessage: SmsgMessage): Promise<ActionMessageCreateRequest> {
+    public async getModel(message: ActionMessageInterface | ProposalMessageInterface | VoteMessageInterface,
+                          listingItemId: number, smsgMessage: SmsgMessage): Promise<ActionMessageCreateRequest> {
 
         let actionMessageCreateRequest: ActionMessageCreateRequest;
         const data = this.getModelMessageData(smsgMessage);
@@ -88,7 +94,14 @@ export class ActionMessageFactory {
                     data
                 } as ActionMessageCreateRequest;
                 break;
-
+            case ProposalMessageType.MP_PROPOSAL_ADD:
+                // TODO: implement
+                // const proposalMessage = message as ProposalMessage;
+                // actionMessageCreateRequest = {
+                // } as ActionMessageCreateRequest;
+                // break;
+            case VoteMessageType.MP_VOTE:
+                // TODO: implement
             default:
                 throw new InternalServerException('Unknown message action type.');
         }

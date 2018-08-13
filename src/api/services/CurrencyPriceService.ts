@@ -110,7 +110,7 @@ export class CurrencyPriceService {
                     returnData.push(createdCurrencyPrice.toJSON());
                 }
             } else {
-                throw new MessageException(`Invalid currency ${toCurrency}`);
+                throw new MessageException(`Invalid or unsupported currency: ${toCurrency}.`);
             }
         }
         // this.log.debug('currencyData: ', returnData);
@@ -170,10 +170,10 @@ export class CurrencyPriceService {
                     resolve(JSON.parse(body));
                 });
             }).catch(() => {
-                throw new MessageException(`Invalid currency ${toCurrency} or ${fromCurrency}`);
+                throw new MessageException(`Invalid or unsupported currency, <${toCurrency}> or <${fromCurrency}>.`);
             });
         } catch (err) {
-            throw new MessageException(`Cannot add currency price ${err}`);
+            throw new MessageException(`Cannot add currency price ${err}.`);
         }
     }
 

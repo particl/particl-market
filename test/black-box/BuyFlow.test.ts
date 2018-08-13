@@ -14,9 +14,10 @@ import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
+import {rpc} from './lib/api';
 // tslint:enable:max-line-length
 
-describe('Happy BuyFlow', () => {
+describe('Happy Buy Flow', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -49,6 +50,8 @@ describe('Happy BuyFlow', () => {
     const escrowLockCommand = Commands.ESCROW_LOCK.commandName;
     const escrowReleaseCommand = Commands.ESCROW_RELEASE.commandName;
 
+    const daemonCommand = Commands.DAEMON_ROOT.commandName;
+
     let sellerProfile: resources.Profile;
     let buyerProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -62,6 +65,11 @@ describe('Happy BuyFlow', () => {
 
     let orderOnSellerNode: resources.Order;
     let orderOnBuyerNode: resources.Order;
+
+    const PAGE = 0;
+    const PAGE_LIMIT = 10;
+    const ORDERING = SearchOrder.ASC;
+    const DAYS_RETENTION = 2;
 
     beforeAll(async () => {
 
@@ -139,6 +147,25 @@ describe('Happy BuyFlow', () => {
         const imageResult: resources.ListingItemTemplate = imageAddRes.getBody()['result'];
         // log.debug('imageResult:', imageResult);
 
+        // start with clean outputs incase something went wrong earlier
+        // incase something went wrong last time.. unlock the locked outputs
+        let response: any = await testUtilSellerNode.rpc(daemonCommand, [
+            'lockunspent',
+            true
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        response = await testUtilBuyerNode.rpc(daemonCommand, [
+            'lockunspent',
+            true
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+
+    });
+
+    afterAll(async () => {
     });
 
     // test('Should post a ListingItemTemplate (ListingItemMessage, MP_ITEM_ADD) to the default marketplace from seller node', async () => {
@@ -150,7 +177,12 @@ describe('Happy BuyFlow', () => {
 
         await testUtilSellerNode.waitFor(5);
 
-        const templatePostRes: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand, listingItemTemplatesSellerNode[0].id, defaultMarket.id]);
+        const templatePostRes: any = await testUtilSellerNode.rpc(templateCommand, [
+            templatePostCommand,
+            listingItemTemplatesSellerNode[0].id,
+            DAYS_RETENTION,
+            defaultMarket.id
+        ]);
         templatePostRes.expectJson();
         templatePostRes.expectStatusCode(200);
 
@@ -176,7 +208,7 @@ describe('Happy BuyFlow', () => {
         log.debug('========================================================================================');
 
         // wait for some time to make sure it's received
-        await testUtilSellerNode.waitFor(5);
+        await testUtilSellerNode.waitFor(10);
 
         const itemGetRes: any = await testUtilSellerNode.rpcWaitFor(
             listingItemCommand,
@@ -193,6 +225,7 @@ describe('Happy BuyFlow', () => {
         // -> meaning item hash was matched with the existing template hash
         const result: resources.ListingItem = itemGetRes.getBody()['result'];
 
+        expect(result).toBeDefined();
         delete result.ItemInformation.ItemImages;
         // log.debug('ListingItem on seller node: ', JSON.stringify(result, null, 2));
         expect(result.hash).toBe(listingItemTemplatesSellerNode[0].hash);
@@ -275,13 +308,21 @@ describe('Happy BuyFlow', () => {
 
         const bidSearchCommandParams = [
             bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
             listingItemReceivedBuyerNode.hash,
             BidMessageType.MPA_BID,
-            SearchOrder.ASC,
+            '*',
             buyerProfile.address
         ];
 
-        const bidSearchRes: any = await testUtilBuyerNode.rpc(bidCommand, bidSearchCommandParams);
+        const bidSearchRes: any = await testUtilBuyerNode.rpcWaitFor(
+            bidCommand,
+            bidSearchCommandParams,
+            8 * 60,
+            200,
+            '[0].action',
+            BidMessageType.MPA_BID.toString()
+        );
         bidSearchRes.expectJson();
         bidSearchRes.expectStatusCode(200);
 
@@ -296,7 +337,7 @@ describe('Happy BuyFlow', () => {
         expect(result[0].ListingItem.ListingItemTemplate).toEqual({});
 
         bidOnBuyerNode = result[0];
-    });
+    }, 600000); // timeout to 600s
 
     test('SELLER RECEIVES MPA_BID posted from buyers node, BidMessageType.MPA_BID', async () => {
 
@@ -306,9 +347,10 @@ describe('Happy BuyFlow', () => {
 
         const bidSearchCommandParams = [
             bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
             listingItemReceivedBuyerNode.hash,
             BidMessageType.MPA_BID,
-            SearchOrder.ASC,
+            '*',
             buyerProfile.address
         ];
 
@@ -347,7 +389,7 @@ describe('Happy BuyFlow', () => {
         log.debug('SELLER POSTS MPA_ACCEPT');
         log.debug('========================================================================================');
 
-        await testUtilSellerNode.waitFor(5);
+        // await testUtilSellerNode.waitFor(5);
 
         const bidAcceptCommandParams = [
             bidAcceptCommand,
@@ -372,8 +414,8 @@ describe('Happy BuyFlow', () => {
         log.debug('bid.ListingItem.seller: ' + bidOnSellerNode.ListingItem.seller);
         log.debug('=================================================================================');
 
-    });
-
+    }, 600000); // timeout to 600s
+/*
     test('Bid should have been updated on seller node after posting the MPA_ACCEPT', async () => {
 
         log.debug('========================================================================================');
@@ -381,17 +423,25 @@ describe('Happy BuyFlow', () => {
         log.debug('========================================================================================');
 
         // wait for some time to make sure the Bid has been updated
-        await testUtilSellerNode.waitFor(5);
+        await testUtilSellerNode.waitFor(10);
 
         const bidSearchCommandParams = [
             bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
             bidOnSellerNode.ListingItem.hash,
             BidMessageType.MPA_ACCEPT,
-            SearchOrder.ASC,
+            '*',
             buyerProfile.address
         ];
 
-        const bidSearchRes: any = await testUtilSellerNode.rpc(bidCommand, bidSearchCommandParams);
+        const bidSearchRes: any = await testUtilSellerNode.rpcWaitFor(
+            bidCommand,
+            bidSearchCommandParams,
+            8 * 60,
+            200,
+            '[0].action',
+            BidMessageType.MPA_ACCEPT.toString()
+        );
         bidSearchRes.expectJson();
         bidSearchRes.expectStatusCode(200);
 
@@ -415,7 +465,7 @@ describe('Happy BuyFlow', () => {
         log.debug('========================================================================================');
 
         // wait for some time to make sure the Order has been created
-        await testUtilSellerNode.waitFor(5);
+        await testUtilSellerNode.waitFor(10);
 
         const orderSearchCommandParams = [
             orderSearchCommand,
@@ -426,7 +476,14 @@ describe('Happy BuyFlow', () => {
             SearchOrder.ASC
         ];
 
-        const orderSearchRes: any = await testUtilSellerNode.rpc(orderCommand, orderSearchCommandParams);
+        const orderSearchRes: any = await testUtilSellerNode.rpcWaitFor(
+            orderCommand,
+            orderSearchCommandParams,
+            8 * 60,
+            200,
+            'OrderItems[0].status',
+            OrderStatus.AWAITING_ESCROW.toString()
+        );
         orderSearchRes.expectJson();
         orderSearchRes.expectStatusCode(200);
 
@@ -440,7 +497,7 @@ describe('Happy BuyFlow', () => {
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnSellerNode = result[0];
-    });
+    }, 600000); // timeout to 600s
 
     test('BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT', async () => {
 
@@ -455,9 +512,10 @@ describe('Happy BuyFlow', () => {
 
         const bidSearchCommandParams = [
             bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
             bidOnBuyerNode.ListingItem.hash,
             BidMessageType.MPA_ACCEPT,
-            SearchOrder.ASC,
+            '*',
             buyerProfile.address
         ];
 
@@ -519,6 +577,32 @@ describe('Happy BuyFlow', () => {
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnBuyerNode = result[0];
+    });
+
+
+    test('After Order is created, we should also find Bids using the OrderStatus', async () => {
+
+        log.debug('========================================================================================');
+        log.debug('Bid should now be found using OrderStatus');
+        log.debug('========================================================================================');
+
+        // wait for some time to make sure the Order has been created
+        await testUtilBuyerNode.waitFor(5);
+
+        const response: any = await testUtilBuyerNode.rpc(bidCommand, [
+            bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
+            bidOnBuyerNode.ListingItem.hash,
+            OrderStatus.AWAITING_ESCROW
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+        const result: any = response.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
+        expect(result[0].ListingItem.hash).toBe(bidOnBuyerNode.ListingItem.hash);
+        expect(result[0].OrderItem.status).toBe(OrderStatus.AWAITING_ESCROW);
+
     });
 
     test('BUYER POSTS MPA_LOCK', async () => {
@@ -829,5 +913,28 @@ describe('Happy BuyFlow', () => {
 
     }, 600000); // timeout to 600s
 
+
+    test('Should have no locked outputs left', async () => {
+
+        // incase something went wrong.. unlock the locked outputs
+        let response: any = await testUtilSellerNode.rpc(daemonCommand, [
+            'listlockunspent'
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+        let result = response.getBody()['result'];
+        expect(result.length).toBe(0);
+
+        response = await testUtilBuyerNode.rpc(daemonCommand, [
+            'listlockunspent'
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+        result = response.getBody()['result'];
+        expect(result.length).toBe(0);
+
+
+    }, 600000); // timeout to 600s
+*/
 
 });

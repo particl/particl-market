@@ -42,7 +42,7 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
         if (data.params[2]) {
             const parentItemCategory = data.params[2];
-            const parentItemCategoryId = await this.getCategoryIdByKey(parentItemCategory);
+            const parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);
             return await this.itemCategoryService.create({
                 name: data.params[0],
                 description: data.params[1],
@@ -74,23 +74,5 @@ export class ItemCategoryAddCommand extends BaseCommand implements RpcCommandInt
 
     public example(): string {
         return 'category ' + this.getName() + ' newCategory \'description of the new category\' cat_wholesale_other ';
-    }
-
-    /**
-     * function to return category id
-     * TODO: NOTE: This function may be duplicated between commands.
-     *
-     * @param data
-     * @returns {Promise<number>}
-     */
-    private async getCategoryIdByKey(parentItemCategory: any): Promise<number> {
-        let parentItemCategoryId;
-        if (typeof parentItemCategory === 'number') {
-            parentItemCategoryId = parentItemCategory;
-        } else { // get category id by key
-            parentItemCategory = await this.itemCategoryService.findOneByKey(parentItemCategory);
-            parentItemCategoryId = parentItemCategory.id;
-        }
-        return parentItemCategoryId;
     }
 }

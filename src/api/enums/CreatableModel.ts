@@ -19,5 +19,6 @@ export enum CreatableModel {
     ORDER = 'order',
     PAYMENTINFORMATION = 'paymentinformation',
     ITEMIMAGE = 'itemimage',
-    ACTIONMESSAGE = 'actionmessage'
+    ACTIONMESSAGE = 'actionmessage',
+    PROPOSAL = 'proposal'
 }

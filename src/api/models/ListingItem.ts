@@ -16,6 +16,7 @@ import { FlaggedItem } from './FlaggedItem';
 import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
 import { ActionMessage } from './ActionMessage';
+import { Proposal } from './Proposal';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -52,7 +53,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'Market',
         'FlaggedItem',
         'ListingItemTemplate',
-        'ListingItemTemplate.Profile'
+        'ListingItemTemplate.Profile',
+        'Proposal',
+        'Proposal.ProposalOptions',
+        'Proposal.ProposalResult'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {
@@ -240,6 +244,10 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
     public ListingItemTemplate(): ListingItemTemplate {
         return this.belongsTo(ListingItemTemplate, 'listing_item_template_id', 'id');
+    }
+
+    public Proposal(): Proposal {
+        return this.belongsTo(Proposal, 'proposal_id', 'id');
     }
 
     public Bids(): Collection<Bid> {

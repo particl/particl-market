@@ -105,6 +105,12 @@ import { PaymentInformationRootCommand } from '../commands/paymentinformation/Pa
 
 import { PriceTickerRootCommand } from '../commands/priceticker/PriceTickerRootCommand';
 
+import { ProposalGetCommand } from '../commands/proposal/ProposalGetCommand';
+import { ProposalPostCommand } from '../commands/proposal/ProposalPostCommand';
+import { ProposalListCommand } from '../commands/proposal/ProposalListCommand';
+import { ProposalResultCommand } from '../commands/proposal/ProposalResultCommand';
+import { ProposalRootCommand } from '../commands/proposal/ProposalRootCommand';
+
 import { ProfileAddCommand } from '../commands/profile/ProfileAddCommand';
 import { ProfileRemoveCommand } from '../commands/profile/ProfileRemoveCommand';
 import { ProfileUpdateCommand } from '../commands/profile/ProfileUpdateCommand';
@@ -132,6 +138,11 @@ import { ShoppingCartItemAddCommand } from '../commands/shoppingcartitem/Shoppin
 import { ShoppingCartItemRemoveCommand } from '../commands/shoppingcartitem/ShoppingCartItemRemoveCommand';
 import { ShoppingCartItemListCommand } from '../commands/shoppingcartitem/ShoppingCartItemListCommand';
 import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitem/ShoppingCartItemRootCommand';
+
+import { VotePostCommand } from '../commands/vote/VotePostCommand';
+import { VoteGetCommand } from '../commands/vote/VoteGetCommand';
+import { VoteListCommand } from '../commands/vote/VoteListCommand';
+import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
 
 
 // tslint:disable:array-type
@@ -258,8 +269,18 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.priceticker.PriceTickerRootCommand) private priceTickerRootCommand: PriceTickerRootCommand,
         @inject(Types.Command) @named(Targets.Command.currencyprice.CurrencyPriceRootCommand) private currencyPriceRootCommand: CurrencyPriceRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalGetCommand) private proposalGetCommand: ProposalGetCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalPostCommand) private proposalPostCommand: ProposalPostCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalListCommand) private proposalListCommand: ProposalListCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalResultCommand) private proposalResultCommand: ProposalResultCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalRootCommand) private proposalRootCommand: ProposalRootCommand,
 
+        @inject(Types.Command) @named(Targets.Command.vote.VotePostCommand) private votePostCommand: VotePostCommand,
+        @inject(Types.Command) @named(Targets.Command.vote.VoteGetCommand) private voteGetCommand: VoteGetCommand,
+        @inject(Types.Command) @named(Targets.Command.vote.VoteListCommand) private voteListCommand: VoteListCommand,
+        @inject(Types.Command) @named(Targets.Command.vote.VoteRootCommand) private voteRootCommand: VoteRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
         //  ---
         // @multiInject(Types.Command) public commands: RpcCommand<any>[],
@@ -384,7 +405,18 @@ export class RpcCommandFactory {
 
         this.commands.push(priceTickerRootCommand);
 
+        this.commands.push(proposalGetCommand);
+        this.commands.push(proposalPostCommand);
+        this.commands.push(proposalListCommand);
+        this.commands.push(proposalResultCommand);
+        this.commands.push(proposalRootCommand);
+
         this.commands.push(currencyPriceRootCommand);
+
+        this.commands.push(votePostCommand);
+        this.commands.push(voteGetCommand);
+        this.commands.push(voteListCommand);
+        this.commands.push(voteRootCommand);
 
         this.commands.push(helpCommand);
 

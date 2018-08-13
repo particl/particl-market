@@ -45,12 +45,13 @@ export class ListingItemFactory {
     /**
      * Creates a ListingItemMessage from given data
      *
-     * @param {'resources'.ListingItemTemplate} listingItemTemplate
-     * @param {'resources'.ItemCategory} listingItemCategory
+     * @param {module:resources.ListingItemTemplate} listingItemTemplate
+     * @param {string} proposalHash
      * @param {number} expiryTime
      * @returns {Promise<ListingItemMessage>}
      */
     public async getMessage(listingItemTemplate: resources.ListingItemTemplate,
+                            proposalHash: string,
                             expiryTime: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)): Promise<ListingItemMessage> {
 
         const information = await this.getMessageInformation(listingItemTemplate.ItemInformation);
@@ -64,6 +65,7 @@ export class ListingItemFactory {
             payment,
             messaging,
             objects,
+            proposalHash,    // todo: this does not exist in OMP
             expiryTime
         } as ListingItemMessage;
 
@@ -71,6 +73,7 @@ export class ListingItemFactory {
     }
 
     /**
+     * TODO: postedAt and expiredAt are not needed anymore as they should now be part of the message
      *
      * @param {ListingItemMessage} listingItemMessage
      * @param {number} marketId
@@ -80,13 +83,15 @@ export class ListingItemFactory {
      * @returns {Promise<ListingItemCreateRequest>}
      */
     public async getModel(listingItemMessage: ListingItemMessage, marketId: number, seller: string,
-                          rootCategory: resources.ItemCategory, postedAt: Date = new Date()): Promise<ListingItemCreateRequest> {
+                          rootCategory: resources.ItemCategory, postedAt: Date): Promise<ListingItemCreateRequest> {
 
         const itemInformation = await this.getModelItemInformation(listingItemMessage.information, rootCategory);
         const paymentInformation = await this.getModelPaymentInformation(listingItemMessage.payment);
         const messagingInformation = await this.getModelMessagingInformation(listingItemMessage.messaging);
         const listingItemObjects = await this.getModelListingItemObjects(listingItemMessage.objects);
         // create expiredAt from postedAt and increate it by expiryTime days * dayMilliseconds
+
+        // TODO: this should come from the smsgmessage
         const expiredAt = new Date(postedAt.getTime());
         expiredAt.setDate(expiredAt.getTime() + listingItemMessage.expiryTime * this.dayMilliseconds);
         return {
@@ -108,7 +113,6 @@ export class ListingItemFactory {
     // ---------------
     private async getModelListingItemObjects(objects: any[]): Promise<ListingItemObjectCreateRequest[]> {
         const objectArray: ListingItemObjectCreateRequest[] = [];
-        this.log.debug('objectArray: ', JSON.stringify(objectArray, null, 2));
         for (const object of objects) {
             let objectData;
             if ('TABLE' === object.type) {

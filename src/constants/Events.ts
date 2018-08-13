@@ -19,5 +19,7 @@ export const Events = {
     AcceptBidReceivedEvent: 'AcceptBidReceivedEvent',
     RejectBidReceivedEvent: 'RejectBidReceivedEvent',
     CancelBidReceivedEvent: 'CancelBidReceivedEvent',
+    ProposalReceivedEvent: 'ProposalReceivedEvent',
+    VoteReceivedEvent: 'VoteReceivedEvent',
     Cli: 'cli'
 };
