@@ -69,9 +69,9 @@ export class Bid extends Bookshelf.Model<Bid> {
 
                 if (options.searchString) {
                     qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'bids.listing_item_id');
-                    qb.where('item_informations.title', '=', options.searchString);
-                    qb.orWhere('item_informations.short_description', '=', options.searchString);
-                    qb.orWhere('item_informations.long_description', '=', options.searchString);
+                    qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
+                    qb.orWhere('item_informations.short_description', 'LIKE', '%' + options.searchString + '%');
+                    qb.orWhere('item_informations.long_description', 'LIKE', '%' + options.searchString + '%');
                 }
 
                 if (!_.isEmpty(options.bidders)) {
