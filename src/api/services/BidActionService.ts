@@ -176,7 +176,7 @@ export class BidActionService {
         // const pubkey = addressInfo.pubkey;
 
         // 0.16.0.3
-        const buyerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(buyerEscrowPubAddress);
+        const buyerEscrowPubAddressInformation = await this.coreRpcService.getAddressInfo(buyerEscrowPubAddress);
         const buyerEcrowPubAddressPublicKey = buyerEscrowPubAddressInformation.pubkey;
 
         this.log.debug('buyerEscrowPubAddressInformation: ', JSON.stringify(buyerEscrowPubAddressInformation, null, 2));
@@ -418,7 +418,7 @@ export class BidActionService {
         // const pubkey = addressInfo.pubkey;
 
         // 0.16.0.3
-        const sellerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(sellerEscrowPubAddress);
+        const sellerEscrowPubAddressInformation = await this.coreRpcService.getAddressInfo(sellerEscrowPubAddress);
         const sellerEscrowPubAddressPublicKey = sellerEscrowPubAddressInformation.pubkey;
         const buyerEscrowPubAddressPublicKey = this.getValueFromBidDatas(BidDataValue.BUYER_PUBKEY, bid.BidDatas);
 
