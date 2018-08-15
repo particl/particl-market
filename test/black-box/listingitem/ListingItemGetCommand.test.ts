@@ -42,7 +42,7 @@ describe('ListingItemGetCommand', () => {
 
     });
 
-    test('Should get the listing item by hash', async () => {
+    test('Should get the ListingItem by hash', async () => {
 
         // find listing item using hash
         const res = await rpc(method, [subCommand, createdListingItem.hash]);
@@ -91,7 +91,7 @@ describe('ListingItemGetCommand', () => {
         expect(result.MessagingInformation[0].publicKey).toBe(createdListingItem.MessagingInformation[0].publicKey);
     });
 
-    test('Should get the listing item by id', async () => {
+    test('Should get the ListingItem by id', async () => {
 
         // find listing item using id
         const res = await rpc(method, [subCommand, createdListingItem.id]);

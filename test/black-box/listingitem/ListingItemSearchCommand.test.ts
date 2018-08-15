@@ -105,7 +105,7 @@ describe('ListingItemSearchCommand', () => {
         createdListingItem = listingItems[0];
     });
 
-    test('Should fail to get ListingItems if type is invalid', async () => {
+    test('Should fail to search ListingItems if type is invalid', async () => {
 /*
      *  [0]: page, number
      *  [1]: pageLimit, number
@@ -130,7 +130,7 @@ describe('ListingItemSearchCommand', () => {
         expect(res.error.error.message).toBe('Type should be FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL');
     });
 
-    test('Should fail to get ListingItems if profileId is not (NUMBER | OWN | ALL)', async () => {
+    test('Should fail to search ListingItems if profileId is not (NUMBER | OWN | ALL)', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = 'INVALID';
@@ -142,7 +142,7 @@ describe('ListingItemSearchCommand', () => {
         expect(res.error.error.message).toBe('Value needs to be number | OWN | ALL. you could pass * as all too');
     });
 
-    test('Should get OWN ListingItems when profileid = OWN', async () => {
+    test('Should search OWN ListingItems when profileid = OWN', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = 'OWN';
@@ -156,7 +156,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[0].hash).toBe(createdListingItemTemplate.ListingItems[0].hash);
     });
 
-    test('Should get ALL ListingItems when profileid = ALL', async () => {
+    test('Should search ALL ListingItems when profileid = ALL', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = 'ALL';
 
@@ -170,7 +170,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[1].hash).toBe(createdListingItem.hash);
     });
 
-    test('Should get ALL ListingItems when profileId is empty, since default is ALL', async () => {
+    test('Should search ALL ListingItems when profileId is empty, since default is ALL', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
 
         const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
@@ -183,7 +183,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[1].hash).toBe(createdListingItem.hash);
     });
 
-    test('Should get ALL ListingItems when profileId = *', async () => {
+    test('Should search ALL ListingItems when profileId = *', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
@@ -198,7 +198,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[1].hash).toBe(createdListingItem.hash);
     });
 
-    test('Should get only first ListingItem using pagination and setting pageLimit to 1', async () => {
+    test('Should search only first ListingItem using pagination and setting pageLimit to 1', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
@@ -214,7 +214,7 @@ describe('ListingItemSearchCommand', () => {
 
     });
 
-    test('Should get the second ListingItem using pagination and setting page to 2 wuth pageLimit set to 1', async () => {
+    test('Should search the second ListingItem using pagination and setting page to 2 wuth pageLimit set to 1', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';

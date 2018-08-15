@@ -80,7 +80,7 @@ describe('ListingItemFlagCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Item already beeing flagged!');
+        expect(res.error.error.message).toBe('Item already being flagged!');
     });
 
     test('Should fail to flag item because of invalid listing item hash', async () => {
@@ -119,6 +119,6 @@ describe('ListingItemFlagCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Item already beeing flagged!');
+        expect(res.error.error.message).toBe('Item already being flagged!');
     });
 });
