@@ -61,7 +61,6 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
     /**
      * Posts a Bid to the network
-     * If addressId is null then one of bidDataId must be equal to addressId
      *
      * data.params[]:
      * [0]: itemhash, string
@@ -145,14 +144,14 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     }
 
     public usage(): string {
-        return this.getName() + ' <itemhash> <profileId> <AddressId> [(<bidDataId>, <bidDataValue>), ...] ';
+        return this.getName() + ' <itemhash> <profileId> <addressId | false> [(<bidDataId>, <bidDataValue>), ...] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <itemhash>               - String - The hash of the item we want to send bids for. \n'
             + '    <profileId>              - Numeric - The id of the profile we want to associate with the bid. \n'
-            + '    <AddressId>              - Numeric - The id of the address we want to associated with the bid. \n'
+            + '    <addressId>              - Numeric - The id of the address we want to associated with the bid. \n'
             + '    <bidDataId>              - [optional] Numeric - The id of the bid we want to send. \n'
             + '    <bidDataValue>           - [optional] String - The value of the bid we want to send. ';
     }

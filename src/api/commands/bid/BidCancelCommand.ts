@@ -66,7 +66,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public usage(): string {
-        return this.getName() + ' <itemhash> ';
+        return this.getName() + ' <itemhash> <bidId>';
     }
 
     public help(): string {

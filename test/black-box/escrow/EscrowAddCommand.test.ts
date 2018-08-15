@@ -41,7 +41,7 @@ describe('EscrowAddCommand', () => {
         profileId = defaultProfile.id;
     });
 
-    test('Should Create new Escrow by RPC', async () => {
+    test('Should Create new Escrow', async () => {
         // set profile
         testDataListingItemTemplate.profile_id = profileId;
 
@@ -64,7 +64,7 @@ describe('EscrowAddCommand', () => {
         expect(result.Ratio.seller).toBe(testData.ratio.seller);
     });
 
-    test('Should fail create Escrow, payment-information is not related with item-template', async () => {
+    test('Should fail to create Escrow, PaymentInformation is not related with ItemTemplate', async () => {
 
         delete testDataListingItemTemplate.itemInformation;
         delete testDataListingItemTemplate.paymentInformation;

@@ -111,8 +111,6 @@ describe('BidAcceptCommand', () => {
         const pubkey = '02dcd01e1c1bde4d5f8eff82cde60017f81ac1c2888d04f47a31660004fe8d4bb7';
         const changeAddress = 'pYTjD9CRepFvh1YvVfowY2J14DK9ayrvrr';
 
-        // TODO: make it possible to pass bidDatas to bid test data generation
-
         // create bid, defaultProfile is bidder, sellerProfile is seller
         const bidCreateRequest = {
             action: BidMessageType.MPA_BID,
@@ -168,5 +166,8 @@ describe('BidAcceptCommand', () => {
         expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
         expect(result[0].bidder).toBe(defaultProfile.address);
     });
+
+    // TODO: should test that accept is successfully sent
+    // TODO: then separate test that Bid has the correct action
 
 });

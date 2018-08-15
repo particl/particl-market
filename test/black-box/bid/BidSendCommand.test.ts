@@ -113,7 +113,7 @@ describe('BidSendCommand', () => {
 
     });
 
-    test('Should post Bid for a ListingItem', async () => {
+    test('Should post Bid for a ListingItem with addressId', async () => {
 
         log.debug('listingItem.hash: ', listingItem1.hash);
         log.debug('profile.shippingAddress:', JSON.stringify(defaultProfile.ShippingAddresses[0], null, 2));
@@ -212,9 +212,7 @@ describe('BidSendCommand', () => {
         expect(res.error.error.message).toBe('Missing required param: ship.addressLine1');
     });
 
-
-
-    test('Should throw exception for incorrect profile', async () => {
+    test('Should throw exception for invalid profile', async () => {
 
         log.debug('listingItem.hash: ', listingItem1.hash);
         log.debug('profile.shippingAddress:', JSON.stringify(defaultProfile.ShippingAddresses[0], null, 2));
