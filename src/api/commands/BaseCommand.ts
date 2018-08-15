@@ -48,11 +48,17 @@ export class BaseCommand {
         const commandType = _.find(this.getChildCommands(), command => command.commandName === commandName);
         if (commandType) {
             const rpcCommand = commandFactory.get(commandType);
+            // validate
+            await rpcCommand.validate(request);
             // execute
             return await rpcCommand.execute(request, commandFactory);
         } else {
             throw new NotFoundException('Unknown subcommand: ' + commandName + '\n');
         }
+    }
+
+    public async validate(data: RpcRequest): Promise<void> {
+        //
     }
 
     public help(): string {
