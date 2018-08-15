@@ -65,7 +65,7 @@ describe('EscrowUpdateCommand', () => {
         profileId = defaultProfile.id;
     });
 
-    test('Should update Escrow by RPC', async () => {
+    test('Should update Escrow', async () => {
         // set profile id
         testDataListingItemTemplate.profile_id = profileId;
 

@@ -35,20 +35,18 @@ export class ProposalRootCommand extends BaseCommand implements RpcCommandInterf
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
-        // throw new NotImplementedException();
-        // root commands:
         return await this.executeNext(data, rpcCommandFactory);
     }
 
     public help(): string {
-        return this.getName() + ' TODO: (command param help)';
+        return this.getName() + ' (get|list|post|result)  -  ' + this.description();
     }
 
     public description(): string {
-        return 'TODO: Commands for managing ProposalCommand.';
+        return 'Commands for managing Proposals.';
     }
 
     public example(): string {
-        return this.getName() + ' TODO: example';
+        return this.getName() + '';
     }
 }

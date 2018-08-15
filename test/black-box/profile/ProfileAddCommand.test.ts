@@ -19,7 +19,7 @@ describe('ProfileAddCommand', () => {
         await testUtil.cleanDb();
     });
 
-    test('Should create a new profile by RPC', async () => {
+    test('Should create a new Profile', async () => {
         const res = await rpc(method, [subCommand, profileName, profileAddress]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -32,7 +32,7 @@ describe('ProfileAddCommand', () => {
         expect(result.ShoppingCart[0].name).toBe('DEFAULT');
     });
 
-    test('Should return created profile by RPC', async () => {
+    test('Should return created Profile', async () => {
         const res = await rpc(method, [Commands.PROFILE_GET.commandName, createdProfile.id]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -44,7 +44,7 @@ describe('ProfileAddCommand', () => {
         expect(result.ShoppingCart[0].name).toBe('DEFAULT');
     });
 
-    test('Should fail to create a new profile because profile with given name aready exist', async () => {
+    test('Should fail to create a new Profile because profile with given name allready exist', async () => {
         const res = await rpc(method, [subCommand, profileName, profileAddress]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -52,7 +52,7 @@ describe('ProfileAddCommand', () => {
         expect(res.error.error.message).toBe(`Profile already exist for the given name = ${profileName}`);
     });
 
-    test('Should fail because we want to create an empty profile', async () => {
+    test('Should fail because we want to create an empty Profile', async () => {
         const res = await rpc(method, [subCommand]);
         res.expectJson();
         res.expectStatusCode(404);

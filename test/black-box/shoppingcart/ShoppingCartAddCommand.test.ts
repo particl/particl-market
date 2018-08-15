@@ -16,11 +16,11 @@ describe('ShoppingCartAddCommand', () => {
     const shoppingCartName = 'Test Shopping Cart';
 
     beforeAll(async () => {
-        await testUtil.cleanDb([]);
+        await testUtil.cleanDb();
         defaultProfile = await testUtil.getDefaultProfile();
     });
 
-    test('Should create a new Shopping Cart', async () => {
+    test('Should create a new ShoppingCart', async () => {
 
         const res = await rpc(method, [subCommand, shoppingCartName, defaultProfile.id]);
         res.expectJson();
@@ -30,7 +30,7 @@ describe('ShoppingCartAddCommand', () => {
         expect(result.profileId).toBe(defaultProfile.id);
     });
 
-    test('Should fail because we want to create an empty shoppingCart', async () => {
+    test('Should fail because we want to create an empty ShoppingCart', async () => {
         const res = await rpc(method, [subCommand]);
         res.expectJson();
         res.expectStatusCode(400);

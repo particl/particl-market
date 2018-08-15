@@ -62,11 +62,13 @@ export class ProfileService {
 
     public async findOneByName(name: string, withRelated: boolean = true): Promise<Profile> {
         const profile = await this.profileRepo.findOneByName(name, withRelated);
+        // TODO: should throw if null
         return profile;
     }
 
-    public async findOneByAddress(name: string, withRelated: boolean = true): Promise<Profile> {
-        const profile = await this.profileRepo.findOneByAddress(name, withRelated);
+    public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Profile> {
+        const profile = await this.profileRepo.findOneByAddress(address, withRelated);
+        // TODO: should throw if null
         return profile;
     }
 

@@ -11,7 +11,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
-describe('/ItemLocationRemoveCommand', () => {
+describe('ItemLocationRemoveCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ITEMLOCATION_ROOT.commandName;
     const subCommand = Commands.ITEMLOCATION_ADD.commandName;
@@ -45,8 +45,7 @@ describe('/ItemLocationRemoveCommand', () => {
         createdTemplateId = addListingItemTempRes.id;
     });
 
-    test('Should not create ItemLocation without conuntry', async () => {
-        // Add Item Location
+    test('Should not create ItemLocation without country', async () => {
         const addDataRes: any = await rpc(method, [subCommand]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
@@ -71,7 +70,7 @@ describe('/ItemLocationRemoveCommand', () => {
         expect(result.LocationMarker.lng).toBe(testData[7]);
     });
 
-    test('Should create ItemLocation if Item-location already exist for listingItemtemplate', async () => {
+    test('Should create ItemLocation if ItemLocation already exist for listingItemtemplate', async () => {
         // Add Item Location
         const addDataRes: any = await rpc(method, testData);
         addDataRes.expectJson();
@@ -80,7 +79,7 @@ describe('/ItemLocationRemoveCommand', () => {
         expect(addDataRes.error.error.message).toBe(`ItemLocation with the listing template id=${testData[1]} is already exist`);
     });
 
-    test('Should create ItemLocation if Item-information not exist', async () => {
+    test('Should create ItemLocation if ItemInformation not exist', async () => {
         delete testDataListingItemTemplate.itemInformation;
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
 
@@ -91,6 +90,6 @@ describe('/ItemLocationRemoveCommand', () => {
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe(`Item Information with the listing template id=${testData[1]} was not found!`);
+        expect(addDataRes.error.error.message).toBe(`ItemInformation with the listing template id=${testData[1]} was not found!`);
     });
 });

@@ -81,17 +81,14 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
             }
         }
 
-        // check vaild itemHash
         if (typeof itemHash !== 'string' && itemHash !== '*') {
             throw new MessageException('Value needs to be a string or wildcard *. Got <${itemHash}> instead.');
         }
 
-        // check vaild itemHash
         if (typeof buyer !== 'string' && buyer !== '*') {
             throw new MessageException('Value needs to be a string or wildcard *. Got <${buyer}> instead.');
         }
 
-        // check vaild itemHash
         if (typeof seller !== 'string' && seller !== '*') {
             throw new MessageException('Value needs to be a string or wildcard *. Got <${seller}> instead.');
         }
@@ -140,18 +137,18 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '<itemHash|*> - The hash of the order item we want to get the status of. \n'
+            + '<itemHash|*> - The hash of the OrderItem we want to get the status of. \n'
             + '               Can use * for wildcard. \n'
-            + '<buyer|*>    - The buyer of the order items we want to get the status of. \n'
+            + '<buyer|*>    - The buyer of the OrderItems we want to get the status of. \n'
             + '               Can use * for wildcard. \n'
-            + '<seller|*>   - The buyer of the order items we want to get the status of. \n'
+            + '<seller|*>   - The seller of the OrderItems we want to get the status of. \n'
             + '               Can use * for wildcard. \n';
     }
 
     // tslint:enable:max-line-length
 
     public description(): string {
-        return 'Fetch statuses of orders specified by given search params. Shows the first 100 orders.';
+        return 'Fetch statuses of OrderItems specified by given search params. Shows the first 100 orders.';
     }
 
     public example(): string {

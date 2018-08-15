@@ -19,9 +19,6 @@ describe('ItemCategorySearchCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-    });
-
-    test('Should get categories, if found by category name string', async () => {
 
         // create category
         const categoryData = {
@@ -36,15 +33,20 @@ describe('ItemCategorySearchCommand', () => {
             categoryData.parent_item_category_id
         ]);
 
+    });
+
+    test('Should find ItemCategories, when search string matches', async () => {
+
         //  find categories
-        const res = await rpc(method, [subCommand, 'Sample Category 1']);
+        const res = await rpc(method, [subCommand, 'Sample']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.length).not.toBe(0);
+        // TODO: expect the previously inserted one
     });
 
-    test('Should fail to search item category because without searchString', async () => {
+    test('Should fail to search iItemCategories because theres no search string', async () => {
         //  find categories
         const res = await rpc(method, [subCommand]);
         res.expectJson();
@@ -53,7 +55,7 @@ describe('ItemCategorySearchCommand', () => {
         expect(res.error.error.message).toBe('SearchString can not be null');
     });
 
-    test('Should not get any categories, if found by non-existing category name string', async () => {
+    test('Should find get any ItemCategories when the search string doesnt match', async () => {
         //  find categories
         const res = await rpc(method, [subCommand, 'NOTFOUNDCATEGORY']);
         res.expectJson();

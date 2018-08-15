@@ -5,6 +5,7 @@
 import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
 describe('ShoppingCartItemAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -21,10 +22,10 @@ describe('ShoppingCartItemAddCommand', () => {
         defaultProfile = await testUtil.getDefaultProfile();
         defaultShoppingCart = defaultProfile.ShoppingCart[0];
         // listing-item
-        listingItems = await testUtil.generateData('listingitem', 2);
+        listingItems = await testUtil.generateData(CreatableModel.LISTINGITEM, 2);
     });
 
-    test('Should add listingItem(id) to Shopping Cart', async () => {
+    test('Should add ListingItem (id) to ShoppingCart', async () => {
         const listingItem = listingItems[0];
         const res = await rpc(method, [subCommand, defaultShoppingCart.id, listingItem.id]);
         res.expectJson();
@@ -34,7 +35,7 @@ describe('ShoppingCartItemAddCommand', () => {
         expect(result.listingItemId).toBe(listingItem.id);
     });
 
-    test('Should add listingItem(hash) to Shopping Cart', async () => {
+    test('Should add ListingItem (hash) to ShoppingCart', async () => {
         const listingItem = listingItems[1];
         const res = await rpc(method, [subCommand, defaultShoppingCart.id, listingItem.hash]);
         res.expectJson();
@@ -44,13 +45,13 @@ describe('ShoppingCartItemAddCommand', () => {
         expect(result.listingItemId).toBe(listingItem.id);
     });
 
-    test('Should not add listingItem(id) to Shopping Cart because its already added', async () => {
+    test('Should not add ListingItem (id) to ShoppingCart because its already added', async () => {
         const listingItem = listingItems[0];
         const res = await rpc(method, [subCommand, defaultShoppingCart.id, listingItem.id]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`listing item already exist on shopping cart`);
+        expect(res.error.error.message).toBe(`ListingItem already exist in ShoppingCart`);
     });
 
     test('Should fail because we want to add an empty shoppingCartItem', async () => {

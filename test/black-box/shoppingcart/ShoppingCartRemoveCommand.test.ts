@@ -15,19 +15,20 @@ describe('ShoppingCartRemoveCommand', () => {
     let shoppingCartId;
 
     beforeAll(async () => {
-        await testUtil.cleanDb([]);
+        await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
+
         const res = await rpc(method, [Commands.SHOPPINGCART_ADD.commandName, 'New Shopping Cart', defaultProfile.id]);
         shoppingCartId = res.getBody()['result'].id;
     });
 
-    test('Should remove a Shopping Cart', async () => {
+    test('Should remove a ShoppingCart', async () => {
         const res = await rpc(method, [subCommand, shoppingCartId]);
         res.expectJson();
         res.expectStatusCode(200);
     });
 
-    test('Should fail because we want to remove non-existing shoppingCart', async () => {
+    test('Should fail because we want to remove non-existing ShoppingCart', async () => {
         const res = await rpc(method, [subCommand, shoppingCartId]);
         res.expectJson();
         res.expectStatusCode(404);

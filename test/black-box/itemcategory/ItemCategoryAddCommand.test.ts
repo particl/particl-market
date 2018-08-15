@@ -21,7 +21,7 @@ describe('ItemCategoryAddCommand', () => {
         key: 'cat_high_real_estate'
     };
 
-    test('Should create the category by parent category key', async () => {
+    test('Should create the ItemCategory with parent category key', async () => {
         //  test default category data
         const categoryData = {
             name: 'Sample Category 1',
@@ -37,7 +37,7 @@ describe('ItemCategoryAddCommand', () => {
         expect(result.ParentItemCategory.key).toBe(parentCategory.key);
     });
 
-    test('Should create the category by parent category Id', async () => {
+    test('Should create the ItemCategory with parent category Id', async () => {
         //  test default category data
         const categoryData = {
             name: 'Sample Category 2',
@@ -53,7 +53,7 @@ describe('ItemCategoryAddCommand', () => {
         expect(result.ParentItemCategory.key).toBe(parentCategory.key);
     });
 
-    test('Should fail to create the category without passing category', async () => {
+    test('Should fail to create the ItemCategory without passing category', async () => {
         const categoryData = {
             name: 'Sample Category 3',
             description: 'Sample Category Description 3'

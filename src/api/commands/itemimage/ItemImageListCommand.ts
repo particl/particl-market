@@ -50,7 +50,6 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
         } else if ( idType === 'item' ) {
             const listingItemId = data.params[1];
             const retval: ListingItem = await this.listingItemService.findOne(listingItemId, true);
-            // this.log.debug('ADSDAS: ' + JSON.stringify(retval, null, 2));
             return retval.toJSON().ItemInformation.ItemImages;
         } else {
             throw new MessageException(`Invalid ID type detected <${idType}>. Expected 'template' or 'item'.`);

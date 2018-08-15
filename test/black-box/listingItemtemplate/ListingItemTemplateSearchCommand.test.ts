@@ -11,7 +11,7 @@ import { CryptocurrencyAddressType } from '../../../src/api/enums/Cryptocurrency
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
-describe('/ListingItemTemplateSearchCommand', () => {
+describe('ListingItemTemplateSearchCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.TEMPLATE_ROOT.commandName;
     const subCommand = Commands.TEMPLATE_SEARCH.commandName;
@@ -61,6 +61,7 @@ describe('/ListingItemTemplateSearchCommand', () => {
     };
     let categoryId;
     let profileId;
+
     beforeAll(async () => {
         await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
@@ -74,7 +75,7 @@ describe('/ListingItemTemplateSearchCommand', () => {
         const addListingItemTemplate2: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate2);
     });
 
-    test('Should get all Item Templates', async () => {
+    test('Should get all ListingItemTemplates', async () => {
         // get all listing items
         const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', profileId]);
         getDataRes.expectJson();
@@ -83,7 +84,7 @@ describe('/ListingItemTemplateSearchCommand', () => {
         expect(result).toHaveLength(2);
     });
 
-    test('Should get only first item template by pagination', async () => {
+    test('Should get only first ListingItemTemplate by pagination', async () => {
         const getDataRes: any = await rpc(method, [subCommand, 1, 1, 'ASC', profileId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -109,7 +110,7 @@ describe('/ListingItemTemplateSearchCommand', () => {
         expect(result).hasOwnProperty('ListingItems');
     });
 
-    test('Should get second item template by pagination', async () => {
+    test('Should get second ListingItemTemplate by pagination', async () => {
         const getDataRes: any = await rpc(method, [subCommand, 2, 1, 'ASC', profileId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -135,7 +136,7 @@ describe('/ListingItemTemplateSearchCommand', () => {
         expect(result).hasOwnProperty('ListingItems');
     });
 
-    test('Should return empty listing item templates array if invalid pagination', async () => {
+    test('Should return empty ListingItemTemplates array if invalid pagination', async () => {
         const getDataRes: any = await rpc(method, [subCommand, 2, 2, 'ASC', profileId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -143,7 +144,7 @@ describe('/ListingItemTemplateSearchCommand', () => {
         expect(emptyResults).toHaveLength(0);
     });
 
-    test('Should search listing items templates by category key', async () => {
+    test('Should searchListingItemTemplates by category key', async () => {
         const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', profileId, 'cat_high_luxyry_items']);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -153,7 +154,7 @@ describe('/ListingItemTemplateSearchCommand', () => {
         expect('cat_high_luxyry_items').toBe(result[0].ItemInformation.ItemCategory.key);
     });
 
-    test('Should search listing items templates by category id', async () => {
+    test('Should search ListingItemTemplates by category id', async () => {
         const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', profileId, categoryId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -163,7 +164,7 @@ describe('/ListingItemTemplateSearchCommand', () => {
         expect(category).toBe(categoryId);
     });
 
-    test('Should search item templates by ItemInformation title', async () => {
+    test('Should search ListingItemTemplates by ItemInformation title', async () => {
         const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', profileId, '', testDataListingItemTemplate1.itemInformation.title]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);

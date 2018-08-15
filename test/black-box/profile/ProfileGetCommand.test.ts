@@ -7,7 +7,7 @@ import { api, rpc } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 
-describe('/ProfileGetCommand', () => {
+describe('ProfileGetCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.PROFILE_ROOT.commandName;
     const subCommand = Commands.PROFILE_GET.commandName;
@@ -24,7 +24,7 @@ describe('/ProfileGetCommand', () => {
         await testUtil.cleanDb();
     });
 
-    test('Should return one profile by ID', async () => {
+    test('Should return one Profile by id', async () => {
         // created profile
         const res = await rpc(method, [Commands.PROFILE_ADD.commandName, profileName, profileAddress]);
         // call rpc api
@@ -48,7 +48,7 @@ describe('/ProfileGetCommand', () => {
         expect(resultMain.ShoppingCart).toBeDefined();
     });
 
-    test('Should return one profile by Name', async () => {
+    test('Should return one Profile by name', async () => {
         const resMain = await rpc(method, [subCommand, profileName]);
         resMain.expectJson();
         resMain.expectStatusCode(200);
@@ -63,15 +63,15 @@ describe('/ProfileGetCommand', () => {
         expect(resultMain.ShoppingCart).toBeDefined();
     });
 
-    test('Should return null profile by invalid Name', async () => {
+    test('Should fail to return Profile with invalid name', async () => {
         const resMain = await rpc(method, [subCommand, 'profileName']);
         resMain.expectJson();
-        resMain.expectStatusCode(200);
+        resMain.expectStatusCode(404);
         const resultMain: any = resMain.getBody()['result'];
         expect(resultMain).toBeNull();
     });
 
-    test('Should return null profile by invalid Id', async () => {
+    test('Should fail to return Profile with invalid id', async () => {
         const resMain = await rpc(method, [subCommand, 123123]);
         resMain.expectJson();
         resMain.expectStatusCode(404);

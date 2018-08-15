@@ -110,7 +110,7 @@ describe('AddressListCommand', () => {
         const res = await rpc(addressCommand, [Commands.ADDRESS_ADD.commandName, defaultProfileId,
                     testDataNotOwn.firstName, testDataNotOwn.lastName, testDataNotOwn.title,
                     testDataNotOwn.addressLine1, testDataNotOwn.addressLine2,
-                    testDataNotOwn.city, testDataNotOwn.state, testDataNotOwn.country, 
+                    testDataNotOwn.city, testDataNotOwn.state, testDataNotOwn.country,
                     testDataNotOwn.zipCode, testDataNotOwn.type]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -145,7 +145,7 @@ describe('AddressListCommand', () => {
         const res = await rpc(addressCommand, [Commands.ADDRESS_ADD.commandName, newProfileId,
                     testDataNotOwn.firstName, testDataNotOwn.lastName, testDataNotOwn.title,
                     testDataNotOwn.addressLine1, testDataNotOwn.addressLine2,
-                    testDataNotOwn.city, testDataNotOwn.state, testDataNotOwn.country, 
+                    testDataNotOwn.city, testDataNotOwn.state, testDataNotOwn.country,
                     testDataNotOwn.zipCode]);
         res.expectJson();
         res.expectStatusCode(200);

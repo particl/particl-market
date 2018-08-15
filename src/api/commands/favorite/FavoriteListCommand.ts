@@ -82,6 +82,6 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public example(): string {
-        return 'favorite ' + this.getName() + ' 1 ' + true;
+        return 'favorite ' + this.getName() + ' 1 true';
     }
 }

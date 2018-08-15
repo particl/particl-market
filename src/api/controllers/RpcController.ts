@@ -17,6 +17,8 @@ import { RpcRequest } from '../requests/RpcRequest';
 import { Commands} from '../commands/CommandEnumType';
 import { ServerStartedListener } from '../listeners/ServerStartedListener';
 import { MessageException } from '../exceptions/MessageException';
+import {Command} from '../commands/Command';
+import {RpcCommandInterface} from '../commands/RpcCommandInterface';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -47,7 +49,9 @@ export class RpcController {
         const commandType = _.find(Commands.rootCommands, command => command.commandName === body.method);
         if (commandType) {
             // ... use the commandType to get the correct RpcCommand implementation and execute
-            const result = await this.rpcCommandFactory.get(commandType).execute(rpcRequest, this.rpcCommandFactory);
+            const rpcCommand: RpcCommandInterface<any> = this.rpcCommandFactory.get(commandType);
+            await rpcCommand.validate(rpcRequest);
+            const result = await rpcCommand.execute(rpcRequest, this.rpcCommandFactory);
             return this.createResponse(rpcRequest.id, result);
         } else {
             throw new NotFoundException('Unknown command: ' + body.method + '\n');

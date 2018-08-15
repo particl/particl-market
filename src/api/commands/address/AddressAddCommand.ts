@@ -17,7 +17,7 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { NotFoundException } from '../../exceptions/NotFoundException';
-import {AddressType} from '../../enums/AddressType';
+import { AddressType } from '../../enums/AddressType';
 
 export class AddressAddCommand extends BaseCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
@@ -50,9 +50,8 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
-        this.log.debug('Attempting to create address');
 
-        this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
+        // TODO: validate that there are correct amount of params
 
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
@@ -86,11 +85,13 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
         return await this.addressService.create(newAddress);
     }
 
-    // TODO: title should be after profileId
+    public async validate(data: RpcRequest): Promise<void> {
+        //
+    }
 
     // tslint:disable:max-line-length
     public usage(): string {
-        return this.getName() + ' <profileId> <firstName> <lastName> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] ';
+        return this.getName() + ' <profileId> <firstName> <lastName> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) <zip> ';
     }
     // tslint:enable:max-line-length
 

@@ -39,11 +39,11 @@ export class ListingItemTemplateRemoveCommand extends BaseCommand implements Rpc
         const listingItemTemplate = listingItemTemplateModel.toJSON();
 
         this.log.debug('remove template: ', data.params[0]);
-        this.log.debug('listingItemTemplate.ListingItems: ', listingItemTemplate.ListingItems.length);
-        this.log.debug('_.isEmpty(listingItemTemplate.ListingItems): ', _.isEmpty(listingItemTemplate.ListingItems));
+        // this.log.debug('listingItemTemplate.ListingItems: ', listingItemTemplate.ListingItems.length);
+        // this.log.debug('_.isEmpty(listingItemTemplate.ListingItems): ', _.isEmpty(listingItemTemplate.ListingItems));
 
         if (!_.isEmpty(listingItemTemplate.ListingItems)) {
-            throw new MessageException(`ListingItemTemplate has ListingItems so it can't be deleted. id=${data.params[0]}`);
+            throw new MessageException(`ListingItemTemplate has ListingItems, so it can't be deleted. id=${data.params[0]}`);
         }
         return await this.listingItemTemplateService.destroy(data.params[0]);
     }

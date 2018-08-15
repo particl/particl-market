@@ -77,7 +77,6 @@ import { HelpCommand } from '../commands/HelpCommand';
 import { ListingItemGetCommand } from '../commands/listingitem/ListingItemGetCommand';
 import { ListingItemSearchCommand } from '../commands/listingitem/ListingItemSearchCommand';
 import { ListingItemFlagCommand } from '../commands/listingitem/ListingItemFlagCommand';
-import { ListingItemUpdateCommand } from '../commands/listingitem/ListingItemUpdateCommand';
 import { ListingItemRootCommand } from '../commands/listingitem/ListingItemRootCommand';
 
 import { ListingItemTemplateAddCommand } from '../commands/listingitemtemplate/ListingItemTemplateAddCommand';
@@ -97,8 +96,8 @@ import { MessagingInformationRootCommand } from '../commands/messaginginformatio
 import { OrderRootCommand } from '../commands/order/OrderRootCommand';
 import { OrderSearchCommand } from '../commands/order/OrderSearchCommand';
 
-import { OrderItemRootCommand } from '../commands/orderItem/OrderItemRootCommand';
-import { OrderItemStatusCommand } from '../commands/orderItem/OrderItemStatusCommand';
+import { OrderItemRootCommand } from '../commands/orderitem/OrderItemRootCommand';
+import { OrderItemStatusCommand } from '../commands/orderitem/OrderItemStatusCommand';
 
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
 import { PaymentInformationRootCommand } from '../commands/paymentinformation/PaymentInformationRootCommand';
@@ -201,7 +200,6 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemGetCommand) private listingItemGetCommand: ListingItemGetCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemFlagCommand) private listingItemFlagCommand: ListingItemFlagCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemSearchCommand) private listingItemSearchCommand: ListingItemSearchCommand,
-        @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemUpdateCommand) private listingItemUpdateCommand: ListingItemUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemRootCommand) private listingItemRootCommand: ListingItemRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateAddCommand) private listingItemTemplateAddCommand: ListingItemTemplateAddCommand,
@@ -221,8 +219,8 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.order.OrderRootCommand) private orderRootCommand: OrderRootCommand,
         @inject(Types.Command) @named(Targets.Command.order.OrderSearchCommand) private orderSearchCommand: OrderSearchCommand,
 
-        @inject(Types.Command) @named(Targets.Command.orderItem.OrderItemRootCommand) private orderItemRootCommand: OrderItemRootCommand,
-        @inject(Types.Command) @named(Targets.Command.orderItem.OrderItemStatusCommand) private orderItemStatusCommand: OrderItemStatusCommand,
+        @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemRootCommand) private orderItemRootCommand: OrderItemRootCommand,
+        @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemStatusCommand) private orderItemStatusCommand: OrderItemStatusCommand,
 
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationRootCommand) private paymentInformationRootCommand: PaymentInformationRootCommand,
@@ -338,7 +336,6 @@ export class RpcCommandFactory {
         this.commands.push(listingItemGetCommand);
         this.commands.push(listingItemFlagCommand);
         this.commands.push(listingItemSearchCommand);
-        this.commands.push(listingItemUpdateCommand);
         this.commands.push(listingItemRootCommand);
 
         this.commands.push(listingItemTemplatePostCommand);

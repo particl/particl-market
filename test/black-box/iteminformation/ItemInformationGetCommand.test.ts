@@ -7,7 +7,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
-describe('/ItemInformationGetCommand', () => {
+describe('ItemInformationGetCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ITEMINFORMATION_ROOT.commandName;
     const subCommand = Commands.ITEMINFORMATION_GET.commandName;
@@ -37,12 +37,13 @@ describe('/ItemInformationGetCommand', () => {
         testDataListingItemTemplate.itemInformation.itemCategory.id = categories.id;
 
         // add item template
+        // todo: use generate
         const addListingItemTemplate: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
         const addListingItemTemplateResult = addListingItemTemplate;
         createdListingItemTemplateId = addListingItemTemplateResult.id;
     });
 
-    test('Should get a ListingItemInformation by listingItemTemplateId RPC', async () => {
+    test('Should get a ListingItemInformation using listingItemTemplateId', async () => {
         // get listingItemInformation by listingItemTemplateId
         const getDataRes: any = await rpc(method, [subCommand, createdListingItemTemplateId]);
 

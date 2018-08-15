@@ -33,8 +33,8 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: profile id
-     *  [4]: category, number|string, if string, try to search using key, can be null
-     *  [5]: searchString, string, can be null
+     *  [4]: category, number|string, if string, try to search using key, optional
+     *  [5]: searchString, string, optional
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
@@ -43,7 +43,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItemTemplate>> {
         return await this.listingItemTemplateService.search({
             page: data.params[0] || 1,
-            pageLimit: data.params[1] || 5,
+            pageLimit: data.params[1] || 10,
             order: data.params[2] || 'ASC',
             profileId: data.params[3],
             category: data.params[4],

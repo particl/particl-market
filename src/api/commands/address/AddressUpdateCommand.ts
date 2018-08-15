@@ -34,7 +34,7 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
     /**
      *
      * data.params[]:
-     *  [0]: address id
+     *  [0]: addressId
      *  [1]: firstName
      *  [2]: lastName
      *  [3]: title

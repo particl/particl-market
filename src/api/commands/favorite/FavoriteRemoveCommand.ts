@@ -36,7 +36,7 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
     /**
      *
      *  data.params[]:
-     *  [0]: profile_id or null if null then use the default profile
+     *  [0]: profile_id
      *  [1]: item_id or hash
      */
     @validate()

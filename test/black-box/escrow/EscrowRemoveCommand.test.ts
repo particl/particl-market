@@ -59,7 +59,7 @@ describe('EscrowRemoveCommand', () => {
         profileId = defaultProfile.id;
     });
 
-    test('Should destroy Escrow by RPC', async () => {
+    test('Should destroy Escrow', async () => {
         testDataListingItemTemplate.profile_id = profileId;
 
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);

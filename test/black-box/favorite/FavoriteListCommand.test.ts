@@ -76,7 +76,7 @@ describe('FavoriteListCommand', () => {
 
     });
 
-    test('Should return empty favorite list', async () => {
+    test('Should return empty FavoriteItem list', async () => {
         const getDataRes: any = await rpc(method, [subCommand, createdProfileId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -85,7 +85,7 @@ describe('FavoriteListCommand', () => {
         expect(result).toHaveLength(0);
     });
 
-    test('Should return one favorite list by profile id with default related = true', async () => {
+    test('Should return one FavoriteItem list by profile id with default related = true', async () => {
 
         // add favorite item
         await rpc(method, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, createdListingItemIdOne]);
@@ -113,7 +113,7 @@ describe('FavoriteListCommand', () => {
         expect(result[0].ListingItem.PaymentInformation).toBeDefined();
     });
 
-    test('Should return one favorite list by profile name', async () => {
+    test('Should return FavoriteItem list by profile name', async () => {
 
         // add favorite item
         await rpc(method, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, createdListingItemIdOne]);
@@ -141,7 +141,7 @@ describe('FavoriteListCommand', () => {
         expect(result[0].ListingItem.PaymentInformation).toBeDefined();
     });
 
-    test('Should fail to get favorite list because invalid profile name', async () => {
+    test('Should fail to get FavoriteItem list because invalid profile name', async () => {
         const profileName = 'INVALID PROFILE NAME';
         const getDataRes: any = await rpc(method, [subCommand, profileName]);
         getDataRes.expectJson();
@@ -150,7 +150,7 @@ describe('FavoriteListCommand', () => {
         expect(getDataRes.error.error.message).toBe(`Profile with the name = ${profileName} was not found!`);
     });
 
-    test('Should fail to get favorite list because invalid profile id', async () => {
+    test('Should fail to get FavoriteItem list because invalid profile id', async () => {
         const getDataRes: any = await rpc(method, [subCommand, createdProfileId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -159,7 +159,7 @@ describe('FavoriteListCommand', () => {
         expect(result).toHaveLength(0);
     });
 
-    test('Should return two favorite lists by profile id', async () => {
+    test('Should return two FavoriteItems by profile id', async () => {
 
         // add favorite item
         await rpc(method, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, createdListingItemIdTwo]);
@@ -201,7 +201,7 @@ describe('FavoriteListCommand', () => {
 
     });
 
-    test('Should return two favorite lists by profile name without related', async () => {
+    test('Should return two FavoriteItems by profile name without related', async () => {
 
         // add favorite item
         await rpc(method, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, createdListingItemIdTwo]);

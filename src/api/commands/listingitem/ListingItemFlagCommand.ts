@@ -53,7 +53,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const isFlagged = await this.listingItemService.isItemFlagged(listingItem);
 
         if (isFlagged) {
-            throw new MessageException('Item already beeing flagged!');
+            throw new MessageException('Item already being flagged!');
         } else {
             // create FlaggedItem
             return await this.flaggedItemService.create({

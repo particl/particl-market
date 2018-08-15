@@ -137,7 +137,7 @@ describe('ItemImageAddCommand', () => {
 
     });
 
-    test('Should return valid LARGE image dimention', async () => {
+    test('Should return valid LARGE image dimension', async () => {
         for ( const imageData of itemImages ) {
             const imageUrl = process.env.APP_HOST
                 + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
@@ -169,7 +169,7 @@ describe('ItemImageAddCommand', () => {
         }
     });
 
-    test('Should return valid MEDIUM image dimention', async () => {
+    test('Should return valid MEDIUM image dimension', async () => {
         for ( const imageData of itemImages ) {
             const imageUrl = process.env.APP_HOST
                 + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')
@@ -201,7 +201,7 @@ describe('ItemImageAddCommand', () => {
         }
     });
 
-    test('Should return valid THUMBNAIL image dimention', async () => {
+    test('Should return valid THUMBNAIL image dimension', async () => {
         for ( const imageData of itemImages ) {
             const imageUrl = process.env.APP_HOST
                 + (process.env.APP_PORT ? ':' + process.env.APP_PORT : '')

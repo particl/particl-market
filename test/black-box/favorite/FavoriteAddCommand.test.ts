@@ -64,7 +64,7 @@ describe('FavoriteAddCommand', () => {
 
     });
 
-    test('Should add favorite item by profile id and listing id', async () => {
+    test('Should add FavoriteItem with profile id and listing id', async () => {
         // add favorite item
         const getDataRes: any = await rpc(method, [subCommand, defaultProfileId, createdListingItemId]);
         getDataRes.expectJson();
@@ -74,7 +74,7 @@ describe('FavoriteAddCommand', () => {
         expect(result.profileId).toBe(defaultProfileId);
     });
 
-    test('Should add favorite item by profile id and listing hash', async () => {
+    test('Should add FavoriteItem by profile id and listing hash', async () => {
         // add favorite item by item hash and profile
         const getDataRes: any = await rpc(method, [subCommand, defaultProfileId, createdListingItemHash]);
         getDataRes.expectJson();
@@ -84,7 +84,7 @@ describe('FavoriteAddCommand', () => {
         expect(result.profileId).toBe(defaultProfileId);
     });
 
-    test('Should fail because we want to create an empty favorite', async () => {
+    test('Should fail because we want to create an empty FavoriteItem', async () => {
         const getDataRes: any = await rpc(method, [subCommand]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(404);

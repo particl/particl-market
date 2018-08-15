@@ -18,17 +18,16 @@ describe('ProfileUpdateCommand', () => {
         await testUtil.cleanDb();
     });
 
-    test('Should update the profile by RPC', async () => {
+    test('Should update the Profile', async () => {
         // set up the test data
         let generatedProfile: any = await testUtil.generateData(CreatableModel.PROFILE, 1, true);
         generatedProfile = generatedProfile[0];
         const createdId = generatedProfile.id;
 
-        // update profile
         const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';
         const profileAddress = 'UPDATED-DEFAULT-PROFILE-TEST-ADDRESS';
         const res = await rpc(method, [subCommand, createdId, profileName]);
-        console.log(JSON.stringify(res));
+
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

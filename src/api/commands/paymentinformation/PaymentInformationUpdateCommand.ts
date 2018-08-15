@@ -39,7 +39,7 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
      *  [3]: base price
      *  [4]: domestic shipping price
      *  [5]: international shipping price
-     *  [6]: payment address
+     *  [6]: payment address, optional
      *
      * @param data
      * @returns {Promise<PaymentInformation>}

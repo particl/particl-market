@@ -35,11 +35,11 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
      * data.params[]:
      * [0]: listing_item_template_id
      * [1]: region (country/countryCode)
-     * [2]: address
-     * [3]: gps marker title
-     * [4]: gps marker description
-     * [5]: gps marker latitude
-     * [6]: gps marker longitude
+     * [2]: address, optional
+     * [3]: gps marker title, optional
+     * [4]: gps marker description, optional
+     * [5]: gps marker latitude, optional
+     * [6]: gps marker longitude, optional
      *
      * @param data
      * @returns {Promise<ItemLocation>}
@@ -127,7 +127,7 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
     }
 
     public description(): string {
-        return 'Command for adding an item location to your listingItemTemplate, identified by listingItemTemplateId.';
+        return 'Command for adding an ItemLocation to your ListingItemTemplate, identified by listingItemTemplateId.';
     }
 
     public example(): string {
@@ -147,12 +147,12 @@ export class ItemLocationAddCommand extends BaseCommand implements RpcCommandInt
 
         // Through exception if ItemInformation or ItemLocation does not exist
         if (_.size(ItemInformation) === 0) {
-            this.log.warn(`Item Information with the listing template id=${listingItemTemplateId} was not found!`);
-            throw new MessageException(`Item Information with the listing template id=${listingItemTemplateId} was not found!`);
+            this.log.error(`Item Information with the listingItemTemplateId=${listingItemTemplateId} was not found!`);
+            throw new MessageException(`ItemInformation with the listingItemTemplateId=${listingItemTemplateId} was not found!`);
         }
         if (_.size(ItemInformation.ItemLocation) > 0) {
-            this.log.warn(`ItemLocation with the listing template id=${listingItemTemplateId} is already exist`);
-            throw new MessageException(`ItemLocation with the listing template id=${listingItemTemplateId} is already exist`);
+            this.log.error(`ItemLocation with the listingItemTemplateId=${listingItemTemplateId} already exists`);
+            throw new MessageException(`ItemLocation with the listingItemTemplateId=${listingItemTemplateId} already exists`);
         }
 
         return ItemInformation;

@@ -16,7 +16,7 @@ describe('ItemCategoriesGetCommand', () => {
         await testUtil.cleanDb();
     });
 
-    test('Should get the categories by RPC', async () => {
+    test('Should return all the Categories', async () => {
         //  test default category data
         const res = await rpc(method, [subCommand]);
         res.expectJson();

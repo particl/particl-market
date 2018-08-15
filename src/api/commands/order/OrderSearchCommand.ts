@@ -30,11 +30,11 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
 
     /**
      * data.params[]:
-     * [0]: itemhash
-     * [1]: status
-     * [2]: buyerAddress
-     * [3]: sellerAddress
-     * [4]: ordering
+     * [0]: itemhash, optional
+     * [1]: status, optional
+     * [2]: buyerAddress, optional
+     * [3]: sellerAddress, optional
+     * [4]: ordering, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<Bookshelf.Collection<Order>>}
@@ -63,7 +63,7 @@ export class OrderSearchCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public usage(): string {
-        return this.getName() + ' (<itemhash>|*) [(<status>|*) [(<buyerAddress>|*) [(<sellerAddress>|*) [<ordering>]]]] ';
+        return this.getName() + ' [(<itemhash>|*) [(<status>|*) [(<buyerAddress>|*) [(<sellerAddress>|*) [<ordering>]]]]]';
     }
 
     public help(): string {

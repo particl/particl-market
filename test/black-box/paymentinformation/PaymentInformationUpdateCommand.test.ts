@@ -11,7 +11,7 @@ import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
-describe('/PaymentInformationUpdateCommand', () => {
+describe('PaymentInformationUpdateCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
     const method =  Commands.PAYMENTINFORMATION_ROOT.commandName;
@@ -74,7 +74,7 @@ describe('/PaymentInformationUpdateCommand', () => {
         profileId = defaultProfile.id;
     });
 
-    test('Should update Payment-information by RPC', async () => {
+    test('Should update PaymentInformation', async () => {
 
         testDataListingItemTemplate.profile_id = profileId;
 
@@ -101,7 +101,7 @@ describe('/PaymentInformationUpdateCommand', () => {
         expect(resultUpdate.ItemPrice.CryptocurrencyAddress.address).toBe(testData.itemPrice.cryptocurrencyAddress.address);
     });
 
-    test('Should fail update Payment Information, payment-information is not related with item-template', async () => {
+    test('Should fail update PaymentInformation, as its not related with ItemTemplate', async () => {
         const updateDataRes: any = await rpc(method, [subCommand, 0, testData.type,
             testData.itemPrice.currency, testData.itemPrice.basePrice,
             testData.itemPrice.shippingPrice.domestic, testData.itemPrice.shippingPrice.international,
