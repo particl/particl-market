@@ -1,7 +1,3 @@
-// Copyright (c) 2017-2018, The Particl Market developers
-// Distributed under the GPL software license, see the accompanying
-// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
-
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -113,6 +109,7 @@ export const Targets = {
         BidActionService: 'BidActionService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
+        CategoryIsDoableService: 'CategoryIsDoableService',
         CoreCookieService: 'CoreCookieService',
         CoreRpcService: 'CoreRpcService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
@@ -126,7 +123,6 @@ export const Targets = {
         FavoriteItemService: 'FavoriteItemService',
         FlaggedItemService: 'FlaggedItemService',
         ItemCategoryService: 'ItemCategoryService',
-        CategoryIsDoableService: 'CategoryIsDoableService',
         ItemImageDataContentService: 'ItemImageDataContentService',
         ItemImageDataService: 'ItemImageDataService',
         ItemImageHttpUploadService: 'ItemImageHttpUploadService',
@@ -249,8 +245,7 @@ export const Targets = {
             ListingItemFlagCommand: 'ListingItemFlagCommand',
             ListingItemGetCommand: 'ListingItemGetCommand',
             ListingItemRootCommand: 'ListingItemRootCommand',
-            ListingItemSearchCommand: 'ListingItemSearchCommand',
-            ListingItemUpdateCommand: 'ListingItemUpdateCommand'
+            ListingItemSearchCommand: 'ListingItemSearchCommand'
         },
         listingitemobject: {
             ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
@@ -277,7 +272,7 @@ export const Targets = {
             OrderRootCommand: 'OrderRootCommand',
             OrderSearchCommand: 'OrderSearchCommand'
         },
-        orderItem: {
+        orderitem: {
             OrderItemRootCommand: 'OrderItemRootCommand',
             OrderItemStatusCommand: 'OrderItemStatusCommand'
         },
@@ -355,6 +350,7 @@ export const Targets = {
             TestMessageProcessor: 'TestMessageProcessor',
             UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
         },
+        ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
         MessageProcessor: 'MessageProcessor',
         MessageProcessorInterface: 'MessageProcessorInterface'
     },

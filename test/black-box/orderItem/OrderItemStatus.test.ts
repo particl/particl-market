@@ -15,11 +15,7 @@ import * as resources from 'resources';
 // Ryno
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { AddressType } from '../../../src/api/enums/AddressType';
-import { EscrowType } from '../../../src/api/enums/EscrowType';
 import { OrderStatus } from '../../../src/api/enums/OrderStatus';
-import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
-
-import { MessageException } from '../../../src/api/exceptions/MessageException';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
@@ -28,9 +24,9 @@ describe('OrderItemStatus', () => {
     const randomBoolean: boolean = Math.random() >= 0.5;
     const testUtil1 = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
     const testUtil2 = new BlackBoxTestUtil(randomBoolean ? 2 : 1);
-    
+
     const lockCommand = Commands.ESCROW_LOCK.commandName;
-    
+
     const categoryCommand = Commands.CATEGORY_ROOT.commandName;
     const categorySearchSubCommand = Commands.CATEGORY_SEARCH.commandName;
 
@@ -44,13 +40,13 @@ describe('OrderItemStatus', () => {
 
     const itemCommand = Commands.ITEM_ROOT.commandName;
     const itemGetSubCommand = Commands.ITEM_GET.commandName;
-    
+
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const escrowAddSubCommand = Commands.ESCROW_ADD.commandName;
 
     const addressCommand = Commands.ADDRESS_ROOT.commandName;
     const addressSubCommand = Commands.ADDRESS_ADD.commandName;
-    
+
     const bidCommand = Commands.BID_ROOT.commandName;
     const bidSubCommand = Commands.BID_SEND.commandName;
     const bidSearchSubCommand = Commands.BID_SEARCH.commandName;
@@ -61,7 +57,7 @@ describe('OrderItemStatus', () => {
 
     const orderItemCommand = Commands.ORDERITEM_ROOT.commandName;
     const orderItemStatusSubCommand = Commands.ORDERITEM_STATUS.commandName;
-    
+
     let profileId1;
     let profileId2;
     let marketId1;
@@ -97,13 +93,8 @@ describe('OrderItemStatus', () => {
     beforeAll(async () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
-        // IDK Why this is crashing here...
-        try {
-            await testUtil1.cleanDb();
-            await testUtil2.cleanDb();
-        } catch (e) {
-            //
-        }
+        await testUtil1.cleanDb();
+        await testUtil2.cleanDb();
 
         defaultProfile1 = await testUtil1.getDefaultProfile();
         profileId1 = defaultProfile1.id;

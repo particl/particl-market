@@ -32,7 +32,7 @@ describe('MarketListCommand', () => {
     });
 
     test('Should list all created markets', async () => {
-        // add markets
+        // add market
         await rpc(method, [addMarketCommand, marketData.name, marketData.private_key, marketData.address]);
 
         const res = await rpc(method, [subCommand]);

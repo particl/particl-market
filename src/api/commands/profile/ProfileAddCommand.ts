@@ -30,7 +30,7 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
     /**
      * data.params[]:
      *  [0]: profile name
-     *  [1]: profile address
+     *  [1]: profile address, optional
      *
      * @param data
      * @returns {Promise<Profile>}

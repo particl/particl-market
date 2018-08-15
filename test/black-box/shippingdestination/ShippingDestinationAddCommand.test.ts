@@ -49,7 +49,7 @@ describe('ShippingDestinationAddCommand', () => {
 
     });
 
-    test('Should add shipping destination converting country name to code in the process', async () => {
+    test('Should add ShippingDestination converting country name to code in the process', async () => {
         const response: any = await rpc(method, [subCommand, createdListingItemTemplate.id, shippingCountry, ShippingAvailability.SHIPS]);
         response.expectJson();
         response.expectStatusCode(200);
@@ -61,7 +61,7 @@ describe('ShippingDestinationAddCommand', () => {
         expect(result.itemInformationId).toBe(createdListingItemTemplate.ItemInformation.id);
     });
 
-    test('Should fail adding shipping destination again for the same country and shipping availability', async () => {
+    test('Should fail adding ShippingDestination again for the same country and shipping availability', async () => {
         const response: any = await rpc(method, [subCommand, createdListingItemTemplate.id, shippingCountry, ShippingAvailability.SHIPS]);
         response.expectJson();
         response.expectStatusCode(404);
@@ -69,7 +69,7 @@ describe('ShippingDestinationAddCommand', () => {
         expect(response.error.error.message).toBe('Shipping destination allready exists.');
     });
 
-    test('Should fail to add shipping destination for invalid country', async () => {
+    test('Should fail to add ShippingDestination for invalid country', async () => {
         const response: any = await rpc(method, [subCommand, createdListingItemTemplate.id, invalidShippingCountry, ShippingAvailability.SHIPS]);
         response.expectJson();
         response.expectStatusCode(404);
@@ -77,7 +77,7 @@ describe('ShippingDestinationAddCommand', () => {
         expect(response.error.error.message).toBe('Entity with identifier Country code <' + invalidShippingCountry + '> was not valid! does not exist');
     });
 
-    test('Should fail to add shipping destination using invalid ShippingAvailability', async () => {
+    test('Should fail to add ShippingDestination using invalid ShippingAvailability', async () => {
         const response: any = await rpc(method, [subCommand, createdListingItemTemplate.id, shippingCountry, invalidShippingAvailability]);
         response.expectJson();
         response.expectStatusCode(404);
@@ -85,7 +85,7 @@ describe('ShippingDestinationAddCommand', () => {
         expect(response.error.error.message).toBe('Shipping Availability <' + invalidShippingAvailability + '> was not valid!');
     });
 
-    test('Should fail to add shipping destination for invalid item template id', async () => {
+    test('Should fail to add ShippingDestination for invalid item template id', async () => {
         const response: any = await rpc(method, [subCommand, createdListingItemTemplate.id + 100, shippingCountry, ShippingAvailability.SHIPS]);
         response.expectJson();
         response.expectStatusCode(404);

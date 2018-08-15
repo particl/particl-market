@@ -46,7 +46,7 @@ describe('ShippingDestinationListCommand', () => {
         createdListingItemId = listingItems[0].id;
     });
 
-    test('Should list shipping destinations for template', async () => {
+    test('Should list ShippingDestinations for template', async () => {
         const response: any = await rpc(method, [subCommand, 'template', createdListingItemTemplateId]);
         response.expectJson();
         response.expectStatusCode(200);
@@ -54,7 +54,7 @@ describe('ShippingDestinationListCommand', () => {
         expect(result.length).toBeGreaterThan(0);
     });
 
-    test('Should list shipping destinations for item', async () => {
+    test('Should list ShippingDestinations for item', async () => {
         const response: any = await rpc(method, [subCommand, 'item', createdListingItemId]);
         response.expectJson();
         response.expectStatusCode(200);
@@ -62,16 +62,14 @@ describe('ShippingDestinationListCommand', () => {
         expect(result.length).toBeGreaterThan(0);
     });
 
-    test('Should fail to list shipping destination for unexisting template', async () => {
+    test('Should fail to list ShippingDestinations for nonexisting template', async () => {
         const response: any = await rpc(method, [subCommand, 'template', createdListingItemTemplateId + 1000]);
-
         response.expectJson();
         response.expectStatusCode(404);
     });
 
-    test('Should fail to list shipping destination for unexisting item', async () => {
+    test('Should fail to list ShippingDestinations for nonexisting item', async () => {
         const response: any = await rpc(method, [subCommand, 'item', createdListingItemId + 1000]);
-
         response.expectJson();
         response.expectStatusCode(404);
     });

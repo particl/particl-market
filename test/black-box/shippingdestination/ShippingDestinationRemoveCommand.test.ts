@@ -81,7 +81,7 @@ describe('ShippingDestinationRemoveCommand', () => {
 
     });
 
-    test('Should fail to remove shipping destination using invalid country', async () => {
+    test('Should fail to remove ShippingDestination using invalid country', async () => {
 
         const removeShippingResult: any = await rpc(method, subCommands.concat(
             [createdListingItemTemplateId, 'invalid-country-code', ShippingAvailability.SHIPS]
@@ -94,7 +94,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         expect(removeShippingResult.error.error.message).toBe('Entity with identifier Country code <INVALID-COUNTRY-CODE> was not valid! does not exist');
     });
 
-    test('Should fail to remove shipping destination using invalid ShippingAvailability', async () => {
+    test('Should fail to remove ShippingDestination using invalid ShippingAvailability', async () => {
         const removeShippingResult: any = await rpc(method, subCommands.concat(
             [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.DOES_NOT_SHIP]
         ));
@@ -106,7 +106,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         expect(removeShippingResult.error.error.message).toBe('Entity with identifier ' + createdListingItemTemplateId + ' does not exist');
     });
 
-    test('Should fail to remove shipping destination using invalid itemtemplate id', async () => {
+    test('Should fail to remove ShippingDestination using invalid itemtemplate id', async () => {
         const removeShippingResult: any = await rpc(method, subCommands.concat(
             [createdListingItemTemplateId + 100, countryList.ZA.iso, ShippingAvailability.SHIPS]
         ));
@@ -117,7 +117,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         expect(removeShippingResult.error.error.message).toBe('Entity with identifier ' + (createdListingItemTemplateId + 100) + ' does not exist');
     });
 
-    test('Should remove shipping destination from template', async () => {
+    test('Should remove ShippingDestination from template', async () => {
         const removeShippingResult: any = await rpc(method, subCommands.concat(
             [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]
         ));
@@ -126,7 +126,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         removeShippingResult.expectStatusCode(200);
     });
 
-    test('Should fail to remove shipping destination from template because it already removed', async () => {
+    test('Should fail to remove ShippingDestination from template because it already removed', async () => {
         const removeShippingResult: any = await rpc(method, subCommands.concat(
             [createdListingItemTemplateId, countryList.ZA.iso, ShippingAvailability.SHIPS]
         ));
@@ -135,7 +135,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         removeShippingResult.expectStatusCode(404);
     });
 
-    test('Should fail to remove shipping destination from listing item (listing items have allready been posted, so they cant be modified)', async () => {
+    test('Should fail to remove ShippingDestination from listing item (listing items have allready been posted, so they cant be modified)', async () => {
         const removeShippingResult: any = await rpc(method, subCommands.concat(
             [createdListingItemsShippingDestinationId]
         ));
@@ -146,7 +146,7 @@ describe('ShippingDestinationRemoveCommand', () => {
         expect(removeShippingResult.error.error.message).toBe('Can\'t delete shipping destination, because the item has allready been posted!');
     });
 
-    test('Should remove shipping destination by id', async () => {
+    test('Should remove ShippingDestination by id', async () => {
 
         const addShippingSubCommands = [Commands.SHIPPINGDESTINATION_ROOT.commandName, Commands.SHIPPINGDESTINATION_ADD.commandName] as any[];
         const addShippingResult = await rpc(method, addShippingSubCommands.concat(
