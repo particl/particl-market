@@ -9,7 +9,7 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 import { ListingItem, ListingItemTemplate } from 'resources';
 
-describe('/ItemLocationRemoveCommand', () => {
+describe('ItemLocationRemoveCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ITEMLOCATION_ROOT.commandName;
     const subCommand = Commands.ITEMLOCATION_REMOVE.commandName;

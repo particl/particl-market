@@ -7,7 +7,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
-describe('/ItemInformationUpdateCommand', () => {
+describe('ItemInformationUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ITEMINFORMATION_ROOT.commandName;
     const subCommand = Commands.ITEMINFORMATION_UPDATE.commandName;
@@ -47,50 +47,52 @@ describe('/ItemInformationUpdateCommand', () => {
 
         // create listing item
         testDataListingItemTemplate.profile_id = profileId;
+        // TODO: use generate
         const addListingItemTemplate: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
         const addListingItemTemplateResult = addListingItemTemplate;
         createdListingItemTemplateId = addListingItemTemplateResult.id;
 
         const testDataListingItemTemplate2 = testDataListingItemTemplate;
         delete testDataListingItemTemplate2.itemInformation;
+        // TODO: use generate
         const addListingItemTemplate2: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate2);
         const addListingItemTemplateResult2 = addListingItemTemplate2;
         createdListingItemTemplateId2 = addListingItemTemplateResult2.id;
     });
 
-    test('Should fail because we want to update an iteminformation with embty body', async () => {
+    test('Should fail because we want to update an ItemInformation with empty body', async () => {
         const res = await rpc(method, [subCommand, createdListingItemTemplateId]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
-    test('Should fail because we want to update an iteminformation without title', async () => {
+    test('Should fail because we want to update an ItemInformation without title', async () => {
         const res = await rpc(method, [subCommand,
             createdListingItemTemplateId, null, testData.shortDescription, testData.longDescription, testData.itemCategory.id]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
-    test('Should fail because we want to update an iteminformation without shortDescription', async () => {
+    test('Should fail because we want to update an ItemInformation without shortDescription', async () => {
         const res = await rpc(method, [subCommand, createdListingItemTemplateId, testData.title, null, testData.longDescription, testData.itemCategory.id]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
-    test('Should fail because we want to update an iteminformation without longDescription', async () => {
+    test('Should fail because we want to update an ItemInformation without longDescription', async () => {
         const res = await rpc(method, [subCommand, createdListingItemTemplateId, testData.title, testData.shortDescription, null, testData.itemCategory.id]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
-    test('Should fail because we want to update an iteminformation without category id', async () => {
+    test('Should fail because we want to update an ItemInformation without category id', async () => {
         const res = await rpc(method, [subCommand, createdListingItemTemplateId, testData.title, testData.shortDescription, testData.longDescription, null]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
 
-    test('Should update Item Information by RPC', async () => {
+    test('Should update ItemInformation', async () => {
         // update item information
 
         const getDataRes: any = await rpc(method, [subCommand, createdListingItemTemplateId,
@@ -104,7 +106,7 @@ describe('/ItemInformationUpdateCommand', () => {
         expect(result.ItemCategory.id).toBe(testData.itemCategory.id);
     });
 
-    test('Should fail update Item Information, item-information is not related with item-template', async () => {
+    test('Should fail update ItemInformation, since its not related with ListingItemTemplate', async () => {
         const getDataRes: any = await rpc(method, [subCommand, createdListingItemTemplateId2,
             testData.title, testData.shortDescription, testData.longDescription, testData.itemCategory.id]);
         getDataRes.expectJson();

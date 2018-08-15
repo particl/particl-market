@@ -7,7 +7,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
-describe('/ItemInformationAddCommand', () => {
+describe('ItemInformationAddCommand', () => {
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ITEMINFORMATION_ROOT.commandName;
     const subCommand = Commands.ITEMINFORMATION_ADD.commandName;
@@ -24,6 +24,7 @@ describe('/ItemInformationAddCommand', () => {
         }
     };
     let createdListingItemTemplateId;
+
     beforeAll(async () => {
         await testUtil.cleanDb();
         const defaultProfile = await testUtil.getDefaultProfile();
@@ -36,64 +37,80 @@ describe('/ItemInformationAddCommand', () => {
 
         // create listing item
         testDataListingItemTemplate.profile_id = profileId;
+        // TODO: use generate
         const addListingItemTemplate: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
         const addListingItemTemplateResult = addListingItemTemplate;
         createdListingItemTemplateId = addListingItemTemplateResult.id;
     });
 
-    test('Should fail because we want to create an iteminformation with embty body', async () => {
+    test('Should fail because we want to create an ItemInformation with empty body', async () => {
         const res = await rpc(method, [subCommand]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
-    test('Should fail because we want to create an iteminformation without   category id', async () => {
-        const res: any = await rpc(method, [subCommand, createdListingItemTemplateId,
+    test('Should fail because we want to create an ItemInformation without   category id', async () => {
+        const res: any = await rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
             testDataListingItemTemplate.itemInformation.title,
             testDataListingItemTemplate.itemInformation.shortDescription,
-            testDataListingItemTemplate.itemInformation.longDescription, null]);
+            testDataListingItemTemplate.itemInformation.longDescription,
+            null
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
-    test('Should fail because we want to create an iteminformation without title', async () => {
-        const res: any = await rpc(method, [subCommand, createdListingItemTemplateId,
+    test('Should fail because we want to create an ItemInformation without title', async () => {
+        const res: any = await rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
             null,
             testDataListingItemTemplate.itemInformation.shortDescription,
             testDataListingItemTemplate.itemInformation.longDescription,
-            testDataListingItemTemplate.itemInformation.itemCategory.id]);
+            testDataListingItemTemplate.itemInformation.itemCategory.id
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
-    test('Should fail because we want to create an iteminformation without shortDescription', async () => {
-        const res: any = await rpc(method, [subCommand, createdListingItemTemplateId,
+    test('Should fail because we want to create an ItemInformation without shortDescription', async () => {
+        const res: any = await rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
             testDataListingItemTemplate.itemInformation.title,
             null,
             testDataListingItemTemplate.itemInformation.longDescription,
-            testDataListingItemTemplate.itemInformation.itemCategory.id]);
+            testDataListingItemTemplate.itemInformation.itemCategory.id
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
-    test('Should fail because we want to create an iteminformation without longDescription', async () => {
-        const res: any = await rpc(method, [subCommand, createdListingItemTemplateId,
+    test('Should fail because we want to create an ItemInformation without longDescription', async () => {
+        const res: any = await rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
             testDataListingItemTemplate.itemInformation.title,
             testDataListingItemTemplate.itemInformation.longDescription,
             null,
             testDataListingItemTemplate.itemInformation.itemCategory.id
-            ]);
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
-    test('Should create a new Item Information by RPC', async () => {
+    test('Should create a new ItemInformation', async () => {
         // create item information
-        const getDataRes: any = await rpc(method, [subCommand, createdListingItemTemplateId,
+        const getDataRes: any = await rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
             testDataListingItemTemplate.itemInformation.title,
             testDataListingItemTemplate.itemInformation.shortDescription,
             testDataListingItemTemplate.itemInformation.longDescription,
-            testDataListingItemTemplate.itemInformation.itemCategory.id]);
+            testDataListingItemTemplate.itemInformation.itemCategory.id
+        ]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];

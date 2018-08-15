@@ -14,7 +14,7 @@ import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 
-describe('/ItemLocationUpdateCommand', () => {
+describe('ItemLocationUpdateCommand', () => {
     const testUtil = new BlackBoxTestUtil();
 
     const method = Commands.ITEMLOCATION_ROOT.commandName;
@@ -75,7 +75,7 @@ describe('/ItemLocationUpdateCommand', () => {
 
     });
 
-    test('Should update item location and set null location marker fields', async () => {
+    test('Should update ItemLocation and set null location marker fields', async () => {
         // update item location
         const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, testDataUpdated[1], testDataUpdated[2]]);
         addDataRes.expectJson();
@@ -87,7 +87,7 @@ describe('/ItemLocationUpdateCommand', () => {
         expect(result.itemInformationId).toBe(createdItemInformationId);
     });
 
-    test('Should update item location', async () => {
+    test('Should update ItemLocation', async () => {
         // update item location
         const testDataUpdated2 = testDataUpdated;
         testDataUpdated2.unshift(subCommand);
@@ -104,7 +104,7 @@ describe('/ItemLocationUpdateCommand', () => {
         expect(result.LocationMarker.lng).toBe(testDataUpdated2[7]);
     });
 
-    test('Should fail because we want to update without reason', async () => {
+    test('Should fail because we want to update without Country code', async () => {
         const addDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
@@ -121,7 +121,7 @@ describe('/ItemLocationUpdateCommand', () => {
     });
 
     // ItemLocation cannot be updated if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
-    test('Should not update item location because item information is related with listing item', async () => {
+    test('Should not update ItemLocation because ItemInformation is related with ListingItem', async () => {
         // generate listing item
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM, // what to generate

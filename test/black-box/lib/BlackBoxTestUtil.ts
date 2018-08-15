@@ -22,6 +22,8 @@ export class BlackBoxTestUtil {
     private node;
 
     constructor(node: number = 0) {
+        // TODO: instead of having default node = 0,
+        // we should use node=1 for ci tests
         jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
         new LoggerConfig().configure();
         this.node = node;

@@ -28,11 +28,13 @@ export class ItemInformationAddCommand extends BaseCommand implements RpcCommand
 
     /**
      * data.params[]:
-     *  [0]: listing template id
+     *  [0]: listingItemTemplateId
      *  [1]: title
-     *  [2]: short-description
-     *  [3]: long-description
+     *  [2]: shortDescription
+     *  [3]: longDescription
      *  [4]: categoryId
+     *
+     * TODO: should support also categorykey
      *
      * @param data
      * @returns {Promise<ItemInformation>}

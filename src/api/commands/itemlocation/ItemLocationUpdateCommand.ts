@@ -35,11 +35,11 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
      * data.params[]:
      * [0]: listing_item_template_id
      * [1]: region (country/countryCode)
-     * [2]: address
-     * [3]: gps marker title
-     * [4]: gps marker description
-     * [5]: gps marker latitude
-     * [6]: gps marker longitude
+     * [2]: address, optional
+     * [3]: gps marker title, optional
+     * [4]: gps marker description, optional
+     * [5]: gps marker latitude, optional
+     * [6]: gps marker longitude, optional
      *
      * @param data
      * @returns {Promise<ItemLocation>}

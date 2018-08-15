@@ -27,7 +27,7 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
 
     /**
      * data.params[]:
-     *  [0]: ItemImage.Id
+     *  [0]: ItemImageId
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {

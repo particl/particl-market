@@ -126,14 +126,14 @@ describe('ItemImageRemoveCommand', () => {
         expect(result.error.error.message).toBe('Can\'t delete itemImage because the item has allready been posted!');
     });
 
-    test('Should remove item images', async () => {
+    test('Should remove ItemImage', async () => {
         // remove item image
         const result: any = await rpc(imageCommand, [removeCommand, createdItemImageId]);
         result.expectJson();
         result.expectStatusCode(200);
     });
 
-    test('Should fail to remove itemImage because itemImage already been removed', async () => {
+    test('Should fail to remove ItemImage because itemImage already been removed', async () => {
         const result: any = await rpc(imageCommand, [removeCommand, createdItemImageId]);
         result.expectJson();
         result.expectStatusCode(404);
