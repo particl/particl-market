@@ -21,9 +21,11 @@ export class BlackBoxTestUtil {
     public log: LoggerType = new LoggerType(__filename);
     private node;
 
-    constructor(node: number = 0) {
-        // TODO: instead of having default node = 0,
-        // we should use node=1 for ci tests
+    constructor(node?: number) {
+        if (!node) {
+            // set test node to 1 when running against docker-compose
+            node = process.env.TEST_NODE ? process.env.TEST_NODE : 0;
+        }
         jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
         new LoggerConfig().configure();
         this.node = node;
