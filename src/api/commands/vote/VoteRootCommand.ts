@@ -37,14 +37,14 @@ export class VoteRootCommand extends BaseCommand implements RpcCommandInterface<
     }
 
     public help(): string {
-        return this.getName() + ' TODO: (command param help)';
+        return this.getName() + ' (get|list|post)  -  ' + this.description();
     }
 
     public description(): string {
-        return 'TODO: Commands for managing VoteRootCommand.';
+        return 'Commands for Voting.';
     }
 
     public example(): string {
-        return this.getName() + ' TODO: example';
+        return this.getName() + '';
     }
 }

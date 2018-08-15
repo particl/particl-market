@@ -29,7 +29,7 @@ export class ShoppingCartRootCommand extends BaseCommand implements RpcCommandIn
     }
 
     public usage(): string {
-        return this.getName() + ' (list|get|add|update|remove|clear|search)  -  ' + this.description();
+        return this.getName() + ' (list|get|add|update|remove|clear)  -  ' + this.description();
     }
 
     public description(): string {

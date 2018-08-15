@@ -20,7 +20,7 @@ describe('ShoppingCartListCommand', () => {
         defaultProfile = await testUtil.getDefaultProfile();
     });
 
-    test('Should get a default Shopping Cart by profileId', async () => {
+    test('Should get a default ShoppingCart by profileId', async () => {
         const res = await rpc(method, [subCommand, defaultProfile.id]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -32,7 +32,7 @@ describe('ShoppingCartListCommand', () => {
         expect(result[0].profileId).toBe(defaultProfile.id);
     });
 
-    test('Should get a default Shopping Cart by profile name', async () => {
+    test('Should get a default ShoppingCart by profile name', async () => {
         const res = await rpc(method, [subCommand, defaultProfile.name]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -44,7 +44,7 @@ describe('ShoppingCartListCommand', () => {
         expect(result[0].profileId).toBe(defaultProfile.id);
     });
 
-    test('Should fail to get shopping cart if profile id non exist', async () => {
+    test('Should fail to get ShoppingCart if profile id non exist', async () => {
         const fakeProfileId = 123123;
         const res = await rpc(method, [subCommand, fakeProfileId]);
         res.expectJson();
@@ -53,7 +53,7 @@ describe('ShoppingCartListCommand', () => {
         expect(res.error.error.message).toBe(`Entity with identifier ${fakeProfileId} does not exist`);
     });
 
-    test('Should fail to get shopping cart if profile name non exist', async () => {
+    test('Should fail to get ShoppingCart if profile name non exist', async () => {
         const fakeProfileName = 'Test User';
         const res = await rpc(method, [subCommand, fakeProfileName]);
         res.expectJson();
@@ -62,7 +62,7 @@ describe('ShoppingCartListCommand', () => {
         expect(res.error.error.message).toBe(`Profile with the name = ${fakeProfileName} was not found!`);
     });
 
-    test('Should get two Shopping Cart by profileId', async () => {
+    test('Should get two ShoppingCart by profileId', async () => {
         // add new shopping cart
         const resAdd = await rpc(method, [Commands.SHOPPINGCART_ADD.commandName, secondShoppingCartName, defaultProfile.id]);
         resAdd.expectJson();
@@ -85,7 +85,7 @@ describe('ShoppingCartListCommand', () => {
         expect(result[1].profileId).toBe(defaultProfile.id);
     });
 
-    test('Should get two Shopping Cart by profile name', async () => {
+    test('Should get two ShoppingCart by profile name', async () => {
         const res = await rpc(method, [subCommand, defaultProfile.name]);
         res.expectJson();
         res.expectStatusCode(200);

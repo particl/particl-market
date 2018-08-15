@@ -21,7 +21,7 @@ describe('ShoppingCartGetCommand', () => {
         defaultShoppingCart = defaultProfile.ShoppingCart[0];
     });
 
-    test('Should get a default Shopping Cart', async () => {
+    test('Should get a default ShoppingCart', async () => {
         const res = await rpc(method, [subCommand, defaultShoppingCart.id]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -29,7 +29,7 @@ describe('ShoppingCartGetCommand', () => {
         expect(result.name).toBe('DEFAULT');
     });
 
-    test('Should get new Shopping Cart', async () => {
+    test('Should get newly created ShoppingCart', async () => {
         // add new shopping cart
         const shoppingName = 'new cart';
         const resAdd = await rpc(method, [Commands.SHOPPINGCART_ADD.commandName, shoppingName, defaultProfile.id]);
@@ -47,7 +47,7 @@ describe('ShoppingCartGetCommand', () => {
     });
 
 
-    test('Should not get Shopping Cart when identifier not exist', async () => {
+    test('Should not get ShoppingCart when identifier not exist', async () => {
         const resRemove = await rpc(method, [Commands.SHOPPINGCART_REMOVE.commandName, defaultShoppingCart.id]);
         resRemove.expectJson();
         resRemove.expectStatusCode(200);

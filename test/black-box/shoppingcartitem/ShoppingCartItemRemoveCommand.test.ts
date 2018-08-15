@@ -5,6 +5,7 @@
 import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 
 describe('ShoppingCartItemRemoveCommand', () => {
     const testUtil = new BlackBoxTestUtil();
@@ -21,7 +22,7 @@ describe('ShoppingCartItemRemoveCommand', () => {
         defaultProfile = await testUtil.getDefaultProfile();
         defaultShoppingCart = defaultProfile.ShoppingCart[0];
         // listing-item
-        listingItems = await testUtil.generateData('listingitem', 2);
+        listingItems = await testUtil.generateData(CreatableModel.LISTINGITEM, 2);
     });
 
     test('Should remove listingItem(id) to Shopping Cart', async () => {
