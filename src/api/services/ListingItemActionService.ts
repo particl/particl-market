@@ -144,31 +144,7 @@ export class ListingItemActionService {
     public async updatePostItem( @request(ListingItemUpdatePostRequest) data: ListingItemUpdatePostRequest): Promise<void> {
 
         // TODO: update not implemented/supported yet
-
         throw new NotImplementedException();
-        /*
-        // fetch the listingItemTemplate
-        const itemTemplateModel = await this.findOne(data.listingItemTemplateId);
-        const itemTemplate = itemTemplateModel.toJSON();
-
-        // get the templates profile address
-        const profileAddress = itemTemplate.Profile.address;
-
-        // check listing-item
-        const listingItems = itemTemplateModel.related('ListingItem').toJSON() || [];
-        if (listingItems.length > 0) {
-            // ListingItemMessage for update
-            const rootCategoryWithRelated: any = await this.itemCategoryService.findRoot();
-            const updateItemMessage = await this.listingItemFactory.getMessage(itemTemplate, rootCategoryWithRelated);
-            updateItemMessage.hash = data.hash; // replace with param hash of listing-item
-
-            // TODO: Need to update broadcast message return after broadcast functionality will be done.
-            this.smsgService.broadcast(profileAddress, market.address, updateItemMessage as ListingItemMessage);
-        } else {
-            this.log.warn(`No listingItem related with listing_item_template_id=${data.hash}!`);
-            throw new MessageException(`No listingItem related with listing_item_template_id=${data.hash}!`);
-        }
-        */
     }
 
     /**

@@ -58,7 +58,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             throw new MessageException('Type should be FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL');
         }
 
-        // check vaild profile profileId search params
+        // check valid profile profileId search params
         if (typeof profileId !== 'number' && profileId !== 'OWN' && profileId !== 'ALL' && profileId !== '*') {
             throw new MessageException('Value needs to be number | OWN | ALL. you could pass * as all too');
         }
