@@ -84,7 +84,7 @@ describe('FavoriteRemoveCommand', () => {
         createdProfileId = profiles[0].id;
     });
 
-    test('Should remove favorite item by profile id and listing id', async () => {
+    test('Should remove FavoriteItem by profile id and listing id', async () => {
         // add favorite item
         await testUtil.addData(CreatableModel.FAVORITEITEM, {
             listing_item_id: createdListingItemIdOne,
@@ -105,7 +105,7 @@ describe('FavoriteRemoveCommand', () => {
         expect(result.length).toBe(0);
     });
 
-    test('Should remove favorite item by profile id and hash', async () => {
+    test('Should remove FavoriteItem by profile id and hash', async () => {
         // add favorite item
         await testUtil.addData(CreatableModel.FAVORITEITEM, {
             listing_item_id: createdListingItemIdOne,
@@ -126,7 +126,7 @@ describe('FavoriteRemoveCommand', () => {
         expect(result.length).toBe(0);
     });
 
-    test('Should fail remove favorite because favorite already removed', async () => {
+    test('Should fail remove FavoriteItem because its already removed', async () => {
         // remove favorite
         const getDataRes: any = await rpc(method, [subCommand, createdProfileId, createdListingItemIdOne]);
         getDataRes.expectJson();

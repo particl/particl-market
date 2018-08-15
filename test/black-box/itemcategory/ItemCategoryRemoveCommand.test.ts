@@ -50,19 +50,19 @@ describe('ItemCategoryRemoveCommand', () => {
         marketId = resultMarket.id;
     });
 
-    test('Should delete the category', async () => {
+    test('Should delete the ItemCategory', async () => {
         const res = await rpc(method, [subCommand, newCategory.id]);
         res.expectJson();
         res.expectStatusCode(200);
     });
 
-    test('Should not delete the default category', async () => {
+    test('Should not delete the default ItemCategory', async () => {
         const res = await rpc(method, [subCommand, rootItemCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);
     });
 
-    test('Should not delete the category if listing-item related with category', async () => {
+    test('Should not delete the ItemCategory if theres ListingItem related with ItemCategory', async () => {
         // create category
         const addCategoryRes: any = await testUtil.addData(CreatableModel.ITEMCATEGORY, {
             name: 'sample category 2',
@@ -91,7 +91,7 @@ describe('ItemCategoryRemoveCommand', () => {
         res.expectStatusCode(404);
     });
 
-    test('Should not delete the category if listing-item-template related with category', async () => {
+    test('Should not delete the ItemCategory if theres ListingItemTemplate related with ItemCategory', async () => {
         // create category
         const addCategoryRes: any = await testUtil.addData(CreatableModel.ITEMCATEGORY, {
             name: 'sample category 3',

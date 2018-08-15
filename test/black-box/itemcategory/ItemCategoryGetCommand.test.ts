@@ -28,7 +28,6 @@ describe('ItemCategoryGetCommand', () => {
         // check that the key matches
         expect(result.key).toBe(categoryIdToFind);
         expect(result.parentItemCategoryId).toBe(null);
-
     });
 
 });

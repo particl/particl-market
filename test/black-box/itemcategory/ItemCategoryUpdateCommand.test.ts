@@ -29,6 +29,14 @@ describe('ItemCategoryUpdateCommand', () => {
     let newCategory;
     let marketId;
 
+    categoryData = {
+        id: 0,
+        name: 'Sample Cat update',
+        description: 'Sample Cat Description update'
+    };
+
+    let defaultCategory;
+
     beforeAll(async () => {
         await testUtil.cleanDb();
 
@@ -54,7 +62,7 @@ describe('ItemCategoryUpdateCommand', () => {
         description: 'Sample Category Description update'
     };
 
-    test('Should update the category with parent category id', async () => {
+    test('Should update the ItemCategory using parent category id', async () => {
         /*
          *  [0]: category id
          *  [1]: category name
@@ -72,15 +80,7 @@ describe('ItemCategoryUpdateCommand', () => {
         expect(result.ParentItemCategory.name).toBe(parentCategory.key);
     });
 
-    categoryData = {
-        id: 0,
-        name: 'Sample Cat update',
-        description: 'Sample Cat Description update'
-    };
-
-    let defaultCategory;
-
-    test('Should update the category with parent category key', async () => {
+    test('Should update the ItemCategory using parent category key', async () => {
         categoryData.id = newCategory.id;
         const res = await rpc(method, [subCommand, categoryData.id, categoryData.name, categoryData.description, parentCategory.key]);
         res.expectJson();
@@ -94,13 +94,15 @@ describe('ItemCategoryUpdateCommand', () => {
         defaultCategory = result.ParentItemCategory.ParentItemCategory;
     });
 
-    test('Should not update the default category', async () => {
+    // TODO: should not update WHY?!
+    test('Should not update the default ItemCategory', async () => {
         const res = await rpc(method, [subCommand, defaultCategory.id, categoryData.name, categoryData.description, parentCategory.parentItemCategoryId]);
         res.expectJson();
         res.expectStatusCode(404);
     });
 
-    test('Should not update the category if listing-item related with category', async () => {
+    test('Should not update the ItemCategory if ListingItem related with ItemCategory', async () => {
+        // TODO: there's no reason why we shouldnt update in this case
         const listingitemData = {
             market_id: marketId,
             hash: '',
@@ -115,6 +117,8 @@ describe('ItemCategoryUpdateCommand', () => {
             }
         };
         listingitemData.hash = ObjectHash.getHash(listingitemData, HashableObjectType.LISTINGITEM);
+
+        // use generateData
         const listingItems = await testUtil.addData(CreatableModel.LISTINGITEM, listingitemData);
         const res = await rpc(method, [subCommand, categoryData.id, categoryData.name, categoryData.description, parentCategory.id]);
         res.expectJson();
