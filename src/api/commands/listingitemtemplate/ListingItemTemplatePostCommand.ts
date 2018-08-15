@@ -42,10 +42,6 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        // TODO: wheres the validation?!?
-        // TODO: if the template doesn't have all the required data, throw an exception
-        // TODO: check escrow
-
         if (!data.params[0]) {
             throw new MessageException('Missing listingItemTemplateId');
         }
@@ -78,7 +74,7 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
     }
 
     public description(): string {
-        return 'Post listing item by listingTemplateId and marketId.';
+        return 'Post the ListingItemTemplate to the Marketplace.';
     }
 
     public example(): string {

@@ -76,6 +76,8 @@ describe('ListingItemTemplateRemoveCommand', () => {
         const result: any = await rpc(templateCommand, [templateRemoveCommand, createdTemplateId]);
         result.expectJson();
         result.expectStatusCode(200);
+
+        // TODO: check that all the related models are deleted too
     });
 
     test('Should fail remove ListingItemTemplate because ListingItemTemplate already removed', async () => {

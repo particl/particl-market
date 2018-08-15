@@ -94,6 +94,9 @@ export class ListingItemActionService {
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true);
         let itemTemplate = itemTemplateModel.toJSON();
 
+        // TODO: should validate that the template has the required info
+        // TODO: recalculate the template.hash in case the related data has changed
+
         itemTemplate = await this.resizeTemplateImages(itemTemplate);
         this.log.debug('images resized');
 

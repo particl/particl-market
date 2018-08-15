@@ -17,7 +17,7 @@ import {ObjectHash} from '../../../src/core/helpers/ObjectHash';
 describe('ListingItemObjectSearchCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
-    const testUtil = new BlackBoxTestUtil(1);
+    const testUtil = new BlackBoxTestUtil();
     const itemObjectCommand = Commands.ITEMOBJECT_ROOT.commandName;
     const searchCommand = Commands.ITEMOBJECT_SEARCH.commandName;
 
@@ -73,14 +73,14 @@ describe('ListingItemObjectSearchCommand', () => {
 
     });
 
-    test('Should fail to search listing item object for the null searchString', async () => {
+    test('Should fail to search ListingItemObject for the null searchString', async () => {
         // search listing item objects
         const getDataRes: any = await testUtil.rpc(itemObjectCommand, [searchCommand]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(400);
     });
 
-    test('Should search empty listing item object for the invalid string search', async () => {
+    test('Should search empty ListingItemObject for the invalid string search', async () => {
         // search listing item objects
         const getDataRes: any = await testUtil.rpc(itemObjectCommand, [searchCommand, 'dapp']);
         getDataRes.expectJson();
@@ -89,7 +89,7 @@ describe('ListingItemObjectSearchCommand', () => {
         expect(result.length).toBe(0);
     });
 
-    test('Should return 2 listing item object searched by listing item object type', async () => {
+    test('Should return 2 ListingItemObjects searched by type', async () => {
         // search listing item objects
         const getDataRes: any = await testUtil.rpc(itemObjectCommand, [searchCommand, ListingItemObjectType.CHECKBOX]);
         getDataRes.expectJson();
@@ -100,7 +100,7 @@ describe('ListingItemObjectSearchCommand', () => {
         expect(result[1].type).toBe(ListingItemObjectType.CHECKBOX);
     });
 
-    test('Should return all listing item object searched by Test text with type or description', async () => {
+    test('Should return all ListingItemObjects searched by Test text with type or description', async () => {
         // search listing item objects
         const getDataRes: any = await testUtil.rpc(itemObjectCommand, [searchCommand, 'Test']);
         getDataRes.expectJson();
@@ -112,7 +112,7 @@ describe('ListingItemObjectSearchCommand', () => {
         expect(result[1].searchable).toBe(0);
     });
 
-    test('Should return all listing item object matching with given search string in listing item object type or description', async () => {
+    test('Should return all ListingItemObjects matching with given search string in listing item object type or description', async () => {
         // search listing item objects
         const getDataRes: any = await testUtil.rpc(itemObjectCommand, [searchCommand, 'CHECKBOX']);
         getDataRes.expectJson();

@@ -23,25 +23,7 @@ describe('ListingItemTemplateAddCommand', () => {
         profile = await testUtil.getDefaultProfile();
     });
 
-    // Command usage doesn't allow this
-    /* test('Should create a new Listing Item Template with only Profile Id', async () => {
-
-        const res = await rpc(method, [subCommand, profile.id]);
-        res.expectJson();
-        res.expectStatusCode(200);
-
-        const result: any = res.getBody()['result'];
-        expect(result.Profile.id).toBe(profile.id);
-        expect(result.Profile.name).toBe(profile.name);
-        expect(result).hasOwnProperty('Profile');
-        expect(result).hasOwnProperty('ItemInformation');
-        expect(result).hasOwnProperty('PaymentInformation');
-        expect(result).hasOwnProperty('MessagingInformation');
-        expect(result).hasOwnProperty('ListingItemObjects');
-        expect(result).hasOwnProperty('ListingItems');
-    });*/
-
-    test('Should create a new Listing Item Template by RPC with Profile + Item-information + Payment-information', async () => {
+    test('Should create a new ListingItemTemplate with Profile + ItemInformation + PaymentInformation', async () => {
 
         // todo: test with existing category, not a custom one
         categoryResult = await rpc('category', ['add', 'templateCategory', 'category for Template', 'cat_ROOT']);
@@ -89,7 +71,7 @@ describe('ListingItemTemplateAddCommand', () => {
 
     });
 
-    test('Should create a new Listing Item Template by RPC with Profile + Item-information + Payment-information without payment-address', async () => {
+    test('Should create a new ListingItemTemplate with Profile + ItemInformation + PaymentInformation without CryptocurrencyAddress', async () => {
 
         const testData = [
             subCommand,
