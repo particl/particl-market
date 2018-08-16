@@ -35,7 +35,7 @@ export class SettingGetCommand extends BaseCommand implements RpcCommandInterfac
      *
      * @param data
      * @param rpcCommandFactory
-     * @returns {Promise<Bookshelf.Collection<Address>>}
+     * @returns {Promise<Setting>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Setting> {
