@@ -215,7 +215,7 @@ describe('TestDataService', () => {
         // clean removes all
         await testDataService.clean(true);
         const categories = await itemCategoryService.findAll();
-        expect(categories).toHaveLength(80);
+        expect(categories).toHaveLength(82);
 
         const profile = await profileService.findAll();
         expect(profile).toHaveLength(1);
@@ -567,7 +567,7 @@ describe('TestDataService', () => {
         await testDataService.clean();
 
         const categories = await itemCategoryService.findAll();
-        expect(categories).toHaveLength(80);
+        expect(categories).toHaveLength(82);
 
         // default profile should not contain addresses
         const addresses = await addressService.findAll();
