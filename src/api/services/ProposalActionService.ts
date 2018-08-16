@@ -23,11 +23,14 @@ import { ProposalResultService } from './ProposalResultService';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
 import { CoreRpcService } from './CoreRpcService';
 import { MessageException } from '../exceptions/MessageException';
-import { ObjectHash } from '../../core/helpers/ObjectHash';
-import { HashableObjectType } from '../enums/HashableObjectType';
-import {SmsgSendResponse} from '../responses/SmsgSendResponse';
-import {ProposalType} from '../enums/ProposalType';
-import {ProposalMessage} from '../messages/ProposalMessage';
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import { ProposalType } from '../enums/ProposalType';
+import { ProposalMessage } from '../messages/ProposalMessage';
+import { ListingItemService } from './ListingItemService';
+import { MarketService } from './MarketService';
+import { VoteMessageType } from '../enums/VoteMessageType';
+import { ProfileService } from './ProfileService';
+import { VoteFactory } from '../factories/VoteFactory';
 
 export class ProposalActionService {
 
@@ -37,9 +40,13 @@ export class ProposalActionService {
         @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
+        @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -97,11 +104,30 @@ export class ProposalActionService {
         let createdProposalModel: Proposal = await this.proposalService.create(proposalCreateRequest);
         const createdProposal: resources.Proposal = createdProposalModel.toJSON();
 
+        // Set up the proposal result stuff for later.
+        const proposalResult = await this.createProposalResult(createdProposal);
+
         // TODO: Validation??
         // - sanity check for proposal start/end blocks vs current one
 
-        // Set up the proposal result stuff for later.
-        const proposalResult = await this.createProposalResult(createdProposal);
+        // if Proposal is of type ITEM_VOTE, and if ListingItem exists, link them
+        if (createdProposal.type === ProposalType.ITEM_VOTE) {
+            await this.listingItemService.findOneByHash(createdProposal.title)
+                .then( async listingItemModel => {
+                    const listingItem = listingItemModel.toJSON();
+                    await this.listingItemService.updateProposalRelation(listingItem.id, createdProposal.hash);
+
+                    // get the market and vote
+                    await this.marketService.findByAddress(message.market || '')
+                        .then(async marketModel => {
+                            const market = marketModel.toJSON();
+                            await this.voteForListingItemProposal(createdProposal, market);
+                        });
+                })
+                .catch(reason => {
+                    this.log.warn('received Proposal, but theres no ListingItem for it yet...');
+                });
+        }
 
         createdProposalModel = await this.proposalService.findOne(createdProposal.id);
         return createdProposalModel.toJSON();
@@ -144,5 +170,38 @@ export class ProposalActionService {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processProposalReceivedEvent(event);
         });
+    }
+
+    /**
+     * TODO: duplicate in ListingItemActionService
+     *
+     * @param {"resources".ProposalResult} proposalResult
+     * @returns {Promise<boolean>}
+     */
+    private async voteForListingItemProposal(proposal: resources.Proposal, market: resources.Market): Promise<boolean> {
+
+        // todo: remove this later
+        const profileModel = await this.profileService.getDefault();
+        const profile: resources.Profile = profileModel.toJSON();
+
+        const proposalOption = _.find(proposal.ProposalOptions, (option: resources.ProposalOption) => {
+            return option.optionId === 1;
+        });
+
+        if (proposalOption) {
+            const currentBlock: number = await this.coreRpcService.getBlockCount();
+            const voteMessage = await this.voteFactory.getMessage(VoteMessageType.MP_VOTE, proposal, proposalOption,
+                profile, currentBlock);
+
+            const msg: MarketplaceMessage = {
+                version: process.env.MARKETPLACE_VERSION,
+                mpaction: voteMessage
+            };
+
+            const smsgSendResponse: SmsgSendResponse = await this.smsgService.smsgSend(profile.address, market.address, msg, false);
+            return smsgSendResponse.error === undefined ? false : true;
+        } else {
+            throw new MessageException('Could not find ProposalOption to vote for.');
+        }
     }
 }

@@ -173,59 +173,66 @@ export class ListingItemActionService {
                 throw new MessageException('ListingItem is missing proposals hash.');
             }
 
-            // get proposal and ignore listingitem if its allready voted off
-            const proposalModel = await this.proposalService.findOneByHash(listingItemMessage.proposalHash || '');
-            const proposal: resources.Proposal = proposalModel.toJSON();
+            // if proposal for the listingitem exists:
+            // - update relation and vote
+            await this.proposalService.findOneByHash(listingItemMessage.proposalHash || '')
+                .then(async proposalModel => {
+                    const proposal: resources.Proposal = proposalModel.toJSON();
 
-            if (await this.shouldAddListingItem(proposal.ProposalResult)) {
+                    // update the proposal relation
+                    if (listingItemMessage.proposalHash) {
+                        await this.listingItemService.updateProposalRelation(listingItem.id, listingItemMessage.proposalHash);
+                    }
+                    await this.voteForListingItemProposal(proposal, market);
+                })
+                .catch(reason => {
+                    // there is no proposal yet
+                    this.log.warn('received ListingItem, but theres no Proposal for it yet...', listingItem.hash);
+                    return null;
+                });
 
-                // create the new custom categories in case there are some
-                const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
+            // if (await this.shouldAddListingItem(proposal.ProposalResult)) {
+            // } else {
+            //    throw new MessageException('ListingItem is allready voted off the market.');
+            // }
 
-                // find the categories/get the root category with related
-                const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
-                const rootCategory = rootCategoryWithRelatedModel.toJSON();
+            // create the new custom categories in case there are some
+            const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
 
-                // create ListingItem
-                const seller = event.smsgMessage.from;
-                const postedAt = new Date(event.smsgMessage.sent);
-                const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory, postedAt);
-                // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
+            // find the categories/get the root category with related
+            const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
+            const rootCategory = rootCategoryWithRelatedModel.toJSON();
 
-                let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
-                let listingItem = listingItemModel.toJSON();
+            // create ListingItem
+            const seller = event.smsgMessage.from;
+            const postedAt = new Date(event.smsgMessage.sent);
+            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory, postedAt);
+            // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
-                // todo: no need for these two updates, set the relations up in the createRequest
-                // update the template relation
-                await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
+            let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
+            let listingItem = listingItemModel.toJSON();
 
-                // update the proposal relation
-                if (listingItemMessage.proposalHash) {
-                    await this.listingItemService.updateProposalRelation(listingItem.id, listingItemMessage.proposalHash);
-                }
+            // todo: there should be no need for these two updates, set the relations up in the createRequest
+            // update the template relation
+            await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
 
-                // first save it
-                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-                const actionMessage = actionMessageModel.toJSON();
-                // this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
+            // first save it
+            const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+            const actionMessage = actionMessageModel.toJSON();
+            // this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
 
-                // emit the latest message event to cli
-                // this.eventEmitter.emit('cli', {
-                //    message: 'new ListingItem received: ' + JSON.stringify(listingItem)
-                // });
+            // emit the latest message event to cli
+            // this.eventEmitter.emit('cli', {
+            //    message: 'new ListingItem received: ' + JSON.stringify(listingItem)
+            // });
 
-                // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
-                listingItemModel = await this.listingItemService.findOne(listingItem.id);
-                listingItem = listingItemModel.toJSON();
+            // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
+            listingItemModel = await this.listingItemService.findOne(listingItem.id);
+            listingItem = listingItemModel.toJSON();
 
-                await this.voteForListingItemProposal(proposal, market);
+            this.log.debug('saved listingItem:', listingItem.hash);
+            return listingItem;
 
-                this.log.debug('saved listingItem:', listingItem.hash);
-                return listingItem;
-
-            } else {
-                throw new MessageException('ListingItem is allready voted off the market.');
-            }
         } else {
             throw new MessageException('Marketplace message missing market.');
         }
