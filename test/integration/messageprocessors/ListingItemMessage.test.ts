@@ -236,7 +236,7 @@ describe('ListingItemMessage', () => {
         expect(listingItemTemplate.ListingItems.length).toBe(0);
 
         // prepare the message to be processed
-        const listingItemMessage: ListingItemMessage = await listingItemFactory.getMessage(listingItemTemplates[1]);
+        const listingItemMessage: ListingItemMessage = await listingItemFactory.getMessage(listingItemTemplates[1], 'proposalHash', 4);
 
         const marketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
