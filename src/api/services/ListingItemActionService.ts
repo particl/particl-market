@@ -173,6 +173,22 @@ export class ListingItemActionService {
                 throw new MessageException('ListingItem is missing proposals hash.');
             }
 
+            // create the new custom categories in case there are some
+            const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
+
+            // find the categories/get the root category with related
+            const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
+            const rootCategory = rootCategoryWithRelatedModel.toJSON();
+
+            // create ListingItem
+            const seller = event.smsgMessage.from;
+            const postedAt = new Date(event.smsgMessage.sent);
+            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory, postedAt);
+            // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
+
+            let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
+            let listingItem = listingItemModel.toJSON();
+
             // if proposal for the listingitem exists:
             // - update relation and vote
             await this.proposalService.findOneByHash(listingItemMessage.proposalHash || '')
@@ -195,22 +211,6 @@ export class ListingItemActionService {
             // } else {
             //    throw new MessageException('ListingItem is allready voted off the market.');
             // }
-
-            // create the new custom categories in case there are some
-            const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
-
-            // find the categories/get the root category with related
-            const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
-            const rootCategory = rootCategoryWithRelatedModel.toJSON();
-
-            // create ListingItem
-            const seller = event.smsgMessage.from;
-            const postedAt = new Date(event.smsgMessage.sent);
-            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory, postedAt);
-            // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
-
-            let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
-            let listingItem = listingItemModel.toJSON();
 
             // todo: there should be no need for these two updates, set the relations up in the createRequest
             // update the template relation
