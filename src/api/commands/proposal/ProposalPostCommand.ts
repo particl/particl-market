@@ -40,7 +40,8 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      * [2] proposalDescription
      * [3] blockStart
      * [4] blockEnd
-     * [5] option1Description
+     * [5] estimateFee
+     * [6] option1Description
      * [n...] optionNDescription
      *
      * @param data, RpcRequest
@@ -51,8 +52,8 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
 
         // todo add validation in separate function..
-        if (data.params.length < 7) {
-            throw new MessageException('Expected <TODO> but received no params.');
+        if (data.params.length < 8) {
+            throw new MessageException('Expected more params.');
         }
 
         const type = ProposalType.PUBLIC_VOTE;
@@ -61,6 +62,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         const proposalDescription = data.params.shift();
         const blockStart = data.params.shift();
         const blockEnd = data.params.shift();
+        const estimateFee = data.params.shift();
 
         if (typeof profileId !== 'number') {
             throw new MessageException('profileId needs to be a number.');
@@ -68,6 +70,8 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
             throw new MessageException('blockStart needs to be a number.');
         } else if (typeof blockEnd !== 'number') {
             throw new MessageException('blockEnd needs to be a number.');
+        } else if (typeof estimateFee !== 'boolean') {
+            throw new MessageException('estimateFee needs to be a boolean.');
         }
 
         let profile: resources.Profile;
@@ -91,12 +95,26 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
         // rest of the data.params are option descriptions
         const optionsList: string[] = data.params;
 
-        return this.proposalActionService.send(type, proposalTitle, proposalDescription, blockStart, blockEnd,
-            optionsList, profile, market);
+        // todo: get rid of the blocks
+        const daysRetention = Math.ceil((blockEnd - blockStart) / (24 * 30));
+        return this.proposalActionService.send(type, proposalTitle, proposalDescription, blockStart, blockEnd, daysRetention,
+            optionsList, profile, market, estimateFee);
+    }
+
+    public usage(): string {
+        return this.getName() + ' <profileId> <proposalTitle> <proposalDescription> <blockStart> <blockEnd> <estimateFee> '
+            + '<option1Description> ... <optionNDescription> ';
     }
 
     public help(): string {
-        return this.getName() + ' <profileId> <proposalTitle> <proposalDescription> <blockStart> <blockEnd> <option1Description> ... <optionNDescription> ';
+        return this.usage() + ' -  ' + this.description() + ' \n'
+            + '    <profileId>              - number, ID of the Profile. \n'
+            + '    <proposalTitle>          - string, Title for the Proposal. \n'
+            + '    <proposalDescription>    - string, Description for the Proposal. \n'
+            + '    <blockStart>             - number, Start Block for the Voting. \n'
+            + '    <blockEnd>               - number, End Block for the Voting. \n'
+            + '    <estimateFee>            - boolean, Just estimate the Fee, dont post the Proposal. \n'
+            + '    <optionNDescription>     - string, ProposalOption description. ';
     }
 
     public description(): string {

@@ -62,13 +62,16 @@ export class ProposalActionService {
      * @param {string} proposalDescription
      * @param {number} blockStart
      * @param {number} blockEnd
+     * @param {number} daysRetention
      * @param {string[]} options
      * @param {"resources".Profile} senderProfile
      * @param {"resources".Market} marketplace
+     * @param {boolean} estimateFee
      * @returns {Promise<SmsgSendResponse>}
      */
     public async send(proposalType: ProposalType, proposalTitle: string, proposalDescription: string, blockStart: number, blockEnd: number,
-                      options: string[], senderProfile: resources.Profile, marketplace: resources.Market): Promise<SmsgSendResponse> {
+                      daysRetention: number, options: string[], senderProfile: resources.Profile, marketplace: resources.Market,
+                      estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
         const proposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, proposalType,
             proposalTitle, proposalDescription, blockStart, blockEnd, options, senderProfile);
@@ -78,7 +81,7 @@ export class ProposalActionService {
             mpaction: proposalMessage
         };
 
-        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, true);
+        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, true, daysRetention, estimateFee);
     }
 
     /**
