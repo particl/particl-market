@@ -171,6 +171,14 @@ export class CommandEnumType extends Enum<Command> {
     public VOTE_ROOT: Command           = new Command('vote', 'vote', true,
         [this.VOTE_POST, this.VOTE_GET, this.VOTE_LIST], EnvironmentType.ALL);
 
+    public SETTING_REMOVE: Command         = new Command('settingremove', 'remove', false);
+    public SETTING_GET: Command         = new Command('settingget', 'get', false);
+    public SETTING_LIST: Command         = new Command('settinglist', 'list', false);
+    public SETTING_SET: Command           = new Command('settingset', 'set', false);
+    public SETTING_ROOT: Command           = new Command('setting', 'setting', true,
+        [this.SETTING_REMOVE, this.SETTING_GET, this.SETTING_LIST, this.SETTING_SET], EnvironmentType.ALL);
+
+
     constructor() {
         super();
         this.initEnum('Command');
