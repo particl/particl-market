@@ -149,7 +149,7 @@ describe('Happy Vote Flow', () => {
 
         const result: resources.Proposal = response.getBody()['result'];
 
-        log.debug('result', JSON.stringify(result, null, 2))
+        log.debug('result', JSON.stringify(result, null, 2));
 
         expect(result.title).toBe(proposal.title);
         expect(result.description).toBe(proposal.description);

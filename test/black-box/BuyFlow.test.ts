@@ -63,8 +63,8 @@ describe('Happy Buy Flow', () => {
     let bidOnSellerNode: resources.Bid;
     let bidOnBuyerNode: resources.Bid;
 
-    let orderOnSellerNode: resources.Order;
-    let orderOnBuyerNode: resources.Order;
+    // let orderOnSellerNode: resources.Order;
+    // let orderOnBuyerNode: resources.Order;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
@@ -165,10 +165,6 @@ describe('Happy Buy Flow', () => {
 
     });
 
-    afterAll(async () => {
-    });
-
-    // test('Should post a ListingItemTemplate (ListingItemMessage, MP_ITEM_ADD) to the default marketplace from seller node', async () => {
     test('SELLER POSTS MP_ITEM_ADD to the default marketplace', async () => {
 
         log.debug('========================================================================================');
