@@ -125,6 +125,8 @@ describe('CurrencyPrice', () => {
     test('Should get CurrencyPrice from db and another one with updated price', async () => {
         const result = await currencyPriceService.getCurrencyPrices('PART', ['INR', 'USD']);
 
+        log.debug('result:', JSON.stringify(result, null, 2));
+
         expect(result[0].id).toBe(createdCurrencyPricePARTINR.id);
         expect(result[0].from).toBe(createdCurrencyPricePARTINR.from);
         expect(result[0].to).toBe(createdCurrencyPricePARTINR.to);
