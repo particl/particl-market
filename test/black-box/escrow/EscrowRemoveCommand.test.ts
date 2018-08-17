@@ -10,70 +10,61 @@ import { CryptocurrencyAddressType } from '../../../src/api/enums/Cryptocurrency
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import {GenerateListingItemParams} from '../../../src/api/requests/params/GenerateListingItemParams';
+import * as resources from 'resources';
+import {GenerateListingItemTemplateParams} from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 
 describe('EscrowRemoveCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ESCROW_ROOT.commandName;
-    const subCommand = Commands.ESCROW_REMOVE.commandName;
+    const escrowCommand = Commands.ESCROW_ROOT.commandName;
+    const escrowRemoveCommand = Commands.ESCROW_REMOVE.commandName;
 
-    let profileId;
-    let createdTemplateId;
-    const testDataListingItemTemplate = {
-        profile_id: 0,
-        itemInformation: {
-            title: 'Item Information with Templates',
-            shortDescription: 'Item short description with Templates',
-            longDescription: 'Item long description with Templates',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            }
-        },
-        paymentInformation: {
-            type: PaymentType.SALE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 100,
-                    seller: 100
-                }
-            },
-            itemPrice: {
-                currency: Currency.BITCOIN,
-                basePrice: 0.0001,
-                shippingPrice: {
-                    domestic: 0.123,
-                    international: 1.234
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.NORMAL,
-                    address: 'This is temp address.'
-                }
-            }
-        }
-    };
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+
+    let createdListingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const defaultProfile = await testUtil.getDefaultProfile();
-        profileId = defaultProfile.id;
+
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            false,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,   // generateListingItem
+            defaultMarket.id  // marketId
+        ]).toParamsArray();
+
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
+
+        createdListingItemTemplate = listingItemTemplates[0];
+
     });
 
     test('Should destroy Escrow', async () => {
-        testDataListingItemTemplate.profile_id = profileId;
-
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-
-        const addListingItemTempResult = addListingItemTempRes;
-        createdTemplateId = addListingItemTempResult.id;
-
-        const destroyDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
+        const destroyDataRes: any = await rpc(escrowCommand, [escrowRemoveCommand, createdListingItemTemplate.id]);
         destroyDataRes.expectJson();
         destroyDataRes.expectStatusCode(200);
     });
 
     test('Should fail destroy Escrow because already been destroyed', async () => {
-        const destroyDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
+        const destroyDataRes: any = await rpc(escrowCommand, [escrowRemoveCommand, createdListingItemTemplate.id]);
         destroyDataRes.expectJson();
         destroyDataRes.expectStatusCode(404);
     });
