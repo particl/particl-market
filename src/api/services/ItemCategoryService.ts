@@ -88,8 +88,9 @@ export class ItemCategoryService {
         itemCategory.Name = body.name;
         itemCategory.Description = body.description;
 
-        // need to set this to null, otherwise it won't get updated
-        // itemCategory.parent_item_category_id = body.parentItemCategoryId === undefined ? null : body.parent_item_category_id;
+        if (body.parent_item_category_id) {
+            itemCategory.set('parentItemCategoryId', body.parent_item_category_id);
+        }
 
         // update itemCategory record
         const updatedItemCategory = await this.itemCategoryRepo.update(id, itemCategory.toJSON(), patching);

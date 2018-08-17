@@ -16,7 +16,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import { CategoryIsDoableService } from '../../services/CategoryIsDoableService';
+import * as resources from 'resources';
 
 export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -27,8 +27,7 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ItemCategoryService) private itemCategoryService: ItemCategoryService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.CategoryIsDoableService) private categoryIsDoableService: CategoryIsDoableService
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService
     ) {
         super(Commands.CATEGORY_UPDATE);
         this.log = new Logger(__filename);
@@ -48,18 +47,42 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
-        const isUpdateable = await this.categoryIsDoableService.isDoable(data.params[0]);
-        if (isUpdateable) {
-            const parentItemCategory = data.params[3] || 'cat_ROOT'; // if null then default_category will be parent
-            const parentItemCategoryId = await this.itemCategoryService.getCategoryIdByKey(parentItemCategory);
-            return await this.itemCategoryService.update(data.params[0], {
-                name: data.params[1],
-                description: data.params[2],
-                parent_item_category_id: parentItemCategoryId
-            } as ItemCategoryUpdateRequest);
-        } else {
-            throw new MessageException(`category can't be update. id= ${data.params[0]}`);
+
+        const categoryId = data.params[0];
+        const name = data.params[1];
+        const description = data.params[2];
+        const parentItemCategoryId = data.params[3] || 'cat_ROOT';
+
+        return await this.itemCategoryService.update(categoryId, {
+            name,
+            description,
+            parent_item_category_id: parentItemCategoryId
+        } as ItemCategoryUpdateRequest);
+    }
+
+    /**
+     * - should have 4 params
+     * - if category has key, it cant be edited
+     * - ...
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<void>}
+     */
+    public async validate(data: RpcRequest): Promise<void> {
+
+        if (data.params.length < 4) {
+            throw new MessageException('Missing parameters.');
         }
+
+        const categoryId = data.params[0];
+        const itemCategoryModel = await this.itemCategoryService.findOne(categoryId);
+        const itemCategory: resources.ItemCategory = itemCategoryModel.toJSON();
+
+        // if category has a key, its a default category and cant be updated
+        if (itemCategory.key != null) {
+            throw new MessageException(`Default category can't be updated or deleted.`);
+        }
+
     }
 
     public usage(): string {
@@ -86,4 +109,6 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
     public example(): string {
         return 'category ' + this.getName() + ' 81 updatedCategory \'Updated category description\' 80 ';
     }
+
+
 }
