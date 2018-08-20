@@ -66,7 +66,7 @@ export class Environment {
     }
 
     public static isTestnet(): boolean {
-        return this.isTruthy(process.env.TESTNET) || this.isAlpha();
+        return this.isTruthy(process.env.TESTNET || String(this.isAlpha()));
     }
 
     public static isTruthy(bool: string): boolean {

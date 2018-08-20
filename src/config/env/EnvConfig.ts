@@ -10,7 +10,7 @@ import { Environment, EnvironmentType } from '../../core/helpers/Environment';
 
 export class EnvConfig {
 
-    public dataDir: string;
+    public dataDir: string | undefined;
     public envFile = '.env';
 
     private defaultEnv = {
@@ -72,6 +72,8 @@ export class EnvConfig {
             // console.log('EnvConfig: setting DataDir:', dataDirLocation);
             // DataDir.set(dataDirLocation);
             this.dataDir = dataDirLocation;
+        } else {
+            this.dataDir = './data';
         }
 
         if (envFileName && DataDir.checkIfExists(envFileName)) {
