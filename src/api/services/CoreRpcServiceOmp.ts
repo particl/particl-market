@@ -14,7 +14,7 @@ import { InternalServerException } from '../exceptions/InternalServerException';
 import { CoreCookieService } from './CoreCookieService';
 import { Output } from 'resources';
 
-import { ISignature, TransactionBuilder, RPC, Output as OmpOutput } from 'omp-lib';
+import { ISignature, TransactionBuilder, RPC, Output as OmpOutput, toSatoshis, fromSatoshis } from 'omp-lib';
 
 declare function escape(s: string): string;
 declare function unescape(s: string): string;
@@ -53,11 +53,49 @@ export class CoreRpcService implements RPC {
     }*/
 
     // Retrieving information of outputs
-    public async getNormalOutputs(satoshis: number): Promise<Output[]> {
-        this.log.error('Not implemented.');
-        throw new Error('Not implemented.');
+    /*
+     * TODO: Might need modification
+     */
+    public async getNormalOutputs(reqSatoshis: number): Promise<OmpOutput[]> {
+        const chosen: Array<OmpOutput> = [];
+        let chosenSatoshis: number = 0;
+
+        const unspent: Array<Output> = await this.call('listunspent', [0]);
+
+        unspent.filter((output: any) => output.spendable && output.safe)
+            .find((utxo: any) => {
+
+                if(utxo.scriptPubKey.substring(0,2) !== '76') {
+                    // only take normal outputs into account
+                    return false;
+                }
+
+                chosenSatoshis += toSatoshis(utxo.amount);
+                chosen.push({
+                    txid: utxo.txid,
+                    vout: utxo.vout,
+                    _satoshis: toSatoshis(utxo.amount),
+                    _scriptPubKey: utxo.scriptPubKey,
+                    _address: utxo.address
+                });
+
+                if (chosenSatoshis >= reqSatoshis) {
+                    return true;
+                }
+                return false;
+            });
+
+        if (chosenSatoshis < reqSatoshis) {
+            throw new Error('Not enough available output to cover the required amount.')
+        }
+
+        await this.call('lockunspent', [false, chosen, true]);
+        return chosen;
     }
 
+    /*
+     * TODO: Might need modification
+     */
     public async getSatoshisForUtxo(utxo: Output): Promise<OmpOutput> {
         const vout = (await this.call('getrawtransaction', [utxo.txid, true]))
             .vout.find((tmpVout: any) => tmpVout.n === utxo.vout);
@@ -67,14 +105,46 @@ export class CoreRpcService implements RPC {
     }
 
     // Importing and signing
+    /*
+     * TODO: Might need modification
+     */
     public async importRedeemScript(script: any): Promise<boolean> {
-        this.log.error('Not implemented.');
-        throw new Error('Not implemented.');
+        await this.call('importaddress', [script, '', false, true])
+        return true;
     }
 
-    public async signRawTransactionForInputs(tx: TransactionBuilder, inputs: Output[]): Promise<ISignature[]> {
-        this.log.error('Not implemented.');
-        throw new Error('Not implemented.');
+    /*
+     * TODO: Might need modification
+     */
+    public async signRawTransactionForInputs(tx: TransactionBuilder, inputs: OmpOutput[]): Promise<ISignature[]> {
+        let r: ISignature[] = [];
+
+        // needs to synchronize, because the order needs to match
+        // the inputs order.
+        for(let i = 0; i < inputs.length; i++){
+            const input = inputs[i];
+            // console.log('signing for ', input)
+            const params = [
+                await tx.build(),
+                {
+                    txid: input.txid,
+                    vout: input.vout,
+                    scriptPubKey: input._scriptPubKey,
+                    amount: fromSatoshis(input._satoshis)
+                },
+                input._address
+            ];
+
+            const sig = {
+                signature: (await this.call('createsignaturewithwallet', params)),
+                pubKey: (await this.call('getaddressinfo', [input._address])).pubkey
+            };
+            r.push(sig);
+            tx.addSignature(input, sig);
+            
+        };
+
+        return r;
     }
 
     // Networking
