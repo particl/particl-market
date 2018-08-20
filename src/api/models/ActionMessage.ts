@@ -9,12 +9,14 @@ import { MessageInfo } from './MessageInfo';
 import { MessageEscrow } from './MessageEscrow';
 import { MessageData } from './MessageData';
 import { ListingItem } from './ListingItem';
+import { MessageValue } from './MessageValue';
 
 export class ActionMessage extends Bookshelf.Model<ActionMessage> {
 
     public static RELATIONS = [
         'ListingItem',
         'MessageObjects',
+        'MessageValues',
         'MessageInfo',
         'MessageEscrow',
         'MessageData'
@@ -50,6 +52,10 @@ export class ActionMessage extends Bookshelf.Model<ActionMessage> {
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
+
+    public MessageValues(): Collection<MessageValue> {
+        return this.hasMany(MessageValue, 'action_message_id', 'id');
+    }
 
     public MessageObjects(): Collection<MessageObject> {
         return this.hasMany(MessageObject, 'action_message_id', 'id');
