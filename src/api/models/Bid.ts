@@ -158,7 +158,9 @@ export class Bid extends Bookshelf.Model<Bid> {
       cancelOnTimeout: false,
       bindings: [ 27, 0 ],
       __knexQueryUid: '3c0d7d66-6f94-4f99-bc51-d8d8ddac6afb',
-      sql: 'select "bids".* from "bids" inner join "order_items" on "order_items"."bid_id" = "bids"."id" inner join "item_informations" on "item_informations"."listing_item_id" = "bids"."listing_item_id" where "bids"."listing_item_id" = ? order by "bids"."updated_at" ASC limit ?' }
+      sql: 'select "bids".* from "bids" inner join "order_items" on "order_items"."bid_id" = "bids"."id"
+       inner join "item_informations" on "item_informations"."listing_item_id" = "bids"."listing_item_id"
+        where "bids"."listing_item_id" = ? order by "bids"."updated_at" ASC limit ?' }
 
   console.log node_modules/knex/lib/helpers.js:75
     { method: 'select',
@@ -167,7 +169,9 @@ export class Bid extends Bookshelf.Model<Bid> {
       cancelOnTimeout: false,
       bindings: [ 27, 'pacMrSKhcNvp4xaMD7ht1pduFuCYHmpWtS', 0 ],
       __knexQueryUid: '0e69404a-5ce5-4577-a393-1bbd4c684b7c',
-      sql: 'select "bids".* from "bids" inner join "order_items" on "order_items"."bid_id" = "bids"."id" inner join "item_informations" on "item_informations"."listing_item_id" = "bids"."listing_item_id" where "bids"."listing_item_id" = ? and ("bids"."bidder" in (?)) order by "bids"."updated_at" ASC limit ?' }
+      sql: 'select "bids".* from "bids" inner join "order_items" on "order_items"."bid_id" = "bids"."id"
+       inner join "item_informations" on "item_informations"."listing_item_id" = "bids"."listing_item_id"
+        where "bids"."listing_item_id" = ? and ("bids"."bidder" in (?)) order by "bids"."updated_at" ASC limit ?' }
 
   console.log node_modules/knex/lib/helpers.js:75
     { method: 'select',
@@ -187,7 +191,9 @@ export class Bid extends Bookshelf.Model<Bid> {
       cancelOnTimeout: false,
       bindings: [ 27, 0 ],
       __knexQueryUid: 'f4d10fb4-de2e-467d-a089-66801c7da402',
-      sql: 'select "bids".* from "bids" inner join "order_items" on "order_items"."bid_id" = "bids"."id" inner join "item_informations" on "item_informations"."listing_item_id" = "bids"."listing_item_id" where "bids"."listing_item_id" = ? order by "bids"."updated_at" ASC limit ?' }
+      sql: 'select "bids".* from "bids" inner join "order_items" on "order_items"."bid_id" = "bids"."id"
+       inner join "item_informations" on "item_informations"."listing_item_id" = "bids"."listing_item_id"
+        where "bids"."listing_item_id" = ? order by "bids"."updated_at" ASC limit ?' }
 
   console.log node_modules/knex/lib/helpers.js:75
     { method: 'select',
@@ -196,7 +202,9 @@ export class Bid extends Bookshelf.Model<Bid> {
       cancelOnTimeout: false,
       bindings: [ 'pacMrSKhcNvp4xaMD7ht1pduFuCYHmpWtS', 0 ],
       __knexQueryUid: '9a13b9eb-696a-446a-ab09-3544705c4837',
-      sql: 'select "bids".* from "bids" inner join "order_items" on "order_items"."bid_id" = "bids"."id" inner join "item_informations" on "item_informations"."listing_item_id" = "bids"."listing_item_id" where ("bids"."bidder" in (?)) order by "bids"."updated_at" ASC limit ?' }
+      sql: 'select "bids".* from "bids" inner join "order_items" on "order_items"."bid_id" = "bids"."id"
+       inner join "item_informations" on "item_informations"."listing_item_id" = "bids"."listing_item_id"
+        where ("bids"."bidder" in (?)) order by "bids"."updated_at" ASC limit ?' }
 
  */
     public get tableName(): string { return 'bids'; }
