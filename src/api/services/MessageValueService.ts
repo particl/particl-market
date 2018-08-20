@@ -38,7 +38,7 @@ export class MessageValueService {
     public async create( @request(MessageValueCreateRequest) data: MessageValueCreateRequest): Promise<MessageValue> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('create MessageValue, key: '+ body.key + ', value: ' + body.value);
+        this.log.debug('create MessageValue, key: ' + body.key + ', value: ' + body.value);
 
         // If the request body was valid we will create the messageValue
         const messageValue = await this.messageValueRepo.create(body);
