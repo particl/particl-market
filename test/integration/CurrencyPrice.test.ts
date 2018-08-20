@@ -35,6 +35,8 @@ describe('CurrencyPrice', () => {
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
+        process.env.CHASING_COINS_API_DELAY = 1000;
+
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         currencyPriceService = app.IoC.getNamed<CurrencyPriceService>(Types.Service, Targets.Service.CurrencyPriceService);
 

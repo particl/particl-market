@@ -411,7 +411,7 @@ describe('Happy Buy Flow', () => {
         log.debug('=================================================================================');
 
     }, 600000); // timeout to 600s
-/*
+
     test('Bid should have been updated on seller node after posting the MPA_ACCEPT', async () => {
 
         log.debug('========================================================================================');
@@ -494,7 +494,7 @@ describe('Happy Buy Flow', () => {
 
         orderOnSellerNode = result[0];
     }, 600000); // timeout to 600s
-
+/*
     test('BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT', async () => {
 
         log.debug('========================================================================================');
