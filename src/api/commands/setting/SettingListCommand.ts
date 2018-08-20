@@ -23,7 +23,7 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService
     ) {
-        super(Commands.ADDRESS_LIST);
+        super(Commands.SETTING_LIST);
         this.log = new Logger(__filename);
     }
 

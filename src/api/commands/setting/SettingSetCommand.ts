@@ -23,7 +23,7 @@ export class SettingSetCommand extends BaseCommand implements RpcCommandInterfac
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.SettingService) private profileService: ProfileService
     ) {
-        super(Commands.MARKET_ADD);
+        super(Commands.SETTING_SET);
         this.log = new Logger(__filename);
     }
 

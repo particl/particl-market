@@ -24,7 +24,7 @@ export class SettingGetCommand extends BaseCommand implements RpcCommandInterfac
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService
     ) {
-        super(Commands.ADDRESS_LIST);
+        super(Commands.SETTING_GET);
         this.log = new Logger(__filename);
     }
 

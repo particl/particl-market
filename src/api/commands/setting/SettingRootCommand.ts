@@ -19,7 +19,7 @@ export class SettingRootCommand extends BaseCommand implements RpcCommandInterfa
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
-        super(Commands.ADDRESS_ROOT);
+        super(Commands.SETTING_ROOT);
         this.log = new Logger(__filename);
     }
 

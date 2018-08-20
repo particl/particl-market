@@ -77,7 +77,7 @@ describe('FavoriteListCommand', () => {
     });
 
     test('Should return empty FavoriteItem list', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, createdProfileId]);
+        const getDataRes: any = await testUtil.rpc(method, [subCommand, createdProfileId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -91,7 +91,7 @@ describe('FavoriteListCommand', () => {
         await rpc(method, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, createdListingItemIdOne]);
 
         // get the favorite list
-        const getDataRes: any = await rpc(method, [subCommand, defaultProfile.id]);
+        const getDataRes: any = await testUtil.rpc(method, [subCommand, defaultProfile.id]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -119,7 +119,7 @@ describe('FavoriteListCommand', () => {
         await rpc(method, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, createdListingItemIdOne]);
 
         // get the favorite list
-        const getDataRes: any = await rpc(method, [subCommand, defaultProfile.name]);
+        const getDataRes: any = await testUtil.rpc(method, [subCommand, defaultProfile.name]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -143,7 +143,7 @@ describe('FavoriteListCommand', () => {
 
     test('Should fail to get FavoriteItem list because invalid profile name', async () => {
         const profileName = 'INVALID PROFILE NAME';
-        const getDataRes: any = await rpc(method, [subCommand, profileName]);
+        const getDataRes: any = await testUtil.rpc(method, [subCommand, profileName]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(404);
         expect(getDataRes.error.error.success).toBe(false);
@@ -151,7 +151,7 @@ describe('FavoriteListCommand', () => {
     });
 
     test('Should fail to get FavoriteItem list because invalid profile id', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, createdProfileId]);
+        const getDataRes: any = await testUtil.rpc(method, [subCommand, createdProfileId]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -165,7 +165,7 @@ describe('FavoriteListCommand', () => {
         await rpc(method, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, createdListingItemIdTwo]);
 
         // get the favorite list
-        const getDataRes: any = await rpc(method, [subCommand, defaultProfile.id]);
+        const getDataRes: any = await testUtil.rpc(method, [subCommand, defaultProfile.id]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];
@@ -207,7 +207,7 @@ describe('FavoriteListCommand', () => {
         await rpc(method, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, createdListingItemIdTwo]);
 
         // get the favorite list
-        const getDataRes: any = await rpc(method, [subCommand, defaultProfile.name, false]);
+        const getDataRes: any = await testUtil.rpc(method, [subCommand, defaultProfile.name, false]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];

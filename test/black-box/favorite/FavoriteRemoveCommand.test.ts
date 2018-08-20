@@ -92,17 +92,37 @@ describe('FavoriteRemoveCommand', () => {
         });
 
         // remove favorite item by item id and profile
-        const removeResult: any = await rpc(method, [subCommand, createdProfileId, createdListingItemIdOne]);
+        const removeResult: any = await testUtil.rpc(method, [subCommand, createdProfileId, createdListingItemIdOne]);
         removeResult.expectJson();
         removeResult.expectStatusCode(200);
 
         // check that the remove really worked
-        const listResult: any = await rpc(method, [subCommandList, createdProfileId]);
+        const listResult: any = await testUtil.rpc(method, [subCommandList, createdProfileId]);
         listResult.expectJson();
         listResult.expectStatusCode(200);
         const result: any = listResult.getBody()['result'];
 
         expect(result.length).toBe(0);
+    });
+
+    test('Should fail remove FavoriteItem because length of params not 2', async () => {
+        // remove favorite
+        const getDataRes: any = await testUtil.rpc(method, [subCommand, createdProfileId]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(404);
+
+        expect(getDataRes.error.error.success).toBe(false);
+        expect(getDataRes.error.error.message).toBe('Invalid number of params!');
+    });
+
+    test('Should fail remove FavoriteItem because of invalid params types', async () => {
+        // remove favorite
+        const getDataRes: any = await testUtil.rpc(method, [subCommand, createdProfileId, null]);
+        getDataRes.expectJson();
+        getDataRes.expectStatusCode(404);
+
+        expect(getDataRes.error.error.success).toBe(false);
+        expect(getDataRes.error.error.message).toBe('Invalid types of params!');
     });
 
     test('Should remove FavoriteItem by profile id and hash', async () => {
@@ -113,12 +133,12 @@ describe('FavoriteRemoveCommand', () => {
         });
 
         // remove favorite item by item id and profile
-        const removeResult: any = await rpc(method, [subCommand, createdProfileId, createdListingItemHashOne]);
+        const removeResult: any = await testUtil.rpc(method, [subCommand, createdProfileId, createdListingItemHashOne]);
         removeResult.expectJson();
         removeResult.expectStatusCode(200);
 
         // check that the remove really worked
-        const listResult: any = await rpc(method, [subCommandList, createdProfileId]);
+        const listResult: any = await testUtil.rpc(method, [subCommandList, createdProfileId]);
         listResult.expectJson();
         listResult.expectStatusCode(200);
         const result: any = listResult.getBody()['result'];
@@ -128,8 +148,11 @@ describe('FavoriteRemoveCommand', () => {
 
     test('Should fail remove FavoriteItem because its already removed', async () => {
         // remove favorite
-        const getDataRes: any = await rpc(method, [subCommand, createdProfileId, createdListingItemIdOne]);
+        const getDataRes: any = await testUtil.rpc(method, [subCommand, createdProfileId, createdListingItemIdOne]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(404);
+
+        expect(getDataRes.error.error.success).toBe(false);
+        expect(getDataRes.error.error.message).toBe(createdListingItemIdOne);
     });
 });

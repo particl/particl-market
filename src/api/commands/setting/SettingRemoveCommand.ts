@@ -22,7 +22,7 @@ export class SettingRemoveCommand extends BaseCommand implements RpcCommandInter
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService
     ) {
-        super(Commands.ADDRESS_REMOVE);
+        super(Commands.SETTING_REMOVE);
         this.log = new Logger(__filename);
     }
 

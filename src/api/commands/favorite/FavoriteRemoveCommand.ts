@@ -12,6 +12,7 @@ import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { NotFoundException } from '../../exceptions/NotFoundException';
+import { MessageException } from '../../exceptions/MessageException';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
@@ -41,6 +42,15 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+        // validate params
+        if (data.params.length !== 2) {
+            throw new MessageException('Invalid number of params!');
+        }
+        if (typeof data.params[0] !== 'string' or typeof data.params[0] !== 'number'
+            || typeof data.params[1] !== 'string' || typeof data.params[1] !== 'number') {
+            throw new MessageException('Invalid types of params!');
+        }
+ 
         const favoriteParams = await this.favoriteItemService.getSearchParams(data);
         const favoriteItem = await this.favoriteItemService.search({profileId: favoriteParams[0], itemId: favoriteParams[1] } as FavoriteSearchParams);
         if (favoriteItem === null) {
