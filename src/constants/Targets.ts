@@ -42,7 +42,6 @@ export const Targets = {
         MessageEscrow: 'MessageEscrow',
         MessageInfo: 'MessageInfo',
         MessageObject: 'MessageObject',
-        MessageValue: 'MessageValue',
         MessagingInformation: 'MessagingInformation',
         Order: 'Order',
         OrderItem: 'OrderItem',
