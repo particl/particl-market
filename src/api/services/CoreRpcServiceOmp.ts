@@ -57,36 +57,36 @@ export class CoreRpcService implements RPC {
      * TODO: Might need modification
      */
     public async getNormalOutputs(reqSatoshis: number): Promise<OmpOutput[]> {
-        const chosen: Array<OmpOutput> = [];
-        let chosenSatoshis: number = 0;
+        const chosen: OmpOutput[] = [];
+        let chosenSatoshis = 0;
 
-        const unspent: Array<Output> = await this.call('listunspent', [0]);
+        const unspent: OmpOutput[] = await this.call('listunspent', [0]);
 
         unspent.filter((output: any) => output.spendable && output.safe)
             .find((utxo: any) => {
+                    if (utxo.scriptPubKey.substring(0, 2) !== '76') {
+                        // only take normal outputs into account
+                        return false;
+                    }
 
-                if(utxo.scriptPubKey.substring(0,2) !== '76') {
-                    // only take normal outputs into account
+                    chosenSatoshis += toSatoshis(utxo.amount);
+                    chosen.push({
+                        txid: utxo.txid,
+                        vout: utxo.vout,
+                        _satoshis: toSatoshis(utxo.amount),
+                        _scriptPubKey: utxo.scriptPubKey,
+                        _address: utxo.address
+                    });
+
+                    if (chosenSatoshis >= reqSatoshis) {
+                        return true;
+                    }
                     return false;
                 }
-
-                chosenSatoshis += toSatoshis(utxo.amount);
-                chosen.push({
-                    txid: utxo.txid,
-                    vout: utxo.vout,
-                    _satoshis: toSatoshis(utxo.amount),
-                    _scriptPubKey: utxo.scriptPubKey,
-                    _address: utxo.address
-                });
-
-                if (chosenSatoshis >= reqSatoshis) {
-                    return true;
-                }
-                return false;
-            });
+            );
 
         if (chosenSatoshis < reqSatoshis) {
-            throw new Error('Not enough available output to cover the required amount.')
+            throw new Error('Not enough available output to cover the required amount.');
         }
 
         await this.call('lockunspent', [false, chosen, true]);
@@ -109,7 +109,7 @@ export class CoreRpcService implements RPC {
      * TODO: Might need modification
      */
     public async importRedeemScript(script: any): Promise<boolean> {
-        await this.call('importaddress', [script, '', false, true])
+        await this.call('importaddress', [script, '', false, true]);
         return true;
     }
 
@@ -117,32 +117,33 @@ export class CoreRpcService implements RPC {
      * TODO: Might need modification
      */
     public async signRawTransactionForInputs(tx: TransactionBuilder, inputs: OmpOutput[]): Promise<ISignature[]> {
-        let r: ISignature[] = [];
+        const r: ISignature[] = [];
 
         // needs to synchronize, because the order needs to match
         // the inputs order.
-        for(let i = 0; i < inputs.length; i++){
-            const input = inputs[i];
-            // console.log('signing for ', input)
-            const params = [
-                await tx.build(),
-                {
-                    txid: input.txid,
-                    vout: input.vout,
-                    scriptPubKey: input._scriptPubKey,
-                    amount: fromSatoshis(input._satoshis)
-                },
-                input._address
-            ];
+        for (const i of inputs) {
+            if (i) {
+                const input = inputs[i];
+                // console.log('signing for ', input)
+                const params = [
+                    await tx.build(),
+                    {
+                        txid: input.txid,
+                        vout: input.vout,
+                        scriptPubKey: input._scriptPubKey,
+                        amount: fromSatoshis(input._satoshis)
+                    },
+                    input._address
+                ];
 
-            const sig = {
-                signature: (await this.call('createsignaturewithwallet', params)),
-                pubKey: (await this.call('getaddressinfo', [input._address])).pubkey
-            };
-            r.push(sig);
-            tx.addSignature(input, sig);
-            
-        };
+                const sig = {
+                    signature: (await this.call('createsignaturewithwallet', params)),
+                    pubKey: (await this.call('getaddressinfo', [input._address])).pubkey
+                };
+                r.push(sig);
+                tx.addSignature(input, sig);
+            }
+        }
 
         return r;
     }
