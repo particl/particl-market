@@ -33,9 +33,9 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
     /**
      * data.params[]:
      *  [0]: profileId
-     *  [1]: firstName
-     *  [2]: lastName
-     *  [3]: title
+     *  [1]: title
+     *  [2]: firstName
+     *  [3]: lastName
      *  [4]: addressLine1
      *  [5]: addressLine2
      *  [6]: city

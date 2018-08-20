@@ -63,8 +63,8 @@ describe('Happy Buy Flow', () => {
     let bidOnSellerNode: resources.Bid;
     let bidOnBuyerNode: resources.Bid;
 
-    let orderOnSellerNode: resources.Order;
-    let orderOnBuyerNode: resources.Order;
+    // let orderOnSellerNode: resources.Order;
+    // let orderOnBuyerNode: resources.Order;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
@@ -165,10 +165,6 @@ describe('Happy Buy Flow', () => {
 
     });
 
-    afterAll(async () => {
-    });
-
-    // test('Should post a ListingItemTemplate (ListingItemMessage, MP_ITEM_ADD) to the default marketplace from seller node', async () => {
     test('SELLER POSTS MP_ITEM_ADD to the default marketplace', async () => {
 
         log.debug('========================================================================================');
@@ -415,7 +411,7 @@ describe('Happy Buy Flow', () => {
         log.debug('=================================================================================');
 
     }, 600000); // timeout to 600s
-/*
+
     test('Bid should have been updated on seller node after posting the MPA_ACCEPT', async () => {
 
         log.debug('========================================================================================');
@@ -498,7 +494,7 @@ describe('Happy Buy Flow', () => {
 
         orderOnSellerNode = result[0];
     }, 600000); // timeout to 600s
-
+/*
     test('BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT', async () => {
 
         log.debug('========================================================================================');

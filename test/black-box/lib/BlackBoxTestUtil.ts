@@ -239,7 +239,8 @@ export class BlackBoxTestUtil {
                         // this.log.debug('objectPropertyValue: ' + objectPropertyValue);
 
                         if (objectPropertyValue === waitForObjectPropertyValue) {
-                            this.log.debug('success! statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
+                            this.log.debug('success! statusCode === ' + waitForStatusCode
+                                + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
                             return response;
                         } else {
 

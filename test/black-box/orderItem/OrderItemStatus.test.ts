@@ -31,32 +31,26 @@ describe('OrderItemStatus', () => {
     const categorySearchSubCommand = Commands.CATEGORY_SEARCH.commandName;
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const templateSubCommand = Commands.TEMPLATE_ADD.commandName;
+    const templateAddCommand = Commands.TEMPLATE_ADD.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
-    const imageCommand = Commands.ITEMIMAGE_ROOT.commandName;
-    const imageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
-
     const itemCommand = Commands.ITEM_ROOT.commandName;
-    const itemGetSubCommand = Commands.ITEM_GET.commandName;
-
-    const escrowCommand = Commands.ESCROW_ROOT.commandName;
-    const escrowAddSubCommand = Commands.ESCROW_ADD.commandName;
+    const itemGetCommand = Commands.ITEM_GET.commandName;
 
     const addressCommand = Commands.ADDRESS_ROOT.commandName;
-    const addressSubCommand = Commands.ADDRESS_ADD.commandName;
+    const addressAddCommand = Commands.ADDRESS_ADD.commandName;
 
     const bidCommand = Commands.BID_ROOT.commandName;
-    const bidSubCommand = Commands.BID_SEND.commandName;
-    const bidSearchSubCommand = Commands.BID_SEARCH.commandName;
-    const bidAcceptSubCommand = Commands.BID_ACCEPT.commandName;
+    const bidSendCommand = Commands.BID_SEND.commandName;
+    const bidSearchCommand = Commands.BID_SEARCH.commandName;
+    const bidAcceptCommand = Commands.BID_ACCEPT.commandName;
 
     const orderCommand = Commands.ORDER_ROOT.commandName;
-    const orderSearchSubCommand = Commands.ORDER_SEARCH.commandName;
+    const orderSearchCommand = Commands.ORDER_SEARCH.commandName;
 
     const orderItemCommand = Commands.ORDERITEM_ROOT.commandName;
-    const orderItemStatusSubCommand = Commands.ORDERITEM_STATUS.commandName;
+    const orderItemStatusCommand = Commands.ORDERITEM_STATUS.commandName;
 
     let profileId1;
     let profileId2;
@@ -64,10 +58,10 @@ describe('OrderItemStatus', () => {
     let marketId2;
     // let createdAddress;
     let myCategory;
-    let listingItemTemplates;
+    // let listingItemTemplates;
     let createdListingItem;
     let myTemplate;
-    let escrow;
+    // let escrow;
     let myBid;
     let myOrder;
     let myAddress;
@@ -90,6 +84,10 @@ describe('OrderItemStatus', () => {
         type: AddressType.SHIPPING_OWN
     };
 
+    const PAGE = 0;
+    const PAGE_LIMIT = 10;
+    const ORDERING = SearchOrder.ASC;
+
     beforeAll(async () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -109,7 +107,6 @@ describe('OrderItemStatus', () => {
         // Get category
         myCategory = await testUtil1.rpc(categoryCommand, [categorySearchSubCommand, 'luxury']);
         myCategory.expectJson();
-        expect(myCategory.error).toBe(null);
         myCategory.expectStatusCode(200);
         myCategory = myCategory.getBody()['result'][0];
 
@@ -142,27 +139,24 @@ describe('OrderItemStatus', () => {
         expect(myTemplate.id).toBeDefined();
 
         // we should be also able to get the template
-        {
-            const templateGetRes: any = await testUtil1.rpc(templateCommand, [templateGetCommand, myTemplate.id]);
-            templateGetRes.expectJson();
-            templateGetRes.expectStatusCode(200);
-            const result: resources.ListingItemTemplate = templateGetRes.getBody()['result'];
-        }
+        const templateGetRes: any = await testUtil1.rpc(templateCommand, [templateGetCommand, myTemplate.id]);
+        templateGetRes.expectJson();
+        templateGetRes.expectStatusCode(200);
+        const result: resources.ListingItemTemplate = templateGetRes.getBody()['result'];
 
         // Post template to create listing item [copied/modified from buy flow]
         const templatePostRes: any = await testUtil1.rpc(templateCommand, [templatePostCommand, myTemplate.id, marketId1]);
         templatePostRes.expectJson();
         templatePostRes.expectStatusCode(200);
+
         // make sure we got the expected result from posting the template
-        {
-            const result: any = templatePostRes.getBody()['result'];
-            expect(result.result).toBe('Sent.');
-        }
+        const postResult: any = templatePostRes.getBody()['result'];
+        expect(postResult.result).toBe('Sent.');
 
         // Search for item since it's not returned by the template post command
         createdListingItem = await testUtil2.rpcWaitFor(
             itemCommand,
-            [itemGetSubCommand, myTemplate.hash],
+            [itemGetCommand, myTemplate.hash],
             60 * 60,
             200,
             'hash',
@@ -170,29 +164,26 @@ describe('OrderItemStatus', () => {
         );
         // throw new MessageException(JSON.stringify(createdListingItem, null, 2));
         createdListingItem.expectJson();
-        expect(createdListingItem.error).toBe(null);
         createdListingItem.expectStatusCode(200);
         createdListingItem = createdListingItem.getBody()['result'];
 
         // throw new MessageException('createdListingItem = ' + JSON.stringify(createdListingItem, null, 2));
 
         // Create an address for the bid
-        myAddress = await testUtil2.rpc(addressCommand, [addressSubCommand, profileId2, shippingAddress.firstName, shippingAddress.lastName, shippingAddress.title,
-                              shippingAddress.addressLine1, shippingAddress.addressLine2, shippingAddress.city,
-                              shippingAddress.state, shippingAddress.country, shippingAddress.zipCode]);
+        myAddress = await testUtil2.rpc(addressCommand, [addressAddCommand, profileId2, shippingAddress.firstName,
+            shippingAddress.lastName, shippingAddress.title, shippingAddress.addressLine1, shippingAddress.addressLine2,
+            shippingAddress.city, shippingAddress.state, shippingAddress.country, shippingAddress.zipCode]);
         myAddress.expectJson();
-        expect(myAddress.error).toBe(null);
         myAddress.expectStatusCode(200);
         myAddress = myAddress.getBody()['result'];
     });
 
     test('Should return an empty list', async () => {
         const orderItemStatusRes = await testUtil2.rpc(orderItemCommand, [
-            orderItemStatusSubCommand
+            orderItemStatusCommand
         ]);
 
         orderItemStatusRes.expectJson();
-        expect(orderItemStatusRes.error).toBe(null);
         orderItemStatusRes.expectStatusCode(200);
         const myOrderItems = orderItemStatusRes.getBody()['result'];
 
@@ -202,44 +193,60 @@ describe('OrderItemStatus', () => {
         expect(myOrderItems.length).toBe(0);
     });
 
+    // todo: split into separate tests
     test('Should show order that has been bidded upon', async () => {
         // Create a bid
-        let bidSendRes = await testUtil2.rpc(bidCommand, [bidSubCommand, /*createdListingItem.hash,*/ myTemplate.hash, profileId2, myAddress.id]);
+        let bidSendRes = await testUtil2.rpc(bidCommand, [
+            bidSendCommand,
+            myTemplate.hash,
+            profileId2,
+            myAddress.id
+        ]);
         bidSendRes.expectJson();
-        expect(bidSendRes.error).toBe(null);
         bidSendRes.expectStatusCode(200);
         bidSendRes = bidSendRes.getBody()['result'];
         expect(bidSendRes.result).toBe('Sent.');
 
         // Check for bid locally
-        myBid = await testUtil2.rpc(bidCommand, [bidSearchSubCommand, /*createdListingItem.hash,*/ myTemplate.hash, BidMessageType.MPA_BID, SearchOrder.ASC, defaultProfile2.address]);
+        myBid = await testUtil2.rpc(bidCommand, [
+            bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
+            myTemplate.hash,
+            BidMessageType.MPA_BID,
+            '*',
+            defaultProfile2.address
+        ]);
         myBid.expectJson();
-        expect(myBid.error).toBe(null);
         myBid.expectStatusCode(200);
-        // myBid = myBid.getBody()['result'][0];
+
 
         // Check for bid on seller
-        myBid = await testUtil1.rpcWaitFor(
-            bidCommand,
-            [bidSearchSubCommand, myTemplate.hash, BidMessageType.MPA_BID, SearchOrder.ASC, defaultProfile2.address],
+        myBid = await testUtil1.rpcWaitFor(bidCommand, [
+                bidSearchCommand,
+                PAGE, PAGE_LIMIT, ORDERING,
+                myTemplate.hash,
+                BidMessageType.MPA_BID,
+                '*',
+                defaultProfile2.address
+            ],
             60 * 60,
             200,
             '[0].action',
             BidMessageType.MPA_BID.toString()
         );
         myBid.expectJson();
-        expect(myBid.error).toBe(null);
         myBid.expectStatusCode(200);
+
         myBid = myBid.getBody()['result'][0];
         expect(myBid.ListingItem.hash).toBe(myTemplate.hash);
 
         const orderItemStatusRes = await testUtil2.rpc(orderItemCommand, [
-            orderItemStatusSubCommand
+            orderItemStatusCommand
         ]);
 
         orderItemStatusRes.expectJson();
-        expect(orderItemStatusRes.error).toBe(null);
         orderItemStatusRes.expectStatusCode(200);
+
         const myOrderItems = orderItemStatusRes.getBody()['result'];
 
         // Check we receive order that was bid upon
@@ -250,14 +257,22 @@ describe('OrderItemStatus', () => {
 
     test('Should show order that has been accepted', async () => {
         // Create an order from the bid
-        const myOrderSend = await testUtil1.rpc(bidCommand, [bidAcceptSubCommand, /*createdListingItem.hash,*/ myTemplate.hash, myBid.id]);
+        const myOrderSend = await testUtil1.rpc(bidCommand, [
+            bidAcceptCommand,
+            myTemplate.hash,
+            myBid.id
+        ]);
         myOrderSend.expectJson();
-        expect(myOrderSend.error).toBe(null);
         myOrderSend.expectStatusCode(200);
 
-        myOrder = await testUtil2.rpcWaitFor(
-            orderCommand,
-            [orderSearchSubCommand, /*createdListingItem.hash,*/ myTemplate.hash, OrderStatus.AWAITING_ESCROW, defaultProfile2.address, defaultProfile1.address, SearchOrder.ASC],
+        myOrder = await testUtil2.rpcWaitFor(orderCommand, [
+                orderSearchCommand,
+                myTemplate.hash,
+                OrderStatus.AWAITING_ESCROW,
+                defaultProfile2.address,
+                defaultProfile1.address,
+                SearchOrder.ASC
+            ],
             60 * 60,
             200,
             // '[0].hash',
@@ -265,20 +280,16 @@ describe('OrderItemStatus', () => {
             '[0].OrderItems[0].itemHash',
              myTemplate.hash
         );
-        // myOrder = await testUtil1.rpc(orderCommand, [orderSearchSubCommand, /*createdListingItem.hash,*/ myTemplate.hash, OrderStatus.AWAITING_ESCROW, profileId2, SearchOrder.ASC]);
+
         myOrder.expectJson();
-        expect(myOrder.error).toBe(null);
         myOrder.expectStatusCode(200);
         myOrder = myOrder.getBody()['result'][0];
 
-        // throw new MessageException('myOrder = ' + JSON.stringify(myOrder, null, 2));
-
         const orderItemStatusRes = await testUtil2.rpc(orderItemCommand, [
-            orderItemStatusSubCommand
+            orderItemStatusCommand
         ]);
 
         orderItemStatusRes.expectJson();
-        expect(orderItemStatusRes.error).toBe(null);
         orderItemStatusRes.expectStatusCode(200);
         const myOrderItems = orderItemStatusRes.getBody()['result'];
 

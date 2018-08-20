@@ -49,27 +49,6 @@ export class Bid extends Bookshelf.Model<Bid> {
 
         const bidCollection = Bid.forge<Model<Bid>>()
             .query( qb => {
-/*
-            .query( qb => {
-                    qb.join('order_items', 'orders.id', 'order_items.order_id');
-                    if (options.listingItemId) {
-                        qb.join('bids', 'order_items.bid_id', 'bids.id');
-                        qb.where('bids.listing_item_id', '=', options.listingItemId);
-                    }
-
-                    if (options.status && typeof options.status === 'string') {
-                        qb.where('order_items.status', '=', options.status);
-                    }
-
-                    if (options.buyerAddress && typeof options.buyerAddress === 'string') {
-                        qb.where('orders.buyer', '=', options.buyerAddress);
-                    }
-
-                    if (options.sellerAddress && typeof options.sellerAddress === 'string') {
-                        qb.where('orders.seller', '=', options.sellerAddress);
-                    }
-                }).orderBy('orders.created_at', options.ordering);
-*/
 
                 if (options.listingItemId) {
                     qb.where('bids.listing_item_id', '=', options.listingItemId);
@@ -103,38 +82,6 @@ export class Bid extends Bookshelf.Model<Bid> {
                     qb.whereIn('bids.bidder', options.bidders);
                 }
 
-/*
-                if (options.listingItemId) {
-                   qb.where('bids.listing_item_id', '=', options.listingItemId);
-                }
-
-                if (options.status
-                    && (options.status === BidMessageType.MPA_ACCEPT
-                        || options.status === BidMessageType.MPA_BID
-                        || options.status === BidMessageType.MPA_CANCEL
-                        || options.status === BidMessageType.MPA_REJECT)) {
-                    qb.where('bids.action', '=', options.status);
-                }
-
-                if (options.status
-                    && (options.status === OrderStatus.AWAITING_ESCROW
-                        || options.status === OrderStatus.COMPLETE
-                        || options.status === OrderStatus.ESCROW_LOCKED
-                        || options.status === OrderStatus.SHIPPING)) {
-                    qb.innerJoin('order_items', 'order_items.bid_id', 'bids.id');
-                    qb.where('order_items.status', '=', options.status);
-                }
-
-                if (options.searchString) {
-                    qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'bids.listing_item_id');
-                    qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
-                    qb.orWhere('item_informations.short_description', 'LIKE', '%' + options.searchString + '%');
-                    qb.orWhere('item_informations.long_description', 'LIKE', '%' + options.searchString + '%');
-                }
-                if (!_.isEmpty(options.bidders)) {
-                    qb.whereIn('bids.bidder', options.bidders);
-                }
-*/
             })
             .orderBy('bids.updated_at', options.ordering)
             .query({
@@ -150,63 +97,7 @@ export class Bid extends Bookshelf.Model<Bid> {
             return await bidCollection.fetchAll();
         }
     }
-/*
- console.log node_modules/knex/lib/helpers.js:75
-    { method: 'select',
-      options: {},
-      timeout: false,
-      cancelOnTimeout: false,
-      bindings: [ 27, 0 ],
-      __knexQueryUid: '3c0d7d66-6f94-4f99-bc51-d8d8ddac6afb',
-      sql: 'select "bids".* from "bids" inner join "order_items" on "order_items"."bid_id" = "bids"."id"
-       inner join "item_informations" on "item_informations"."listing_item_id" = "bids"."listing_item_id"
-        where "bids"."listing_item_id" = ? order by "bids"."updated_at" ASC limit ?' }
 
-  console.log node_modules/knex/lib/helpers.js:75
-    { method: 'select',
-      options: {},
-      timeout: false,
-      cancelOnTimeout: false,
-      bindings: [ 27, 'pacMrSKhcNvp4xaMD7ht1pduFuCYHmpWtS', 0 ],
-      __knexQueryUid: '0e69404a-5ce5-4577-a393-1bbd4c684b7c',
-      sql: 'select "bids".* from "bids" inner join "order_items" on "order_items"."bid_id" = "bids"."id"
-       inner join "item_informations" on "item_informations"."listing_item_id" = "bids"."listing_item_id"
-        where "bids"."listing_item_id" = ? and ("bids"."bidder" in (?)) order by "bids"."updated_at" ASC limit ?' }
-
-  console.log node_modules/knex/lib/helpers.js:75
-    { method: 'select',
-      options: {},
-      timeout: false,
-      cancelOnTimeout: false,
-      bindings:
-       [ '88257c6f9f920d5a655989a3e348e31168b59eab0fd26cc0771b79faf16e70e5',
-         1 ],
-      __knexQueryUid: 'aa6deaab-702b-44b2-83c2-674fc294b2f2',
-      sql: 'select "listing_items".* from "listing_items" where "hash" = ? limit ?' }
-
-  console.log node_modules/knex/lib/helpers.js:75
-    { method: 'select',
-      options: {},
-      timeout: false,
-      cancelOnTimeout: false,
-      bindings: [ 27, 0 ],
-      __knexQueryUid: 'f4d10fb4-de2e-467d-a089-66801c7da402',
-      sql: 'select "bids".* from "bids" inner join "order_items" on "order_items"."bid_id" = "bids"."id"
-       inner join "item_informations" on "item_informations"."listing_item_id" = "bids"."listing_item_id"
-        where "bids"."listing_item_id" = ? order by "bids"."updated_at" ASC limit ?' }
-
-  console.log node_modules/knex/lib/helpers.js:75
-    { method: 'select',
-      options: {},
-      timeout: false,
-      cancelOnTimeout: false,
-      bindings: [ 'pacMrSKhcNvp4xaMD7ht1pduFuCYHmpWtS', 0 ],
-      __knexQueryUid: '9a13b9eb-696a-446a-ab09-3544705c4837',
-      sql: 'select "bids".* from "bids" inner join "order_items" on "order_items"."bid_id" = "bids"."id"
-       inner join "item_informations" on "item_informations"."listing_item_id" = "bids"."listing_item_id"
-        where ("bids"."bidder" in (?)) order by "bids"."updated_at" ASC limit ?' }
-
- */
     public get tableName(): string { return 'bids'; }
     public get hasTimestamps(): boolean { return true; }
 
