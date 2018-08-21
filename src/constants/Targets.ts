@@ -57,6 +57,7 @@ export const Targets = {
         ShippingPrice: 'ShippingPrice',
         ShoppingCart: 'ShoppingCart',
         ShoppingCartItem: 'ShoppingCartItem',
+        SmsgMessage: 'SmsgMessage',
         User: 'User',
         Vote: 'Vote'
     },
@@ -89,7 +90,6 @@ export const Targets = {
         MessageEscrowRepository: 'MessageEscrowRepository',
         MessageInfoRepository: 'MessageInfoRepository',
         MessageObjectRepository: 'MessageObjectRepository',
-        MessageValueRepository: 'MessageValueRepository',
         MessagingInformationRepository: 'MessagingInformationRepository',
         OrderItemObjectRepository: 'OrderItemObjectRepository',
         OrderItemRepository: 'OrderItemRepository',
@@ -105,6 +105,7 @@ export const Targets = {
         ShippingPriceRepository: 'ShippingPriceRepository',
         ShoppingCartItemRepository: 'ShoppingCartItemRepository',
         ShoppingCartRepository: 'ShoppingCartRepository',
+        SmsgMessageRepository: 'SmsgMessageRepository',
         UserRepository: 'UserRepository',
         VoteRepository: 'VoteRepository'
     },
@@ -146,7 +147,6 @@ export const Targets = {
         MessageEscrowService: 'MessageEscrowService',
         MessageInfoService: 'MessageInfoService',
         MessageObjectService: 'MessageObjectService',
-        MessageValueService: 'MessageValueService',
         MessagingInformationService: 'MessagingInformationService',
         OrderItemObjectService: 'OrderItemObjectService',
         OrderItemService: 'OrderItemService',
@@ -163,6 +163,7 @@ export const Targets = {
         ShippingPriceService: 'ShippingPriceService',
         ShoppingCartItemService: 'ShoppingCartItemService',
         ShoppingCartService: 'ShoppingCartService',
+        SmsgMessageService: 'SmsgMessageService',
         SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
         UserService: 'UserService',
@@ -325,6 +326,7 @@ export const Targets = {
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         },
+        SmsgMessageCommand: 'SmsgMessageCommand',
         vote: {
             VoteGetCommand: 'VoteGetCommand',
             VoteListCommand: 'VoteListCommand',
