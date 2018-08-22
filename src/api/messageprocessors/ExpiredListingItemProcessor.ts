@@ -12,7 +12,7 @@ import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { ListingItem } from '../models/ListingItem';
 import { ListingItemService } from '../services/ListingItemService';
 
-export class ExpiredListingItemProcessor {
+export class ExpiredListingItemProcessor implements MessageProcessorInterface {
 
     public log: LoggerType;
 

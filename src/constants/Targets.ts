@@ -326,7 +326,6 @@ export const Targets = {
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         },
-        SmsgMessageCommand: 'SmsgMessageCommand',
         vote: {
             VoteGetCommand: 'VoteGetCommand',
             VoteListCommand: 'VoteListCommand',
@@ -345,21 +344,14 @@ export const Targets = {
         OrderFactory: 'OrderFactory',
         ProposalFactory: 'ProposalFactory',
         RpcCommandFactory: 'RpcCommandFactory',
+        SmsgMessageFactory: 'SmsgMessageFactory',
         VoteFactory: 'VoteFactory'
     },
     MessageProcessor:     {
-        deprecated: {
-            AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
-            BidMessageProcessor: 'BidMessageProcessor',
-            CancelBidMessageProcessor: 'CancelBidMessageProcessor',
-            ListingItemMessageProcessor: 'ListingItemMessageProcessor',
-            RejectBidMessageProcessor: 'RejectBidMessageProcessor',
-            TestMessageProcessor: 'TestMessageProcessor',
-            UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
-        },
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
         MessageProcessor: 'MessageProcessor',
-        MessageProcessorInterface: 'MessageProcessorInterface'
+        MessageProcessorInterface: 'MessageProcessorInterface',
+        SmsgMessageProcessor: 'SmsgMessageProcessor'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
