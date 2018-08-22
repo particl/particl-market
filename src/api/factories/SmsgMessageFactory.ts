@@ -43,7 +43,7 @@ export class SmsgMessageFactory {
                     received: message.received,
                     sent: message.sent,
                     expiration: message.expiration,
-                    daysRetention: message.daysRetention,
+                    daysretention: message.daysretention,
                     from: message.from,
                     to: message.to,
                     text: message.text
@@ -63,7 +63,7 @@ export class SmsgMessageFactory {
                     received: message.received,
                     sent: message.sent,
                     expiration: message.expiration,
-                    daysRetention: message.daysRetention,
+                    daysretention: message.daysretention,
                     from: message.from,
                     to: message.to,
                     text: message.text

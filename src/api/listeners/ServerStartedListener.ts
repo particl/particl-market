@@ -12,6 +12,7 @@ import { EventEmitter } from '../../core/api/events';
 import { MessageProcessor} from '../messageprocessors/MessageProcessor';
 import { CoreRpcService } from '../services/CoreRpcService';
 import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
+import { SmsgMessageProcessor } from '../messageprocessors/SmsgMessageProcessor';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -28,6 +29,7 @@ export class ServerStartedListener implements interfaces.Listener {
 
     constructor(
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.SmsgMessageProcessor) public smsgMessageProcessor: SmsgMessageProcessor,
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ExpiredListingItemProcessor)
         public expiredListingItemProcessor: ExpiredListingItemProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
@@ -90,6 +92,7 @@ export class ServerStartedListener implements interfaces.Listener {
                 this.expiredListingItemProcessor.scheduleProcess();
 
                 // start message polling
+                this.smsgMessageProcessor.schedulePoll();
                 this.messageProcessor.schedulePoll();
                 this.interval = 10000;
             }

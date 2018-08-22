@@ -13,7 +13,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.dateTime('received').notNullable();
             table.dateTime('sent').notNullable();
             table.dateTime('expiration').notNullable();
-            table.integer('daysRetention').notNullable();
+            table.integer('daysretention').notNullable();
             table.string('from').notNullable();
             table.string('to').notNullable();
             table.text('text').nullable();

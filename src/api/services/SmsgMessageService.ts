@@ -8,7 +8,7 @@ import { SmsgMessageRepository } from '../repositories/SmsgMessageRepository';
 import { SmsgMessage } from '../models/SmsgMessage';
 import { SmsgMessageCreateRequest } from '../requests/SmsgMessageCreateRequest';
 import { SmsgMessageUpdateRequest } from '../requests/SmsgMessageUpdateRequest';
-
+import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 
 export class SmsgMessageService {
 
@@ -19,6 +19,12 @@ export class SmsgMessageService {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
+    }
+
+    public async searchBy(options: SmsgMessageSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<SmsgMessage>> {
+        const result = await this.smsgMessageRepo.searchBy(options, withRelated);
+        this.log.debug('searchBy, result: ', JSON.stringify(result.toJSON(), null, 2));
+        return result;
     }
 
     public async findAll(): Promise<Bookshelf.Collection<SmsgMessage>> {
@@ -40,16 +46,8 @@ export class SmsgMessageService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create SmsgMessage, body: ', JSON.stringify(body, null, 2));
 
-        // TODO: extract and remove related models from request
-        // const smsgMessageRelated = body.related;
-        // delete body.related;
-
         // If the request body was valid we will create the smsgMessage
         const smsgMessage = await this.smsgMessageRepo.create(body);
-
-        // TODO: create related models
-        // smsgMessageRelated._id = smsgMessage.Id;
-        // await this.smsgMessageRelatedService.create(smsgMessageRelated);
 
         // finally find and return the created smsgMessage
         const newSmsgMessage = await this.findOne(smsgMessage.id);
@@ -70,7 +68,7 @@ export class SmsgMessageService {
         smsgMessage.Received = body.received;
         smsgMessage.Sent = body.sent;
         smsgMessage.Expiration = body.expiration;
-        smsgMessage.DaysRetention = body.daysRetention;
+        smsgMessage.Daysretention = body.daysretention;
         smsgMessage.From = body.from;
         smsgMessage.To = body.to;
         smsgMessage.Text = body.text;

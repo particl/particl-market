@@ -46,7 +46,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
     // tslint:enable:max-line-length
 
     /**
-     * main messageprocessor, polls for new smsgmessages and stores them in the database
+     * polls for new smsgmessages and stores them in the database
      *
      * @param {SmsgMessage[]} messages
      * @returns {Promise<void>}
@@ -55,11 +55,25 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
 
         for (const message of messages) {
 
-            const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get(message);
-            const smsgMessageModel: SmsgMessage = await this.smsgMessageService.create(smsgMessageCreateRequest);
-            const smsgMessage: resources.SmsgMessage = smsgMessageModel.toJSON();
-            this.log.debug('INCOMING SMSGMESSAGE: ' + smsgMessage.from + ' => ' + smsgMessage.to
-                + ' : ' + smsgMessage.type + '[' + smsgMessage.status + '] ' + smsgMessage.msgid);
+            // get the message again using smsg, since the smsginbox doesnt return expiration
+            const msg: resources.SmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
+            const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get(msg);
+
+            await this.smsgMessageService.create(smsgMessageCreateRequest)
+                .then(async smsgMessageModel => {
+
+                    const smsgMessage: resources.SmsgMessage = smsgMessageModel.toJSON();
+                    this.log.debug('INCOMING SMSGMESSAGE: '
+                        + smsgMessage.from + ' => ' + smsgMessage.to
+                        + ' : ' + smsgMessage.type + '[' + smsgMessage.status + '] '
+                        + smsgMessage.msgid);
+
+                    // after message is stored, remove it
+                    await this.smsgService.smsg(message.msgid, true, true);
+                })
+                .catch(reason => {
+                    this.log.error('ERROR: ', reason);
+                });
         }
     }
 
@@ -103,8 +117,20 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
             });
     }
 
+
     private async pollMessages(): Promise<any> {
         const response = await this.smsgService.smsgInbox('unread');
+        return response;
+    }
+
+    private async getMessage(msgId: string, remove: boolean = false, setRead: boolean = true): Promise<resources.SmsgMessage> {
+        const response = await this.smsgService.smsg(msgId, remove, setRead);
+        // this.log.debug('got response:', response);
+        return response;
+    }
+
+    private async removeMessage(msgId: string): Promise<resources.SmsgMessage> {
+        const response = await this.smsgService.smsg(msgId, true, false);
         // this.log.debug('got response:', response);
         return response;
     }
