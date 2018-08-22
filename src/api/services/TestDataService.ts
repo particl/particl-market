@@ -733,12 +733,12 @@ export class TestDataService {
         const currentblock: number = await this.coreRpcService.getBlockCount();
 
         const blockStart = generateParams.generatePastProposal
-            ? _.random(1, (currentblock / 2))
-            : _.random(currentblock, currentblock + 100);
+            ? _.random(1, (currentblock / 2), false)
+            : _.random(currentblock + 100, currentblock + 1000, false);
 
         const blockEnd = generateParams.generatePastProposal
-            ? _.random((currentblock / 2) + 1, currentblock)
-            : _.random(currentblock + 101, currentblock + 200);
+            ? _.random((currentblock / 2) + 100, currentblock - 1000, false)
+            : _.random(currentblock + 1001, currentblock + 2000, false);
 
         // this.log.debug('generateParams.generatePastProposal: ', generateParams.generatePastProposal);
         // this.log.debug('currentblock: ', currentblock);

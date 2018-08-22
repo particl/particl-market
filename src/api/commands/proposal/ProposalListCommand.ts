@@ -70,15 +70,15 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
      *
      * [0] startBlock |*, optional
      * [1] endBlock |*, optional
-     * [2] order, optional
-     * [3] type, optional
+     * [2] type |*, optional
+     * [3] order, optional
      *
      * @param {any[]} params
      * @returns {ProposalSearchParams}
      */
     private getSearchParams(params: any[]): ProposalSearchParams {
         let order: SearchOrder = SearchOrder.ASC;
-        let type: ProposalType = ProposalType.PUBLIC_VOTE;
+        let type: ProposalType;
         let startBlock: number | string = '*';
         let endBlock: number | string = '*';
 
@@ -97,6 +97,19 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
         }
 
         if (!_.isEmpty(params)) {
+            type = params.shift();
+            if (type.toUpperCase() === ProposalType.ITEM_VOTE.toString()) {
+                type = ProposalType.ITEM_VOTE;
+            } else if (type.toUpperCase() === ProposalType.PUBLIC_VOTE.toString()) {
+                type = ProposalType.PUBLIC_VOTE;
+            } else {
+                // anything goes
+            }
+        } else {
+            type = ProposalType.PUBLIC_VOTE; // default
+        }
+
+        if (!_.isEmpty(params)) {
             order = params.shift();
             if (order.toUpperCase() === SearchOrder.DESC.toString()) {
                 order = SearchOrder.DESC;
@@ -104,18 +117,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
                 order = SearchOrder.ASC;
             }
         } else {
-            order = SearchOrder.ASC;
-        }
-
-        if (!_.isEmpty(params)) {
-            type = params.shift();
-            if (type.toUpperCase() === ProposalType.ITEM_VOTE.toString()) {
-                type = ProposalType.ITEM_VOTE;
-            } else {
-                type = ProposalType.PUBLIC_VOTE;
-            }
-        } else {
-            type = ProposalType.PUBLIC_VOTE;
+            order = SearchOrder.ASC; // default
         }
 
         const searchParams = {
