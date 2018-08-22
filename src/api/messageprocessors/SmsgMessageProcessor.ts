@@ -7,7 +7,6 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
 
 import { EventEmitter } from '../../core/api/events';
-import { SmsgMessage } from '../messages/SmsgMessage';
 import { SmsgService } from '../services/SmsgService';
 
 import { MessageProcessorInterface } from './MessageProcessorInterface';
@@ -20,6 +19,12 @@ import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { VoteMessageType } from '../enums/VoteMessageType';
+import { SmsgMessageService } from '../services/SmsgMessageService';
+import { SmsgMessageFactory } from '../factories/SmsgMessageFactory';
+import { MessageException } from '../exceptions/MessageException';
+import * as resources from 'resources';
+import {SmsgMessageCreateRequest} from '../requests/SmsgMessageCreateRequest';
+import {SmsgMessage} from '../models/SmsgMessage';
 
 export class SmsgMessageProcessor implements MessageProcessorInterface {
 
@@ -28,10 +33,10 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
     private timeout: any;
     private interval = 5000;
 
-    // TODO: injecting listingItemService causes Error: knex: Required configuration option 'client' is missing.
     // tslint:disable:max-line-length
     constructor(
-        // @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Factory) @named(Targets.Factory.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
+        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
@@ -41,86 +46,20 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
     // tslint:enable:max-line-length
 
     /**
-     * main messageprocessor, ...
+     * main messageprocessor, polls for new smsgmessages and stores them in the database
      *
      * @param {SmsgMessage[]} messages
      * @returns {Promise<void>}
      */
-    public async process(messages: SmsgMessage[]): Promise<void> {
+    public async process(messages: resources.SmsgMessage[]): Promise<void> {
 
         for (const message of messages) {
-            this.log.debug('MessageProcessor.process, received message...');
 
-            let parsed: MarketplaceMessage | any;
-            parsed = await this.parseJSONSafe(message.text)
-                .then(value => {
-                    return value;
-                })
-                .catch(reason => {
-                    this.log.debug('parse error:' + reason);
-                    return null;
-                });
-            delete message.text;
-
-            if (parsed) {
-                parsed.market = message.to;
-
-                // in case of ListingItemMessage
-                if (parsed.item) {
-
-                    // const messageForLogging = JSON.parse(JSON.stringify(parsed.item));
-                    // delete messageForLogging.information.images;
-                    this.log.debug('==] poll(), new ListingItemMessage [============================================');
-                    // this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
-                    this.log.debug('from:', message.from);
-                    this.log.debug('to:', message.to);
-                    this.log.debug('sent:', message.sent);
-                    this.log.debug('received:', message.received);
-                    this.log.debug('msgid:', message.msgid);
-                    this.log.debug('==] poll(), new ListingItemMessage, end [=======================================');
-
-                    // ListingItemMessage, listingitemservice listens for this event
-                    this.eventEmitter.emit(Events.ListingItemReceivedEvent, {
-                        smsgMessage: message,
-                        marketplaceMessage: parsed
-                    } as MarketplaceEvent);
-
-                    // send event to cli
-                    this.eventEmitter.emit(Events.Cli, {
-                        message: Events.ListingItemReceivedEvent,
-                        data: parsed
-                    });
-
-                // in case of ActionMessage, which is either BidMessage or EscrowMessage
-                } else if (parsed.mpaction) {
-                    // const messageForLogging = JSON.parse(JSON.stringify(parsed.mpaction));
-                    this.log.debug('==] poll(), new ActionMessage [===============================================');
-                    // this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
-                    this.log.debug('from:', message.from);
-                    this.log.debug('to:', message.to);
-                    this.log.debug('sent:', message.sent);
-                    this.log.debug('received:', message.received);
-                    this.log.debug('msgid:', message.msgid);
-                    this.log.debug('==] poll(), new ActionMessage, end [==========================================');
-
-                    // ActionMessage
-                    const eventType = await this.getActionEventType(parsed.mpaction);
-                    this.eventEmitter.emit(eventType, {
-                        smsgMessage: message,
-                        marketplaceMessage: parsed
-                    });
-
-                    // send event to cli
-                    this.eventEmitter.emit(Events.Cli, {
-                        message: eventType,
-                        data: parsed
-                    });
-
-                } else {
-                    // json object, but not something that we're expecting
-                    this.log.error('received something unexpected: ', JSON.stringify(parsed, null, 2));
-                }
-            }
+            const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get(message);
+            const smsgMessageModel: SmsgMessage = await this.smsgMessageService.create(smsgMessageCreateRequest);
+            const smsgMessage: resources.SmsgMessage = smsgMessageModel.toJSON();
+            this.log.debug('INCOMING SMSGMESSAGE: ' + smsgMessage.from + ' => ' + smsgMessage.to
+                + ' : ' + smsgMessage.type + '[' + smsgMessage.status + '] ' + smsgMessage.msgid);
         }
     }
 
@@ -150,7 +89,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
         await this.pollMessages()
             .then( async messages => {
                 if (messages.result !== '0') {
-                    const smsgMessages: SmsgMessage[] = messages.messages;
+                    const smsgMessages: resources.SmsgMessage[] = messages.messages;
                     await this.process(smsgMessages);
                 }
                 return;
@@ -170,14 +109,13 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
         return response;
     }
 
-    private async parseJSONSafe(json: string): Promise<MarketplaceMessage|null> {
-        let parsed = null;
+    private async parseJSONSafe(json: string): Promise<MarketplaceMessage> {
+        let parsed: MarketplaceMessage;
         try {
            // this.log.debug('json to parse:', json);
             parsed = JSON.parse(json);
         } catch (e) {
-            this.log.debug('parseJSONSafe, invalid JSON:', json);
-            return null;
+            throw new MessageException('Could not parse the incoming message.');
         }
         return parsed;
     }

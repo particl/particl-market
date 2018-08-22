@@ -47,7 +47,7 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @returns {Promise<void>}
      */
     public async process(messages: SmsgMessage[]): Promise<void> {
-
+/*
         for (const message of messages) {
             this.log.debug('MessageProcessor.process, received message...');
 
@@ -122,6 +122,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                 }
             }
         }
+*/
     }
 
     public stop(): void {
