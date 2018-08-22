@@ -125,7 +125,7 @@ export class IoC {
 
     private bindMessageProcessors(): Promise<void> {
         return this.bindFiles(
-            '/messageprocessors/**/*MessageProcessor.ts',
+            '/messageprocessors/**/*Processor.ts',
             Targets.MessageProcessor,
             (name: any, value: any) => this.bindFile(Types.MessageProcessor, name, value));
     }

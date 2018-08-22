@@ -11,6 +11,7 @@ import { DefaultMarketService } from '../services/DefaultMarketService';
 import { EventEmitter } from '../../core/api/events';
 import { MessageProcessor} from '../messageprocessors/MessageProcessor';
 import { CoreRpcService } from '../services/CoreRpcService';
+import { ExpiredListingItemProcessor } from '../messageprocessors/ExpiredListingItemProcessor';
 
 export class ServerStartedListener implements interfaces.Listener {
 
@@ -27,6 +28,8 @@ export class ServerStartedListener implements interfaces.Listener {
 
     constructor(
         @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.MessageProcessor) public messageProcessor: MessageProcessor,
+        @inject(Types.MessageProcessor) @named(Targets.MessageProcessor.ExpiredListingItemProcessor)
+        public expiredListingItemProcessor: ExpiredListingItemProcessor,
         @inject(Types.Service) @named(Targets.Service.DefaultItemCategoryService) public defaultItemCategoryService: DefaultItemCategoryService,
         @inject(Types.Service) @named(Targets.Service.DefaultProfileService) public defaultProfileService: DefaultProfileService,
         @inject(Types.Service) @named(Targets.Service.DefaultMarketService) public defaultMarketService: DefaultMarketService,
@@ -74,8 +77,6 @@ export class ServerStartedListener implements interfaces.Listener {
             if (this.previousState !== isConnected) {
                 this.log.info('connection with particld established.');
 
-                // this.coreRpcService.call('smsgscanchain');
-
                 // seed the default market
                 await this.defaultMarketService.seedDefaultMarket();
 
@@ -84,6 +85,9 @@ export class ServerStartedListener implements interfaces.Listener {
 
                 // seed the default Profile
                 await this.defaultProfileService.seedDefaultProfile();
+
+                // start expiredListingItemProcessor
+                this.expiredListingItemProcessor.scheduleProcess();
 
                 // start message polling
                 this.messageProcessor.schedulePoll();
