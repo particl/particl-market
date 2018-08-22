@@ -7,7 +7,6 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
 
 import { EventEmitter } from '../../core/api/events';
-import { SmsgMessage } from '../messages/SmsgMessage';
 import { SmsgService } from '../services/SmsgService';
 
 import { MessageProcessorInterface } from './MessageProcessorInterface';
@@ -20,6 +19,7 @@ import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { VoteMessageType } from '../enums/VoteMessageType';
+import * as resources from 'resources';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -46,7 +46,7 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @param {SmsgMessage[]} messages
      * @returns {Promise<void>}
      */
-    public async process(messages: SmsgMessage[]): Promise<void> {
+    public async process(messages: resources.SmsgMessage[]): Promise<void> {
 /*
         for (const message of messages) {
             this.log.debug('MessageProcessor.process, received message...');
@@ -148,10 +148,11 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @returns {Promise<void>}
      */
     private async poll(): Promise<void> {
+
         await this.pollMessages()
             .then( async messages => {
                 if (messages.result !== '0') {
-                    const smsgMessages: SmsgMessage[] = messages.messages;
+                    const smsgMessages: resources.SmsgMessage[] = messages.messages;
                     await this.process(smsgMessages);
                 }
                 return;

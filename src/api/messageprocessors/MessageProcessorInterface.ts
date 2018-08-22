@@ -5,10 +5,10 @@
 import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { ListingItemMessageInterface } from '../messages/ListingItemMessageInterface';
 import { ProposalMessageInterface } from '../messages/ProposalMessageInterface';
-import { SmsgMessage } from '../messages/SmsgMessage';
 import { VoteMessageInterface } from '../messages/VoteMessageInterface';
+import * as resources from 'resources';
 
 export interface MessageProcessorInterface {
-    process( message: ActionMessageInterface | ListingItemMessageInterface | ProposalMessageInterface | VoteMessageInterface | SmsgMessage[],
+    process( message: ActionMessageInterface | ListingItemMessageInterface | ProposalMessageInterface | VoteMessageInterface | resources.SmsgMessage[],
              marketAddress: string): any;
 }

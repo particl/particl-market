@@ -5,6 +5,7 @@ import { SmsgMessage } from '../models/SmsgMessage';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
+import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 
 export class SmsgMessageRepository {
 
@@ -15,6 +16,10 @@ export class SmsgMessageRepository {
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
+    }
+
+    public async searchBy(options: SmsgMessageSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<SmsgMessage>> {
+        return this.SmsgMessageModel.searchBy(options, withRelated);
     }
 
     public async findAll(): Promise<Bookshelf.Collection<SmsgMessage>> {

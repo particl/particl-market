@@ -32,7 +32,7 @@ export class SmsgMessageCreateRequest extends RequestBody {
     public expiration: Date;
 
     @IsNotEmpty()
-    public daysRetention: number;
+    public daysretention: number;
 
     @IsNotEmpty()
     public from: string;

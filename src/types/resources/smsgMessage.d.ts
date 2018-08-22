@@ -9,7 +9,7 @@ declare module 'resources' {
         received: Date;
         sent: Date;
         expiration: Date;
-        daysRetention: number;
+        daysretention: number;
         from: string;
         to: string;
         text: string; // this should propably be cleared after message has been succesfully processed
