@@ -170,7 +170,7 @@ export class BlackBoxTestUtil {
     public async rpc(method: string, params: any[] = [], logError: boolean = true): Promise<any> {
         const response = await rpc(method, params, this.node);
         if (logError && response.error) {
-            this.log.error(response.error.error.message);
+            this.log.error('ERROR: ' + response.error.error.message);
         }
         return response;
     }
@@ -239,7 +239,8 @@ export class BlackBoxTestUtil {
                         // this.log.debug('objectPropertyValue: ' + objectPropertyValue);
 
                         if (objectPropertyValue === waitForObjectPropertyValue) {
-                            this.log.debug('success! statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
+                            this.log.debug('success! statusCode === ' + waitForStatusCode
+                                + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
                             return response;
                         } else {
 

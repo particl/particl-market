@@ -121,6 +121,7 @@ describe('Happy Buy Flow', () => {
         ) as resources.ListingItemTemplates[];
 
         expect(listingItemTemplatesSellerNode[0].id).toBeDefined();
+        expect(listingItemTemplatesSellerNode[0].hash).toBeDefined();
 
         // we should be also able to get the template
         const templateGetRes: any = await testUtilSellerNode.rpc(templateCommand, [templateGetCommand, listingItemTemplatesSellerNode[0].id]);
@@ -165,10 +166,6 @@ describe('Happy Buy Flow', () => {
 
     });
 
-    afterAll(async () => {
-    });
-
-    // test('Should post a ListingItemTemplate (ListingItemMessage, MP_ITEM_ADD) to the default marketplace from seller node', async () => {
     test('SELLER POSTS MP_ITEM_ADD to the default marketplace', async () => {
 
         log.debug('========================================================================================');
@@ -210,7 +207,7 @@ describe('Happy Buy Flow', () => {
         // wait for some time to make sure it's received
         await testUtilSellerNode.waitFor(10);
 
-        const itemGetRes: any = await testUtilSellerNode.rpcWaitFor(
+        const response: any = await testUtilSellerNode.rpcWaitFor(
             listingItemCommand,
             [listingItemGetCommand, listingItemTemplatesSellerNode[0].hash],
             8 * 60,
@@ -218,21 +215,26 @@ describe('Happy Buy Flow', () => {
             'hash',
             listingItemTemplatesSellerNode[0].hash
         );
-        itemGetRes.expectJson();
-        itemGetRes.expectStatusCode(200);
+        response.expectJson();
+        response.expectStatusCode(200);
 
         // make sure we got the expected result from seller node
         // -> meaning item hash was matched with the existing template hash
-        const result: resources.ListingItem = itemGetRes.getBody()['result'];
+        const result: resources.ListingItem = response.getBody()['result'];
 
         expect(result).toBeDefined();
         delete result.ItemInformation.ItemImages;
-        // log.debug('ListingItem on seller node: ', JSON.stringify(result, null, 2));
+        log.debug('result.hash: ', result.hash);
+        log.debug('listingItemTemplatesSellerNode[0].hash: ', listingItemTemplatesSellerNode[0].hash);
         expect(result.hash).toBe(listingItemTemplatesSellerNode[0].hash);
+        log.debug('result.ListingItemTemplate.hash: ', listingItemTemplatesSellerNode[0].hash);
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
+        // sometimes result.ListingItemTemplate is null!!!
 
         // store ListingItem for later tests
         listingItemReceivedSellerNode = result;
+
+        log.debug('==> SELLER received MP_ITEM_ADD.');
 
     }, 600000); // timeout to 600s
 
@@ -260,6 +262,8 @@ describe('Happy Buy Flow', () => {
 
         // store ListingItem for later tests
         listingItemReceivedBuyerNode = result;
+
+        log.debug('==> SELLER received MP_ITEM_ADD.');
 
     }, 600000); // timeout to 600s
 
@@ -337,6 +341,9 @@ describe('Happy Buy Flow', () => {
         expect(result[0].ListingItem.ListingItemTemplate).toEqual({});
 
         bidOnBuyerNode = result[0];
+
+        log.debug('==> Bid created on BUYER node.');
+
     }, 600000); // timeout to 600s
 
     test('SELLER RECEIVES MPA_BID posted from buyers node, BidMessageType.MPA_BID', async () => {
@@ -344,6 +351,9 @@ describe('Happy Buy Flow', () => {
         log.debug('========================================================================================');
         log.debug('SELLER RECEIVES MPA_BID posted from buyers node, BidMessageType.MPA_BID');
         log.debug('========================================================================================');
+
+        // wait for some time to make sure the Bid has been created
+        // await testUtilBuyerNode.waitFor(5);
 
         const bidSearchCommandParams = [
             bidSearchCommand,
@@ -369,17 +379,31 @@ describe('Happy Buy Flow', () => {
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
         expect(result[0].bidder).toBe(buyerProfile.address);
+
+        log.debug('result[0].ListingItem.hash:', result[0].ListingItem.hash);
+
+        expect(result[0].ListingItem).toBeDefined();
+        log.debug('1');
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
+        log.debug('2');
+        log.debug('result[0].ListingItem.hash: ', result[0].ListingItem.hash);
+        log.debug('listingItemReceivedSellerNode.hash: ', listingItemReceivedSellerNode.hash);
+        log.debug('result[0]: ', JSON.stringify(result[0].ListingItem.hash, null, 2));
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedSellerNode.hash);
+        log.debug('3');
 
         // there should be a relation to template on the seller side
         expect(result[0].ListingItem.ListingItemTemplate).toBeDefined();
+        log.debug('4');
 
         // the relation should match the hash of the template that was created earlier on node1
         expect(result[0].ListingItem.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
+        log.debug('5');
 
         // todo: check for correct biddata
         bidOnSellerNode = result[0];
+
+        log.debug('==> SELLER received MPA_BID.');
 
     }, 600000); // timeout to 600s
 
@@ -389,7 +413,9 @@ describe('Happy Buy Flow', () => {
         log.debug('SELLER POSTS MPA_ACCEPT');
         log.debug('========================================================================================');
 
-        // await testUtilSellerNode.waitFor(5);
+        await testUtilSellerNode.waitFor(5);
+
+        expect(bidOnSellerNode).toBeDefined();
 
         const bidAcceptCommandParams = [
             bidAcceptCommand,
@@ -397,13 +423,15 @@ describe('Happy Buy Flow', () => {
             bidOnSellerNode.id
         ];
 
-        const bidAcceptRes: any = await testUtilSellerNode.rpc(bidCommand, bidAcceptCommandParams);
-        bidAcceptRes.expectJson();
-        bidAcceptRes.expectStatusCode(200);
+        const response: any = await testUtilSellerNode.rpc(bidCommand, bidAcceptCommandParams);
+        log.debug('response:', JSON.stringify(response, null, 2));
+
+        response.expectJson();
+        response.expectStatusCode(200);
 
         // make sure we got the expected result from sending the bid
-        const result: any = bidAcceptRes.getBody()['result'];
-        log.debug('result', result);
+        const result: any = response.getBody()['result'];
+        log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.result).toBe('Sent.');
 
         log.debug('==[ accept Bid /// seller (node1) -> buyer (node2) ]=============================');
@@ -415,7 +443,7 @@ describe('Happy Buy Flow', () => {
         log.debug('=================================================================================');
 
     }, 600000); // timeout to 600s
-/*
+
     test('Bid should have been updated on seller node after posting the MPA_ACCEPT', async () => {
 
         log.debug('========================================================================================');
@@ -456,6 +484,8 @@ describe('Happy Buy Flow', () => {
         expect(result[0].ListingItem.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
 
         bidOnSellerNode = result[0];
+
+        log.debug('==> Bid updated on SELLER node.');
     });
 
     test('Order should have been created on seller node after posting the MPA_ACCEPT', async () => {
@@ -467,6 +497,7 @@ describe('Happy Buy Flow', () => {
         // wait for some time to make sure the Order has been created
         await testUtilSellerNode.waitFor(10);
 
+        log.debug('bidOnSellerNode: ', JSON.stringify(bidOnSellerNode, null, 2));
         const orderSearchCommandParams = [
             orderSearchCommand,
             bidOnSellerNode.ListingItem.hash,
@@ -481,7 +512,7 @@ describe('Happy Buy Flow', () => {
             orderSearchCommandParams,
             8 * 60,
             200,
-            'OrderItems[0].status',
+            '[0].OrderItems[0].status',
             OrderStatus.AWAITING_ESCROW.toString()
         );
         orderSearchRes.expectJson();
@@ -497,6 +528,9 @@ describe('Happy Buy Flow', () => {
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnSellerNode = result[0];
+
+        log.debug('==> Order created on SELLER node.');
+
     }, 600000); // timeout to 600s
 
     test('BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT', async () => {
@@ -543,6 +577,7 @@ describe('Happy Buy Flow', () => {
         // todo: check for correct biddata
         bidOnBuyerNode = result[0];
 
+        log.debug('==> BUYER received MPA_ACCEPT.');
     }, 600000); // timeout to 600s
 
     test('Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderStatus.AWAITING_ESCROW', async () => {
@@ -577,8 +612,10 @@ describe('Happy Buy Flow', () => {
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnBuyerNode = result[0];
-    });
 
+        log.debug('==> Order created on BUYER node.');
+
+    });
 
     test('After Order is created, we should also find Bids using the OrderStatus', async () => {
 
@@ -603,6 +640,7 @@ describe('Happy Buy Flow', () => {
         expect(result[0].ListingItem.hash).toBe(bidOnBuyerNode.ListingItem.hash);
         expect(result[0].OrderItem.status).toBe(OrderStatus.AWAITING_ESCROW);
 
+        log.debug('==> Updated Bid found on BUYER node.');
     });
 
     test('BUYER POSTS MPA_LOCK', async () => {
@@ -669,6 +707,8 @@ describe('Happy Buy Flow', () => {
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnBuyerNode = result[0];
+
+        log.debug('==> Updated Bid found on BUYER node.');
     });
 
     test('SELLER RECEIVES MPA_LOCK posted from buyers node, OrderStatus.ESCROW_LOCKED', async () => {
@@ -704,6 +744,8 @@ describe('Happy Buy Flow', () => {
         expect(result[0].seller).toBe(sellerProfile.address);
 
         orderOnSellerNode = result[0];
+
+        log.debug('==> SELLER received MPA_LOCK.');
 
     }, 600000); // timeout to 600s
 
@@ -771,6 +813,9 @@ describe('Happy Buy Flow', () => {
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
 
         orderOnSellerNode = result[0];
+
+        log.debug('==> Order updated on SELLER node.');
+
     });
 
     test('BUYER RECEIVES MPA_RELEASE posted from sellers node, OrderStatus.SHIPPING', async () => {
@@ -808,6 +853,8 @@ describe('Happy Buy Flow', () => {
         expect(result[0].seller).toBe(sellerProfile.address);
 
         orderOnBuyerNode = result[0];
+
+        log.debug('==> BUYER received MPA_RELEASE.');
 
     }, 600000); // timeout to 600s
 
@@ -875,6 +922,9 @@ describe('Happy Buy Flow', () => {
         expect(result[0].OrderItems[0].itemHash).toBe(bidOnBuyerNode.ListingItem.hash);
 
         orderOnSellerNode = result[0];
+
+        log.debug('==> Order updated on BUYER node.');
+
     });
 
     test('SELLER RECEIVES MPA_RELEASE posted from buyers node, OrderStatus.COMPLETE', async () => {
@@ -911,6 +961,8 @@ describe('Happy Buy Flow', () => {
 
         orderOnBuyerNode = result[0];
 
+        log.debug('==> SELLER received MPA_RELEASE.');
+
     }, 600000); // timeout to 600s
 
 
@@ -933,8 +985,9 @@ describe('Happy Buy Flow', () => {
         result = response.getBody()['result'];
         expect(result.length).toBe(0);
 
+        log.debug('==> No locked outputs left.');
 
     }, 600000); // timeout to 600s
-*/
+
 
 });

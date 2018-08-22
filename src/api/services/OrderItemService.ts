@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -45,7 +46,7 @@ export class OrderItemService {
         const body = JSON.parse(JSON.stringify(data));
         this.log.debug('OrderItemCreateRequest: ', JSON.stringify(body, null, 2));
 
-        const orderItemObjects = body.orderItemObjects;
+        const orderItemObjects = body.orderItemObjects || [];
         delete body.orderItemObjects;
 
         // this.log.debug('create OrderItem, body: ', JSON.stringify(body, null, 2));
