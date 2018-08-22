@@ -11,7 +11,7 @@ import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 export class SmsgMessageCreateRequest extends RequestBody {
 
     @IsNotEmpty()
-    public type: EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType;
+    public type: EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string;
 
     @IsNotEmpty()
     public status: SmsgMessageStatus;

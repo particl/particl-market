@@ -10,6 +10,7 @@
 export enum SmsgMessageStatus {
 
     NEW = 'NEW',
+    PARSING_FAILED = 'PARSING_FAILED',
     PROCESSED = 'PROCESSED',
     PROCESSING_FAILED = 'PROCESSING_FAILED',
     WAITING = 'WAITING'
