@@ -8,11 +8,11 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.string('type').notNullable();
             table.string('status').notNullable();
-            table.string('msgid').notNullable();
+            table.string('msgid').notNullable().unique();
             table.string('version').notNullable();
-            table.dateTime('received').notNullable();
-            table.dateTime('sent').notNullable();
-            table.dateTime('expiration').notNullable();
+            table.timestamp('received').notNullable();
+            table.timestamp('sent').notNullable();
+            table.timestamp('expiration').notNullable();
             table.integer('daysretention').notNullable();
             table.string('from').notNullable();
             table.string('to').notNullable();

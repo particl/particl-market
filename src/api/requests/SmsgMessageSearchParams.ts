@@ -18,12 +18,15 @@ import {ProposalMessageType} from '../enums/ProposalMessageType';
 export class SmsgMessageSearchParams extends RequestBody {
 
     @IsEnum(SearchOrder)
-    public order: SearchOrder = SearchOrder.ASC;
+    public order: SearchOrder = SearchOrder.DESC;
+    public orderByColumn = 'received';
 
     @IsEnum(SmsgMessageStatus)
     public status: SmsgMessageStatus;
 
     public type: EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string;
+    public count; // max count
 
+    public age = 1000 * 60 * 2; // minimum message age, 2 min
 }
 // tslint:enable:variable-name

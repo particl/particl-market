@@ -31,6 +31,10 @@ export class SmsgMessageRepository {
         return this.SmsgMessageModel.fetchById(id, withRelated);
     }
 
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<SmsgMessage> {
+        return this.SmsgMessageModel.fetchByMsgId(msgId, withRelated);
+    }
+
     public async create(data: any): Promise<SmsgMessage> {
         const smsgMessage = this.SmsgMessageModel.forge<SmsgMessage>(data);
         try {

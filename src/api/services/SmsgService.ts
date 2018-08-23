@@ -163,7 +163,7 @@ export class SmsgService {
                 setread: setRead
             })
         ]);
-        this.log.debug('smsg, response: ' + JSON.stringify(response, null, 2));
+        // this.log.debug('smsg, response: ' + JSON.stringify(response, null, 2));
         return response;
     }
 

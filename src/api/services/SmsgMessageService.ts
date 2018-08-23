@@ -23,7 +23,7 @@ export class SmsgMessageService {
 
     public async searchBy(options: SmsgMessageSearchParams, withRelated: boolean = true): Promise<Bookshelf.Collection<SmsgMessage>> {
         const result = await this.smsgMessageRepo.searchBy(options, withRelated);
-        this.log.debug('searchBy, result: ', JSON.stringify(result.toJSON(), null, 2));
+        // this.log.debug('searchBy, result: ', JSON.stringify(result.toJSON(), null, 2));
         return result;
     }
 
@@ -36,6 +36,15 @@ export class SmsgMessageService {
         if (smsgMessage === null) {
             this.log.warn(`SmsgMessage with the id=${id} was not found!`);
             throw new NotFoundException(id);
+        }
+        return smsgMessage;
+    }
+
+    public async findOneByMsgId(msgId: string, withRelated: boolean = true): Promise<SmsgMessage> {
+        const smsgMessage = await this.smsgMessageRepo.findOneByMsgId(msgId, withRelated);
+        if (smsgMessage === null) {
+            this.log.warn(`SmsgMessage with the msgid=${msgId} was not found!`);
+            throw new NotFoundException(msgId);
         }
         return smsgMessage;
     }
