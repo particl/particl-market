@@ -1,6 +1,7 @@
 const glob = require('glob');
 const fs = require('sync-fs');
 const prepend = require('prepend');
+
 const date = new Date();
 const particlMarket = '// Copyright (c) 2017-' + String(date.getFullYear()) + ', The Particl Market developers';
 const underLicense = '// Distributed under the GPL software license, see the accompanying';
@@ -8,7 +9,7 @@ const licenseLink = '// file COPYING or https://github.com/particl/particl-marke
 
 function getFiles(filePath) {
     console.log(filePath);
-    let filenames = glob.sync(filePath + '**/*.ts');
+    let filenames = glob.sync(filePath + '{src,test}/**/*.ts', {nodir: true, ignore: filePath + 'data/**'});
     console.log(filenames);
     return filenames;
 }

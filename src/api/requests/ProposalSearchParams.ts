@@ -13,8 +13,9 @@ export class ProposalSearchParams extends RequestBody {
 
     @IsEnum(SearchOrder)
     public order: SearchOrder = SearchOrder.ASC;
+
     @IsEnum(ProposalType)
-    public type: ProposalType = ProposalType.PUBLIC_VOTE;
+    public type: ProposalType;
 
     public startBlock: number | string;
     public endBlock: number | string;

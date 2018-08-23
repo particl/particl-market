@@ -50,21 +50,19 @@ export class CurrencyPriceService {
      * @returns {Promise<CurrencyPrice>}
      */
     @validate()
-    public async search(
-        @request(CurrencyPriceParams) options: CurrencyPriceParams
-        ): Promise<CurrencyPrice> {
-        return this.currencyPriceRepo.search(options);
+    public async search(@request(CurrencyPriceParams) options: CurrencyPriceParams): Promise<CurrencyPrice> {
+        return await this.currencyPriceRepo.search(options);
     }
 
     /**
      *
-     * fromCurrency: fromCurrency name (PART for now)
-     * toCurrencies[]: array of toCurrencies
      * example: toCurrencies[] = [INR, USD, EUR, GBP]
      *
      * description: from argument must be PART for now and toCurrencies is an array of toCurrencies like [INR, USD, EUR, GBP].
      *
-     * @returns {Promise<CurrencyPrice[]>}
+     * @param {string} fromCurrency name (PART for now)
+     * @param {string[]} toCurrencies array of toCurrencies
+     * @returns {Promise<"resources".CurrencyPrice[]>}
      */
     public async getCurrencyPrices(fromCurrency: string, toCurrencies: string[]): Promise<resources.CurrencyPrice[]> {
 
@@ -79,6 +77,7 @@ export class CurrencyPriceService {
                 } as CurrencyPriceParams);
 
                 const currency = currencyPriceModel && currencyPriceModel.toJSON();
+                this.log.debug('currency:', currency);
 
                 // check if currency already exist in the db then update the price
                 if (currency) {
@@ -160,14 +159,17 @@ export class CurrencyPriceService {
     private async getUpdatedCurrencyPrice(fromCurrency: string, toCurrency: string): Promise<any> {
         try {
             return new Promise<any>((resolve, reject) => {
-                this.apiRequest({
-                    method: 'GET',
-                    url: `${process.env.CHASING_COINS_API}/${fromCurrency}/${toCurrency}`
-                }, async (error: any, response: Request.RequestResponse, body: any) => {
+                this.apiRequest.get(
+                    process.env.CHASING_COINS_API + '/' + fromCurrency + '/' + toCurrency,
+                    {
+                        strictSSL: false
+                    }, async (error: any, response: Request.RequestResponse, body: any) => {
                     if (error || body.includes('Undefined property')) {
+                        this.log.error('error while fetching currencyprice:', error);
                         reject(error);
+                    } else {
+                        resolve(JSON.parse(body));
                     }
-                    resolve(JSON.parse(body));
                 });
             }).catch(() => {
                 throw new MessageException(`Invalid or unsupported currency, <${toCurrency}> or <${fromCurrency}>.`);
@@ -183,9 +185,11 @@ export class CurrencyPriceService {
      */
 
     private async needToUpdate(currencyUpdatedAt: number): Promise<boolean> {
-        const current: any = new Date();
-        const tricker: any = new Date(currencyUpdatedAt);
+        const current: any = new Date().getTime();
+        const ticker: any = new Date(currencyUpdatedAt).getTime();
         // check if the results in db are older than 60 second
-        return (((current - tricker) / 1000) > Number(process.env.CHASING_COINS_API_DELAY));
+        const secondsSinceUpdate = ((current - ticker) / 1000);
+        this.log.debug('secondsSinceUpdate:', secondsSinceUpdate);
+        return ( secondsSinceUpdate > Number(process.env.CHASING_COINS_API_DELAY));
     }
 }

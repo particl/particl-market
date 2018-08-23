@@ -31,6 +31,8 @@ describe('ProposalPostCommand', () => {
     const description = Faker.lorem.paragraph();
     let blockStart;
     let blockEnd;
+    let estimateFee = true;
+
     const options = [];
     options.push('optionA1');
     options.push('optionB2');
@@ -124,6 +126,21 @@ describe('ProposalPostCommand', () => {
             description,
             blockStart,
             blockEnd,
+            estimateFee
+        ]);
+        response.expectJson();
+        response.expectStatusCode(404);
+    });
+
+    test('Should fail to post a Proposal because it has too few args (7)', async () => {
+        const response: any = await testUtil.rpc(proposalCommand, [
+            proposalPostCommand,
+            defaultProfile.id,
+            title,
+            description,
+            blockStart,
+            blockEnd,
+            estimateFee,
             options[0]
         ]);
         response.expectJson();
@@ -140,6 +157,7 @@ describe('ProposalPostCommand', () => {
             description,
             blockStart,
             blockEnd,
+            estimateFee,
             options[0],
             options[1]
         ]);
@@ -157,6 +175,7 @@ describe('ProposalPostCommand', () => {
             description,
             blockStart,
             blockEnd,
+            estimateFee,
             options[0],
             options[1]
         ]);
@@ -174,6 +193,7 @@ describe('ProposalPostCommand', () => {
             description,
             invalidBlockStart,
             blockEnd,
+            estimateFee,
             options[0],
             options[1]
         ]);
@@ -191,6 +211,7 @@ describe('ProposalPostCommand', () => {
             description,
             blockStart,
             invalidBlockEnd,
+            estimateFee,
             options[0],
             options[1]
         ]);
@@ -198,7 +219,7 @@ describe('ProposalPostCommand', () => {
         response.expectStatusCode(404);
     });
 
-    test('Should post a Proposal', async () => {
+    test('Should estimate Proposal posting fee', async () => {
         const response: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
@@ -206,6 +227,29 @@ describe('ProposalPostCommand', () => {
             description,
             blockStart,
             blockEnd,
+            estimateFee,
+            options[0],
+            options[1]
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        const result: any = response.getBody()['result'];
+
+        log.debug('estimate fee result:', JSON.stringify(result));
+        expect(result.result).toEqual('Not Sent.');
+    });
+
+    test('Should post a Proposal', async () => {
+        estimateFee = false;
+        const response: any = await testUtil.rpc(proposalCommand, [
+            proposalPostCommand,
+            defaultProfile.id,
+            title,
+            description,
+            blockStart,
+            blockEnd,
+            estimateFee,
             options[0],
             options[1]
         ]);

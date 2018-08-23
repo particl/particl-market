@@ -166,35 +166,12 @@ export class ListingItemActionService {
             const marketModel = await this.marketService.findByAddress(message.market);
             const market = marketModel.toJSON();
 
-            const listingItemMessage: ListingItemMessage = message.item;
+            const listingItemMessage: ListingItemMessage = message.item as ListingItemMessage;
 
             if (!listingItemMessage.proposalHash) {
                 this.log.error('ListingItem is missing proposals hash.');
                 throw new MessageException('ListingItem is missing proposals hash.');
             }
-
-            // if proposal for the listingitem exists:
-            // - update relation and vote
-            await this.proposalService.findOneByHash(listingItemMessage.proposalHash || '')
-                .then(async proposalModel => {
-                    const proposal: resources.Proposal = proposalModel.toJSON();
-
-                    // update the proposal relation
-                    if (listingItemMessage.proposalHash) {
-                        await this.listingItemService.updateProposalRelation(listingItem.id, listingItemMessage.proposalHash);
-                    }
-                    await this.voteForListingItemProposal(proposal, market);
-                })
-                .catch(reason => {
-                    // there is no proposal yet
-                    this.log.warn('received ListingItem, but theres no Proposal for it yet...', listingItem.hash);
-                    return null;
-                });
-
-            // if (await this.shouldAddListingItem(proposal.ProposalResult)) {
-            // } else {
-            //    throw new MessageException('ListingItem is allready voted off the market.');
-            // }
 
             // create the new custom categories in case there are some
             const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
@@ -211,6 +188,31 @@ export class ListingItemActionService {
 
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
             let listingItem = listingItemModel.toJSON();
+
+            // if proposal for the listingitem exists:
+            // - update relation and vote
+            await this.proposalService.findOneByHash(listingItemMessage.proposalHash || '')
+                .then(async proposalModel => {
+                    const proposal: resources.Proposal = proposalModel.toJSON();
+
+                    // update the proposal relation
+                    if (listingItemMessage.proposalHash) {
+                        await this.listingItemService.updateProposalRelation(listingItem.id, listingItemMessage.proposalHash);
+                    }
+
+                    // TODO: skipping this too since the wallet could be locked
+                    // await this.voteForListingItemProposal(proposal, market);
+                })
+                .catch(reason => {
+                    // there is no proposal yet
+                    this.log.warn('received ListingItem, but theres no Proposal for it yet...', listingItem.hash);
+                    return null;
+                });
+
+            // if (await this.shouldAddListingItem(proposal.ProposalResult)) {
+            // } else {
+            //    throw new MessageException('ListingItem is allready voted off the market.');
+            // }
 
             // todo: there should be no need for these two updates, set the relations up in the createRequest
             // update the template relation

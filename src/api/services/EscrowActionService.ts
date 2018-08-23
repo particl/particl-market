@@ -468,6 +468,7 @@ export class EscrowActionService {
 
                 if (OrderStatus.ESCROW_LOCKED === orderItem.status && isMyListingItem) {
                     // seller sends the first MPA_RELEASE, OrderStatus.ESCROW_LOCKED
+                    this.log.debug('createRawTx(), orderItem:', JSON.stringify(orderItem, null, 2));
 
                     const buyerReleaseAddress = this.getValueFromOrderItemObjects(BidDataValue.BUYER_RELEASE_ADDRESS, orderItem.OrderItemObjects);
                     this.log.debug('createRawTx(), buyerReleaseAddress:', buyerReleaseAddress);

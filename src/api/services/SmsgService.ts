@@ -76,14 +76,22 @@ export class SmsgService {
      * @param {MarketplaceMessage} message
      * @param {boolean} paidMessage
      * @param {number} daysRetention
+     * @param {boolean} estimateFee
      * @returns {Promise<any>}
      */
-    public async smsgSend(profileAddress: string, marketAddress: string, message: MarketplaceMessage,
-                          paidMessage: boolean = true, daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)
-                          ): Promise<SmsgSendResponse> {
+    public async smsgSend(fromAddress: string, toAddress: string, message: MarketplaceMessage,
+                          paidMessage: boolean = true, daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10),
+                          estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
-        this.log.debug('smsgSend, from: ' + profileAddress + ', to: ' + marketAddress);
-        const params: any[] = [profileAddress, marketAddress, JSON.stringify(message), paidMessage, daysRetention];
+        this.log.debug('smsgSend, from: ' + fromAddress + ', to: ' + toAddress);
+        const params: any[] = [
+            fromAddress,
+            toAddress,
+            JSON.stringify(message),
+            paidMessage,
+            daysRetention,
+            estimateFee
+        ];
         const response: SmsgSendResponse = await this.coreRpcService.call('smsgsend', params);
         this.log.debug('smsgSend, response: ' + JSON.stringify(response, null, 2));
         return response;

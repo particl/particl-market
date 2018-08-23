@@ -8,9 +8,9 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
-import {GenerateProposalParams} from '../../../src/api/requests/params/GenerateProposalParams';
+import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
+import { ProposalType } from '../../../src/api/enums/ProposalType';
 // tslint:enable:max-line-length
 
 describe('ProposalListCommand', () => {
@@ -115,6 +115,30 @@ describe('ProposalListCommand', () => {
 
         log.debug('result:', JSON.stringify(result, null, 2));
         expect(result).toHaveLength(1);
+    });
+
+    test('Should list 3 proposals with type PUBLIC_VOTE', async () => {
+
+        log.debug('search ' + currentBlock + ' -> *');
+
+        // all generated ones are public at the moment
+        const res: any = await rpc(proposalCommand, [proposalListCommand, '*', '*', ProposalType.PUBLIC_VOTE]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        expect(result).toHaveLength(3);
+    });
+
+    test('Should not list any proposals with type ITEM_VOTE', async () => {
+
+        // all generated ones are public at the moment
+        const res: any = await rpc(proposalCommand, [proposalListCommand, '*', '*', ProposalType.ITEM_VOTE]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: any = res.getBody()['result'];
+        expect(result).toHaveLength(0);
     });
 
 

@@ -85,6 +85,8 @@ describe('ListingItemTemplateRemoveCommand', () => {
         const result: any = await rpc(templateCommand, [templateRemoveCommand, createdTemplateId]);
         result.expectJson();
         result.expectStatusCode(404);
+        expect(result.error.error.success).toBe(false);
+        expect(result.error.error.message).toBe(`Entity with identifier ${createdTemplateId} does not exist`);
     });
 
     test('Should fail remove ListingItemTemplate because ListingItemTemplate have related ListingItems', async () => {
@@ -134,6 +136,6 @@ describe('ListingItemTemplateRemoveCommand', () => {
         const result: any = await rpc(templateCommand, [templateRemoveCommand, createdTemplateId]);
         result.expectJson();
         result.expectStatusCode(404);
-        expect(result.error.error.message).toBe(`ListingItemTemplate has ListingItems so it can't be deleted. id=${createdTemplateId}`);
+        expect(result.error.error.message).toBe(`ListingItemTemplate has ListingItems, so it can't be deleted. id=${createdTemplateId}`);
     });
 });

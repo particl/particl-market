@@ -35,6 +35,8 @@ describe('CurrencyPrice', () => {
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
+        process.env.CHASING_COINS_API_DELAY = 1000;
+
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         currencyPriceService = app.IoC.getNamed<CurrencyPriceService>(Types.Service, Targets.Service.CurrencyPriceService);
 
@@ -124,6 +126,8 @@ describe('CurrencyPrice', () => {
 
     test('Should get CurrencyPrice from db and another one with updated price', async () => {
         const result = await currencyPriceService.getCurrencyPrices('PART', ['INR', 'USD']);
+
+        log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result[0].id).toBe(createdCurrencyPricePARTINR.id);
         expect(result[0].from).toBe(createdCurrencyPricePARTINR.from);
