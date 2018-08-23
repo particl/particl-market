@@ -74,6 +74,9 @@ export class SmsgMessageService {
         smsgMessage.Status = body.status;
         smsgMessage.Msgid = body.msgid;
         smsgMessage.Version = body.version;
+        smsgMessage.Read = body.read;
+        smsgMessage.Paid = body.paid;
+        smsgMessage.Payloadsize = body.payloadsize;
         smsgMessage.Received = body.received;
         smsgMessage.Sent = body.sent;
         smsgMessage.Expiration = body.expiration;

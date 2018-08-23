@@ -1,4 +1,9 @@
 import { SmsgMessageStatus } from '../../api/enums/SmsgMessageStatus';
+import {EscrowMessageType} from '../../api/enums/EscrowMessageType';
+import {BidMessageType} from '../../api/enums/BidMessageType';
+import {VoteMessageType} from '../../api/enums/VoteMessageType';
+import {ListingItemMessageType} from '../../api/enums/ListingItemMessageType';
+import {ProposalMessageType} from '../../api/enums/ProposalMessageType';
 
 declare module 'resources' {
 
@@ -6,9 +11,12 @@ declare module 'resources' {
         // these fields are in the incoming message
         msgid: string;
         version: string;
-        received: Date;
-        sent: Date;
-        expiration: Date;
+        read: boolean;
+        paid: boolean;
+        payloadsize: number;
+        received: number;
+        sent: number;
+        expiration: number;
         daysretention: number;
         from: string;
         to: string;
@@ -16,7 +24,7 @@ declare module 'resources' {
 
         // model also has these
         id: number;
-        type: string;
+        type: ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType | string;
         status: SmsgMessageStatus;
 
         createdAt: Date;

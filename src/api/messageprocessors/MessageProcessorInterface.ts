@@ -7,8 +7,9 @@ import { ListingItemMessageInterface } from '../messages/ListingItemMessageInter
 import { ProposalMessageInterface } from '../messages/ProposalMessageInterface';
 import { VoteMessageInterface } from '../messages/VoteMessageInterface';
 import * as resources from 'resources';
+import {IncomingSmsgMessage} from '../messages/IncomingSmsgMessage';
 
 export interface MessageProcessorInterface {
-    process( message: ActionMessageInterface | ListingItemMessageInterface | ProposalMessageInterface | VoteMessageInterface | resources.SmsgMessage[],
+    process( message: ActionMessageInterface | ListingItemMessageInterface | ProposalMessageInterface | VoteMessageInterface | IncomingSmsgMessage[],
              marketAddress: string): any;
 }

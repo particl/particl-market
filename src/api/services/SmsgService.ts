@@ -10,6 +10,7 @@ import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import {Environment} from '../../core/helpers/Environment';
 import * as resources from 'resources';
+import {IncomingSmsgMessage} from '../messages/IncomingSmsgMessage';
 
 export class SmsgService {
 
@@ -154,9 +155,9 @@ export class SmsgService {
      *  "from": "str"                     (string) Address the message was sent from
      * }
      *
-     * @returns {Promise<any>}
+     * @returns {Promise<IncomingSmsgMessage>}
      */
-    public async smsg(msgId: string, remove: boolean = false, setRead: boolean = true): Promise<resources.SmsgMessage> {
+    public async smsg(msgId: string, remove: boolean = false, setRead: boolean = true): Promise<IncomingSmsgMessage> {
         const response = await this.coreRpcService.call('smsg', [msgId,
             JSON.stringify({
                 delete: remove,
@@ -173,7 +174,7 @@ export class SmsgService {
      *
      * @param {string} address
      * @param {string} publicKey
-     * @returns {Promise<any>}
+     * @returns {Promise<boolean>}
      */
     public async smsgAddAddress(address: string, publicKey: string): Promise<boolean> {
         return await this.coreRpcService.call('smsgaddaddress', [address, publicKey])

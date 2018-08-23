@@ -311,7 +311,8 @@ export class TestDataService {
             'proposal_results',
             'proposal_options',
             'proposals',
-            'votes'
+            'votes',
+            'smsg_messages'
         ];
 
         for (const table of tablesToClean) {
