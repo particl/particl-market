@@ -17,14 +17,18 @@ export class SmsgMessageUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public version: string;
 
-    @IsNotEmpty()
-    public received: Date;
+    public read: boolean;
+    public paid: boolean;
+    public payloadsize: number;
 
     @IsNotEmpty()
-    public sent: Date;
+    public received: number;
 
     @IsNotEmpty()
-    public expiration: Date;
+    public sent: number;
+
+    @IsNotEmpty()
+    public expiration: number;
 
     @IsNotEmpty()
     public daysretention: number;

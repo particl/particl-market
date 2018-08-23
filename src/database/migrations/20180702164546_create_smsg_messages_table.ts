@@ -10,6 +10,9 @@ exports.up = (db: Knex): Promise<any> => {
             table.string('status').notNullable();
             table.string('msgid').notNullable().unique();
             table.string('version').notNullable();
+            table.boolean('read').nullable();
+            table.boolean('paid').nullable();
+            table.integer('payloadsize').nullable();
             table.timestamp('received').notNullable();
             table.timestamp('sent').notNullable();
             table.timestamp('expiration').notNullable();

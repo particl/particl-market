@@ -25,6 +25,7 @@ import { MessageException } from '../exceptions/MessageException';
 import * as resources from 'resources';
 import {SmsgMessageCreateRequest} from '../requests/SmsgMessageCreateRequest';
 import {SmsgMessage} from '../models/SmsgMessage';
+import {IncomingSmsgMessage} from '../messages/IncomingSmsgMessage';
 
 export class SmsgMessageProcessor implements MessageProcessorInterface {
 
@@ -51,12 +52,12 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
      * @param {SmsgMessage[]} messages
      * @returns {Promise<void>}
      */
-    public async process(messages: resources.SmsgMessage[]): Promise<void> {
+    public async process(messages: IncomingSmsgMessage[]): Promise<void> {
 
         for (const message of messages) {
 
             // get the message again using smsg, since the smsginbox doesnt return expiration
-            const msg: resources.SmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
+            const msg: IncomingSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
             const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get(msg);
 
             // this.log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
@@ -105,7 +106,7 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
         await this.pollMessages()
             .then( async messages => {
                 if (messages.result !== '0') {
-                    const smsgMessages: resources.SmsgMessage[] = messages.messages;
+                    const smsgMessages: IncomingSmsgMessage[] = messages.messages;
                     await this.process(smsgMessages);
                 }
                 return;
@@ -116,7 +117,11 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
             });
     }
 
-
+    /**
+     * TODO: should not fetch all unreads at the same time
+     *
+     * @returns {Promise<any>}
+     */
     private async pollMessages(): Promise<any> {
         const response = await this.smsgService.smsgInbox('unread');
         return response;

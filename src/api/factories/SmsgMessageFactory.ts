@@ -16,6 +16,7 @@ import { VoteMessageType } from '../enums/VoteMessageType';
 import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import {IncomingSmsgMessage} from '../messages/IncomingSmsgMessage';
 
 export class SmsgMessageFactory {
 
@@ -27,7 +28,7 @@ export class SmsgMessageFactory {
         this.log = new Logger(__filename);
     }
 
-    public async get(message: resources.SmsgMessage): Promise<SmsgMessageCreateRequest> {
+    public async get(message: IncomingSmsgMessage): Promise<SmsgMessageCreateRequest> {
 
         return await this.parseJSONSafe(message.text)
             .then( marketplaceMessage => {
@@ -40,9 +41,12 @@ export class SmsgMessageFactory {
                     status,
                     msgid: message.msgid,
                     version: message.version,
-                    received: message.received,
-                    sent: message.sent,
-                    expiration: message.expiration,
+                    read: message.read,
+                    paid: message.paid,
+                    payloadsize: message.payloadsize,
+                    received: message.received * 1000,
+                    sent: message.sent * 1000,
+                    expiration: message.expiration * 1000,
                     daysretention: message.daysretention,
                     from: message.from,
                     to: message.to,
@@ -60,9 +64,12 @@ export class SmsgMessageFactory {
                     status,
                     msgid: message.msgid,
                     version: message.version,
-                    received: message.received,
-                    sent: message.sent,
-                    expiration: message.expiration,
+                    read: message.read,
+                    paid: message.paid,
+                    payloadsize: message.payloadsize,
+                    received: message.received * 1000,
+                    sent: message.sent * 1000,
+                    expiration: message.expiration * 1000,
                     daysretention: message.daysretention,
                     from: message.from,
                     to: message.to,

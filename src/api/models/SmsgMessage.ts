@@ -75,14 +75,23 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
     public get Version(): string { return this.get('version'); }
     public set Version(value: string) { this.set('version', value); }
 
-    public get Received(): Date { return this.get('received'); }
-    public set Received(value: Date) { this.set('received', value); }
+    public get Read(): boolean { return this.get('read'); }
+    public set Read(value: boolean) { this.set('read', value); }
 
-    public get Sent(): Date { return this.get('sent'); }
-    public set Sent(value: Date) { this.set('sent', value); }
+    public get Paid(): boolean { return this.get('paid'); }
+    public set Paid(value: boolean) { this.set('paid', value); }
 
-    public get Expiration(): Date { return this.get('expiration'); }
-    public set Expiration(value: Date) { this.set('expiration', value); }
+    public get Payloadsize(): number { return this.get('payloadsize'); }
+    public set Payloadsize(value: number) { this.set('payloadsize', value); }
+
+    public get Received(): number { return this.get('received'); }
+    public set Received(value: number) { this.set('received', value); }
+
+    public get Sent(): number { return this.get('sent'); }
+    public set Sent(value: number) { this.set('sent', value); }
+
+    public get Expiration(): number { return this.get('expiration'); }
+    public set Expiration(value: number) { this.set('expiration', value); }
 
     public get Daysretention(): number { return this.get('daysretention'); }
     public set Daysretention(value: number) { this.set('daysretention', value); }
