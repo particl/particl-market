@@ -1,3 +1,4 @@
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -71,8 +72,6 @@ describe('SmsgMessage', () => {
         text: "{\"version\":\"0.0.1.0\",\"mpaction\":{\"action\":\"MP_VOTE\",\"proposalHash\":\"75f0ccdfa65c5b09562b840b1ed862b56155a734c0ec7d0f73d9bc59b6093428\",\"optionId\":1,\"voter\":\"poJJukenuB455RciQ6a1JPe7frNxBLUqLw\",\"block\":217484,\"weight\":1}}"
     };
 
-
-
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
@@ -82,19 +81,6 @@ describe('SmsgMessage', () => {
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
     });
-
-    afterAll(async () => {
-        //
-    });
-
-    /*
-    test('Should throw ValidationException because there is no related_id', async () => {
-        expect.assertions(1);
-        await smsgMessageService.create(testData).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-    */
 
     test('Should create a new smsg message', async () => {
         // testData['related_id'] = 0;
