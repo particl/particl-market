@@ -1,5 +1,6 @@
 import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
+import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
 
 // tslint:disable:variable-name
 export class SmsgMessageUpdateRequest extends RequestBody {
@@ -8,7 +9,7 @@ export class SmsgMessageUpdateRequest extends RequestBody {
     public type: string;
 
     @IsNotEmpty()
-    public status: string;
+    public status: SmsgMessageStatus;
 
     @IsNotEmpty()
     public msgid: string;
@@ -34,7 +35,6 @@ export class SmsgMessageUpdateRequest extends RequestBody {
     @IsNotEmpty()
     public to: string;
 
-    @IsNotEmpty()
     public text: string;
 
 }

@@ -6,50 +6,34 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
     public static RELATIONS = [];
 
-    public static async fetchExpired(): Promise<Collection<SmsgMessage>> {
-        const listingCollection = SmsgMessage.forge<Model<SmsgMessage>>()
-            .query(qb => {
-                qb.where('expired_at', '<=', Date.now());
-                qb.groupBy('listing_items.id');
-            });
-        return await listingCollection.fetchAll();
-    }
-
     public static async searchBy(options: SmsgMessageSearchParams, withRelated: boolean = false): Promise<Collection<SmsgMessage>> {
 
-        const proposalCollection = SmsgMessage.forge<Model<SmsgMessage>>()
+        const messageCollection = SmsgMessage.forge<Model<SmsgMessage>>()
             .query(qb => {
-/*
+
+                if (options.status) {
+                    qb.where('smsg_messages.status', '=', options.status.toString());
+                }
+
                 if (options.type) {
-                    // search all
-                    qb.where('proposals.type', '=', options.type.toString());
-
+                    qb.where('smsg_messages.type', '=', options.type.toString());
                 }
 
-                if (typeof options.startBlock === 'number' && typeof options.endBlock === 'string') {
-                    // search all ending after options.startBlock
-                    qb.where('proposals.block_end', '>', options.startBlock - 1);
+                qb.where('smsg_messages.created_at', '<', Date.now() - options.age);
 
-                } else if (typeof options.startBlock === 'string' && typeof options.endBlock === 'number') {
-                    // search all ending before block
-                    qb.where('proposals.block_end', '<', options.endBlock + 1);
-
-                } else if (typeof options.startBlock === 'number' && typeof options.endBlock === 'number') {
-                    // search all ending after startBlock, starting before endBlock
-                    qb.where('proposals.block_start', '<', options.endBlock + 1);
-                    qb.andWhere('proposals.block_end', '>', options.startBlock - 1);
-                }
-
-*/
             })
-            .orderBy('block_start', options.order);
+            .orderBy(options.orderByColumn, options.order)
+            .query({
+                limit: options.count,
+                offset: 0
+            });
 
         if (withRelated) {
-            return await proposalCollection.fetchAll({
+            return await messageCollection.fetchAll({
                 withRelated: this.RELATIONS
             });
         } else {
-            return await proposalCollection.fetchAll();
+            return await messageCollection.fetchAll();
         }
     }
 
@@ -60,6 +44,16 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
             });
         } else {
             return await SmsgMessage.where<SmsgMessage>({ id: value }).fetch();
+        }
+    }
+
+    public static async fetchByMsgId(value: string, withRelated: boolean = true): Promise<SmsgMessage> {
+        if (withRelated) {
+            return await SmsgMessage.where<SmsgMessage>({ msgid: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await SmsgMessage.where<SmsgMessage>({ msgid: value }).fetch();
         }
     }
 
@@ -108,8 +102,4 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
-    // TODO: add related
-    // public SmsgMessageRelated(): SmsgMessageRelated {
-    //    return this.hasOne(SmsgMessageRelated);
-    // }
 }

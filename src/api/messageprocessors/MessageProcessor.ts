@@ -2,12 +2,12 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * as Bookshelf from 'bookshelf';
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
 
 import { EventEmitter } from '../../core/api/events';
-import { SmsgService } from '../services/SmsgService';
 
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
@@ -15,11 +15,18 @@ import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { BidMessageType } from '../enums/BidMessageType';
 import { EscrowMessageType } from '../enums/EscrowMessageType';
 import { InternalServerException } from '../exceptions/InternalServerException';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
 
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { VoteMessageType } from '../enums/VoteMessageType';
 import * as resources from 'resources';
+import { SmsgMessageService } from '../services/SmsgMessageService';
+import { ListingItemMessageType } from '../enums/ListingItemMessageType';
+import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { SearchOrder } from '../enums/SearchOrder';
+import {SmsgMessage} from '../models/SmsgMessage';
+import {SmsgMessageUpdateRequest} from '../requests/SmsgMessageUpdateRequest';
+import {IsNotEmpty} from 'class-validator';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -28,11 +35,9 @@ export class MessageProcessor implements MessageProcessorInterface {
     private timeout: any;
     private interval = 5000;
 
-    // TODO: injecting listingItemService causes Error: knex: Required configuration option 'client' is missing.
     // tslint:disable:max-line-length
     constructor(
-        // @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
     ) {
@@ -47,10 +52,11 @@ export class MessageProcessor implements MessageProcessorInterface {
      * @returns {Promise<void>}
      */
     public async process(messages: resources.SmsgMessage[]): Promise<void> {
-/*
-        for (const message of messages) {
-            this.log.debug('MessageProcessor.process, received message...');
 
+        for (const message of messages) {
+            this.log.debug('processing...');
+
+/*
             let parsed: MarketplaceMessage | any;
             parsed = await this.parseJSONSafe(message.text)
                 .then(value => {
@@ -121,8 +127,11 @@ export class MessageProcessor implements MessageProcessorInterface {
                     this.log.error('received something unexpected: ', JSON.stringify(parsed, null, 2));
                 }
             }
-        }
 */
+            await this.updateSmsgMessageStatus(message, SmsgMessageStatus.PROCESSED);
+
+        }
+
     }
 
     public stop(): void {
@@ -149,27 +158,72 @@ export class MessageProcessor implements MessageProcessorInterface {
      */
     private async poll(): Promise<void> {
 
-        await this.pollMessages()
-            .then( async messages => {
-                if (messages.result !== '0') {
-                    const smsgMessages: resources.SmsgMessage[] = messages.messages;
-                    await this.process(smsgMessages);
-                }
-                return;
+        // fetch and process oldest 10 new listingitems
+        await this.getSmsgMessages(ListingItemMessageType.MP_ITEM_ADD, SmsgMessageStatus.NEW, 10)
+            .then( async smsgMessages => {
+                await this.process(smsgMessages);
             })
             .catch( reason => {
-                this.log.error('poll(), error:' + reason);
-                // this.eventEmitter.emit('cli', {
-                //    message: 'poll(), error' + reason
-                // });
+                this.log.error('poll(), error: ' + reason);
                 return;
             });
     }
 
-    private async pollMessages(): Promise<any> {
-        const response = await this.smsgService.smsgInbox('unread');
-        // this.log.debug('got response:', response);
-        return response;
+    /**
+     *
+     * @param {ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType} type
+     * @param {SmsgMessageStatus} status
+     * @param {number} count
+     * @returns {Promise<module:resources.SmsgMessage[]>}
+     */
+    private async getSmsgMessages(type: ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType,
+                                  status: SmsgMessageStatus, count: number = 10): Promise<resources.SmsgMessage[]> {
+
+        const searchParams = new SmsgMessageSearchParams({
+            order: SearchOrder.DESC,
+            orderByColumn: 'received',
+            status,
+            type,
+            count,
+            age: 1000 * 20
+        });
+        const messagesModel = await this.smsgMessageService.searchBy(searchParams);
+        const messages = messagesModel.toJSON();
+        this.log.debug('fetched ' + messages.length + ' messages. type: ' + type + ', status: ' + status);
+        return messages;
+    }
+
+    /**
+     * update the status of the processed message, clean the text field if processing was successfull
+     *
+     * @param {module:resources.SmsgMessage} message
+     * @param {SmsgMessageStatus} status
+     * @returns {Promise<module:resources.SmsgMessage>}
+     */
+    private async updateSmsgMessageStatus(message: resources.SmsgMessage, status: SmsgMessageStatus): Promise<resources.SmsgMessage> {
+
+        const text = status === SmsgMessageStatus.PROCESSED ? '' : message.text;
+
+        const updateRequest = {
+            type: message.type,
+            status,
+            msgid: message.msgid,
+            version: message.version,
+            received: message.received,
+            sent: message.sent,
+            expiration: message.expiration,
+            daysretention: message.daysretention,
+            from: message.from,
+            to: message.to,
+            text
+        } as SmsgMessageUpdateRequest;
+
+        // this.log.debug('message:', JSON.stringify(message, null, 2));
+        // this.log.debug('updateRequest:', JSON.stringify(updateRequest, null, 2));
+
+        const messageModel = await this.smsgMessageService.update(message.id, updateRequest);
+        const updatedMessage = messageModel.toJSON();
+        return updatedMessage;
     }
 
     private async parseJSONSafe(json: string): Promise<MarketplaceMessage|null> {
@@ -178,7 +232,7 @@ export class MessageProcessor implements MessageProcessorInterface {
            // this.log.debug('json to parse:', json);
             parsed = JSON.parse(json);
         } catch (e) {
-            this.log.debug('parseJSONSafe, invalid JSON:', json);
+            this.log.error('parseJSONSafe, invalid JSON:', json);
             return null;
         }
         return parsed;
