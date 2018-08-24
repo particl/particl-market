@@ -719,9 +719,6 @@ app2_1       | }]
      */
     public async processBidReceivedEvent(event: MarketplaceEvent): Promise<resources.Bid> {
 
-        // todo: fix
-        event.smsgMessage.received = new Date().toISOString();
-
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
         const message = event.marketplaceMessage;

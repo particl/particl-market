@@ -255,7 +255,6 @@ describe('SmsgMessage', () => {
             orderByColumn: 'received',
             status: SmsgMessageStatus.NEW,
             types: [ListingItemMessageType.MP_ITEM_ADD],
-            count: 10,
             age: 0
         } as SmsgMessageSearchParams;
 
@@ -271,7 +270,6 @@ describe('SmsgMessage', () => {
             orderByColumn: 'received',
             status: SmsgMessageStatus.NEW,
             types: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD],
-            count: 10,
             age: 0
         } as SmsgMessageSearchParams;
 
@@ -287,7 +285,6 @@ describe('SmsgMessage', () => {
             orderByColumn: 'received',
             status: SmsgMessageStatus.NEW,
             types: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE],
-            count: 10,
             age: 0
         } as SmsgMessageSearchParams;
 
@@ -305,7 +302,6 @@ describe('SmsgMessage', () => {
             orderByColumn: 'received',
             status: SmsgMessageStatus.NEW,
             types,
-            count: 10,
             age: 0
         } as SmsgMessageSearchParams;
 
