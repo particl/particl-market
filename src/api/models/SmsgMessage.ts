@@ -9,7 +9,8 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
     public static async searchBy(options: SmsgMessageSearchParams, withRelated: boolean = false): Promise<Collection<SmsgMessage>> {
 
-        const limit = options.count ? options.count : 10;
+        options.page = options.page || 0;
+        options.pageLimit = options.pageLimit || 10;
 
         const messageCollection = SmsgMessage.forge<Model<SmsgMessage>>()
             .query(qb => {
@@ -27,8 +28,8 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
             })
             .orderBy(options.orderByColumn, options.order)
             .query({
-                limit,
-                offset: 0
+                limit: options.pageLimit,
+                offset: options.page * options.pageLimit
             });
 
         if (withRelated) {

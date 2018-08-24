@@ -181,7 +181,8 @@ export class MessageProcessor implements MessageProcessorInterface {
             orderByColumn: 'received',
             status,
             types,
-            count,
+            page: 0,
+            pageLimit: count,
             age: 1000 * 20
         } as SmsgMessageSearchParams;
 

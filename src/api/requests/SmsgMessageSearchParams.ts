@@ -5,14 +5,7 @@
 import { IsEnum, IsNotEmpty, ValidateIf } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { SearchOrder } from '../enums/SearchOrder';
-import * as _ from 'lodash';
-import { ProposalType } from '../enums/ProposalType';
-import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
-import {EscrowMessageType} from '../enums/EscrowMessageType';
-import {BidMessageType} from '../enums/BidMessageType';
-import {VoteMessageType} from '../enums/VoteMessageType';
-import {ListingItemMessageType} from '../enums/ListingItemMessageType';
-import {ProposalMessageType} from '../enums/ProposalMessageType';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 
 // tslint:disable:variable-name
 export class SmsgMessageSearchParams extends RequestBody {
@@ -25,8 +18,12 @@ export class SmsgMessageSearchParams extends RequestBody {
     public status: SmsgMessageStatus;
 
     public types: any[]; // EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string;
-    public count; // max count
+
+    public page = 0;
+    public pageLimit = 10;
 
     public age = 1000 * 60 * 2; // minimum message age in ms, 2 min
+
+    public msgid;
 }
 // tslint:enable:variable-name

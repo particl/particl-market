@@ -86,8 +86,6 @@ export class VoteActionService {
      */
     public async processVoteReceivedEvent(event: MarketplaceEvent): Promise<resources.Vote> {
 
-        event.smsgMessage.received = new Date().toISOString();
-
         const message = event.marketplaceMessage;
         if (!message.mpaction) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
