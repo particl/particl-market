@@ -15,6 +15,10 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
         const messageCollection = SmsgMessage.forge<Model<SmsgMessage>>()
             .query(qb => {
 
+                if (!_.isEmpty(options.msgid)) {
+                    qb.where('smsg_messages.msgid', '=', options.msgid);
+                }
+
                 if (!_.isEmpty(options.status)) {
                     qb.where('smsg_messages.status', '=', options.status.toString());
                 }

@@ -313,6 +313,8 @@ describe('SmsgMessage', () => {
 
     });
 
+    // todo: add searchby tests, missing msgid at least
+
     test('Should delete the SmsgMessage', async () => {
         expect.assertions(2);
         await smsgMessageService.destroy(smsgMessages[0].id);

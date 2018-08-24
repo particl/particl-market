@@ -17,6 +17,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { SmsgMessage } from '../../models/SmsgMessage';
 import { SmsgMessageService } from '../../services/SmsgMessageService';
 import { SmsgMessageSearchParams } from '../../requests/SmsgMessageSearchParams';
+import {SmsgMessageStatus} from '../../enums/SmsgMessageStatus';
 
 export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<SmsgMessage>> {
 
@@ -88,53 +89,55 @@ export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterfac
      */
     private getSearchParams(params: any[]): SmsgMessageSearchParams {
 
-        // TODO: fix this
-        let page;
-        let pageLimit;
+        let page = 0;
+        let pageLimit = 10;
         let ordering: SearchOrder = SearchOrder.ASC;
-        let types;
+        let types: any = [];
         let status;
         let msgid;
 
         if (!_.isEmpty(params)) {
-            page = params.shift();
-            if (typeof page !== 'number') {
+            if (typeof params[0] !== 'number') {
                 throw new MessageException('page should be a number.');
-            }
-        }
-
-        if (!_.isEmpty(params)) {
-            pageLimit = params.shift();
-            if (typeof page !== 'number') {
-                throw new MessageException('pageLimit should be a number.');
-            }
-        }
-
-        if (!_.isEmpty(params)) {
-            ordering = params.shift();
-            if (ordering === 'DESC') {
-                ordering = SearchOrder.DESC;
             } else {
-                ordering = SearchOrder.ASC;
+                page = params.shift();
+            }
+        }
+
+        if (!_.isEmpty(params)) {
+            if (typeof params[0] !== 'number') {
+                throw new MessageException('pageLimit should be a number.');
+            } else {
+                pageLimit = params.shift();
+            }
+        }
+
+        if (!_.isEmpty(params)) {
+            if (typeof params[0] !== 'string') {
+                throw new MessageException('ordering should be a string.');
+            } else {
+                if (params[0] === 'DESC') {
+                    ordering = SearchOrder.DESC;
+                } else {
+                    ordering = SearchOrder.ASC;
+                }
+                params.shift();
             }
         }
 
         if (!_.isEmpty(params)) {
             types = [params.shift()];
-            // todo
         }
 
         if (!_.isEmpty(params)) {
             status = params.shift();
-            // todo
         }
 
         if (!_.isEmpty(params)) {
             msgid = params.shift();
-            // todo
         }
 
-        const searchParams = new SmsgMessageSearchParams({
+        const searchParams = {
             page,
             pageLimit,
             order: ordering,
@@ -142,9 +145,8 @@ export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterfac
             types,
             status,
             msgid,
-            count: 10,
             age: 1000 * 30
-        });
+        } as SmsgMessageSearchParams;
 
         this.log.debug('SmsgMessageSearchParams: ', JSON.stringify(searchParams, null, 2));
         return searchParams;
