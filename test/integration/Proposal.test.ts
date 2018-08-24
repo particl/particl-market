@@ -20,8 +20,8 @@ import { ProposalUpdateRequest } from '../../src/api/requests/ProposalUpdateRequ
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
-import {ProposalSearchParams} from '../../src/api/requests/ProposalSearchParams';
-import {SearchOrder} from '../../src/api/enums/SearchOrder';
+import { ProposalSearchParams } from '../../src/api/requests/ProposalSearchParams';
+import { SearchOrder } from '../../src/api/enums/SearchOrder';
 
 describe('Proposal', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
