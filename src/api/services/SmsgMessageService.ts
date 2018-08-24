@@ -9,6 +9,8 @@ import { SmsgMessage } from '../models/SmsgMessage';
 import { SmsgMessageCreateRequest } from '../requests/SmsgMessageCreateRequest';
 import { SmsgMessageUpdateRequest } from '../requests/SmsgMessageUpdateRequest';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
+import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
+import * as resources from 'resources';
 
 export class SmsgMessageService {
 
@@ -92,6 +94,40 @@ export class SmsgMessageService {
         // return newSmsgMessage;
 
         return updatedSmsgMessage;
+    }
+
+    /**
+     * update the status of the processed message, clean the text field if processing was successfull
+     *
+     * @param {module:resources.SmsgMessage} message
+     * @param {SmsgMessageStatus} status
+     * @returns {Promise<module:resources.SmsgMessage>}
+     */
+    public async updateSmsgMessageStatus(message: resources.SmsgMessage, status: SmsgMessageStatus): Promise<SmsgMessage> {
+
+        const text = status === SmsgMessageStatus.PROCESSED ? '' : message.text;
+
+        const updateRequest = {
+            type: message.type.toString(),
+            status,
+            msgid: message.msgid,
+            version: message.version,
+            read: message.read,
+            paid: message.paid,
+            payloadsize: message.payloadsize,
+            received: message.received,
+            sent: message.sent,
+            expiration: message.expiration,
+            daysretention: message.daysretention,
+            from: message.from,
+            to: message.to,
+            text
+        } as SmsgMessageUpdateRequest;
+
+        // this.log.debug('message:', JSON.stringify(message, null, 2));
+        // this.log.debug('updateRequest:', JSON.stringify(updateRequest, null, 2));
+
+        return await this.update(message.id, updateRequest);
     }
 
     public async destroy(id: number): Promise<void> {
