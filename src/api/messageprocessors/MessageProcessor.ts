@@ -98,7 +98,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                 });
 
             } else {
-                await this.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PARSING_FAILED);
+                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PARSING_FAILED);
             }
         }
     }
@@ -146,7 +146,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                     .then( async smsgMessages => {
                         if (!_.isEmpty(smsgMessages)) {
                             for (const smsgMessage of smsgMessages) {
-                                const updated = await this.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PROCESSING);
+                                await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PROCESSING);
                                 smsgMessage.status = SmsgMessageStatus.PROCESSING;
                             }
                             await this.process(smsgMessages);
@@ -193,42 +193,6 @@ export class MessageProcessor implements MessageProcessorInterface {
             this.log.debug('found ' + messages.length + ' messages. types: [' + types + '], status: ' + status);
         }
         return messages;
-    }
-
-    /**
-     * update the status of the processed message, clean the text field if processing was successfull
-     *
-     * @param {module:resources.SmsgMessage} message
-     * @param {SmsgMessageStatus} status
-     * @returns {Promise<module:resources.SmsgMessage>}
-     */
-    private async updateSmsgMessageStatus(message: resources.SmsgMessage, status: SmsgMessageStatus): Promise<resources.SmsgMessage> {
-
-        const text = status === SmsgMessageStatus.PROCESSED ? '' : message.text;
-
-        const updateRequest = {
-            type: message.type.toString(),
-            status,
-            msgid: message.msgid,
-            version: message.version,
-            read: message.read,
-            paid: message.paid,
-            payloadsize: message.payloadsize,
-            received: message.received,
-            sent: message.sent,
-            expiration: message.expiration,
-            daysretention: message.daysretention,
-            from: message.from,
-            to: message.to,
-            text
-        } as SmsgMessageUpdateRequest;
-
-        // this.log.debug('message:', JSON.stringify(message, null, 2));
-        // this.log.debug('updateRequest:', JSON.stringify(updateRequest, null, 2));
-
-        const messageModel = await this.smsgMessageService.update(message.id, updateRequest);
-        const updatedMessage = messageModel.toJSON();
-        return updatedMessage;
     }
 
     private async getEventForMessageType(
