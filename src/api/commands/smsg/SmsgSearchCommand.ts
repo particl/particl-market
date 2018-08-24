@@ -54,7 +54,7 @@ export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterfac
 
     public usage(): string {
         return this.getName()
-            + ' [<page> [<pageLimit> [<ordering> [<TODO> [<TODO> [<TODO>]]]]]] ';
+            + ' [<page> [<pageLimit> [<ordering> [<type> [<status> [<msgid>]]]]]] ';
     }
 
     public help(): string {
@@ -63,7 +63,9 @@ export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterfac
             + '                                view of search listing item results. \n'
             + '    <pageLimit>              - [optional] Numeric - The number of results per page. \n'
             + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the search results. \n'
-            + '    <TODO>               - TODO \n';
+            + '    <type>                   - [optional] ENUM{ASC,DESC} - MessageType. \n'
+            + '    <status>                 - [optional] ENUM{ASC,DESC} - SmsgMessageStatus. \n'
+            + '    <msgid>                  - [optional] ENUM{ASC,DESC} - The message msgid. \n';
 
     }
 
@@ -90,7 +92,7 @@ export class SmsgSearchCommand extends BaseCommand implements RpcCommandInterfac
     private getSearchParams(params: any[]): SmsgMessageSearchParams {
 
         let page = 0;
-        let pageLimit = 10;
+        let pageLimit = this.DEFAULT_PAGE_LIMIT;
         let ordering: SearchOrder = SearchOrder.ASC;
         let types: any = [];
         let status;
