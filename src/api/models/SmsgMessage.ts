@@ -1,6 +1,7 @@
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
+import * as _ from 'lodash';
 
 export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
@@ -8,15 +9,17 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
 
     public static async searchBy(options: SmsgMessageSearchParams, withRelated: boolean = false): Promise<Collection<SmsgMessage>> {
 
+        const limit = options.count ? options.count : 10;
+
         const messageCollection = SmsgMessage.forge<Model<SmsgMessage>>()
             .query(qb => {
 
-                if (options.status) {
+                if (!_.isEmpty(options.status)) {
                     qb.where('smsg_messages.status', '=', options.status.toString());
                 }
 
-                if (options.type) {
-                    qb.where('smsg_messages.type', '=', options.type.toString());
+                if (!_.isEmpty(options.types)) {
+                    qb.whereIn('smsg_messages.type', options.types);
                 }
 
                 qb.where('smsg_messages.created_at', '<', Date.now() - options.age);
@@ -24,7 +27,7 @@ export class SmsgMessage extends Bookshelf.Model<SmsgMessage> {
             })
             .orderBy(options.orderByColumn, options.order)
             .query({
-                limit: options.count,
+                limit,
                 offset: 0
             });
 

@@ -24,7 +24,7 @@ declare module 'resources' {
 
         // model also has these
         id: number;
-        type: ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType | string;
+        type: ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType; // | string;
         status: SmsgMessageStatus;
 
         createdAt: Date;
