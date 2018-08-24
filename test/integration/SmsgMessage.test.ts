@@ -21,6 +21,8 @@ import { ProposalMessageType } from '../../src/api/enums/ProposalMessageType';
 import { VoteMessageType } from '../../src/api/enums/VoteMessageType';
 import { EscrowMessageType } from '../../src/api/enums/EscrowMessageType';
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
+import { SmsgMessageSearchParams } from '../../src/api/requests/SmsgMessageSearchParams';
+import { SearchOrder } from '../../src/api/enums/SearchOrder';
 
 describe('SmsgMessage', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -183,7 +185,7 @@ describe('SmsgMessage', () => {
         );
     });
 
-    test('Should list SmsgMessages with our newly create ones', async () => {
+    test('Should list all SmsgMessages', async () => {
         const smsgMessageCollection = await smsgMessageService.findAll();
         smsgMessages = smsgMessageCollection.toJSON();
 
@@ -247,6 +249,74 @@ describe('SmsgMessage', () => {
         expect(result.text).toBe(updatedData.text);
     });
 
+    test('Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD]', async () => {
+        const searchParams = {
+            order: SearchOrder.DESC,
+            orderByColumn: 'received',
+            status: SmsgMessageStatus.NEW,
+            types: [ListingItemMessageType.MP_ITEM_ADD],
+            count: 10,
+            age: 0
+        } as SmsgMessageSearchParams;
+
+        const smsgMessageCollection = await smsgMessageService.searchBy(searchParams);
+        smsgMessages = smsgMessageCollection.toJSON();
+
+        expect(smsgMessages.length).toBe(1);
+    });
+
+    test('Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD]', async () => {
+        const searchParams = {
+            order: SearchOrder.DESC,
+            orderByColumn: 'received',
+            status: SmsgMessageStatus.NEW,
+            types: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD],
+            count: 10,
+            age: 0
+        } as SmsgMessageSearchParams;
+
+        const smsgMessageCollection = await smsgMessageService.searchBy(searchParams);
+        smsgMessages = smsgMessageCollection.toJSON();
+
+        expect(smsgMessages.length).toBe(2);
+    });
+
+    test('Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE]',async () => {
+        const searchParams = {
+            order: SearchOrder.DESC,
+            orderByColumn: 'received',
+            status: SmsgMessageStatus.NEW,
+            types: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE],
+            count: 10,
+            age: 0
+        } as SmsgMessageSearchParams;
+
+        const smsgMessageCollection = await smsgMessageService.searchBy(searchParams);
+        smsgMessages = smsgMessageCollection.toJSON();
+
+        expect(smsgMessages.length).toBe(3);
+        expect(smsgMessages[0].received).toBeGreaterThan(smsgMessages[2].received);
+    });
+
+    test('Should search for SmsgMessages: empty [] should find all',async () => {
+        const types: any[] = [];
+        const searchParams = {
+            order: SearchOrder.ASC,
+            orderByColumn: 'received',
+            status: SmsgMessageStatus.NEW,
+            types,
+            count: 10,
+            age: 0
+        } as SmsgMessageSearchParams;
+
+        const smsgMessageCollection = await smsgMessageService.searchBy(searchParams);
+        smsgMessages = smsgMessageCollection.toJSON();
+
+        expect(smsgMessages.length).toBe(3);
+        expect(smsgMessages[0].received).toBeLessThan(smsgMessages[2].received);
+
+    });
+
     test('Should delete the SmsgMessage', async () => {
         expect.assertions(2);
         await smsgMessageService.destroy(smsgMessages[0].id);
@@ -258,5 +328,8 @@ describe('SmsgMessage', () => {
         smsgMessages = smsgMessageCollection.toJSON();
         expect(smsgMessages.length).toBe(2);
     });
+
+
+
 
 });

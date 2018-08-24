@@ -80,6 +80,17 @@ export class SmsgMessageFactory {
             });
     }
 
+    public async getMarketplaceMessage(message: resources.SmsgMessage): Promise<MarketplaceMessage | null> {
+
+        return await this.parseJSONSafe(message.text)
+            .then( marketplaceMessage => {
+                return marketplaceMessage;
+            })
+            .catch(reason => {
+                return null;
+            });
+    }
+
     private async parseJSONSafe(json: string): Promise<MarketplaceMessage> {
         let parsed: MarketplaceMessage;
         try {

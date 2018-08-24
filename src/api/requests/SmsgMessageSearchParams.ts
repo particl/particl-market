@@ -24,7 +24,7 @@ export class SmsgMessageSearchParams extends RequestBody {
     @IsEnum(SmsgMessageStatus)
     public status: SmsgMessageStatus;
 
-    public type: EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string;
+    public types: any[]; // EscrowMessageType | BidMessageType | ListingItemMessageType | ProposalMessageType | VoteMessageType | string;
     public count; // max count
 
     public age = 1000 * 60 * 2; // minimum message age in ms, 2 min

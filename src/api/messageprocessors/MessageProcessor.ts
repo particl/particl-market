@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as Bookshelf from 'bookshelf';
+import * as _ from 'lodash';
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
@@ -11,11 +11,8 @@ import { EventEmitter } from '../../core/api/events';
 
 import { MessageProcessorInterface } from './MessageProcessorInterface';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
 import { BidMessageType } from '../enums/BidMessageType';
 import { EscrowMessageType } from '../enums/EscrowMessageType';
-import { InternalServerException } from '../exceptions/InternalServerException';
-
 import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { VoteMessageType } from '../enums/VoteMessageType';
 import * as resources from 'resources';
@@ -24,9 +21,10 @@ import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { SmsgMessageSearchParams } from '../requests/SmsgMessageSearchParams';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SearchOrder } from '../enums/SearchOrder';
-import {SmsgMessage} from '../models/SmsgMessage';
-import {SmsgMessageUpdateRequest} from '../requests/SmsgMessageUpdateRequest';
-import {IsNotEmpty} from 'class-validator';
+import { SmsgMessage } from '../models/SmsgMessage';
+import { SmsgMessageUpdateRequest } from '../requests/SmsgMessageUpdateRequest';
+import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { SmsgMessageFactory } from '../factories/SmsgMessageFactory';
 
 export class MessageProcessor implements MessageProcessorInterface {
 
@@ -34,9 +32,17 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     private timeout: any;
     private interval = 5000;
+    private pollCount = 0;
+
+    private LISTINGITEM_MESSAGES = [ListingItemMessageType.MP_ITEM_ADD];
+    private BID_MESSAGES = [BidMessageType.MPA_BID, BidMessageType.MPA_ACCEPT, BidMessageType.MPA_REJECT, BidMessageType.MPA_CANCEL];
+    private ESCROW_MESSAGES = [EscrowMessageType.MPA_LOCK, EscrowMessageType.MPA_RELEASE, EscrowMessageType.MPA_REQUEST_REFUND, EscrowMessageType.MPA_REFUND];
+    private PROPOSAL_MESSAGES = [ProposalMessageType.MP_PROPOSAL_ADD];
+    private VOTE_MESSAGES = [VoteMessageType.MP_VOTE];
 
     // tslint:disable:max-line-length
     constructor(
+        @inject(Types.Factory) @named(Targets.Factory.SmsgMessageFactory) private smsgMessageFactory: SmsgMessageFactory,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter
@@ -48,90 +54,53 @@ export class MessageProcessor implements MessageProcessorInterface {
     /**
      * main messageprocessor, ...
      *
-     * @param {SmsgMessage[]} messages
+     * @param {SmsgMessage[]} smsgMessages
      * @returns {Promise<void>}
      */
-    public async process(messages: resources.SmsgMessage[]): Promise<void> {
+    public async process(smsgMessages: resources.SmsgMessage[]): Promise<void> {
 
-        for (const message of messages) {
-            this.log.debug('processing...');
+        for (const smsgMessage of smsgMessages) {
 
-/*
-            let parsed: MarketplaceMessage | any;
-            parsed = await this.parseJSONSafe(message.text)
-                .then(value => {
-                    return value;
-                })
-                .catch(reason => {
-                    this.log.debug('parse error:' + reason);
-                    return null;
+            this.log.debug('PROCESSING: ', smsgMessage.msgid);
+
+            const marketplaceMessage: MarketplaceMessage | null = await this.smsgMessageFactory.getMarketplaceMessage(smsgMessage);
+            const eventType: string | null = await this.getEventForMessageType(smsgMessage.type);
+
+            if (!_.isNull(marketplaceMessage) && !_.isNull(eventType)) {
+
+                // todo: check if this is actually necessary?
+                marketplaceMessage.market = smsgMessage.to;
+                smsgMessage.text = '';
+
+                const marketplaceEvent: MarketplaceEvent = {
+                    smsgMessage,
+                    marketplaceMessage
+                };
+
+                this.log.debug('SMSGMESSAGE: '
+                    + smsgMessage.from + ' => ' + smsgMessage.to
+                    + ' : ' + smsgMessage.type
+                    + ' : ' + smsgMessage.status
+                    + ' : ' + smsgMessage.msgid);
+
+                this.log.debug('SENDING: ', eventType);
+
+                // send event to the eventTypes processor
+                this.eventEmitter.emit(eventType, {
+                    smsgMessage,
+                    marketplaceMessage
                 });
-            delete message.text;
 
-            if (parsed) {
-                parsed.market = message.to;
+                // send event to cli
+                this.eventEmitter.emit(Events.Cli, {
+                    message: eventType,
+                    data: marketplaceMessage
+                });
 
-                // in case of ListingItemMessage
-                if (parsed.item) {
-
-                    // const messageForLogging = JSON.parse(JSON.stringify(parsed.item));
-                    // delete messageForLogging.information.images;
-                    this.log.debug('==] poll(), new ListingItemMessage [============================================');
-                    // this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
-                    this.log.debug('from:', message.from);
-                    this.log.debug('to:', message.to);
-                    this.log.debug('sent:', message.sent);
-                    this.log.debug('received:', message.received);
-                    this.log.debug('msgid:', message.msgid);
-                    this.log.debug('==] poll(), new ListingItemMessage, end [=======================================');
-
-                    // ListingItemMessage, listingitemservice listens for this event
-                    this.eventEmitter.emit(Events.ListingItemReceivedEvent, {
-                        smsgMessage: message,
-                        marketplaceMessage: parsed
-                    } as MarketplaceEvent);
-
-                    // send event to cli
-                    this.eventEmitter.emit(Events.Cli, {
-                        message: Events.ListingItemReceivedEvent,
-                        data: parsed
-                    });
-
-                // in case of ActionMessage, which is either BidMessage or EscrowMessage
-                } else if (parsed.mpaction) {
-                    // const messageForLogging = JSON.parse(JSON.stringify(parsed.mpaction));
-                    this.log.debug('==] poll(), new ActionMessage [===============================================');
-                    // this.log.debug('content:', JSON.stringify(messageForLogging, null, 2));
-                    this.log.debug('from:', message.from);
-                    this.log.debug('to:', message.to);
-                    this.log.debug('sent:', message.sent);
-                    this.log.debug('received:', message.received);
-                    this.log.debug('msgid:', message.msgid);
-                    this.log.debug('==] poll(), new ActionMessage, end [==========================================');
-
-                    // ActionMessage
-                    const eventType = await this.getActionEventType(parsed.mpaction);
-                    this.eventEmitter.emit(eventType, {
-                        smsgMessage: message,
-                        marketplaceMessage: parsed
-                    });
-
-                    // send event to cli
-                    this.eventEmitter.emit(Events.Cli, {
-                        message: eventType,
-                        data: parsed
-                    });
-
-                } else {
-                    // json object, but not something that we're expecting
-                    this.log.error('received something unexpected: ', JSON.stringify(parsed, null, 2));
-                }
+            } else {
+                await this.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PARSING_FAILED);
             }
-*/
-            await this.updateSmsgMessageStatus(message, SmsgMessageStatus.PROCESSED);
-
         }
-
     }
 
     public stop(): void {
@@ -158,38 +127,70 @@ export class MessageProcessor implements MessageProcessorInterface {
      */
     private async poll(): Promise<void> {
 
-        // fetch and process oldest 10 new listingitems
-        await this.getSmsgMessages(ListingItemMessageType.MP_ITEM_ADD, SmsgMessageStatus.NEW, 10)
-            .then( async smsgMessages => {
-                await this.process(smsgMessages);
-            })
-            .catch( reason => {
-                this.log.error('poll(), error: ' + reason);
-                return;
-            });
+        const startTime = new Date().getTime();
+
+        let fetchNext = true;
+
+        const searchParams = [
+            {types: this.PROPOSAL_MESSAGES,     status: SmsgMessageStatus.NEW,      count: 10}, // fetch and process new ProposalMessages
+            {types: this.VOTE_MESSAGES,         status: SmsgMessageStatus.NEW,      count: 10}, // fetch and process new VoteMessages
+            {types: this.LISTINGITEM_MESSAGES,  status: SmsgMessageStatus.NEW,      count: 10}, // fetch and process new ListingItemMessages
+            {types: this.BID_MESSAGES,          status: SmsgMessageStatus.NEW,      count: 10}, // fetch and process new BidMessages
+            {types: this.ESCROW_MESSAGES,       status: SmsgMessageStatus.NEW,      count: 10}, // fetch and process new EscrowMessages
+            {types: [],                         status: SmsgMessageStatus.WAITING,  count: 10}  // fetch and process the waiting ones
+        ];
+
+        for (const params of searchParams) {
+            if (fetchNext) {
+                fetchNext = await this.getSmsgMessages(params.types, params.status, params.count)
+                    .then( async smsgMessages => {
+                        if (!_.isEmpty(smsgMessages)) {
+                            for (const smsgMessage of smsgMessages) {
+                                const updated = await this.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PROCESSING);
+                                smsgMessage.status = SmsgMessageStatus.PROCESSING;
+                            }
+                            await this.process(smsgMessages);
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    })
+                    .catch( reason => {
+                        this.log.error('Messageprocessor.poll(), ERROR: ', reason);
+                        return true;
+                    });
+            }
+        }
+
+        this.log.debug('MessageProcessor.poll #' + this.pollCount + ': ' + (new Date().getTime() - startTime) + 'ms');
+        this.pollCount++;
     }
 
     /**
      *
-     * @param {ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType} type
+     * @param {any[]} types
      * @param {SmsgMessageStatus} status
      * @param {number} count
      * @returns {Promise<module:resources.SmsgMessage[]>}
      */
-    private async getSmsgMessages(type: ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType,
+    private async getSmsgMessages(types: any[], // ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType,
                                   status: SmsgMessageStatus, count: number = 10): Promise<resources.SmsgMessage[]> {
 
-        const searchParams = new SmsgMessageSearchParams({
+        const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
             status,
-            type,
+            types,
             count,
             age: 1000 * 20
-        });
+        } as SmsgMessageSearchParams;
+
         const messagesModel = await this.smsgMessageService.searchBy(searchParams);
         const messages = messagesModel.toJSON();
-        this.log.debug('fetched ' + messages.length + ' messages. type: ' + type + ', status: ' + status);
+
+        if (messages.length > 0) {
+            this.log.debug('found ' + messages.length + ' messages. types: [' + types + '], status: ' + status);
+        }
         return messages;
     }
 
@@ -205,10 +206,13 @@ export class MessageProcessor implements MessageProcessorInterface {
         const text = status === SmsgMessageStatus.PROCESSED ? '' : message.text;
 
         const updateRequest = {
-            type: message.type,
+            type: message.type.toString(),
             status,
             msgid: message.msgid,
             version: message.version,
+            read: message.read,
+            paid: message.paid,
+            payloadsize: message.payloadsize,
             received: message.received,
             sent: message.sent,
             expiration: message.expiration,
@@ -226,20 +230,11 @@ export class MessageProcessor implements MessageProcessorInterface {
         return updatedMessage;
     }
 
-    private async parseJSONSafe(json: string): Promise<MarketplaceMessage|null> {
-        let parsed = null;
-        try {
-           // this.log.debug('json to parse:', json);
-            parsed = JSON.parse(json);
-        } catch (e) {
-            this.log.error('parseJSONSafe, invalid JSON:', json);
-            return null;
-        }
-        return parsed;
-    }
+    private async getEventForMessageType(
+        messageType: ListingItemMessageType | BidMessageType | EscrowMessageType | ProposalMessageType | VoteMessageType):
+        Promise<string | null> {
 
-    private async getActionEventType(message: ActionMessageInterface): Promise<string> {
-        switch (message.action) {
+        switch (messageType) {
             case EscrowMessageType.MPA_LOCK:
                 return Events.LockEscrowReceivedEvent;
             case EscrowMessageType.MPA_REQUEST_REFUND:
@@ -261,7 +256,7 @@ export class MessageProcessor implements MessageProcessorInterface {
             case VoteMessageType.MP_VOTE:
                 return Events.VoteReceivedEvent;
             default:
-                throw new InternalServerException('Unknown action message.');
+                return null;
         }
     }
 }
