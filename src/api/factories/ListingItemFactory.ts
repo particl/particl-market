@@ -92,15 +92,14 @@ export class ListingItemFactory {
         // create expiredAt from postedAt and increate it by expiryTime days * dayMilliseconds
 
         // TODO: this should come from the smsgmessage
-        const expiredAt = new Date(postedAt.getTime());
-        expiredAt.setDate(expiredAt.getTime() + listingItemMessage.expiryTime * this.dayMilliseconds);
+        const expiredAt = new Date(postedAt.getTime() + listingItemMessage.expiryTime * this.dayMilliseconds);
         return {
             hash: listingItemMessage.hash,
             seller,
             market_id: marketId,
             expiryTime: listingItemMessage.expiryTime,
-            postedAt,
-            expiredAt,
+            postedAt: new Date(postedAt.getTime()),
+            expiredAt: new Date(expiredAt.getTime()),
             itemInformation,
             paymentInformation,
             messagingInformation,

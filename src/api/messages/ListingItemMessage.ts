@@ -2,7 +2,10 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-export class ListingItemMessage {
+import { MessageBody } from '../../core/api/MessageBody';
+import { ListingItemMessageInterface } from './ListingItemMessageInterface';
+
+export class ListingItemMessage extends MessageBody implements ListingItemMessageInterface {
 
     public hash: string;
     public information: any;

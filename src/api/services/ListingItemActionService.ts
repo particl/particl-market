@@ -166,7 +166,7 @@ export class ListingItemActionService {
             const marketModel = await this.marketService.findByAddress(message.market);
             const market = marketModel.toJSON();
 
-            const listingItemMessage: ListingItemMessage = message.item;
+            const listingItemMessage: ListingItemMessage = message.item as ListingItemMessage;
 
             if (!listingItemMessage.proposalHash) {
                 this.log.error('ListingItem is missing proposals hash.');
@@ -199,7 +199,9 @@ export class ListingItemActionService {
                     if (listingItemMessage.proposalHash) {
                         await this.listingItemService.updateProposalRelation(listingItem.id, listingItemMessage.proposalHash);
                     }
-                    await this.voteForListingItemProposal(proposal, market);
+
+                    // TODO: skipping this too since the wallet could be locked
+                    // await this.voteForListingItemProposal(proposal, market);
                 })
                 .catch(reason => {
                     // there is no proposal yet

@@ -18,19 +18,31 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         'ListingItem'
     ];
 
+    /**
+     * list * 100 -> return all proposals which ended before block 100
+     * list 100 * -> return all proposals ending after block 100
+     * list 100 200 -> return all which are active and closed between 100 200
+     *
+     * @param {ProposalSearchParams} options
+     * @param {boolean} withRelated
+     * @returns {Promise<Bookshelf.Collection<Proposal>>}
+     */
     public static async searchBy(options: ProposalSearchParams, withRelated: boolean = false): Promise<Collection<Proposal>> {
+
         const proposalCollection = Proposal.forge<Model<Proposal>>()
             .query(qb => {
 
-                if (options.startBlock === '*' && options.endBlock === '*') {
+                if (options.type) {
                     // search all
                     qb.where('proposals.type', '=', options.type.toString());
 
-                } else if (typeof options.startBlock === 'number' && options.endBlock === '*') {
+                }
+
+                if (typeof options.startBlock === 'number' && typeof options.endBlock === 'string') {
                     // search all ending after options.startBlock
                     qb.where('proposals.block_end', '>', options.startBlock - 1);
 
-                } else if (options.startBlock === '*' && typeof options.endBlock === 'number') {
+                } else if (typeof options.startBlock === 'string' && typeof options.endBlock === 'number') {
                     // search all ending before block
                     qb.where('proposals.block_end', '<', options.endBlock + 1);
 
