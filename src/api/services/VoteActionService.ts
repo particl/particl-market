@@ -31,6 +31,8 @@ import { ProposalOptionResultService } from './ProposalOptionResultService';
 import { ProposalType } from '../enums/ProposalType';
 import { ProposalOptionResult } from '../models/ProposalOptionResult';
 import { ListingItemService } from './ListingItemService';
+import { SmsgMessageService } from './SmsgMessageService';
+import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
 
 export class VoteActionService {
 
@@ -46,6 +48,7 @@ export class VoteActionService {
         @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
         @inject(Types.Service) @named(Targets.Service.VoteService) public voteService: VoteService,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -84,7 +87,7 @@ export class VoteActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.Bid>}
      */
-    public async processVoteReceivedEvent(event: MarketplaceEvent): Promise<resources.Vote> {
+    public async processVoteReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
         if (!message.mpaction) {   // ACTIONEVENT
@@ -97,45 +100,53 @@ export class VoteActionService {
         }
 
         // get proposal and ignore vote if we're past the final block of the proposal
-        const proposalModel = await this.proposalService.findOneByHash(voteMessage.proposalHash);
-        const proposal: resources.Proposal = proposalModel.toJSON();
+        return await this.proposalService.findOneByHash(voteMessage.proposalHash)
+            .then(async proposalModel => {
 
-        if (_.isEmpty(proposal.ProposalResult)) {
-            throw new MessageException('ProposalResult should not be empty!');
-        }
+                const proposal: resources.Proposal = proposalModel.toJSON();
 
-        const currentBlock: number = await this.coreRpcService.getBlockCount();
-        // this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
-
-        if (voteMessage && proposal.blockEnd >= currentBlock) {
-            const createdVote = await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
-            // this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
-
-            const proposalResult: resources.ProposalResult = await this.updateProposalResult(proposal.ProposalResult.id);
-
-            // todo: extract method
-            if (proposal.type === ProposalType.ITEM_VOTE) {
-                if (await this.shouldRemoveListingItem(proposalResult)) {
-                    // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
-                    const listingItemId = await this.listingItemService.findOne(proposal.ListingItem.id, false)
-                        .then(value => {
-                            return value.Id;
-                        }).catch(reason => {
-                            // ignore
-                            return null;
-                        });
-                    if (listingItemId) {
-                        await this.listingItemService.destroy(listingItemId);
-                    }
+                if (_.isEmpty(proposal.ProposalResult)) {
+                    throw new MessageException('ProposalResult should not be empty!');
                 }
-            }
-            // TODO: do whatever else needs to be done
 
-            // todo: return ActionMessages from all actionservice.process functions
-            return createdVote;
-        } else {
-            throw new MessageException('Missing VoteMessage');
-        }
+                const currentBlock: number = await this.coreRpcService.getBlockCount();
+                // this.log.debug('before update, proposal:', JSON.stringify(proposal, null, 2));
+
+                if (voteMessage && proposal.blockEnd >= currentBlock) {
+                    const createdVote = await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
+                    // this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
+
+                    const proposalResult: resources.ProposalResult = await this.updateProposalResult(proposal.ProposalResult.id);
+
+                    /*
+                    // todo: extract method
+                    if (proposal.type === ProposalType.ITEM_VOTE) {
+                        if (await this.shouldRemoveListingItem(proposalResult)) {
+                            // remove the ListingItem from the marketplace (unless user has Bid/Order related to it).
+                            const listingItemId = await this.listingItemService.findOne(proposal.ListingItem.id, false)
+                                .then(value => {
+                                    return value.Id;
+                                }).catch(reason => {
+                                    // ignore
+                                    return null;
+                                });
+                            if (listingItemId) {
+                                await this.listingItemService.destroy(listingItemId);
+                            }
+                        }
+                    }
+                    */
+                    // TODO: do whatever else needs to be done
+
+                    return SmsgMessageStatus.PROCESSED;
+                } else {
+                    throw new MessageException('Missing VoteMessage');
+                }
+            })
+            .catch(reason => {
+                return SmsgMessageStatus.WAITING;
+            });
+
     }
 
     /**
@@ -252,7 +263,14 @@ export class VoteActionService {
     private configureEventListeners(): void {
         this.eventEmitter.on(Events.VoteReceivedEvent, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
-            await this.processVoteReceivedEvent(event);
+            await this.processVoteReceivedEvent(event)
+                .then(async status => {
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                })
+                .catch(async reason => {
+                    this.log.error('PROCESSING ERROR: ', reason);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PARSING_FAILED);
+                });
         });
     }
 }
