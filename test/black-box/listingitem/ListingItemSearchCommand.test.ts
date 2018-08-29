@@ -214,12 +214,12 @@ describe('ListingItemSearchCommand', () => {
 
     });
 
-    test('Should search the second ListingItem using pagination and setting page to 2 wuth pageLimit set to 1', async () => {
+    test('Should search the second ListingItem using pagination and setting page to 1 with pageLimit set to 1', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
         params.pageLimit = 1;
-        params.page = 2;
+        params.page = 1;
 
         const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
@@ -235,7 +235,7 @@ describe('ListingItemSearchCommand', () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
         params.pageLimit = 1;
-        params.page = 3;
+        params.page = 2;
 
         const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();

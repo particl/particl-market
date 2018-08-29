@@ -54,7 +54,7 @@ export class ListingItemSearchParams extends RequestBody {
         super(generateParams);
         // set params only if there are some -> by default all are true
         // if (!_.isEmpty(generateParams) ) {
-        this.page                   = generateParams[0] ? generateParams[0] : 1;
+        this.page                   = generateParams[0] ? generateParams[0] : 0;
         this.pageLimit              = generateParams[1] ? generateParams[1] : 10;
         this.order                  = generateParams[2] ? generateParams[2] : SearchOrder.ASC;
         this.category               = generateParams[3] ? generateParams[3] : '';
