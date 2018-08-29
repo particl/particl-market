@@ -2,28 +2,29 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+// tslint:disable:max-line-length
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import { GenerateBidParams } from '../../../src/api/requests/params/GenerateBidParams';
-import { GenerateOrderParams } from '../../../src/api/requests/params/GenerateOrderParams';
-import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
 import * as resources from 'resources';
-
-// Ryno
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { AddressType } from '../../../src/api/enums/AddressType';
 import { OrderStatus } from '../../../src/api/enums/OrderStatus';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+// tslint:enable:max-line-length
 
 describe('OrderItemStatus', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
+
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtil1 = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
-    const testUtil2 = new BlackBoxTestUtil(randomBoolean ? 2 : 1);
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
+    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 2 : 1);
 
     const lockCommand = Commands.ESCROW_LOCK.commandName;
 
@@ -52,37 +53,17 @@ describe('OrderItemStatus', () => {
     const orderItemCommand = Commands.ORDERITEM_ROOT.commandName;
     const orderItemStatusCommand = Commands.ORDERITEM_STATUS.commandName;
 
-    let profileId1;
-    let profileId2;
-    let marketId1;
-    let marketId2;
-    // let createdAddress;
-    let myCategory;
-    // let listingItemTemplates;
-    let createdListingItem;
-    let myTemplate;
-    // let escrow;
-    let myBid;
-    let myOrder;
-    let myAddress;
+    let listingItemTemplateSellerNode: resources.ListingItemTemplate;
+    let listingItemReceivedSellerNode: resources.ListingItem;
+    let listingItemReceivedBuyerNode: resources.ListingItem;
 
-    let defaultProfile1;
-    let defaultProfile2;
-    let defaultMarket1;
-    let defaultMarket2;
+    let sellerProfile: resources.Profile;
+    let buyerProfile: resources.Profile;
+    let sellerMarket: resources.Market;
+    let buyerMarket: resources.Market;
 
-    const shippingAddress = {
-        firstName: 'Johnny',
-        lastName: 'Depp',
-        title: 'Work',
-        addressLine1: '123 6th St',
-        addressLine2: 'Melbourne, FL 32904',
-        city: 'Melbourne',
-        state: 'Mel State',
-        country: 'Finland',
-        zipCode: '85001',
-        type: AddressType.SHIPPING_OWN
-    };
+    let bidOnBuyerNode: resources.Bid;
+    let bidOnSellerNode: resources.Bid;
 
     const PAGE = 0;
     const PAGE_LIMIT = 10;
@@ -91,24 +72,15 @@ describe('OrderItemStatus', () => {
     beforeAll(async () => {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
-        await testUtil1.cleanDb();
-        await testUtil2.cleanDb();
+        await testUtilSellerNode.cleanDb();
+        await testUtilBuyerNode.cleanDb();
 
-        defaultProfile1 = await testUtil1.getDefaultProfile();
-        profileId1 = defaultProfile1.id;
-        defaultProfile2 = await testUtil2.getDefaultProfile();
-        profileId2 = defaultProfile2.id;
-        // throw new MessageException('defaultProfile2 = ' + JSON.stringify(defaultProfile2));
-        defaultMarket1 = await testUtil1.getDefaultMarket();
-        marketId1 = defaultProfile1.id;
-        defaultMarket2 = await testUtil2.getDefaultMarket();
-        marketId2 = defaultProfile2.id;
+        sellerProfile = await testUtilSellerNode.getDefaultProfile();
+        sellerMarket = await testUtilSellerNode.getDefaultMarket();
 
-        // Get category
-        myCategory = await testUtil1.rpc(categoryCommand, [categorySearchSubCommand, 'luxury']);
-        myCategory.expectJson();
-        myCategory.expectStatusCode(200);
-        myCategory = myCategory.getBody()['result'][0];
+        // testUtil will add one shipping address to it unless one allready exists
+        buyerProfile = await testUtilBuyerNode.getDefaultProfile();
+        buyerMarket = await testUtilBuyerNode.getDefaultMarket();
 
         // Create template
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
@@ -119,128 +91,133 @@ describe('OrderItemStatus', () => {
             true,       // generateEscrow
             true,       // generateItemPrice
             true,       // generateMessagingInformation
-            false,       // generateListingItemObjects
-            false,       // generateObjectDatas
-            profileId1, // profileId
-            false,      // generateListingItem
-            marketId1   // marketId
+            false,              // generateListingItemObjects
+            false,              // generateObjectDatas
+            sellerProfile.id, // profileId
+            false,              // generateListingItem
+            sellerMarket.id   // marketId
         ]).toParamsArray();
 
-        // generate listingItemTemplate
-        myTemplate = await testUtil1.generateData(
+        // generate ListingItemTemplate
+        const listingItemTemplatesSellerNode = await testUtilSellerNode.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
-        expect(myTemplate).toBeDefined();
-        expect(myTemplate[0]).toBeDefined();
-        myTemplate = myTemplate[0];
-        expect(myTemplate.id).toBeDefined();
 
-        // we should be also able to get the template
-        const templateGetRes: any = await testUtil1.rpc(templateCommand, [templateGetCommand, myTemplate.id]);
-        templateGetRes.expectJson();
-        templateGetRes.expectStatusCode(200);
-        const result: resources.ListingItemTemplate = templateGetRes.getBody()['result'];
+        listingItemTemplateSellerNode = listingItemTemplatesSellerNode[0];
+        expect(listingItemTemplateSellerNode.id).toBeDefined();
+        expect(listingItemTemplateSellerNode.hash).toBeDefined();
 
-        // Post template to create listing item [copied/modified from buy flow]
-        const templatePostRes: any = await testUtil1.rpc(templateCommand, [templatePostCommand, myTemplate.id, marketId1]);
+        // Post ListingItemTemplate to create ListingItem
+        const templatePostRes: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand, listingItemTemplateSellerNode.id, sellerMarket.id]);
         templatePostRes.expectJson();
         templatePostRes.expectStatusCode(200);
-
-        // make sure we got the expected result from posting the template
         const postResult: any = templatePostRes.getBody()['result'];
         expect(postResult.result).toBe('Sent.');
 
-        // Search for item since it's not returned by the template post command
-        createdListingItem = await testUtil2.rpcWaitFor(
+        // wait for ListingItem to be received on the seller node
+        let response = await testUtilSellerNode.rpcWaitFor(
             itemCommand,
-            [itemGetCommand, myTemplate.hash],
+            [itemGetCommand, listingItemTemplateSellerNode.hash],
             60 * 60,
             200,
             'hash',
-            myTemplate.hash
+            listingItemTemplateSellerNode.hash
         );
-        // throw new MessageException(JSON.stringify(createdListingItem, null, 2));
-        createdListingItem.expectJson();
-        createdListingItem.expectStatusCode(200);
-        createdListingItem = createdListingItem.getBody()['result'];
+        response.expectJson();
+        response.expectStatusCode(200);
+        listingItemReceivedSellerNode = response.getBody()['result'];
 
-        // throw new MessageException('createdListingItem = ' + JSON.stringify(createdListingItem, null, 2));
+        // wait for ListingItem to be received on the buyer node
+        listingItemReceivedBuyerNode = await testUtilBuyerNode.rpcWaitFor(
+            itemCommand,
+            [itemGetCommand, listingItemTemplateSellerNode.hash],
+            60 * 60,
+            200,
+            'hash',
+            listingItemTemplateSellerNode.hash
+        );
+        response.expectJson();
+        response.expectStatusCode(200);
+        listingItemReceivedBuyerNode = response.getBody()['result'];
 
-        // Create an address for the bid
-        myAddress = await testUtil2.rpc(addressCommand, [addressAddCommand, profileId2, shippingAddress.firstName,
-            shippingAddress.lastName, shippingAddress.title, shippingAddress.addressLine1, shippingAddress.addressLine2,
-            shippingAddress.city, shippingAddress.state, shippingAddress.country, shippingAddress.zipCode]);
-        myAddress.expectJson();
-        myAddress.expectStatusCode(200);
-        myAddress = myAddress.getBody()['result'];
     });
 
-    test('Should return an empty list', async () => {
-        const orderItemStatusRes = await testUtil2.rpc(orderItemCommand, [
+    test('Should return an empty list since there are no bids or orders yet', async () => {
+        const orderItemStatusRes = await testUtilBuyerNode.rpc(orderItemCommand, [
             orderItemStatusCommand
         ]);
 
         orderItemStatusRes.expectJson();
         orderItemStatusRes.expectStatusCode(200);
         const myOrderItems = orderItemStatusRes.getBody()['result'];
-
-        // throw new MessageException('myOrderItems = ' + JSON.stringify(myOrderItems, null, 2));
-
-        // Check we receive nothing
         expect(myOrderItems.length).toBe(0);
     });
 
-    // todo: split into separate tests
-    test('Should show order that has been bidded upon', async () => {
-        // Create a bid
-        let bidSendRes = await testUtil2.rpc(bidCommand, [
+    test('Should post a Bid for a ListingItem', async () => {
+
+        let bidSendRes = await testUtilBuyerNode.rpc(bidCommand, [
             bidSendCommand,
-            myTemplate.hash,
-            profileId2,
-            myAddress.id
+            listingItemReceivedBuyerNode.hash,
+            buyerProfile.id,
+            buyerProfile.ShippingAddresses[0].id,
+            'colour',
+            'black',
+            'size',
+            'xl'
         ]);
         bidSendRes.expectJson();
         bidSendRes.expectStatusCode(200);
         bidSendRes = bidSendRes.getBody()['result'];
         expect(bidSendRes.result).toBe('Sent.');
 
-        // Check for bid locally
-        myBid = await testUtil2.rpc(bidCommand, [
+    });
+
+    test('Bid should have been created on buyer node after posting the MPA_BID, BidMessageType.MPA_BID', async () => {
+
+        // wait for some time to make sure the Bid has been created
+        await testUtilBuyerNode.waitFor(5);
+
+        const bidSearchCommandParams = [
             bidSearchCommand,
             PAGE, PAGE_LIMIT, ORDERING,
-            myTemplate.hash,
+            listingItemReceivedBuyerNode.hash,
             BidMessageType.MPA_BID,
             '*',
-            defaultProfile2.address
-        ]);
-        myBid.expectJson();
-        myBid.expectStatusCode(200);
+            buyerProfile.address
+        ];
 
-
-        // Check for bid on seller
-        myBid = await testUtil1.rpcWaitFor(bidCommand, [
-                bidSearchCommand,
-                PAGE, PAGE_LIMIT, ORDERING,
-                myTemplate.hash,
-                BidMessageType.MPA_BID,
-                '*',
-                defaultProfile2.address
-            ],
-            60 * 60,
+        const bidSearchRes: any = await testUtilBuyerNode.rpcWaitFor(
+            bidCommand,
+            bidSearchCommandParams,
+            8 * 60,
             200,
             '[0].action',
             BidMessageType.MPA_BID.toString()
         );
-        myBid.expectJson();
-        myBid.expectStatusCode(200);
+        bidSearchRes.expectJson();
+        bidSearchRes.expectStatusCode(200);
 
-        myBid = myBid.getBody()['result'][0];
-        expect(myBid.ListingItem.hash).toBe(myTemplate.hash);
+        const result: resources.Bid = bidSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].ListingItem.hash).toBe(listingItemReceivedBuyerNode.hash);
+        expect(result[0].bidder).toBe(buyerProfile.address);
+        expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
 
-        const orderItemStatusRes = await testUtil2.rpc(orderItemCommand, [
+        // there should be no relation to template on the buyer side
+        expect(result[0].ListingItem.ListingItemTemplate).toEqual({});
+
+        bidOnBuyerNode = result[0];
+
+    }, 600000); // timeout to 600s
+
+
+    test('Should get OrderItemStatus from buyer node', async () => {
+
+        const orderItemStatusRes = await testUtilBuyerNode.rpc(orderItemCommand, [
             orderItemStatusCommand
         ]);
 
@@ -251,13 +228,58 @@ describe('OrderItemStatus', () => {
 
         // Check we receive order that was bid upon
         expect(myOrderItems.length).toBe(1);
-        expect(myOrderItems[0].listingItemHash).toBe(myTemplate.hash);
+        expect(myOrderItems[0].listingItemHash).toBe(listingItemReceivedBuyerNode.hash);
         expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_BID);
     });
 
+
+    test('SELLER RECEIVES MPA_BID posted from buyers node, BidMessageType.MPA_BID', async () => {
+
+        // wait for some time to make sure the Bid has been created
+        // await testUtilBuyerNode.waitFor(5);
+
+        const bidSearchCommandParams = [
+            bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
+            listingItemReceivedBuyerNode.hash,
+            BidMessageType.MPA_BID,
+            '*',
+            buyerProfile.address
+        ];
+
+        const bidSearchRes: any = await testUtilSellerNode.rpcWaitFor(
+            bidCommand,
+            bidSearchCommandParams,
+            8 * 60,
+            200,
+            '[0].action',
+            BidMessageType.MPA_BID.toString()
+        );
+        bidSearchRes.expectJson();
+        bidSearchRes.expectStatusCode(200);
+
+        const result: resources.Bid = bidSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].bidder).toBe(buyerProfile.address);
+        expect(result[0].ListingItem).toBeDefined();
+        expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
+        expect(result[0].ListingItem.hash).toBe(listingItemReceivedSellerNode.hash);
+
+        // there should be a relation to template on the seller side
+        expect(result[0].ListingItem.ListingItemTemplate).toBeDefined();
+
+        // the relation should match the hash of the template that was created earlier on node1
+        expect(result[0].ListingItem.ListingItemTemplate.hash).toBe(listingItemTemplateSellerNode.hash);
+        bidOnSellerNode = result[0];
+
+    }, 600000); // timeout to 600s
+
+
+/*
     test('Should show order that has been accepted', async () => {
         // Create an order from the bid
-        const myOrderSend = await testUtil1.rpc(bidCommand, [
+        const myOrderSend = await testUtilSellerNode.rpc(bidCommand, [
             bidAcceptCommand,
             myTemplate.hash,
             myBid.id
@@ -265,12 +287,12 @@ describe('OrderItemStatus', () => {
         myOrderSend.expectJson();
         myOrderSend.expectStatusCode(200);
 
-        myOrder = await testUtil2.rpcWaitFor(orderCommand, [
+        myOrder = await testUtilBuyerNode.rpcWaitFor(orderCommand, [
                 orderSearchCommand,
                 myTemplate.hash,
                 OrderStatus.AWAITING_ESCROW,
-                defaultProfile2.address,
-                defaultProfile1.address,
+                buyerProfile.address,
+                sellerProfile.address,
                 SearchOrder.ASC
             ],
             60 * 60,
@@ -285,7 +307,7 @@ describe('OrderItemStatus', () => {
         myOrder.expectStatusCode(200);
         myOrder = myOrder.getBody()['result'][0];
 
-        const orderItemStatusRes = await testUtil2.rpc(orderItemCommand, [
+        const orderItemStatusRes = await testUtilBuyerNode.rpc(orderItemCommand, [
             orderItemStatusCommand
         ]);
 
@@ -298,4 +320,6 @@ describe('OrderItemStatus', () => {
         expect(myOrderItems[0].listingItemHash).toBe(myTemplate.hash);
         expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_ACCEPT);
     });
+
+*/
 });

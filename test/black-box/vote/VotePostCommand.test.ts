@@ -2,15 +2,16 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+// tslint:disable:max-line-length
+import * from 'jest';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { Profile } from '../../../src/api/models/Profile';
-import { Proposal } from '../../../src/api/models/Proposal';
 import * as Faker from 'faker';
 import * as resources from 'resources';
 import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+// tslint:enable:max-line-length
 
 describe('VotePostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 100 * process.env.JASMINE_TIMEOUT;

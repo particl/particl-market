@@ -14,7 +14,6 @@ import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import {rpc} from './lib/api';
 // tslint:enable:max-line-length
 
 describe('Happy Buy Flow', () => {
@@ -379,26 +378,15 @@ describe('Happy Buy Flow', () => {
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
         expect(result[0].bidder).toBe(buyerProfile.address);
-
-        log.debug('result[0].ListingItem.hash:', result[0].ListingItem.hash);
-
         expect(result[0].ListingItem).toBeDefined();
-        log.debug('1');
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
-        log.debug('2');
-        log.debug('result[0].ListingItem.hash: ', result[0].ListingItem.hash);
-        log.debug('listingItemReceivedSellerNode.hash: ', listingItemReceivedSellerNode.hash);
-        log.debug('result[0]: ', JSON.stringify(result[0].ListingItem.hash, null, 2));
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedSellerNode.hash);
-        log.debug('3');
 
         // there should be a relation to template on the seller side
         expect(result[0].ListingItem.ListingItemTemplate).toBeDefined();
-        log.debug('4');
 
         // the relation should match the hash of the template that was created earlier on node1
         expect(result[0].ListingItem.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
-        log.debug('5');
 
         // todo: check for correct biddata
         bidOnSellerNode = result[0];
