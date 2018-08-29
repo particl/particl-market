@@ -13,6 +13,7 @@ import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ItemInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -39,6 +40,17 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemInformation> {
+        if (data.params.length < 5) {
+            this.log.error('Not enough args.');
+            throw new MessageException('Not enough args.');
+        } else if (typeof data.params[0] !== 'number') {
+            this.log.error('Listing template id must be numeric.');
+            throw new MessageException('Listing template id must be numeric.');
+        } else if (typeof data.params[4] !== 'number') {
+            this.log.error('Category id must be numeric.');
+            throw new MessageException('Category id must be numeric.');
+        }
+
         return this.itemInformationService.updateWithCheckListingTemplate({
             listing_item_template_id: data.params[0],
             title: data.params[1],

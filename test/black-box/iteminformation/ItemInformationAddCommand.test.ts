@@ -47,6 +47,8 @@ describe('ItemInformationAddCommand', () => {
         const res = await rpc(method, [subCommand]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Category id must be numeric.');
     });
 
     test('Should fail because we want to create an ItemInformation without category id.', async () => {

@@ -12,6 +12,7 @@ import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ItemInformationGetCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -34,6 +35,14 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemInformation> {
+        if (data.params.length < 1) {
+            this.log.error('Listing item template ID missing.');
+            throw new MessageException('Listing item template ID missing.');
+        } else if (typeof data.params[0] !== 'number') {
+            this.log.error('Listing item template ID must be numeric.');
+            throw new MessageException('Listing item template ID must be numeric.');
+        }
+
         return this.itemInformationService.findByItemTemplateId(data.params[0]);
     }
 

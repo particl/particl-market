@@ -40,7 +40,7 @@ describe('ItemInformationUpdateCommand', () => {
         const profileId = defaultProfile.id;
 
         // get category
-        const itemCategoryList: any = await rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_LIST.commandName]);
+        const itemCategoryList: any = await testUtil.rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_LIST.commandName]);
         const categories: any = itemCategoryList.getBody()['result'];
         testDataListingItemTemplate.itemInformation.itemCategory.id = categories.id;
         testData.itemCategory.id = categories.id;
@@ -60,42 +60,162 @@ describe('ItemInformationUpdateCommand', () => {
         createdListingItemTemplateId2 = addListingItemTemplateResult2.id;
     });
 
-    test('Should fail because we want to update an ItemInformation with empty body', async () => {
-        const res = await rpc(method, [subCommand, createdListingItemTemplateId]);
+    test('Should fail because we want to create an ItemInformation without category id.', async () => {
+        const res: any = await testUtil.rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
+            testData.title,
+            testData.shortDescription,
+            testData.longDescription,
+            null
+        ]);
         res.expectJson();
-        res.expectStatusCode(400);
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Category id must be numeric.');
     });
 
-    test('Should fail because we want to update an ItemInformation without title', async () => {
-        const res = await rpc(method, [subCommand,
-            createdListingItemTemplateId, null, testData.shortDescription, testData.longDescription, testData.itemCategory.id]);
+    test('Should fail because we want to create an ItemInformation without title.', async () => {
+        const res: any = await testUtil.rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
+            null,
+            testData.shortDescription,
+            testData.longDescription,
+            testData.itemCategory.id
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Request body is not valid');
     });
 
-    test('Should fail because we want to update an ItemInformation without shortDescription', async () => {
-        const res = await rpc(method, [subCommand, createdListingItemTemplateId, testData.title, null, testData.longDescription, testData.itemCategory.id]);
+    test('Should fail because we want to create an ItemInformation without shortDescription.', async () => {
+        const res: any = await testUtil.rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
+            testData.title,
+            null,
+            testData.longDescription,
+            testData.itemCategory.id
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Request body is not valid');
     });
 
-    test('Should fail because we want to update an ItemInformation without longDescription', async () => {
-        const res = await rpc(method, [subCommand, createdListingItemTemplateId, testData.title, testData.shortDescription, null, testData.itemCategory.id]);
+    test('Should fail because we want to create an ItemInformation without longDescription.', async () => {
+        const res: any = await testUtil.rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
+            testData.title,
+            testData.longDescription,
+            null,
+            testData.itemCategory.id
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Request body is not valid');
     });
 
-    test('Should fail because we want to update an ItemInformation without category id', async () => {
-        const res = await rpc(method, [subCommand, createdListingItemTemplateId, testData.title, testData.shortDescription, testData.longDescription, null]);
+    test('Should fail because missing 1 arg.', async () => {
+        const res: any = await testUtil.rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
+            testData.title,
+            testData.shortDescription,
+            testData.longDescription
+        ]);
         res.expectJson();
-        res.expectStatusCode(400);
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Not enough args.');
     });
 
+    test('Should fail because missing 2 args.', async () => {
+        const res: any = await testUtil.rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
+            testData.title,
+            testData.shortDescription
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Not enough args.');
+    });
+
+    test('Should fail because missing 3 args.', async () => {
+        const res: any = await testUtil.rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
+            testData.title
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Not enough args.');
+    });
+
+    test('Should fail because missing 3 args.', async () => {
+        const res: any = await testUtil.rpc(method, [
+            subCommand,
+            createdListingItemTemplateId
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Not enough args.');
+    });
+
+    test('Should fail because missing 3 args.', async () => {
+        const res: any = await testUtil.rpc(method, [
+            subCommand
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Not enough args.');
+    });
+
+    test('Should fail because listing template id is non-numeric.', async () => {
+        // create item information
+        const res: any = await testUtil.rpc(method, [
+            subCommand,
+            '<invalid listing template id>',
+            testData.title,
+            testData.shortDescription,
+            testData.longDescription,
+            testData.itemCategory.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Listing template id must be numeric.');
+    });
+
+    test('Should fail because category id is non-numeric.', async () => {
+        // create item information
+        const res: any = await testUtil.rpc(method, [
+            subCommand,
+            createdListingItemTemplateId,
+            testData.title,
+            testData.shortDescription,
+            testData.longDescription,
+            '<invalid category id>'
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Category id must be numeric.');
+    });
 
     test('Should update ItemInformation', async () => {
         // update item information
 
-        const getDataRes: any = await rpc(method, [subCommand, createdListingItemTemplateId,
+        const getDataRes: any = await testUtil.rpc(method, [subCommand, createdListingItemTemplateId,
             testData.title, testData.shortDescription, testData.longDescription, testData.itemCategory.id]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
@@ -107,7 +227,7 @@ describe('ItemInformationUpdateCommand', () => {
     });
 
     test('Should fail update ItemInformation, since its not related with ListingItemTemplate', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, createdListingItemTemplateId2,
+        const getDataRes: any = await testUtil.rpc(method, [subCommand, createdListingItemTemplateId2,
             testData.title, testData.shortDescription, testData.longDescription, testData.itemCategory.id]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(404);
