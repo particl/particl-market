@@ -103,7 +103,7 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
             type,
             profileId,
             searchString: '',
-            page: 1,
+            page: 0,
             pageLimit: 100,
             withBids: true
         } as ListingItemSearchParams, true);

@@ -86,7 +86,7 @@ export class Bid extends Bookshelf.Model<Bid> {
             .orderBy('bids.updated_at', options.ordering)
             .query({
                 limit: options.pageLimit,
-                offset: (options.page - 1) * options.pageLimit
+                offset: options.page * options.pageLimit
             });
 
         if (withRelated) {

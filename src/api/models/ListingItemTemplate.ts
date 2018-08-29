@@ -91,7 +91,7 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
             })
             .orderBy('item_informations.title', options.order).query({
                 limit: options.pageLimit,
-                offset: (options.page - 1) * options.pageLimit
+                offset: options.page * options.pageLimit
             });
 
         if (withRelated) {

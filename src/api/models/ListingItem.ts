@@ -182,7 +182,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             .orderBy('updated_at', options.order)
             .query({
                 limit: options.pageLimit,
-                offset: (options.page - 1) * options.pageLimit
+                offset: options.page * options.pageLimit
             });
 
         if (withRelated) {
