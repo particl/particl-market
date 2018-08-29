@@ -161,7 +161,8 @@ export class SmsgService {
         const response = await this.coreRpcService.call('smsg', [msgId,
             JSON.stringify({
                 delete: remove,
-                setread: setRead
+                setread: setRead,
+                encoding: 'ascii'
             })
         ]);
         // this.log.debug('smsg, response: ' + JSON.stringify(response, null, 2));
