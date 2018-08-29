@@ -38,8 +38,7 @@ import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 import { LockedOutputService } from './LockedOutputService';
 import { BidDataValue } from '../enums/BidDataValue';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
-import {SmsgMessageService} from './SmsgMessageService';
-import {Environment} from '../../core/helpers/Environment';
+import { SmsgMessageService } from './SmsgMessageService';
 
 // todo: move
 export interface OutputData {
