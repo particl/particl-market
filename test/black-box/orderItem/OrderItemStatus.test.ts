@@ -132,7 +132,7 @@ describe('OrderItemStatus', () => {
         log.debug('==> ListingItemTemplate posted.');
 
         // wait for ListingItem to be received on the seller node
-        let response = await testUtilSellerNode.rpcWaitFor(
+        const response = await testUtilSellerNode.rpcWaitFor(
             itemCommand,
             [itemGetCommand, listingItemTemplateSellerNode.hash],
             60 * 60,
