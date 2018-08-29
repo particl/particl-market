@@ -336,17 +336,6 @@ export class CoreRpcService {
         return await this.call('dumpprivkey', params);
     }
 
-    /**
-     * ﻿Return information about the given particl address.
-     *
-     * @param {string} address
-     * @returns {Promise<string>}
-     */
-    public async validateAddress(address: string): Promise<any> {
-        const params: any[] = [address];
-        return await this.call('validateaddress', params);
-    }
-
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {
 
         const id = RPC_REQUEST_ID++;
