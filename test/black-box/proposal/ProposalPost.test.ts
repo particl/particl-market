@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+// tslint:disable:max-line-length
+import * from 'jest';
 import { rpc, api } from '../lib/api';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
@@ -9,6 +11,7 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Profile } from '../../../src/api/models/Profile';
 import * as Faker from 'faker';
 import * as resources from 'resources';
+// tslint:enable:max-line-length
 
 describe('ProposalPostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 100 * process.env.JASMINE_TIMEOUT;
