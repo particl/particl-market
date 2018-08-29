@@ -39,6 +39,7 @@ import { LockedOutputService } from './LockedOutputService';
 import { BidDataValue } from '../enums/BidDataValue';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import {SmsgMessageService} from './SmsgMessageService';
+import {Environment} from '../../core/helpers/Environment';
 
 // todo: move
 export interface OutputData {
@@ -173,13 +174,12 @@ export class BidActionService {
         this.log.debug('buyerEscrowPubAddress: ', buyerEscrowPubAddress);
         this.log.debug('buyerEscrowChangeAddress: ', buyerEscrowChangeAddress);
 
-        // TODO: this is not on 0.16.0.3 yet ...
-        // const addressInfo = await this.coreRpcService.getAddressInfo(addr);
-        // this.log.debug('addressInfo: ', JSON.stringify(addressInfo, null, 2));
-        // const pubkey = addressInfo.pubkey;
-
         // 0.16.0.3
-        const buyerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(buyerEscrowPubAddress);
+        // const buyerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(buyerEscrowPubAddress);
+        // const buyerEcrowPubAddressPublicKey = buyerEscrowPubAddressInformation.pubkey;
+
+        // 0.17++ ...
+        const buyerEscrowPubAddressInformation = await this.coreRpcService.getAddressInfo(buyerEscrowPubAddress);
         const buyerEcrowPubAddressPublicKey = buyerEscrowPubAddressInformation.pubkey;
 
         this.log.debug('buyerEscrowPubAddressInformation: ', JSON.stringify(buyerEscrowPubAddressInformation, null, 2));
@@ -415,14 +415,14 @@ export class BidActionService {
         this.log.debug('sellerEscrowPubAddress: ', sellerEscrowPubAddress);
         this.log.debug('sellerEscrowChangeAddress: ', sellerEscrowChangeAddress);
 
-        // TODO: this is not on 0.16.0.3 yet ...
-        // const addressInfo = await this.coreRpcService.getAddressInfo(addr);
-        // this.log.debug('addressInfo: ', JSON.stringify(addressInfo, null, 2));
-        // const pubkey = addressInfo.pubkey;
-
         // 0.16.0.3
-        const sellerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(sellerEscrowPubAddress);
+        // const sellerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(sellerEscrowPubAddress);
+        // const sellerEscrowPubAddressPublicKey = sellerEscrowPubAddressInformation.pubkey;
+
+        // 0.17++ ...
+        const sellerEscrowPubAddressInformation = await this.coreRpcService.getAddressInfo(sellerEscrowPubAddress);
         const sellerEscrowPubAddressPublicKey = sellerEscrowPubAddressInformation.pubkey;
+
         const buyerEscrowPubAddressPublicKey = this.getValueFromBidDatas(BidDataValue.BUYER_PUBKEY, bid.BidDatas);
 
         // create multisig escrow address
@@ -461,19 +461,18 @@ export class BidActionService {
         this.log.debug('MPA_ACCEPT, txout: ', JSON.stringify(txout, null, 2));
         this.log.debug('MPA_ACCEPT, rawtx: ', JSON.stringify(rawtx, null, 2));
 
-        // TODO: At this stage we need to store the unsigned transaction, as we will need user interaction to sign the transaction
-        // TODO: this is not on 0.16.0.3 yet ...
-        // let signed;
+        // 0.16.0.3
+        // const signed = await this.coreRpcService.signRawTransaction(rawtx);
+        // this.log.debug('signed: ', JSON.stringify(signed, null, 2));
+
+        // 0.17++
         // if (Environment.isDevelopment() || Environment.isTest()) {
         //    const privKey = await this.coreRpcService.dumpPrivKey(addr);
         //    signed = await this.coreRpcService.signRawTransactionWithKey(rawtx, [privKey]);
         // } else {
-        //    signed = await this.coreRpcService.signRawTransactionWithWallet(rawtx);
+        const signed = await this.coreRpcService.signRawTransactionWithWallet(rawtx);
         // }
 
-        // 0.16.0.3
-        const signed = await this.coreRpcService.signRawTransaction(rawtx);
-        this.log.debug('signed: ', JSON.stringify(signed, null, 2));
 
         // TODO: duplicate code, use the same signRawTx function as in EscrowActionService
         if (!signed || (signed.errors && (

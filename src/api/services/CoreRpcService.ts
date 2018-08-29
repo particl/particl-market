@@ -147,8 +147,13 @@ export class CoreRpcService {
      * @param {string} account
      * @returns {Promise<any>}
      */
-    public async addMultiSigAddress(nrequired: number, keys: string[], account: string): Promise<any> {
-        const params: any[] = [nrequired, keys, account];
+    public async addMultiSigAddress(nrequired: number, keys: string[], account?: string): Promise<any> {
+        const params: any[] = [];
+        params.push(nrequired);
+        params.push(keys);
+        if (account) {
+            params.push(account);
+        }
         this.log.debug('params: ', params);
         return await this.call('addmultisigaddress', params);
     }

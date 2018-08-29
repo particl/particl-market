@@ -65,6 +65,9 @@ describe('OrderItemStatus', () => {
     let bidOnBuyerNode: resources.Bid;
     let bidOnSellerNode: resources.Bid;
 
+    let orderOnSellerNode: resources.Order;
+    let orderOnBuyerNode: resources.Order;
+
     const PAGE = 0;
     const PAGE_LIMIT = 10;
     const ORDERING = SearchOrder.ASC;
@@ -110,12 +113,23 @@ describe('OrderItemStatus', () => {
         expect(listingItemTemplateSellerNode.id).toBeDefined();
         expect(listingItemTemplateSellerNode.hash).toBeDefined();
 
+        log.debug('==> Setup DONE.');
+
+    });
+
+
+    test('Post ListingItemTemplate to create ListingItem', async () => {
+
+        expect(listingItemTemplateSellerNode).toBeDefined();
+
         // Post ListingItemTemplate to create ListingItem
         const templatePostRes: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand, listingItemTemplateSellerNode.id, sellerMarket.id]);
         templatePostRes.expectJson();
         templatePostRes.expectStatusCode(200);
         const postResult: any = templatePostRes.getBody()['result'];
         expect(postResult.result).toBe('Sent.');
+
+        log.debug('==> ListingItemTemplate posted.');
 
         // wait for ListingItem to be received on the seller node
         let response = await testUtilSellerNode.rpcWaitFor(
@@ -130,6 +144,8 @@ describe('OrderItemStatus', () => {
         response.expectStatusCode(200);
         listingItemReceivedSellerNode = response.getBody()['result'];
 
+        log.debug('==> ListingItem received on seller node.');
+
         // wait for ListingItem to be received on the buyer node
         listingItemReceivedBuyerNode = await testUtilBuyerNode.rpcWaitFor(
             itemCommand,
@@ -143,9 +159,18 @@ describe('OrderItemStatus', () => {
         response.expectStatusCode(200);
         listingItemReceivedBuyerNode = response.getBody()['result'];
 
-    });
+        log.debug('==> ListingItem received on buyer node.');
+
+    }, 600000); // timeout to 600s
+
 
     test('Should return an empty list since there are no bids or orders yet', async () => {
+
+        expect(listingItemReceivedBuyerNode).toBeDefined();
+
+        // wait for some time to make sure the Bid has been created
+        await testUtilBuyerNode.waitFor(5);
+
         const orderItemStatusRes = await testUtilBuyerNode.rpc(orderItemCommand, [
             orderItemStatusCommand
         ]);
@@ -154,9 +179,14 @@ describe('OrderItemStatus', () => {
         orderItemStatusRes.expectStatusCode(200);
         const myOrderItems = orderItemStatusRes.getBody()['result'];
         expect(myOrderItems.length).toBe(0);
+
+        log.debug('==> Got empty result.');
+
     });
 
     test('Should post a Bid for a ListingItem', async () => {
+
+        expect(listingItemReceivedBuyerNode).toBeDefined();
 
         let bidSendRes = await testUtilBuyerNode.rpc(bidCommand, [
             bidSendCommand,
@@ -173,9 +203,13 @@ describe('OrderItemStatus', () => {
         bidSendRes = bidSendRes.getBody()['result'];
         expect(bidSendRes.result).toBe('Sent.');
 
+        log.debug('==> Bid posted.');
+
     });
 
     test('Bid should have been created on buyer node after posting the MPA_BID, BidMessageType.MPA_BID', async () => {
+
+        expect(listingItemReceivedBuyerNode).toBeDefined();
 
         // wait for some time to make sure the Bid has been created
         await testUtilBuyerNode.waitFor(5);
@@ -212,10 +246,17 @@ describe('OrderItemStatus', () => {
 
         bidOnBuyerNode = result[0];
 
+        log.debug('==> Bid found on buyer node.');
+
     }, 600000); // timeout to 600s
 
 
-    test('Should get OrderItemStatus from buyer node', async () => {
+    test('Should get OrderItemStatus from buyer node (bidtype=MPA_BID)', async () => {
+
+        expect(bidOnBuyerNode).toBeDefined();
+
+        // wait for some time to make sure the Bid has been created
+        await testUtilBuyerNode.waitFor(5);
 
         const orderItemStatusRes = await testUtilBuyerNode.rpc(orderItemCommand, [
             orderItemStatusCommand
@@ -230,13 +271,30 @@ describe('OrderItemStatus', () => {
         expect(myOrderItems.length).toBe(1);
         expect(myOrderItems[0].listingItemHash).toBe(listingItemReceivedBuyerNode.hash);
         expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_BID);
+        expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
+        expect(myOrderItems[0].seller).toBe(sellerProfile.address);
+
+        log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
+/*
+myOrderItems:  0=[[
+  {
+    "listingItemHash": "6f946aa36fc78047e904f497b3ec8561d849fa1c1e8c74f3dd11ce09c4ea8d5f",
+    "bidType": "MPA_BID",
+    "orderStatus": "",
+    "buyer": "ppUFRUL576kMr9pG41BtjXAy3ZN9fiEBTK",
+    "seller": "pXqEPTgARKWDyvVZ5qtjQB4ujthPQ1K7K7"
+  }
+]]
+*/
+        log.debug('==> Correct status got from buyer node.');
+
     });
 
 
     test('SELLER RECEIVES MPA_BID posted from buyers node, BidMessageType.MPA_BID', async () => {
 
         // wait for some time to make sure the Bid has been created
-        // await testUtilBuyerNode.waitFor(5);
+        await testUtilSellerNode.waitFor(5);
 
         const bidSearchCommandParams = [
             bidSearchCommand,
@@ -273,53 +331,259 @@ describe('OrderItemStatus', () => {
         expect(result[0].ListingItem.ListingItemTemplate.hash).toBe(listingItemTemplateSellerNode.hash);
         bidOnSellerNode = result[0];
 
+        log.debug('==> Bid found on seller node.');
+
     }, 600000); // timeout to 600s
 
+    test('Should get OrderItemStatus from seller node (bidtype=MPA_BID)', async () => {
 
-/*
-    test('Should show order that has been accepted', async () => {
-        // Create an order from the bid
-        const myOrderSend = await testUtilSellerNode.rpc(bidCommand, [
-            bidAcceptCommand,
-            myTemplate.hash,
-            myBid.id
-        ]);
-        myOrderSend.expectJson();
-        myOrderSend.expectStatusCode(200);
+        expect(bidOnSellerNode).toBeDefined();
 
-        myOrder = await testUtilBuyerNode.rpcWaitFor(orderCommand, [
-                orderSearchCommand,
-                myTemplate.hash,
-                OrderStatus.AWAITING_ESCROW,
-                buyerProfile.address,
-                sellerProfile.address,
-                SearchOrder.ASC
-            ],
-            60 * 60,
-            200,
-            // '[0].hash',
-            // OrderStatus.AWAITING_ESCROW.toString()
-            '[0].OrderItems[0].itemHash',
-             myTemplate.hash
-        );
+        // wait for some time to make sure the Bid has been created
+        await testUtilSellerNode.waitFor(5);
 
-        myOrder.expectJson();
-        myOrder.expectStatusCode(200);
-        myOrder = myOrder.getBody()['result'][0];
-
-        const orderItemStatusRes = await testUtilBuyerNode.rpc(orderItemCommand, [
+        const orderItemStatusRes = await testUtilSellerNode.rpc(orderItemCommand, [
             orderItemStatusCommand
         ]);
 
         orderItemStatusRes.expectJson();
         orderItemStatusRes.expectStatusCode(200);
+
         const myOrderItems = orderItemStatusRes.getBody()['result'];
 
-        // Check we receive order that was accepted
+        // Check we receive order that was bid upon
         expect(myOrderItems.length).toBe(1);
-        expect(myOrderItems[0].listingItemHash).toBe(myTemplate.hash);
-        expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_ACCEPT);
+        expect(myOrderItems[0].listingItemHash).toBe(listingItemReceivedBuyerNode.hash);
+        expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_BID);
+        expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
+        expect(myOrderItems[0].seller).toBe(sellerProfile.address);
+
+        log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
+        log.debug('==> Correct status: MPA_BID got from seller node.');
+
     });
 
+    test('SELLER POSTS MPA_ACCEPT', async () => {
+
+        await testUtilSellerNode.waitFor(5);
+
+        expect(bidOnSellerNode).toBeDefined();
+
+        const bidAcceptCommandParams = [
+            bidAcceptCommand,
+            bidOnSellerNode.ListingItem.hash,
+            bidOnSellerNode.id
+        ];
+
+        const response: any = await testUtilSellerNode.rpc(bidCommand, bidAcceptCommandParams);
+        log.debug('response:', JSON.stringify(response, null, 2));
+
+        response.expectJson();
+        response.expectStatusCode(200);
+
+        // make sure we got the expected result from sending the bid
+        const result: any = response.getBody()['result'];
+        log.debug('result:', JSON.stringify(result, null, 2));
+        expect(result.result).toBe('Sent.');
+
+        log.debug('==[ accept Bid /// seller (node1) -> buyer (node2) ]=============================');
+        log.debug('msgid: ' + result.msgid);
+        log.debug('item.hash: ' + bidOnSellerNode.ListingItem.hash);
+        log.debug('bid.id: ' + bidOnSellerNode.id);
+        log.debug('bid.bidder: ' + bidOnSellerNode.bidder);
+        log.debug('bid.ListingItem.seller: ' + bidOnSellerNode.ListingItem.seller);
+        log.debug('=================================================================================');
+
+    }, 600000); // timeout to 600s
+
+
+    test('Should get OrderItemStatus from seller node (bidtype=MPA_ACCEPT, orderStatus=AWAITING_ESCROW)', async () => {
+
+        expect(bidOnSellerNode).toBeDefined();
+
+        // wait for some time to make sure the Bid has been created
+        await testUtilSellerNode.waitFor(5);
+
+        const orderItemStatusRes = await testUtilSellerNode.rpc(orderItemCommand, [
+            orderItemStatusCommand
+        ]);
+
+        orderItemStatusRes.expectJson();
+        orderItemStatusRes.expectStatusCode(200);
+
+        const myOrderItems = orderItemStatusRes.getBody()['result'];
+
+        // Check we receive order that was bid upon
+        expect(myOrderItems.length).toBe(1);
+        expect(myOrderItems[0].listingItemHash).toBe(listingItemReceivedBuyerNode.hash);
+        expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_ACCEPT);
+        expect(myOrderItems[0].orderStatus).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
+        expect(myOrderItems[0].seller).toBe(sellerProfile.address);
+
+        log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
+/*
+        2018-08-29T18:12:35.500Z - debug: [/home/juha/Work/particl/particl-market/test/black-box/orderItem/OrderItemStatus.test] myOrderItems:  0=[[
+            {
+                "listingItemHash": "3ebfd8df240974460b608d999eddb3231860b429a03695af9b5531d31aacc4c8",
+                "bidType": "MPA_ACCEPT",
+                "orderStatus": "AWAITING_ESCROW",
+                "buyer": "pdFPsUzpqtoMKsZGwQsRqWbRuJbxvwfcdk",
+                "seller": "pc6CdRG5fGZugUsxbaZuVxbo6HxkxCJaB7"
+            }
+        ]]
 */
+        log.debug('==> Correct status: MPA_ACCEPT got from seller node.');
+
+    });
+
+    test('Order should have been created on seller node after posting the MPA_ACCEPT', async () => {
+
+        // wait for some time to make sure the Order has been created
+        await testUtilSellerNode.waitFor(10);
+
+        log.debug('bidOnSellerNode: ', JSON.stringify(bidOnSellerNode, null, 2));
+        const orderSearchCommandParams = [
+            orderSearchCommand,
+            bidOnSellerNode.ListingItem.hash,
+            OrderStatus.AWAITING_ESCROW,
+            buyerProfile.address,
+            sellerProfile.address,
+            SearchOrder.ASC
+        ];
+
+        const orderSearchRes: any = await testUtilSellerNode.rpcWaitFor(
+            orderCommand,
+            orderSearchCommandParams,
+            8 * 60,
+            200,
+            '[0].OrderItems[0].status',
+            OrderStatus.AWAITING_ESCROW.toString()
+        );
+        orderSearchRes.expectJson();
+        orderSearchRes.expectStatusCode(200);
+
+        const result: resources.Order = orderSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].hash).toBeDefined(); // TODO: should match bidOnSellerNode.BidDatas[orderHash]
+        expect(result[0].buyer).toBe(buyerProfile.address);
+        expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].OrderItems).toHaveLength(1);
+        expect(result[0].OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
+
+        orderOnSellerNode = result[0];
+
+        log.debug('==> Order created on SELLER node.');
+
+    }, 600000); // timeout to 600s
+
+
+    test('BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT', async () => {
+
+        expect(orderOnSellerNode).toBeDefined();
+
+        await testUtilBuyerNode.waitFor(10);
+
+        // TODO: when we first get the template hash, store it in originalTemplateHash and use that for searches and expects
+        // same for other similar cases...
+
+        const bidSearchCommandParams = [
+            bidSearchCommand,
+            PAGE, PAGE_LIMIT, ORDERING,
+            bidOnBuyerNode.ListingItem.hash,
+            BidMessageType.MPA_ACCEPT,
+            '*',
+            buyerProfile.address
+        ];
+
+        const bidSearchRes: any = await testUtilBuyerNode.rpcWaitFor(
+            bidCommand,
+            bidSearchCommandParams,
+            8 * 60,
+            200,
+            '[0].action',
+            BidMessageType.MPA_ACCEPT.toString()
+        );
+        bidSearchRes.expectJson();
+        bidSearchRes.expectStatusCode(200);
+
+        const result: resources.Bid = bidSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
+        expect(result[0].bidder).toBe(buyerProfile.address);
+        expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
+        expect(result[0].ListingItem.hash).toBe(listingItemReceivedSellerNode.hash);
+
+        // there should be no relation to template on the buyer side
+        expect(result[0].ListingItem.ListingItemTemplate).toEqual({});
+
+        bidOnBuyerNode = result[0];
+
+        log.debug('==> BUYER received MPA_ACCEPT.');
+    }, 600000); // timeout to 600s
+
+
+    test('Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderStatus.AWAITING_ESCROW', async () => {
+
+        expect(bidOnBuyerNode.action).toBe(BidMessageType.MPA_ACCEPT);
+
+        // wait for some time to make sure the Order has been created
+        await testUtilBuyerNode.waitFor(5);
+
+        const orderSearchCommandParams = [
+            orderSearchCommand,
+            bidOnBuyerNode.ListingItem.hash,
+            OrderStatus.AWAITING_ESCROW,
+            buyerProfile.address,
+            sellerProfile.address,
+            SearchOrder.ASC
+        ];
+
+        const orderSearchRes: any = await testUtilBuyerNode.rpc(orderCommand, orderSearchCommandParams);
+        orderSearchRes.expectJson();
+        orderSearchRes.expectStatusCode(200);
+
+        const result: resources.Order = orderSearchRes.getBody()['result'];
+        expect(result.length).toBe(1);
+        expect(result[0].hash).toBeDefined(); // TODO: bidNode1.BidDatas[orderHash]
+        expect(result[0].buyer).toBe(buyerProfile.address);
+        expect(result[0].seller).toBe(sellerProfile.address);
+        expect(result[0].OrderItems).toHaveLength(1);
+        expect(result[0].OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(result[0].OrderItems[0].itemHash).toBe(bidOnSellerNode.ListingItem.hash);
+
+        orderOnBuyerNode = result[0];
+
+        log.debug('==> Order created on BUYER node.');
+    });
+
+    test('Should get OrderItemStatus from buyer node (bidtype=MPA_ACCEPT, orderStatus=AWAITING_ESCROW)', async () => {
+
+        expect(bidOnSellerNode).toBeDefined();
+
+        // wait for some time to make sure the Bid has been created
+        await testUtilSellerNode.waitFor(5);
+
+        const orderItemStatusRes = await testUtilSellerNode.rpc(orderItemCommand, [
+            orderItemStatusCommand
+        ]);
+
+        orderItemStatusRes.expectJson();
+        orderItemStatusRes.expectStatusCode(200);
+
+        const myOrderItems = orderItemStatusRes.getBody()['result'];
+
+        // Check we receive order that was bid upon
+        expect(myOrderItems.length).toBe(1);
+        expect(myOrderItems[0].listingItemHash).toBe(listingItemReceivedBuyerNode.hash);
+        expect(myOrderItems[0].bidType).toBe(BidMessageType.MPA_ACCEPT);
+        expect(myOrderItems[0].orderStatus).toBe(OrderStatus.AWAITING_ESCROW);
+        expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
+        expect(myOrderItems[0].seller).toBe(sellerProfile.address);
+
+        log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
+        log.debug('==> Correct status got from seller node.');
+
+    });
 });

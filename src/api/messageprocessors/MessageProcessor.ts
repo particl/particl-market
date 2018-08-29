@@ -63,10 +63,16 @@ export class MessageProcessor implements MessageProcessorInterface {
 
             this.log.debug('PROCESSING: ', smsgMessage.msgid);
 
+            this.log.debug('smsgMessage:', JSON.stringify(smsgMessage, null, 2));
+
+            // TODO: throw instead of returning null
             const marketplaceMessage: MarketplaceMessage | null = await this.smsgMessageFactory.getMarketplaceMessage(smsgMessage);
             const eventType: string | null = await this.getEventForMessageType(smsgMessage.type);
 
-            if (!_.isNull(marketplaceMessage) && !_.isNull(eventType)) {
+            this.log.debug('marketplaceMessage:', JSON.stringify(marketplaceMessage, null, 2));
+            this.log.debug('eventType:', JSON.stringify(eventType, null, 2));
+
+            if (marketplaceMessage !== null && eventType !== null) {
 
                 // todo: check if this is actually necessary?
                 marketplaceMessage.market = smsgMessage.to;
@@ -200,14 +206,6 @@ export class MessageProcessor implements MessageProcessorInterface {
         Promise<string | null> {
 
         switch (messageType) {
-            case EscrowMessageType.MPA_LOCK:
-                return Events.LockEscrowReceivedEvent;
-            case EscrowMessageType.MPA_REQUEST_REFUND:
-                return Events.RequestRefundEscrowReceivedEvent;
-            case EscrowMessageType.MPA_REFUND:
-                return Events.RefundEscrowReceivedEvent;
-            case EscrowMessageType.MPA_RELEASE:
-                return Events.ReleaseEscrowReceivedEvent;
             case BidMessageType.MPA_BID:
                 return Events.BidReceivedEvent;
             case BidMessageType.MPA_ACCEPT:
@@ -216,10 +214,21 @@ export class MessageProcessor implements MessageProcessorInterface {
                 return Events.RejectBidReceivedEvent;
             case BidMessageType.MPA_CANCEL:
                 return Events.CancelBidReceivedEvent;
+            case EscrowMessageType.MPA_LOCK:
+                return Events.LockEscrowReceivedEvent;
+            case EscrowMessageType.MPA_REQUEST_REFUND:
+                return Events.RequestRefundEscrowReceivedEvent;
+            case EscrowMessageType.MPA_REFUND:
+                return Events.RefundEscrowReceivedEvent;
+            case EscrowMessageType.MPA_RELEASE:
+                return Events.ReleaseEscrowReceivedEvent;
             case ProposalMessageType.MP_PROPOSAL_ADD:
                 return Events.ProposalReceivedEvent;
             case VoteMessageType.MP_VOTE:
                 return Events.VoteReceivedEvent;
+            case ListingItemMessageType.MP_ITEM_ADD:
+                return Events.ListingItemReceivedEvent;
+            case ListingItemMessageType.UNKNOWN:
             default:
                 return null;
         }

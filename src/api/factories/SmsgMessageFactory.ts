@@ -97,7 +97,7 @@ export class SmsgMessageFactory {
             // this.log.debug('json to parse:', json);
             parsed = JSON.parse(json);
         } catch (e) {
-            this.log.warn('parseJSONSafe, invalid JSON:', json);
+            this.log.error('parseJSONSafe, invalid JSON:', json);
             throw new MessageException('Could not parse the incoming message.');
         }
         return parsed;
