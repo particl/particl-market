@@ -35,15 +35,25 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemInformation> {
-        if (data.params.length < 1) {
-            this.log.error('Listing item template ID missing.');
-            throw new MessageException('Listing item template ID missing.');
-        } else if (typeof data.params[0] !== 'number') {
-            this.log.error('Listing item template ID must be numeric.');
-            throw new MessageException('Listing item template ID must be numeric.');
-        }
-
         return this.itemInformationService.findByItemTemplateId(data.params[0]);
+    }
+
+    /**
+     * - should have 4 params
+     * - if category has key, it cant be edited
+     * - ...
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<void>}
+     */
+    public async validate(data: RpcRequest): Promise<void> {
+        if (data.params.length < 1) {
+            this.log.error('ListingItemTemplate ID missing.');
+            throw new MessageException('ListingItemTemplate ID missing.');
+        } else if (typeof data.params[0] !== 'number') {
+            this.log.error('ListingItemTemplate ID must be numeric.');
+            throw new MessageException('ListingItemTemplate ID must be numeric.');
+        }
     }
 
     public usage(): string {
