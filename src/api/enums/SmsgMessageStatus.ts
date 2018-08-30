@@ -9,11 +9,11 @@
 
 export enum SmsgMessageStatus {
 
-    NEW = 'NEW',
-    PARSING_FAILED = 'PARSING_FAILED',
-    PROCESSING = 'PROCESSING',
-    PROCESSED = 'PROCESSED',
-    PROCESSING_FAILED = 'PROCESSING_FAILED',
-    WAITING = 'WAITING'
-
+    NEW = 'NEW',                                // new
+    PARSING_FAILED = 'PARSING_FAILED',          // smsg parsing failed
+    PROCESSING = 'PROCESSING',                  // currently being processed
+    PROCESSED = 'PROCESSED',                    // processing done
+    PROCESSING_FAILED = 'PROCESSING_FAILED',    // processing failed, can't recover
+    WAITING = 'WAITING',                        // these are waiting for some other messages
+    DB_LOCKED = 'DB_LOCKED'                     // db was locked, retry asap TODO: get rid of this
 }

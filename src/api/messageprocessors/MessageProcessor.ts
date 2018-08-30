@@ -137,6 +137,7 @@ export class MessageProcessor implements MessageProcessorInterface {
 
         let fetchNext = true;
 
+        // TODO: change count to amount
         const searchParams = [
             {types: this.PROPOSAL_MESSAGES,     status: SmsgMessageStatus.NEW,      count: 10}, // fetch and process new ProposalMessages
             {types: this.VOTE_MESSAGES,         status: SmsgMessageStatus.NEW,      count: 10}, // fetch and process new VoteMessages
