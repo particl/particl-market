@@ -218,7 +218,7 @@ export class BidActionService {
 
         // todo: get the actual fee
         const TRANSACTION_FEE = 0.0002;
-        const adjustedRequiredAmount: number = requiredAmount + TRANSACTION_FEE;
+        const adjustedRequiredAmount: number = this.correctNumberDecimals(requiredAmount + TRANSACTION_FEE);
 
         const selectedOutputs: Output[] = [];
         let selectedOutputsSum = 0;
@@ -238,7 +238,7 @@ export class BidActionService {
         unspentOutputs.filter(
             (output: any, outIdx: number) => {
                 if (output.spendable && output.solvable && output.safe ) {
-                    if ( (exactMatchIdx === -1) && ((output.amount - adjustedRequiredAmount) === 0)) {
+                    if ( (exactMatchIdx === -1) && ( this.correctNumberDecimals(output.amount - adjustedRequiredAmount) === 0) ) {
                         // Found a utxo with amount that is an exact match for the requested amount.
                         exactMatchIdx = outIdx;
                     } else if (output.amount < adjustedRequiredAmount) {
@@ -271,7 +271,7 @@ export class BidActionService {
             //  ... Step 2: Sum utxos to find a summed group that matches exactly or is greater than the requried amount by no more than 1%.
             for (let ii = 0; ii < Math.pow(2, utxoLessThanReqestedAmount.length); ii++) {
                 const potentialIdxs: number[] = utxoLessThanReqestedAmount.filter((num: number, index: number) => ii & (1 << index) );
-                const summed: number = potentialIdxs.reduce((acc: number, idx: number) => acc + unspentOutputs[idx].amount, 0);
+                const summed: number = this.correctNumberDecimals( potentialIdxs.reduce((acc: number, idx: number) => acc + unspentOutputs[idx].amount, 0) );
 
                 if ((summed >= adjustedRequiredAmount) && ((summed - adjustedRequiredAmount) < (adjustedRequiredAmount / 100)) ) {
                     // Sum of utxos is within a 1 percent upper margin of the requested amount.
@@ -318,17 +318,18 @@ export class BidActionService {
             }
         }
 
-
-        selectedOutputsSum = 0;
-        utxoIdxs.forEach( utxoIdx => {
-            const utxo: any = unspentOutputs[utxoIdx];
-            selectedOutputs.push({
-                txid: utxo.txid,
-                vout: utxo.vout,
-                amount: utxo.amount
+        if (utxoIdxs.length) {
+            selectedOutputsSum = 0;
+            utxoIdxs.forEach( utxoIdx => {
+                const utxo: any = unspentOutputs[utxoIdx];
+                selectedOutputs.push({
+                    txid: utxo.txid,
+                    vout: utxo.vout,
+                    amount: utxo.amount
+                });
+                selectedOutputsSum += utxo.amount;
             });
-            selectedOutputsSum += utxo.amount;
-        });
+        }
 
         selectedOutputsChangeAmount = +(selectedOutputsSum - adjustedRequiredAmount).toFixed(8);
 
@@ -1130,6 +1131,17 @@ app2_1       | }]
             }
         }
         throw new MessageException('Buyer not found for ListingItem.');
+    }
+
+    /**
+     * Convenience util to correct unwanted precision errors in numbers.
+     * (particularly after number arithmetic)
+     *
+     * @param {number} n
+     * @returns {number}
+     */
+    private correctNumberDecimals(n: number): number {
+        return Number.parseFloat( n.toFixed(8) );
     }
 
 
