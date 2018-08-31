@@ -1189,7 +1189,7 @@ app2_1       | }]
 
         });
     }
-    
+
     /**
      * Convenience util to correct unwanted precision errors in numbers.
      * (particularly after number arithmetic)
