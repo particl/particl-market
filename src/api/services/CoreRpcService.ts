@@ -147,8 +147,13 @@ export class CoreRpcService {
      * @param {string} account
      * @returns {Promise<any>}
      */
-    public async addMultiSigAddress(nrequired: number, keys: string[], account: string): Promise<any> {
-        const params: any[] = [nrequired, keys, account];
+    public async addMultiSigAddress(nrequired: number, keys: string[], account?: string): Promise<any> {
+        const params: any[] = [];
+        params.push(nrequired);
+        params.push(keys);
+        if (account) {
+            params.push(account);
+        }
         this.log.debug('params: ', params);
         return await this.call('addmultisigaddress', params);
     }
@@ -334,17 +339,6 @@ export class CoreRpcService {
     public async dumpPrivKey(address: string): Promise<string> {
         const params: any[] = [address];
         return await this.call('dumpprivkey', params);
-    }
-
-    /**
-     * ﻿Return information about the given particl address.
-     *
-     * @param {string} address
-     * @returns {Promise<string>}
-     */
-    public async validateAddress(address: string): Promise<any> {
-        const params: any[] = [address];
-        return await this.call('validateaddress', params);
     }
 
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {

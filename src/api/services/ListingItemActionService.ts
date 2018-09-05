@@ -44,6 +44,8 @@ import { VoteMessageType } from '../enums/VoteMessageType';
 import { VoteFactory } from '../factories/VoteFactory';
 import { Market } from '../models/Market';
 import { MarketService } from './MarketService';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { SmsgMessageService } from './SmsgMessageService';
 
 export class ListingItemActionService {
     private static FRACTION_TO_COMPRESS_BY = 0.6;
@@ -65,6 +67,7 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
+        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
@@ -156,8 +159,7 @@ export class ListingItemActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<"resources".ListingItem>}
      */
-    public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<resources.ListingItem> {
-        // todo: this returns ListingItem and processed BidMessages return ActionMessage's
+    public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
 
@@ -218,22 +220,17 @@ export class ListingItemActionService {
             // update the template relation
             await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
 
-            // first save it
+            // todo: we could propably get rid of these actionmessages
             const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
             const actionMessage = actionMessageModel.toJSON();
             // this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
-
-            // emit the latest message event to cli
-            // this.eventEmitter.emit('cli', {
-            //    message: 'new ListingItem received: ' + JSON.stringify(listingItem)
-            // });
 
             // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
             listingItemModel = await this.listingItemService.findOne(listingItem.id);
             listingItem = listingItemModel.toJSON();
 
             this.log.debug('saved listingItem:', listingItem.hash);
-            return listingItem;
+            return SmsgMessageStatus.PROCESSED;
 
         } else {
             throw new MessageException('Marketplace message missing market.');
@@ -408,7 +405,14 @@ export class ListingItemActionService {
         this.eventEmitter.on(Events.ListingItemReceivedEvent, async (event) => {
             // this.log.info('Received event, msgid:', event.smsgMessage.msgid);
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
-            await this.processListingItemReceivedEvent(event);
+            await this.processListingItemReceivedEvent(event)
+                .then(async status => {
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                })
+                .catch(async reason => {
+                    this.log.error('ERROR: ListingItemMessage processing failed.', reason);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
+                });
         });
 
     }

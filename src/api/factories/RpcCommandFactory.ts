@@ -142,6 +142,9 @@ import { VoteGetCommand } from '../commands/vote/VoteGetCommand';
 import { VoteListCommand } from '../commands/vote/VoteListCommand';
 import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
 
+import { SmsgSearchCommand } from '../commands/smsg/SmsgSearchCommand';
+import { SmsgRootCommand } from '../commands/smsg/SmsgRootCommand';
+
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -275,6 +278,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.vote.VoteGetCommand) private voteGetCommand: VoteGetCommand,
         @inject(Types.Command) @named(Targets.Command.vote.VoteListCommand) private voteListCommand: VoteListCommand,
         @inject(Types.Command) @named(Targets.Command.vote.VoteRootCommand) private voteRootCommand: VoteRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.smsg.SmsgSearchCommand) private smsgSearchCommand: SmsgSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.smsg.SmsgRootCommand) private smsgRootCommand: SmsgRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
@@ -411,6 +417,9 @@ export class RpcCommandFactory {
         this.commands.push(voteGetCommand);
         this.commands.push(voteListCommand);
         this.commands.push(voteRootCommand);
+
+        this.commands.push(smsgSearchCommand);
+        this.commands.push(smsgRootCommand);
 
         this.commands.push(helpCommand);
 

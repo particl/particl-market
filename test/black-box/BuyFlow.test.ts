@@ -187,6 +187,7 @@ describe('Happy Buy Flow', () => {
         expect(result.result).toBe('Sent.');
 
         log.debug('==[ post ListingItemTemplate /// seller -> marketplace ]================================');
+        log.debug('result.msgid: ' + result.msgid);
         log.debug('item.id: ' + listingItemTemplatesSellerNode[0].id);
         log.debug('item.hash: ' + listingItemTemplatesSellerNode[0].hash);
         log.debug('item.title: ' + listingItemTemplatesSellerNode[0].ItemInformation.title);

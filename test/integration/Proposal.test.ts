@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -90,8 +91,6 @@ describe('Proposal', () => {
         testDataHash = ObjectHash.getHash(testData, HashableObjectType.PROPOSAL_CREATEREQUEST);
 
         const proposalModel: Proposal = await proposalService.create(testData);
-        createdId = proposalModel.Id;
-
         const result = proposalModel.toJSON();
 
         expect(result.submitter).toBe(testData.submitter);
@@ -101,6 +100,8 @@ describe('Proposal', () => {
         expect(result.type).toBe(testData.type);
         expect(result.title).toBe(testData.title);
         expect(result.description).toBe(testData.description);
+
+        createdId = result.id;
 
         // todo: should test that creating proposal with options works too..
     });

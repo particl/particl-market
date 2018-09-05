@@ -1,7 +1,3 @@
-// Copyright (c) 2017-2018, The Particl Market developers
-// Distributed under the GPL software license, see the accompanying
-// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
-
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -57,6 +53,7 @@ export const Targets = {
         ShippingPrice: 'ShippingPrice',
         ShoppingCart: 'ShoppingCart',
         ShoppingCartItem: 'ShoppingCartItem',
+        SmsgMessage: 'SmsgMessage',
         User: 'User',
         Vote: 'Vote'
     },
@@ -104,6 +101,7 @@ export const Targets = {
         ShippingPriceRepository: 'ShippingPriceRepository',
         ShoppingCartItemRepository: 'ShoppingCartItemRepository',
         ShoppingCartRepository: 'ShoppingCartRepository',
+        SmsgMessageRepository: 'SmsgMessageRepository',
         UserRepository: 'UserRepository',
         VoteRepository: 'VoteRepository'
     },
@@ -113,7 +111,6 @@ export const Targets = {
         BidActionService: 'BidActionService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
-        CategoryIsDoableService: 'CategoryIsDoableService',
         CoreCookieService: 'CoreCookieService',
         CoreRpcService: 'CoreRpcService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
@@ -162,6 +159,7 @@ export const Targets = {
         ShippingPriceService: 'ShippingPriceService',
         ShoppingCartItemService: 'ShoppingCartItemService',
         ShoppingCartService: 'ShoppingCartService',
+        SmsgMessageService: 'SmsgMessageService',
         SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
         UserService: 'UserService',
@@ -324,6 +322,10 @@ export const Targets = {
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         },
+        smsg: {
+            SmsgRootCommand: 'SmsgRootCommand',
+            SmsgSearchCommand: 'SmsgSearchCommand'
+        },
         vote: {
             VoteGetCommand: 'VoteGetCommand',
             VoteListCommand: 'VoteListCommand',
@@ -342,21 +344,14 @@ export const Targets = {
         OrderFactory: 'OrderFactory',
         ProposalFactory: 'ProposalFactory',
         RpcCommandFactory: 'RpcCommandFactory',
+        SmsgMessageFactory: 'SmsgMessageFactory',
         VoteFactory: 'VoteFactory'
     },
     MessageProcessor:     {
-        deprecated: {
-            AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
-            BidMessageProcessor: 'BidMessageProcessor',
-            CancelBidMessageProcessor: 'CancelBidMessageProcessor',
-            ListingItemMessageProcessor: 'ListingItemMessageProcessor',
-            RejectBidMessageProcessor: 'RejectBidMessageProcessor',
-            TestMessageProcessor: 'TestMessageProcessor',
-            UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
-        },
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
         MessageProcessor: 'MessageProcessor',
-        MessageProcessorInterface: 'MessageProcessorInterface'
+        MessageProcessorInterface: 'MessageProcessorInterface',
+        SmsgMessageProcessor: 'SmsgMessageProcessor'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',
