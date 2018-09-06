@@ -56,8 +56,16 @@ export class SmsgMessageProcessor implements MessageProcessorInterface {
 
         for (const message of messages) {
 
+            this.log.debug('message.text: ', JSON.stringify(message.text, null, 2));
+
             // get the message again using smsg, since the smsginbox doesnt return expiration
             const msg: IncomingSmsgMessage = await this.smsgService.smsg(message.msgid, false, true);
+
+            // TODO: when MP_ITEM_ADD contains images, the smsginbox command returns the text field, but smsg command returns hex field even when encoding is set to ascii
+            // TODO: ugly workaround follows
+
+            this.log.debug('incoming msg: ', JSON.stringify(msg, null, 2));
+
             const smsgMessageCreateRequest: SmsgMessageCreateRequest = await this.smsgMessageFactory.get(msg);
 
             // this.log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));

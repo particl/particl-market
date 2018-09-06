@@ -158,12 +158,11 @@ export class SmsgService {
      * @returns {Promise<IncomingSmsgMessage>}
      */
     public async smsg(msgId: string, remove: boolean = false, setRead: boolean = true): Promise<IncomingSmsgMessage> {
-        const response = await this.coreRpcService.call('smsg', [msgId,
-            JSON.stringify({
+        const response = await this.coreRpcService.call('smsg', [msgId, {
                 delete: remove,
                 setread: setRead,
                 encoding: 'ascii'
-            })
+            }
         ]);
         // this.log.debug('smsg, response: ' + JSON.stringify(response, null, 2));
         return response;
