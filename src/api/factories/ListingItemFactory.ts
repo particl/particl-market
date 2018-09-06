@@ -51,7 +51,6 @@ export class ListingItemFactory {
      * @returns {Promise<ListingItemMessage>}
      */
     public async getMessage(listingItemTemplate: resources.ListingItemTemplate,
-                            proposalHash: string,
                             expiryTime: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10)): Promise<ListingItemMessage> {
 
         const information = await this.getMessageInformation(listingItemTemplate.ItemInformation);
@@ -65,7 +64,6 @@ export class ListingItemFactory {
             payment,
             messaging,
             objects,
-            proposalHash,    // todo: this does not exist in OMP
             expiryTime
         } as ListingItemMessage;
 
