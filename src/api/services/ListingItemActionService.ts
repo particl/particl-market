@@ -232,6 +232,48 @@ export class ListingItemActionService {
 
     /**
      *
+     * @param {"resources".ListingItemTemplate} itemTemplate
+     * @param {number} daysRetention
+     * @param {"resources".Profile} profile
+     * @returns {Promise<ProposalMessage>}
+     */
+    public async createProposalMessage(itemTemplate: resources.ListingItemTemplate, daysRetention: number,
+                                        profile: resources.Profile): Promise<ProposalMessage> {
+
+        const blockStart: number = await this.coreRpcService.getBlockCount();
+        const blockEnd: number = blockStart + (daysRetention * 24 * 30);
+
+        const proposalMessage: ProposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, ProposalType.ITEM_VOTE,
+            itemTemplate.hash, '', blockStart, blockEnd, ['OK', 'Remove'], profile);
+
+        return proposalMessage;
+
+    }
+
+    /**
+     *
+     * @param {ProposalMessage} proposalMessage
+     * @param {number} daysRetention
+     * @param {"resources".Profile} profile
+     * @param {"resources".Market} market
+     * @returns {Promise<SmsgSendResponse>}
+     */
+    public async postProposal(proposalMessage: ProposalMessage, daysRetention: number, profile: resources.Profile,
+                               market: resources.Market): Promise<SmsgSendResponse> {
+
+        const msg: MarketplaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: proposalMessage
+        };
+
+        const response = this.smsgService.smsgSend(profile.address, market.address, msg, false, daysRetention);
+        this.log.debug('postProposal(), response: ', response);
+        return response;
+
+    }
+
+    /**
+     *
      * @param {"resources".ProposalResult} proposalResult
      * @returns {Promise<boolean>}
      */
@@ -285,48 +327,6 @@ export class ListingItemActionService {
         } else {
             return true;
         }
-    }
-
-    /**
-     *
-     * @param {"resources".ListingItemTemplate} itemTemplate
-     * @param {number} daysRetention
-     * @param {"resources".Profile} profile
-     * @returns {Promise<ProposalMessage>}
-     */
-    public async createProposalMessage(itemTemplate: resources.ListingItemTemplate, daysRetention: number,
-                                        profile: resources.Profile): Promise<ProposalMessage> {
-
-        const blockStart: number = await this.coreRpcService.getBlockCount();
-        const blockEnd: number = blockStart + (daysRetention * 24 * 30);
-
-        const proposalMessage: ProposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, ProposalType.ITEM_VOTE,
-            itemTemplate.hash, '', blockStart, blockEnd, ['OK', 'Remove'], profile);
-
-        return proposalMessage;
-
-    }
-
-    /**
-     *
-     * @param {ProposalMessage} proposalMessage
-     * @param {number} daysRetention
-     * @param {"resources".Profile} profile
-     * @param {"resources".Market} market
-     * @returns {Promise<SmsgSendResponse>}
-     */
-    public async postProposal(proposalMessage: ProposalMessage, daysRetention: number, profile: resources.Profile,
-                               market: resources.Market): Promise<SmsgSendResponse> {
-
-        const msg: MarketplaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: proposalMessage
-        };
-
-        const response = this.smsgService.smsgSend(profile.address, market.address, msg, false, daysRetention);
-        this.log.debug('postProposal(), response: ', response);
-        return response;
-
     }
 
     /**
