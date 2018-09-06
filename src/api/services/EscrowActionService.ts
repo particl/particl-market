@@ -572,7 +572,11 @@ export class EscrowActionService {
 
         // This requires user interaction, so should be elsewhere possibly?
         // TODO: Verify that the transaction has the correct values! Very important!!! TODO TODO TODO
-        const signed = await this.coreRpcService.signRawTransaction(rawtx);
+
+        // 0.16.x
+        // const signed = await this.coreRpcService.signRawTransaction(rawtx);
+        // 0.17++
+        const signed = await this.coreRpcService.signRawTransactionWithWallet(rawtx);
 
         const ignoreErrors = [
             'Unable to sign input, invalid stack size (possibly missing key)',
