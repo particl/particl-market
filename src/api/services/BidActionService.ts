@@ -1201,5 +1201,16 @@ app2_1       | }]
         return Number.parseFloat( n.toFixed(8) );
     }
 
+    /**
+     * Convenience util to correct unwanted precision errors in numbers.
+     * (particularly after number arithmetic)
+     *
+     * @param {number} n
+     * @returns {number}
+     */
+    private correctNumberDecimals(n: number): number {
+        return Number.parseFloat( n.toFixed(8) );
+    }
+
 
 }
