@@ -123,13 +123,8 @@ export class ListingItemActionService {
         const itemCategory = itemCategoryModel.toJSON();
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
-        // create and post a proposal for the item to be voted off the marketplace
-        const proposalMessage = await this.createProposalMessage(itemTemplate, data.daysRetention, itemTemplate.Profile);
-        this.log.debug('post(), proposalMessage: ', proposalMessage);
-        const response: SmsgSendResponse = await this.postProposal(proposalMessage, data.daysRetention, itemTemplate.Profile, market);
-
         // create and post the itemmessage
-        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, proposalMessage.hash, data.daysRetention);
+        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, data.daysRetention);
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             item: listingItemMessage

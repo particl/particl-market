@@ -483,6 +483,8 @@ describe('Happy Buy Flow', () => {
         log.debug('Order should have been created on seller node after posting the MPA_ACCEPT');
         log.debug('========================================================================================');
 
+        expect(bidOnSellerNode).toBeDefined();
+
         // wait for some time to make sure the Order has been created
         await testUtilSellerNode.waitFor(10);
 
@@ -527,6 +529,8 @@ describe('Happy Buy Flow', () => {
         log.debug('========================================================================================');
         log.debug('BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT');
         log.debug('========================================================================================');
+
+        expect(orderOnSellerNode).toBeDefined();
 
         await testUtilBuyerNode.waitFor(10);
 
@@ -575,6 +579,8 @@ describe('Happy Buy Flow', () => {
         log.debug('Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderStatus.AWAITING_ESCROW');
         log.debug('========================================================================================');
 
+        expect(bidOnBuyerNode).toBeDefined();
+
         // wait for some time to make sure the Order has been created
         await testUtilBuyerNode.waitFor(5);
 
@@ -611,6 +617,8 @@ describe('Happy Buy Flow', () => {
         log.debug('========================================================================================');
         log.debug('Bid should now be found using OrderStatus');
         log.debug('========================================================================================');
+
+        expect(orderOnBuyerNode).toBeDefined();
 
         // wait for some time to make sure the Order has been created
         await testUtilBuyerNode.waitFor(5);
@@ -706,6 +714,8 @@ describe('Happy Buy Flow', () => {
         log.debug('SELLER RECEIVES MPA_LOCK posted from buyers node, OrderStatus.ESCROW_LOCKED');
         log.debug('========================================================================================');
 
+        expect(orderOnBuyerNode).toBeDefined();
+
         const orderSearchCommandParams = [
             orderSearchCommand,
             bidOnSellerNode.ListingItem.hash,
@@ -743,6 +753,8 @@ describe('Happy Buy Flow', () => {
         log.debug('========================================================================================');
         log.debug('SELLER POSTS MPA_RELEASE, indicating that the item has been sent');
         log.debug('========================================================================================');
+
+        expect(orderOnSellerNode).toBeDefined();
 
         await testUtilSellerNode.waitFor(5);
 
@@ -813,6 +825,8 @@ describe('Happy Buy Flow', () => {
         log.debug('BUYER RECEIVES MPA_RELEASE posted from sellers node, OrderStatus.SHIPPING');
         log.debug('========================================================================================');
 
+        expect(orderOnSellerNode).toBeDefined();
+
         await testUtilBuyerNode.waitFor(5);
 
         const orderSearchCommandParams = [
@@ -852,6 +866,8 @@ describe('Happy Buy Flow', () => {
         log.debug('========================================================================================');
         log.debug('BUYER POSTS MPA_RELEASE, indicating that the item has been received');
         log.debug('========================================================================================');
+
+        expect(orderOnBuyerNode).toBeDefined();
 
         await testUtilBuyerNode.waitFor(5);
 
@@ -921,6 +937,8 @@ describe('Happy Buy Flow', () => {
         log.debug('========================================================================================');
         log.debug('SELLER RECEIVES MPA_RELEASE posted from buyers node, OrderStatus.COMPLETE');
         log.debug('========================================================================================');
+
+        expect(orderOnSellerNode).toBeDefined();
 
         const orderSearchCommandParams = [
             orderSearchCommand,
