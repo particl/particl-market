@@ -301,7 +301,7 @@ export class ListingItemActionService {
      * @param {"resources".Profile} profile
      * @returns {Promise<ProposalMessage>}
      */
-    private async createProposalMessage(itemTemplate: resources.ListingItemTemplate, daysRetention: number,
+    public async createProposalMessage(itemTemplate: resources.ListingItemTemplate, daysRetention: number,
                                         profile: resources.Profile): Promise<ProposalMessage> {
 
         const blockStart: number = await this.coreRpcService.getBlockCount();
@@ -322,7 +322,7 @@ export class ListingItemActionService {
      * @param {"resources".Market} market
      * @returns {Promise<SmsgSendResponse>}
      */
-    private async postProposal(proposalMessage: ProposalMessage, daysRetention: number, profile: resources.Profile,
+    public async postProposal(proposalMessage: ProposalMessage, daysRetention: number, profile: resources.Profile,
                                market: resources.Market): Promise<SmsgSendResponse> {
 
         const msg: MarketplaceMessage = {
