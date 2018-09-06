@@ -88,8 +88,8 @@ describe('Happy Buy Flow', () => {
 
         // log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
         // log.debug('buyerProfile: ', JSON.stringify(buyerProfile, null, 2));
-        log.debug('sellerProfile: ', sellerProfile.id);
-        log.debug('buyerProfile: ', buyerProfile.id);
+        log.debug('sellerProfile: ', sellerProfile.address);
+        log.debug('buyerProfile: ', buyerProfile.address);
 
         defaultMarket = await testUtilSellerNode.getDefaultMarket();
         expect(defaultMarket.id).toBeDefined();

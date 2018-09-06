@@ -130,8 +130,6 @@ export class ListingItemActionService {
             item: listingItemMessage
         } as MarketplaceMessage;
 
-        this.log.debug('post(), marketPlaceMessage: ', marketPlaceMessage);
-
         return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, data.daysRetention);
     }
 
@@ -165,11 +163,6 @@ export class ListingItemActionService {
 
             const listingItemMessage: ListingItemMessage = message.item as ListingItemMessage;
 
-            if (!listingItemMessage.proposalHash) {
-                this.log.error('ListingItem is missing proposals hash.');
-                throw new MessageException('ListingItem is missing proposals hash.');
-            }
-
             // create the new custom categories in case there are some
             const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
 
@@ -185,6 +178,10 @@ export class ListingItemActionService {
 
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
             let listingItem = listingItemModel.toJSON();
+
+            /*
+            // TODO: Proposals related to ListingItems should wait for processing until ListingItem is received
+            // as we no longer have proposalHash in the ListingItemMessage
 
             // if proposal for the listingitem exists:
             // - update relation and vote
@@ -205,6 +202,7 @@ export class ListingItemActionService {
                     this.log.warn('received ListingItem, but theres no Proposal for it yet...', listingItem.hash);
                     return null;
                 });
+            */
 
             // if (await this.shouldAddListingItem(proposal.ProposalResult)) {
             // } else {
