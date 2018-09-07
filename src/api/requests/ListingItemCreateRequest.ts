@@ -20,10 +20,15 @@ export class ListingItemCreateRequest extends RequestBody {
     public listing_item_template_id: number;
 
     // in days
+    @IsNotEmpty()
     public expiryTime: number;
 
-    public postedAt: Date;
-    public expiredAt: Date;
+    @IsNotEmpty()
+    public postedAt: number;
+    @IsNotEmpty()
+    public expiredAt: number;
+    @IsNotEmpty()
+    public receivedAt: number;
 
     public itemInformation;
     public paymentInformation;
