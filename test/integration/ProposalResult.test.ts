@@ -21,7 +21,6 @@ import { ProposalType } from '../../src/api/enums/ProposalType';
 import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequest';
 import { Proposal } from '../../src/api/models/Proposal';
 import * as resources from 'resources';
-import {ProposalOptionCreateRequest} from '../../src/api/requests/ProposalOptionCreateRequest';
 
 describe('ProposalResult', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

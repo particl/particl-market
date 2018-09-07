@@ -22,9 +22,9 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
 import { ProfileService } from '../../../src/api/services/ProfileService';
 import { MarketplaceMessage } from '../../../src/api/messages/MarketplaceMessage';
-import { SmsgMessage } from '../../../src/api/messages/SmsgMessage';
 import { ListingItemService } from '../../../src/api/services/ListingItemService';
 import { ListingItemTemplateService } from '../../../src/api/services/ListingItemTemplateService';
+import { IncomingSmsgMessage } from '../../../src/api/messages/IncomingSmsgMessage';
 
 
 describe('ListingItemMessage', () => {
@@ -209,7 +209,7 @@ describe('ListingItemMessage', () => {
             from: defaultProfile.address,
             to: defaultMarket.address,
             text: JSON.stringify(marketplaceMessage)
-        } as SmsgMessage;
+        } as IncomingSmsgMessage;
 
         // we have the message, so remove the template
         await listingItemTemplateService.destroy(listingItemTemplates[0].id);
@@ -253,7 +253,7 @@ describe('ListingItemMessage', () => {
             from: defaultProfile.address,
             to: defaultMarket.address,
             text: JSON.stringify(marketplaceMessage)
-        } as SmsgMessage;
+        } as IncomingSmsgMessage;
 
         // process the message like it was received from the network
         const result: resources.ListingItem = await listingItemActionService.processListingItemReceivedEvent({

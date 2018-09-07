@@ -24,9 +24,6 @@ import { BidSearchParams } from '../../src/api/requests/BidSearchParams';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 
-import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
-import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
-
 import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BID.json';
 import * as resources from 'resources';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
@@ -40,7 +37,7 @@ import { OrderStatus } from '../../src/api/enums/OrderStatus';
 import { OrderCreateRequest } from '../../src/api/requests/OrderCreateRequest';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import {DatabaseException} from '../../src/api/exceptions/DatabaseException';
+import { DatabaseException } from '../../src/api/exceptions/DatabaseException';
 
 
 describe('Bid', () => {

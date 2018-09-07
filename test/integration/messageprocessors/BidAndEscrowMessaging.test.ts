@@ -7,9 +7,6 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Types, Core, Targets } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
 
-import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
-import { ValidationException } from '../../../src/api/exceptions/ValidationException';
-
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemService } from '../../../src/api/services/ListingItemService';
@@ -17,15 +14,12 @@ import { BidService } from '../../../src/api/services/BidService';
 import { ProfileService } from '../../../src/api/services/ProfileService';
 import { AddressService } from '../../../src/api/services/AddressService';
 
-import { ListingItem } from '../../../src/api/models/ListingItem';
 import { ListingItemCreateRequest } from '../../../src/api/requests/ListingItemCreateRequest';
-import { TestDataCreateRequest } from '../../../src/api/requests/TestDataCreateRequest';
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { BidMessage } from '../../../src/api/messages/BidMessage';
 
 import * as resources from 'resources';
 
-import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
 import { BidActionService } from '../../../src/api/services/BidActionService';
@@ -37,18 +31,14 @@ import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { MarketplaceEvent } from '../../../src/api/messages/MarketplaceEvent';
 import { BidFactory } from '../../../src/api/factories/BidFactory';
-import { SmsgMessage } from '../../../src/api/messages/SmsgMessage';
 
 import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
 import { AddressType } from '../../../src/api/enums/AddressType';
-import { OrderStatus } from '../../../src/api/enums/OrderStatus';
 import { EscrowActionService } from '../../../src/api/services/EscrowActionService';
 import { EscrowFactory } from '../../../src/api/factories/EscrowFactory';
-import { EscrowRequest } from '../../../src/api/requests/EscrowRequest';
-import { IsEnum, IsNotEmpty } from 'class-validator';
-import { EscrowMessageType } from '../../../src/api/enums/EscrowMessageType';
 import { OrderItemService } from '../../../src/api/services/OrderItemService';
 import { OrderService } from '../../../src/api/services/OrderService';
+import {IncomingSmsgMessage} from '../../../src/api/messages/IncomingSmsgMessage';
 
 
 describe('BidMessageProcessing', () => {
@@ -238,7 +228,7 @@ describe('BidMessageProcessing', () => {
 
         expect(marketplaceMessage.mpaction.item).toBe(listingItem.hash);
 
-        const smsgMessage: SmsgMessage = {
+        const smsgMessage: IncomingSmsgMessage = {
             msgid: 'TESTMESSAGE' + new Date().getTime(),
             version: '0300',
             received: new Date().toISOString(),
