@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../../src/app';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Types, Core, Targets } from '../../../src/constants';
@@ -10,9 +11,7 @@ import { TestUtil } from '../lib/TestUtil';
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemActionService } from '../../../src/api/services/ListingItemActionService';
-
 import { ListingItemFactory } from '../../../src/api/factories/ListingItemFactory';
-
 import { ListingItemMessage } from '../../../src/api/messages/ListingItemMessage';
 
 import * as resources from 'resources';
@@ -25,6 +24,7 @@ import { MarketplaceMessage } from '../../../src/api/messages/MarketplaceMessage
 import { ListingItemService } from '../../../src/api/services/ListingItemService';
 import { ListingItemTemplateService } from '../../../src/api/services/ListingItemTemplateService';
 import { IncomingSmsgMessage } from '../../../src/api/messages/IncomingSmsgMessage';
+import {SmsgMessageStatus} from '../../../src/api/enums/SmsgMessageStatus';
 
 
 describe('ListingItemMessage', () => {
@@ -98,6 +98,10 @@ describe('ListingItemMessage', () => {
     // tslint:enable:max-line-length
 
     const expectListingItemFromMessage = (result: resources.ListingItem, message: ListingItemMessage) => {
+
+        log.debug('result.ItemInformation: ', JSON.stringify(result.ItemInformation, null, 2));
+        log.debug('message.information: ', JSON.stringify(message.information, null, 2));
+        // log.debug('message: ', JSON.stringify(message, null, 2));
 
         expect(result.id).not.toBeNull();
         expect(result.hash).not.toBeNull();
@@ -192,7 +196,7 @@ describe('ListingItemMessage', () => {
         expect(listingItemTemplate.ListingItems.length).toBe(0);
 
         // prepare the message to be processed
-        const listingItemMessage: ListingItemMessage = await listingItemFactory.getMessage(listingItemTemplates[0], 'proposalHash');
+        const listingItemMessage: ListingItemMessage = await listingItemFactory.getMessage(listingItemTemplates[0]);
 
         const marketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
@@ -202,10 +206,16 @@ describe('ListingItemMessage', () => {
 
         // put the MarketplaceMessage in SmsgMessage
         const listingItemSmsg = {
-            msgid: 'somethingnotsorandom',
+            msgid: 'TESTMESSAGE' + new Date().getTime(),
             version: '0300',
-            received: new Date().toISOString(),
-            sent: new Date().toISOString(),
+            location: 'inbox',
+            read: false,
+            paid: false,
+            payloadsize: 100,
+            received: new Date().getTime(),
+            sent: new Date().getTime(),
+            expiration: new Date().getTime(),
+            daysretention: 4,
             from: defaultProfile.address,
             to: defaultMarket.address,
             text: JSON.stringify(marketplaceMessage)
@@ -215,13 +225,18 @@ describe('ListingItemMessage', () => {
         await listingItemTemplateService.destroy(listingItemTemplates[0].id);
 
         // process the message like it was received from the network
-        const result: resources.ListingItem = await listingItemActionService.processListingItemReceivedEvent({
+        const status: SmsgMessageStatus = await listingItemActionService.processListingItemReceivedEvent({
             smsgMessage: listingItemSmsg,
             marketplaceMessage
         });
 
+        expect(status).toBe(SmsgMessageStatus.PROCESSED);
+
+        const listingItemModel = await listingItemService.findOneByHash(listingItemMessage.hash);
+        const listingItem: resources.ListingItem = listingItemModel.toJSON();
+
         // common ListingItem expects, expect listingitem to match with the message
-        expectListingItemFromMessage(result, listingItemMessage);
+        expectListingItemFromMessage(listingItem, listingItemMessage);
 
     });
 
@@ -236,7 +251,7 @@ describe('ListingItemMessage', () => {
         expect(listingItemTemplate.ListingItems.length).toBe(0);
 
         // prepare the message to be processed
-        const listingItemMessage: ListingItemMessage = await listingItemFactory.getMessage(listingItemTemplates[1], 'proposalHash', 4);
+        const listingItemMessage: ListingItemMessage = await listingItemFactory.getMessage(listingItemTemplates[1]);
 
         const marketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
@@ -246,30 +261,38 @@ describe('ListingItemMessage', () => {
 
         // put the MarketplaceMessage in SmsgMessage
         const listingItemSmsg = {
-            msgid: 'somethingnotsorandom',
+            msgid: 'TESTMESSAGE' + new Date().getTime(),
             version: '0300',
-            received: new Date().toISOString(),
-            sent: new Date().toISOString(),
+            location: 'inbox',
+            read: false,
+            paid: false,
+            payloadsize: 100,
+            received: new Date().getTime(),
+            sent: new Date().getTime(),
+            expiration: new Date().getTime(),
+            daysretention: 4,
             from: defaultProfile.address,
             to: defaultMarket.address,
             text: JSON.stringify(marketplaceMessage)
         } as IncomingSmsgMessage;
 
         // process the message like it was received from the network
-        const result: resources.ListingItem = await listingItemActionService.processListingItemReceivedEvent({
+        const status: SmsgMessageStatus = await listingItemActionService.processListingItemReceivedEvent({
             smsgMessage: listingItemSmsg,
             marketplaceMessage
         });
 
-        log.debug('listingItemMessage: ', JSON.stringify(marketplaceMessage.item, null, 2));
-        log.debug('result.hash: ', JSON.stringify(result.hash, null, 2));
+        expect(status).toBe(SmsgMessageStatus.PROCESSED);
+
+        const listingItemModel = await listingItemService.findOneByHash(listingItemMessage.hash);
+        const listingItem: resources.ListingItem = listingItemModel.toJSON();
 
         // common ListingItem expects, expect listingitem to match with the message
-        expectListingItemFromMessage(result, listingItemMessage);
+        expectListingItemFromMessage(listingItem, listingItemMessage);
 
         // as a result we should have gotten ListingItem with a relation to the ListingItemTemplate with matching hashes
-        expect(result.ListingItemTemplate).toBeDefined();
-        expect(result.ListingItemTemplate.hash).toBe(result.hash);
+        expect(listingItem.ListingItemTemplate).toBeDefined();
+        expect(listingItem.ListingItemTemplate.hash).toBe(listingItem.hash);
     });
 
 
