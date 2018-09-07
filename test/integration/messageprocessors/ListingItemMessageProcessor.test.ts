@@ -99,10 +99,6 @@ describe('ListingItemMessage', () => {
 
     const expectListingItemFromMessage = (result: resources.ListingItem, message: ListingItemMessage) => {
 
-        log.debug('result.ItemInformation: ', JSON.stringify(result.ItemInformation, null, 2));
-        log.debug('message.information: ', JSON.stringify(message.information, null, 2));
-        // log.debug('message: ', JSON.stringify(message, null, 2));
-
         expect(result.id).not.toBeNull();
         expect(result.hash).not.toBeNull();
 
