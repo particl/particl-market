@@ -9,25 +9,18 @@ import { TestUtil } from './lib/TestUtil';
 
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ItemImageService } from '../../src/api/services/ItemImageService';
-import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
 
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 
 import { ItemImage } from '../../src/api/models/ItemImage';
-import { ListingItem } from '../../src/api/models/ListingItem';
-
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
 
 import { ItemImageCreateRequest } from '../../src/api/requests/ItemImageCreateRequest';
 import { ItemImageUpdateRequest } from '../../src/api/requests/ItemImageUpdateRequest';
 
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
-import { ImageTriplet } from '../../src/core/helpers/ImageTriplet';
-
-import piexif = require('piexifjs');
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';

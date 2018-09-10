@@ -355,6 +355,7 @@ export class CoreRpcService {
         const options = this.getOptions();
 
         if (logCall) {
+            // TODO: handle [object Object]
             this.log.debug('call: ' + method + ' ' + params.toString().replace(new RegExp(',', 'g'), ' '));
         }
         // this.log.debug('call url:', url);

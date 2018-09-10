@@ -13,9 +13,11 @@ exports.up = (db: Knex): Promise<any> => {
             table.boolean('read').nullable();
             table.boolean('paid').nullable();
             table.integer('payloadsize').nullable();
-            table.timestamp('received').notNullable();
-            table.timestamp('sent').notNullable();
-            table.timestamp('expiration').notNullable();
+
+            table.integer('received').notNullable();
+            table.integer('sent').notNullable();
+            table.integer('expiration').notNullable();
+
             table.integer('daysretention').notNullable();
             table.string('from').notNullable();
             table.string('to').notNullable();

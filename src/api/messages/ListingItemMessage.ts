@@ -12,5 +12,4 @@ export class ListingItemMessage extends MessageBody implements ListingItemMessag
     public payment: any;
     public messaging: any;
     public objects?: any;
-    public expiryTime: number; // expiry time measured in days
 }
