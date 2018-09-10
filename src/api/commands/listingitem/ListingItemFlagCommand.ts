@@ -67,11 +67,12 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             listingItem = await this.listingItemService.findOneByHash(listingItemId);
         }
 
+        const listingItemHash = listingItem.Hash;
         const listingItemTemplate: any = listingItem.ListingItemTemplate();
 
         const profileId = data.params.shift();
         const blockStart = await this.coreRpcService.getBlockCount();
-        const blockEnd = blockStart + 1000000;
+        const blockEnd = blockStart + 1000000; // TODO: When we're expiring by time not block make this listingItem.ExpiryTime();
 
         if (typeof profileId !== 'number') {
             throw new MessageException('profileId needs to be a number.');
@@ -88,8 +89,8 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             throw new MessageException('Item already being flagged!');
         } else {
             const type = ProposalType.ITEM_VOTE;
-            const proposalTitle = 'ITEM_FLAG:';
-            const proposalDescription = 'ITEM_FLAG:';
+            const proposalTitle = 'ITEM_VOTE:' + listingItemHash;
+            const proposalDescription = listingItemHash;
             const daysRetention = 30;
             const estimateFee = false;
 

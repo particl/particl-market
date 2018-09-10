@@ -22,6 +22,8 @@ export class ProposalCreateRequest extends RequestBody {
     // @IsNotEmpty()
     public hash: string;
 
+    public item: string;
+
     @IsNotEmpty()
     @IsEnum(ProposalType)
     public type: ProposalType;

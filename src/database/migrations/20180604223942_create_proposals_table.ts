@@ -14,6 +14,7 @@ exports.up = (db: Knex): Promise<any> => {
             table.integer('block_start').notNullable();
             table.integer('block_end').notNullable();
             table.string('hash').notNullable();
+            table.string('item').notNullable();
             table.string('type').notNullable();
             table.text('title').nullable();
             table.text('description').nullable();

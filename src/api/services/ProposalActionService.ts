@@ -34,6 +34,9 @@ import { VoteFactory } from '../factories/VoteFactory';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 
+import { VoteService } from './VoteService';
+import { VoteCreateRequest } from '../requests/VoteCreateRequest';
+
 export class ProposalActionService {
 
     public log: LoggerType;
@@ -50,6 +53,7 @@ export class ProposalActionService {
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
+        @inject(Types.Service) @named(Targets.Service.VoteService) private voteService: VoteService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -104,6 +108,10 @@ export class ProposalActionService {
         // create the proposal
         const proposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
 
+        const currentBlock = await this.coreRpcService.getBlockCount();
+        // TODO: Validation??
+        // - sanity check for proposal start/end blocks vs current one
+
         return await this.proposalService.create(proposalCreateRequest)
             .then(async createdProposalModel => {
 
@@ -112,9 +120,6 @@ export class ProposalActionService {
                 // create the proposalresult
                 const proposalResult = await this.createProposalResult(createdProposal)
                     .catch();
-
-                // TODO: Validation??
-                // - sanity check for proposal start/end blocks vs current one
 
                 // if Proposal is of type ITEM_VOTE, and if ListingItem exists, link them
                 if (createdProposal.type === ProposalType.ITEM_VOTE) {
@@ -127,7 +132,26 @@ export class ProposalActionService {
                             await this.marketService.findByAddress(marketplaceMessage.market || '')
                                 .then(async marketModel => {
                                     const market = marketModel.toJSON();
-                                    await this.voteForListingItemProposal(createdProposal, market);
+                                    // await this.voteForListingItemProposal(createdProposal, market);
+                                    let proposalOption: resources.ProposalOption | null = null;
+                                    for (const i in createdProposal.ProposalOptions) {
+                                      if (i) {
+                                        const tmpProposalOption = createdProposal.ProposalOptions[i];
+                                        if (tmpProposalOption.description === 'REMOVE') {
+                                          proposalOption = tmpProposalOption;
+                                        }
+                                      }
+                                    }
+                                    if (!proposalOption) {
+                                      throw new MessageException('ItemVote received that doesn\'t have REMOVE option.');
+                                    }
+                                    const vote: VoteCreateRequest = {
+                                      proposal_option_id: proposalOption.optionId,
+                                      voter: createdProposal.submitter,
+                                      block: currentBlock,
+                                      weight: 1
+                                    } as VoteCreateRequest;
+                                    this.voteService.create(vote);
                                 });
                         })
                         .catch(reason => {
@@ -213,13 +237,13 @@ export class ProposalActionService {
         this.eventEmitter.on(Events.ProposalReceivedEvent, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processProposalReceivedEvent(event)
-                .then(async status => {
-                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
-                })
-                .catch(async reason => {
-                    this.log.error('PROCESSING ERROR: ', reason);
-                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PARSING_FAILED);
-                });
+              .then(async status => {
+                await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+              })
+              .catch(async reason => {
+                this.log.error('PROCESSING ERROR: ', reason);
+                await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PARSING_FAILED);
+              });
         });
     }
 

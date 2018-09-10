@@ -33,7 +33,7 @@ export class ProposalFactory {
      */
     public async getMessage(proposalMessageType: ProposalMessageType, proposalType: ProposalType, proposalTitle: string,
                             proposalDescription: string, blockStart: number, blockEnd: number, options: string[],
-                            senderProfile: resources.Profile): Promise<ProposalMessage> {
+                            senderProfile: resources.Profile, item: string | null = null): Promise<ProposalMessage> {
 
         const submitter = senderProfile.address;
 
@@ -57,7 +57,8 @@ export class ProposalFactory {
             title: proposalTitle,
             description: proposalDescription,
             options: optionsList,
-            type: proposalType
+            type: proposalType,
+            item
         } as ProposalMessage;
 
         message.hash = ObjectHash.getHash(message, HashableObjectType.PROPOSAL_MESSAGE);
@@ -85,6 +86,7 @@ export class ProposalFactory {
             type: proposalMessage.type,
             title: proposalMessage.title,
             description: proposalMessage.description,
+            item: proposalMessage.item,
             options: proposalMessage.options as ProposalOptionCreateRequest[]
         } as ProposalCreateRequest;
 
