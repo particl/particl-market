@@ -1,15 +1,13 @@
 import * from 'jest';
+import * as _ from 'lodash';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { SmsgMessage } from '../../src/api/models/SmsgMessage';
-
 import { SmsgMessageService } from '../../src/api/services/SmsgMessageService';
 import * as resources from 'resources';
 import { SmsgMessageCreateRequest } from '../../src/api/requests/SmsgMessageCreateRequest';
@@ -180,7 +178,7 @@ describe('SmsgMessage', () => {
 
     test('Should throw ValidationException because we want to create a empty SmsgMessage', async () => {
         expect.assertions(1);
-        await smsgMessageService.create({}).catch(e =>
+        await smsgMessageService.create({} as SmsgMessageCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -279,7 +277,7 @@ describe('SmsgMessage', () => {
         expect(smsgMessages.length).toBe(2);
     });
 
-    test('Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE]',async () => {
+    test('Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE], status: NEW',async () => {
         const searchParams = {
             order: SearchOrder.DESC,
             orderByColumn: 'received',
@@ -311,6 +309,49 @@ describe('SmsgMessage', () => {
         expect(smsgMessages.length).toBe(3);
         expect(smsgMessages[0].received).toBeLessThan(smsgMessages[2].received);
 
+    });
+
+    test('Should update SmsgMessage status to SmsgMessageStatus.PROCESSING', async () => {
+
+        expect(smsgMessages.length).toBe(3);
+
+        const message = _.find(smsgMessages, { type: ListingItemMessageType.MP_ITEM_ADD });
+        expect(message.type).toBe(ListingItemMessageType.MP_ITEM_ADD);
+
+        const updatedData = message;
+        updatedData.status = SmsgMessageStatus.PROCESSING;
+
+        const smsgMessageModel: SmsgMessage = await smsgMessageService.update(message.id, updatedData);
+        const result: resources.SmsgMessage = smsgMessageModel.toJSON();
+
+        // test the values
+        // expect(result.value).toBe(testDataUpdated.value);
+        expect(result.type).toBe(updatedData.type);
+        expect(result.status).toBe(updatedData.status);
+        expect(result.msgid).toBe(updatedData.msgid);
+        expect(result.version).toBe(updatedData.version);
+        expect(result.received).toBe(updatedData.received);
+        expect(result.sent).toBe(updatedData.sent);
+        expect(result.expiration).toBe(updatedData.expiration);
+        expect(result.daysretention).toBe(updatedData.daysretention);
+        expect(result.from).toBe(updatedData.from);
+        expect(result.to).toBe(updatedData.to);
+        expect(result.text).toBe(updatedData.text);
+    });
+
+    test('Should search for SmsgMessages: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE], status: NEW',async () => {
+        const searchParams = {
+            order: SearchOrder.DESC,
+            orderByColumn: 'received',
+            status: SmsgMessageStatus.NEW,
+            types: [ListingItemMessageType.MP_ITEM_ADD, ProposalMessageType.MP_PROPOSAL_ADD, VoteMessageType.MP_VOTE],
+            age: 0
+        } as SmsgMessageSearchParams;
+
+        const smsgMessageCollection = await smsgMessageService.searchBy(searchParams);
+        smsgMessages = smsgMessageCollection.toJSON();
+
+        expect(smsgMessages.length).toBe(2);
     });
 
     // todo: add searchby tests, missing msgid at least

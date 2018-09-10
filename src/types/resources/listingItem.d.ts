@@ -9,10 +9,11 @@ declare module 'resources' {
         hash: string;
         seller: string;
         expiryTime: number;
-        postedAt: Date;
-        expiredAt: Date;
-        createdAt: Date;
-        updatedAt: Date;
+
+        receivedAt: number;
+        postedAt: number;
+        expiredAt: number;
+
         ItemInformation: ItemInformation;
         PaymentInformation: PaymentInformation;
         MessagingInformation: MessagingInformation[];
@@ -21,6 +22,9 @@ declare module 'resources' {
         Bids: Bid[];
         ActionMessages: ActionMessage[];
         ListingItemTemplate: ListingItemTemplate;
+
+        createdAt: Date;
+        updatedAt: Date;
     }
 
 }

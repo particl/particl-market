@@ -31,8 +31,10 @@ export class MessageProcessor implements MessageProcessorInterface {
     public log: LoggerType;
 
     private timeout: any;
-    private interval = 5000;
     private pollCount = 0;
+
+    private DEFAULT_INTERVAL = 5 * 1000;
+    private interval = this.DEFAULT_INTERVAL;
 
     private LISTINGITEM_MESSAGES = [ListingItemMessageType.MP_ITEM_ADD];
     private BID_MESSAGES = [BidMessageType.MPA_BID, BidMessageType.MPA_ACCEPT, BidMessageType.MPA_REJECT, BidMessageType.MPA_CANCEL];
@@ -119,7 +121,7 @@ export class MessageProcessor implements MessageProcessorInterface {
     public schedulePoll(): void {
         this.timeout = setTimeout(
             async () => {
-                await this.poll();
+                this.interval = await this.poll();
                 this.schedulePoll();
             },
             this.interval
@@ -131,25 +133,37 @@ export class MessageProcessor implements MessageProcessorInterface {
      *
      * @returns {Promise<void>}
      */
-    private async poll(): Promise<void> {
+    private async poll(): Promise<number> {
 
         const startTime = new Date().getTime();
 
-        let fetchNext = true;
+        // fetch and process new ProposalMessages
+        // fetch and process new VoteMessages
+        // fetch and process new ListingItemMessages
+        // fetch and process new BidMessages
+        // fetch and process new EscrowMessages
+        // fetch and process the waiting ones
 
-        // TODO: change count to amount
         const searchParams = [
-            {types: this.PROPOSAL_MESSAGES,     status: SmsgMessageStatus.NEW,      count: 10}, // fetch and process new ProposalMessages
-            {types: this.VOTE_MESSAGES,         status: SmsgMessageStatus.NEW,      count: 10}, // fetch and process new VoteMessages
-            {types: this.LISTINGITEM_MESSAGES,  status: SmsgMessageStatus.NEW,      count: 10}, // fetch and process new ListingItemMessages
-            {types: this.BID_MESSAGES,          status: SmsgMessageStatus.NEW,      count: 10}, // fetch and process new BidMessages
-            {types: this.ESCROW_MESSAGES,       status: SmsgMessageStatus.NEW,      count: 10}, // fetch and process new EscrowMessages
-            {types: [],                         status: SmsgMessageStatus.WAITING,  count: 10}  // fetch and process the waiting ones
+            {types: this.PROPOSAL_MESSAGES,     status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
+            {types: this.VOTE_MESSAGES,         status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
+            {types: this.LISTINGITEM_MESSAGES,  status: SmsgMessageStatus.NEW,      amount: 1,  nextInverval: this.DEFAULT_INTERVAL},
+            {types: this.BID_MESSAGES,          status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
+            {types: this.ESCROW_MESSAGES,       status: SmsgMessageStatus.NEW,      amount: 10, nextInverval: this.DEFAULT_INTERVAL},
+            {types: [],                         status: SmsgMessageStatus.WAITING,  amount: 10, nextInverval: this.DEFAULT_INTERVAL}
         ];
 
+        let fetchNext = true;
+        let nextInterval = 1000;
+
+        // search for different types of messages in order: proposal -> vote -> listingitem -> ...
         for (const params of searchParams) {
+
+            // if we find messages, skip fetching more until we poll for more
             if (fetchNext) {
-                fetchNext = await this.getSmsgMessages(params.types, params.status, params.count)
+                this.log.debug('MessageProcessor.poll #' + this.pollCount + ': find: ' + JSON.stringify(params));
+
+                fetchNext = await this.getSmsgMessages(params.types, params.status, params.amount)
                     .then( async smsgMessages => {
                         if (!_.isEmpty(smsgMessages)) {
                             for (const smsgMessage of smsgMessages) {
@@ -157,8 +171,14 @@ export class MessageProcessor implements MessageProcessorInterface {
                                 smsgMessage.status = SmsgMessageStatus.PROCESSING;
                             }
                             await this.process(smsgMessages);
+
+                            // we just processed certain types of messages, so skip processing the next types until we
+                            // have processed all of these
                             return false;
                         } else {
+                            nextInterval = params.nextInverval;
+
+                            // move to process the next types of messages
                             return true;
                         }
                     })
@@ -171,6 +191,8 @@ export class MessageProcessor implements MessageProcessorInterface {
 
         this.log.debug('MessageProcessor.poll #' + this.pollCount + ': ' + (new Date().getTime() - startTime) + 'ms');
         this.pollCount++;
+
+        return nextInterval;
     }
 
     /**

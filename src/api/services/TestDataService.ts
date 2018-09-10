@@ -104,6 +104,7 @@ import { ProposalResultCreateRequest } from '../requests/ProposalResultCreateReq
 import { ProposalOptionResultService } from './ProposalOptionResultService';
 import { ProposalOptionResultCreateRequest } from '../requests/ProposalOptionResultCreateRequest';
 import { ProposalActionService } from './ProposalActionService';
+import {IsNotEmpty} from 'class-validator';
 
 export class TestDataService {
 
@@ -337,6 +338,9 @@ export class TestDataService {
         const items: resources.ListingItemTemplate[] = [];
         for (let i = amount; i > 0; i--) {
             const listingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
+
+            this.log.debug('listingItemTemplateCreateRequest:', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+
             let listingItemTemplateModel = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest);
             let result = listingItemTemplateModel.toJSON();
 
@@ -352,23 +356,6 @@ export class TestDataService {
                     market = marketModel.toJSON();
                 }
 
-                // add ActionMessage
-                const actionMessages = [{
-                    action: ListingItemMessageType.MP_ITEM_ADD,
-                    objects: [{
-                        dataId: 'seller',
-                        dataValue: result.Profile.address
-                    }],
-                    data: {
-                        msgid: 'testdatanotsorandommsgidfrom_generateListingItems',
-                        version: '0300',
-                        received: new Date().toISOString(),
-                        sent: new Date().toISOString(),
-                        from: result.Profile.address,
-                        to: market.address
-                    }
-                }];
-
                 const listingItemCreateRequest = {
                     seller: result.Profile.address,
                     market_id: market.id,
@@ -377,15 +364,21 @@ export class TestDataService {
                     paymentInformation: listingItemTemplateCreateRequest.paymentInformation,
                     messagingInformation: listingItemTemplateCreateRequest.messagingInformation,
                     listingItemObjects: listingItemTemplateCreateRequest.listingItemObjects,
-                    actionMessages
+                    expiryTime: 10,
+                    postedAt: new Date().getTime(),
+                    expiredAt: new Date().getTime() + 60 * 1000 * 60 * 24 * 10,
+                    receivedAt: new Date().getTime()
                 } as ListingItemCreateRequest;
+
 
                 const listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
                 const listingItem = listingItemModel.toJSON();
+                // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
                 // fetch new relation
                 listingItemTemplateModel = await this.listingItemTemplateService.findOne(result.id);
                 result = listingItemTemplateModel.toJSON();
+
             }
             items.push(result);
         }
@@ -410,23 +403,6 @@ export class TestDataService {
             // const fromAddress = await this.coreRpcService.getNewAddress();
             const marketModel = await this.marketService.getDefault();
             const market = marketModel.toJSON();
-
-            // add ActionMessage
-            listingItemCreateRequest.actionMessages = [{
-                action: ListingItemMessageType.MP_ITEM_ADD,
-                objects: [{
-                    dataId: 'seller',
-                    dataValue: listingItemCreateRequest.seller
-                }],
-                data: {
-                    msgid: 'testdatanotsorandommsgidfrom_generateListingItems',
-                    version: '0300',
-                    received: new Date().toISOString(),
-                    sent: new Date().toISOString(),
-                    from: listingItemCreateRequest.seller,
-                    to: market.address
-                }
-            }];
 
             this.log.debug('create listingitem start');
             const savedListingItemModel = await this.listingItemService.create(listingItemCreateRequest);
@@ -802,8 +778,6 @@ export class TestDataService {
         const name = 'TEST-' + Faker.name.firstName();
         const address = await this.coreRpcService.getNewAddress();
 
-        this.log.debug('generateParams.generateShippingAddresses: ', generateParams.generateShippingAddresses);
-        this.log.debug('generateParams.generateCryptocurrencyAddresses: ', generateParams.generateCryptocurrencyAddresses);
         const profile = await this.generateAddressesData(_.random(1, 5));
         const shippingAddresses = generateParams.generateShippingAddresses ? profile : [];
         const cryptocurrencyAddresses = generateParams.generateCryptocurrencyAddresses ? await this.generateCryptocurrencyAddressesData(_.random(1, 5)) : [];

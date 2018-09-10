@@ -28,8 +28,9 @@ exports.up = (db: Knex): Promise<any> => {
 
             table.integer('expiry_time').unsigned();
 
-            table.timestamp('posted_at');
-            table.timestamp('expired_at');
+            table.integer('received_at').notNullable();
+            table.integer('posted_at').notNullable();
+            table.integer('expired_at').notNullable();
 
             table.timestamp('updated_at').defaultTo(db.fn.now());
             table.timestamp('created_at').defaultTo(db.fn.now());

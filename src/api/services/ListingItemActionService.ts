@@ -124,7 +124,7 @@ export class ListingItemActionService {
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
         // create and post the itemmessage
-        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, data.daysRetention);
+        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate);
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             item: listingItemMessage
@@ -154,14 +154,15 @@ export class ListingItemActionService {
      */
     public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
-        const message = event.marketplaceMessage;
+        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
+        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
+        const listingItemMessage: ListingItemMessage = marketplaceMessage.item as ListingItemMessage;
 
-        if (message.market && message.item) {
+        if (marketplaceMessage.market && marketplaceMessage.item) {
+
             // get market
-            const marketModel = await this.marketService.findByAddress(message.market);
+            const marketModel = await this.marketService.findByAddress(marketplaceMessage.market);
             const market = marketModel.toJSON();
-
-            const listingItemMessage: ListingItemMessage = message.item as ListingItemMessage;
 
             // create the new custom categories in case there are some
             const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
@@ -170,10 +171,7 @@ export class ListingItemActionService {
             const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
             const rootCategory = rootCategoryWithRelatedModel.toJSON();
 
-            // create ListingItem
-            const seller = event.smsgMessage.from;
-            const postedAt = new Date(event.smsgMessage.sent);
-            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory, postedAt);
+            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, smsgMessage, market.id, rootCategory);
             // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
