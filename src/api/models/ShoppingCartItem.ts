@@ -29,7 +29,8 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
         'ListingItem.ListingItemObjects',
         'ListingItem.Bids',
         'ListingItem.Market',
-        'ListingItem.FlaggedItem'
+        'ListingItem.FlaggedItem',
+        'ShoppingCart'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ShoppingCartItem> {
@@ -42,7 +43,7 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
         }
     }
 
-    public static async findOneByListingItemOnCart(cartId: number, listingItemId: number, withRelated: boolean = true): Promise<ShoppingCartItem> {
+    public static async fetchByCartIdAndListingItemId(cartId: number, listingItemId: number, withRelated: boolean = true): Promise<ShoppingCartItem> {
         if (withRelated) {
             return await ShoppingCartItem.where<ShoppingCartItem>({ shopping_cart_id: cartId, listing_item_id: listingItemId }).fetch({
                 withRelated: this.RELATIONS
@@ -52,7 +53,7 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
         }
     }
 
-    public static async findListItemsByCartId(cartId: number, withRelated: boolean = true): Promise<Collection<ShoppingCartItem>> {
+    public static async fetchAllByCartId(cartId: number, withRelated: boolean = true): Promise<Collection<ShoppingCartItem>> {
         const ShoppingCartItemCollection = ShoppingCartItem.forge<Model<ShoppingCartItem>>()
             .query(qb => {
                 qb.where('shopping_cart_id', '=', cartId);
@@ -82,12 +83,6 @@ export class ShoppingCartItem extends Bookshelf.Model<ShoppingCartItem> {
 
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
-
-    public get ShoppingCartId(): number { return this.get('shopping_cart_id'); }
-    public set ShoppingCartId(value: number) { this.set('shopping_cart_id', value); }
-
-    public get ListingItemId(): number { return this.get('listing_item_id'); }
-    public set ListingItemId(value: number) { this.set('listing_item_id', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

@@ -27,7 +27,7 @@ describe('ShoppingCartListCommand', () => {
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(1);
         expect(result[0].Profile).not.toBeDefined();
-        expect(result[0].ShoppingCartItem).not.toBeDefined();
+        expect(result[0].ShoppingCartItems).not.toBeDefined();
         expect(result[0].name).toBe('DEFAULT');
         expect(result[0].profileId).toBe(defaultProfile.id);
     });
@@ -39,7 +39,7 @@ describe('ShoppingCartListCommand', () => {
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(1);
         expect(result[0].Profile).not.toBeDefined();
-        expect(result[0].ShoppingCartItem).not.toBeDefined();
+        expect(result[0].ShoppingCartItems).not.toBeDefined();
         expect(result[0].name).toBe('DEFAULT');
         expect(result[0].profileId).toBe(defaultProfile.id);
     });
@@ -75,12 +75,12 @@ describe('ShoppingCartListCommand', () => {
         expect(result).toHaveLength(2);
 
         expect(result[0].Profile).not.toBeDefined();
-        expect(result[0].ShoppingCartItem).not.toBeDefined();
+        expect(result[0].ShoppingCartItems).not.toBeDefined();
         expect(result[0].name).toBe('DEFAULT');
         expect(result[0].profileId).toBe(defaultProfile.id);
 
         expect(result[1].Profile).not.toBeDefined();
-        expect(result[1].ShoppingCartItem).not.toBeDefined();
+        expect(result[1].ShoppingCartItems).not.toBeDefined();
         expect(result[1].name).toBe(secondShoppingCartName);
         expect(result[1].profileId).toBe(defaultProfile.id);
     });
@@ -93,12 +93,12 @@ describe('ShoppingCartListCommand', () => {
         expect(result).toHaveLength(2);
 
         expect(result[0].Profile).not.toBeDefined();
-        expect(result[0].ShoppingCartItem).not.toBeDefined();
+        expect(result[0].ShoppingCartItems).not.toBeDefined();
         expect(result[0].name).toBe('DEFAULT');
         expect(result[0].profileId).toBe(defaultProfile.id);
 
         expect(result[1].Profile).not.toBeDefined();
-        expect(result[1].ShoppingCartItem).not.toBeDefined();
+        expect(result[1].ShoppingCartItems).not.toBeDefined();
         expect(result[1].name).toBe(secondShoppingCartName);
         expect(result[1].profileId).toBe(defaultProfile.id);
     });

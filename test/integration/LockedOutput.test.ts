@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -25,8 +26,8 @@ import { ProfileService } from '../../src/api/services/ProfileService';
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { MarketService } from '../../src/api/services/MarketService';
-import {ListingItemTemplateService} from '../../src/api/services/ListingItemTemplateService';
-import {ListingItemService} from '../../src/api/services/ListingItemService';
+import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+import { ListingItemService } from '../../src/api/services/ListingItemService';
 
 describe('LockedOutput', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

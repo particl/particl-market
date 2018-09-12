@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -17,7 +18,6 @@ import { MarketService } from '../../src/api/services/MarketService';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 
-import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { BidDataCreateRequest } from '../../src/api/requests/BidDataCreateRequest';
 import { BidDataUpdateRequest } from '../../src/api/requests/BidDataUpdateRequest';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
@@ -25,10 +25,10 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import * as resources from 'resources';
-import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BIDWithoutBidDatas.json';
-import {GenerateBidParams} from '../../src/api/requests/params/GenerateBidParams';
-import {BidMessageType} from '../../src/api/enums/BidMessageType';
-import {GenerateProfileParams} from '../../src/api/requests/params/GenerateProfileParams';
+
+import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
+import { BidMessageType } from '../../src/api/enums/BidMessageType';
+import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 
 describe('BidDatas', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
