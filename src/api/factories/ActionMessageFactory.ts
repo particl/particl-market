@@ -7,7 +7,6 @@ import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { BidMessageType } from '../enums/BidMessageType';
-import { MessageException } from '../exceptions/MessageException';
 import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
 import * as resources from 'resources';
 import { ActionMessageInterface } from '../messages/ActionMessageInterface';
@@ -19,14 +18,12 @@ import { EscrowMessageType } from '../enums/EscrowMessageType';
 import { InternalServerException } from '../exceptions/InternalServerException';
 import { BidMessage } from '../messages/BidMessage';
 import { EscrowMessage } from '../messages/EscrowMessage';
-import { SmsgMessage } from '../messages/SmsgMessage';
 import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { ListingItemAddMessage } from '../messages/ListingItemAddMessage';
 import { ProposalMessageType } from '../enums/ProposalMessageType';
-import { ProposalMessage } from '../messages/ProposalMessage';
 import { ProposalMessageInterface } from '../messages/ProposalMessageInterface';
 import { VoteMessageInterface } from '../messages/VoteMessageInterface';
-import {VoteMessageType} from '../enums/VoteMessageType';
+import { VoteMessageType } from '../enums/VoteMessageType';
 
 export class ActionMessageFactory {
 
@@ -39,7 +36,7 @@ export class ActionMessageFactory {
     }
 
     public async getModel(message: ActionMessageInterface | ProposalMessageInterface | VoteMessageInterface,
-                          listingItemId: number, smsgMessage: SmsgMessage): Promise<ActionMessageCreateRequest> {
+                          listingItemId: number, smsgMessage: resources.SmsgMessage): Promise<ActionMessageCreateRequest> {
 
         let actionMessageCreateRequest: ActionMessageCreateRequest;
         const data = this.getModelMessageData(smsgMessage);
@@ -123,7 +120,7 @@ export class ActionMessageFactory {
         return createRequests;
     }
 
-    private getModelMessageData(smsgMessage: SmsgMessage): MessageDataCreateRequest {
+    private getModelMessageData(smsgMessage: resources.SmsgMessage): MessageDataCreateRequest {
         return {
             msgid: smsgMessage.msgid,
             version: smsgMessage.version,

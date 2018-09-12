@@ -15,6 +15,7 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import {SearchOrder} from '../../enums/SearchOrder';
 
 export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -42,9 +43,14 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
         const categoryId = data.params[0];
 
+        // TODO: profileId=0, wtf? fix this
         // check listingItemTemplate related with category
         const listingItemTemplates = await this.listingItemTemplateService.search({
-            page: 1, pageLimit: 10, order: 'ASC', category: categoryId, profileId: 0
+            page: 0,
+            pageLimit: 10,
+            order: SearchOrder.ASC,
+            category: categoryId,
+            profileId: 0
         } as ListingItemTemplateSearchParams);
         if (listingItemTemplates.toJSON().length > 0) {
             // not be delete its a associated with listingItemTemplate

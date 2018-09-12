@@ -21,8 +21,8 @@ import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequ
 import { Proposal } from '../../src/api/models/Proposal';
 import { ProposalService } from '../../src/api/services/ProposalService';
 import * as resources from 'resources';
-import {ObjectHash} from '../../src/core/helpers/ObjectHash';
-import {HashableObjectType} from '../../src/api/enums/HashableObjectType';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 
 describe('ProposalOption', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

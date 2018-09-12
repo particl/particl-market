@@ -42,8 +42,9 @@ import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ProfileService } from './ProfileService';
 import { VoteMessageType } from '../enums/VoteMessageType';
 import { VoteFactory } from '../factories/VoteFactory';
-import { Market } from '../models/Market';
 import { MarketService } from './MarketService';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { SmsgMessageService } from './SmsgMessageService';
 
 export class ListingItemActionService {
     private static FRACTION_TO_COMPRESS_BY = 0.6;
@@ -65,6 +66,7 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
+        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) public smsgMessageService: SmsgMessageService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
@@ -87,8 +89,6 @@ export class ListingItemActionService {
      */
     @validate()
     public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<SmsgSendResponse> {
-
-        this.log.debug('post()');
 
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true);
@@ -120,19 +120,12 @@ export class ListingItemActionService {
         const itemCategory = itemCategoryModel.toJSON();
         // this.log.debug('itemCategory: ', JSON.stringify(itemCategory, null, 2));
 
-        // create and post a proposal for the item to be voted off the marketplace
-        const proposalMessage = await this.createProposalMessage(itemTemplate, data.daysRetention, itemTemplate.Profile);
-        this.log.debug('post(), proposalMessage: ', proposalMessage);
-        const response: SmsgSendResponse = await this.postProposal(proposalMessage, data.daysRetention, itemTemplate.Profile, market);
-
         // create and post the itemmessage
-        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate, proposalMessage.hash, data.daysRetention);
+        const listingItemMessage = await this.listingItemFactory.getMessage(itemTemplate);
         const marketPlaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
             item: listingItemMessage
         } as MarketplaceMessage;
-
-        this.log.debug('post(), marketPlaceMessage: ', marketPlaceMessage);
 
         return await this.smsgService.smsgSend(profileAddress, market.address, marketPlaceMessage, true, data.daysRetention);
     }
@@ -156,22 +149,17 @@ export class ListingItemActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<"resources".ListingItem>}
      */
-    public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<resources.ListingItem> {
-        // todo: this returns ListingItem and processed BidMessages return ActionMessage's
+    public async processListingItemReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
-        const message = event.marketplaceMessage;
+        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
+        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
+        const listingItemMessage: ListingItemMessage = marketplaceMessage.item as ListingItemMessage;
 
-        if (message.market && message.item) {
+        if (marketplaceMessage.market && marketplaceMessage.item) {
+
             // get market
-            const marketModel = await this.marketService.findByAddress(message.market);
+            const marketModel = await this.marketService.findByAddress(marketplaceMessage.market);
             const market = marketModel.toJSON();
-
-            const listingItemMessage: ListingItemMessage = message.item as ListingItemMessage;
-
-            if (!listingItemMessage.proposalHash) {
-                this.log.error('ListingItem is missing proposals hash.');
-                throw new MessageException('ListingItem is missing proposals hash.');
-            }
 
             // create the new custom categories in case there are some
             const itemCategory: resources.ItemCategory = await this.itemCategoryService.createCategoriesFromArray(listingItemMessage.information.category);
@@ -180,14 +168,15 @@ export class ListingItemActionService {
             const rootCategoryWithRelatedModel: any = await this.itemCategoryService.findRoot();
             const rootCategory = rootCategoryWithRelatedModel.toJSON();
 
-            // create ListingItem
-            const seller = event.smsgMessage.from;
-            const postedAt = new Date(event.smsgMessage.sent);
-            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, market.id, seller, rootCategory, postedAt);
+            const listingItemCreateRequest = await this.listingItemFactory.getModel(listingItemMessage, smsgMessage, market.id, rootCategory);
             // this.log.debug('process(), listingItemCreateRequest:', JSON.stringify(listingItemCreateRequest, null, 2));
 
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
             let listingItem = listingItemModel.toJSON();
+
+            /*
+            // TODO: Proposals related to ListingItems should wait for processing until ListingItem is received
+            // as we no longer have proposalHash in the ListingItemMessage
 
             // if proposal for the listingitem exists:
             // - update relation and vote
@@ -208,6 +197,7 @@ export class ListingItemActionService {
                     this.log.warn('received ListingItem, but theres no Proposal for it yet...', listingItem.hash);
                     return null;
                 });
+            */
 
             // if (await this.shouldAddListingItem(proposal.ProposalResult)) {
             // } else {
@@ -218,22 +208,17 @@ export class ListingItemActionService {
             // update the template relation
             await this.listingItemService.updateListingItemTemplateRelation(listingItem.id);
 
-            // first save it
+            // todo: we could propably get rid of these actionmessages
             const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
             const actionMessage = actionMessageModel.toJSON();
             // this.log.debug('created actionMessage:', JSON.stringify(actionMessage, null, 2));
-
-            // emit the latest message event to cli
-            // this.eventEmitter.emit('cli', {
-            //    message: 'new ListingItem received: ' + JSON.stringify(listingItem)
-            // });
 
             // this.log.debug('new ListingItem received: ' + JSON.stringify(listingItem));
             listingItemModel = await this.listingItemService.findOne(listingItem.id);
             listingItem = listingItemModel.toJSON();
 
             this.log.debug('saved listingItem:', listingItem.hash);
-            return listingItem;
+            return SmsgMessageStatus.PROCESSED;
 
         } else {
             throw new MessageException('Marketplace message missing market.');
@@ -405,10 +390,18 @@ export class ListingItemActionService {
     }
 
     private configureEventListeners(): void {
+        this.log.info('Configuring EventListeners ');
+
         this.eventEmitter.on(Events.ListingItemReceivedEvent, async (event) => {
-            // this.log.info('Received event, msgid:', event.smsgMessage.msgid);
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
-            await this.processListingItemReceivedEvent(event);
+            await this.processListingItemReceivedEvent(event)
+                .then(async status => {
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                })
+                .catch(async reason => {
+                    this.log.error('ERROR: ListingItemMessage processing failed.', reason);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
+                });
         });
 
     }

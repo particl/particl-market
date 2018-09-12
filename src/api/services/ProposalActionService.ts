@@ -31,6 +31,8 @@ import { MarketService } from './MarketService';
 import { VoteMessageType } from '../enums/VoteMessageType';
 import { ProfileService } from './ProfileService';
 import { VoteFactory } from '../factories/VoteFactory';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { SmsgMessageService } from './SmsgMessageService';
 
 export class ProposalActionService {
 
@@ -46,6 +48,7 @@ export class ProposalActionService {
         @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
         @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
@@ -92,48 +95,53 @@ export class ProposalActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.Bid>}
      */
-    public async processProposalReceivedEvent(event: MarketplaceEvent): Promise<resources.Proposal> {
+    public async processProposalReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
-        const message = event.marketplaceMessage;
-        if (!message.mpaction) {
-            throw new MessageException('Missing mpaction.');
-        }
-
-        const proposalMessage: ProposalMessage = event.marketplaceMessage.mpaction as ProposalMessage;
+        const smsgMessage: resources.SmsgMessage = event.smsgMessage;
+        const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
+        const proposalMessage: ProposalMessage = marketplaceMessage.mpaction as ProposalMessage;
 
         // create the proposal
         const proposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
-        // this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest));
-        let createdProposalModel: Proposal = await this.proposalService.create(proposalCreateRequest);
-        const createdProposal: resources.Proposal = createdProposalModel.toJSON();
 
-        // Set up the proposal result stuff for later.
-        const proposalResult = await this.createProposalResult(createdProposal);
+        return await this.proposalService.create(proposalCreateRequest)
+            .then(async createdProposalModel => {
 
-        // TODO: Validation??
-        // - sanity check for proposal start/end blocks vs current one
+                const createdProposal: resources.Proposal = createdProposalModel.toJSON();
 
-        // if Proposal is of type ITEM_VOTE, and if ListingItem exists, link them
-        if (createdProposal.type === ProposalType.ITEM_VOTE) {
-            await this.listingItemService.findOneByHash(createdProposal.title)
-                .then( async listingItemModel => {
-                    const listingItem = listingItemModel.toJSON();
-                    await this.listingItemService.updateProposalRelation(listingItem.id, createdProposal.hash);
+                // create the proposalresult
+                const proposalResult = await this.createProposalResult(createdProposal)
+                    .catch();
 
-                    // get the market and vote
-                    await this.marketService.findByAddress(message.market || '')
-                        .then(async marketModel => {
-                            const market = marketModel.toJSON();
-                            await this.voteForListingItemProposal(createdProposal, market);
+                // TODO: Validation??
+                // - sanity check for proposal start/end blocks vs current one
+
+                // if Proposal is of type ITEM_VOTE, and if ListingItem exists, link them
+                if (createdProposal.type === ProposalType.ITEM_VOTE) {
+                    await this.listingItemService.findOneByHash(createdProposal.title)
+                        .then( async listingItemModel => {
+                            const listingItem = listingItemModel.toJSON();
+                            await this.listingItemService.updateProposalRelation(listingItem.id, createdProposal.hash);
+
+                            // get the market and vote
+                            await this.marketService.findByAddress(marketplaceMessage.market || '')
+                                .then(async marketModel => {
+                                    const market = marketModel.toJSON();
+                                    await this.voteForListingItemProposal(createdProposal, market);
+                                });
+                        })
+                        .catch(reason => {
+                            this.log.warn('received Proposal, but theres no ListingItem for it yet...');
                         });
-                })
-                .catch(reason => {
-                    this.log.warn('received Proposal, but theres no ListingItem for it yet...');
-                });
-        }
+                }
 
-        createdProposalModel = await this.proposalService.findOne(createdProposal.id);
-        return createdProposalModel.toJSON();
+                // createdProposalModel = await this.proposalService.findOne(createdProposal.id);
+                // return createdProposalModel.toJSON();
+                return SmsgMessageStatus.PROCESSED;
+            })
+            .catch(reason => {
+                return SmsgMessageStatus.WAITING;
+            });
     }
 
     /**
@@ -168,13 +176,6 @@ export class ProposalActionService {
         return proposalResultModel.toJSON();
     }
 
-    private configureEventListeners(): void {
-        this.eventEmitter.on(Events.ProposalReceivedEvent, async (event) => {
-            this.log.debug('Received event:', JSON.stringify(event, null, 2));
-            await this.processProposalReceivedEvent(event);
-        });
-    }
-
     /**
      * TODO: duplicate in ListingItemActionService
      *
@@ -207,4 +208,21 @@ export class ProposalActionService {
             throw new MessageException('Could not find ProposalOption to vote for.');
         }
     }
+
+    private configureEventListeners(): void {
+        this.log.info('Configuring EventListeners ');
+
+        this.eventEmitter.on(Events.ProposalReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
+            await this.processProposalReceivedEvent(event)
+                .then(async status => {
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                })
+                .catch(async reason => {
+                    this.log.error('PROCESSING ERROR: ', reason);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PARSING_FAILED);
+                });
+        });
+    }
+
 }

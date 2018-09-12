@@ -182,7 +182,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             .orderBy('updated_at', options.order)
             .query({
                 limit: options.pageLimit,
-                offset: (options.page - 1) * options.pageLimit
+                offset: options.page * options.pageLimit
             });
 
         if (withRelated) {
@@ -210,11 +210,14 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public get ExpiryTime(): number { return this.get('expiryTime'); }
     public set ExpiryTime(value: number) { this.set('expiryTime', value); }
 
-    public get PostedAt(): Date { return this.get('postedAt'); }
-    public set PostedAt(value: Date) { this.set('postedAt', value); }
+    public get PostedAt(): number { return this.get('postedAt'); }
+    public set PostedAt(value: number) { this.set('postedAt', value); }
 
-    public get ExpiredAt(): Date { return this.get('expiredAt'); }
-    public set ExpiredAt(value: Date) { this.set('expiredAt', value); }
+    public get ExpiredAt(): number { return this.get('expiredAt'); }
+    public set ExpiredAt(value: number) { this.set('expiredAt', value); }
+
+    public get ReceivedAt(): number { return this.get('receivedAt'); }
+    public set ReceivedAt(value: number) { this.set('receivedAt', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

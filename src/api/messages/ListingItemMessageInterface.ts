@@ -10,7 +10,6 @@ export interface ListingItemMessageInterface {
     information: any;
     payment: any;
     messaging: any;
-    expiryTime: number;
     objects?: any;
     proposalHash?: string;
 }

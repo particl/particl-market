@@ -18,7 +18,7 @@ import { AddressUpdateRequest } from '../../src/api/requests/AddressUpdateReques
 
 import { AddressService } from '../../src/api/services/AddressService';
 import { ProfileService } from '../../src/api/services/ProfileService';
-import {AddressType} from '../../src/api/enums/AddressType';
+import { AddressType } from '../../src/api/enums/AddressType';
 
 describe('Address', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
