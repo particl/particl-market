@@ -261,6 +261,8 @@ export class VoteActionService {
     }
 
     private configureEventListeners(): void {
+        this.log.info('Configuring EventListeners ');
+
         this.eventEmitter.on(Events.VoteReceivedEvent, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processVoteReceivedEvent(event)

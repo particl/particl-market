@@ -339,7 +339,7 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const listingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
 
-            this.log.debug('listingItemTemplateCreateRequest:', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+            // this.log.debug('listingItemTemplateCreateRequest:', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
 
             let listingItemTemplateModel = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest);
             let result = listingItemTemplateModel.toJSON();

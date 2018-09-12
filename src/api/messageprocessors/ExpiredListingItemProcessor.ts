@@ -5,11 +5,7 @@
 import { inject, multiInject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
-
-import { EnvConfig } from '../../config/env/EnvConfig';
-
 import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { ListingItem } from '../models/ListingItem';
 import { ListingItemService } from '../services/ListingItemService';
 
 export class ExpiredListingItemProcessor implements MessageProcessorInterface {
@@ -25,7 +21,6 @@ export class ExpiredListingItemProcessor implements MessageProcessorInterface {
     ) {
         this.log = new Logger(__filename);
     }
-    // tslint:enable:max-line-length
 
 
     public async process(): Promise<void> {

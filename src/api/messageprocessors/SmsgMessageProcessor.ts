@@ -10,22 +10,12 @@ import { EventEmitter } from '../../core/api/events';
 import { SmsgService } from '../services/SmsgService';
 
 import { MessageProcessorInterface } from './MessageProcessorInterface';
-import { MarketplaceMessage } from '../messages/MarketplaceMessage';
-import { ActionMessageInterface } from '../messages/ActionMessageInterface';
-import { BidMessageType } from '../enums/BidMessageType';
-import { EscrowMessageType } from '../enums/EscrowMessageType';
-import { InternalServerException } from '../exceptions/InternalServerException';
-import { MarketplaceEvent } from '../messages/MarketplaceEvent';
-
-import { ProposalMessageType } from '../enums/ProposalMessageType';
-import { VoteMessageType } from '../enums/VoteMessageType';
 import { SmsgMessageService } from '../services/SmsgMessageService';
 import { SmsgMessageFactory } from '../factories/SmsgMessageFactory';
-import { MessageException } from '../exceptions/MessageException';
 import * as resources from 'resources';
-import {SmsgMessageCreateRequest} from '../requests/SmsgMessageCreateRequest';
-import {SmsgMessage} from '../models/SmsgMessage';
-import {IncomingSmsgMessage} from '../messages/IncomingSmsgMessage';
+import { SmsgMessageCreateRequest } from '../requests/SmsgMessageCreateRequest';
+import { SmsgMessage } from '../models/SmsgMessage';
+import { IncomingSmsgMessage } from '../messages/IncomingSmsgMessage';
 
 export class SmsgMessageProcessor implements MessageProcessorInterface {
 

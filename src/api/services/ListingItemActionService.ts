@@ -42,7 +42,6 @@ import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ProfileService } from './ProfileService';
 import { VoteMessageType } from '../enums/VoteMessageType';
 import { VoteFactory } from '../factories/VoteFactory';
-import { Market } from '../models/Market';
 import { MarketService } from './MarketService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
@@ -90,8 +89,6 @@ export class ListingItemActionService {
      */
     @validate()
     public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<SmsgSendResponse> {
-
-        this.log.debug('post()');
 
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true);
@@ -393,8 +390,9 @@ export class ListingItemActionService {
     }
 
     private configureEventListeners(): void {
+        this.log.info('Configuring EventListeners ');
+
         this.eventEmitter.on(Events.ListingItemReceivedEvent, async (event) => {
-            // this.log.info('Received event, msgid:', event.smsgMessage.msgid);
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processListingItemReceivedEvent(event)
                 .then(async status => {

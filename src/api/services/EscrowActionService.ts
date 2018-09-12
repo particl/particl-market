@@ -665,6 +665,8 @@ export class EscrowActionService {
     }
 
     private configureEventListeners(): void {
+        this.log.info('Configuring EventListeners ');
+
         this.eventEmitter.on(Events.LockEscrowReceivedEvent, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processLockEscrowReceivedEvent(event)

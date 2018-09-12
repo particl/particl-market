@@ -210,6 +210,8 @@ export class ProposalActionService {
     }
 
     private configureEventListeners(): void {
+        this.log.info('Configuring EventListeners ');
+
         this.eventEmitter.on(Events.ProposalReceivedEvent, async (event) => {
             this.log.debug('Received event:', JSON.stringify(event, null, 2));
             await this.processProposalReceivedEvent(event)
