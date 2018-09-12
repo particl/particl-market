@@ -352,7 +352,7 @@ describe('ListingItemTemplate', async () => {
     // -------------------------------
     // TESTS
     // -------------------------------
-    test('Should throw ValidationException because we want to create a empty listing item template', async () => {
+    test('Should throw ValidationException because we want to create a empty ListingItemTemplate', async () => {
         expect.assertions(1);
         await listingItemTemplateService.create({} as ListingItemTemplateCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
@@ -415,7 +415,11 @@ describe('ListingItemTemplate', async () => {
 
         testDataToSave.profile_id = defaultProfile.id;
 
-        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
+        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave)
+            .catch(reason => {
+                log.error('REASON:', JSON.stringify(reason, null, 2));
+                return {} as ListingItemTemplate;
+            });
         createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate2, testDataToSave);
@@ -500,9 +504,13 @@ describe('ListingItemTemplate', async () => {
         createdListingItemTemplate3 = listingItemTemplate.toJSON();
 
         // create ListingItem with relation to ListingItemTemplate
-        testDataToSave.listing_item_template_id = listingItemTemplate.Id;
+        testDataToSave.listing_item_template_id = createdListingItemTemplate3.id;
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.expiryTime = 4;
+        testDataToSave.postedAt = new Date().getTime() * 1000;
+        testDataToSave.expiredAt = new Date().getTime() * 1000;
+        testDataToSave.receivedAt = new Date().getTime() * 1000;
 
         log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
@@ -510,7 +518,7 @@ describe('ListingItemTemplate', async () => {
         createdListingItem1 = listingItemModel.toJSON();
 
         expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
-        expect(createdListingItem1.ListingItemTemplate.id).toBe(listingItemTemplate.Id);
+        expect(createdListingItem1.ListingItemTemplate.id).toBe(createdListingItemTemplate3.id);
     });
 
     test('Should not delete ListingItemTemplate having relation to ListingItem', async () => {
