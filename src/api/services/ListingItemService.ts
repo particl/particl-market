@@ -130,9 +130,11 @@ export class ListingItemService {
         const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
-        // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
+        this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
 
         body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEM_CREATEREQUEST);
+
+        this.log.debug('body.hash:', body.hash);
 
         // extract and remove related models from request
         const itemInformation = body.itemInformation;
@@ -146,6 +148,8 @@ export class ListingItemService {
 
         const actionMessages = body.actionMessages || [];
         delete body.actionMessages;
+
+        this.log.debug('body:', JSON.stringify(body, null, 2));
 
         // If the request body was valid we will create the listingItem
         const listingItemModel = await this.listingItemRepo.create(body);

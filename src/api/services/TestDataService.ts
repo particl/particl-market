@@ -850,7 +850,11 @@ export class TestDataService {
             paymentInformation,
             messagingInformation,
             listingItemObjects,
-            market_id: defaultMarket.id
+            market_id: defaultMarket.id,
+            expiryTime: 4,
+            postedAt: new Date().getTime(),
+            expiredAt: new Date().getTime() + 100000000,
+            receivedAt: new Date().getTime()
         } as ListingItemCreateRequest;
 
         // fetch listingItemTemplate if hash was given and set the listing_item_template_id
