@@ -492,7 +492,24 @@ export class TestDataService {
         const action = generateParams.action ? generateParams.action : BidMessageType.MPA_BID;
 
         // TODO: generate biddatas
-        const bidDatas: BidDataCreateRequest[] = [];
+        const bidDatas: BidDataCreateRequest[] = [
+            {dataId: 'size', dataValue: 'XL'},
+            {dataId: 'color', dataValue: 'pink'},
+            {dataId: 'outputs', dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0b\"' +
+                ',\"vout\":1,\"amount\":100.52497491}]'},
+            {dataId: 'pubkeys', dataValue: '[\"021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d90\"]'},
+            {dataId: 'changeaddr', dataValue: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb4'},
+            {dataId: 'change', dataValue: 96.52477491},
+            {dataId: 'ship.title', dataValue: 'title'},
+            {dataId: 'ship.firstName', dataValue: 'asdf'},
+            {dataId: 'ship.lastName', dataValue: 'asdf'},
+            {dataId: 'ship.addressLine1', dataValue: 'asdf'},
+            {dataId: 'ship.addressLine2', dataValue: 'asdf'},
+            {dataId: 'ship.city', dataValue: 'asdf'},
+            {dataId: 'ship.state', dataValue: ''},
+            {dataId: 'ship.zipCode', dataValue: '1234'},
+            {dataId: 'ship.country', dataValue: 'FI'}
+        ];
 
         const bidCreateRequest = {
             action,

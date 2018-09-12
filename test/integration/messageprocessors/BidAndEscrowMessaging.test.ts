@@ -210,8 +210,8 @@ describe('BidMessageProcessing', () => {
                 {id: 'ship.city', value: 'asdf'},
                 {id: 'ship.state', value: ''},
                 {id: 'ship.zipCode', value: '1234'},
-                {id: 'ship.country', value: 'FI'
-            }]
+                {id: 'ship.country', value: 'FI'}
+            ]
         );
 
         // create MPA_BID type of MarketplaceMessage

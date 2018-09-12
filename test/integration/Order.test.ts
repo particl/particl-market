@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -20,12 +21,7 @@ import { BidService } from '../../src/api/services/BidService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-import { Bid } from '../../src/api/models/Bid';
 
-import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
-import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
-
-import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BID.json';
 import * as orderCreateRequest1 from '../testdata/createrequest/orderCreateRequest1.json';
 import * as resources from 'resources';
 
@@ -37,6 +33,8 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { OrderItemService } from '../../src/api/services/OrderItemService';
 import { OrderItemObjectService } from '../../src/api/services/OrderItemObjectService';
+import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
+import { BidMessageType } from '../../src/api/enums/BidMessageType';
 
 
 describe('Order', () => {
@@ -59,7 +57,8 @@ describe('Order', () => {
     let createdSellerProfile: resources.Profile;
     let createdListingItem1: resources.ListingItem;
     let createdListingItem2: resources.ListingItem;
-    let createdListingItemTemplate: resources.ListingItemTemplate;
+    let createdListingItemTemplate1: resources.ListingItemTemplate;
+    let createdListingItemTemplate2: resources.ListingItemTemplate;
     let createdBid1: resources.Bid;
 
     let createdOrder: resources.Order;
@@ -106,6 +105,7 @@ describe('Order', () => {
         createdSellerProfile = profiles[0];
         log.debug('createdSellerProfile: ', createdSellerProfile.id);
 
+        /*
         // generate template
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams().toParamsArray();
         const listingItemTemplates = await testDataService.generate({
@@ -133,14 +133,63 @@ describe('Order', () => {
         createdListingItem2 = createdListingItemModel2.toJSON();
         log.debug('createdListingItem2: ', createdListingItem2.id);
         log.debug('createdListingItem2: ', createdListingItem2.hash);
+    */
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            false,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            createdSellerProfile.id, // profileId
+            true,   // generateListingItem
+            defaultMarket.id  // marketId
+        ]).toParamsArray();
+
+        log.debug('CREATE LISTINGITEMTEMPLATES');
+
+        // generate two ListingItemTemplates with ListingItems
+        const listingItemTemplates = await testDataService.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,          // what to generate
+            amount: 2,                                          // how many to generate
+            withRelated: true,                                  // return model
+            generateParams: generateListingItemTemplateParams   // what kind of data to generate
+        } as TestDataGenerateRequest);
+        log.debug('CREATE LISTINGITEMTEMPLATES DONE');
+
+        // log.debug('CREATED LISTINGITEMTEMPLATES: ', JSON.stringify(listingItemTemplates, null, 2));
+
+        createdListingItemTemplate1 = listingItemTemplates[0];
+        createdListingItemTemplate2 = listingItemTemplates[1];
+        createdListingItem1 = listingItemTemplates[0].ListingItems[0];
+        createdListingItem2 = listingItemTemplates[1].ListingItems[0];
+
+        log.debug('createdListingItem1.hash: ', JSON.stringify(createdListingItem1.hash, null, 2));
+        log.debug('createdListingItem2.hash: ', JSON.stringify(createdListingItem2.hash, null, 2));
 
         // create a new bid from defaultProfile for ListingItem that is being sold by createdSellerProfile
-        bidCreateRequest1.listing_item_id = createdListingItem1.id;
-        bidCreateRequest1.bidder = createdListingItem1.ListingItemTemplate.Profile.address;
-        bidCreateRequest1.address.profile_id = defaultProfile.id;  // bidder/seller profile
+        const bidParams = new GenerateBidParams([
+            false,                              // generateListingItemTemplate
+            false,                              // generateListingItem
+            createdListingItem1.hash,           // listingItemhash
+            BidMessageType.MPA_BID,             // action
+            defaultProfile.address,             // bidder
+            createdSellerProfile.address        // listingItemSeller
+        ]).toParamsArray();
 
-        const bidModel1: Bid = await bidService.create(bidCreateRequest1);
-        createdBid1 = bidModel1.toJSON();
+        const bids = await testDataService.generate({
+            model: CreatableModel.BID,
+            amount: 1,
+            withRelated: true,
+            generateParams: bidParams
+        } as TestDataGenerateRequest).catch(reason => {
+            log.error('REASON:', JSON.stringify(reason, null, 2));
+        });
+        createdBid1 = bids[0];
 
         log.debug('createdBid1: ', JSON.stringify(createdBid1, null, 2));
 

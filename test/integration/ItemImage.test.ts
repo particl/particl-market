@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -114,7 +115,7 @@ describe('ItemImage', () => {
         );
     });
 
-    test('Should create a new item image', async () => {
+    test('Should create a new ItemImage', async () => {
 
         // add the required data to testData
         testData.item_information_id = createdListingItem.ItemInformation.id;
@@ -139,14 +140,14 @@ describe('ItemImage', () => {
         // TODO: When non-BASE64 resizing is implemented check image sizes.
     });
 
-    test('Should throw ValidationException because we want to create a empty item image', async () => {
+    test('Should throw ValidationException because we want to create a empty ItemImage', async () => {
         expect.assertions(1);
         await itemImageService.create({} as ItemImageCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list item images with our new create one', async () => {
+    test('Should list ItemImages with our new create one', async () => {
         const itemImageCollection = await itemImageService.findAll();
         const itemImage = itemImageCollection.toJSON();
         expect(itemImage.length).toBe(1);
@@ -155,7 +156,7 @@ describe('ItemImage', () => {
         expect(result.ItemImageDatas).toBe(undefined); // doesnt fetch related
     });
 
-    test('Should return one item image', async () => {
+    test('Should return one ItemImage', async () => {
         const itemImageModel: ItemImage = await itemImageService.findOne(createdImageId);
         const result = itemImageModel.toJSON();
 
@@ -201,7 +202,7 @@ describe('ItemImage', () => {
         // TODO: check images sizes
     });
 
-    test('Should delete the item image', async () => {
+    test('Should delete the ItemImage', async () => {
         expect.assertions(7);
 
         // find the listing item
