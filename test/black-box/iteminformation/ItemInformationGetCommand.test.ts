@@ -6,51 +6,63 @@ import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { GenerateListingItemTemplateParams as GenerateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import * as resources from 'resources';
 
 describe('ItemInformationGetCommand', () => {
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ITEMINFORMATION_ROOT.commandName;
-    const subCommand = Commands.ITEMINFORMATION_GET.commandName;
+    const itemInfoRootCommand = Commands.ITEMINFORMATION_ROOT.commandName;
+    const itemInfoGetSubCommand = Commands.ITEMINFORMATION_GET.commandName;
 
-    const testDataListingItemTemplate = {
-        profile_id: 0,
-        itemInformation: {
-            title: 'Item Information with Templates First',
-            shortDescription: 'Item short description with Templates First',
-            longDescription: 'Item long description with Templates First',
-            itemCategory: {
-                id: null
-            }
-        }
-    };
-    let createdListingItemTemplateId;
+    let createdListingItemTemplate;
+
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const defaultProfile = await testUtil.getDefaultProfile();
+        const defaultProfile: resources.Profile = await testUtil.getDefaultProfile();
         const profileId = defaultProfile.id;
-        // create listing item
-        testDataListingItemTemplate.profile_id = profileId;
 
-        // get category
-        const itemCategoryList: any = await rpc(Commands.CATEGORY_ROOT.commandName, [Commands.CATEGORY_LIST.commandName]);
-        const categories: any = itemCategoryList.getBody()['result'];
-        testDataListingItemTemplate.itemInformation.itemCategory.id = categories.id;
+        const defaultMarket: resources.Market = await testUtil.getDefaultMarket();
+        const marketId = defaultMarket.id;
 
         // add item template
         // todo: use generate
-        const addListingItemTemplate: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-        const addListingItemTemplateResult = addListingItemTemplate;
-        createdListingItemTemplateId = addListingItemTemplateResult.id;
+        // create listing item
+        const generateListingItemTemplateParams = new GenerateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            false,  // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            profileId, // profileId
+            false,  // generateListingItem
+            marketId   // marketId
+        ]).toParamsArray();
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(CreatableModel.LISTINGITEMTEMPLATE, 2, true, generateListingItemTemplateParams);
+        createdListingItemTemplate = listingItemTemplates[0];
+    });
+
+    test('Should fail to get a ListingItemInformation because of a non-existent listingItemTemplateId', async () => {
+        // get listingItemInformation by listingItemTemplateId
+        const fakeId = 1000000000;
+        const res: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand, fakeId]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Entity with identifier ${fakeId} does not exist`);
     });
 
     test('Should get a ListingItemInformation using listingItemTemplateId', async () => {
         // get listingItemInformation by listingItemTemplateId
-        const getDataRes: any = await rpc(method, [subCommand, createdListingItemTemplateId]);
+        const getDataRes: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoGetSubCommand, createdListingItemTemplate.id]);
 
         const result: any = getDataRes.getBody()['result'];
-        expect(result.title).toBe(testDataListingItemTemplate.itemInformation.title);
-        expect(result.shortDescription).toBe(testDataListingItemTemplate.itemInformation.shortDescription);
-        expect(result.longDescription).toBe(testDataListingItemTemplate.itemInformation.longDescription);
-        expect(result.ItemCategory.id).toBe(testDataListingItemTemplate.itemInformation.itemCategory.id);
+        expect(result.title).toBe(createdListingItemTemplate.ItemInformation.title);
+        expect(result.shortDescription).toBe(createdListingItemTemplate.ItemInformation.shortDescription);
+        expect(result.longDescription).toBe(createdListingItemTemplate.ItemInformation.longDescription);
+        expect(result.ItemCategory.id).toBe(createdListingItemTemplate.ItemInformation.itemCategoryId);
     });
 });

@@ -97,7 +97,6 @@ export class ListingItemTemplateService {
                          timestampedHash: boolean = false): Promise<ListingItemTemplate> {
 
         // TODO: need to add transactions and rollback in case of failure
-
         const body = JSON.parse(JSON.stringify(data));
 
         body.hash = ObjectHash.getHash(body, HashableObjectType.LISTINGITEMTEMPLATE_CREATEREQUEST, [timestampedHash]);
@@ -120,29 +119,32 @@ export class ListingItemTemplateService {
         // create related models
         if (!_.isEmpty(itemInformation)) {
             itemInformation.listing_item_template_id = listingItemTemplate.Id;
-            const result = await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
+            await this.itemInformationService.create(itemInformation as ItemInformationCreateRequest);
             // this.log.debug('itemInformation, result:', JSON.stringify(result, null, 2));
         }
         if (!_.isEmpty(paymentInformation)) {
             paymentInformation.listing_item_template_id = listingItemTemplate.Id;
-            const result = await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
+            await this.paymentInformationService.create(paymentInformation as PaymentInformationCreateRequest);
             // this.log.debug('paymentInformation, result:', JSON.stringify(result, null, 2));
         }
 
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_template_id = listingItemTemplate.Id;
-            const result = await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
+            await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest);
             // this.log.debug('msgInfo, result:', JSON.stringify(result, null, 2));
         }
 
         for (const object of listingItemObjects) {
             object.listing_item_template_id = listingItemTemplate.Id;
-            const result = await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
+            await this.listingItemObjectService.create(object as ListingItemObjectCreateRequest);
             // this.log.debug('object, result:', JSON.stringify(result, null, 2));
         }
 
+        const result = await this.findOne(listingItemTemplate.Id);
+        // this.log.debug('result:', JSON.stringify(result.toJSON(), null, 2));
+
         // finally find and return the created listingItemTemplate
-        return await this.findOne(listingItemTemplate.Id);
+        return result;
 
     }
 

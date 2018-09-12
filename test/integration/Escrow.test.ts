@@ -23,7 +23,6 @@ import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowCreateRequest } from '../../src/api/requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../../src/api/requests/EscrowUpdateRequest';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import { ListingItemService } from '../../src/api/services/ListingItemService';
 
 describe('Escrow', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

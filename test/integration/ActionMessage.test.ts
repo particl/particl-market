@@ -2,6 +2,8 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
+
 import { app } from '../../src/app';
 
 import { Logger as LoggerType } from '../../src/core/Logger';
@@ -121,13 +123,14 @@ describe('ActionMessage', () => {
     });
 
 
-    test('Should create a new action message', async () => {
+    test('Should create a new ActionMessage', async () => {
 
         testData.listing_item_id = createdListingItem.id;
 
         const actionMessageModel: ActionMessage = await actionMessageService.create(testData);
         const result = actionMessageModel.toJSON();
         createdActionMessage = result;
+
         // test the values
         expect(result.action).toBe(testData.action);
         expect(result.nonce).toBe(testData.nonce);
@@ -175,7 +178,7 @@ describe('ActionMessage', () => {
         expect(result.MessageObjects[1].dataValue).toBe(testData.objects[1].dataValue);
     });
 
-    test('Should throw ValidationException because we want to create a empty action message', async () => {
+    test('Should throw ValidationException because we want to create a empty ActionMessage', async () => {
 
         expect.assertions(1);
         await actionMessageService.create({} as ActionMessageCreateRequest).catch(e =>
@@ -183,7 +186,7 @@ describe('ActionMessage', () => {
         );
     });
 
-    test('Should list action messages with our new create one', async () => {
+    test('Should list ActionMessage with our new create one', async () => {
 
         const actionMessageCollection = await actionMessageService.findAll();
         const actionMessage = actionMessageCollection.toJSON();
@@ -200,7 +203,7 @@ describe('ActionMessage', () => {
         expect(result.listingItemId).toBe(createdListingItem.id);
     });
 
-    test('Should return one action message', async () => {
+    test('Should return one ActionMessage', async () => {
 
         const actionMessageModel: ActionMessage = await actionMessageService.findOne(createdActionMessage.id);
         const result = actionMessageModel.toJSON();
@@ -251,27 +254,8 @@ describe('ActionMessage', () => {
         expect(result.MessageObjects[1].dataId).toBe(testData.objects[1].dataId);
         expect(result.MessageObjects[1].dataValue).toBe(testData.objects[1].dataValue);
     });
-    /*
-        test('Should throw ValidationException because there is no related_id', async () => {
-            expect.assertions(1);
-            await actionMessageService.update(createdId, testDataUpdated).catch(e =>
-                expect(e).toEqual(new ValidationException('Request body is not valid', []))
-            );
-        });
 
-        test('Should update the action message', async () => {
-            // testDataUpdated['related_id'] = 0;
-            const actionMessageModel: ActionMessage = await actionMessageService.update(createdId, testDataUpdated);
-            const result = actionMessageModel.toJSON();
-
-            // test the values
-            // expect(result.value).toBe(testDataUpdated.value);
-            expect(result.action).toBe(testDataUpdated.action);
-            expect(result.nonce).toBe(testDataUpdated.nonce);
-            expect(result.accepted).toBe(testDataUpdated.accepted);
-        });
-    */
-    test('Should delete the action message', async () => {
+    test('Should delete the ActionMessage', async () => {
         expect.assertions(5);
         await actionMessageService.destroy(createdActionMessage.id);
         await actionMessageService.findOne(createdActionMessage.id).catch(e =>
@@ -300,7 +284,7 @@ describe('ActionMessage', () => {
     });
 
 
-    test('Should create a new action message with empty objects', async () => {
+    test('Should create a new ActionMessage with empty objects', async () => {
         expect.assertions(30);
 
         testData.listing_item_id = createdListingItem.id;

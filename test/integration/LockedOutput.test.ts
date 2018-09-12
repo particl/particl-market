@@ -16,14 +16,12 @@ import { LockedOutput } from '../../src/api/models/LockedOutput';
 import { LockedOutputService } from '../../src/api/services/LockedOutputService';
 import { LockedOutputCreateRequest } from '../../src/api/requests/LockedOutputCreateRequest';
 import { LockedOutputUpdateRequest } from '../../src/api/requests/LockedOutputUpdateRequest';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import {IsNotEmpty} from 'class-validator';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
-import {GenerateProfileParams} from '../../src/api/requests/params/GenerateProfileParams';
-import {GenerateBidParams} from '../../src/api/requests/params/GenerateBidParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
 import * as resources from 'resources';
-import {BidMessageType} from '../../src/api/enums/BidMessageType';
-import {ProfileService} from '../../src/api/services/ProfileService';
+import { BidMessageType } from '../../src/api/enums/BidMessageType';
+import { ProfileService } from '../../src/api/services/ProfileService';
 
 describe('LockedOutput', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

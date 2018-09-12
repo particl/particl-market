@@ -32,7 +32,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
 
     /**
      * data.params[]:
-     *  [0]: page, number
+     *  [0]: page, number, 0-based
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: category, number|string, if string, try to find using key, can be null
@@ -77,8 +77,8 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
         // TODO: searching for items that youre buying or selling should be done with bid or orderitem search
         // TODO: ...so remove type
         return await this.listingItemService.search({
-            page: data.params[0] || 1,
-            pageLimit: data.params[1] || 5, // default page limit 5
+            page: data.params[0] || 0,
+            pageLimit: data.params[1] || 10, // default page limit 10
             order: data.params[2] || 'ASC',
             category: data.params[3],
             type,

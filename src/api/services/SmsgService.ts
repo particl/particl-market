@@ -9,6 +9,8 @@ import { CoreRpcService } from './CoreRpcService';
 import { MarketplaceMessage } from '../messages/MarketplaceMessage';
 import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import {Environment} from '../../core/helpers/Environment';
+import * as resources from 'resources';
+import {IncomingSmsgMessage} from '../messages/IncomingSmsgMessage';
 
 export class SmsgService {
 
@@ -126,12 +128,53 @@ export class SmsgService {
     }
 
     /**
+     * View smsg by msgid.
+     *
+     * Arguments:
+     * 1. "msgid"              (string, required) The id of the message to view.
+     * 2. options              (json, optional) Options object.
+     * {
+     *       "delete": bool                 (bool, optional) Delete msg if true.
+     *       "setread": bool                (bool, optional) Set read status to value.
+     *       "encoding": str                (string, optional, default="ascii") Display message data in encoding, values: "hex".
+     * }
+     *
+     * Result:
+     * {
+     *  "msgid": "..."                    (string) The message identifier
+     *  "version": "str"                  (string) The message version
+     *  "location": "str"                 (string) inbox|outbox|sending
+     *  "received": int                     (int) Time the message was received
+     *  "to": "str"                       (string) Address the message was sent to
+     *  "read": bool                        (bool) Read status
+     *  "sent": int                         (int) Time the message was created
+     *  "paid": bool                        (bool) Paid or free message
+     *  "daysretention": int                (int) Number of days message will stay in the network for
+     *  "expiration": int                   (int) Time the message will be dropped from the network
+     *  "payloadsize": int                  (int) Size of user message
+     *  "from": "str"                     (string) Address the message was sent from
+     * }
+     *
+     * @returns {Promise<IncomingSmsgMessage>}
+     */
+    public async smsg(msgId: string, remove: boolean = false, setRead: boolean = true): Promise<IncomingSmsgMessage> {
+        const response = await this.coreRpcService.call('smsg', [msgId, {
+                delete: remove,
+                setread: setRead,
+                encoding: 'ascii'
+            }
+        ]);
+        // this.log.debug('smsg, response: ' + JSON.stringify(response, null, 2));
+        return response;
+    }
+
+    /**
      * ﻿Add address and matching public key to database.
      * ﻿smsgaddaddress <address> <pubkey>
      *
      * @param {string} address
      * @param {string} publicKey
-     * @returns {Promise<any>}
+     * @returns {Promise<boolean>}
      */
     public async smsgAddAddress(address: string, publicKey: string): Promise<boolean> {
         return await this.coreRpcService.call('smsgaddaddress', [address, publicKey])
