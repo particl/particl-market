@@ -177,7 +177,7 @@ export class BidActionService {
 
         // 0.16.0.3
         const buyerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(buyerEscrowPubAddress);
-        const buyerEcrowPubAddressPublicKey = buyerEscrowPubAddressInformation.pubkey;
+        const buyerEcrowPubAddressPublicKey = buyerEscrowPubAddressInformation.pubkey || buyerEscrowPubAddressInformation.scriptPubKey;
 
         this.log.debug('buyerEscrowPubAddressInformation: ', JSON.stringify(buyerEscrowPubAddressInformation, null, 2));
 
@@ -213,47 +213,125 @@ export class BidActionService {
      */
     public async findUnspentOutputs(requiredAmount: number): Promise<OutputData> {
 
-        // get all unspent transaction outputs
-        const unspentOutputs = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+        // requiredAmount, for MPA_BID: (totalPrice * 2)
+        // requiredAmount, for MPA_ACCEPT: totalPrice
 
-        if (!unspentOutputs || unspentOutputs.length === 0) {
-            this.log.warn('No unspent outputs');
-            throw new MessageException('No unspent outputs');
-        }
-
-        this.log.debug('unspent outputs amount: ', unspentOutputs.length);
+        // todo: get the actual fee
+        const TRANSACTION_FEE = 0.0002;
+        const adjustedRequiredAmount: number = this.correctNumberDecimals(requiredAmount + TRANSACTION_FEE);
 
         const selectedOutputs: Output[] = [];
         let selectedOutputsSum = 0;
         let selectedOutputsChangeAmount = 0;
 
-        unspentOutputs.find(output => {
-            if (output.spendable && output.solvable) {
-                selectedOutputsSum += output.amount;
-                selectedOutputs.push({
-                    txid: output.txid,
-                    vout: output.vout,
-                    amount: output.amount
-                });
+        const utxoLessThanReqestedAmount: number[] = [];
+        let utxoIdxs: number[] = [];
+
+        let exactMatchIdx = -1;
+        let maxOutputIdx = -1;
+        const defaultselectedOutputsIdxs: number[] = [];
+
+        // get all unspent transaction outputs
+        const unspentOutputs = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+
+        // Loop over all outputs once to obtain various fitlering information
+        unspentOutputs.filter(
+            (output: any, outIdx: number) => {
+                if (output.spendable && output.solvable && output.safe ) {
+                    if ( (exactMatchIdx === -1) && ( this.correctNumberDecimals(output.amount - adjustedRequiredAmount) === 0) ) {
+                        // Found a utxo with amount that is an exact match for the requested amount.
+                        exactMatchIdx = outIdx;
+                    } else if (output.amount < adjustedRequiredAmount) {
+                        // utxo is less than the amount requested, so may be summable with others to get to the exact value (or within a close threshold).
+                        utxoLessThanReqestedAmount.push(outIdx);
+                    }
+
+                    // Get the max utxo amount in case an output needs to be split
+                    if (maxOutputIdx === -1) {
+                        maxOutputIdx = outIdx;
+                    } else if (unspentOutputs[maxOutputIdx].amount < output.amount) {
+                        maxOutputIdx = outIdx;
+                    }
+
+                    // Sum up output amounts for the default case
+                    if (selectedOutputsSum < adjustedRequiredAmount) {
+                        selectedOutputsSum += output.amount;
+                        defaultselectedOutputsIdxs.push(outIdx);
+                    }
+
+                    return true;
+                }
+                return false;
+            }
+        );
+
+        // Step 1: Check whether an exact match was found.
+        if (exactMatchIdx === -1) {
+            // No exact match found, so...
+            //  ... Step 2: Sum utxos to find a summed group that matches exactly or is greater than the requried amount by no more than 1%.
+            for (let ii = 0; ii < Math.pow(2, utxoLessThanReqestedAmount.length); ii++) {
+                const potentialIdxs: number[] = utxoLessThanReqestedAmount.filter((num: number, index: number) => ii & (1 << index) );
+                const summed: number = this.correctNumberDecimals( potentialIdxs.reduce((acc: number, idx: number) => acc + unspentOutputs[idx].amount, 0) );
+
+                if ((summed >= adjustedRequiredAmount) && ((summed - adjustedRequiredAmount) < (adjustedRequiredAmount / 100)) ) {
+                    // Sum of utxos is within a 1 percent upper margin of the requested amount.
+                    if (summed === adjustedRequiredAmount) {
+                        // Found the exact required amount.
+                        utxoIdxs = potentialIdxs;
+                        break;
+                    } else if (!utxoIdxs.length) {
+                        utxoIdxs.length = 0;
+                        utxoIdxs = potentialIdxs;
+                    }
+                }
             }
 
-            // todo: get the actual fee
-            // check whether we have collected enough outputs to pay for the item and
-            // calculate the change amount
-            // requiredAmount, for MPA_BID: (totalPrice * 2)
-            // requiredAmount, for MPA_ACCEPT: totalPrice
+            // ... Step 3: If no summed values found, attempt to split a large enough output.
+            if (utxoIdxs.length === 0 && maxOutputIdx !== -1 && unspentOutputs[maxOutputIdx].amount > adjustedRequiredAmount) {
+                const newAddress = await this.coreRpcService.getNewAddress([], false);
+                // sendtoaddress will create a new transaction with its own selection of utxos to use, ie: the output with the max amount is not necessary used
+                const txid: string = await this.coreRpcService.call('sendtoaddress', [newAddress, adjustedRequiredAmount.toFixed(8), 'Split output']);
+                const txData: any = await this.coreRpcService.call('getrawtransaction', [txid, true]);
+                const outputData: any = txData.vout.find( outputObject => outputObject.value.toFixed(8) === adjustedRequiredAmount.toFixed(8) );
 
-            if (selectedOutputsSum > requiredAmount) {
-                selectedOutputsChangeAmount = +(selectedOutputsSum - requiredAmount - 0.0002).toFixed(8);
-                return true;
+                if (outputData) {
+                    selectedOutputs.push({
+                        txid: txData.txid,
+                        vout: outputData.n,
+                        amount: outputData.value
+                    });
+                    selectedOutputsSum = outputData.value;
+                }
             }
-            return false;
-        });
-
-        if (selectedOutputsSum < requiredAmount) {
-            this.log.warn('Not enough funds');
-            throw new MessageException('Not enough funds');
+        } else {
+            // Push the exact match.
+            utxoIdxs.push(exactMatchIdx);
         }
+
+        // Step 4: Default to the summed utxos if no other method was successful
+        if (!selectedOutputs.length && !utxoIdxs.length) {
+            if (selectedOutputsSum >= adjustedRequiredAmount) {
+                utxoIdxs = defaultselectedOutputsIdxs;
+            } else {
+                this.log.warn('Not enough funds');
+                throw new MessageException('Not enough funds');
+            }
+        }
+
+        if (utxoIdxs.length) {
+            selectedOutputsSum = 0;
+            utxoIdxs.forEach( utxoIdx => {
+                const utxo: any = unspentOutputs[utxoIdx];
+                selectedOutputs.push({
+                    txid: utxo.txid,
+                    vout: utxo.vout,
+                    amount: utxo.amount
+                });
+                selectedOutputsSum += utxo.amount;
+            });
+        }
+
+        selectedOutputsChangeAmount = +(selectedOutputsSum - adjustedRequiredAmount).toFixed(8);
 
         // todo: type
         const response: OutputData = {
@@ -1053,6 +1131,17 @@ app2_1       | }]
             }
         }
         throw new MessageException('Buyer not found for ListingItem.');
+    }
+
+    /**
+     * Convenience util to correct unwanted precision errors in numbers.
+     * (particularly after number arithmetic)
+     *
+     * @param {number} n
+     * @returns {number}
+     */
+    private correctNumberDecimals(n: number): number {
+        return Number.parseFloat( n.toFixed(8) );
     }
 
 
