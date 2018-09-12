@@ -9,17 +9,14 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ShoppingCartItem } from '../../src/api/models/ShoppingCartItem';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { ShoppingCartItemService } from '../../src/api/services/ShoppingCartItemService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { ShoppingCartItemCreateRequest } from '../../src/api/requests/ShoppingCartItemCreateRequest';
-
 import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';

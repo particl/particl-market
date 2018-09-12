@@ -7,19 +7,15 @@ import { app } from '../../../src/app';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Types, Core, Targets } from '../../../src/constants';
 import { TestUtil } from '../lib/TestUtil';
-
 import { TestDataService } from '../../../src/api/services/TestDataService';
 import { MarketService } from '../../../src/api/services/MarketService';
 import { ListingItemService } from '../../../src/api/services/ListingItemService';
 import { BidService } from '../../../src/api/services/BidService';
 import { ProfileService } from '../../../src/api/services/ProfileService';
 import { AddressService } from '../../../src/api/services/AddressService';
-
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
 import { BidMessage } from '../../../src/api/messages/BidMessage';
-
 import * as resources from 'resources';
-
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../../src/api/requests/TestDataGenerateRequest';
 import { BidActionService } from '../../../src/api/services/BidActionService';
@@ -31,15 +27,14 @@ import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { MarketplaceEvent } from '../../../src/api/messages/MarketplaceEvent';
 import { BidFactory } from '../../../src/api/factories/BidFactory';
-
 import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
 import { AddressType } from '../../../src/api/enums/AddressType';
 import { EscrowActionService } from '../../../src/api/services/EscrowActionService';
 import { EscrowFactory } from '../../../src/api/factories/EscrowFactory';
 import { OrderItemService } from '../../../src/api/services/OrderItemService';
 import { OrderService } from '../../../src/api/services/OrderService';
-import {IncomingSmsgMessage} from '../../../src/api/messages/IncomingSmsgMessage';
-import {SmsgMessageStatus} from '../../../src/api/enums/SmsgMessageStatus';
+import { IncomingSmsgMessage } from '../../../src/api/messages/IncomingSmsgMessage';
+import { SmsgMessageStatus } from '../../../src/api/enums/SmsgMessageStatus';
 
 
 describe('BidMessageProcessing', () => {

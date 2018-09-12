@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import * as Bookshelf from 'bookshelf';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
@@ -15,13 +16,10 @@ import { AddressService } from '../../src/api/services/AddressService';
 import { CryptocurrencyAddressService } from '../../src/api/services/CryptocurrencyAddressService';
 import { FavoriteItemService } from '../../src/api/services/FavoriteItemService';
 import { ShoppingCartService } from '../../src/api/services/ShoppingCartService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { Profile } from '../../src/api/models/Profile';
 import { FavoriteItem } from '../../src/api/models/FavoriteItem';
-
 import { ProfileCreateRequest } from '../../src/api/requests/ProfileCreateRequest';
 import { ProfileUpdateRequest } from '../../src/api/requests/ProfileUpdateRequest';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';

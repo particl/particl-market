@@ -2,21 +2,17 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
-
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import * as _ from 'lodash';
-
 import { TestUtil } from './lib/TestUtil';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { MessageException } from '../../src/api/exceptions/MessageException';
-
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { ListingItem } from '../../src/api/models/ListingItem';
-
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { ProfileService } from '../../src/api/services/ProfileService';
@@ -36,29 +32,16 @@ import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
 import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
-
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
-import { ListingItemTemplateUpdateRequest } from '../../src/api/requests/ListingItemTemplateUpdateRequest';
-import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
 import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
 import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
 import { ItemInformationCreateRequest } from '../../src/api/requests/ItemInformationCreateRequest';
-
-import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
-import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
-import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
-
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
 import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
 import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
-
 import * as resources from 'resources';
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { CustomConfig } from '../../src/config/CustomConfig';
-import { App } from '../../src/core/App';
 
 describe('ListingItemTemplate', async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

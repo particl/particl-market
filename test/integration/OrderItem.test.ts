@@ -2,18 +2,16 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { app } from '../../../src/app';
-import { Logger as LoggerType } from '../../../src/core/Logger';
-import { Types, Core, Targets } from '../../../src/constants';
-import { TestUtil } from '../lib/TestUtil';
-import { TestDataService } from '../../../src/api/services/TestDataService';
-
-import { ValidationException } from '../../../src/api/exceptions/ValidationException';
-import { NotFoundException } from '../../../src/api/exceptions/NotFoundException';
-
-import { OrderItem } from '../../../src/api/models/OrderItem';
-
-import { OrderItemService } from '../../../src/api/services/OrderItemService';
+import * from 'jest';
+import { app } from '../../src/app';
+import { Logger as LoggerType } from '../../src/core/Logger';
+import { Types, Core, Targets } from '../../src/constants';
+import { TestDataService } from '../../src/api/services/TestDataService';
+import { TestUtil } from './lib/TestUtil';
+import { ValidationException } from '../../src/api/exceptions/ValidationException';
+import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
+import { OrderItem } from '../../src/api/models/OrderItem';
+import { OrderItemService } from '../../src/api/services/OrderItemService';
 
 describe('OrderItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

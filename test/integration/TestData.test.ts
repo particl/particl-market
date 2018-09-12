@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import * as Bookshelf from 'bookshelf';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
@@ -14,14 +15,11 @@ import { ProfileService } from '../../src/api/services/ProfileService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { MessageException } from '../../src/api/exceptions/MessageException';
-
 import { ListingItemMessageType } from '../../src/api/enums/ListingItemMessageType';
 import { ListingItem } from '../../src/api/models/ListingItem';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-
 import { ActionMessage } from '../../src/api/models/ActionMessage';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
@@ -29,13 +27,10 @@ import { Profile } from '../../src/api/models/Profile';
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { GenerateActionMessageParams } from '../../src/api/requests/params/GenerateActionMessageParams';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-
-import { ListingItemMessageType } from '../../src/api/enums/ListingItemMessageType';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 import * as resources from 'resources';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { GenerateActionMessageParams } from '../../src/api/requests/params/GenerateActionMessageParams';
 import { GenerateOrderParams } from '../../src/api/requests/params/GenerateOrderParams'
 
 describe('TestDataService', () => {
@@ -476,7 +471,7 @@ describe('TestDataService', () => {
 
         const bid = generatedBids[0];
 
-        expectGenerateBid(bidGenerateParams, bid, false, true);
+        expectGenerateBid(bidGenerateParams, bid, true, true);
     });
 
     test('Should generate Bid using GenerateBidParams, with a relation to existing ListingItem', async () => {
@@ -512,7 +507,7 @@ describe('TestDataService', () => {
         } as TestDataGenerateRequest);
 
         const bid = generatedBids[0];
-        expectGenerateBid(bidGenerateParams, bid, false, true);
+        expectGenerateBid(bidGenerateParams, bid, true, true);
 
         expect(bid.ListingItem.hash).toBe(listingItems[0].hash);
         // expect(bid.ListingItem.seller).toBe(defaultProfile.address);

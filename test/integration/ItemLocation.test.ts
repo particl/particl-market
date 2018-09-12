@@ -7,25 +7,22 @@ import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
-
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { ItemInformationService } from '../../src/api/services/ItemInformationService';
 import { ItemLocationService } from '../../src/api/services/ItemLocationService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ItemLocation } from '../../src/api/models/ItemLocation';
 import { ItemLocationCreateRequest } from '../../src/api/requests/ItemLocationCreateRequest';
 import { ItemLocationUpdateRequest } from '../../src/api/requests/ItemLocationUpdateRequest';
 import * as resources from 'resources';
 import { ProfileService } from '../../src/api/services/ProfileService';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 
 describe('ItemLocation', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

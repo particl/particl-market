@@ -7,20 +7,15 @@ import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
-
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ItemImageService } from '../../src/api/services/ItemImageService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ItemImage } from '../../src/api/models/ItemImage';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-
 import { ItemImageCreateRequest } from '../../src/api/requests/ItemImageCreateRequest';
 import { ItemImageUpdateRequest } from '../../src/api/requests/ItemImageUpdateRequest';
-
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';

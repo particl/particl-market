@@ -8,12 +8,9 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { LockedOutput } from '../../src/api/models/LockedOutput';
-
 import { LockedOutputService } from '../../src/api/services/LockedOutputService';
 import { LockedOutputCreateRequest } from '../../src/api/requests/LockedOutputCreateRequest';
 import { LockedOutputUpdateRequest } from '../../src/api/requests/LockedOutputUpdateRequest';

@@ -8,12 +8,9 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { Order } from '../../src/api/models/Order';
-
 import { OrderService } from '../../src/api/services/OrderService';
 import { OrderCreateRequest } from '../../src/api/requests/OrderCreateRequest';
-
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { MarketService } from '../../src/api/services/MarketService';
@@ -21,10 +18,8 @@ import { BidService } from '../../src/api/services/BidService';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-
 import * as orderCreateRequest1 from '../testdata/createrequest/orderCreateRequest1.json';
 import * as resources from 'resources';
-
 import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import { AddressType } from '../../src/api/enums/AddressType';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
