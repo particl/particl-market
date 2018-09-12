@@ -28,9 +28,9 @@ import { SmsgMessageService } from '../../../src/api/services/SmsgMessageService
 import { SmsgMessageCreateRequest } from '../../../src/api/requests/SmsgMessageCreateRequest';
 import { SmsgMessageFactory } from '../../../src/api/factories/SmsgMessageFactory';
 import { MessageProcessor } from '../../../src/api/messageprocessors/MessageProcessor';
-import {SmsgMessageSearchParams} from '../../../src/api/requests/SmsgMessageSearchParams';
-import {SearchOrder} from '../../../src/api/enums/SearchOrder';
-import {ListingItemMessageType} from '../../../src/api/enums/ListingItemMessageType';
+import { SmsgMessageSearchParams } from '../../../src/api/requests/SmsgMessageSearchParams';
+import { SearchOrder } from '../../../src/api/enums/SearchOrder';
+import { ListingItemMessageType } from '../../../src/api/enums/ListingItemMessageType';
 
 
 describe('MessageProcessor', () => {
