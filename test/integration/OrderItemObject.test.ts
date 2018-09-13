@@ -12,18 +12,18 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { OrderItemObject } from '../../src/api/models/OrderItemObject';
 import { OrderItemObjectService } from '../../src/api/services/OrderItemObjectService';
-import {OrderItemObjectCreateRequest} from '../../src/api/requests/OrderItemObjectCreateRequest';
-import {OrderItemObjectUpdateRequest} from '../../src/api/requests/OrderItemObjectUpdateRequest';
-import {GenerateBidParams} from '../../src/api/requests/params/GenerateBidParams';
-import {OrderItemService} from '../../src/api/services/OrderItemService';
-import {ProfileService} from '../../src/api/services/ProfileService';
-import {BidMessageType} from '../../src/api/enums/BidMessageType';
-import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import {GenerateOrderParams} from '../../src/api/requests/params/GenerateOrderParams';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import {MarketService} from '../../src/api/services/MarketService';
-import {GenerateProfileParams} from '../../src/api/requests/params/GenerateProfileParams';
+import { OrderItemObjectCreateRequest } from '../../src/api/requests/OrderItemObjectCreateRequest';
+import { OrderItemObjectUpdateRequest } from '../../src/api/requests/OrderItemObjectUpdateRequest';
+import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
+import { OrderItemService } from '../../src/api/services/OrderItemService';
+import { ProfileService } from '../../src/api/services/ProfileService';
+import { BidMessageType } from '../../src/api/enums/BidMessageType';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { GenerateOrderParams } from '../../src/api/requests/params/GenerateOrderParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { MarketService } from '../../src/api/services/MarketService';
+import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 import * as resources from 'resources';
 
 describe('OrderItemObject', () => {

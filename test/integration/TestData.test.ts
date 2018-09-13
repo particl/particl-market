@@ -176,9 +176,8 @@ describe('TestDataService', () => {
 
         expect(result.hash).toBeDefined();
 
-        expect(result.OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
-
         if (orderGenerateParams.generateListingItem) {
+            expect(result.OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
             expect(result.OrderItems[0].Bid.ListingItem).toBeDefined();
             expect(result.OrderItems[0].Bid.ListingItem.hash).not.toBeNull();
 
@@ -524,15 +523,17 @@ describe('TestDataService', () => {
         // [0]: generateListingItemTemplate, generate a ListingItemTemplate
         // [1]: generateListingItem, generate a ListingItem
         // [2]: generateBid, generate a Bid
-        // [3]: listingItemhash, attach bid to existing ListingItem
-        // [4]: bidId, attach Order to existing Bid
-        // [5]: bidder, bidders address
-        // [6]: listingItemSeller, ListingItem sellers address
+        // [3]: generateOrderItem, generate OrderItem
+        // [4]: listingItemhash, attach bid to existing ListingItem
+        // [5]: bidId, attach Order to existing Bid
+        // [6]: bidder, bidders address
+        // [7]: listingItemSeller, ListingItem sellers address
 
         const orderGenerateParams = new GenerateOrderParams([
             true,                       // generateListingItemTemplate
             true,                       // generateListingItem
             true,                       // generateBid
+            true,                      // generateOrderItem
             null,                       // listingItemhash
             null,                       // bidId
             null,                       // bidder

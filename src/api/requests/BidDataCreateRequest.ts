@@ -8,7 +8,7 @@ import { RequestBody } from '../../core/api/RequestBody';
 // tslint:disable:variable-name
 export class BidDataCreateRequest extends RequestBody {
 
-    // @IsNotEmpty()
+    @IsNotEmpty()
     public bid_id: number;
 
     @IsNotEmpty()

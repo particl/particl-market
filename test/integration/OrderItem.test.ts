@@ -12,21 +12,19 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { OrderItem } from '../../src/api/models/OrderItem';
 import { OrderItemService } from '../../src/api/services/OrderItemService';
-import {OrderItemCreateRequest} from '../../src/api/requests/OrderItemCreateRequest';
-import {OrderItemUpdateRequest} from '../../src/api/requests/OrderItemUpdateRequest';
-import {OrderStatus} from '../../src/api/enums/OrderStatus';
-import {IsEnum, IsNotEmpty} from 'class-validator';
-import {OrderItemObjectCreateRequest} from '../../src/api/requests/OrderItemObjectCreateRequest';
-import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import {GenerateProfileParams} from '../../src/api/requests/params/GenerateProfileParams';
-import {ProfileService} from '../../src/api/services/ProfileService';
-import {MarketService} from '../../src/api/services/MarketService';
+import { OrderItemCreateRequest } from '../../src/api/requests/OrderItemCreateRequest';
+import { OrderItemUpdateRequest } from '../../src/api/requests/OrderItemUpdateRequest';
+import { OrderStatus } from '../../src/api/enums/OrderStatus';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
+import { ProfileService } from '../../src/api/services/ProfileService';
+import { MarketService } from '../../src/api/services/MarketService';
 import * as resources from 'resources';
-import {GenerateBidParams} from '../../src/api/requests/params/GenerateBidParams';
-import {BidMessageType} from '../../src/api/enums/BidMessageType';
-import {GenerateOrderParams} from '../../src/api/requests/params/GenerateOrderParams';
+import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
+import { BidMessageType } from '../../src/api/enums/BidMessageType';
+import { GenerateOrderParams } from '../../src/api/requests/params/GenerateOrderParams';
 
 describe('OrderItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
