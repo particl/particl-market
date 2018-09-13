@@ -539,12 +539,12 @@ export class TestDataService {
 
         this.log.debug('generateOrders, generateParams: ', generateParams);
 
-        const bidGenerateParams = new GenerateBidParams();
         let bid: resources.Bid;
 
         // generate bid
         if (generateParams.generateBid) {
 
+            const bidGenerateParams = new GenerateBidParams();
             bidGenerateParams.generateListingItemTemplate = generateParams.generateListingItemTemplate;
             bidGenerateParams.generateListingItem = generateParams.generateListingItem;
             bidGenerateParams.action = BidMessageType.MPA_ACCEPT;
@@ -556,35 +556,17 @@ export class TestDataService {
             this.log.debug('bids generated:', bids.length);
             this.log.debug('bid.id:', bid.id);
 
-            // set the bid_id for order generation
-            generateParams.bidId = bid.id;
         } else {
-            bid = {} as resources.Bid;
+            const bidModel = await this.bidService.findOne(generateParams.bidId);
+            bid = bidModel.toJSON();
         }
 
-        this.log.debug('bid:', JSON.stringify(bid, null, 2));
-
-        // wtf why are the objects allready?
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(bid.ListingItem.ListingItemTemplate.id);
-        const listingItemModel = await this.listingItemService.findOne(bid.ListingItem.id);
-
-        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
-        const listingItem: resources.ListingItem = listingItemModel.toJSON();
-
-
-        this.log.debug('bid.ListingItem.ListingItemTemplate.id:', bid.ListingItem.ListingItemTemplate.id);
-        this.log.debug('listingItemTemplate.id:', listingItemTemplate.id);
-        this.log.debug('listingItem.id:', listingItem.id);
-        this.log.debug('listingItem.seller:', listingItem.seller);
-        this.log.debug('bid.bidder:', bid.bidder);
-        // this.log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
-        // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
-
+        // set the bid_id for order generation
+        generateParams.bidId = bid.id;
 
         const items: resources.Order[] = [];
         for (let i = amount; i > 0; i--) {
             const orderCreateRequest = await this.generateOrderData(generateParams);
-
 
             this.log.debug('orderCreateRequest:', JSON.stringify(orderCreateRequest, null, 2));
 
@@ -605,6 +587,9 @@ export class TestDataService {
         // then generate ordercreaterequest with some orderitems and orderitemobjects
         const orderCreateRequest = await this.orderFactory.getModelFromBid(bid);
 
+        if (!generateParams.generateOrderItem) {
+            orderCreateRequest.orderItems = [];
+        }
         return orderCreateRequest;
     }
 

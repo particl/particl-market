@@ -24,6 +24,9 @@ import {GenerateProfileParams} from '../../src/api/requests/params/GenerateProfi
 import {ProfileService} from '../../src/api/services/ProfileService';
 import {MarketService} from '../../src/api/services/MarketService';
 import * as resources from 'resources';
+import {GenerateBidParams} from '../../src/api/requests/params/GenerateBidParams';
+import {BidMessageType} from '../../src/api/enums/BidMessageType';
+import {GenerateOrderParams} from '../../src/api/requests/params/GenerateOrderParams';
 
 describe('OrderItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -36,25 +39,15 @@ describe('OrderItem', () => {
     let marketService: MarketService;
     let profileService: ProfileService;
 
-    const testData = {
-        itemHash: '',
-        bid_id: 1,
-        status: OrderStatus.AWAITING_ESCROW,
-        orderItemObjects: OrderItemObjectCreateRequest[],
-        order_id: 1
-    } as OrderItemCreateRequest;
-
-    const testDataUpdated = {
-        itemHash: '',
-        bid_id: 1,
-        status: OrderStatus.AWAITING_ESCROW,
-        orderItemObjects: OrderItemObjectCreateRequest[],
-        order_id: 1
-    } as OrderItemUpdateRequest;
-
     let buyerProfile: resources.Profile;
     let sellerProfile: resources.Profile;
     let defaultMarket: resources.Market;
+
+    let createdListingItemTemplate: resources.ListingItemTemplate;
+    let createdListingItem: resources.ListingItem;
+    let createdBid: resources.Bid;
+    let createdOrder: resources.Order;
+    let createdOrderItem: resources.OrderItem;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -89,21 +82,76 @@ describe('OrderItem', () => {
         log.debug('sellerProfile: ', sellerProfile.id);
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
-            true,   // generateItemInformation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            false,  // generateListingItemObjects
-            false,  // generateObjectDatas
-            sellerProfile.id, // profileId
-            true,   // generateListingItem
-            defaultMarket.id  // marketId
+            true,                   // generateItemInformation
+            true,                   // generateShippingDestinations
+            false,                  // generateItemImages
+            true,                   // generatePaymentInformation
+            true,                   // generateEscrow
+            true,                   // generateItemPrice
+            true,                   // generateMessagingInformation
+            false,                  // generateListingItemObjects
+            false,                  // generateObjectDatas
+            sellerProfile.id,       // profileId
+            true,                   // generateListingItem
+            defaultMarket.id        // marketId
         ]).toParamsArray();
 
+        // generate two ListingItemTemplates with ListingItems
+        const listingItemTemplates = await testDataService.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,          // what to generate
+            amount: 1,                                          // how many to generate
+            withRelated: true,                                  // return model
+            generateParams: generateListingItemTemplateParams   // what kind of data to generate
+        } as TestDataGenerateRequest);
 
+        createdListingItemTemplate = listingItemTemplates[0];
+        createdListingItem = listingItemTemplates[0].ListingItems[0];
+
+        log.debug('createdListingItem.hash: ', JSON.stringify(createdListingItem.hash, null, 2));
+
+        // create a new bid from defaultProfile for ListingItem that is being sold by createdSellerProfile
+        const bidParams = new GenerateBidParams([
+            false,                      // generateListingItemTemplate
+            false,                      // generateListingItem
+            createdListingItem.hash,    // listingItemhash
+            BidMessageType.MPA_ACCEPT,  // action
+            buyerProfile.address,       // bidder
+            sellerProfile.address       // listingItemSeller
+        ]).toParamsArray();
+
+        const bids = await testDataService.generate({
+            model: CreatableModel.BID,
+            amount: 1,
+            withRelated: true,
+            generateParams: bidParams
+        } as TestDataGenerateRequest).catch(reason => {
+            log.error('REASON:', JSON.stringify(reason, null, 2));
+        });
+        createdBid = bids[0];
+
+        log.debug('createdBid: ', JSON.stringify(createdBid, null, 2));
+
+        const orderGenerateParams = new GenerateOrderParams([
+            false,                      // generateListingItemTemplate
+            false,                      // generateListingItem
+            false,                      // generateBid
+            false,                      // generateOrderItems
+            createdListingItem.hash,    // listingItemhash
+            createdBid.id,              // bidId
+            buyerProfile.address,       // bidder
+            sellerProfile.address       // listingItemSeller
+        ]);
+
+        const generatedOrders = await testDataService.generate({
+            model: CreatableModel.ORDER,
+            amount: 1,
+            withRelated: true,
+            generateParams: orderGenerateParams.toParamsArray()
+        } as TestDataGenerateRequest);
+
+        createdOrder = generatedOrders[0];
+
+        log.debug('createdOrder: ', JSON.stringify(createdOrder, null, 2));
 
     });
 
@@ -113,76 +161,75 @@ describe('OrderItem', () => {
 
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
-        await orderItemService.create(testData).catch(e =>
+        await orderItemService.create({} as OrderItemCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should create a new order item', async () => {
-        // testData['related_id'] = 0;
+    test('Should create a new OrderItem', async () => {
+
+        const testData = {
+            itemHash: createdBid.ListingItem.hash,
+            bid_id: createdBid.id,
+            status: OrderStatus.AWAITING_ESCROW,
+            order_id: createdOrder.id
+        } as OrderItemCreateRequest;
+
         const orderItemModel: OrderItem = await orderItemService.create(testData);
-        createdId = orderItemModel.Id;
+        createdOrderItem = orderItemModel.toJSON();
 
-        const result = orderItemModel.toJSON();
-
-        // test the values
-        // expect(result.value).toBe(testData.value);
-        expect(result.status).toBe(testData.status);
+        expect(createdOrderItem.status).toBe(testData.status);
     });
 
-    test('Should throw ValidationException because we want to create a empty order item', async () => {
+    test('Should throw ValidationException because we want to create a empty OrderItem', async () => {
         expect.assertions(1);
         await orderItemService.create({}).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list order items with our new create one', async () => {
+    test('Should list OrderItems with our newly created one', async () => {
         const orderItemCollection = await orderItemService.findAll();
-        const orderItem = orderItemCollection.toJSON();
-        expect(orderItem.length).toBe(1);
+        const orderItems = orderItemCollection.toJSON();
+        expect(orderItems.length).toBe(1);
 
-        const result = orderItem[0];
-
-        // test the values
-        // expect(result.value).toBe(testData.value);
-        expect(result.status).toBe(testData.status);
+        const result = orderItems[0];
+        log.debug('result:', JSON.stringify(result, null, 2));
+        expect(result.itemHash).toBe(createdOrderItem.itemHash);
+        expect(result.status).toBe(createdOrderItem.status);
     });
 
-    test('Should return one order item', async () => {
-        const orderItemModel: OrderItem = await orderItemService.findOne(createdId);
+    test('Should return one OrderItem', async () => {
+        const orderItemModel: OrderItem = await orderItemService.findOne(createdOrderItem.id);
         const result = orderItemModel.toJSON();
 
-        // test the values
-        // expect(result.value).toBe(testData.value);
-        expect(result.status).toBe(testData.status);
+        expect(result.itemHash).toBe(createdOrderItem.itemHash);
+        expect(result.status).toBe(createdOrderItem.status);
+        expect(result.Order.id).toBe(createdOrder.id);
+        expect(result.Bid.id).toBe(createdBid.id);
     });
 
-    /*
-    test('Should throw ValidationException because there is no related_id', async () => {
-        expect.assertions(1);
-        await orderItemService.update(createdId, testDataUpdated).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-    */
+    test('Should update the OrderItem', async () => {
+        const testDataUpdated = {
+            itemHash: createdBid.ListingItem.hash,
+            status: OrderStatus.SHIPPING
+        } as OrderItemUpdateRequest;
 
-    test('Should update the order item', async () => {
-        // testDataUpdated['related_id'] = 0;
-        const orderItemModel: OrderItem = await orderItemService.update(createdId, testDataUpdated);
+        const orderItemModel: OrderItem = await orderItemService.update(createdOrderItem.id, testDataUpdated);
         const result = orderItemModel.toJSON();
 
-        // test the values
-        // expect(result.value).toBe(testDataUpdated.value);
+        expect(result.itemHash).toBe(testDataUpdated.itemHash);
         expect(result.status).toBe(testDataUpdated.status);
+        expect(result.Order.id).toBe(createdOrder.id);
+        expect(result.Bid.id).toBe(createdBid.id);
+
     });
 
-    test('Should delete the order item', async () => {
+    test('Should delete the OrderItem', async () => {
         expect.assertions(1);
-        await orderItemService.destroy(createdId);
-        await orderItemService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await orderItemService.destroy(createdOrderItem.id);
+        await orderItemService.findOne(createdOrderItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdOrderItem.id))
         );
     });
-
 });
