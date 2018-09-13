@@ -471,9 +471,9 @@ describe('ListingItem', () => {
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
         testDataToSave.expiryTime = 4;
-        testDataToSave.postedAt = new Date().getTime() * 1000;
-        testDataToSave.expiredAt = new Date().getTime() * 1000;
-        testDataToSave.receivedAt = new Date().getTime() * 1000;
+        testDataToSave.postedAt = new Date().getTime();
+        testDataToSave.expiredAt = new Date().getTime();
+        testDataToSave.receivedAt = new Date().getTime();
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         createdListingItem3 = listingItemModel.toJSON();

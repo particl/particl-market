@@ -508,9 +508,9 @@ describe('ListingItemTemplate', async () => {
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
         testDataToSave.expiryTime = 4;
-        testDataToSave.postedAt = new Date().getTime() * 1000;
-        testDataToSave.expiredAt = new Date().getTime() * 1000;
-        testDataToSave.receivedAt = new Date().getTime() * 1000;
+        testDataToSave.postedAt = new Date().getTime();
+        testDataToSave.expiredAt = new Date().getTime();
+        testDataToSave.receivedAt = new Date().getTime();
 
         log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
