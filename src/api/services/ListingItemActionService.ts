@@ -217,7 +217,7 @@ export class ListingItemActionService {
             listingItemModel = await this.listingItemService.findOne(listingItem.id);
             listingItem = listingItemModel.toJSON();
 
-            this.log.debug('saved listingItem:', listingItem.hash);
+            this.log.debug('==> PROCESSED LISTINGITEM: ', listingItem.hash);
             return SmsgMessageStatus.PROCESSED;
 
         } else {
@@ -393,7 +393,7 @@ export class ListingItemActionService {
         this.log.info('Configuring EventListeners ');
 
         this.eventEmitter.on(Events.ListingItemReceivedEvent, async (event) => {
-            this.log.debug('Received event:', JSON.stringify(event, null, 2));
+            this.log.debug('Received event, message type: ' + event.smsgMessage.type + ', msgid: ' + event.smsgMessage.msgid);
             await this.processListingItemReceivedEvent(event)
                 .then(async status => {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);

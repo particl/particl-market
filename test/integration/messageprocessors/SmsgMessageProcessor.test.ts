@@ -77,7 +77,7 @@ describe('MessageProcessor', () => {
     });
     // tslint:enable:max-line-length
 
-    const createSmsgMessage = async (listingItemTemplate: resources.ListingItemTemplate) => {
+    const createSmsgMessage = async (listingItemTemplate: resources.ListingItemTemplate, index: number): resources.SmsgMessage => {
 
         // prepare the message to be processed
         const listingItemMessage: ListingItemMessage = await listingItemFactory.getMessage(listingItemTemplate);
@@ -90,7 +90,7 @@ describe('MessageProcessor', () => {
 
         // put the MarketplaceMessage in SmsgMessage
         const listingItemSmsg = {
-            msgid: 'TESTMESSAGE' + new Date().getTime(),
+            msgid: 'TESTMESSAGE [' + index + '] : ' + new Date().getTime(),
             version: '0300',
             location: 'inbox',
             read: false,
@@ -111,7 +111,7 @@ describe('MessageProcessor', () => {
         const smsgMessageCreateRequest: SmsgMessageCreateRequest = await smsgMessageFactory.get(listingItemSmsg);
 
         // this.log.debug('smsgMessageCreateRequest: ', JSON.stringify(smsgMessageCreateRequest, null, 2));
-        await smsgMessageService.create(smsgMessageCreateRequest)
+        return await smsgMessageService.create(smsgMessageCreateRequest)
             .then(async smsgMessageModel => {
 
                 const smsgMessage: resources.SmsgMessage = smsgMessageModel.toJSON();
@@ -120,9 +120,8 @@ describe('MessageProcessor', () => {
                     + ' : ' + smsgMessage.type
                     + ' : ' + smsgMessage.status
                     + ' : ' + smsgMessage.msgid);
-
+                return smsgMessage;
             });
-
     };
 
     test('Should generate 100 ListingItemTemplates', async () => {
@@ -157,12 +156,13 @@ describe('MessageProcessor', () => {
 
     test('Should process 100 SmsgMessages and set status PROCESSING', async () => {
 
-        for (const listingItemTemplate of listingItemTemplates) {
-            await createSmsgMessage(listingItemTemplate)
-        }
+        let smsgMessages: resources.SmsgMessage[] = [];
 
-        let smsgMessageCollection = await smsgMessageService.findAll();
-        let smsgMessages: resources.SmsgMessage[] = smsgMessageCollection.toJSON();
+        let i = 1;
+        for (const listingItemTemplate of listingItemTemplates) {
+            smsgMessages.push(await createSmsgMessage(listingItemTemplate, i));
+            i++;
+        }
         expect(smsgMessages.length).toBe(100);
 
         log.debug('CREATED ' + listingItemTemplates.length + ' SMSGMESSAGES ');
@@ -175,7 +175,7 @@ describe('MessageProcessor', () => {
             await messageProcessor.poll(false);
         }
 
-        smsgMessageCollection = await smsgMessageService.findAll();
+        let smsgMessageCollection = await smsgMessageService.findAll();
         smsgMessages = smsgMessageCollection.toJSON();
         expect(smsgMessages.length).toBe(100);
 
@@ -197,13 +197,13 @@ describe('MessageProcessor', () => {
 
     test('Should process 100 SmsgMessages and set status PROCESSED', async () => {
 
-        // create smsgmessages
-        for (const listingItemTemplate of listingItemTemplates) {
-            await createSmsgMessage(listingItemTemplate)
-        }
+        let smsgMessages: resources.SmsgMessage[] = [];
 
-        let smsgMessageCollection = await smsgMessageService.findAll();
-        let smsgMessages: resources.SmsgMessage[] = smsgMessageCollection.toJSON();
+        let i = 1;
+        for (const listingItemTemplate of listingItemTemplates) {
+            smsgMessages.push(await createSmsgMessage(listingItemTemplate, i));
+            i++;
+        }
         expect(smsgMessages.length).toBe(100);
 
         log.debug('CREATED ' + listingItemTemplates.length + ' SMSGMESSAGES ');
@@ -212,13 +212,10 @@ describe('MessageProcessor', () => {
         await testUtil.waitFor(20);
 
         // start polling
-        messageProcessor.schedulePoll();
+        // messageProcessor.schedulePoll();
 
-        smsgMessageCollection = await smsgMessageService.findAll();
+        let smsgMessageCollection = await smsgMessageService.findAll();
         smsgMessages = smsgMessageCollection.toJSON();
-
-        log.debug('smsgMessages.length: ', smsgMessages.length);
-
         expect(smsgMessages.length).toBe(100);
 
         const newSearchParams = {
@@ -261,8 +258,13 @@ describe('MessageProcessor', () => {
             age: 1000 * 20
         } as SmsgMessageSearchParams;
 
-        let processedCount = 0;
+        // call poll for 100 times
+        for (const smsgMessage of smsgMessages) {
+            await messageProcessor.poll(true);
+            await testUtil.waitFor(1);
+        }
 
+        let processedCount = 0;
         while (processedCount !== 100) {
             const newMessagesModel = await smsgMessageService.searchBy(newSearchParams);
             const newMessages = newMessagesModel.toJSON();
@@ -276,19 +278,17 @@ describe('MessageProcessor', () => {
             const failedMessagesModel = await smsgMessageService.searchBy(failedSearchParams);
             const failedMessages = failedMessagesModel.toJSON();
 
-            log.debug('newMessages.length: ', newMessages.length);
-            log.debug('processingMessages.length: ', processingMessages.length);
-            log.debug('processedMessages.length: ', processedMessages.length);
-            log.debug('failedMessages.length: ', failedMessages.length);
+            log.debug('new: ' + newMessages.length + ', processing: ' + processingMessages.length + ', failed: ' + failedMessages.length + ', PROCESSED: ' + processedMessages.length);
 
             expect(failedMessages.length).toBe(0);
             processedCount = processedMessages.length;
 
-            expect(newMessages.length + processingMessages.length + processedMessages.length).toBe(100);
+            // expect(newMessages.length + processingMessages.length + processedMessages.length).toBe(100);
 
-            log.debug('SMSGMESSAGES PROCESSED: ', processedMessages.length);
             await testUtil.waitFor(1);
         }
+
+        await testUtil.waitFor(1);
 
         smsgMessageCollection = await smsgMessageService.findAll();
         smsgMessages = smsgMessageCollection.toJSON();

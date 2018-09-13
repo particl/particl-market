@@ -56,7 +56,7 @@ export class MessagingInformationService {
         // finally find and return the created messagingInformation
         const newMessagingInformation = await this.findOne(messagingInformation.Id);
 
-        this.log.debug('messagingInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        // this.log.debug('messagingInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return newMessagingInformation;
     }
 

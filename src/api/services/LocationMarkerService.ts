@@ -48,7 +48,8 @@ export class LocationMarkerService {
 
         // finally find and return the created locationMarker
         const result = await this.findOne(locationMarker.Id);
-        this.log.debug('locationMarkerService.create: ' + (new Date().getTime() - startTime) + 'ms');
+
+        // this.log.debug('locationMarkerService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return result;
     }
 

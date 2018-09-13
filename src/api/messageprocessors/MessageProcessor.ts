@@ -92,7 +92,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                         + ' : ' + smsgMessage.status
                         + ' : ' + smsgMessage.msgid);
 
-                    this.log.debug('SENDING: ', eventType);
+                    // this.log.debug('SENDING: ', eventType);
 
                     // send event to the eventTypes processor
                     this.eventEmitter.emit(eventType, {
@@ -129,7 +129,7 @@ export class MessageProcessor implements MessageProcessorInterface {
 
     public schedulePoll(pollingInterval: number = this.DEFAULT_INTERVAL): void {
 
-        this.log.debug('schedulePoll(), pollingInterval: ', pollingInterval);
+        // this.log.debug('schedulePoll(), pollingInterval: ', pollingInterval);
 
 /*
         this.timeout = setTimeout(
