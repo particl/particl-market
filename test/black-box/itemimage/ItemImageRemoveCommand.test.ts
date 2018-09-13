@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/ListingItemTemplateCreateRequest';
@@ -13,7 +13,7 @@ import { ListingItemTemplate } from 'resources';
 import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
 import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-import {ObjectHash} from '../../../src/core/helpers/ObjectHash';
+import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 
 describe('ItemImageRemoveCommand', () => {
 
@@ -97,7 +97,7 @@ describe('ItemImageRemoveCommand', () => {
 
     });
 
-     test('Should fail to remove ItemImage because no args', async () => {
+    test('Should fail to remove ItemImage because no args', async () => {
         const result: any = await testUtil.rpc(imageCommand, [removeCommand]);
         result.expectJson();
         result.expectStatusCode(404);
@@ -120,7 +120,10 @@ describe('ItemImageRemoveCommand', () => {
         const newCreatedTemplateId = result.id;
 
         // add item image
-        const itemImageRes: any = await testUtil.rpc(Commands.ITEMIMAGE_ROOT.commandName, [Commands.ITEMIMAGE_ADD.commandName, newCreatedTemplateId, 'TEST-DATA-ID',
+        const itemImageRes: any = await testUtil.rpc(Commands.ITEMIMAGE_ROOT.commandName, [
+            Commands.ITEMIMAGE_ADD.commandName,
+            newCreatedTemplateId,
+            'TEST-DATA-ID',
             ImageDataProtocolType.LOCAL,
             'BASE64',
             ImageProcessing.milkcatSmall]);

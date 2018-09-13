@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -53,7 +53,13 @@ describe('ItemInformationUpdateCommand', () => {
             false,  // generateListingItem
             marketId   // marketId
         ]).toParamsArray();
-        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(CreatableModel.LISTINGITEMTEMPLATE, 2, true, generateListingItemTemplateParams);
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            2,
+            true,
+            generateListingItemTemplateParams
+        );
         createdListingItemTemplateId = listingItemTemplates[0].id;
         createdListingItemTemplateId2 = listingItemTemplates[1].id;
     });
@@ -213,8 +219,14 @@ describe('ItemInformationUpdateCommand', () => {
     test('Should update ItemInformation', async () => {
         // update item information
 
-        const getDataRes: any = await testUtil.rpc(itemInfoRootCommand, [itemInfoUpdateSubCommand, createdListingItemTemplateId,
-            testDataListingItemTemplate.title, testDataListingItemTemplate.shortDescription, testDataListingItemTemplate.longDescription, testDataListingItemTemplate.itemCategory.id]);
+        const getDataRes: any = await testUtil.rpc(itemInfoRootCommand, [
+            itemInfoUpdateSubCommand,
+            createdListingItemTemplateId,
+            testDataListingItemTemplate.title,
+            testDataListingItemTemplate.shortDescription,
+            testDataListingItemTemplate.longDescription,
+            testDataListingItemTemplate.itemCategory.id
+        ]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(200);
         const result: any = getDataRes.getBody()['result'];

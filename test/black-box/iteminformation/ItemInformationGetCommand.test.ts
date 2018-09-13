@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -24,9 +24,6 @@ describe('ItemInformationGetCommand', () => {
         const defaultMarket: resources.Market = await testUtil.getDefaultMarket();
         const marketId = defaultMarket.id;
 
-        // add item template
-        // todo: use generate
-        // create listing item
         const generateListingItemTemplateParams = new GenerateParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
@@ -41,7 +38,13 @@ describe('ItemInformationGetCommand', () => {
             false,  // generateListingItem
             marketId   // marketId
         ]).toParamsArray();
-        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(CreatableModel.LISTINGITEMTEMPLATE, 2, true, generateListingItemTemplateParams);
+
+        const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE,
+            2,
+            true,
+            generateListingItemTemplateParams
+        );
         createdListingItemTemplate = listingItemTemplates[0];
     });
 
