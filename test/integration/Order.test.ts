@@ -100,36 +100,6 @@ describe('Order', () => {
         createdSellerProfile = profiles[0];
         log.debug('createdSellerProfile: ', createdSellerProfile.id);
 
-        /*
-        // generate template
-        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams().toParamsArray();
-        const listingItemTemplates = await testDataService.generate({
-            model: CreatableModel.LISTINGITEMTEMPLATE,          // what to generate
-            amount: 1,                                          // how many to generate
-            withRelated: true,                                  // return model
-            generateParams: generateListingItemTemplateParams   // what kind of data to generate
-        } as TestDataGenerateRequest);
-        createdListingItemTemplate = listingItemTemplates[0];
-        log.debug('createdListingItemTemplate: ', createdListingItemTemplate.id);
-
-        // create listing item, seller = createdSellerProfile
-        listingItemCreateRequestBasic1.market_id = defaultMarket.id;
-        listingItemCreateRequestBasic1.listing_item_template_id = listingItemTemplates[0].id;
-        listingItemCreateRequestBasic1.seller = createdSellerProfile.address;
-        const createdListingItemModel1 = await listingItemService.create(listingItemCreateRequestBasic1);
-        createdListingItem1 = createdListingItemModel1.toJSON();
-        log.debug('createdListingItem1: ', createdListingItem1.id);
-        log.debug('createdListingItem1: ', createdListingItem1.hash);
-
-        // create another listing item, seller = createdSellerProfile
-        listingItemCreateRequestBasic2.market_id = defaultMarket.id;
-        listingItemCreateRequestBasic2.seller = createdSellerProfile.address;
-        const createdListingItemModel2 = await listingItemService.create(listingItemCreateRequestBasic2);
-        createdListingItem2 = createdListingItemModel2.toJSON();
-        log.debug('createdListingItem2: ', createdListingItem2.id);
-        log.debug('createdListingItem2: ', createdListingItem2.hash);
-    */
-
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
@@ -145,8 +115,6 @@ describe('Order', () => {
             defaultMarket.id  // marketId
         ]).toParamsArray();
 
-        log.debug('CREATE LISTINGITEMTEMPLATES');
-
         // generate two ListingItemTemplates with ListingItems
         const listingItemTemplates = await testDataService.generate({
             model: CreatableModel.LISTINGITEMTEMPLATE,          // what to generate
@@ -154,9 +122,6 @@ describe('Order', () => {
             withRelated: true,                                  // return model
             generateParams: generateListingItemTemplateParams   // what kind of data to generate
         } as TestDataGenerateRequest);
-        log.debug('CREATE LISTINGITEMTEMPLATES DONE');
-
-        // log.debug('CREATED LISTINGITEMTEMPLATES: ', JSON.stringify(listingItemTemplates, null, 2));
 
         createdListingItemTemplate1 = listingItemTemplates[0];
         createdListingItemTemplate2 = listingItemTemplates[1];

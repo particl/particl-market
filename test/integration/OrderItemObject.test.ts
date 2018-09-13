@@ -12,6 +12,8 @@ import { ValidationException } from '../../src/api/exceptions/ValidationExceptio
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { OrderItemObject } from '../../src/api/models/OrderItemObject';
 import { OrderItemObjectService } from '../../src/api/services/OrderItemObjectService';
+import {OrderItemObjectCreateRequest} from '../../src/api/requests/OrderItemObjectCreateRequest';
+import {OrderItemObjectUpdateRequest} from '../../src/api/requests/OrderItemObjectUpdateRequest';
 
 describe('OrderItemObject', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -25,14 +27,14 @@ describe('OrderItemObject', () => {
     let createdId;
 
     const testData = {
-        dataId: undefined, // TODO: Add test value
-        dataValue: undefined // TODO: Add test value
-    };
+        dataId: 'id1',
+        dataValue: 'value1'
+    } as OrderItemObjectCreateRequest;
 
     const testDataUpdated = {
-        dataId: undefined, // TODO: Add test value
-        dataValue: undefined // TODO: Add test value
-    };
+        dataId: 'id2',
+        dataValue: 'value2'
+    } as OrderItemObjectUpdateRequest;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -41,21 +43,21 @@ describe('OrderItemObject', () => {
         orderItemObjectService = app.IoC.getNamed<OrderItemObjectService>(Types.Service, Targets.Service.OrderItemObjectService);
 
         // clean up the db, first removes all data and then seeds the db with default data
-        await testDataService.clean([]);
+        await testDataService.clean();
+
+
     });
 
     afterAll(async () => {
         //
     });
 
-    /*
     test('Should throw ValidationException because there is no related_id', async () => {
         expect.assertions(1);
         await orderItemObjectService.create(testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
-    */
 
     test('Should create a new order item object', async () => {
         // testData['related_id'] = 0;
@@ -65,7 +67,6 @@ describe('OrderItemObject', () => {
         const result = orderItemObjectModel.toJSON();
 
         // test the values
-        // expect(result.value).toBe(testData.value);
         expect(result.dataId).toBe(testData.dataId);
         expect(result.dataValue).toBe(testData.dataValue);
     });

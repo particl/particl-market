@@ -492,7 +492,7 @@ export class TestDataService {
         const action = generateParams.action ? generateParams.action : BidMessageType.MPA_BID;
 
         // TODO: generate biddatas
-        const bidDatas: BidDataCreateRequest[] = [
+        const bidDatas = [
             {dataId: 'size', dataValue: 'XL'},
             {dataId: 'color', dataValue: 'pink'},
             {dataId: 'outputs', dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0b\"' +
@@ -509,7 +509,7 @@ export class TestDataService {
             {dataId: 'ship.state', dataValue: ''},
             {dataId: 'ship.zipCode', dataValue: '1234'},
             {dataId: 'ship.country', dataValue: 'FI'}
-        ];
+        ] as BidDataCreateRequest[];
 
         const bidCreateRequest = {
             action,
