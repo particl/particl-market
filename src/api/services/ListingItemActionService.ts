@@ -233,14 +233,14 @@ export class ListingItemActionService {
      * @param {"resources".Profile} profile
      * @returns {Promise<ProposalMessage>}
      */
-    public async createProposalMessage(itemTemplate: resources.ListingItemTemplate, daysRetention: number,
+    public async createProposalMessage(itemTemplateHash: string, daysRetention: number,
                                        profile: resources.Profile): Promise<ProposalMessage> {
 
         const blockStart: number = await this.coreRpcService.getBlockCount();
         const blockEnd: number = blockStart + (daysRetention * 24 * 30);
 
         const proposalMessage: ProposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, ProposalType.ITEM_VOTE,
-            itemTemplate.hash, '', blockStart, blockEnd, ['OK', 'Remove'], profile, itemTemplate.hash);
+            itemTemplateHash, '', blockStart, blockEnd, ['OK', 'REMOVE'], profile, itemTemplateHash);
 
         return proposalMessage;
 

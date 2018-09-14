@@ -54,8 +54,8 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
-        if (data.params.length < 4) {
-            throw new MessageException('Requires arg: listingItemId');
+        if (data.params.length < 2) {
+            throw new MessageException('Requires arg: listingItemId or hash, and profileId');
         }
 
         let listingItem: ListingItem;
@@ -68,7 +68,6 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         }
 
         const listingItemHash = listingItem.Hash;
-        const listingItemTemplate: any = listingItem.ListingItemTemplate();
 
         const profileId = data.params.shift();
         const blockStart = await this.coreRpcService.getBlockCount();
@@ -120,14 +119,14 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             // return this.proposalActionService.send(type, proposalTitle, proposalDescription, blockStart, blockEnd,
             //     daysRetention, optionsList, profile, market, estimateFee);
 
-            const proposalMessage = await this.listingItemActionService.createProposalMessage(listingItemTemplate, daysRetention, profile);
-            this.log.debug('post(), proposalMessage: ', proposalMessage);
+            const proposalMessage = await this.listingItemActionService.createProposalMessage(listingItemHash, daysRetention, profile);
+            this.log.debug('post(), proposalMessage: ', JSON.stringify(proposalMessage, null, 2));
             return await this.listingItemActionService.postProposal(proposalMessage, daysRetention, profile, market);
         }
     }
 
     public usage(): string {
-        return this.getName() + ' [<listingItemId>|<hash>] <profileId> <blockStart> <blockEnd>';
+        return this.getName() + ' [<listingItemId>|<hash>] <profileId> ';
     }
 
     public help(): string {

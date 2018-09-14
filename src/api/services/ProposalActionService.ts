@@ -36,6 +36,7 @@ import { SmsgMessageService } from './SmsgMessageService';
 
 import { VoteService } from './VoteService';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
+import { VoteActionService } from './VoteActionService';
 
 export class ProposalActionService {
 
@@ -54,6 +55,7 @@ export class ProposalActionService {
         @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
         @inject(Types.Service) @named(Targets.Service.VoteService) private voteService: VoteService,
+        @inject(Types.Service) @named(Targets.Service.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -112,60 +114,92 @@ export class ProposalActionService {
         // TODO: Validation??
         // - sanity check for proposal start/end blocks vs current one
 
-        return await this.proposalService.create(proposalCreateRequest)
-            .then(async createdProposalModel => {
+        let proposal: resources.Proposal;
+        let proposalResult;
+        let tmpProposal;
+        try {
+          tmpProposal = await this.proposalService.findOneByItemHash(proposalCreateRequest.item);
+        } catch (ex) {
+          // Do nothing
+        }
+        if (tmpProposal) {
+          proposal = tmpProposal.toJSON();
+          // We have a proposal for this item already.
+          if (proposal.createdAt < smsgMessage.createdAt) {
+            try {
+              // This is an older proposal, but for some reaason we received it *after*.
+              // Replace the existing proposal.
+              proposalResult = await this.proposalResultService.findOneByProposalHash(proposal.hash);
+              tmpProposal = await this.proposalService.update(proposal.id, proposalCreateRequest);
+              proposal = tmpProposal.toJSON();
+              proposalResult = await this.createProposalResult(proposal);
+            } catch (ex) {
+              this.log.warn(ex);
+              return SmsgMessageStatus.WAITING;
+            }
+          }
+          /* else {
+            // This proposal is newer than the existing one, so don't overwrite anything.
+            // [this is done after this block] Just register vote, that is,
+            //  unless the submitter has already voted on this proposal.
+          } */
+          proposalResult = await this.proposalResultService.findOneByProposalHash(proposal.hash);
+        } else {
+          try {
+            // Completely new proposal, not a duplicate, add it to our database.
+            tmpProposal = await this.proposalService.create(proposalCreateRequest);
+            proposal = tmpProposal.toJSON();
+          } catch (ex) {
+            this.log.warn(ex);
+            return SmsgMessageStatus.WAITING;
+          }
+          proposalResult = await this.createProposalResult(proposal);
+        }
+        // If the proposal is an ITEM_VOTE,
+        // Vote on the proposal, that is, unless the submitter has already voted on this proposal.
+        if (proposal.type === ProposalType.ITEM_VOTE) {
+          await this.listingItemService.findOneByHash(proposal.item)
+              .then( async listingItemModel => {
+                  const listingItem = listingItemModel.toJSON();
+                  await this.listingItemService.updateProposalRelation(listingItem.id, proposal.hash);
 
-                const createdProposal: resources.Proposal = createdProposalModel.toJSON();
-
-                // create the proposalresult
-                const proposalResult = await this.createProposalResult(createdProposal)
-                    .catch();
-
-                // if Proposal is of type ITEM_VOTE, and if ListingItem exists, link them
-                if (createdProposal.type === ProposalType.ITEM_VOTE) {
-                    await this.listingItemService.findOneByHash(createdProposal.title)
-                        .then( async listingItemModel => {
-                            const listingItem = listingItemModel.toJSON();
-                            await this.listingItemService.updateProposalRelation(listingItem.id, createdProposal.hash);
-
-                            // get the market and vote
-                            await this.marketService.findByAddress(marketplaceMessage.market || '')
-                                .then(async marketModel => {
-                                    const market = marketModel.toJSON();
-                                    // await this.voteForListingItemProposal(createdProposal, market);
-                                    let proposalOption: resources.ProposalOption | null = null;
-                                    for (const i in createdProposal.ProposalOptions) {
-                                      if (i) {
-                                        const tmpProposalOption = createdProposal.ProposalOptions[i];
-                                        if (tmpProposalOption.description === 'REMOVE') {
-                                          proposalOption = tmpProposalOption;
-                                        }
-                                      }
-                                    }
-                                    if (!proposalOption) {
-                                      throw new MessageException('ItemVote received that doesn\'t have REMOVE option.');
-                                    }
-                                    const vote: VoteCreateRequest = {
-                                      proposal_option_id: proposalOption.optionId,
-                                      voter: createdProposal.submitter,
-                                      block: currentBlock,
-                                      weight: 1
-                                    } as VoteCreateRequest;
-                                    this.voteService.create(vote);
-                                });
-                        })
-                        .catch(reason => {
-                            this.log.warn('received Proposal, but theres no ListingItem for it yet...');
-                        });
-                }
-
-                // createdProposalModel = await this.proposalService.findOne(createdProposal.id);
-                // return createdProposalModel.toJSON();
-                return SmsgMessageStatus.PROCESSED;
-            })
-            .catch(reason => {
-                return SmsgMessageStatus.WAITING;
-            });
+                  // get the market and vote
+                  await this.marketService.findByAddress(marketplaceMessage.market || '')
+                      .then(async marketModel => {
+                          // const market = marketModel.toJSON();
+                          // await this.voteForListingItemProposal(proposal, market);
+                          let proposalOption: resources.ProposalOption | null = null;
+                          for (const i in proposal.ProposalOptions) {
+                            if (i) {
+                              const tmpProposalOption = proposal.ProposalOptions[i];
+                              if (tmpProposalOption.description === 'REMOVE') {
+                                proposalOption = tmpProposalOption;
+                              }
+                            }
+                          }
+                          if (!proposalOption) {
+                            this.log.warn('ItemVote received that doesn\'t have REMOVE option.');
+                            throw new MessageException('ItemVote received that doesn\'t have REMOVE option.');
+                          }
+                          this.log.error('Found REMOVE option');
+                          const voteRequest: VoteCreateRequest = {
+                            proposal_option_id: proposalOption.id,
+                            voter: proposal.submitter,
+                            block: currentBlock,
+                            weight: 1
+                          } as VoteCreateRequest;
+                          this.log.error('About to create vote');
+                          const vote = await this.voteService.create(voteRequest);
+                          this.log.error('Vote created = ' + JSON.stringify(vote, null, 2));
+                          proposalResult = await this.voteActionService.updateProposalResult(proposalResult.id);
+                          this.log.error('Proposal updated = ' + JSON.stringify(proposalResult, null, 2));
+                      });
+              })
+              .catch(reason => {
+                  this.log.warn('received Proposal, but theres no ListingItem for it yet...');
+              });
+        }
+        return SmsgMessageStatus.PROCESSED;
     }
 
     /**

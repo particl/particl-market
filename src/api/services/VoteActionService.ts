@@ -114,7 +114,7 @@ export class VoteActionService {
 
                 if (voteMessage && proposal.blockEnd >= currentBlock) {
                     const createdVote = await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
-                    // this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
+                    this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
                     const proposalResult: resources.ProposalResult = await this.updateProposalResult(proposal.ProposalResult.id);
 
