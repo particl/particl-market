@@ -181,18 +181,14 @@ export class ProposalActionService {
                             this.log.warn('ItemVote received that doesn\'t have REMOVE option.');
                             throw new MessageException('ItemVote received that doesn\'t have REMOVE option.');
                           }
-                          this.log.error('Found REMOVE option');
                           const voteRequest: VoteCreateRequest = {
                             proposal_option_id: proposalOption.id,
                             voter: proposal.submitter,
                             block: currentBlock,
                             weight: 1
                           } as VoteCreateRequest;
-                          this.log.error('About to create vote');
                           const vote = await this.voteService.create(voteRequest);
-                          this.log.error('Vote created = ' + JSON.stringify(vote, null, 2));
                           proposalResult = await this.voteActionService.updateProposalResult(proposalResult.id);
-                          this.log.error('Proposal updated = ' + JSON.stringify(proposalResult, null, 2));
                       });
               })
               .catch(reason => {
