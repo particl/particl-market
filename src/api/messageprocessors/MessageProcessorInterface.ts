@@ -12,5 +12,5 @@ import { IncomingSmsgMessage } from '../messages/IncomingSmsgMessage';
 export interface MessageProcessorInterface {
     process( message: ActionMessageInterface | ListingItemMessageInterface | ProposalMessageInterface
         | VoteMessageInterface | IncomingSmsgMessage[] | resources.SmsgMessage[],
-             marketAddress: string): any;
+             emitEvent: boolean): any;
 }

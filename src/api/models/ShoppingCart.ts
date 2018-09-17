@@ -9,13 +9,15 @@ import { ShoppingCartItem } from './ShoppingCartItem';
 
 export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
 
+    public static RELATIONS = [
+        'Profile',
+        'ShoppingCartItems'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ShoppingCart> {
         if (withRelated) {
             return await ShoppingCart.where<ShoppingCart>({ id: value }).fetch({
-                withRelated: [
-                    'Profile',
-                    'ShoppingCartItem'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await ShoppingCart.where<ShoppingCart>({ id: value }).fetch();
@@ -49,7 +51,7 @@ export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
         return this.belongsTo(Profile, 'profile_id', 'id');
     }
 
-    public ShoppingCartItem(): Collection<ShoppingCartItem> {
+    public ShoppingCartItems(): Collection<ShoppingCartItem> {
         return this.hasMany(ShoppingCartItem, 'shopping_cart_id', 'id');
     }
 }

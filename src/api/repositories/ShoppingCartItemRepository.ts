@@ -30,12 +30,12 @@ export class ShoppingCartItemRepository {
         return this.ShoppingCartItemModel.fetchById(id, withRelated);
     }
 
-    public async findOneByListingItemOnCart(cartId: number, listingItemId: number): Promise<ShoppingCartItem> {
-        return this.ShoppingCartItemModel.findOneByListingItemOnCart(cartId, listingItemId);
+    public async findOneByCartIdAndListingItemId(cartId: number, listingItemId: number): Promise<ShoppingCartItem> {
+        return this.ShoppingCartItemModel.fetchByCartIdAndListingItemId(cartId, listingItemId);
     }
 
-    public async findListItemsByCartId(cartId: number): Promise<Bookshelf.Collection<ShoppingCartItem>> {
-        return this.ShoppingCartItemModel.findListItemsByCartId(cartId);
+    public async findAllByCartId(cartId: number): Promise<Bookshelf.Collection<ShoppingCartItem>> {
+        return this.ShoppingCartItemModel.fetchAllByCartId(cartId);
     }
 
     public async create(data: any): Promise<ShoppingCartItem> {

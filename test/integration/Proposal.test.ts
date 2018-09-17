@@ -8,12 +8,9 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { Proposal } from '../../src/api/models/Proposal';
-
 import { ProposalService } from '../../src/api/services/ProposalService';
 import { ProposalType } from '../../src/api/enums/ProposalType';
 import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequest';

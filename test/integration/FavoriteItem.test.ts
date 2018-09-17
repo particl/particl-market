@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import * as Bookshelf from 'bookshelf';
 import { Logger as LoggerType } from '../../src/core/Logger';
@@ -12,22 +13,17 @@ import { FavoriteItemService } from '../../src/api/services/FavoriteItemService'
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { MessageException } from '../../src/api/exceptions/MessageException';
-
 import { FavoriteItem } from '../../src/api/models/FavoriteItem';
-import { ListingItem } from '../../src/api/models/ListingItem';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-
 import { FavoriteItemCreateRequest } from '../../src/api/requests/FavoriteItemCreateRequest';
 import { FavoriteItemUpdateRequest } from '../../src/api/requests/FavoriteItemUpdateRequest';
 import { FavoriteSearchParams } from '../../src/api/requests/FavoriteSearchParams';
 import * as resources from 'resources';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
-import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 
 describe('FavoriteItem', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

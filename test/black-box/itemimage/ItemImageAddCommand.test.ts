@@ -86,7 +86,7 @@ describe('ItemImageAddCommand', () => {
     });
 
     test('Should fail to add ItemImage because missing ListingItemTemplate.Id', async () => {
-        const result: any = await rpc(imageCommand, [addCommand]);
+        const result: any = await testUtil.rpc(imageCommand, [addCommand]);
         result.expectJson();
         result.expectStatusCode(404);
         expect(result.error.error.success).toBe(false);
@@ -95,7 +95,7 @@ describe('ItemImageAddCommand', () => {
 
     test('Should fail to add ItemImage because given ListingItemTemplate does not have ItemInformation', async () => {
         // add item image
-        const addDataRes: any = await rpc(imageCommand, [addCommand, createdListingItemTemplateWithoutItemInformation.id]);
+        const addDataRes: any = await testUtil.rpc(imageCommand, [addCommand, createdListingItemTemplateWithoutItemInformation.id]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(400);
         expect(addDataRes.error.error.success).toBe(false);
@@ -104,22 +104,25 @@ describe('ItemImageAddCommand', () => {
 
     test('Should fail to add ItemImage without ItemImageData', async () => {
         // add item image
-        const addDataRes: any = await rpc(imageCommand, [addCommand, createdListingItemTemplate.id]);
+        const addDataRes: any = await testUtil.rpc(imageCommand, [addCommand, createdListingItemTemplate.id]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
+        expect(addDataRes.error.error.success).toBe(false);
+        expect(addDataRes.error.error.message).toBe('Invalid image protocol.');
     });
 
     test('Should fail to add ItemImage because invalid ItemImageData protocol', async () => {
-        const addDataRes: any = await rpc(imageCommand,
+        const addDataRes: any = await testUtil.rpc(imageCommand,
             [addCommand, createdListingItemTemplate.id, 'TEST-DATA-ID', 'INVALID_PROTOCOL', 'BASE64', ImageProcessing.milkcat]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
+        expect(addDataRes.error.error.success).toBe(false);
         expect(addDataRes.error.error.message).toBe('Invalid image protocol.');
     });
 
     test('Should add ItemImage with ItemImageData', async () => {
         // add item image
-        const addDataRes: any = await rpc(imageCommand, [
+        const addDataRes: any = await testUtil.rpc(imageCommand, [
             addCommand,
             createdListingItemTemplate.id,
             'TEST-DATA-ID',
@@ -148,7 +151,8 @@ describe('ItemImageAddCommand', () => {
 
             if ( imageData.imageVersion === ImageVersions.ORIGINAL.propName ) {
 
-                const rawImage = imageData.data;
+                const rawImage = imageData.ItemImageDataContent.data;
+                expect(typeof rawImage).toBe('string');
 
                 const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
                 const originalData: string = await ImageProcessing.convertToJPEG(rawImage);
@@ -180,7 +184,7 @@ describe('ItemImageAddCommand', () => {
 
             if ( imageData.imageVersion === ImageVersions.ORIGINAL.propName ) {
 
-                const rawImage = imageData.data;
+                const rawImage = imageData.ItemImageDataContent.data;
 
                 const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
                 const originalData: string = await ImageProcessing.convertToJPEG(rawImage);
@@ -212,7 +216,7 @@ describe('ItemImageAddCommand', () => {
 
             if ( imageData.imageVersion === ImageVersions.ORIGINAL.propName ) {
 
-                const rawImage = imageData.data;
+                const rawImage = imageData.ItemImageDataContent.data;
 
                 const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
                 const originalData: string = await ImageProcessing.convertToJPEG(rawImage);

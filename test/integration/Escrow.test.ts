@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -11,15 +12,12 @@ import { ProfileService } from '../../src/api/services/ProfileService';
 import { EscrowService } from '../../src/api/services/EscrowService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { Escrow } from '../../src/api/models/Escrow';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
-
 import { EscrowCreateRequest } from '../../src/api/requests/EscrowCreateRequest';
 import { EscrowUpdateRequest } from '../../src/api/requests/EscrowUpdateRequest';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
