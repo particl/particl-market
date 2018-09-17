@@ -11,9 +11,9 @@ declare module 'resources' {
         description: string;
         createdAt: Date;
         updatedAt: Date;
-        parentItemCategoryId: any;
-        ChildItemCategories: any[];
-        ParentItemCategory: any;
+        parentItemCategoryId: number;
+        ChildItemCategories: ItemCategory[];
+        ParentItemCategory: ItemCategory;
     }
 
 }
