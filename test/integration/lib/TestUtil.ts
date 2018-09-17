@@ -15,7 +15,6 @@ export class TestUtil {
     }
 
     public async bootstrapAppContainer(app: any): Promise<void> {
-
         await app.bootstrap();
         await this.waitFor(10);
     }

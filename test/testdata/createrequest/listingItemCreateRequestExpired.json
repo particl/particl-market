@@ -1,7 +1,8 @@
 {
-    "postedAt": "2018-03-31T04:00:00+0200",
-    "expiryTime": "0",
-    "expiredAt": "2018-03-31T04:00:00+0200",
+    "expiryTime": 4,
+    "postedAt": 1436786316653,
+    "expiredAt": 1436886316653,
+    "receivedAt": 1436786317653,
     "itemInformation": {
         "title": "Small Soft Gloves",
         "shortDescription": "Ergonomic Tuna",

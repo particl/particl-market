@@ -106,8 +106,17 @@ export class FavoriteItemService {
      *
      */
     public async getSearchParams(data: any): Promise<any> {
+        if (data.params.length < 2) {
+            this.log.warn(`Not enough parameters supplied.`);
+            throw new MessageException('Not enough parameters supplied.');
+        }
         let profileId = data.params[0];
         let itemId = data.params[1] || 0;
+
+        if (typeof profileId !== 'number') {
+            this.log.warn(`Profile id must be numeric.`);
+            throw new MessageException('Profile id must be numeric.');
+        }
 
         // if item hash is in the params
         if (itemId && typeof itemId === 'string') {

@@ -2,20 +2,17 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { CurrencyPrice } from '../../src/api/models/CurrencyPrice';
-
 import { CurrencyPriceService } from '../../src/api/services/CurrencyPriceService';
 import { CurrencyPriceParams } from '../../src/api/requests/CurrencyPriceParams';
-
 import * as createRequestCurrencyPricePARTINR from '../testdata/createrequest/currencyPricePARTINR.json';
 import * as updateRequestCurrencyPricePARTINR from '../testdata/updaterequest/currencyPricePARTINR.json';
 

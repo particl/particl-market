@@ -31,6 +31,9 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+        if (data.params.length < 1) {
+            throw new MessageException('Requires arg: ItemImageId');
+        }
         // find itemImage
         const itemImage = await this.itemImageService.findOne(data.params[0]);
 

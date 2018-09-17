@@ -6,6 +6,9 @@ declare module 'resources' {
 
     interface ShoppingCartItem {
         id: number;
+        ShoppingCart: ShoppingCart;
+        ListingItem: ListingItem;
+
         createdAt: Date;
         updatedAt: Date;
     }

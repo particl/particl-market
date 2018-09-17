@@ -2,22 +2,19 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { BidData } from '../../src/api/models/BidData';
-
 import { BidDataService } from '../../src/api/services/BidDataService';
 import { BidService } from '../../src/api/services/BidService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
-
-import { BidCreateRequest } from '../../src/api/requests/BidCreateRequest';
 import { BidDataCreateRequest } from '../../src/api/requests/BidDataCreateRequest';
 import { BidDataUpdateRequest } from '../../src/api/requests/BidDataUpdateRequest';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
@@ -25,7 +22,9 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import * as resources from 'resources';
-import * as bidCreateRequest1 from '../testdata/createrequest/bidCreateRequestMPA_BIDWithoutBidDatas.json';
+import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
+import { BidMessageType } from '../../src/api/enums/BidMessageType';
+import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 
 describe('BidDatas', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -35,22 +34,21 @@ describe('BidDatas', () => {
 
     let testDataService: TestDataService;
     let bidDataService: BidDataService;
-    let bidService: BidService;
     let marketService: MarketService;
     let profileService: ProfileService;
     let listingItemService: ListingItemService;
+    let bidService: BidService;
 
-    let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
+    let defaultProfile: resources.Profile;
+    let sellerProfile: resources.Profile;
+
     let createdListingItem: resources.ListingItem;
     let createdBid: resources.Bid;
 
     let createdId;
 
-    const testBid: BidCreateRequest = bidCreateRequest1;
-
     const testData = {
-        bid_id: null,
         dataId: 'color',
         dataValue: 'black'
     } as BidDataCreateRequest;
@@ -66,25 +64,41 @@ describe('BidDatas', () => {
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.BidDataService);
-        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
         marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
-        bidDataService = app.IoC.getNamed<BidDataService>(Types.Service, Targets.Service.BidDataService);
         listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        bidService = app.IoC.getNamed<BidService>(Types.Service, Targets.Service.BidService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // get default profile
         const defaultProfileModel = await profileService.getDefault();
         defaultProfile = defaultProfileModel.toJSON();
 
-        // get market
+        // generate seller profile
+        const sellerProfileParams = new GenerateProfileParams([true, false]).toParamsArray();
+        const profiles = await testDataService.generate({
+            model: CreatableModel.PROFILE,
+            amount: 1,
+            withRelated: true,
+            generateParams: sellerProfileParams
+        } as TestDataGenerateRequest);
+        sellerProfile = profiles[0];
+
         const defaultMarketModel = await marketService.getDefault();
         defaultMarket = defaultMarketModel.toJSON();
 
-        // create listingitem and store its id for testing
-        const generateParams = new GenerateListingItemParams().toParamsArray();
+        const generateParams = new GenerateListingItemParams([
+            true,                               // generateItemInformation
+            true,                               // generateShippingDestinations
+            false,                              // generateItemImages
+            true,                               // generatePaymentInformation
+            true,                               // generateEscrow
+            true,                               // generateItemPrice
+            true,                               // generateMessagingInformation
+            false,                              // generateListingItemObjects
+        ]).toParamsArray();
+
         const listingItems = await testDataService.generate({
             model: CreatableModel.LISTINGITEM,  // what to generate
             amount: 1,                          // how many to generate
@@ -94,12 +108,23 @@ describe('BidDatas', () => {
         createdListingItem = listingItems[0];
 
         // create bid
-        testBid.listing_item_id = createdListingItem.id;
-        testBid.bidder = defaultProfile.address;
-        testBid.address.profile_id = defaultProfile.id;
+        const bidParams = new GenerateBidParams([
+            false,                      // generateListingItemTemplate
+            false,                      // generateListingItem
+            createdListingItem.hash,    // listingItemhash
+            BidMessageType.MPA_BID,     // action
+            defaultProfile.address,     // bidder
+            sellerProfile.address       // listingItemSeller
+        ]).toParamsArray();
 
-        const createdBidModel = await bidService.create(testBid);
-        createdBid = createdBidModel.toJSON();
+        const bids = await testDataService.generate({
+            model: CreatableModel.BID,
+            amount: 1,
+            withRelated: true,
+            generateParams: bidParams
+        } as TestDataGenerateRequest);
+        createdBid = bids[0];
+
 
     });
 
@@ -110,8 +135,7 @@ describe('BidDatas', () => {
     test('Should throw ValidationException because there is no bid_id', async () => {
         expect.assertions(1);
 
-        const bidData = {dataId: 'color', dataValue: 'black'} as BidDataCreateRequest;
-        await bidDataService.create(bidData).catch(e =>
+        await bidDataService.create(testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
@@ -141,8 +165,8 @@ describe('BidDatas', () => {
         const bidData = bidDataCollection.toJSON();
 
         log.debug('biddatas: ', JSON.stringify(bidData, null, 2));
-        expect(bidData.length).toBe(1);
-        const result = bidData[0];
+        expect(bidData.length).toBe(16);
+        const result = bidData[15];
 
         // test the values
         expect(result.dataId).toBe(testDataUpdated.dataId);

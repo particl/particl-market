@@ -65,7 +65,7 @@ export class ShippingDestinationService {
         // finally find and return the created shippingDestination
         const newShippingDestination = await this.findOne(shippingDestination.id);
 
-        this.log.debug('shippingDestinationService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        // this.log.debug('shippingDestinationService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return newShippingDestination;
     }
 

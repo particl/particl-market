@@ -339,7 +339,7 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const listingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
 
-            this.log.debug('listingItemTemplateCreateRequest:', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+            // this.log.debug('listingItemTemplateCreateRequest:', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
 
             let listingItemTemplateModel = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest);
             let result = listingItemTemplateModel.toJSON();
@@ -492,7 +492,24 @@ export class TestDataService {
         const action = generateParams.action ? generateParams.action : BidMessageType.MPA_BID;
 
         // TODO: generate biddatas
-        const bidDatas: BidDataCreateRequest[] = [];
+        const bidDatas = [
+            {dataId: 'size', dataValue: 'XL'},
+            {dataId: 'color', dataValue: 'pink'},
+            {dataId: 'outputs', dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0b\"' +
+                ',\"vout\":1,\"amount\":100.52497491}]'},
+            {dataId: 'pubkeys', dataValue: '[\"021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d90\"]'},
+            {dataId: 'changeaddr', dataValue: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb4'},
+            {dataId: 'change', dataValue: 96.52477491},
+            {dataId: 'ship.title', dataValue: 'title'},
+            {dataId: 'ship.firstName', dataValue: 'asdf'},
+            {dataId: 'ship.lastName', dataValue: 'asdf'},
+            {dataId: 'ship.addressLine1', dataValue: 'asdf'},
+            {dataId: 'ship.addressLine2', dataValue: 'asdf'},
+            {dataId: 'ship.city', dataValue: 'asdf'},
+            {dataId: 'ship.state', dataValue: ''},
+            {dataId: 'ship.zipCode', dataValue: '1234'},
+            {dataId: 'ship.country', dataValue: 'FI'}
+        ] as BidDataCreateRequest[];
 
         const bidCreateRequest = {
             action,
@@ -522,12 +539,12 @@ export class TestDataService {
 
         this.log.debug('generateOrders, generateParams: ', generateParams);
 
-        const bidGenerateParams = new GenerateBidParams();
         let bid: resources.Bid;
 
         // generate bid
         if (generateParams.generateBid) {
 
+            const bidGenerateParams = new GenerateBidParams();
             bidGenerateParams.generateListingItemTemplate = generateParams.generateListingItemTemplate;
             bidGenerateParams.generateListingItem = generateParams.generateListingItem;
             bidGenerateParams.action = BidMessageType.MPA_ACCEPT;
@@ -539,35 +556,17 @@ export class TestDataService {
             this.log.debug('bids generated:', bids.length);
             this.log.debug('bid.id:', bid.id);
 
-            // set the bid_id for order generation
-            generateParams.bidId = bid.id;
         } else {
-            bid = {} as resources.Bid;
+            const bidModel = await this.bidService.findOne(generateParams.bidId);
+            bid = bidModel.toJSON();
         }
 
-        this.log.debug('bid:', JSON.stringify(bid, null, 2));
-
-        // wtf why are the objects allready?
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(bid.ListingItem.ListingItemTemplate.id);
-        const listingItemModel = await this.listingItemService.findOne(bid.ListingItem.id);
-
-        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
-        const listingItem: resources.ListingItem = listingItemModel.toJSON();
-
-
-        this.log.debug('bid.ListingItem.ListingItemTemplate.id:', bid.ListingItem.ListingItemTemplate.id);
-        this.log.debug('listingItemTemplate.id:', listingItemTemplate.id);
-        this.log.debug('listingItem.id:', listingItem.id);
-        this.log.debug('listingItem.seller:', listingItem.seller);
-        this.log.debug('bid.bidder:', bid.bidder);
-        // this.log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
-        // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
-
+        // set the bid_id for order generation
+        generateParams.bidId = bid.id;
 
         const items: resources.Order[] = [];
         for (let i = amount; i > 0; i--) {
             const orderCreateRequest = await this.generateOrderData(generateParams);
-
 
             this.log.debug('orderCreateRequest:', JSON.stringify(orderCreateRequest, null, 2));
 
@@ -588,6 +587,9 @@ export class TestDataService {
         // then generate ordercreaterequest with some orderitems and orderitemobjects
         const orderCreateRequest = await this.orderFactory.getModelFromBid(bid);
 
+        if (!generateParams.generateOrderItem) {
+            orderCreateRequest.orderItems = [];
+        }
         return orderCreateRequest;
     }
 
@@ -850,7 +852,11 @@ export class TestDataService {
             paymentInformation,
             messagingInformation,
             listingItemObjects,
-            market_id: defaultMarket.id
+            market_id: defaultMarket.id,
+            expiryTime: 4,
+            postedAt: new Date().getTime(),
+            expiredAt: new Date().getTime() + 100000000,
+            receivedAt: new Date().getTime()
         } as ListingItemCreateRequest;
 
         // fetch listingItemTemplate if hash was given and set the listing_item_template_id

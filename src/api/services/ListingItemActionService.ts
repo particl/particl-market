@@ -42,7 +42,6 @@ import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ProfileService } from './ProfileService';
 import { VoteMessageType } from '../enums/VoteMessageType';
 import { VoteFactory } from '../factories/VoteFactory';
-import { Market } from '../models/Market';
 import { MarketService } from './MarketService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
@@ -90,8 +89,6 @@ export class ListingItemActionService {
      */
     @validate()
     public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<SmsgSendResponse> {
-
-        this.log.debug('post()');
 
         // fetch the listingItemTemplate
         const itemTemplateModel = await this.listingItemTemplateService.findOne(data.listingItemTemplateId, true);
@@ -218,7 +215,7 @@ export class ListingItemActionService {
             listingItemModel = await this.listingItemService.findOne(listingItem.id);
             listingItem = listingItemModel.toJSON();
 
-            this.log.debug('saved listingItem:', listingItem.hash);
+            this.log.debug('==> PROCESSED LISTINGITEM: ', listingItem.hash);
             return SmsgMessageStatus.PROCESSED;
 
         } else {
@@ -391,9 +388,10 @@ export class ListingItemActionService {
     }
 
     private configureEventListeners(): void {
+        this.log.info('Configuring EventListeners ');
+
         this.eventEmitter.on(Events.ListingItemReceivedEvent, async (event) => {
-            // this.log.info('Received event, msgid:', event.smsgMessage.msgid);
-            this.log.debug('Received event:', JSON.stringify(event, null, 2));
+            this.log.debug('Received event, message type: ' + event.smsgMessage.type + ', msgid: ' + event.smsgMessage.msgid);
             await this.processListingItemReceivedEvent(event)
                 .then(async status => {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);

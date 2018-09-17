@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/ListingItemTemplateCreateRequest';
@@ -13,7 +13,7 @@ import { ListingItemTemplate } from 'resources';
 import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
 import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-import {ObjectHash} from '../../../src/core/helpers/ObjectHash';
+import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 
 describe('ItemImageRemoveCommand', () => {
 
@@ -84,7 +84,7 @@ describe('ItemImageRemoveCommand', () => {
         listingItemId = listingItems[0]['id'];
 
         // add item image
-        const addDataRes: any = await rpc(Commands.ITEMIMAGE_ROOT.commandName, [Commands.ITEMIMAGE_ADD.commandName,
+        const addDataRes: any = await testUtil.rpc(Commands.ITEMIMAGE_ROOT.commandName, [Commands.ITEMIMAGE_ADD.commandName,
             createdTemplateId,
             'TEST-DATA-ID',
             ImageDataProtocolType.LOCAL,
@@ -95,6 +95,14 @@ describe('ItemImageRemoveCommand', () => {
         addDataRes.expectDataRpc(keys);
         createdItemImageId = addDataRes.getBody()['result'].id;
 
+    });
+
+    test('Should fail to remove ItemImage because no args', async () => {
+        const result: any = await testUtil.rpc(imageCommand, [removeCommand]);
+        result.expectJson();
+        result.expectStatusCode(404);
+        expect(result.error.error.success).toBe(false);
+        expect(result.error.error.message).toBe('Requires arg: ItemImageId');
     });
 
     test('Should fail to remove ItemImage because there is a ListingItem related to ItemInformation.', async () => {
@@ -112,7 +120,10 @@ describe('ItemImageRemoveCommand', () => {
         const newCreatedTemplateId = result.id;
 
         // add item image
-        const itemImageRes: any = await rpc(Commands.ITEMIMAGE_ROOT.commandName, [Commands.ITEMIMAGE_ADD.commandName, newCreatedTemplateId, 'TEST-DATA-ID',
+        const itemImageRes: any = await testUtil.rpc(Commands.ITEMIMAGE_ROOT.commandName, [
+            Commands.ITEMIMAGE_ADD.commandName,
+            newCreatedTemplateId,
+            'TEST-DATA-ID',
             ImageDataProtocolType.LOCAL,
             'BASE64',
             ImageProcessing.milkcatSmall]);
@@ -120,7 +131,7 @@ describe('ItemImageRemoveCommand', () => {
         itemImageRes.expectStatusCode(200);
         createdItemImageIdNew = itemImageRes.getBody()['result'].id;
 
-        result = await rpc(imageCommand, [removeCommand, createdItemImageIdNew]);
+        result = await testUtil.rpc(imageCommand, [removeCommand, createdItemImageIdNew]);
         result.expectJson();
         result.expectStatusCode(404);
         expect(result.error.error.message).toBe('Can\'t delete itemImage because the item has allready been posted!');
@@ -128,13 +139,13 @@ describe('ItemImageRemoveCommand', () => {
 
     test('Should remove ItemImage', async () => {
         // remove item image
-        const result: any = await rpc(imageCommand, [removeCommand, createdItemImageId]);
+        const result: any = await testUtil.rpc(imageCommand, [removeCommand, createdItemImageId]);
         result.expectJson();
         result.expectStatusCode(200);
     });
 
     test('Should fail to remove ItemImage because itemImage already been removed', async () => {
-        const result: any = await rpc(imageCommand, [removeCommand, createdItemImageId]);
+        const result: any = await testUtil.rpc(imageCommand, [removeCommand, createdItemImageId]);
         result.expectJson();
         result.expectStatusCode(404);
     });
