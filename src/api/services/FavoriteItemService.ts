@@ -53,9 +53,7 @@ export class FavoriteItemService {
      * @returns {Promise<FavoriteItem>}
      */
     public async findOneByProfileIdAndListingItemId(profileId: number, itemId: number, withRelated: boolean = true): Promise<FavoriteItem> {
-        this.log.debug('find, profileId: ' + profileId + ', itemId: ' + itemId);
         const favoriteItem = await this.favoriteItemRepo.findOneByProfileIdAndListingItemId(profileId, itemId, withRelated);
-        this.log.debug('find, result: ', favoriteItem);
         if (favoriteItem === null) {
             this.log.warn(`FavoriteItem with the profileId=${profileId} or listingItemId=${itemId} was not found!`);
             throw new NotFoundException(profileId + ' or ' + itemId);

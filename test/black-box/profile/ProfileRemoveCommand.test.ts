@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -36,7 +35,7 @@ describe('ProfileRemoveCommand', () => {
 
     test('Should fail to delete Profile with invalid id', async () => {
         const invalidProfileId = 0;
-        const res = await rpc(profileCommand, [profileRemoveCommand, invalidProfileId]);
+        const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, invalidProfileId]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
@@ -44,19 +43,19 @@ describe('ProfileRemoveCommand', () => {
     });
 
     test('Should delete the Profile by id', async () => {
-        const res = await rpc(profileCommand, [profileRemoveCommand, createdProfile1.id]);
+        const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, createdProfile1.id]);
         res.expectJson();
         res.expectStatusCode(200);
     });
 
     test('Should delete the Profile by name ', async () => {
-        const res = await rpc(profileCommand, [profileRemoveCommand, createdProfile2.name]);
+        const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, createdProfile2.name]);
         res.expectJson();
         res.expectStatusCode(200);
     });
 
     test('Should fail to delete Profile using id because it doesnt exist', async () => {
-        const res = await rpc(profileCommand, [profileRemoveCommand, createdProfile1.id]);
+        const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, createdProfile1.id]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
@@ -64,7 +63,7 @@ describe('ProfileRemoveCommand', () => {
     });
 
     test('Should fail to delete Profile using name because it doesnt exist', async () => {
-        const res = await rpc(profileCommand, [profileRemoveCommand, createdProfile2.name]);
+        const res = await testUtil.rpc(profileCommand, [profileRemoveCommand, createdProfile2.name]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);

@@ -8,7 +8,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import {SearchOrder} from '../../../src/api/enums/SearchOrder';
+import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 
 describe('ListingItemTemplateSearchCommand', () => {
 
