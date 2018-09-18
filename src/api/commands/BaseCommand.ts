@@ -49,7 +49,8 @@ export class BaseCommand {
         if (commandType) {
             const rpcCommand = commandFactory.get(commandType);
             // validate
-            await rpcCommand.validate(request);
+            const newRpcRequest = await rpcCommand.validate(request);
+            request = newRpcRequest ? newRpcRequest : request;
             // execute
             return await rpcCommand.execute(request, commandFactory);
         } else {
@@ -57,8 +58,8 @@ export class BaseCommand {
         }
     }
 
-    public async validate(data: RpcRequest): Promise<void> {
-        //
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        return data;
     }
 
     public help(): string {

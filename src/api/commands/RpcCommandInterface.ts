@@ -13,7 +13,7 @@ export interface RpcCommandInterface<T> {
     command: Command;
 
     execute(data: RpcRequest, rpcCommandFactory?: RpcCommandFactory): Promise<T>;
-    validate(data: RpcRequest): Promise<void>;
+    validate(data: RpcRequest): Promise<RpcRequest | void>;
     getName(): string;
     getCommand(): Command;
     getChildCommands(): Command[];

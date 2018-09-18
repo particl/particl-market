@@ -45,16 +45,22 @@ export class FavoriteItemService {
     }
 
     /**
-     * search favorite item using given FavoriteSearchParams
+     * search favorite item by profileId and itemId
      *
-     * @param options
-     * @returns {Promise<FavoriteItem> }
+     * @param {number} profileId
+     * @param {number} itemId
+     * @param {boolean} withRelated
+     * @returns {Promise<FavoriteItem>}
      */
-
-    @validate()
-    public async search(
-        @request(FavoriteSearchParams) options: FavoriteSearchParams): Promise<FavoriteItem> {
-        return this.favoriteItemRepo.search(options);
+    public async findOneByProfileIdAndListingItemId(profileId: number, itemId: number, withRelated: boolean = true): Promise<FavoriteItem> {
+        this.log.debug('find, profileId: ' + profileId + ', itemId: ' + itemId);
+        const favoriteItem = await this.favoriteItemRepo.findOneByProfileIdAndListingItemId(profileId, itemId, withRelated);
+        this.log.debug('find, result: ', favoriteItem);
+        if (favoriteItem === null) {
+            this.log.warn(`FavoriteItem with the profileId=${profileId} or listingItemId=${itemId} was not found!`);
+            throw new NotFoundException(profileId + ' or ' + itemId);
+        }
+        return favoriteItem;
     }
 
     /**
@@ -64,8 +70,8 @@ export class FavoriteItemService {
      * @param withRelated
      * @returns {Promise<Bookshelf.Collection<FavoriteItem>> }
      */
-    public async findFavoritesByProfileId(profileId: number, withRelated: boolean): Promise<Bookshelf.Collection<FavoriteItem>> {
-        return this.favoriteItemRepo.findFavoritesByProfileId(profileId, withRelated);
+    public async findAllByProfileId(profileId: number, withRelated: boolean): Promise<Bookshelf.Collection<FavoriteItem>> {
+        return this.favoriteItemRepo.findAllByProfileId(profileId, withRelated);
     }
 
 
@@ -95,49 +101,6 @@ export class FavoriteItemService {
 
     public async destroy(id: number): Promise<void> {
         await this.favoriteItemRepo.destroy(id);
-    }
-
-    /**
-     * data.params[]:
-     *  [0]: item_id or hash
-     *  [1]: profile_id or null
-     *
-     * when data.params[0] is number then findById, else findOneByHash
-     * TODO: needs to be refactored
-     *
-     */
-    public async getSearchParamsFromRpcRequest(data: RpcRequest): Promise<any> {
-        if (data.params.length < 2) {
-            this.log.warn(`Not enough parameters supplied.`);
-            throw new MessageException('Not enough parameters supplied.');
-        }
-        let profileId = data.params[0];
-        let itemId = data.params[1] || 0;
-
-        if (profileId && typeof profileId === 'string') {
-            const profileModel = await this.profileService.findOneByName(data.params[1]);
-            const profile = profileModel.toJSON();
-            profileId = profile.id;
-        } else if (!profileId) {
-            // if profile id not found in the params then find default profile
-            const profile = await this.profileService.findOneByName('DEFAULT');
-            profileId = profile.id;
-        }
-
-        // if item hash is in the params
-        if (itemId && typeof itemId === 'string') {
-            const listingItemModel = await this.listingItemService.findOneByHash(itemId);
-            const listingItem = listingItemModel.toJSON();
-            itemId = listingItem.id;
-        }
-        // find listing item by id
-        const item = await this.listingItemService.findOne(itemId);
-
-        if (item === null) {
-            this.log.warn(`ListingItem with the id=${itemId} was not found!`);
-            throw new NotFoundException(itemId);
-        }
-        return [profileId, item.id];
     }
 
 }

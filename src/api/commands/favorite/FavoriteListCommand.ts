@@ -51,13 +51,13 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
             return await this.profileService.findOne(data.params[0])
                 .then(async value => {
                     const profile = value.toJSON();
-                    return await this.favoriteItemService.findFavoritesByProfileId(profile.id, data.params[1]);
+                    return await this.favoriteItemService.findAllByProfileId(profile.id, data.params[1]);
                 });
         } else {
             return await this.profileService.findOneByName(data.params[0])
                 .then(async value => {
                     const profile = value.toJSON();
-                    return await this.favoriteItemService.findFavoritesByProfileId(profile.id, data.params[1]);
+                    return await this.favoriteItemService.findAllByProfileId(profile.id, data.params[1]);
                 });
         }
 

@@ -15,6 +15,7 @@ import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import {MessageException} from '../../exceptions/MessageException';
 
 /**
  * Command for removing an item from your favorites, identified by ID or hash.
@@ -41,13 +42,53 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        const favoriteParams = await this.favoriteItemService.getSearchParamsFromRpcRequest(data);
-        const favoriteItem = await this.favoriteItemService.search({profileId: favoriteParams[0], itemId: favoriteParams[1] } as FavoriteSearchParams);
-        if (favoriteItem === null) {
-            this.log.warn(`FavoriteItem with the item id=${favoriteParams[1]} was not found!`);
-            throw new NotFoundException(favoriteParams[1]);
+        const favoriteItemModel = await this.favoriteItemService.findOneByProfileIdAndListingItemId(data.params[0], data.params[1]);
+        const favoriteItem = favoriteItemModel.toJSON();
+        return this.favoriteItemService.destroy(favoriteItem.id);
+    }
+
+    /**
+     * validate that profile and item exists, replace possible hash with id
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 2) {
+            throw new MessageException('Missing parameters.');
         }
-        return this.favoriteItemService.destroy(favoriteItem.Id);
+
+        const profileId = data.params[0];
+        let itemId = data.params[1];
+
+        if (profileId && typeof profileId === 'string') {
+            throw new MessageException('profileId cant be a string.');
+        } else {
+            // make sure profile with the id exists
+            await this.profileService.findOne(profileId);   // throws if not found
+        }
+
+        // if item hash is in the params, fetch the id
+        if (itemId && typeof itemId === 'string') {
+            const listingItemModel = await this.listingItemService.findOneByHash(itemId);
+            const listingItem = listingItemModel.toJSON();
+            itemId = listingItem.id;
+        } else {
+            // else make sure the the item with the id exists, throws if not
+            const item = await this.listingItemService.findOne(itemId);
+        }
+        return await this.favoriteItemService.findOneByProfileIdAndListingItemId(profileId, itemId) // throws if not found
+            .catch(reason => {
+                // great, not found, so we can continue and create it
+                // return RpcRequest with the correct data to be passed to execute
+                data.params[0] = profileId;
+                data.params[1] = itemId;
+                return data;
+            })
+            .then(value => {
+                throw new MessageException('FavoriteItem allready exists.');
+            });
     }
 
     public usage(): string {
@@ -58,7 +99,7 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <profileId>                   - Numeric - The ID of the profile \n'
             + '                                     associated with the favorite we want to remove. \n'
-            + '    <itemId>                      - Numeric - The ID of the listing item you want \n'
+            + '    <listingItemId>               - Numeric - The ID of the listing item you want \n'
             + '                                     to remove from your favorites. \n'
             + '    <hash>                        - String - The hash of the listing item you want \n'
             + '                                     to remove from your favourites. ';

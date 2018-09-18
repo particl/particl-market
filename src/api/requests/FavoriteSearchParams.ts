@@ -10,10 +10,10 @@ import { SearchOrder } from '../enums/SearchOrder';
 export class FavoriteSearchParams extends RequestBody {
 
     @IsNotEmpty()
-    public profileId: string | number;
+    public profileId: number;
 
     @IsNotEmpty()
-    public itemId: string | number;
+    public itemId: number;
 
 }
 // tslint:enable:variable-name
