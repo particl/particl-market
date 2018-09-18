@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -10,15 +11,13 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import * as resources from 'resources';
 
 describe('ProfileRemoveCommand', () => {
-
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new BlackBoxTestUtil();
 
     const profileCommand = Commands.PROFILE_ROOT.commandName;
     const profileRemoveCommand = Commands.PROFILE_REMOVE.commandName;
-
-    const testUtil = new BlackBoxTestUtil();
 
     let createdProfile1: resources.Profile;
     let createdProfile2: resources.Profile;
