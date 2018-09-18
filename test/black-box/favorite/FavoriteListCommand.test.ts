@@ -7,9 +7,8 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import {ListingItem, Profile, default as resources} from 'resources';
-import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
-import {Logger as LoggerType} from '../../../src/core/Logger';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import * as resources from 'resources';
 
 describe('FavoriteListCommand', () => {
 
@@ -26,8 +25,6 @@ describe('FavoriteListCommand', () => {
 
     let listingItem1: resources.ListingItem;
     let listingItem2: resources.ListingItem;
-    let secondProfile: resources.Profile;
-
 
     beforeAll(async () => {
 
@@ -54,7 +51,7 @@ describe('FavoriteListCommand', () => {
             2,                          // how many to generate
             true,                    // return model
             generateListingItemParams           // what kind of data to generate
-        ) as ListingItem[];
+        ) as resources.ListingItem[];
 
         // store id's for testing
         listingItem1 = listingItems[0];
