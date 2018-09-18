@@ -45,7 +45,7 @@ describe('FavoriteListCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        // create two items and store their id's for testing
+        // create two items
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,         // what to generate
             2,                          // how many to generate
@@ -53,7 +53,6 @@ describe('FavoriteListCommand', () => {
             generateListingItemParams           // what kind of data to generate
         ) as resources.ListingItem[];
 
-        // store id's for testing
         listingItem1 = listingItems[0];
         listingItem2 = listingItems[1];
 

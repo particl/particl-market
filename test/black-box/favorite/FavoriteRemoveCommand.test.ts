@@ -2,54 +2,40 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { EscrowType } from '../../../src/api/enums/EscrowType';
-import { Currency } from '../../../src/api/enums/Currency';
-import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
-import { PaymentType } from '../../../src/api/enums/PaymentType';
-import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolType';
-
-import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
-import { MessagingProtocolType } from '../../../src/api/enums/MessagingProtocolType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import {GenerateListingItemParams} from '../../../src/api/requests/params/GenerateListingItemParams';
-import {ListingItem, Profile} from 'resources';
-import {GenerateProfileParams} from '../../../src/api/requests/params/GenerateProfileParams';
+import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
+import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
+import * as resources from 'resources';
 
 describe('FavoriteRemoveCommand', () => {
 
     const testUtil = new BlackBoxTestUtil();
-    const method =  Commands.FAVORITE_ROOT.commandName;
-    const subCommand = Commands.FAVORITE_REMOVE.commandName;
-    const subCommandList = Commands.FAVORITE_LIST.commandName;
 
-    let defaultProfileId;
-    let defaultMarketId;
+    const favoriteCommand = Commands.FAVORITE_ROOT.commandName;
+    const favoriteRemoveCommand = Commands.FAVORITE_REMOVE.commandName;
+    const favoriteListCommand = Commands.FAVORITE_LIST.commandName;
 
-    let createdListingItemIdOne;
-    let createdListingItemHashOne;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
 
-    let createdProfileId;
+    let listingItem1: resources.ListingItem;
+    let listingItem2: resources.ListingItem;
 
     beforeAll(async () => {
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testUtil.cleanDb();
 
-        // fetch default profile
-        const defaultProfile = await testUtil.getDefaultProfile();
-        defaultProfileId = defaultProfile.id;
-
-        // fetch default market
-        const defaultMarket = await testUtil.getDefaultMarket();
-        defaultMarketId = defaultMarket.id;
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
-            true,   // generateItemImages
+            false,   // generateItemImages
             true,   // generatePaymentInformation
             true,   // generateEscrow
             true,   // generateItemPrice
@@ -57,47 +43,30 @@ describe('FavoriteRemoveCommand', () => {
             true    // generateListingItemObjects
         ]).toParamsArray();
 
-        // create two items and store their id's for testing
+        // create two items
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,         // what to generate
-            1,                          // how many to generate
+            2,                          // how many to generate
             true,                    // return model
             generateListingItemParams           // what kind of data to generate
-        ) as ListingItem[];
+        ) as resources.ListingItem[];
 
-        // store id's for testing
-        createdListingItemIdOne = listingItems[0].id;
-        createdListingItemHashOne = listingItems[0].hash;
+        listingItem1 = listingItems[0];
+        listingItem2 = listingItems[1];
 
-        // create a second profile
-        const generateProfileParams = new GenerateProfileParams([
-            true,   // generateShippingAddresses
-            true   // generateCryptocurrencyAddresses
-        ]).toParamsArray();
-
-        const profiles = await testUtil.generateData(
-            CreatableModel.PROFILE,             // what to generate
-            1,                          // how many to generate
-            true,                    // return model
-            generateProfileParams               // what kind of data to generate
-        ) as Profile[];
-        createdProfileId = profiles[0].id;
     });
 
-    test('Should remove FavoriteItem by profile id and listing id', async () => {
+    test('Should remove FavoriteItem by profileId and itemId', async () => {
         // add favorite item
-        await testUtil.addData(CreatableModel.FAVORITEITEM, {
-            listing_item_id: createdListingItemIdOne,
-            profile_id: createdProfileId
-        });
+        await testUtil.rpc(favoriteCommand, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, listingItem1.id]);
 
-        // remove favorite item by item id and profile
-        const removeResult: any = await rpc(method, [subCommand, createdProfileId, createdListingItemIdOne]);
+        // remove favorite item by itemId and profileId
+        const removeResult: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem1.id]);
         removeResult.expectJson();
         removeResult.expectStatusCode(200);
 
         // check that the remove really worked
-        const listResult: any = await rpc(method, [subCommandList, createdProfileId]);
+        const listResult: any = await testUtil.rpc(favoriteCommand, [favoriteListCommand, defaultProfile.id]);
         listResult.expectJson();
         listResult.expectStatusCode(200);
         const result: any = listResult.getBody()['result'];
@@ -108,17 +77,17 @@ describe('FavoriteRemoveCommand', () => {
     test('Should remove FavoriteItem by profile id and hash', async () => {
         // add favorite item
         await testUtil.addData(CreatableModel.FAVORITEITEM, {
-            listing_item_id: createdListingItemIdOne,
-            profile_id: createdProfileId
+            listing_item_id: listingItem1.id,
+            profile_id: defaultProfile.id
         });
 
         // remove favorite item by item id and profile
-        const removeResult: any = await rpc(method, [subCommand, createdProfileId, createdListingItemHashOne]);
+        const removeResult: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem1.hash]);
         removeResult.expectJson();
         removeResult.expectStatusCode(200);
 
         // check that the remove really worked
-        const listResult: any = await rpc(method, [subCommandList, createdProfileId]);
+        const listResult: any = await testUtil.rpc(favoriteCommand, [favoriteListCommand, defaultProfile.id]);
         listResult.expectJson();
         listResult.expectStatusCode(200);
         const result: any = listResult.getBody()['result'];
@@ -128,7 +97,7 @@ describe('FavoriteRemoveCommand', () => {
 
     test('Should fail remove FavoriteItem because its already removed', async () => {
         // remove favorite
-        const getDataRes: any = await rpc(method, [subCommand, createdProfileId, createdListingItemIdOne]);
+        const getDataRes: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem1.id]);
         getDataRes.expectJson();
         getDataRes.expectStatusCode(404);
     });
