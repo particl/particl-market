@@ -56,7 +56,6 @@ describe('ProfileRemoveCommand', () => {
     });
 
     test('Should fail to delete Profile using id because it doesnt exist', async () => {
-        // delete profile by name
         const res = await rpc(profileCommand, [profileRemoveCommand, createdProfile1.id]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -65,7 +64,6 @@ describe('ProfileRemoveCommand', () => {
     });
 
     test('Should fail to delete Profile using name because it doesnt exist', async () => {
-        // delete profile by name
         const res = await rpc(profileCommand, [profileRemoveCommand, createdProfile2.name]);
         res.expectJson();
         res.expectStatusCode(404);
