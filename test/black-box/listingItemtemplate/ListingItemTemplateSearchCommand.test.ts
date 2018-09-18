@@ -8,6 +8,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import {SearchOrder} from '../../../src/api/enums/SearchOrder';
 
 describe('ListingItemTemplateSearchCommand', () => {
 
@@ -60,7 +61,13 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should get all ListingItemTemplates for Profile', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand, 0, 2, 'ASC', defaultProfile.id]);
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            defaultProfile.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -69,7 +76,13 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should get only first ListingItemTemplate using pagination (page 0) for Profile', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand, 0, 1, 'ASC', defaultProfile.id]);
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            1,
+            SearchOrder.ASC,
+            defaultProfile.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -82,7 +95,13 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should get second ListingItemTemplate using pagination (page 1) for Profile', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand, 1, 1, 'ASC', defaultProfile.id]);
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            1,
+            1,
+            SearchOrder.ASC,
+            defaultProfile.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -95,7 +114,13 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should return empty ListingItemTemplates array if invalid pagination', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand, 2, 2, 'ASC', defaultProfile.id]);
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            2,
+            2,
+            SearchOrder.ASC,
+            defaultProfile.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -104,7 +129,14 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should search ListingItemTemplates by ItemCategory key', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand, 0, 2, 'ASC', defaultProfile.id, listingItemTemplate1.ItemInformation.ItemCategory.key]);
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            defaultProfile.id,
+            listingItemTemplate1.ItemInformation.ItemCategory.key
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -114,7 +146,14 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should search ListingItemTemplates by ItemCategory id', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand, 0, 2, 'ASC', defaultProfile.id, listingItemTemplate1.ItemInformation.ItemCategory.id]);
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            defaultProfile.id,
+            listingItemTemplate1.ItemInformation.ItemCategory.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -124,7 +163,15 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should search ListingItemTemplates by ItemInformation title', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand, 0, 2, 'ASC', defaultProfile.id, '', listingItemTemplate1.ItemInformation.title]);
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            defaultProfile.id,
+            '',
+            listingItemTemplate1.ItemInformation.title
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -134,7 +181,12 @@ describe('ListingItemTemplateSearchCommand', () => {
     });
 
     test('Should fail because we want to search without profileId', async () => {
-        const res: any = await testUtil.rpc(templateCommand, [templateSearchCommand, 0, 2, 'ASC']);
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe('Missing parameters.');

@@ -21,8 +21,8 @@ describe('Happy Vote Flow', () => {
     // const randomBoolean: boolean = Math.random() >= 0.5;
     // const testUtilNode1 = new BlackBoxTestUtil(randomBoolean ? 1 : 2);
     // const testUtilNode2 = new BlackBoxTestUtil(randomBoolean ? 2 : 1);
-    const testUtilNode1 = new BlackBoxTestUtil(1);
-    const testUtilNode2 = new BlackBoxTestUtil(2);
+    const testUtilNode1 = new BlackBoxTestUtil(0);
+    const testUtilNode2 = new BlackBoxTestUtil(1);
 
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalPostCommand = Commands.PROPOSAL_POST.commandName;

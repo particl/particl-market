@@ -27,7 +27,7 @@ describe('ProfileRemoveCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        let generatedProfiles: resources.Profile[] = await testUtil.generateData(CreatableModel.PROFILE, 2, true);
+        const generatedProfiles: resources.Profile[] = await testUtil.generateData(CreatableModel.PROFILE, 2, true);
         expect(generatedProfiles).toHaveLength(2);
         createdProfile1 = generatedProfiles[0];
         createdProfile2 = generatedProfiles[1];
