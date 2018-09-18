@@ -12,7 +12,6 @@ import { Profile } from '../../models/Profile';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import * as resources from 'resources';
 
 export class ProfileGetCommand extends BaseCommand implements RpcCommandInterface<Profile> {
 

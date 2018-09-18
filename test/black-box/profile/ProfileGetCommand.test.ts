@@ -14,7 +14,8 @@ describe('ProfileGetCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
-    const log: LoggerType = new LoggerType(__filename);    const testUtil = new BlackBoxTestUtil();
+    const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new BlackBoxTestUtil();
 
     const profileCommand = Commands.PROFILE_ROOT.commandName;
     const profileGetCommand = Commands.PROFILE_GET.commandName;
