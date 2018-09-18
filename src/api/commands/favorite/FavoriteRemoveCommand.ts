@@ -41,7 +41,7 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        const favoriteParams = await this.favoriteItemService.getSearchParams(data);
+        const favoriteParams = await this.favoriteItemService.getSearchParamsFromRpcRequest(data);
         const favoriteItem = await this.favoriteItemService.search({profileId: favoriteParams[0], itemId: favoriteParams[1] } as FavoriteSearchParams);
         if (favoriteItem === null) {
             this.log.warn(`FavoriteItem with the item id=${favoriteParams[1]} was not found!`);

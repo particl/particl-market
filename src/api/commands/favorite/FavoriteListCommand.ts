@@ -46,20 +46,21 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<FavoriteItem>> {
 
-        let profile;
-
         // if data.params[0] is number then find favorite by profileId else find
         if (typeof data.params[0] === 'number') {
-            profile = await this.profileService.findOne(data.params[0]);
+            return await this.profileService.findOne(data.params[0])
+                .then(async value => {
+                    const profile = value.toJSON();
+                    return await this.favoriteItemService.findFavoritesByProfileId(profile.id, data.params[1]);
+                });
         } else {
-            profile = await this.profileService.findOneByName(data.params[0]);
-            if (profile === null) {
-                this.log.warn(`Profile with the name = ${data.params[0]} was not found!`);
-                throw new MessageException(`Profile with the name = ${data.params[0]} was not found!`);
-            }
+            return await this.profileService.findOneByName(data.params[0])
+                .then(async value => {
+                    const profile = value.toJSON();
+                    return await this.favoriteItemService.findFavoritesByProfileId(profile.id, data.params[1]);
+                });
         }
 
-        return await this.favoriteItemService.findFavoritesByProfileId(profile.id, data.params[1]);
     }
 
     public usage(): string {

@@ -16,6 +16,7 @@ import { FavoriteItemUpdateRequest } from '../requests/FavoriteItemUpdateRequest
 import { FavoriteSearchParams } from '../requests/FavoriteSearchParams';
 import { ListingItemService } from './ListingItemService';
 import { ProfileService } from './ProfileService';
+import {RpcRequest} from '../requests/RpcRequest';
 
 export class FavoriteItemService {
 
@@ -53,8 +54,7 @@ export class FavoriteItemService {
     @validate()
     public async search(
         @request(FavoriteSearchParams) options: FavoriteSearchParams): Promise<FavoriteItem> {
-        const searchParams = await this.checkSearchByItemHashOrProfileName(options);
-        return this.favoriteItemRepo.search(searchParams);
+        return this.favoriteItemRepo.search(options);
     }
 
     /**
@@ -103,9 +103,10 @@ export class FavoriteItemService {
      *  [1]: profile_id or null
      *
      * when data.params[0] is number then findById, else findOneByHash
+     * TODO: needs to be refactored
      *
      */
-    public async getSearchParams(data: any): Promise<any> {
+    public async getSearchParamsFromRpcRequest(data: RpcRequest): Promise<any> {
         if (data.params.length < 2) {
             this.log.warn(`Not enough parameters supplied.`);
             throw new MessageException('Not enough parameters supplied.');
@@ -113,24 +114,25 @@ export class FavoriteItemService {
         let profileId = data.params[0];
         let itemId = data.params[1] || 0;
 
-        if (typeof profileId !== 'number') {
-            this.log.warn(`Profile id must be numeric.`);
-            throw new MessageException('Profile id must be numeric.');
+        if (profileId && typeof profileId === 'string') {
+            const profileModel = await this.profileService.findOneByName(data.params[1]);
+            const profile = profileModel.toJSON();
+            profileId = profile.id;
+        } else if (!profileId) {
+            // if profile id not found in the params then find default profile
+            const profile = await this.profileService.findOneByName('DEFAULT');
+            profileId = profile.id;
         }
 
         // if item hash is in the params
         if (itemId && typeof itemId === 'string') {
-            const listingItem = await this.listingItemService.findOneByHash(data.params[1]);
+            const listingItemModel = await this.listingItemService.findOneByHash(itemId);
+            const listingItem = listingItemModel.toJSON();
             itemId = listingItem.id;
         }
         // find listing item by id
         const item = await this.listingItemService.findOne(itemId);
 
-        // if profile id not found in the params then find default profile
-        if (!profileId || typeof profileId !== 'number') {
-            const profile = await this.profileService.findOneByName('DEFAULT');
-            profileId = profile.id;
-        }
         if (item === null) {
             this.log.warn(`ListingItem with the id=${itemId} was not found!`);
             throw new NotFoundException(itemId);
@@ -138,30 +140,4 @@ export class FavoriteItemService {
         return [profileId, item.id];
     }
 
-    /**
-     * search favorite item using given FavoriteSearchParams
-     * when itemId is string then find by item hash
-     * when profileId is string then find by profile name
-     *
-     * @param options
-     * @returns {Promise<FavoriteSearchParams> }
-     */
-    private async checkSearchByItemHashOrProfileName(options: FavoriteSearchParams): Promise<FavoriteSearchParams> {
-
-        // if options.itemId is string then find by hash
-        if (typeof options.itemId === 'string') {
-            const listingItem = await this.listingItemService.findOneByHash(options.itemId);
-            options.itemId = listingItem.id;
-        }
-        // if options.profileId is string then find by profile name
-        if (typeof options.profileId === 'string') {
-            const profile = await this.profileService.findOneByName(options.profileId);
-            if (profile === null) {
-                throw new MessageException(`Profile not found for the given name = ${options.profileId}`);
-            }
-            options.profileId = profile.id;
-        }
-
-        return options;
-    }
 }
