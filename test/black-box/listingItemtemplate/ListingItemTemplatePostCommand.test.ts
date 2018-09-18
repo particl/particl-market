@@ -4,7 +4,6 @@
 
 // tslint:disable:max-line-length
 import * from 'jest';
-import { rpc, api } from '../lib/api';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
@@ -18,11 +17,12 @@ describe('ListingItemTemplatePostCommand', () => {
 
     const log: LoggerType = new LoggerType(__filename);
 
-    const testUtil = new BlackBoxTestUtil();
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
+
+    const testUtil = new BlackBoxTestUtil();
 
     let defaultProfile;
     let defaultMarket;
@@ -32,6 +32,14 @@ describe('ListingItemTemplatePostCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
+        // get default profile
+        defaultProfile = await testUtil.getDefaultProfile();
+        log.debug('defaultProfile: ', defaultProfile);
+
+        // fetch default market
+        defaultMarket = await testUtil.getDefaultMarket();
+
+        // generate listingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
@@ -43,14 +51,6 @@ describe('ListingItemTemplatePostCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        // get default profile
-        defaultProfile = await testUtil.getDefaultProfile();
-        log.debug('defaultProfile: ', defaultProfile);
-
-        // fetch default market
-        defaultMarket = await testUtil.getDefaultMarket();
-
-        // generate listingItemTemplate
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
@@ -62,7 +62,7 @@ describe('ListingItemTemplatePostCommand', () => {
 
     test('Should post a ListingItem in to the default marketplace', async () => {
 
-        const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplate.id, defaultMarket.id]);
+        const res: any = await testUtil.rpc(templateCommand, [templatePostCommand, listingItemTemplate.id, defaultMarket.id]);
         res.expectJson();
         res.expectStatusCode(200);
 
