@@ -64,6 +64,7 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public example(): string {
-        return 'profile ' + this.getName() + ' 2 myProfile ';
+        return 'profile ' + this.getName() + ' 2\n'
+            + 'profile ' + this.getName() + ' myProfileName\n';
     }
 }

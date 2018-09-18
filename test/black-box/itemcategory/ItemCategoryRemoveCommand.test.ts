@@ -57,7 +57,7 @@ describe('ItemCategoryRemoveCommand', () => {
 
         // TODO: categories should be related to market
     });
-/*
+
     test('Should delete the ItemCategory', async () => {
         const res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, createdCategory.id]);
         res.expectJson();
@@ -69,7 +69,7 @@ describe('ItemCategoryRemoveCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
     });
-*/
+
     test('Should not delete the ItemCategory if theres ListingItem related with ItemCategory', async () => {
         // create a custom category
         let res = await testUtil.rpc(categoryCommand, [categoryAddCommand,
@@ -116,7 +116,7 @@ describe('ItemCategoryRemoveCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
     });
-/*
+
     test('Should not delete the ItemCategory if theres ListingItemTemplate related with ItemCategory', async () => {
         // create category
         const addCategoryRes: any = await testUtil.addData(CreatableModel.ITEMCATEGORY, {
@@ -142,5 +142,5 @@ describe('ItemCategoryRemoveCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
     });
-*/
+
 });
