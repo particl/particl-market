@@ -64,14 +64,14 @@ describe('ProfileGetCommand', () => {
         const res = await rpc(profileCommand, [profileGetCommand, 'invalid_profile_name']);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Currency can\'t be blank`);
+        expect(res.error.error.message).toBe(`Entity with identifier invalid_profile_name does not exist`);
    });
 
     test('Should fail to return Profile with invalid id', async () => {
         const res = await rpc(profileCommand, [profileGetCommand, 123123]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Currency can\'t be blank`);
+        expect(res.error.error.message).toBe(`Entity with identifier 123123 does not exist`);
     });
 
 });
