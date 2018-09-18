@@ -62,13 +62,19 @@ export class ProfileService {
 
     public async findOneByName(name: string, withRelated: boolean = true): Promise<Profile> {
         const profile = await this.profileRepo.findOneByName(name, withRelated);
-        // TODO: should throw if null
+        if (profile === null) {
+            this.log.warn(`Profile with the name=${name} was not found!`);
+            throw new NotFoundException(name);
+        }
         return profile;
     }
 
     public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Profile> {
         const profile = await this.profileRepo.findOneByAddress(address, withRelated);
-        // TODO: should throw if null
+        if (profile === null) {
+            this.log.warn(`Profile with the address=${address} was not found!`);
+            throw new NotFoundException(address);
+        }
         return profile;
     }
 
