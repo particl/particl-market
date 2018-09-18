@@ -13,7 +13,7 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/par
 import * as resources from 'resources';
 // tslint:enable:max-line-length
 
-describe('ListingItemPostCommand', () => {
+describe('ListingItemTemplatePostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
@@ -81,7 +81,7 @@ describe('ListingItemPostCommand', () => {
 
     });
 
-    test('Should receive MP_ITEM_ADD message, create a ListingItem and matched with the existing ListingItemTemplate', async () => {
+    test('Should receive MP_ITEM_ADD message on the same node, create a ListingItem and matched with the existing ListingItemTemplate', async () => {
 
         // wait for some time to make sure it's received
         await testUtil.waitFor(5);
@@ -101,12 +101,10 @@ describe('ListingItemPostCommand', () => {
         // -> meaning item hash was matched with the existing template hash
         const result: resources.ListingItem = response.getBody()['result'];
 
-        delete result.ItemInformation.ItemImages;
         log.debug('listingItem: ', JSON.stringify(result, null, 2));
 
         expect(result.hash).toBe(listingItemTemplate.hash);
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplate.hash);
-        expect(result.Proposal.title).toBe(listingItemTemplate.hash);
 
     }, 600000); // timeout to 600s
 
