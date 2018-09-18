@@ -7,87 +7,70 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as _ from 'lodash';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import * as resources from 'resources';
 
 describe('ProfileRemoveCommand', () => {
 
-    const testUtil = new BlackBoxTestUtil();
-    const method = Commands.PROFILE_ROOT.commandName;
-    const subCommand = Commands.PROFILE_REMOVE.commandName;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
-    let createdId = 0;
-    let profileName;
+    const log: LoggerType = new LoggerType(__filename);
+
+    const profileCommand = Commands.PROFILE_ROOT.commandName;
+    const profileRemoveCommand = Commands.PROFILE_REMOVE.commandName;
+
+    const testUtil = new BlackBoxTestUtil();
+
+    let createdProfile1: resources.Profile;
+    let createdProfile2: resources.Profile;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        let generatedProfiles: resources.Profile[] = await testUtil.generateData(CreatableModel.PROFILE, 2, true);
+        expect(generatedProfiles).toHaveLength(2);
+        createdProfile1 = generatedProfiles[0];
+        createdProfile2 = generatedProfiles[1];
+
     });
 
-    test('Should fail to delete profile for invalid id by RPC', async () => {
-        // delete profile
-        const res = await rpc(method, [subCommand, createdId]);
+    test('Should fail to delete Profile with invalid id', async () => {
+        const invalidProfileId = 0;
+        const res = await rpc(profileCommand, [profileRemoveCommand, invalidProfileId]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Entity with identifier ' + invalidProfileId + ' does not exist');
     });
 
-    test('Should delete the profile by id', async () => {
-        // set up the test data
-        let generatedProfile: any = await testUtil.generateData(CreatableModel.PROFILE, 1, true);
-        generatedProfile = generatedProfile[0];
-        createdId = generatedProfile.id;
-
-        // delete profile
-        const res = await rpc(method, [subCommand, createdId]);
+    test('Should delete the Profile by id', async () => {
+        const res = await rpc(profileCommand, [profileRemoveCommand, createdProfile1.id]);
         res.expectJson();
         res.expectStatusCode(200);
     });
 
-    test('Should delete the profile by name ', async () => {
-        // set up the test data
-        let generatedProfile: any = await testUtil.generateData(CreatableModel.PROFILE, 1, true);
-        generatedProfile = generatedProfile[0];
-        profileName = generatedProfile.name;
+    test('Should delete the Profile by name ', async () => {
+        const res = await rpc(profileCommand, [profileRemoveCommand, createdProfile2.name]);
+        res.expectJson();
+        res.expectStatusCode(200);
+    });
 
+    test('Should fail to delete Profile using id because it doesnt exist', async () => {
         // delete profile by name
-        const res = await rpc(method, [subCommand, profileName]);
+        const res = await rpc(profileCommand, [profileRemoveCommand, createdProfile1.id]);
         res.expectJson();
-        res.expectStatusCode(200);
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Entity with identifier ' + createdProfile1.id + ' does not exist');
     });
 
-    test('Should fail to delete profile because already been deleted by profile id ', async () => {
+    test('Should fail to delete Profile using name because it doesnt exist', async () => {
         // delete profile by name
-        const res = await rpc(method, [subCommand, createdId]);
+        const res = await rpc(profileCommand, [profileRemoveCommand, createdProfile2.name]);
         res.expectJson();
         res.expectStatusCode(404);
-    });
-
-    test('Should fail to delete profile because already been deleted by profile name ', async () => {
-        // delete profile by name
-        const res = await rpc(method, [subCommand, profileName]);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('Should fail to get profile by id for the delete profile', async () => {
-        const res = await rpc(method, [Commands.PROFILE_GET.commandName, createdId]);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('Should get empty profile by name for the delete profile', async () => {
-        const res = await rpc(method, [Commands.PROFILE_GET.commandName, profileName]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result).toBe(null);
-    });
-
-    test('Should not contain the delete profile', async () => {
-        const res = await rpc(method, [Commands.PROFILE_LIST.commandName]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        _.each(result, (pro) => {
-            expect(pro.id).not.toBe(createdId);
-        });
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Entity with identifier ' + createdProfile2.name + ' does not exist');
     });
 
 });

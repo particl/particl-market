@@ -46,7 +46,7 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
      * @param {RpcRequest} data
      * @returns {Promise<void>}
      */
-    public async validate(data: RpcRequest): Promise<void> {
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
             this.log.error('ListingItemTemplate ID missing.');
             throw new MessageException('ListingItemTemplate ID missing.');
@@ -54,6 +54,7 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
             this.log.error('ListingItemTemplate ID must be numeric.');
             throw new MessageException('ListingItemTemplate ID must be numeric.');
         }
+        return data;
     }
 
     public usage(): string {

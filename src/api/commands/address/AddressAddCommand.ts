@@ -85,8 +85,9 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
         return await this.addressService.create(newAddress);
     }
 
-    public async validate(data: RpcRequest): Promise<void> {
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
         //
+        return data;
     }
 
     // tslint:disable:max-line-length
