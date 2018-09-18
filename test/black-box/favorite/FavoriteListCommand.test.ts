@@ -138,7 +138,7 @@ describe('FavoriteListCommand', () => {
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe(`Entity with identifier ${invalidProfileId} does not exist`);
-        });
+    });
 
     test('Should return two FavoriteItems by profileId', async () => {
 

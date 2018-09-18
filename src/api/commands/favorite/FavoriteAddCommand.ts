@@ -89,12 +89,10 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
 
         return await this.favoriteItemService.findOneByProfileIdAndListingItemId(profileId, itemId) // throws if not found
             .catch(reason => {
-                this.log.debug('NOT FOUND');
                 // great, not found, so we can continue and create it
                 // return RpcRequest with the correct data to be passed to execute
             })
             .then(value => {
-                this.log.debug('value:', value ? 'true' : 'false');
                 if (value) {
                     throw new MessageException('FavoriteItem allready exists.');
                 } else {

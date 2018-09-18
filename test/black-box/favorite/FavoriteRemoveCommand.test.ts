@@ -7,11 +7,14 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
 import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('FavoriteRemoveCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
 
     const favoriteCommand = Commands.FAVORITE_ROOT.commandName;
@@ -54,51 +57,46 @@ describe('FavoriteRemoveCommand', () => {
         listingItem1 = listingItems[0];
         listingItem2 = listingItems[1];
 
-    });
-
-    test('Should remove FavoriteItem by profileId and itemId', async () => {
-        // add favorite item
+        // add favorite items
         await testUtil.rpc(favoriteCommand, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, listingItem1.id]);
-
-        // remove favorite item by itemId and profileId
-        const removeResult: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem1.id]);
-        removeResult.expectJson();
-        removeResult.expectStatusCode(200);
-
-        // check that the remove really worked
-        const listResult: any = await testUtil.rpc(favoriteCommand, [favoriteListCommand, defaultProfile.id]);
-        listResult.expectJson();
-        listResult.expectStatusCode(200);
-        const result: any = listResult.getBody()['result'];
-
-        expect(result.length).toBe(0);
+        await testUtil.rpc(favoriteCommand, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, listingItem2.id]);
     });
 
-    test('Should remove FavoriteItem by profile id and hash', async () => {
-        // add favorite item
-        await testUtil.addData(CreatableModel.FAVORITEITEM, {
-            listing_item_id: listingItem1.id,
-            profile_id: defaultProfile.id
-        });
+    test('Should remove first FavoriteItem by profileId and itemId', async () => {
+        let res: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem1.id]);
+        res.expectJson();
+        log.debug('res.error.error.message:', res.error.error.message);
+        res.expectStatusCode(200);
 
-        // remove favorite item by item id and profile
-        const removeResult: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem1.hash]);
-        removeResult.expectJson();
-        removeResult.expectStatusCode(200);
+        // check that the remove really worked
+        res = await testUtil.rpc(favoriteCommand, [favoriteListCommand, defaultProfile.id]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.FavoriteItem[] = res.getBody()['result'];
+        expect(result.length).toBe(1);
+    });
+
+    test('Should remove second FavoriteItem by hash and profileId', async () => {
+        const res: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem1.hash]);
+        res.expectJson();
+        res.expectStatusCode(200);
 
         // check that the remove really worked
         const listResult: any = await testUtil.rpc(favoriteCommand, [favoriteListCommand, defaultProfile.id]);
         listResult.expectJson();
         listResult.expectStatusCode(200);
-        const result: any = listResult.getBody()['result'];
 
+        const result: resources.FavoriteItem[] = res.getBody()['result'];
         expect(result.length).toBe(0);
     });
 
     test('Should fail remove FavoriteItem because its already removed', async () => {
         // remove favorite
-        const getDataRes: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem1.id]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(404);
+        const res: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem1.id]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Entity with identifier ${listingItem1.id} does not exist`);
     });
 });

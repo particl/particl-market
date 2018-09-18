@@ -82,12 +82,15 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
             .catch(reason => {
                 // great, not found, so we can continue and create it
                 // return RpcRequest with the correct data to be passed to execute
-                data.params[0] = profileId;
-                data.params[1] = itemId;
-                return data;
             })
             .then(value => {
-                throw new MessageException('FavoriteItem allready exists.');
+                if (value) {
+                    data.params[0] = profileId;
+                    data.params[1] = itemId;
+                    return data;
+                } else {
+                    throw new MessageException('FavoriteItem doesnt exist.');
+                }
             });
     }
 
