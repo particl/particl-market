@@ -71,6 +71,7 @@ export class FavoriteRemoveCommand extends BaseCommand implements RpcCommandInte
 
         // if item hash is in the params, fetch the id
         if (itemId && typeof itemId === 'string') {
+
             const listingItemModel = await this.listingItemService.findOneByHash(itemId);
             const listingItem = listingItemModel.toJSON();
             itemId = listingItem.id;

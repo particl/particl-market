@@ -65,7 +65,6 @@ describe('FavoriteRemoveCommand', () => {
     test('Should remove first FavoriteItem by profileId and itemId', async () => {
         let res: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem1.id]);
         res.expectJson();
-        log.debug('res.error.error.message:', res.error.error.message);
         res.expectStatusCode(200);
 
         // check that the remove really worked
@@ -78,14 +77,14 @@ describe('FavoriteRemoveCommand', () => {
     });
 
     test('Should remove second FavoriteItem by hash and profileId', async () => {
-        const res: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem1.hash]);
+        let res: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem2.hash]);
         res.expectJson();
         res.expectStatusCode(200);
 
         // check that the remove really worked
-        const listResult: any = await testUtil.rpc(favoriteCommand, [favoriteListCommand, defaultProfile.id]);
-        listResult.expectJson();
-        listResult.expectStatusCode(200);
+        res = await testUtil.rpc(favoriteCommand, [favoriteListCommand, defaultProfile.id]);
+        res.expectJson();
+        res.expectStatusCode(200);
 
         const result: resources.FavoriteItem[] = res.getBody()['result'];
         expect(result.length).toBe(0);
@@ -97,6 +96,6 @@ describe('FavoriteRemoveCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Entity with identifier ${listingItem1.id} does not exist`);
+        expect(res.error.error.message).toBe(`FavoriteItem doesnt exist.`);
     });
 });
