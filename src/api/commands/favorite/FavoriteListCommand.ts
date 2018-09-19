@@ -33,34 +33,44 @@ export class FavoriteListCommand extends BaseCommand implements RpcCommandInterf
     }
 
     /**
-     *
      * data.params[]:
-     *  [0]: profileId or profileName
+     *  [0]: profileId
      *  [1]: withRelated, boolean
      *
-     * if data.params[0] is number then find favorites by profileId else find  by profile Name
-     *
-     * @param data
+     * @param {RpcRequest} data
      * @returns {Promise<Bookshelf.Collection<FavoriteItem>>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<FavoriteItem>> {
+        return await this.profileService.findOne(data.params[0])
+            .then(async value => {
+                const profile = value.toJSON();
+                return await this.favoriteItemService.findAllByProfileId(profile.id, data.params[1]);
+            });
+    }
 
-        // if data.params[0] is number then find favorite by profileId else find
-        if (typeof data.params[0] === 'number') {
-            return await this.profileService.findOne(data.params[0])
-                .then(async value => {
-                    const profile = value.toJSON();
-                    return await this.favoriteItemService.findAllByProfileId(profile.id, data.params[1]);
-                });
-        } else {
-            return await this.profileService.findOneByName(data.params[0])
-                .then(async value => {
-                    const profile = value.toJSON();
-                    return await this.favoriteItemService.findAllByProfileId(profile.id, data.params[1]);
-                });
+    /**
+     * data.params[]:
+     *  [0]: profileId or profileName
+     *  [1]: withRelated, boolean
+     *
+     * if data.params[0] is number then find favorites by profileId else find by profile Name
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MessageException('Missing profileId or profileName.');
         }
 
+        if (typeof data.params[0] === 'string') {
+            const profileModel = await this.profileService.findOneByName(data.params[0]);
+            const profile = profileModel.toJSON();
+            data.params[0] = profile.id;
+        }
+
+        return data;
     }
 
     public usage(): string {

@@ -92,6 +92,7 @@ import { ProposalResultService } from './ProposalResultService';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
 import { ProposalActionService } from './ProposalActionService';
 import {ItemCategoryUpdateRequest} from '../requests/ItemCategoryUpdateRequest';
+import {BidDataValue} from '../enums/BidDataValue';
 
 export class TestDataService {
 
@@ -481,11 +482,15 @@ export class TestDataService {
         const bidDatas = [
             {dataId: 'size', dataValue: 'XL'},
             {dataId: 'color', dataValue: 'pink'},
-            {dataId: 'outputs', dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0b\"' +
-                ',\"vout\":1,\"amount\":100.52497491}]'},
-            {dataId: 'pubkeys', dataValue: '[\"021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d90\"]'},
-            {dataId: 'changeaddr', dataValue: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb4'},
-            {dataId: 'change', dataValue: 96.52477491},
+            {dataId: BidDataValue.BUYER_OUTPUTS, dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0b\"' +
+                ',\"vout\":1,\"amount\":1.52497491}]'},
+            {dataId: BidDataValue.BUYER_PUBKEY, dataValue: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d90'},
+            {dataId: BidDataValue.BUYER_CHANGE_ADDRESS, dataValue: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb4'},
+            {dataId: BidDataValue.BUYER_CHANGE_AMOUNT, dataValue: 96.52477491},
+            {dataId: BidDataValue.BUYER_RELEASE_ADDRESS, dataValue: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb5'},
+            {dataId: BidDataValue.SELLER_PUBKEY, dataValue: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d91'},
+            {dataId: BidDataValue.SELLER_OUTPUTS, dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0a\"' +
+                ',\"vout\":1,\"amount\":1.52497491}]'},
             {dataId: 'ship.title', dataValue: 'title'},
             {dataId: 'ship.firstName', dataValue: 'asdf'},
             {dataId: 'ship.lastName', dataValue: 'asdf'},

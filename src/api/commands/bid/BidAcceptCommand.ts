@@ -33,7 +33,7 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
 
     /**
      * data.params[]:
-     * [0]: itemhash, string
+     * [0]: itemId
      * [1]: bidId
      *
      * @param data
@@ -42,14 +42,11 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        const itemHash = data.params[0];
+        const itemId = data.params[0];
         const bidId = data.params[1];
 
-        // find listingItem by hash
-        const listingItemModel = await this.listingItemService.findOneByHash(itemHash);
+        const listingItemModel = await this.listingItemService.findOne(itemId);
         const listingItem = listingItemModel.toJSON();
-
-        // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
         // make sure we have a ListingItemTemplate, so we know it's our item
         if (_.isEmpty(listingItem.ListingItemTemplate)) {
@@ -69,6 +66,27 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
         }
 
         return this.bidActionService.accept(listingItem, bidToAccept);
+    }
+
+    /**
+     * data.params[]:
+     * [0]: itemhash, string
+     * [1]: bidId
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 2) {
+            throw new MessageException('Missing params.');
+        }
+
+        // find listingItem by hash
+        const listingItemModel = await this.listingItemService.findOneByHash(data.params[0]);
+        const listingItem = listingItemModel.toJSON();
+
+        data.params[0] = listingItem.id;
+        return data;
     }
 
     public usage(): string {
