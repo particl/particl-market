@@ -24,7 +24,7 @@ describe('DataGenerateCommand', () => {
         await testUtil.cleanDb();
     });
 
-    test('Should generate one profile with no related data', async () => {
+    test('Should generate one Profile with no related data', async () => {
 
         const generateProfileParams = new GenerateProfileParams([
             false,  // generateShippingAddresses
@@ -42,7 +42,7 @@ describe('DataGenerateCommand', () => {
         expect(result[0].CryptocurrencyAddresses).toHaveLength(0);
     });
 
-    test('Should generate one profile with ShippingAddresses', async () => {
+    test('Should generate one Profile with ShippingAddresses', async () => {
 
         const generateProfileParams = new GenerateProfileParams([
             true,  // generateShippingAddresses
@@ -60,7 +60,7 @@ describe('DataGenerateCommand', () => {
         expect(result[0].CryptocurrencyAddresses).toHaveLength(0);
     });
 
-    test('Should generate one profile with CryptocurrencyAddresses', async () => {
+    test('Should generate one Profile with CryptocurrencyAddresses', async () => {
 
         const generateProfileParams = new GenerateProfileParams([
             false,  // generateShippingAddresses
@@ -78,7 +78,7 @@ describe('DataGenerateCommand', () => {
         expect(result[0].CryptocurrencyAddresses).not.toBeUndefined();
     });
 
-    test('Should generate two profiles', async () => {
+    test('Should generate two Profiles', async () => {
         const generateProfileParams = new GenerateProfileParams([
             true,  // generateShippingAddresses
             true   // generateCryptocurrencyAddresses
@@ -296,9 +296,6 @@ describe('DataGenerateCommand', () => {
 
     test('Should generate one ListingItem with ItemInformation, ShippingDestinations, ItemImages, PaymentInformation, Escrow, ' +
         'ItemPrice, MessagingInformation and ListingItemObjects', async () => {
-        /*
-
-        TODO: ListingItemObjects generation not implemented yet
 
         const generateListingItemParams = new GenerateListingItemParams([
             true,   // generateItemInformation
@@ -325,29 +322,8 @@ describe('DataGenerateCommand', () => {
         expect(result[0].PaymentInformation.ItemPrice.id).toBeDefined();
         expect(result[0].MessagingInformation).not.toHaveLength(0);
         expect(result[0].ListingItemObjects).not.toHaveLength(0);
-        */
+
     });
 
-    test('Should generate one ListingItem having ActionMessage', async () => {
-
-        const generateListingItemParams = new GenerateListingItemParams([
-            true,   // generateItemInformation
-            true,   // generateShippingDestinations
-            false,   // generateItemImages
-            true,   // generatePaymentInformation
-            true,   // generateEscrow
-            true,   // generateItemPrice
-            true,   // generateMessagingInformation
-            true    // generateListingItemObjects
-        ]).toParamsArray();
-
-        const res = await rpc(method, [subCommand, CreatableModel.LISTINGITEM, 1, withRelated].concat(generateListingItemParams));
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-
-        expect(result).toHaveLength(1);
-        expect(result[0].ActionMessages).not.toHaveLength(0);
-    });
 
 });

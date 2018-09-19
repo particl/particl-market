@@ -29,12 +29,11 @@ export class ItemImageHttpUploadService {
     @validate()
     public async httpPostImageUpload(@request(ImagePostUploadRequest) uploadRequest: ImagePostUploadRequest): Promise<resources.ItemImage[]> {
 
-        // TODO: ImagePostUploadRequest.id, should be names templateId and not just some random id
         const createdItemImages: resources.ItemImage[] = [];
-        const listingItemTemplate: ListingItemTemplate = await this.listingItemTemplateService.findOne(uploadRequest.id);
+        const listingItemTemplate: ListingItemTemplate = await this.listingItemTemplateService.findOne(uploadRequest.listingItemTemplateId);
 
-        for ( const file of uploadRequest.request.files ) {
-            const createdItemImage = await this.itemImageService.createFile(file, listingItemTemplate);
+        for (const file of uploadRequest.request.files) {
+            const createdItemImage = await this.itemImageService.createFromFile(file, listingItemTemplate);
             createdItemImages.push(createdItemImage.toJSON());
         }
         return createdItemImages;

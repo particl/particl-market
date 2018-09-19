@@ -25,21 +25,11 @@ describe('OrderItemStatus', () => {
     const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);  // SELLER
     const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
-    const lockCommand = Commands.ESCROW_LOCK.commandName;
-
-    const categoryCommand = Commands.CATEGORY_ROOT.commandName;
-    const categorySearchSubCommand = Commands.CATEGORY_SEARCH.commandName;
-
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const templateAddCommand = Commands.TEMPLATE_ADD.commandName;
-    const templateGetCommand = Commands.TEMPLATE_GET.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
 
     const itemCommand = Commands.ITEM_ROOT.commandName;
     const itemGetCommand = Commands.ITEM_GET.commandName;
-
-    const addressCommand = Commands.ADDRESS_ROOT.commandName;
-    const addressAddCommand = Commands.ADDRESS_ADD.commandName;
 
     const bidCommand = Commands.BID_ROOT.commandName;
     const bidSendCommand = Commands.BID_SEND.commandName;

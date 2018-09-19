@@ -8,8 +8,13 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 import { ListingItem } from 'resources';
+import {Logger as LoggerType} from '../../../src/core/Logger';
 
 describe('ListingItemGetCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
 
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ITEM_ROOT.commandName;
@@ -50,6 +55,7 @@ describe('ListingItemGetCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
+        // log.debug('listingItem:', JSON.stringify(result, null, 2));
         expect(result).hasOwnProperty('ItemInformation');
         expect(result).hasOwnProperty('PaymentInformation');
         expect(result).hasOwnProperty('MessagingInformation');
