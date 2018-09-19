@@ -483,7 +483,7 @@ export class EscrowActionService {
 
                 // TODO: This requires user interaction, so should be elsewhere possibly?
                 // TODO: Save TXID somewhere maybe??!
-                const response = await this.coreRpcService.sendRawTransaction(signedForLock.hex);
+                const response = await this.coreRpcService.sendRawTransaction(signedForLock); // .hex);
 
                 this.log.debug('createRawTx(), response:', JSON.stringify(response, null, 2));
                 return response;
@@ -566,7 +566,7 @@ export class EscrowActionService {
      * @param {boolean} shouldBeComplete
      * @returns {Promise<any>}
      */
-    private async signRawTx(rawtx: string, shouldBeComplete?: boolean): Promise<any> {
+    private async signRawTx(rawtx: string, shouldBeComplete: boolean): Promise<any> {
 
         this.log.debug('signRawTx(): signing rawtx, shouldBeComplete:', shouldBeComplete);
 
@@ -577,20 +577,42 @@ export class EscrowActionService {
         // const signed = await this.coreRpcService.signRawTransaction(rawtx);
         // 0.17++
         const signed = await this.coreRpcService.signRawTransactionWithWallet(rawtx);
+        this.log.info('===========================================================================');
+        this.log.info('signed: ', JSON.stringify(signed, null, 2));
+        this.log.info('===========================================================================');
 
-        const ignoreErrors = [
-            'Unable to sign input, invalid stack size (possibly missing key)',
-            'Operation not valid with the current stack size'
-        ];
+        if (shouldBeComplete) {
+            // rawtx_complete =  buyer.combinerawtransaction(rawtx_with_buyer_sig, rawtx_with_seller_sig)
+            const completeRawTx = await this.coreRpcService.combineRawTransaction([signed.hex, rawtx]);
+            this.log.info('===========================================================================');
+            this.log.info('completeRawTx: ', JSON.stringify(completeRawTx, null, 2));
+            this.log.info('===========================================================================');
 
-        if (!signed
-            || signed.errors
-            && (!shouldBeComplete && ignoreErrors.indexOf(signed.errors[0].error) === -1)) {
-            this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
-            this.log.error('signed: ', JSON.stringify(signed, null, 2));
-            throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
+            // const decodedTx = await this.coreRpcService.decodeRawTransaction(completeRawTx);
+            // this.log.debug('createRawTx(), completeRawTx decoded:', JSON.stringify(decodedTx, null, 2));
+
+            return completeRawTx;
+
+        } else {
+
+            const ignoreErrors = [
+                'Unable to sign input, invalid stack size (possibly missing key)',
+                'Operation not valid with the current stack size'
+            ];
+
+            if (!signed
+                || signed.errors
+                && (!shouldBeComplete && ignoreErrors.indexOf(signed.errors[0].error) === -1)) {
+                this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
+                this.log.error('signed: ', JSON.stringify(signed, null, 2));
+                throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
+            }
+
+            this.log.debug('signRawTx(): signed:', JSON.stringify(signed, null, 2));
+            return signed;
         }
 
+/*
         if (shouldBeComplete) {
             if (!signed.complete) {
                 this.log.error('Transaction should be complete at this stage.', JSON.stringify(signed, null, 2));
@@ -604,6 +626,7 @@ export class EscrowActionService {
         this.log.debug('signRawTx(): signed:', JSON.stringify(signed, null, 2));
 
         return signed;
+*/
     }
 
     /**

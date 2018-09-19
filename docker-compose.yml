@@ -58,7 +58,7 @@ services:
       - TESTNET_PORT=51935
 
   gui1:
-    image: marketplace-gui:latest
+    image: ludx/marketplace-gui:latest
     build:
       context: ../particl-desktop
       dockerfile: Dockerfile
@@ -80,7 +80,7 @@ services:
       - PORT=4200
 
   gui2:
-    image: marketplace-gui:latest
+    image: ludx/marketplace-gui:latest
     build:
       context: ../particl-desktop
       dockerfile: Dockerfile
@@ -102,7 +102,7 @@ services:
       - PORT=4200
 
   particld1:
-    image: ludx/particl:0.17.0.1rc1 # master # 0.16.2.0
+    image: ludx/particl:0.17.0.1rc3 # master # 0.16.2.0
     volumes:
       - ./data/particl1:/root/.particl
     ports:
@@ -136,7 +136,7 @@ services:
       - CREATEDEFAULTMASTERKEY=true
 
   particld2:
-    image: ludx/particl:0.17.0.1rc1 # master # 0.16.2.0
+    image: ludx/particl:0.17.0.1rc3 # master # 0.16.2.0
     volumes:
       - ./data/particl2:/root/.particl
     ports:
