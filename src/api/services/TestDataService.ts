@@ -3,7 +3,6 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { Bookshelf as Database } from '../../config/Database';
-import { Collection } from 'bookshelf';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
@@ -28,7 +27,6 @@ import { ItemCategory } from '../models/ItemCategory';
 import { FavoriteItem } from '../models/FavoriteItem';
 import { PaymentInformation } from '../models/PaymentInformation';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
-
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { DefaultItemCategoryService } from './DefaultItemCategoryService';
@@ -44,15 +42,11 @@ import { ProposalService } from './ProposalService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemImageService } from './ItemImageService';
 import { ActionMessageService } from './ActionMessageService';
-
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
-import { Address } from '../models/Address';
-import { CryptocurrencyAddress } from '../models/CryptocurrencyAddress';
 import { ItemInformation } from '../models/ItemInformation';
 import { Bid } from '../models/Bid';
 import { ItemImage } from '../models/ItemImage';
-
 import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
 import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
 import { MessageDataCreateRequest } from '../requests/MessageDataCreateRequest';
@@ -74,21 +68,16 @@ import { GenerateBidParams } from '../requests/params/GenerateBidParams';
 import { GenerateProposalParams } from '../requests/params/GenerateProposalParams';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { BidMessageType } from '../enums/BidMessageType';
-import { SearchOrder } from '../enums/SearchOrder';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 import { AddressType } from '../enums/AddressType';
-import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { ActionMessage } from '../models/ActionMessage';
 import { CoreRpcService } from './CoreRpcService';
 import { GenerateOrderParams } from '../requests/params/GenerateOrderParams';
 import { OrderCreateRequest } from '../requests/OrderCreateRequest';
-import { OrderItemCreateRequest } from '../requests/OrderItemCreateRequest';
 import * as resources from 'resources';
-import { OrderStatus } from '../enums/OrderStatus';
-import { OrderItemObjectCreateRequest } from '../requests/OrderItemObjectCreateRequest';
 import { OrderService } from './OrderService';
 import { OrderFactory } from '../factories/OrderFactory';
 import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
@@ -100,11 +89,10 @@ import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { VoteService } from './VoteService';
 import { VoteActionService } from './VoteActionService';
 import { ProposalResultService } from './ProposalResultService';
-import { ProposalResultCreateRequest } from '../requests/ProposalResultCreateRequest';
 import { ProposalOptionResultService } from './ProposalOptionResultService';
-import { ProposalOptionResultCreateRequest } from '../requests/ProposalOptionResultCreateRequest';
 import { ProposalActionService } from './ProposalActionService';
-import {IsNotEmpty} from 'class-validator';
+import {ItemCategoryUpdateRequest} from '../requests/ItemCategoryUpdateRequest';
+import {BidDataValue} from '../enums/BidDataValue';
 
 export class TestDataService {
 
@@ -157,7 +145,6 @@ export class TestDataService {
             await this.defaultProfileService.seedDefaultProfile();
             await this.defaultMarketService.seedDefaultMarket();
             this.log.info('cleanup & default seeds done.');
-
             return;
         }
     }
@@ -495,11 +482,15 @@ export class TestDataService {
         const bidDatas = [
             {dataId: 'size', dataValue: 'XL'},
             {dataId: 'color', dataValue: 'pink'},
-            {dataId: 'outputs', dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0b\"' +
-                ',\"vout\":1,\"amount\":100.52497491}]'},
-            {dataId: 'pubkeys', dataValue: '[\"021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d90\"]'},
-            {dataId: 'changeaddr', dataValue: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb4'},
-            {dataId: 'change', dataValue: 96.52477491},
+            {dataId: BidDataValue.BUYER_OUTPUTS, dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0b\"' +
+                ',\"vout\":1,\"amount\":1.52497491}]'},
+            {dataId: BidDataValue.BUYER_PUBKEY, dataValue: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d90'},
+            {dataId: BidDataValue.BUYER_CHANGE_ADDRESS, dataValue: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb4'},
+            {dataId: BidDataValue.BUYER_CHANGE_AMOUNT, dataValue: 96.52477491},
+            {dataId: BidDataValue.BUYER_RELEASE_ADDRESS, dataValue: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb5'},
+            {dataId: BidDataValue.SELLER_PUBKEY, dataValue: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d91'},
+            {dataId: BidDataValue.SELLER_OUTPUTS, dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0a\"' +
+                ',\"vout\":1,\"amount\":1.52497491}]'},
             {dataId: 'ship.title', dataValue: 'title'},
             {dataId: 'ship.firstName', dataValue: 'asdf'},
             {dataId: 'ship.lastName', dataValue: 'asdf'},
@@ -911,13 +902,18 @@ export class TestDataService {
             ? this.generateItemImagesData(_.random(1, 5))
             : [];
 
+        const itemCategory = {} as ItemCategoryUpdateRequest;
+        if (generateParams.categoryId) {
+            itemCategory.id = generateParams.categoryId;
+        } else {
+            itemCategory.key = this.randomCategoryKey();
+        }
+
         const itemInformation = {
             title: Faker.commerce.productName(),
             shortDescription: Faker.commerce.productAdjective() + ' ' + Faker.commerce.product(),
             longDescription: Faker.lorem.paragraph(),
-            itemCategory: {
-                key: this.randomCategoryKey()
-            },
+            itemCategory,
             itemLocation: {
                 region: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
                 address: Faker.address.streetAddress(),

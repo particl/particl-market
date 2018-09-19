@@ -113,7 +113,7 @@ export class MessageProcessor implements MessageProcessorInterface {
                 this.log.debug('eventType:', JSON.stringify(eventType, null, 2));
                 this.log.debug('emitEvent:', JSON.stringify(emitEvent, null, 2));
 
-                this.log.debug('PROCESSING: ' + smsgMessage.msgid + 'PARSING FAILED');
+                this.log.debug('PROCESSING: ' + smsgMessage.msgid + ' PARSING FAILED');
 
                 await this.smsgMessageService.updateSmsgMessageStatus(smsgMessage, SmsgMessageStatus.PARSING_FAILED);
             }

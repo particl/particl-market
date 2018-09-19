@@ -11,6 +11,7 @@ import { ItemCategory } from '../models/ItemCategory';
 import { MessageException } from '../exceptions/MessageException';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
 import * as resources from 'resources';
+import {NotFoundException} from '../exceptions/NotFoundException';
 
 export class ItemCategoryFactory {
 
@@ -68,9 +69,14 @@ export class ItemCategoryFactory {
         } else {
             // search the children for a match
             const childCategories = rootCategory.ChildItemCategories;
-            return _.find(childCategories, (childCategory) => {
+            const found = _.find(childCategories, (childCategory) => {
                 return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);
             });
+            if (found) {
+                return found;
+            } else {
+                throw new NotFoundException(keyOrName);
+            }
         }
     }
 

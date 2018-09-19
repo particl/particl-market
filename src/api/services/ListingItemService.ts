@@ -117,6 +117,10 @@ export class ListingItemService {
                         withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
         // if valid params
         // todo: check whether category is string or number, if string, try to find the Category by key
+
+        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
+        this.log.debug('search(), Date.now(): ', Date.now());
+
         return await this.listingItemRepo.search(options, withRelated);
     }
 

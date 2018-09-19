@@ -397,6 +397,7 @@ export class ListingItemActionService {
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
                 })
                 .catch(async reason => {
+                    this.log.debug('ERRORED event: ', JSON.stringify(event, null, 2));
                     this.log.error('ERROR: ListingItemMessage processing failed.', reason);
                     await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
                 });

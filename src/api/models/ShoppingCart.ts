@@ -24,7 +24,7 @@ export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
         }
     }
 
-    public static async fetchAllByProfile(value: number): Promise<Collection<ShoppingCart>> {
+    public static async fetchAllByProfileId(value: number): Promise<Collection<ShoppingCart>> {
         const shoppingCart = ShoppingCart.forge<Model<ShoppingCart>>()
             .query(qb => {
                 qb.where('profile_id', '=', value);

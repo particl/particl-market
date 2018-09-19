@@ -2,180 +2,194 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { PaymentType } from '../../../src/api/enums/PaymentType';
-import { EscrowType } from '../../../src/api/enums/EscrowType';
-import { Currency } from '../../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
-import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import { Commands } from '../../../src/api/commands/CommandEnumType';
+import * as resources from 'resources';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 
 describe('ListingItemTemplateSearchCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.TEMPLATE_ROOT.commandName;
-    const subCommand = Commands.TEMPLATE_SEARCH.commandName;
 
-    const testDataListingItemTemplate1 = {
-        profile_id: 0,
-        itemInformation: {
-            title: 'Item Information with Templates First',
-            shortDescription: 'Item short description with Templates First',
-            longDescription: 'Item long description with Templates First',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            }
-        },
-        paymentInformation: {
-            type: PaymentType.SALE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 100,
-                    seller: 100
-                }
-            }
-        }
-    };
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templateSearchCommand = Commands.TEMPLATE_SEARCH.commandName;
 
-    const testDataListingItemTemplate2 = {
-        profile_id: 0,
-        itemInformation: {
-            title: 'Item Information with Templates Second',
-            shortDescription: 'Item short description with Templates Second',
-            longDescription: 'Item long description with Templates Second',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            }
-        },
-        paymentInformation: {
-            type: PaymentType.SALE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 100,
-                    seller: 100
-                }
-            }
-        }
-    };
-    let categoryId;
-    let profileId;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+
+    let listingItemTemplate1: resources.ListingItemTemplate;
+    let listingItemTemplate2: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const defaultProfile = await testUtil.getDefaultProfile();
-        profileId = defaultProfile.id;
-        // create listing item
-        testDataListingItemTemplate1.profile_id = profileId;
-        const addListingItemTemplate1: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate1);
-        const addListingItemTemplate1Result = addListingItemTemplate1;
-        categoryId = addListingItemTemplate1Result.ItemInformation.ItemCategory.id;
-        testDataListingItemTemplate2.profile_id = profileId;
-        const addListingItemTemplate2: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate2);
+
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
+
+        // create templates
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            false,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,   // generateListingItem
+            defaultMarket.id  // marketId
+        ]).toParamsArray();
+
+        // generate ListingItemTemplate with ListingItem
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            2,                          // how many to generate
+            true,                    // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
+
+        listingItemTemplate1 = listingItemTemplates[0];
+        listingItemTemplate2 = listingItemTemplates[1];
     });
 
-    test('Should get all ListingItemTemplates', async () => {
-        // get all listing items
-        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', profileId]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
+    test('Should get all ListingItemTemplates for Profile', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            defaultProfile.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
         expect(result).toHaveLength(2);
     });
 
-    test('Should get only first ListingItemTemplate by pagination', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 1, 1, 'ASC', profileId]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
+    test('Should get only first ListingItemTemplate using pagination (page 0) for Profile', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            1,
+            SearchOrder.ASC,
+            defaultProfile.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ListingItemTemplate[] = res.getBody()['result'];
         expect(result).toHaveLength(1);
-        // check itemInformation
-        expect(result[0]['ItemInformation'].title).toBe(testDataListingItemTemplate1.itemInformation.title);
-        expect(result[0]['ItemInformation'].shortDescription).toBe(testDataListingItemTemplate1.itemInformation.shortDescription);
-        expect(result[0]['ItemInformation'].longDescription).toBe(testDataListingItemTemplate1.itemInformation.longDescription);
-        // check profile
-        expect(result[0]['profileId']).toBe(profileId);
-        // check realted models
-        expect(result).hasOwnProperty('profile');
-
-        expect(result).hasOwnProperty('ItemInformation');
-
-        expect(result).hasOwnProperty('PaymentInformation');
-
-        expect(result).hasOwnProperty('MessagingInformation');
-
-        expect(result).hasOwnProperty('ListingItemObjects');
-
-        expect(result).hasOwnProperty('ListingItems');
+        expect(result[0].ItemInformation.title).toBe(listingItemTemplate1.ItemInformation.title);
+        expect(result[0].ItemInformation.shortDescription).toBe(listingItemTemplate1.ItemInformation.shortDescription);
+        expect(result[0].ItemInformation.longDescription).toBe(listingItemTemplate1.ItemInformation.longDescription);
+        expect(result[0].Profile.id).toBe(defaultProfile.id);
     });
 
-    test('Should get second ListingItemTemplate by pagination', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 2, 1, 'ASC', profileId]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
+    test('Should get second ListingItemTemplate using pagination (page 1) for Profile', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            1,
+            1,
+            SearchOrder.ASC,
+            defaultProfile.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ListingItemTemplate[] = res.getBody()['result'];
         expect(result).toHaveLength(1);
-        // check itemInformation
-        expect(result[0]['ItemInformation'].title).toBe(testDataListingItemTemplate2.itemInformation.title);
-        expect(result[0]['ItemInformation'].shortDescription).toBe(testDataListingItemTemplate2.itemInformation.shortDescription);
-        expect(result[0]['ItemInformation'].longDescription).toBe(testDataListingItemTemplate2.itemInformation.longDescription);
-        // check profile
-        expect(result[0]['profileId']).toBe(profileId);
-        // check realted models
-        expect(result).hasOwnProperty('profile');
-
-        expect(result).hasOwnProperty('ItemInformation');
-
-        expect(result).hasOwnProperty('PaymentInformation');
-
-        expect(result).hasOwnProperty('MessagingInformation');
-
-        expect(result).hasOwnProperty('ListingItemObjects');
-
-        expect(result).hasOwnProperty('ListingItems');
+        expect(result[0].ItemInformation.title).toBe(listingItemTemplate2.ItemInformation.title);
+        expect(result[0].ItemInformation.shortDescription).toBe(listingItemTemplate2.ItemInformation.shortDescription);
+        expect(result[0].ItemInformation.longDescription).toBe(listingItemTemplate2.ItemInformation.longDescription);
+        expect(result[0].Profile.id).toBe(defaultProfile.id);
     });
 
     test('Should return empty ListingItemTemplates array if invalid pagination', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 2, 2, 'ASC', profileId]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const emptyResults: any = getDataRes.getBody()['result'];
-        expect(emptyResults).toHaveLength(0);
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            2,
+            2,
+            SearchOrder.ASC,
+            defaultProfile.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
+        expect(result).toHaveLength(0);
     });
 
-    test('Should searchListingItemTemplates by category key', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', profileId, 'cat_high_luxyry_items']);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        const category = result[0].ItemInformation.ItemCategory.key;
-        expect(result).toHaveLength(2);
-        expect('cat_high_luxyry_items').toBe(result[0].ItemInformation.ItemCategory.key);
+    test('Should search ListingItemTemplates by ItemCategory key', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            defaultProfile.id,
+            listingItemTemplate1.ItemInformation.ItemCategory.key
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].ItemInformation.ItemCategory.key).toBe(listingItemTemplate1.ItemInformation.ItemCategory.key);
     });
 
-    test('Should search ListingItemTemplates by category id', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', profileId, categoryId]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-        expect(result).toHaveLength(2);
-        const category = result[0].ItemInformation.itemCategoryId;
-        expect(category).toBe(categoryId);
+    test('Should search ListingItemTemplates by ItemCategory id', async () => {
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            defaultProfile.id,
+            listingItemTemplate1.ItemInformation.ItemCategory.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
+        expect(result.length).toBeGreaterThan(0);
+        expect(result[0].ItemInformation.ItemCategory.id).toBe(listingItemTemplate1.ItemInformation.ItemCategory.id);
     });
 
     test('Should search ListingItemTemplates by ItemInformation title', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', profileId, '', testDataListingItemTemplate1.itemInformation.title]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC,
+            defaultProfile.id,
+            '',
+            listingItemTemplate1.ItemInformation.title
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        const result: resources.ListingItemTemplate = res.getBody()['result'];
         expect(result).toHaveLength(1);
-        expect(testDataListingItemTemplate1.itemInformation.title).toBe(result[0].ItemInformation.title);
+        expect(result[0].ItemInformation.title).toBe(listingItemTemplate1.ItemInformation.title);
     });
 
     test('Should fail because we want to search without profileId', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, 1, 2, 'ASC', '']);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(400);
+        const res: any = await testUtil.rpc(templateCommand, [
+            templateSearchCommand,
+            0,
+            2,
+            SearchOrder.ASC
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Missing parameters.');
     });
 });

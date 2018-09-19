@@ -42,7 +42,7 @@ export class RpcController {
     @httpPost('/')
     public async handleRPC( @response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
 
-        const rpcRequest = this.createRequest(body.method, body.params, body.id);
+        let rpcRequest = this.createRequest(body.method, body.params, body.id);
         this.log.debug('controller.handleRPC():', rpcRequest.method + ' ' + rpcRequest.params);
 
         // get the commandType for the method name
@@ -50,7 +50,8 @@ export class RpcController {
         if (commandType) {
             // ... use the commandType to get the correct RpcCommand implementation and execute
             const rpcCommand: RpcCommandInterface<any> = this.rpcCommandFactory.get(commandType);
-            await rpcCommand.validate(rpcRequest);
+            const newRpcRequest = await rpcCommand.validate(rpcRequest);
+            rpcRequest = newRpcRequest ? newRpcRequest : rpcRequest;
             const result = await rpcCommand.execute(rpcRequest, this.rpcCommandFactory);
             return this.createResponse(rpcRequest.id, result);
         } else {

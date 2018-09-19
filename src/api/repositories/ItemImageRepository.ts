@@ -27,7 +27,7 @@ export class ItemImageRepository {
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ItemImage> {
-        return this.ItemImageModel.fetchById(id, withRelated);
+        return await this.ItemImageModel.fetchById(id, withRelated);
     }
 
     public async create(data: any): Promise<ItemImage> {
@@ -35,7 +35,7 @@ export class ItemImageRepository {
         const itemImage = this.ItemImageModel.forge<ItemImage>(data);
         try {
             const itemImageCreated = await itemImage.save();
-            const result = this.ItemImageModel.fetchById(itemImageCreated.id);
+            const result = await this.ItemImageModel.fetchById(itemImageCreated.id);
             this.log.debug('itemImageRepository.create: ' + (new Date().getTime() - startTime) + 'ms');
             return result;
         } catch (error) {
@@ -47,7 +47,7 @@ export class ItemImageRepository {
         const itemImage = this.ItemImageModel.forge<ItemImage>({ id });
         try {
             const itemImageUpdated = await itemImage.save(data, { patch: true });
-            return this.ItemImageModel.fetchById(itemImageUpdated.id);
+            return await this.ItemImageModel.fetchById(itemImageUpdated.id);
         } catch (error) {
             throw new DatabaseException('Could not update the itemImage!', error);
         }

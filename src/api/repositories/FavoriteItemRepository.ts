@@ -28,28 +28,30 @@ export class FavoriteItemRepository {
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<FavoriteItem> {
-        return this.FavoriteItemModel.fetchById(id, withRelated);
+        return await this.FavoriteItemModel.fetchById(id, withRelated);
     }
 
     /**
      * search favorite item by profile id and item id
-     * @param options, FavoriteSearchParams
-     * @returns {Promise<FavoriteItem> }
+     *
+     * @param {number} profileId
+     * @param {number} itemId
+     * @param {boolean} withRelated
+     * @returns {Promise<FavoriteItem>}
      */
-
-    public async search(options: FavoriteSearchParams): Promise<FavoriteItem> {
-      return this.FavoriteItemModel.search(options);
+    public async findOneByProfileIdAndListingItemId(profileId: number, itemId: number, withRelated: boolean = true): Promise<FavoriteItem> {
+        return await this.FavoriteItemModel.fetchByProfileIdAndListingItemId(profileId, itemId, withRelated);
     }
 
-    public async findFavoritesByProfileId(profileId: number, withRelated: boolean): Promise<Bookshelf.Collection<FavoriteItem>> {
-        return this.FavoriteItemModel.findFavoritesByProfileId(profileId, withRelated);
+    public async findAllByProfileId(profileId: number, withRelated: boolean): Promise<Bookshelf.Collection<FavoriteItem>> {
+        return await this.FavoriteItemModel.fetchFavoritesByProfileId(profileId, withRelated);
     }
 
     public async create(data: any): Promise<FavoriteItem> {
         const favoriteItem = this.FavoriteItemModel.forge<FavoriteItem>(data);
         try {
             const favoriteItemCreated = await favoriteItem.save();
-            return this.FavoriteItemModel.fetchById(favoriteItemCreated.id);
+            return await this.FavoriteItemModel.fetchById(favoriteItemCreated.id);
         } catch (error) {
             throw new DatabaseException('Could not create the favoriteItem!', error);
         }

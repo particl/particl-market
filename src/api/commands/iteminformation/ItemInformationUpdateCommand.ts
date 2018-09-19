@@ -59,7 +59,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
      * @param {RpcRequest} data
      * @returns {Promise<void>}
      */
-    public async validate(data: RpcRequest): Promise<void> {
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 5) {
             this.log.error('Not enough args.');
             throw new MessageException('Not enough args.');
@@ -70,6 +70,7 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
             this.log.error('Category ID must be numeric.');
             throw new MessageException('Category ID must be numeric.');
         }
+        return data;
     }
 
     public usage(): string {

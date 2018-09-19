@@ -30,10 +30,10 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<void>}
      */
-    public async cleanDb(): Promise<any> {
+    public async cleanDb(seed: boolean = true): Promise<any> {
 
         this.log.debug('cleanDb, this.node', this.node);
-        const res = await this.rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName]);
+        const res = await this.rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName, seed]);
         res.expectJson();
         res.expectStatusCode(200);
         return { result: 'success' };

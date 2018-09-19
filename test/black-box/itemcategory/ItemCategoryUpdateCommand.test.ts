@@ -2,12 +2,9 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-import {ObjectHash} from '../../../src/core/helpers/ObjectHash';
 import * as resources from 'resources';
 
 describe('ItemCategoryUpdateCommand', () => {

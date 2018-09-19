@@ -4,7 +4,6 @@
 
 // tslint:disable:max-line-length
 import * from 'jest';
-import { rpc, api } from '../lib/api';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
@@ -13,16 +12,17 @@ import { GenerateListingItemTemplateParams } from '../../../src/api/requests/par
 import * as resources from 'resources';
 // tslint:enable:max-line-length
 
-describe('ListingItemPostCommand', () => {
+describe('ListingItemTemplatePostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
 
-    const testUtil = new BlackBoxTestUtil();
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
+
+    const testUtil = new BlackBoxTestUtil();
 
     let defaultProfile;
     let defaultMarket;
@@ -32,6 +32,14 @@ describe('ListingItemPostCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
+        // get default profile
+        defaultProfile = await testUtil.getDefaultProfile();
+        log.debug('defaultProfile: ', defaultProfile);
+
+        // fetch default market
+        defaultMarket = await testUtil.getDefaultMarket();
+
+        // generate listingItemTemplate
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
             true,   // generateShippingDestinations
@@ -43,14 +51,6 @@ describe('ListingItemPostCommand', () => {
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        // get default profile
-        defaultProfile = await testUtil.getDefaultProfile();
-        log.debug('defaultProfile: ', defaultProfile);
-
-        // fetch default market
-        defaultMarket = await testUtil.getDefaultMarket();
-
-        // generate listingItemTemplate
         const listingItemTemplates: resources.ListingItemTemplate[] = await testUtil.generateData(
             CreatableModel.LISTINGITEMTEMPLATE, // what to generate
             1,                          // how many to generate
@@ -62,7 +62,7 @@ describe('ListingItemPostCommand', () => {
 
     test('Should post a ListingItem in to the default marketplace', async () => {
 
-        const res: any = await rpc(templateCommand, [templatePostCommand, listingItemTemplate.id, defaultMarket.id]);
+        const res: any = await testUtil.rpc(templateCommand, [templatePostCommand, listingItemTemplate.id, defaultMarket.id]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -81,7 +81,7 @@ describe('ListingItemPostCommand', () => {
 
     });
 
-    test('Should receive MP_ITEM_ADD message, create a ListingItem and matched with the existing ListingItemTemplate', async () => {
+    test('Should receive MP_ITEM_ADD message on the same node, create a ListingItem and matched with the existing ListingItemTemplate', async () => {
 
         // wait for some time to make sure it's received
         await testUtil.waitFor(5);
@@ -101,12 +101,10 @@ describe('ListingItemPostCommand', () => {
         // -> meaning item hash was matched with the existing template hash
         const result: resources.ListingItem = response.getBody()['result'];
 
-        delete result.ItemInformation.ItemImages;
         log.debug('listingItem: ', JSON.stringify(result, null, 2));
 
         expect(result.hash).toBe(listingItemTemplate.hash);
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplate.hash);
-        expect(result.Proposal.title).toBe(listingItemTemplate.hash);
 
     }, 600000); // timeout to 600s
 

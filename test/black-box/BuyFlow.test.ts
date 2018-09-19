@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-// tslint:disable:max-line-length
 import * from 'jest';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
@@ -14,7 +13,6 @@ import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-// tslint:enable:max-line-length
 
 describe('Happy Buy Flow', () => {
 
@@ -24,8 +22,8 @@ describe('Happy Buy Flow', () => {
 
     // const testUtilNode0 = new BlackBoxTestUtil(0);
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
-    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 2 : 1);  // BUYER
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);  // SELLER
+    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);  // BUYER
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
