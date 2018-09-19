@@ -2,31 +2,29 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('BidCancelCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
 
-    const method =  Commands.BID_ROOT.commandName;
-    const subMethod =  Commands.BID_CANCEL.commandName;
+    const bidCommand =  Commands.BID_ROOT.commandName;
+    const bidCancelCommand =  Commands.BID_CANCEL.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
 
-    test('Should cancel a bid by RPC', async () => {
-        const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
-        const res: any = await rpc(method, [subMethod, listingItem[0].hash]);
-        res.expectJson();
+    test('Should cancel a Bid', async () => {
 
-        // TODO: Need to implements after broadcast functionality get done
+        // TODO: not implemented
 
-        // res.expectStatusCode(200);
-        // const result: any = res.getBody()['result'];
     });
 
 });

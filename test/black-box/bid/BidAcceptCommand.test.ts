@@ -14,6 +14,7 @@ import { GenerateProfileParams } from '../../../src/api/requests/params/Generate
 import { GenerateBidParams } from '../../../src/api/requests/params/GenerateBidParams';
 
 describe('BidAcceptCommand', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
@@ -28,7 +29,6 @@ describe('BidAcceptCommand', () => {
     let sellerProfile: resources.Profile;
 
     let listingItemTemplate: resources.ListingItemTemplate;
-
     let bid: resources.Bid;
 
     beforeAll(async () => {
@@ -99,7 +99,7 @@ describe('BidAcceptCommand', () => {
 
     });
 
-    test('Should Accept a Bid for a ListingItem', async () => {
+    test('Should Accept a Bid', async () => {
 
     // TODO: fix
 /*

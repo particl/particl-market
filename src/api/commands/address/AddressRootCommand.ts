@@ -37,6 +37,6 @@ export class AddressRootCommand extends BaseCommand implements RpcCommandInterfa
     }
 
     public description(): string {
-        return 'Manage addresses associated with profiles.';
+        return 'Manage addresses associated with Profiles.';
     }
 }

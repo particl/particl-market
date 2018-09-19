@@ -19,9 +19,8 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { NotFoundException } from '../../exceptions/NotFoundException';
 
 export class AddressUpdateCommand extends BaseCommand implements RpcCommandInterface<Address> {
+
     public log: LoggerType;
-    public name: string;
-    public helpStr: string;
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
@@ -35,9 +34,9 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
      *
      * data.params[]:
      *  [0]: addressId
-     *  [1]: firstName
-     *  [2]: lastName
-     *  [3]: title
+     *  [1]: title
+     *  [2]: firstName
+     *  [3]: lastName
      *  [4]: addressLine1
      *  [5]: addressLine2
      *  [6]: city
@@ -64,9 +63,9 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
         }
 
         return this.addressService.update(data.params[0], {
-            firstName: data.params[1],
-            lastName: data.params[2],
-            title: data.params[3],
+            title: data.params[1],
+            firstName: data.params[2],
+            lastName: data.params[3],
             addressLine1: data.params[4],
             addressLine2: data.params[5],
             city: data.params[6],
@@ -78,16 +77,16 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
 
     // tslint:disable:max-line-length
     public usage(): string {
-        return this.getName() + ' <addressId> <firstName> <lastName> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] ';
+        return this.getName() + ' <addressId> <title> <firstName> <lastName> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] ';
     }
     // tslint:enable:max-line-length
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <addressId>              - Numeric - The ID of the address we want to modify. \n'
+            + '    <title>                  - String - A short identifier for the address. \n'
             + '    <firstName>              - String - First Name of user. \n'
             + '    <lastName>               - String - Last Name of user. \n'
-            + '    <title>                  - String - A short identifier for the address. \n'
             + '    <addressLine1>           - String - The first line of the address. \n'
             + '    <addressLine2>           - String - The second line of the address. \n'
             + '    <city>                   - String - The city of the address. \n'
@@ -102,6 +101,6 @@ export class AddressUpdateCommand extends BaseCommand implements RpcCommandInter
     }
 
     public example(): string {
-        return 'address 1 ' + this.getName() + 'johnny \' deep \' homeAddress \'1060 West Addison Street\' \'\' Chicago IL \'United States\' 60613 ';
+        return 'address 1 ' + this.getName() + 'Home johnny deep \'1060 West Addison Street\' \'\' Chicago IL \'United States\' 60613 ';
     }
 }
