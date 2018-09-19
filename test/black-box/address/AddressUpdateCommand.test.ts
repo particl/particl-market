@@ -116,7 +116,7 @@ describe('AddressUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`ASDF`);
+        expect(res.error.error.message).toBe(`Entity with identifier Country code <TEST> was not valid! does not exist`);
     });
 
     test('Should fail because we want to update with null state field', async () => {
@@ -134,7 +134,7 @@ describe('AddressUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(`ASDF`);
+        expect(res.error.error.message).toBe(`Request body is not valid`);
     });
 
     test('Should fail because we want to update with undefined state field', async () => {
@@ -152,7 +152,7 @@ describe('AddressUpdateCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(400);
-        expect(res.error.error.message).toBe(`ASDF`);
+        expect(res.error.error.message).toBe(`Request body is not valid`);
     });
 
     test('Should update the address with blank state field', async () => {

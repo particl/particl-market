@@ -62,11 +62,11 @@ describe('AddressRemoveCommand', () => {
 
     });
 
-    test('Should fail because we want to create an invalid address id', async () => {
-        const res = await testUtil.rpc(addressCommand, [addressRemoveCommand, createdAddress.id]);
+    test('Should fail because we want to remove an invalid address id', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressRemoveCommand, 0]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`ASDF`);
+        expect(res.error.error.message).toBe(`Entity with identifier 0 does not exist`);
     });
 
     test('Should remove Address', async () => {
@@ -80,7 +80,7 @@ describe('AddressRemoveCommand', () => {
         const res = await testUtil.rpc(addressCommand, [addressRemoveCommand, createdAddress.id]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`ASDF`);
+        expect(res.error.error.message).toBe(`Entity with identifier ${createdAddress.id} does not exist`);
     });
 
 });

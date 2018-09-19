@@ -95,11 +95,11 @@ describe('BidAcceptCommand', () => {
             bidGenerateParams);
         bid = bids[0];
 
-        log.debug('bids: ', JSON.stringify(bids, null, 2));
+        // log.debug('bids: ', JSON.stringify(bids, null, 2));
 
     });
 
-    test('Should Accept a Bid', async () => {
+    test('Should accept a Bid', async () => {
 
     // TODO: fix
 /*
