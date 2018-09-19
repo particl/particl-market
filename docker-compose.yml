@@ -59,9 +59,10 @@ services:
 
   gui1:
     image: ludx/marketplace-gui:latest
-    build:
-      context: ../particl-desktop
-      dockerfile: Dockerfile
+#    image: marketplace-gui
+#    build:
+#      context: ../particl-desktop
+#      dockerfile: Dockerfile
     volumes:
       - ../particl-desktop/:/app/
       - ./data/gui1_node_modules:/app/node_modules
@@ -81,9 +82,10 @@ services:
 
   gui2:
     image: ludx/marketplace-gui:latest
-    build:
-      context: ../particl-desktop
-      dockerfile: Dockerfile
+#    image: marketplace-gui
+#    build:
+#     context: ../particl-desktop
+#     dockerfile: Dockerfile
     volumes:
       - ../particl-desktop/:/app/
       - ./data/gui2_node_modules:/app/node_modules

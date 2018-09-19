@@ -7,7 +7,7 @@ import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import { ListingItem } from 'resources';
+import * as resources from 'resources';
 
 describe('ListingItemFlagCommand', () => {
 
@@ -38,7 +38,7 @@ describe('ListingItemFlagCommand', () => {
             2,                      // how many to generate
             true,                   // return model
             generateListingItemParams    // what kind of data to generate
-        ) as ListingItem[];
+        ) as resources.ListingItem[];
         createdListingItem = listingItems[0];
         createdNewListingItem = listingItems[1];
 
