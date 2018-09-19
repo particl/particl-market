@@ -9,7 +9,6 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as resources from 'resources';
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
-import { AddressType } from '../../../src/api/enums/AddressType';
 import { OrderStatus } from '../../../src/api/enums/OrderStatus';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
@@ -23,8 +22,8 @@ describe('OrderItemStatus', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
-    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 2 : 1);
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);  // SELLER
+    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     const lockCommand = Commands.ESCROW_LOCK.commandName;
 
