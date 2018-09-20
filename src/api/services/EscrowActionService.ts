@@ -440,7 +440,7 @@ export class EscrowActionService {
         const buyerEscrowPubAddressPublicKey = this.getValueFromOrderItemObjects(BidDataValue.BUYER_PUBKEY, orderItem.OrderItemObjects);
         const sellerEscrowPubAddressPublicKey = this.getValueFromOrderItemObjects(BidDataValue.SELLER_PUBKEY, orderItem.OrderItemObjects);
         const pubkeys = [sellerEscrowPubAddressPublicKey, buyerEscrowPubAddressPublicKey].sort();
-        // todo: does the order of the pubkeys matter and how?
+        // todo: does the order of the pubkeys matter?
 
         this.log.debug('createRawTx(), rawtx:', rawtx);
         this.log.debug('createRawTx(), pubkeys:', pubkeys);
@@ -492,7 +492,7 @@ export class EscrowActionService {
 
                 if (OrderStatus.ESCROW_LOCKED === orderItem.status && isMyListingItem) {
                     // seller sends the first MPA_RELEASE, OrderStatus.ESCROW_LOCKED
-                    this.log.debug('createRawTx(), orderItem:', JSON.stringify(orderItem, null, 2));
+                    // this.log.debug('createRawTx(), orderItem:', JSON.stringify(orderItem, null, 2));
 
                     const buyerReleaseAddress = this.getValueFromOrderItemObjects(BidDataValue.BUYER_RELEASE_ADDRESS, orderItem.OrderItemObjects);
                     this.log.debug('createRawTx(), buyerReleaseAddress:', buyerReleaseAddress);
@@ -530,11 +530,13 @@ export class EscrowActionService {
                     // TODO: Make sure this is the correct vout !!!
                     // TODO: loop through the vouts and check the value, but what if theres multiple outputs with same value?
                     const txInputs: Output[] = [{txid, vout: 0}];
+                    this.log.debug('===============================================================================');
+                    this.log.debug('createRawTx(), txInputs:', JSON.stringify(txInputs, null, 2));
+                    this.log.debug('createRawTx(), txout: ', JSON.stringify(txout, null, 2));
+
                     rawtx = await this.coreRpcService.createRawTransaction(txInputs, txout);
                     const signed = await this.signRawTx(rawtx, false);
 
-                    this.log.debug('createRawTx(), txInputs: ', JSON.stringify(txInputs, null, 2));
-                    this.log.debug('createRawTx(), txout: ', JSON.stringify(txout, null, 2));
                     this.log.debug('createRawTx(), rawtx: ', JSON.stringify(rawtx, null, 2));
                     this.log.debug('createRawTx(), signed: ', JSON.stringify(signed, null, 2));
 
@@ -543,10 +545,10 @@ export class EscrowActionService {
                 } else if (OrderStatus.SHIPPING === orderItem.status && !isMyListingItem) {
                     // buyer sends the MPA_RELEASE, OrderStatus.SHIPPING
 
-                    const signed = await this.signRawTx(rawtx, true);
-                    this.log.debug('createRawTx(), signed: ', JSON.stringify(signed, null, 2));
+                    const completeRawTx = await this.signRawTx(rawtx, true);
+                    this.log.debug('createRawTx(), completeRawTx: ', JSON.stringify(completeRawTx, null, 2));
 
-                    const txid =  await this.coreRpcService.sendRawTransaction(signed.hex);
+                    const txid =  await this.coreRpcService.sendRawTransaction(completeRawTx);
                     this.log.debug('createRawTx(), response:', JSON.stringify(txid, null, 2));
                     return txid;
 
@@ -597,15 +599,16 @@ export class EscrowActionService {
 
             const ignoreErrors = [
                 'Unable to sign input, invalid stack size (possibly missing key)',
-                'Operation not valid with the current stack size'
+                'Operation not valid with the current stack size',
+                'Signature must be zero for failed CHECK(MULTI)SIG operation'
             ];
 
             if (!signed
                 || signed.errors
                 && (!shouldBeComplete && ignoreErrors.indexOf(signed.errors[0].error) === -1)) {
-                this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
+                this.log.error('Error signing transaction' + signed.errors ? ': ' + signed.errors[0].error : '');
                 this.log.error('signed: ', JSON.stringify(signed, null, 2));
-                throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
+                throw new MessageException('Error signing transaction' + signed.errors ? ': ' + signed.error : '');
             }
 
             this.log.debug('signRawTx(): signed:', JSON.stringify(signed, null, 2));

@@ -370,7 +370,7 @@ export class CoreRpcService {
 
         if (logCall) {
             // TODO: handle [object Object]
-            this.log.debug('call: ' + method + ' ' + params.toString().replace(new RegExp(',', 'g'), ' '));
+            this.log.debug('call: ' + method + ' ' + JSON.stringify(params).replace(new RegExp(',', 'g'), ' '));
         }
         // this.log.debug('call url:', url);
         // this.log.debug('call postData:', postData);
