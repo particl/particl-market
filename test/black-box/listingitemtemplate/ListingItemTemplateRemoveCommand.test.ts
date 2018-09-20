@@ -55,7 +55,6 @@ describe('ListingItemTemplateRemoveCommand', () => {
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
-
         listingItemTemplate = listingItemTemplates[0];
 
         const result: any = await testUtil.rpc(templateCommand, [templateRemoveCommand, listingItemTemplate.id]);
@@ -98,8 +97,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
-
-        const listingItemTemplate = listingItemTemplates[0];
+        listingItemTemplate = listingItemTemplates[0];
 
         // expect template is related to correct profile and listingitem posted to correct market
         expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);

@@ -60,19 +60,29 @@ describe('MessagingInformationUpdateCommand', () => {
     };
 
     test('Should fail to update MessagingInformation because empty body', async () => {
-        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand, listingItemTemplates[0].id]);
+        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
+            listingItemTemplates[0].id
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
     test('Should fail to update MessagingInformation because invalid protocol', async () => {
-        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand, listingItemTemplates[0].id, 'test', messageInfoData.publicKey]);
+        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
+            listingItemTemplates[0].id,
+            'test',
+            messageInfoData.publicKey
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
     });
 
     test('Should update the MessagingInformation', async () => {
-        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand, listingItemTemplates[0].id, messageInfoData.protocol, messageInfoData.publicKey]);
+        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
+            listingItemTemplates[0].id,
+            messageInfoData.protocol,
+            messageInfoData.publicKey
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -107,7 +117,11 @@ describe('MessagingInformationUpdateCommand', () => {
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
 
-        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand, listingItemTemplates[0].id, messageInfoData.protocol, messageInfoData.publicKey]);
+        const res = await testUtil.rpc(messagingCommand, [messagingUpdateCommand,
+            listingItemTemplates[0].id,
+            messageInfoData.protocol,
+            messageInfoData.publicKey
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
