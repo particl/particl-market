@@ -204,7 +204,6 @@ describe('BidSendCommand', () => {
             'xl'
         ];
 
-        // send bid
         const res: any = await testUtil.rpc(bidCommand, bidSendCommandParams);
         res.expectJson();
         res.expectStatusCode(404);
@@ -228,9 +227,9 @@ describe('BidSendCommand', () => {
         const res: any = await testUtil.rpc(bidCommand, bidSearchCommandParams);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
 
-        log.debug('bid search result:', JSON.stringify(result, null, 2));
+        const result: any = res.getBody()['result'];
+        // log.debug('bid search result:', JSON.stringify(result, null, 2));
         expect(result[0].ListingItem.hash).toBe(listingItem1.hash);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
         expect(result[0].bidder).toBe(defaultProfile.address);

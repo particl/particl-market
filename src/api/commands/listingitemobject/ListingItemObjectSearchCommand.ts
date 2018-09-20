@@ -14,7 +14,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemObjectSearchParams } from '../../requests/ListingItemObjectSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ListingItemObjectSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemObject>> {
 

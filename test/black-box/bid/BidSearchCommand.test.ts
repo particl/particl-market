@@ -79,7 +79,6 @@ describe('BidSearchCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('Entity with identifier INVALID HASH does not exist');
     });
 
@@ -88,7 +87,6 @@ describe('BidSearchCommand', () => {
         const res: any = await testUtil.rpc(bidCommand, [bidSearchCommand, 'invalid page']);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('parameter page should be a number.');
     });
 
@@ -205,7 +203,6 @@ describe('BidSearchCommand', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
         expect(res.error.error.message).toBe('Invalid status.');
     });
 

@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { EscrowType } from '../../../src/api/enums/EscrowType';
 import { Currency } from '../../../src/api/enums/Currency';
@@ -10,76 +10,73 @@ import { CryptocurrencyAddressType } from '../../../src/api/enums/Cryptocurrency
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import {GenerateListingItemTemplateParams} from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('EscrowUpdateCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ESCROW_ROOT.commandName;
-    const subCommand = Commands.ESCROW_UPDATE.commandName;
 
-    let profileId;
-    const testDataListingItemTemplate = {
-        profile_id: 0,
-        itemInformation: {
-            title: 'Item Information with Templates',
-            shortDescription: 'Item short description with Templates',
-            longDescription: 'Item long description with Templates',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            }
-        },
-        paymentInformation: {
-            type: PaymentType.SALE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 100,
-                    seller: 100
-                }
-            },
-            itemPrice: {
-                currency: Currency.BITCOIN,
-                basePrice: 0.0001,
-                shippingPrice: {
-                    domestic: 0.123,
-                    international: 1.234
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.NORMAL,
-                    address: 'This is temp address.'
-                }
-            }
-        }
-    };
+    const escrowCommand = Commands.ESCROW_ROOT.commandName;
+    const escrowUpdateCommand = Commands.ESCROW_UPDATE.commandName;
 
-    const testData = {
-        type: EscrowType.NOP,
-        ratio: {
-            buyer: 1000,
-            seller: 1000
-        }
-    };
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let createdListingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const defaultProfile = await testUtil.getDefaultProfile();
-        profileId = defaultProfile.id;
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            false,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,   // generateListingItem
+            defaultMarket.id  // marketId
+        ]).toParamsArray();
+
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
+
+        createdListingItemTemplate = listingItemTemplates[0];
     });
 
     test('Should update Escrow', async () => {
-        // set profile id
-        testDataListingItemTemplate.profile_id = profileId;
 
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        const testData = {
+            type: EscrowType.NOP,
+            ratio: {
+                buyer: 1000,
+                seller: 1000
+            }
+        };
 
-        const addListingItemTempResult = addListingItemTempRes;
-        const createdTemplateId = addListingItemTempResult.id;
-        const paymentInformationId = addListingItemTempResult.PaymentInformation.id;
-
-        const updateDataRes: any = await rpc(method, [subCommand, createdTemplateId, testData.type, testData.ratio.buyer, testData.ratio.seller]);
-        updateDataRes.expectJson();
-        updateDataRes.expectStatusCode(200);
-        const result: any = updateDataRes.getBody()['result'];
-        expect(result.paymentInformationId).toBe(paymentInformationId);
+        const res: any = await testUtil.rpc(escrowCommand, [escrowUpdateCommand,
+            createdListingItemTemplate.id,
+            testData.type,
+            testData.ratio.buyer,
+            testData.ratio.seller
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
         expect(result.type).toBe(testData.type);
         expect(result.Ratio.buyer).toBe(testData.ratio.buyer);
         expect(result.Ratio.seller).toBe(testData.ratio.seller);
