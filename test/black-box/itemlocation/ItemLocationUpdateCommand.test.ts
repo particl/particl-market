@@ -21,8 +21,8 @@ describe('ItemLocationUpdateCommand', () => {
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
 
-    const method = Commands.ITEMLOCATION_ROOT.commandName;
-    const subCommand = Commands.ITEMLOCATION_UPDATE.commandName;
+    const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
+    const itemLocationUpdateCommand = Commands.ITEMLOCATION_UPDATE.commandName;
 
     const testDataListingItemTemplate = {
         profile_id: 0,
@@ -81,7 +81,7 @@ describe('ItemLocationUpdateCommand', () => {
 
     test('Should update ItemLocation and set null location marker fields', async () => {
         // update item location
-        const addDataRes: any = await testUtil.rpc(method, [subCommand, createdTemplateId, testDataUpdated[1], testDataUpdated[2]]);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand, createdTemplateId, testDataUpdated[1], testDataUpdated[2]]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         const result: any = addDataRes.getBody()['result'];
@@ -94,8 +94,8 @@ describe('ItemLocationUpdateCommand', () => {
     test('Should update ItemLocation', async () => {
         // update item location
         const testDataUpdated2 = testDataUpdated;
-        testDataUpdated2.unshift(subCommand);
-        const addDataRes: any = await testUtil.rpc(method, testDataUpdated2);
+        testDataUpdated2.unshift(itemLocationUpdateCommand);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, testDataUpdated2);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         const result: any = addDataRes.getBody()['result'];
@@ -109,7 +109,7 @@ describe('ItemLocationUpdateCommand', () => {
     });
 
     test('Should fail because we want to update without Country code', async () => {
-        const addDataRes: any = await testUtil.rpc(method, [subCommand, createdTemplateId]);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand, createdTemplateId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
@@ -117,7 +117,7 @@ describe('ItemLocationUpdateCommand', () => {
     });
 
     test('Should fail because we want to update without address not valid', async () => {
-        const addDataRes: any = await testUtil.rpc(method, [subCommand, createdTemplateId, 'USA']);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand, createdTemplateId, 'USA']);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
@@ -147,7 +147,7 @@ describe('ItemLocationUpdateCommand', () => {
         const newTemplateId = newListingItemTemplate.id;
 
         // update item location
-        const addDataRes: any = await testUtil.rpc(method, [subCommand, newTemplateId, 'China', 'TEST ADDRESS', 'TEST TITLE', 'TEST DESC', 55.6, 60.8]);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand, newTemplateId, 'China', 'TEST ADDRESS', 'TEST TITLE', 'TEST DESC', 55.6, 60.8]);
 
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);

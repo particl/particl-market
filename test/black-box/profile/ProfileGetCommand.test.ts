@@ -3,8 +3,6 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * from 'jest';
-import * as _ from 'lodash';
-import { api, rpc } from '../lib/api';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
@@ -32,7 +30,7 @@ describe('ProfileGetCommand', () => {
     });
 
     test('Should return one Profile by id', async () => {
-        const res = await rpc(profileCommand, [profileGetCommand, defaultProfile.id]);
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand, defaultProfile.id]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -47,7 +45,7 @@ describe('ProfileGetCommand', () => {
     });
 
     test('Should return one Profile by name', async () => {
-        const res = await rpc(profileCommand, [profileGetCommand, defaultProfile.name]);
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand, defaultProfile.name]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -62,14 +60,14 @@ describe('ProfileGetCommand', () => {
     });
 
     test('Should fail to return Profile with invalid name', async () => {
-        const res = await rpc(profileCommand, [profileGetCommand, 'invalid_profile_name']);
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand, 'invalid_profile_name']);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(`Entity with identifier invalid_profile_name does not exist`);
    });
 
     test('Should fail to return Profile with invalid id', async () => {
-        const res = await rpc(profileCommand, [profileGetCommand, 123123]);
+        const res = await testUtil.rpc(profileCommand, [profileGetCommand, 123123]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.message).toBe(`Entity with identifier 123123 does not exist`);

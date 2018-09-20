@@ -2,17 +2,20 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
-import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
+import * from 'jest';import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ProfileUpdateCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.PROFILE_ROOT.commandName;
-    const subCommand = Commands.PROFILE_UPDATE.commandName;
+
+    const profileCommand = Commands.PROFILE_ROOT.commandName;
+    const profileUpdateCommand = Commands.PROFILE_UPDATE.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -26,7 +29,7 @@ describe('ProfileUpdateCommand', () => {
 
         const profileName = 'UPDATED-DEFAULT-PROFILE-TEST';
         const profileAddress = 'UPDATED-DEFAULT-PROFILE-TEST-ADDRESS';
-        const res = await rpc(method, [subCommand, createdId, profileName]);
+        const res = await testUtil.rpc(profileCommand, [profileUpdateCommand, createdId, profileName]);
 
         res.expectJson();
         res.expectStatusCode(200);

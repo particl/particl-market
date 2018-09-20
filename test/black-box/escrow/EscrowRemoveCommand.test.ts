@@ -8,10 +8,15 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
+import {Logger as LoggerType} from '../../../src/core/Logger';
 
 describe('EscrowRemoveCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
+
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const escrowRemoveCommand = Commands.ESCROW_REMOVE.commandName;
 

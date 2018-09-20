@@ -45,10 +45,9 @@ export class ShippingDestinationService {
      *  country: options.options
      *  shipping_availability: options.shipping_availability
      *
-     * @param options
+     * @param {ShippingDestinationSearchParams} options
      * @returns {Promise<ShippingDestination>}
      */
-
     @validate()
     public async search(
         @request(ShippingDestinationCreateRequest) options: ShippingDestinationSearchParams): Promise<ShippingDestination> {

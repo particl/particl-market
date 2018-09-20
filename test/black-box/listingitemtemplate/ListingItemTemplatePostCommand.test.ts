@@ -13,30 +13,26 @@ import * as resources from 'resources';
 // tslint:enable:max-line-length
 
 describe('ListingItemTemplatePostCommand', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new BlackBoxTestUtil();
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
 
-    const testUtil = new BlackBoxTestUtil();
-
-    let defaultProfile;
-    let defaultMarket;
-
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
     let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile
+        // get default profile and market
         defaultProfile = await testUtil.getDefaultProfile();
-        log.debug('defaultProfile: ', defaultProfile);
-
-        // fetch default market
         defaultMarket = await testUtil.getDefaultMarket();
 
         // generate listingItemTemplate

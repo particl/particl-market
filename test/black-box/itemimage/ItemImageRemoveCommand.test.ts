@@ -14,12 +14,17 @@ import { ImageDataProtocolType } from '../../../src/api/enums/ImageDataProtocolT
 import { ImageProcessing } from '../../../src/core/helpers/ImageProcessing';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
+import {Logger as LoggerType} from '../../../src/core/Logger';
 
 describe('ItemImageRemoveCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const imageCommand = Commands.ITEMIMAGE_ROOT.commandName;
-    const removeCommand = Commands.ITEMIMAGE_REMOVE.commandName;
+
+    const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
+    const itemImageRemoveCommand = Commands.ITEMIMAGE_REMOVE.commandName;
 
     const keys = [
         'id', 'hash', 'updatedAt', 'createdAt'
@@ -98,7 +103,7 @@ describe('ItemImageRemoveCommand', () => {
     });
 
     test('Should fail to remove ItemImage because no args', async () => {
-        const result: any = await testUtil.rpc(imageCommand, [removeCommand]);
+        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand]);
         result.expectJson();
         result.expectStatusCode(404);
         expect(result.error.error.success).toBe(false);
@@ -131,7 +136,7 @@ describe('ItemImageRemoveCommand', () => {
         itemImageRes.expectStatusCode(200);
         createdItemImageIdNew = itemImageRes.getBody()['result'].id;
 
-        result = await testUtil.rpc(imageCommand, [removeCommand, createdItemImageIdNew]);
+        result = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand, createdItemImageIdNew]);
         result.expectJson();
         result.expectStatusCode(404);
         expect(result.error.error.message).toBe('Can\'t delete itemImage because the item has allready been posted!');
@@ -139,13 +144,13 @@ describe('ItemImageRemoveCommand', () => {
 
     test('Should remove ItemImage', async () => {
         // remove item image
-        const result: any = await testUtil.rpc(imageCommand, [removeCommand, createdItemImageId]);
+        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand, createdItemImageId]);
         result.expectJson();
         result.expectStatusCode(200);
     });
 
     test('Should fail to remove ItemImage because itemImage already been removed', async () => {
-        const result: any = await testUtil.rpc(imageCommand, [removeCommand, createdItemImageId]);
+        const result: any = await testUtil.rpc(itemImageCommand, [itemImageRemoveCommand, createdItemImageId]);
         result.expectJson();
         result.expectStatusCode(404);
     });

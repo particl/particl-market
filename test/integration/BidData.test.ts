@@ -128,10 +128,6 @@ describe('BidDatas', () => {
 
     });
 
-    afterAll(async () => {
-        //
-    });
-
     test('Should throw ValidationException because there is no bid_id', async () => {
         expect.assertions(1);
 
@@ -165,8 +161,8 @@ describe('BidDatas', () => {
         const bidData = bidDataCollection.toJSON();
 
         log.debug('biddatas: ', JSON.stringify(bidData, null, 2));
-        expect(bidData.length).toBe(16);
-        const result = bidData[15];
+        expect(bidData.length).toBe(19);
+        const result = bidData[18];
 
         // test the values
         expect(result.dataId).toBe(testDataUpdated.dataId);

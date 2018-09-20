@@ -16,8 +16,9 @@ describe('ItemLocationRemoveCommand', () => {
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ITEMLOCATION_ROOT.commandName;
-    const subCommand = Commands.ITEMLOCATION_REMOVE.commandName;
+
+    const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
+    const itemLocationRemoveCommand = Commands.ITEMLOCATION_REMOVE.commandName;
 
     const testDataListingItemTemplate = {
         profile_id: 0,
@@ -101,14 +102,14 @@ describe('ItemLocationRemoveCommand', () => {
 
     test('Should remove ItemLocation', async () => {
         // remove item location
-        const addDataRes: any = await testUtil.rpc(method, [subCommand, createdTemplateId]);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, createdTemplateId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
     });
 
     test('Should fail to remove ItemLocation because its already removed', async () => {
         // remove item location
-        const addDataRes: any = await testUtil.rpc(method, [subCommand, createdTemplateId]);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, createdTemplateId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
     });
@@ -124,7 +125,7 @@ describe('ItemLocationRemoveCommand', () => {
         const newListingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate2);
 
         // remove item location
-        const addDataRes: any = await testUtil.rpc(method, [subCommand, newListingItemTemplate.id]);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, newListingItemTemplate.id]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
@@ -138,7 +139,7 @@ describe('ItemLocationRemoveCommand', () => {
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
         const templateId = addListingItemTempRes.id;
         // remove item location
-        const addDataRes: any = await testUtil.rpc(method, [subCommand, templateId]);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationRemoveCommand, templateId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);

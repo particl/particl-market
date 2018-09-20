@@ -16,13 +16,14 @@ import {Logger as LoggerType} from '../../../src/core/Logger';
 import * as resources from 'resources';
 
 describe('ItemImageAddCommand', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
 
-    const imageCommand = Commands.ITEMIMAGE_ROOT.commandName;
-    const imageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
+    const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
+    const itemImageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
@@ -82,7 +83,7 @@ describe('ItemImageAddCommand', () => {
     });
 
     test('Should fail to add ItemImage because missing ListingItemTemplate.Id', async () => {
-        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand]);
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
@@ -91,7 +92,7 @@ describe('ItemImageAddCommand', () => {
 
     test('Should fail to add ItemImage because given ListingItemTemplate does not have ItemInformation', async () => {
         // add item image
-        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand, createdListingItemTemplateWithoutItemInformation.id]);
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand, createdListingItemTemplateWithoutItemInformation.id]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.success).toBe(false);
@@ -100,7 +101,7 @@ describe('ItemImageAddCommand', () => {
 
     test('Should fail to add ItemImage without ItemImageData', async () => {
         // add item image
-        const res: any = await testUtil.rpc(imageCommand, [imageAddCommand, createdListingItemTemplate.id]);
+        const res: any = await testUtil.rpc(itemImageCommand, [itemImageAddCommand, createdListingItemTemplate.id]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
@@ -108,8 +109,8 @@ describe('ItemImageAddCommand', () => {
     });
 
     test('Should fail to add ItemImage because invalid ItemImageData protocol', async () => {
-        const res: any = await testUtil.rpc(imageCommand,
-            [imageAddCommand, createdListingItemTemplate.id, 'TEST-DATA-ID', 'INVALID_PROTOCOL', 'BASE64', ImageProcessing.milkcat]);
+        const res: any = await testUtil.rpc(itemImageCommand,
+            [itemImageAddCommand, createdListingItemTemplate.id, 'TEST-DATA-ID', 'INVALID_PROTOCOL', 'BASE64', ImageProcessing.milkcat]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
@@ -118,8 +119,8 @@ describe('ItemImageAddCommand', () => {
 
     test('Should add ItemImage with ItemImageData', async () => {
         // add item image
-        const res: any = await testUtil.rpc(imageCommand, [
-            imageAddCommand,
+        const res: any = await testUtil.rpc(itemImageCommand, [
+            itemImageAddCommand,
             createdListingItemTemplate.id,
             'TEST-DATA-ID',
             ImageDataProtocolType.LOCAL,

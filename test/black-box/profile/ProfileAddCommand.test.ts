@@ -2,32 +2,33 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import {Logger as LoggerType} from '../../../src/core/Logger';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import * as resources from 'resources';
 
 describe('ProfileAddCommand', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new BlackBoxTestUtil();
 
     const profileCommand = Commands.PROFILE_ROOT.commandName;
     const profileAddCommand = Commands.PROFILE_ADD.commandName;
 
-    const testUtil = new BlackBoxTestUtil();
-
     const profileAddress = 'DEFAULT-TEST-ADDRESS';
     const profileName = 'DEFAULT-TEST-PROFILE';
-    let createdProfile;
+
+    let createdProfile: resources.Profile;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
 
     test('Should create a new Profile', async () => {
-        const res = await rpc(profileCommand, [profileAddCommand, profileName, profileAddress]);
+        const res = await testUtil.rpc(profileCommand, [profileAddCommand, profileName, profileAddress]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -41,7 +42,7 @@ describe('ProfileAddCommand', () => {
     });
 
     test('Should return created Profile', async () => {
-        const res = await rpc(profileCommand, [Commands.PROFILE_GET.commandName, createdProfile.id]);
+        const res = await testUtil.rpc(profileCommand, [Commands.PROFILE_GET.commandName, createdProfile.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -52,7 +53,7 @@ describe('ProfileAddCommand', () => {
     });
 
     test('Should fail to create a new Profile because profile with given name allready exist', async () => {
-        const res = await rpc(profileCommand, [profileAddCommand, profileName, profileAddress]);
+        const res = await testUtil.rpc(profileCommand, [profileAddCommand, profileName, profileAddress]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
@@ -60,7 +61,7 @@ describe('ProfileAddCommand', () => {
     });
 
     test('Should fail because we want to create a Profile without a name', async () => {
-        const res = await rpc(profileCommand, [profileAddCommand]);
+        const res = await testUtil.rpc(profileCommand, [profileAddCommand]);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);

@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-// tslint:disable:max-line-length
 import * from 'jest';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
@@ -10,7 +9,6 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as resources from 'resources';
 import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
-// tslint:enable:max-line-length
 
 describe('VoteGetCommand', () => {
 
@@ -26,7 +24,6 @@ describe('VoteGetCommand', () => {
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
-
     let proposal: resources.Proposal;
 
     let currentBlock: 0;
@@ -91,8 +88,6 @@ describe('VoteGetCommand', () => {
         voteGetRes.expectStatusCode(200);
 
         const result: resources.Vote = voteGetRes.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
-
         expect(result).hasOwnProperty('ProposalOption');
         expect(result.block).toBe(currentBlock);
         expect(result.weight).toBe(1);
@@ -135,8 +130,6 @@ describe('VoteGetCommand', () => {
         voteGetRes.expectStatusCode(200);
 
         const result: resources.Vote = voteGetRes.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
-
         expect(result).hasOwnProperty('ProposalOption');
         expect(result.block).toBe(currentBlock);
         expect(result.weight).toBe(1);

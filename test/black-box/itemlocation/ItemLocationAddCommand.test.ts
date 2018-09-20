@@ -9,13 +9,14 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ItemLocationAddCommand', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ITEMLOCATION_ROOT.commandName;
-    const subCommand = Commands.ITEMLOCATION_ADD.commandName;
+
+    const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
+    const itemLocationAddCommand = Commands.ITEMLOCATION_ADD.commandName;
 
     const testDataListingItemTemplate = {
         profile_id: 0,
@@ -32,7 +33,7 @@ describe('ItemLocationAddCommand', () => {
     let createdTemplateId;
     // let createdItemLocation;
 
-    const testData = [subCommand, 0, 'CN', 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
+    const testData = [itemLocationAddCommand, 0, 'CN', 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -47,7 +48,7 @@ describe('ItemLocationAddCommand', () => {
     });
 
     test('Should not create ItemLocation without country', async () => {
-        const addDataRes: any = await testUtil.rpc(method, [subCommand]);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationAddCommand]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
@@ -57,7 +58,7 @@ describe('ItemLocationAddCommand', () => {
     test('Should create ItemLocation', async () => {
         // Add Item Location
         testData[1] = createdTemplateId;
-        const addDataRes: any = await testUtil.rpc(method, testData);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, testData);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         const result: any = addDataRes.getBody()['result'];
@@ -73,7 +74,7 @@ describe('ItemLocationAddCommand', () => {
 
     test('Should create ItemLocation if ItemLocation already exist for listingItemtemplate', async () => {
         // Add Item Location
-        const addDataRes: any = await testUtil.rpc(method, testData);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, testData);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
@@ -87,7 +88,7 @@ describe('ItemLocationAddCommand', () => {
         createdTemplateId = addListingItemTempRes.id;
         testData[1] = createdTemplateId;
         // Add Item Location
-        const addDataRes: any = await testUtil.rpc(method, testData);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, testData);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
