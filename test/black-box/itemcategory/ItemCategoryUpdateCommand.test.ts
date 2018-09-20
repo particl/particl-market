@@ -2,14 +2,20 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ItemCategoryUpdateCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
+
     const categoryCommand = Commands.CATEGORY_ROOT.commandName;
     const categoryAddCommand = Commands.CATEGORY_ADD.commandName;
     const categoryUpdateCommand = Commands.CATEGORY_UPDATE.commandName;
@@ -29,18 +35,6 @@ describe('ItemCategoryUpdateCommand', () => {
             description: 'root category description',
             parent_item_category_id: 0
         });
-
-/*
-        // add root category
-        let response = await testUtil.rpc(categoryCommand, [categoryAddCommand,
-            'ROOT CATEGORY NAME',           // name
-            'root category description',    // description
-            0                               // parent key/id
-        ]);
-        response.expectJson();
-        response.expectStatusCode(200);
-        rootCategory = response.getBody()['result'];
-*/
 
         // add child1 category
         let response = await testUtil.rpc(categoryCommand, [categoryAddCommand,

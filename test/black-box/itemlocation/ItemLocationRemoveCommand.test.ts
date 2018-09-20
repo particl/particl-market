@@ -2,14 +2,19 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import { ListingItem, ListingItemTemplate } from 'resources';
+import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ItemLocationRemoveCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
     const method = Commands.ITEMLOCATION_ROOT.commandName;
     const subCommand = Commands.ITEMLOCATION_REMOVE.commandName;
@@ -90,25 +95,25 @@ describe('ItemLocationRemoveCommand', () => {
             1,                                  // how many to generate
             true,                               // return model
             generateListingItemParams   // what kind of data to generate
-        ) as ListingItemTemplate[];
+        ) as resources.ListingItemTemplate[];
         createdlistingitemId = listingItems[0].id;
     });
 
-    test('Should remove item location', async () => {
+    test('Should remove ItemLocation', async () => {
         // remove item location
-        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
+        const addDataRes: any = await testUtil.rpc(method, [subCommand, createdTemplateId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
     });
 
-    test('Should fail to remove item location because item location already removed', async () => {
+    test('Should fail to remove ItemLocation because its already removed', async () => {
         // remove item location
-        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
+        const addDataRes: any = await testUtil.rpc(method, [subCommand, createdTemplateId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
     });
 
-    test('Should not remove item location because item information is related with listing item', async () => {
+    test('Should not remove ItemLocation because ItemInformation is related with ListingItem', async () => {
         // set listing item id in item information
         testDataListingItemTemplate.itemInformation.listingItemId = createdlistingitemId;
 
@@ -119,25 +124,25 @@ describe('ItemLocationRemoveCommand', () => {
         const newListingItemTemplate = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate2);
 
         // remove item location
-        const addDataRes: any = await rpc(method, [subCommand, newListingItemTemplate.id]);
+        const addDataRes: any = await testUtil.rpc(method, [subCommand, newListingItemTemplate.id]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('ItemLocation cannot be removed because the item has allready been posted!');
+        expect(addDataRes.error.error.message).toBe('ItemLocation cannot be removed because the ListingItem has allready been posted!');
     });
 
-    test('Should fail to remove item location if Item-information not exist', async () => {
+    test('Should fail to remove ItemLocation if ItemInformation not exist', async () => {
         // create new item template
         delete testDataListingItemTemplate.itemInformation;
         // const addListingItemTempRes = await testUtil.generateData(CreatableModel.LISTINGITEMTEMPLATE, 1, true);
         const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
         const templateId = addListingItemTempRes.id;
         // remove item location
-        const addDataRes: any = await rpc(method, [subCommand, templateId]);
+        const addDataRes: any = await testUtil.rpc(method, [subCommand, templateId]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('Item Information or Item Location with the listing template id=' + templateId + ' was not found!');
+        expect(addDataRes.error.error.message).toBe('ItemInformation or ItemLocation with the listingItemTemplateId=' + templateId + ' was not found!');
     });
 
 });
