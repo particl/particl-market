@@ -2,19 +2,13 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from './lib/api';
+import { api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import * as Jimp from 'jimp';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import {Logger as LoggerType} from '../../src/core/Logger';
-import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { Logger as LoggerType } from '../../src/core/Logger';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
 import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 
@@ -32,11 +26,6 @@ describe('/publish-image', () => {
     let defaultProfile: resources.Profile;
 
     let listingItemTemplate: resources.ListingItemTemplate;
-
-    let itemImageId;
-    let imageVersion;
-    let newFormat;
-    let dataBuffer;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
