@@ -12,7 +12,6 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
-
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import * as resources from 'resources';
 import { ProposalType } from '../../enums/ProposalType';
@@ -23,9 +22,8 @@ import { ProposalActionService } from '../../services/ProposalActionService';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { ListingItemActionService } from '../../services/ListingItemActionService';
 import { ItemVote } from '../../enums/ItemVote';
-import { ProposalMessage } from '../../messages/ProposalMessage';
 import { ProposalFactory } from '../../factories/ProposalFactory';
-import { ProposalMessageType } from '../../enums/ProposalMessageType';
+import * as _ from 'lodash';
 
 export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -66,6 +64,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const optionsList: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
         const proposalTitle = listingItemHash;
         const proposalDescription = '';
+        const proposalType = ProposalType.ITEM_VOTE;
 
         // TODO: refactor these to startTime and endTime
         // TODO: When we're expiring by time not block make this listingItem.ExpiryTime();
@@ -85,24 +84,23 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             });
         const profile: resources.Profile = profileModel.toJSON();
 
-        const proposalMessage: ProposalMessage = await this.proposalFactory.getMessage(
-            ProposalMessageType.MP_PROPOSAL_ADD,
-            proposalTitle,
-            proposalDescription,
-            blockStart,
-            blockEnd,
-            optionsList,
-            profile,
-            listingItemHash
-        );
-
         // Get the default market.
         // TODO: We might want to let users specify this later.
         const marketModel = await this.marketService.getDefault(); // throws if not found
         const market: resources.Market = marketModel.toJSON();
 
-        this.log.debug('post(), proposalMessage: ', JSON.stringify(proposalMessage, null, 2));
-        return await this.listingItemActionService.postProposal(proposalMessage, daysRetention, profile, market);
+        return await this.proposalActionService.send(
+            proposalTitle,
+            proposalDescription,
+            blockStart,
+            blockEnd,
+            daysRetention,
+            optionsList,
+            profile,
+            market,
+            listingItemHash,
+            false
+        );
 
     }
 
@@ -138,9 +136,8 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             throw new MessageException('profileId needs to be a number.');
         }
 
-        // check if item already flagged
-        const isFlagged = await this.listingItemService.isItemFlagged(listingItem);
-        if (isFlagged) {
+        // check if item is already flagged
+        if (!_.isEmpty(listingItem.FlaggedItem)) {
             throw new MessageException('Item is already flagged.');
         }
 

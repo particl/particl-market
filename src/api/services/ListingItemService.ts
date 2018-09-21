@@ -396,6 +396,8 @@ export class ListingItemService {
 
     /**
      * delete expired listing items
+     *
+     * @returns {Promise<void>}
      */
     public async deleteExpiredListingItems(): Promise<void> {
        const listingItemsModel = await this.findExpired();
@@ -407,20 +409,9 @@ export class ListingItemService {
        }
     }
 
-
-    /**
-     * check if ListingItem already Flagged
-     *
-     * @param {ListingItem} listingItem
-     * @returns {Promise<boolean>}
-     */
-    public async isItemFlagged(listingItem: ListingItem): Promise<boolean> {
-        const flaggedItem = listingItem.related('FlaggedItem').toJSON();
-        return _.size(flaggedItem) !== 0;
-    }
-
     /**
      * check if object is exist in a array
+     * todo: this is utility function, does not belong here
      *
      * @param {string[]} objectArray
      * @param {string} fieldName

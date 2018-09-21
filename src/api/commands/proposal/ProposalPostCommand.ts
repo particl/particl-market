@@ -97,8 +97,8 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
 
         // todo: get rid of the blocks
         const daysRetention = Math.ceil((blockEnd - blockStart) / (24 * 30));
-        return this.proposalActionService.send(type, proposalTitle, proposalDescription, blockStart, blockEnd, daysRetention,
-            optionsList, profile, market, estimateFee);
+        return await this.proposalActionService.send(proposalTitle, proposalDescription, blockStart, blockEnd,
+            daysRetention, optionsList, profile, market, null, estimateFee);
     }
 
     public usage(): string {

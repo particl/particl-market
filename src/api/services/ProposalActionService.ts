@@ -75,15 +75,25 @@ export class ProposalActionService {
      * @param {string[]} options
      * @param {"resources".Profile} senderProfile
      * @param {"resources".Market} marketplace
+     * @param {string} itemHash
      * @param {boolean} estimateFee
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async send(proposalType: ProposalType, proposalTitle: string, proposalDescription: string, blockStart: number, blockEnd: number,
-                      daysRetention: number, options: string[], senderProfile: resources.Profile, marketplace: resources.Market,
+    public async send(proposalTitle: string, proposalDescription: string,
+                      blockStart: number, blockEnd: number, daysRetention: number, options: string[],
+                      senderProfile: resources.Profile, marketplace: resources.Market, itemHash: string | null = null,
                       estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
-        const proposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, proposalType,
-            proposalTitle, proposalDescription, blockStart, blockEnd, options, senderProfile);
+        const proposalMessage = await this.proposalFactory.getMessage(
+            ProposalMessageType.MP_PROPOSAL_ADD,
+            proposalTitle,
+            proposalDescription,
+            blockStart,
+            blockEnd,
+            options,
+            senderProfile,
+            itemHash
+        );
 
         const msg: MarketplaceMessage = {
             version: process.env.MARKETPLACE_VERSION,
