@@ -63,6 +63,9 @@ describe('ListingItemTemplatePostCommand', () => {
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
+        if (result.result === 'Send failed.') {
+            log.debug(JSON.stringify(result, null, 2));
+        }
         expect(result.result).toBe('Sent.');
         expect(result.txid).toBeDefined();
         expect(result.fee).toBeGreaterThan(0);

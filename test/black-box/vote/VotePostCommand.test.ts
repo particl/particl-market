@@ -189,7 +189,7 @@ describe('VotePostCommand', () => {
         log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBe(currentBlock);
+        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
@@ -225,7 +225,7 @@ describe('VotePostCommand', () => {
 
         const result: resources.Vote = res.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBe(currentBlock);
+        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);
