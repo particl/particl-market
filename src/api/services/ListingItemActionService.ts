@@ -32,16 +32,11 @@ import { ListingItemService } from './ListingItemService';
 import { ActionMessageService } from './ActionMessageService';
 
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
-import { ProposalFactory } from '../factories/ProposalFactory';
-import { ProposalMessageType } from '../enums/ProposalMessageType';
-import { ProposalType } from '../enums/ProposalType';
 import { CoreRpcService } from './CoreRpcService';
 import { ProposalMessage } from '../messages/ProposalMessage';
 import { ProposalService } from './ProposalService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ProfileService } from './ProfileService';
-import { VoteMessageType } from '../enums/VoteMessageType';
-import { VoteFactory } from '../factories/VoteFactory';
 import { MarketService } from './MarketService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
@@ -72,8 +67,6 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
-        @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
-        @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -225,26 +218,6 @@ export class ListingItemActionService {
 
     /**
      *
-     * @param {"resources".ListingItemTemplate} itemTemplate
-     * @param {number} daysRetention
-     * @param {"resources".Profile} profile
-     * @returns {Promise<ProposalMessage>}
-     */
-    public async createProposalMessage(itemTemplateHash: string, daysRetention: number,
-                                       profile: resources.Profile): Promise<ProposalMessage> {
-
-        const blockStart: number = await this.coreRpcService.getBlockCount();
-        const blockEnd: number = blockStart + (daysRetention * 24 * 30);
-
-        const proposalMessage: ProposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, ProposalType.ITEM_VOTE,
-            itemTemplateHash, '', blockStart, blockEnd, ['OK', 'REMOVE'], profile, itemTemplateHash);
-
-        return proposalMessage;
-
-    }
-
-    /**
-     *
      * @param {ProposalMessage} proposalMessage
      * @param {number} daysRetention
      * @param {"resources".Profile} profile
@@ -262,7 +235,6 @@ export class ListingItemActionService {
         const response = this.smsgService.smsgSend(profile.address, market.address, msg, false, daysRetention);
         this.log.debug('postProposal(), response: ', response);
         return response;
-
     }
 
     /**

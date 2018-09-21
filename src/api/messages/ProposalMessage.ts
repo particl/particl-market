@@ -6,13 +6,14 @@ import { ProposalMessageType } from '../enums/ProposalMessageType';
 import { MessageBody } from '../../core/api/MessageBody';
 import { ProposalType } from '../enums/ProposalType';
 import { ProposalMessageInterface } from './ProposalMessageInterface';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+import { BidMessageType } from '../enums/BidMessageType';
 
 export class ProposalMessage extends MessageBody implements ProposalMessageInterface {
 
-    // @IsNotEmpty()
-    // @IsEnum(BidMessageType)
+    @IsNotEmpty()
+    @IsEnum(BidMessageType)
     public action: ProposalMessageType;
-    public item?: string;
     public submitter: string;
     public blockStart: number;
     public blockEnd: number;
@@ -21,5 +22,6 @@ export class ProposalMessage extends MessageBody implements ProposalMessageInter
     public options: any[];
     public type: ProposalType;
     public hash: string;
+    public item?: string;   // itemHash
 
 }

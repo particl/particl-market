@@ -8,7 +8,6 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { ListingItemService } from '../../services/ListingItemService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { FlaggedItemCreateRequest } from '../../requests/FlaggedItemCreateRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
@@ -23,7 +22,10 @@ import { MarketService } from '../../services/MarketService';
 import { ProposalActionService } from '../../services/ProposalActionService';
 import { CoreRpcService } from '../../services/CoreRpcService';
 import { ListingItemActionService } from '../../services/ListingItemActionService';
-import { ListingItemTemplate } from '../../models/ListingItemTemplate';
+import { ItemVote } from '../../enums/ItemVote';
+import { ProposalMessage } from '../../messages/ProposalMessage';
+import { ProposalFactory } from '../../factories/ProposalFactory';
+import { ProposalMessageType } from '../../enums/ProposalMessageType';
 
 export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -36,7 +38,8 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
-        @inject(Types.Service) @named(Targets.Service.ProposalActionService) public proposalActionService: ProposalActionService
+        @inject(Types.Service) @named(Targets.Service.ProposalActionService) public proposalActionService: ProposalActionService,
+        @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory
     ) {
         super(Commands.ITEM_FLAG);
         this.log = new Logger(__filename);
@@ -44,7 +47,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
     /**
      * data.params[]:
-     *  [0]: listingItemId or hash
+     *  [0]: listingItemHash
      *  [1]: profileId
      *
      * when data.params[0] is number then findById, else findOneByHash
@@ -54,75 +57,101 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
-        if (data.params.length < 2) {
-            throw new MessageException('Requires arg: listingItemId or hash, and profileId');
-        }
 
-        let listingItem: ListingItem;
-        // if listingItemId is number then findById, else findOneByHash
-        const listingItemId = data.params.shift();
-        if (typeof listingItemId === 'number') {
-            listingItem = await this.listingItemService.findOne(listingItemId);
-        } else {
-            listingItem = await this.listingItemService.findOneByHash(listingItemId);
-        }
-
-        const listingItemHash = listingItem.Hash;
-
+        const listingItemHash = data.params.shift();
         const profileId = data.params.shift();
-        const blockStart = await this.coreRpcService.getBlockCount();
-        const blockEnd = blockStart + 1000000; // TODO: When we're expiring by time not block make this listingItem.ExpiryTime();
 
-        if (typeof profileId !== 'number') {
-            throw new MessageException('profileId needs to be a number.');
-        } else if (typeof blockStart !== 'number') {
+        const optionsList: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
+        const proposalTitle = listingItemHash;
+        const proposalDescription = '';
+        const daysRetention = 30;
+
+        // TODO: refactor these to startTime and endTime
+        // TODO: When we're expiring by time not block make this listingItem.ExpiryTime();
+        const blockStart: number = await this.coreRpcService.getBlockCount();
+        const blockEnd: number = blockStart + (daysRetention * 24 * 30);
+
+        if (typeof blockStart !== 'number') {
             throw new MessageException('blockStart needs to be a number.');
         } else if (typeof blockEnd !== 'number') {
             throw new MessageException('blockEnd needs to be a number.');
         }
 
+        const profileModel = await this.profileService.findOne(profileId) // throws if not found
+            .catch(reason => {
+                this.log.error('ERROR:', reason);
+                throw new MessageException('Profile not found.');
+            });
+        const profile: resources.Profile = profileModel.toJSON();
+
+        const proposalMessage: ProposalMessage = await this.proposalFactory.getMessage(
+            ProposalMessageType.MP_PROPOSAL_ADD,
+            proposalTitle,
+            proposalDescription,
+            blockStart,
+            blockEnd,
+            optionsList,
+            profile,
+            listingItemHash
+        );
+
+        // Get the default market.
+        // TODO: We might want to let users specify this later.
+        const marketModel = await this.marketService.getDefault(); // throws if not found
+        const market: resources.Market = marketModel.toJSON();
+
+        this.log.debug('post(), proposalMessage: ', JSON.stringify(proposalMessage, null, 2));
+        return await this.listingItemActionService.postProposal(proposalMessage, daysRetention, profile, market);
+
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: listingItemId or hash
+     *  [1]: profileId
+     *
+     * when data.params[0] is hash, fetch the id
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 2) {
+            throw new MessageException('Missing params.');
+        }
+
+        let listingItemModel: ListingItem;
+        if (typeof data.params[0] === 'number') {
+            listingItemModel = await this.listingItemService.findOne(data.params[0]);
+        } else {
+            listingItemModel = await this.listingItemService.findOneByHash(data.params[0]);
+        }
+        const listingItem: resources.ListingItem = listingItemModel.toJSON();
+
+        // hash is what we need in execute()
+        data.params[0] = listingItem.hash;  // set to hash
+
+        if (typeof data.params[1] !== 'number') {
+            throw new MessageException('profileId needs to be a number.');
+        }
+
         // check if item already flagged
         const isFlagged = await this.listingItemService.isItemFlagged(listingItem);
-
         if (isFlagged) {
-            throw new MessageException('Item already being flagged!');
-        } else {
-            const type = ProposalType.ITEM_VOTE;
-            const proposalTitle = 'ITEM_VOTE:' + listingItemHash;
-            const proposalDescription = listingItemHash;
-            const daysRetention = 30;
-            const estimateFee = false;
-
-            let profile: resources.Profile;
-            try {
-                const profileModel = await this.profileService.findOne(profileId);
-                profile = profileModel.toJSON();
-            } catch ( ex ) {
-                this.log.error(ex);
-                throw new MessageException('Profile not found.');
-            }
-
-            // Get the default market.
-            // TODO: Might want to let users specify this later.
-            let market: resources.Market;
-            const marketModel = await this.marketService.getDefault();
-            if (!marketModel) {
-                throw new MessageException(`Default market doesn't exist!`);
-            }
-            market = marketModel.toJSON();
-
-            // rest of the data.params are option descriptions
-            const optionsList: string[] = ['REMOVE', 'KEEP'];
-
-            // todo: get rid of the blocks
-            // const daysRetention = Math.ceil((blockEnd - blockStart) / (24 * 30));
-            // return this.proposalActionService.send(type, proposalTitle, proposalDescription, blockStart, blockEnd,
-            //     daysRetention, optionsList, profile, market, estimateFee);
-
-            const proposalMessage = await this.listingItemActionService.createProposalMessage(listingItemHash, daysRetention, profile);
-            this.log.debug('post(), proposalMessage: ', JSON.stringify(proposalMessage, null, 2));
-            return await this.listingItemActionService.postProposal(proposalMessage, daysRetention, profile, market);
+            throw new MessageException('Item is already flagged.');
         }
+
+
+        // -----------------
+        if (data.params.length < 1) {
+            this.log.error('ListingItemTemplate ID missing.');
+            throw new MessageException('ListingItemTemplate ID missing.');
+        } else if (typeof data.params[0] !== 'number') {
+            this.log.error('ListingItemTemplate ID must be numeric.');
+            throw new MessageException('ListingItemTemplate ID must be numeric.');
+        }
+        return data;
     }
 
     public usage(): string {
