@@ -124,6 +124,18 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
 
+    public get ExpiryTime(): number { return this.get('expiryTime'); }
+    public set ExpiryTime(value: number) { this.set('expiryTime', value); }
+
+    public get PostedAt(): number { return this.get('postedAt'); }
+    public set PostedAt(value: number) { this.set('postedAt', value); }
+
+    public get ExpiredAt(): number { return this.get('expiredAt'); }
+    public set ExpiredAt(value: number) { this.set('expiredAt', value); }
+
+    public get ReceivedAt(): number { return this.get('receivedAt'); }
+    public set ReceivedAt(value: number) { this.set('receivedAt', value); }
+
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
 
