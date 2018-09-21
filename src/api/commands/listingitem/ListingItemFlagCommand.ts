@@ -49,6 +49,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      * data.params[]:
      *  [0]: listingItemHash
      *  [1]: profileId
+     *  [2]: daysRetention
      *
      * when data.params[0] is number then findById, else findOneByHash
      *
@@ -60,11 +61,11 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
         const listingItemHash = data.params.shift();
         const profileId = data.params.shift();
+        const daysRetention = data.params.shift();  // not perfect, but more than needed
 
         const optionsList: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
         const proposalTitle = listingItemHash;
         const proposalDescription = '';
-        const daysRetention = 30;
 
         // TODO: refactor these to startTime and endTime
         // TODO: When we're expiring by time not block make this listingItem.ExpiryTime();
@@ -142,15 +143,8 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             throw new MessageException('Item is already flagged.');
         }
 
+        data.params[2] = listingItem.expiryTime;
 
-        // -----------------
-        if (data.params.length < 1) {
-            this.log.error('ListingItemTemplate ID missing.');
-            throw new MessageException('ListingItemTemplate ID missing.');
-        } else if (typeof data.params[0] !== 'number') {
-            this.log.error('ListingItemTemplate ID must be numeric.');
-            throw new MessageException('ListingItemTemplate ID must be numeric.');
-        }
         return data;
     }
 
