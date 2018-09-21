@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/ListingItemTemplateCreateRequest';
@@ -12,13 +12,17 @@ import { GenerateListingItemParams } from '../../../src/api/requests/params/Gene
 import { ListingItem } from 'resources';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
-import { MessageException } from '../../../src/api/exceptions/MessageException';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ItemLocationUpdateCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
 
-    const method = Commands.ITEMLOCATION_ROOT.commandName;
-    const subCommand = Commands.ITEMLOCATION_UPDATE.commandName;
+    const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
+    const itemLocationUpdateCommand = Commands.ITEMLOCATION_UPDATE.commandName;
 
     const testDataListingItemTemplate = {
         profile_id: 0,
@@ -67,8 +71,8 @@ describe('ItemLocationUpdateCommand', () => {
         // set hash
         testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
         // create item template
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
-        const result: any = addListingItemTempRes;
+        const res: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        const result: any = res;
         createdTemplateId = result.id;
         createdItemInformationId = result.ItemInformation.id;
         testDataUpdated.unshift(createdTemplateId);
@@ -77,10 +81,13 @@ describe('ItemLocationUpdateCommand', () => {
 
     test('Should update ItemLocation and set null location marker fields', async () => {
         // update item location
-        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, testDataUpdated[1], testDataUpdated[2]]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(200);
-        const result: any = addDataRes.getBody()['result'];
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
+            createdTemplateId,
+            testDataUpdated[1],
+            testDataUpdated[2]]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
 
         expect(result.region).toBe(testDataUpdated[1]);
         expect(result.address).toBe(testDataUpdated[2]);
@@ -90,11 +97,11 @@ describe('ItemLocationUpdateCommand', () => {
     test('Should update ItemLocation', async () => {
         // update item location
         const testDataUpdated2 = testDataUpdated;
-        testDataUpdated2.unshift(subCommand);
-        const addDataRes: any = await rpc(method, testDataUpdated2);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(200);
-        const result: any = addDataRes.getBody()['result'];
+        testDataUpdated2.unshift(itemLocationUpdateCommand);
+        const res: any = await testUtil.rpc(itemLocationCommand, testDataUpdated2);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
         expect(result.region).toBe(testDataUpdated2[2]);
         expect(result.address).toBe(testDataUpdated2[3]);
         expect(result.itemInformationId).toBe(createdItemInformationId);
@@ -105,19 +112,19 @@ describe('ItemLocationUpdateCommand', () => {
     });
 
     test('Should fail because we want to update without Country code', async () => {
-        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('Country code can\'t be blank.');
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand, createdTemplateId]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Country code can\'t be blank.');
     });
 
     test('Should fail because we want to update without address not valid', async () => {
-        const addDataRes: any = await rpc(method, [subCommand, createdTemplateId, 'USA']);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('Entity with identifier Country code <USA> was not valid! does not exist');
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand, createdTemplateId, 'USA']);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Entity with identifier Country code <USA> was not valid! does not exist');
     });
 
     // ItemLocation cannot be updated if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
@@ -143,12 +150,20 @@ describe('ItemLocationUpdateCommand', () => {
         const newTemplateId = newListingItemTemplate.id;
 
         // update item location
-        const addDataRes: any = await rpc(method, [subCommand, newTemplateId, 'China', 'TEST ADDRESS', 'TEST TITLE', 'TEST DESC', 55.6, 60.8]);
+        const res: any = await testUtil.rpc(itemLocationCommand, [itemLocationUpdateCommand,
+            newTemplateId,
+            'China',
+            'TEST ADDRESS',
+            'TEST TITLE',
+            'TEST DESC',
+            55.6,
+            60.8
+        ]);
 
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(404);
-        expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe('ItemLocation cannot be updated because the item has allready been posted!');
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('ItemLocation cannot be updated because the item has allready been posted!');
     });
 
 });

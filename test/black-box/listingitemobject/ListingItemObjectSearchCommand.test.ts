@@ -10,14 +10,17 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { ListingItemObjectType } from '../../../src/api/enums/ListingItemObjectType';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ListingItemObjectSearchCommand', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new BlackBoxTestUtil();
 
     const itemObjectCommand = Commands.ITEMOBJECT_ROOT.commandName;
     const itemObjectsearchCommand = Commands.ITEMOBJECT_SEARCH.commandName;
-
-    const testUtil = new BlackBoxTestUtil();
 
     let listingItemObjects: resources.ListingItemObject[];
 

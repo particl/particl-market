@@ -2,19 +2,27 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import { ListingItem, ListingItemTemplate } from 'resources';
+import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ListingItemTemplateGetCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
 
-    const method = Commands.TEMPLATE_ROOT.commandName;
-    const subCommand = Commands.TEMPLATE_GET.commandName;
-    let profile;
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templateGetCommand = Commands.TEMPLATE_GET.commandName;
+
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+
     const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
         true,   // generateItemInformation
         true,   // generateShippingDestinations
@@ -28,7 +36,10 @@ describe('ListingItemTemplateGetCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        profile = await testUtil.getDefaultProfile();
+
+        // get default profile and market
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
 
     });
 
@@ -39,16 +50,16 @@ describe('ListingItemTemplateGetCommand', () => {
             1,                          // how many to generate
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
-        ) as ListingItemTemplate[];
+        ) as resources.ListingItemTemplate[];
         const testData = listingItemTemplates[0];
 
         // fetch using id
-        const res = await rpc(method, [subCommand, listingItemTemplates[0].id]);
+        const res = await testUtil.rpc(templateCommand, [templateGetCommand, listingItemTemplates[0].id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-        expect(result.Profile.id).toBe(profile.id);
-        expect(result.Profile.name).toBe(profile.name);
+        expect(result.Profile.id).toBe(defaultProfile.id);
+        expect(result.Profile.name).toBe(defaultProfile.name);
         expect(result).hasOwnProperty('Profile');
         expect(result).hasOwnProperty('ItemInformation');
         expect(result).hasOwnProperty('PaymentInformation');

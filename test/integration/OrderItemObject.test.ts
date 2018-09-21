@@ -195,9 +195,9 @@ describe('OrderItemObject', () => {
         const orderItemObjectCollection = await orderItemObjectService.findAll();
         const orderItemObjects = orderItemObjectCollection.toJSON();
 
-        expect(orderItemObjects.length).toBe(16);
+        expect(orderItemObjects.length).toBe(19);
 
-        const result = orderItemObjects[15];
+        const result = orderItemObjects[18];
 
         expect(result.dataId).toBe(testData.dataId);
         expect(result.dataValue).toBe(testData.dataValue);

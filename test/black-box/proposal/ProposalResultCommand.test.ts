@@ -2,30 +2,27 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-// tslint:disable:max-line-length
 import * from 'jest';
-import { rpc, api } from '../lib/api';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as resources from 'resources';
 import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
-// tslint:enable:max-line-length
 
 describe('ProposalResultCommand', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-
     const testUtil = new BlackBoxTestUtil();
+
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalResultCommand = Commands.PROPOSAL_RESULT.commandName;
     const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
-
     let proposal: resources.Proposal;
 
     let currentBlock: 0;
@@ -34,11 +31,8 @@ describe('ProposalResultCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile
+        // get default profile and market
         defaultProfile = await testUtil.getDefaultProfile();
-        log.debug('defaultProfile: ', defaultProfile);
-
-        // fetch default market
         defaultMarket = await testUtil.getDefaultMarket();
 
         const generateProposalParams = new GenerateProposalParams([
@@ -59,7 +53,7 @@ describe('ProposalResultCommand', () => {
 
         proposal = proposals[0];
 
-        const res: any = await rpc(daemonCommand, ['getblockcount']);
+        const res: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
         currentBlock = res.getBody()['result'];
         log.debug('currentBlock:', currentBlock);
 
@@ -67,7 +61,7 @@ describe('ProposalResultCommand', () => {
     });
 
     test('Should return ProposalResult', async () => {
-        const res: any = await rpc(proposalCommand, [proposalResultCommand, proposal.hash]);
+        const res: any = await testUtil.rpc(proposalCommand, [proposalResultCommand, proposal.hash]);
         res.expectJson();
         res.expectStatusCode(200);
 

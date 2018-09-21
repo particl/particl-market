@@ -2,7 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
@@ -10,15 +10,14 @@ import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import {HashableObjectType} from '../../../src/api/enums/HashableObjectType';
-import {ObjectHash} from '../../../src/core/helpers/ObjectHash';
-import {TestDataGenerateRequest} from '../../../src/api/requests/TestDataGenerateRequest';
-
+import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
+import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 
 describe('ListingItemTemplateRemoveCommand', () => {
 
-    const log: LoggerType = new LoggerType(__filename);
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
@@ -26,26 +25,12 @@ describe('ListingItemTemplateRemoveCommand', () => {
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
-
-    let createdTemplateId;
-
-    const listingItemData = {
-        listing_item_template_id: null,
-        market_id: 0,
-        hash: 'hash2',
-        itemInformation: {
-            title: 'title UPDATED',
-            shortDescription: 'item UPDATED',
-            longDescription: 'item UPDATED',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            }
-        }
-    };
+    let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
+        // get default profile and market
         defaultProfile = await testUtil.getDefaultProfile();
         defaultMarket = await testUtil.getDefaultMarket();
 
@@ -70,10 +55,9 @@ describe('ListingItemTemplateRemoveCommand', () => {
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplates[];
+        listingItemTemplate = listingItemTemplates[0];
 
-        createdTemplateId = listingItemTemplates[0].id;
-
-        const result: any = await rpc(templateCommand, [templateRemoveCommand, createdTemplateId]);
+        const result: any = await testUtil.rpc(templateCommand, [templateRemoveCommand, listingItemTemplate.id]);
         result.expectJson();
         result.expectStatusCode(200);
 
@@ -82,11 +66,11 @@ describe('ListingItemTemplateRemoveCommand', () => {
 
     test('Should fail remove ListingItemTemplate because ListingItemTemplate already removed', async () => {
         // remove Listing item template
-        const result: any = await rpc(templateCommand, [templateRemoveCommand, createdTemplateId]);
+        const result: any = await testUtil.rpc(templateCommand, [templateRemoveCommand, listingItemTemplate.id]);
         result.expectJson();
         result.expectStatusCode(404);
         expect(result.error.error.success).toBe(false);
-        expect(result.error.error.message).toBe(`Entity with identifier ${createdTemplateId} does not exist`);
+        expect(result.error.error.message).toBe(`Entity with identifier ${listingItemTemplate.id} does not exist`);
     });
 
     test('Should fail remove ListingItemTemplate because ListingItemTemplate have related ListingItems', async () => {
@@ -113,9 +97,7 @@ describe('ListingItemTemplateRemoveCommand', () => {
             true,                       // return model
             generateListingItemTemplateParams   // what kind of data to generate
         ) as resources.ListingItemTemplate[];
-
-        const listingItemTemplate = listingItemTemplates[0];
-        createdTemplateId = listingItemTemplate.id;
+        listingItemTemplate = listingItemTemplates[0];
 
         // expect template is related to correct profile and listingitem posted to correct market
         expect(listingItemTemplate.Profile.id).toBe(defaultProfile.id);
@@ -133,9 +115,9 @@ describe('ListingItemTemplateRemoveCommand', () => {
         expect(listingItemTemplate.hash).toBe(listingItemTemplate.ListingItems[0].hash);
 
         // remove Listing item template
-        const result: any = await rpc(templateCommand, [templateRemoveCommand, createdTemplateId]);
+        const result: any = await testUtil.rpc(templateCommand, [templateRemoveCommand, listingItemTemplate.id]);
         result.expectJson();
         result.expectStatusCode(404);
-        expect(result.error.error.message).toBe(`ListingItemTemplate has ListingItems, so it can't be deleted. id=${createdTemplateId}`);
+        expect(result.error.error.message).toBe(`ListingItemTemplate has ListingItems, so it can't be deleted. id=${listingItemTemplate.id}`);
     });
 });

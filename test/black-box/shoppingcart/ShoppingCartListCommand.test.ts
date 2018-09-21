@@ -9,6 +9,7 @@ import { Logger as LoggerType } from '../../../src/core/Logger';
 import * as resources from 'resources';
 
 describe('ShoppingCartListCommand', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);

@@ -41,6 +41,7 @@ describe('Happy Vote Flow', () => {
     let marketNode2: resources.Market;
 
     let currentBlock: number;
+    const estimateFee = false;
 
     const proposalTitle = Faker.lorem.words();
     const proposalDescription = Faker.lorem.paragraph();
@@ -91,6 +92,7 @@ describe('Happy Vote Flow', () => {
             proposalDescription,
             blockStart,
             blockEnd,
+            estimateFee,
             'YES',
             'NO'
         ]);
@@ -207,7 +209,7 @@ describe('Happy Vote Flow', () => {
 
         const result: resources.Vote = response.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBe(currentBlock);
+        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(profileNode1.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
@@ -283,7 +285,7 @@ describe('Happy Vote Flow', () => {
 
         const result: resources.Vote = response.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBe(currentBlock);
+        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(profileNode2.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);

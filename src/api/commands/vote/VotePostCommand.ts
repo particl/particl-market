@@ -9,7 +9,6 @@ import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import { VoteActionService } from '../../services/VoteActionService';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { Vote } from '../../models/Vote';
 import { RpcCommandInterface } from './../RpcCommandInterface';
 import { Commands } from './../CommandEnumType';
 import { BaseCommand } from './../BaseCommand';
@@ -17,7 +16,6 @@ import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { ProfileService } from '../../services/ProfileService';
 import { MarketService } from '../../services/MarketService';
 import { MessageException } from '../../exceptions/MessageException';
-import { ProposalOptionService } from '../../services/ProposalOptionService';
 import { ProposalService } from '../../services/ProposalService';
 import * as resources from 'resources';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
@@ -38,10 +36,10 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
     }
 
     /**
-     * command description
-     * [0] profileId
-     * [0] proposalHash
-     * [1] proposalOptionId
+     * data.params[]:
+     *  [0]: profileId
+     *  [1]: proposalHash
+     *  [2]: proposalOptionId
      *
      * @param data, RpcRequest
      * @param rpcCommandFactory, RpcCommandFactory
@@ -49,24 +47,23 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<SmsgSendResponse> {
-        if (data.params.length < 2) {
-            throw new MessageException('Expected <TODO> but received no params.');
-        }
 
         const profileId = data.params.shift();
         const proposalHash = data.params.shift();
         // TODO: for now we'll say this is optionId, but it may not be. May need to change it later to be something else like hash
         const proposalOptionId = data.params.shift();
 
-        const proposalModel = await this.proposalService.findOneByHash(proposalHash);
+        const proposalModel = await this.proposalService.findOneByHash(proposalHash)
+            .catch(reason => {
+                throw new MessageException('Proposal not found.');
+            });
         const proposal: resources.Proposal = proposalModel.toJSON();
-
         const proposalOption = _.find(proposal.ProposalOptions, (o: resources.ProposalOption) => {
             return o.optionId === proposalOptionId;
         });
 
         if (!proposalOption) {
-            throw new MessageException(`ProposalOption with proposal hash ${proposalHash} and optionId ${proposalOptionId} not found.`);
+            throw new MessageException(`ProposalOption not found.`);
         }
 
         // Get profile from address.
@@ -86,6 +83,35 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
         const market: resources.Market = marketModel.toJSON();
 
         return await this.voteActionService.send(proposal, proposalOption, profile, market);
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: profileId
+     *  [1]: proposalHash
+     *  [2]: proposalOptionId
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 3) {
+            throw new MessageException('Missing params.');
+        }
+
+        if (typeof data.params[0] !== 'number') {
+            throw new MessageException('Invalid profileId.');
+        }
+
+        if (typeof data.params[1] !== 'string') {
+            throw new MessageException('Invalid proposalHash.');
+        }
+
+        if (typeof data.params[2] !== 'number') {
+            throw new MessageException('Invalid proposalOptionId.');
+        }
+
+        return data;
     }
 
     public help(): string {

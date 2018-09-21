@@ -164,7 +164,7 @@ export class BlackBoxTestUtil {
     public async rpc(method: string, params: any[] = [], logError: boolean = true): Promise<any> {
         const response = await rpc(method, params, this.node);
         if (logError && response.error) {
-            this.log.error('ERROR: ' + response.error.error.message);
+            this.log.error('ERROR: ' + JSON.stringify(response.error.error.message));
         }
         return response;
     }

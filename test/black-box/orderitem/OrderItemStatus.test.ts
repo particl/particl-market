@@ -9,7 +9,6 @@ import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import * as resources from 'resources';
 import { BidMessageType } from '../../../src/api/enums/BidMessageType';
-import { AddressType } from '../../../src/api/enums/AddressType';
 import { OrderStatus } from '../../../src/api/enums/OrderStatus';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { SearchOrder } from '../../../src/api/enums/SearchOrder';
@@ -23,33 +22,19 @@ describe('OrderItemStatus', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
-    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 2 : 1);
-
-    const lockCommand = Commands.ESCROW_LOCK.commandName;
-
-    const categoryCommand = Commands.CATEGORY_ROOT.commandName;
-    const categorySearchSubCommand = Commands.CATEGORY_SEARCH.commandName;
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);  // SELLER
+    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
-    const templateAddCommand = Commands.TEMPLATE_ADD.commandName;
-    const templateGetCommand = Commands.TEMPLATE_GET.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
-
     const itemCommand = Commands.ITEM_ROOT.commandName;
     const itemGetCommand = Commands.ITEM_GET.commandName;
-
-    const addressCommand = Commands.ADDRESS_ROOT.commandName;
-    const addressAddCommand = Commands.ADDRESS_ADD.commandName;
-
     const bidCommand = Commands.BID_ROOT.commandName;
     const bidSendCommand = Commands.BID_SEND.commandName;
     const bidSearchCommand = Commands.BID_SEARCH.commandName;
     const bidAcceptCommand = Commands.BID_ACCEPT.commandName;
-
     const orderCommand = Commands.ORDER_ROOT.commandName;
     const orderSearchCommand = Commands.ORDER_SEARCH.commandName;
-
     const orderItemCommand = Commands.ORDERITEM_ROOT.commandName;
     const orderItemStatusCommand = Commands.ORDERITEM_STATUS.commandName;
 

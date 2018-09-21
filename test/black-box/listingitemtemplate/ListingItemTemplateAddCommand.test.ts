@@ -2,38 +2,50 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { Currency } from '../../../src/api/enums/Currency';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import * as resources from 'resources';
 
 describe('ListingItemTemplateAddCommand', () => {
-    const testUtil = new BlackBoxTestUtil();
-    const method = Commands.TEMPLATE_ROOT.commandName;
-    const subCommand = Commands.TEMPLATE_ADD.commandName;
 
-    let profile;
-    let categoryResult;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new BlackBoxTestUtil();
+
+    const templateCommand = Commands.TEMPLATE_ROOT.commandName;
+    const templateAddCommand = Commands.TEMPLATE_ADD.commandName;
+    const categoryCommand = Commands.CATEGORY_ROOT.commandName;
+    const categoryAddCommand = Commands.CATEGORY_ADD.commandName;
+
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let categoryResult: resources.ItemCategory;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        // get profile
-        profile = await testUtil.getDefaultProfile();
+
+        // get default profile and market
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
     });
 
     test('Should create a new ListingItemTemplate with Profile + ItemInformation + PaymentInformation', async () => {
 
         // todo: test with existing category, not a custom one
-        categoryResult = await rpc('category', ['add', 'templateCategory', 'category for Template', 'cat_ROOT']);
+        categoryResult = await testUtil.rpc(categoryCommand, [categoryAddCommand, 'templateCategory', 'category for Template', 'cat_ROOT']);
         categoryResult.expectJson();
         categoryResult.expectStatusCode(200);
         categoryResult = categoryResult.getBody()['result'];
 
         const testData = [
-            subCommand,
-            profile.id,                     // [0]: profile_id
+            templateAddCommand,
+            defaultProfile.id,              // [0]: profile_id
             'Test Title',                   // [1]: title
             'test short description',       // [2]: short description
             'Long description',             // [3]: long description
@@ -46,7 +58,7 @@ describe('ListingItemTemplateAddCommand', () => {
             'Pasfdasfzcxvcvzcxvcxzvsfadf4'  // [11]: payment address
         ];
 
-        const res = await rpc(method, testData);
+        const res = await testUtil.rpc(templateCommand, testData);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -74,8 +86,8 @@ describe('ListingItemTemplateAddCommand', () => {
     test('Should create a new ListingItemTemplate with Profile + ItemInformation + PaymentInformation without CryptocurrencyAddress', async () => {
 
         const testData = [
-            subCommand,
-            profile.id,                     // [0]: profile_id
+            templateAddCommand,
+            defaultProfile.id,                     // [0]: profile_id
             'Test Title 2',                 // [1]: title
             'test short description 2',     // [2]: short description
             'Long description 2',           // [3]: long description
@@ -87,7 +99,7 @@ describe('ListingItemTemplateAddCommand', () => {
             1.12341234                      // [9]: international shipping price
         ];
 
-        const res = await rpc(method, testData);
+        const res = await testUtil.rpc(templateCommand, testData);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -113,8 +125,8 @@ describe('ListingItemTemplateAddCommand', () => {
     });
 
     test('Should fail because we want to create an empty ItemTemplate', async () => {
-        const testData = [subCommand];
-        const res = await rpc(method, testData);
+        const testData = [templateAddCommand];
+        const res = await testUtil.rpc(templateCommand, testData);
         res.expectJson();
         res.expectStatusCode(404);
     });

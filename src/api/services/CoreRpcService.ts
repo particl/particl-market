@@ -190,6 +190,20 @@ export class CoreRpcService {
     }
 
     /**
+     * ﻿combinerawtransaction ["hexstring",...]
+     *
+     * Combine multiple partially signed transactions into one transaction.
+     * The combined transaction may be another partially signed transaction or a fully signed transaction
+     *
+     * @param {string} hexstring
+     * @param {any[]} outputs
+     * @returns {Promise<any>}
+     */
+    public async combineRawTransaction(hexstrings: string[]): Promise<any> {
+        return await this.call('combinerawtransaction', [hexstrings]);
+    }
+
+    /**
      * ﻿Sign inputs for raw transaction (serialized, hex-encoded)
      *
      * @param {string} hexstring
@@ -356,7 +370,7 @@ export class CoreRpcService {
 
         if (logCall) {
             // TODO: handle [object Object]
-            this.log.debug('call: ' + method + ' ' + params.toString().replace(new RegExp(',', 'g'), ' '));
+            this.log.debug('call: ' + method + ' ' + JSON.stringify(params).replace(new RegExp(',', 'g'), ' '));
         }
         // this.log.debug('call url:', url);
         // this.log.debug('call postData:', postData);

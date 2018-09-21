@@ -226,6 +226,10 @@ describe('Happy Buy Flow', () => {
         log.debug('listingItemTemplatesSellerNode[0].hash: ', listingItemTemplatesSellerNode[0].hash);
         expect(result.hash).toBe(listingItemTemplatesSellerNode[0].hash);
         log.debug('result.ListingItemTemplate.hash: ', listingItemTemplatesSellerNode[0].hash);
+
+        if (result.ListingItemTemplate === null) {
+            log.debug('WHYYYY: ', JSON.stringify(result, null, 2));
+        }
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
         // sometimes result.ListingItemTemplate is null!!!
 
@@ -418,7 +422,6 @@ describe('Happy Buy Flow', () => {
 
         // make sure we got the expected result from sending the bid
         const result: any = response.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.result).toBe('Sent.');
 
         log.debug('==[ accept Bid /// seller (node1) -> buyer (node2) ]=============================');
@@ -993,6 +996,5 @@ describe('Happy Buy Flow', () => {
         log.debug('==> No locked outputs left.');
 
     }, 600000); // timeout to 600s
-
 
 });
