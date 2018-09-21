@@ -110,6 +110,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      * data.params[]:
      *  [0]: listingItemId or hash
      *  [1]: profileId
+     *  [2]: daysRetention
      *
      * when data.params[0] is hash, fetch the id
      *
@@ -154,10 +155,9 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemId>     - Numeric - The ID of the listing item we want to flag. \n'
-
-            + '    <hash>             - String - The hash of the listing item we want to flag. \n'
-            + '    <profileId>        - TODO';
+            + '    <listingItemId>     - Numeric - The ID of the ListingItem we want to report. \n'
+            + '    <hash>             - String - The hash of the ListingItem we want to report. \n'
+            + '    <profileId>        - Numeric - The ID of the Profile reporting the item.';
     }
 
     public description(): string {
