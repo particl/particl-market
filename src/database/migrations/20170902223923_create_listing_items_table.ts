@@ -27,7 +27,6 @@ exports.up = (db: Knex): Promise<any> => {
                 .inTable('proposals');
 
             table.integer('expiry_time').unsigned();
-
             table.integer('received_at').notNullable();
             table.integer('posted_at').notNullable();
             table.integer('expired_at').notNullable();

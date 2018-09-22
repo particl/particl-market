@@ -112,7 +112,10 @@ export class ProposalService {
     }
 
     @validate()
-    public async update(id: number, @request(ProposalUpdateRequest) body: ProposalUpdateRequest): Promise<Proposal> {
+    public async update(id: number, @request(ProposalUpdateRequest) data: ProposalUpdateRequest): Promise<Proposal> {
+
+        const body = JSON.parse(JSON.stringify(data));
+        body.hash = ObjectHash.getHash(body, HashableObjectType.PROPOSAL_CREATEREQUEST);
 
         // find the existing one without related
         const proposal = await this.findOne(id, false);
@@ -121,18 +124,18 @@ export class ProposalService {
         proposal.Submitter = body.submitter;
         proposal.BlockStart = body.blockStart;
         proposal.BlockEnd = body.blockEnd;
-        proposal.Submitter = body.submitter;
+        proposal.ExpiryTime = body.expiryTime;
+        proposal.PostedAt = body.postedAt;
+        proposal.ExpiredAt = body.expiredAt;
+        proposal.ReceivedAt = body.receivedAt;
         proposal.Hash = body.hash;
+        proposal.Item = body.item;
         proposal.Type = body.type;
         proposal.Title = body.title;
         proposal.Description = body.description;
 
         // update proposal record
         const updatedProposal = await this.proposalRepo.update(id, proposal.toJSON());
-
-        // const newProposal = await this.findOne(id);
-        // return newProposal;
-
         return updatedProposal;
     }
 

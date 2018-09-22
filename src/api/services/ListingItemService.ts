@@ -222,6 +222,10 @@ export class ListingItemService {
 
         // set new values
         listingItem.Hash = body.hash;
+        listingItem.ExpiryTime = body.expiryTime;
+        listingItem.PostedAt = body.postedAt;
+        listingItem.ExpiredAt = body.expiredAt;
+        listingItem.ReceivedAt = body.receivedAt;
 
         // and update the ListingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
