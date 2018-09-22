@@ -1175,6 +1175,4 @@ export class BidActionService {
     private correctNumberDecimals(n: number): number {
         return Number.parseFloat( n.toFixed(8) );
     }
-
-
 }

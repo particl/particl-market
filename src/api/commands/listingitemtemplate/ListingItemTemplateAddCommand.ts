@@ -137,6 +137,6 @@ export class ListingItemTemplateAddCommand extends BaseCommand implements RpcCom
         + ' \'Fight capitalism by buying this book!\''
         + ' \'Impress all your hippest comrades by attending your next communist revolutionary Starbucks meeting with the original'
         + ' and best book on destroying your economy!\''
-        + ' 16 SALE BITCOIN 1848 1922 1945 396tyYFbHxgJcf3kSrSdugp6g4tctUP3ay ';
+        + ' 16 SALE BITCOIN 0.1848 0.1922 0.1945 396tyYFbHxgJcf3kSrSdugp6g4tctUP3ay ';
     }
 }

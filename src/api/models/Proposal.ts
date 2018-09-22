@@ -84,6 +84,16 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         }
     }
 
+    public static async fetchByItemHash(value: string, withRelated: boolean = true): Promise<Proposal> {
+        if (withRelated) {
+            return await Proposal.where<Proposal>({ item: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Proposal.where<Proposal>({ item: value }).fetch();
+        }
+    }
+
     public get tableName(): string { return 'proposals'; }
     public get hasTimestamps(): boolean { return true; }
 
@@ -102,6 +112,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
+    public get Item(): string { return this.get('item'); }
+    public set Item(value: string) { this.set('item', value); }
+
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }
 
@@ -110,6 +123,18 @@ export class Proposal extends Bookshelf.Model<Proposal> {
 
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
+
+    public get ExpiryTime(): number { return this.get('expiryTime'); }
+    public set ExpiryTime(value: number) { this.set('expiryTime', value); }
+
+    public get PostedAt(): number { return this.get('postedAt'); }
+    public set PostedAt(value: number) { this.set('postedAt', value); }
+
+    public get ExpiredAt(): number { return this.get('expiredAt'); }
+    public set ExpiredAt(value: number) { this.set('expiredAt', value); }
+
+    public get ReceivedAt(): number { return this.get('receivedAt'); }
+    public set ReceivedAt(value: number) { this.set('receivedAt', value); }
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }

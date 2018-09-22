@@ -114,11 +114,10 @@ export class VoteActionService {
 
                 if (voteMessage && proposal.blockEnd >= currentBlock) {
                     const createdVote = await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
-                    // this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
+                    this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
                     const proposalResult: resources.ProposalResult = await this.updateProposalResult(proposal.ProposalResult.id);
 
-                    /*
                     // todo: extract method
                     if (proposal.type === ProposalType.ITEM_VOTE) {
                         if (await this.shouldRemoveListingItem(proposalResult)) {
@@ -135,7 +134,6 @@ export class VoteActionService {
                             }
                         }
                     }
-                    */
                     // TODO: do whatever else needs to be done
 
                     return SmsgMessageStatus.PROCESSED;

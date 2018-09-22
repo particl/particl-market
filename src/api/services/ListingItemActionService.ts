@@ -32,16 +32,11 @@ import { ListingItemService } from './ListingItemService';
 import { ActionMessageService } from './ActionMessageService';
 
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
-import { ProposalFactory } from '../factories/ProposalFactory';
-import { ProposalMessageType } from '../enums/ProposalMessageType';
-import { ProposalType } from '../enums/ProposalType';
 import { CoreRpcService } from './CoreRpcService';
 import { ProposalMessage } from '../messages/ProposalMessage';
 import { ProposalService } from './ProposalService';
 import { ListingItemMessage } from '../messages/ListingItemMessage';
 import { ProfileService } from './ProfileService';
-import { VoteMessageType } from '../enums/VoteMessageType';
-import { VoteFactory } from '../factories/VoteFactory';
 import { MarketService } from './MarketService';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
@@ -72,8 +67,6 @@ export class ListingItemActionService {
         @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
-        @inject(Types.Factory) @named(Targets.Factory.ProposalFactory) private proposalFactory: ProposalFactory,
-        @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
         @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -174,19 +167,18 @@ export class ListingItemActionService {
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
             let listingItem = listingItemModel.toJSON();
 
-            /*
             // TODO: Proposals related to ListingItems should wait for processing until ListingItem is received
             // as we no longer have proposalHash in the ListingItemMessage
 
             // if proposal for the listingitem exists:
             // - update relation and vote
-            await this.proposalService.findOneByHash(listingItemMessage.proposalHash || '')
+            await this.proposalService.findOneByItemHash(listingItem.hash || '')
                 .then(async proposalModel => {
                     const proposal: resources.Proposal = proposalModel.toJSON();
 
                     // update the proposal relation
-                    if (listingItemMessage.proposalHash) {
-                        await this.listingItemService.updateProposalRelation(listingItem.id, listingItemMessage.proposalHash);
+                    if (proposal.hash) {
+                        await this.listingItemService.updateProposalRelation(listingItem.id, proposal.hash);
                     }
 
                     // TODO: skipping this too since the wallet could be locked
@@ -197,7 +189,6 @@ export class ListingItemActionService {
                     this.log.warn('received ListingItem, but theres no Proposal for it yet...', listingItem.hash);
                     return null;
                 });
-            */
 
             // if (await this.shouldAddListingItem(proposal.ProposalResult)) {
             // } else {
@@ -227,10 +218,31 @@ export class ListingItemActionService {
 
     /**
      *
+     * @param {ProposalMessage} proposalMessage
+     * @param {number} daysRetention
+     * @param {"resources".Profile} profile
+     * @param {"resources".Market} market
+     * @returns {Promise<SmsgSendResponse>}
+     */
+    public async postProposal(proposalMessage: ProposalMessage, daysRetention: number, profile: resources.Profile,
+                              market: resources.Market): Promise<SmsgSendResponse> {
+
+        const msg: MarketplaceMessage = {
+            version: process.env.MARKETPLACE_VERSION,
+            mpaction: proposalMessage
+        };
+
+        const response = this.smsgService.smsgSend(profile.address, market.address, msg, false, daysRetention);
+        this.log.debug('postProposal(), response: ', response);
+        return response;
+    }
+
+    /**
+     *
      * @param {"resources".ProposalResult} proposalResult
      * @returns {Promise<boolean>}
      */
-    private async voteForListingItemProposal(proposal: resources.Proposal, market: resources.Market): Promise<boolean> {
+    /*private async voteForListingItemProposal(proposal: resources.Proposal, market: resources.Market): Promise<boolean> {
 
         // todo: remove this later
         const profileModel = await this.profileService.getDefault();
@@ -255,7 +267,7 @@ export class ListingItemActionService {
         } else {
             throw new MessageException('Could not find ProposalOption to vote for.');
         }
-    }
+    }*/
 
     /**
      *
@@ -280,48 +292,6 @@ export class ListingItemActionService {
         } else {
             return true;
         }
-    }
-
-    /**
-     *
-     * @param {"resources".ListingItemTemplate} itemTemplate
-     * @param {number} daysRetention
-     * @param {"resources".Profile} profile
-     * @returns {Promise<ProposalMessage>}
-     */
-    private async createProposalMessage(itemTemplate: resources.ListingItemTemplate, daysRetention: number,
-                                        profile: resources.Profile): Promise<ProposalMessage> {
-
-        const blockStart: number = await this.coreRpcService.getBlockCount();
-        const blockEnd: number = blockStart + (daysRetention * 24 * 30);
-
-        const proposalMessage: ProposalMessage = await this.proposalFactory.getMessage(ProposalMessageType.MP_PROPOSAL_ADD, ProposalType.ITEM_VOTE,
-            itemTemplate.hash, '', blockStart, blockEnd, ['OK', 'Remove'], profile);
-
-        return proposalMessage;
-
-    }
-
-    /**
-     *
-     * @param {ProposalMessage} proposalMessage
-     * @param {number} daysRetention
-     * @param {"resources".Profile} profile
-     * @param {"resources".Market} market
-     * @returns {Promise<SmsgSendResponse>}
-     */
-    private async postProposal(proposalMessage: ProposalMessage, daysRetention: number, profile: resources.Profile,
-                               market: resources.Market): Promise<SmsgSendResponse> {
-
-        const msg: MarketplaceMessage = {
-            version: process.env.MARKETPLACE_VERSION,
-            mpaction: proposalMessage
-        };
-
-        const response = this.smsgService.smsgSend(profile.address, market.address, msg, false, daysRetention);
-        this.log.debug('postProposal(), response: ', response);
-        return response;
-
     }
 
     /**

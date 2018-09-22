@@ -51,7 +51,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public help(): string {
-        return this.getName() + ' <startBlock> <endBlock> <order> <type> ';
+        return this.getName() + ' <startBlock> <endBlock> <type> <order> ';
     }
 
     public description(): string {
@@ -59,7 +59,7 @@ export class ProposalListCommand extends BaseCommand implements RpcCommandInterf
     }
 
     public example(): string {
-        return this.getName() + ' 1 100000000 ASC ';
+        return this.getName() + ' 1 100000000 ITEM_VOTE ASC ';
     }
 
     /**
