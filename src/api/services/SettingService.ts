@@ -12,13 +12,14 @@ import { SettingRepository } from '../repositories/SettingRepository';
 import { Setting } from '../models/Setting';
 import { SettingCreateRequest } from '../requests/SettingCreateRequest';
 import { SettingUpdateRequest } from '../requests/SettingUpdateRequest';
-
+import { ProfileService } from './ProfileService';
 
 export class SettingService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
         @inject(Types.Repository) @named(Targets.Repository.SettingRepository) public settingRepo: SettingRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -36,6 +37,50 @@ export class SettingService {
             throw new NotFoundException(id);
         }
         return setting;
+    }
+
+    public async findOneByKeyAndProfileId(key: string, profileId: number): Promise<Setting> {
+        const profileModel = await this.profileService.findOne(profileId);
+        const profile = profileModel.toJSON();
+
+        for (const setting of profile.Settings) {
+            if (setting.key === key) {
+                return setting;
+            }
+        }
+        throw new NotFoundException(key);
+    }
+
+
+    @validate()
+    public async setSetting(@request(SettingUpdateRequest) data: any): Promise<void> {
+        // Create get request
+        const profileId = data.params[0];
+        const key = data.params[1];
+        const settingGetRequest = {
+            profileId,
+            key
+        } as SettingGetRequest;
+
+        // Update setting
+        const setting = await this.getSetting(settingGetRequest);
+        await this.settingService.update(setting.id, data);
+    }
+
+
+    @validate()
+    public async removeSetting(@request(SettingRemoveRequest) data: any): Promise<void> {
+        // Create get request
+        const profileId = data.params[0];
+        const key = data.params[1];
+        const settingGetRequest = {
+            profileId,
+            key
+        } as SettingGetRequest;
+
+        // Remove setting
+        const setting = await this.getSetting(settingGetRequest);
+        await this.settingService.destroy(setting.id);
     }
 
     @validate()

@@ -2,19 +2,18 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ProfileService } from '../../services/ProfileService';
+import { SettingService } from '../../services/SettingService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Setting } from '../../models/Setting';
-import { SettingGetRequest } from '../../requests/SettingGetRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class SettingGetCommand extends BaseCommand implements RpcCommandInterface<Setting> {
 
@@ -22,7 +21,7 @@ export class SettingGetCommand extends BaseCommand implements RpcCommandInterfac
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.SettingService) public settingService: SettingService
     ) {
         super(Commands.SETTING_GET);
         this.log = new Logger(__filename);
@@ -41,18 +40,22 @@ export class SettingGetCommand extends BaseCommand implements RpcCommandInterfac
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Setting> {
         const profileId = data.params[0];
         const key = data.params[1];
+        return await this.settingService.findOneByKeyAndProfileId(key, profileId);
+    }
 
-        if (!profileId) {
-            throw new Error('No profileId for a command');
+    /**
+     * data.params[]:
+     *  [0]: profileId
+     *  [1]: key
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 2) {
+            throw new MessageException('Missing params.');
         }
-        if (!key) {
-            throw new Error('No key for a command');
-        }
-
-        return await this.profileService.getSetting({
-            profileId,
-            key
-        } as SettingGetRequest);
+        return data;
     }
 
     public usage(): string {
