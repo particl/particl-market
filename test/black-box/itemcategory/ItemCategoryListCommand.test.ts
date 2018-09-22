@@ -2,15 +2,20 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
-describe('ItemCategoriesGetCommand', () => {
+describe('ItemCategoryListCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.CATEGORY_ROOT.commandName;
-    const subCommand = Commands.CATEGORY_LIST.commandName;
+
+    const categoryCommand = Commands.CATEGORY_ROOT.commandName;
+    const categoryListCommand = Commands.CATEGORY_LIST.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -18,7 +23,7 @@ describe('ItemCategoriesGetCommand', () => {
 
     test('Should return all the Categories', async () => {
         //  test default category data
-        const res = await rpc(method, [subCommand]);
+        const res = await testUtil.rpc(categoryCommand, [categoryListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

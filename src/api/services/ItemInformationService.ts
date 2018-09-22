@@ -110,7 +110,7 @@ export class ItemInformationService {
 
         // finally find and return the created itemInformation
         const result = await this.findOne(itemInformation.Id);
-        this.log.debug('itemInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        // this.log.debug('itemInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         return result;
     }
@@ -205,8 +205,6 @@ export class ItemInformationService {
      * @returns {Promise<ItemCategory>}
      */
     private async getOrCreateItemCategory(itemCategory: ItemCategoryUpdateRequest): Promise<ItemCategory> {
-        const startTime = new Date().getTime();
-
         let result;
         if (itemCategory.key) {
             result = await this.itemCategoryService.findOneByKey(itemCategory.key);
@@ -216,7 +214,6 @@ export class ItemInformationService {
             result = await this.itemCategoryService.create(itemCategory);
         }
 
-        this.log.debug('itemInformationService.getOrCreateItemCategory: ' + (new Date().getTime() - startTime) + 'ms');
         return result;
     }
 

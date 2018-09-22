@@ -109,11 +109,11 @@ export class Server {
         }
         switch (error.code) {
             case 'EACCES':
-                this.log.error(`The Server requires elevated privileges`);
+                this.log.error('The Server requires elevated privileges: ', error);
                 process.exit(1);
                 break;
             case 'EADDRINUSE':
-                this.log.error(`Port is already in use or blocked by the os`);
+                this.log.error('Port is already in use or blocked by the os: ', error);
                 process.exit(1);
                 break;
             default:

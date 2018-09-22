@@ -3,7 +3,6 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import { app } from '../../../src/app';
-
 import { api, rpc, ApiOptions } from './api';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -12,7 +11,6 @@ import * as resources from 'resources';
 import { LoggerConfig } from '../../../src/config/LoggerConfig';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { AddressType } from '../../../src/api/enums/AddressType';
-
 import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 
@@ -21,11 +19,7 @@ export class BlackBoxTestUtil {
     public log: LoggerType = new LoggerType(__filename);
     private node;
 
-    constructor(node?: number) {
-        if (!node) {
-            // set test node to 1 when running against docker-compose
-            node = process.env.TEST_NODE ? process.env.TEST_NODE : 0;
-        }
+    constructor(node: number = 0) {
         jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
         new LoggerConfig().configure();
         this.node = node;
@@ -36,10 +30,10 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<void>}
      */
-    public async cleanDb(): Promise<any> {
+    public async cleanDb(seed: boolean = true): Promise<any> {
 
         this.log.debug('cleanDb, this.node', this.node);
-        const res = await this.rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName]);
+        const res = await this.rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName, seed]);
         res.expectJson();
         res.expectStatusCode(200);
         return { result: 'success' };
@@ -170,7 +164,7 @@ export class BlackBoxTestUtil {
     public async rpc(method: string, params: any[] = [], logError: boolean = true): Promise<any> {
         const response = await rpc(method, params, this.node);
         if (logError && response.error) {
-            this.log.error('ERROR: ' + response.error.error.message);
+            this.log.error('ERROR: ' + JSON.stringify(response.error.error.message));
         }
         return response;
     }

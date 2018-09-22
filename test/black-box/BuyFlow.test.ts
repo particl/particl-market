@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-// tslint:disable:max-line-length
 import * from 'jest';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
@@ -14,8 +13,6 @@ import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import {rpc} from './lib/api';
-// tslint:enable:max-line-length
 
 describe('Happy Buy Flow', () => {
 
@@ -25,8 +22,8 @@ describe('Happy Buy Flow', () => {
 
     // const testUtilNode0 = new BlackBoxTestUtil(0);
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 2);  // SELLER
-    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 2 : 1);  // BUYER
+    const testUtilSellerNode = new BlackBoxTestUtil(randomBoolean ? 0 : 1);  // SELLER
+    const testUtilBuyerNode = new BlackBoxTestUtil(randomBoolean ? 1 : 0);  // BUYER
 
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
@@ -89,8 +86,8 @@ describe('Happy Buy Flow', () => {
 
         // log.debug('sellerProfile: ', JSON.stringify(sellerProfile, null, 2));
         // log.debug('buyerProfile: ', JSON.stringify(buyerProfile, null, 2));
-        log.debug('sellerProfile: ', sellerProfile.id);
-        log.debug('buyerProfile: ', buyerProfile.id);
+        log.debug('sellerProfile: ', sellerProfile.address);
+        log.debug('buyerProfile: ', buyerProfile.address);
 
         defaultMarket = await testUtilSellerNode.getDefaultMarket();
         expect(defaultMarket.id).toBeDefined();
@@ -188,6 +185,7 @@ describe('Happy Buy Flow', () => {
         expect(result.result).toBe('Sent.');
 
         log.debug('==[ post ListingItemTemplate /// seller -> marketplace ]================================');
+        log.debug('result.msgid: ' + result.msgid);
         log.debug('item.id: ' + listingItemTemplatesSellerNode[0].id);
         log.debug('item.hash: ' + listingItemTemplatesSellerNode[0].hash);
         log.debug('item.title: ' + listingItemTemplatesSellerNode[0].ItemInformation.title);
@@ -228,6 +226,10 @@ describe('Happy Buy Flow', () => {
         log.debug('listingItemTemplatesSellerNode[0].hash: ', listingItemTemplatesSellerNode[0].hash);
         expect(result.hash).toBe(listingItemTemplatesSellerNode[0].hash);
         log.debug('result.ListingItemTemplate.hash: ', listingItemTemplatesSellerNode[0].hash);
+
+        if (result.ListingItemTemplate === null) {
+            log.debug('WHYYYY: ', JSON.stringify(result, null, 2));
+        }
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
         // sometimes result.ListingItemTemplate is null!!!
 
@@ -379,26 +381,15 @@ describe('Happy Buy Flow', () => {
         expect(result.length).toBe(1);
         expect(result[0].action).toBe(BidMessageType.MPA_BID);
         expect(result[0].bidder).toBe(buyerProfile.address);
-
-        log.debug('result[0].ListingItem.hash:', result[0].ListingItem.hash);
-
         expect(result[0].ListingItem).toBeDefined();
-        log.debug('1');
         expect(result[0].ListingItem.seller).toBe(sellerProfile.address);
-        log.debug('2');
-        log.debug('result[0].ListingItem.hash: ', result[0].ListingItem.hash);
-        log.debug('listingItemReceivedSellerNode.hash: ', listingItemReceivedSellerNode.hash);
-        log.debug('result[0]: ', JSON.stringify(result[0].ListingItem.hash, null, 2));
         expect(result[0].ListingItem.hash).toBe(listingItemReceivedSellerNode.hash);
-        log.debug('3');
 
         // there should be a relation to template on the seller side
         expect(result[0].ListingItem.ListingItemTemplate).toBeDefined();
-        log.debug('4');
 
         // the relation should match the hash of the template that was created earlier on node1
         expect(result[0].ListingItem.ListingItemTemplate.hash).toBe(listingItemTemplatesSellerNode[0].hash);
-        log.debug('5');
 
         // todo: check for correct biddata
         bidOnSellerNode = result[0];
@@ -431,7 +422,6 @@ describe('Happy Buy Flow', () => {
 
         // make sure we got the expected result from sending the bid
         const result: any = response.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.result).toBe('Sent.');
 
         log.debug('==[ accept Bid /// seller (node1) -> buyer (node2) ]=============================');
@@ -494,6 +484,8 @@ describe('Happy Buy Flow', () => {
         log.debug('Order should have been created on seller node after posting the MPA_ACCEPT');
         log.debug('========================================================================================');
 
+        expect(bidOnSellerNode).toBeDefined();
+
         // wait for some time to make sure the Order has been created
         await testUtilSellerNode.waitFor(10);
 
@@ -538,6 +530,8 @@ describe('Happy Buy Flow', () => {
         log.debug('========================================================================================');
         log.debug('BUYER RECEIVES MPA_ACCEPT posted from sellers node, BidMessageType.MPA_ACCEPT');
         log.debug('========================================================================================');
+
+        expect(orderOnSellerNode).toBeDefined();
 
         await testUtilBuyerNode.waitFor(10);
 
@@ -586,6 +580,8 @@ describe('Happy Buy Flow', () => {
         log.debug('Order should have been created on buyer node after receiving the MPA_ACCEPT, OrderStatus.AWAITING_ESCROW');
         log.debug('========================================================================================');
 
+        expect(bidOnBuyerNode).toBeDefined();
+
         // wait for some time to make sure the Order has been created
         await testUtilBuyerNode.waitFor(5);
 
@@ -622,6 +618,8 @@ describe('Happy Buy Flow', () => {
         log.debug('========================================================================================');
         log.debug('Bid should now be found using OrderStatus');
         log.debug('========================================================================================');
+
+        expect(orderOnBuyerNode).toBeDefined();
 
         // wait for some time to make sure the Order has been created
         await testUtilBuyerNode.waitFor(5);
@@ -717,6 +715,8 @@ describe('Happy Buy Flow', () => {
         log.debug('SELLER RECEIVES MPA_LOCK posted from buyers node, OrderStatus.ESCROW_LOCKED');
         log.debug('========================================================================================');
 
+        expect(orderOnBuyerNode).toBeDefined();
+
         const orderSearchCommandParams = [
             orderSearchCommand,
             bidOnSellerNode.ListingItem.hash,
@@ -754,6 +754,8 @@ describe('Happy Buy Flow', () => {
         log.debug('========================================================================================');
         log.debug('SELLER POSTS MPA_RELEASE, indicating that the item has been sent');
         log.debug('========================================================================================');
+
+        expect(orderOnSellerNode).toBeDefined();
 
         await testUtilSellerNode.waitFor(5);
 
@@ -824,6 +826,8 @@ describe('Happy Buy Flow', () => {
         log.debug('BUYER RECEIVES MPA_RELEASE posted from sellers node, OrderStatus.SHIPPING');
         log.debug('========================================================================================');
 
+        expect(orderOnSellerNode).toBeDefined();
+
         await testUtilBuyerNode.waitFor(5);
 
         const orderSearchCommandParams = [
@@ -863,6 +867,8 @@ describe('Happy Buy Flow', () => {
         log.debug('========================================================================================');
         log.debug('BUYER POSTS MPA_RELEASE, indicating that the item has been received');
         log.debug('========================================================================================');
+
+        expect(orderOnBuyerNode).toBeDefined();
 
         await testUtilBuyerNode.waitFor(5);
 
@@ -933,6 +939,8 @@ describe('Happy Buy Flow', () => {
         log.debug('SELLER RECEIVES MPA_RELEASE posted from buyers node, OrderStatus.COMPLETE');
         log.debug('========================================================================================');
 
+        expect(orderOnSellerNode).toBeDefined();
+
         const orderSearchCommandParams = [
             orderSearchCommand,
             bidOnSellerNode.ListingItem.hash,
@@ -988,6 +996,5 @@ describe('Happy Buy Flow', () => {
         log.debug('==> No locked outputs left.');
 
     }, 600000); // timeout to 600s
-
 
 });

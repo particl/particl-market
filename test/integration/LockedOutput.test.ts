@@ -2,28 +2,29 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { LockedOutput } from '../../src/api/models/LockedOutput';
-
 import { LockedOutputService } from '../../src/api/services/LockedOutputService';
 import { LockedOutputCreateRequest } from '../../src/api/requests/LockedOutputCreateRequest';
 import { LockedOutputUpdateRequest } from '../../src/api/requests/LockedOutputUpdateRequest';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import {IsNotEmpty} from 'class-validator';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
-import {GenerateProfileParams} from '../../src/api/requests/params/GenerateProfileParams';
-import {GenerateBidParams} from '../../src/api/requests/params/GenerateBidParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
 import * as resources from 'resources';
-import {BidMessageType} from '../../src/api/enums/BidMessageType';
-import {ProfileService} from '../../src/api/services/ProfileService';
+import { BidMessageType } from '../../src/api/enums/BidMessageType';
+import { ProfileService } from '../../src/api/services/ProfileService';
+import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { MarketService } from '../../src/api/services/MarketService';
+import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
+import { ListingItemService } from '../../src/api/services/ListingItemService';
 
 describe('LockedOutput', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -34,10 +35,19 @@ describe('LockedOutput', () => {
     let testDataService: TestDataService;
     let lockedOutputService: LockedOutputService;
     let profileService: ProfileService;
+    let marketService: MarketService;
+    let listingItemService: ListingItemService;
+    let listingItemTemplateService: ListingItemTemplateService;
 
-    let createdId;
-    let bid: resources.Bid;
+    let defaultMarket: resources.Market;
     let defaultProfile: resources.Profile;
+    let sellerProfile: resources.Profile;
+
+    let listingItem: resources.ListingItem;
+    let listingItemTemplate: resources.ListingItemTemplate;
+    let bid: resources.Bid;
+
+    let createdLockedOutput: resources.LockedOutput;
 
     const testData = {
         txid: '5b3b8a1a99edc7b1a539efb870cefec4d7a984c503fdac8eb05504c71629dxxx',
@@ -63,6 +73,9 @@ describe('LockedOutput', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         lockedOutputService = app.IoC.getNamed<LockedOutputService>(Types.Service, Targets.Service.LockedOutputService);
         profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
+        listingItemTemplateService = app.IoC.getNamed<ListingItemTemplateService>(Types.Service, Targets.Service.ListingItemTemplateService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
@@ -71,22 +84,58 @@ describe('LockedOutput', () => {
         const defaultProfileModel = await profileService.getDefault();
         defaultProfile = defaultProfileModel.toJSON();
 
-        /*
-         * [0]: generateListingItemTemplate, generate a ListingItemTemplate
-         * [1]: generateListingItem, generate a ListingItem
-         * [2]: listingItemhash, attach bid to existing ListingItem
-         * [3]: action, bid action, see BidMessageType
-         * [4]: bidder, bidders address
-         * [5]: listingItemSeller, ListingItem sellers address
-         */
+        // get default market
+        const defaultMarketModel = await marketService.getDefault();
+        defaultMarket = defaultMarketModel.toJSON();
+
+        // generate seller profile
+        const sellerProfileParams = new GenerateProfileParams([true, false]).toParamsArray();
+        const profiles = await testDataService.generate({
+            model: CreatableModel.PROFILE,
+            amount: 1,
+            withRelated: true,
+            generateParams: sellerProfileParams
+        } as TestDataGenerateRequest);
+        sellerProfile = profiles[0];
+
+        // generate ListingItemTemplate with ListingItem to sell
+        const templateGenerateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            false,  // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            sellerProfile.id, // profileId
+            true,   // generateListingItem
+            defaultMarket.id  // marketId
+        ]).toParamsArray();
+
+        log.debug('templateGenerateParams:', JSON.stringify(templateGenerateParams, null, 2));
+
+        const listingItemTemplates = await testDataService.generate({
+            model: CreatableModel.LISTINGITEMTEMPLATE,
+            amount: 1,
+            withRelated: true,
+            generateParams: templateGenerateParams
+        } as TestDataGenerateRequest);
+        listingItemTemplate = listingItemTemplates[0];
+
+        log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
+
+        const createdListingItemModel = await listingItemService.findOne(listingItemTemplate.ListingItems[0].id);
+        listingItem = createdListingItemModel.toJSON();
 
         const bidParams = new GenerateBidParams([
-            true,
-            true,
-            null,
-            BidMessageType.MPA_BID,
-            defaultProfile.address,
-            'listingItemSeller.address'
+            false,                      // generateListingItemTemplate
+            false,                      // generateListingItem
+            listingItem.hash,           // listingItemhash
+            BidMessageType.MPA_BID,     // action
+            defaultProfile.address,     // bidder
+            sellerProfile.address       // listingItemSeller
         ]).toParamsArray();
 
         const bids = await testDataService.generate({
@@ -115,18 +164,15 @@ describe('LockedOutput', () => {
 
         testData.bid_id = bid.id;
         const lockedOutputModel: LockedOutput = await lockedOutputService.create(testData);
-        createdId = lockedOutputModel.Id;
-
-        const result = lockedOutputModel.toJSON();
+        createdLockedOutput = lockedOutputModel.toJSON();
 
         // test the values
-        // expect(result.value).toBe(testData.value);
-        expect(result.txid).toBe(testData.txid);
-        expect(result.vout).toBe(testData.vout);
-        expect(result.amount).toBe(testData.amount);
-        expect(result.data).toBe(testData.data);
-        expect(result.address).toBe(testData.address);
-        expect(result.scriptPubKey).toBe(testData.scriptPubKey);
+        expect(createdLockedOutput.txid).toBe(testData.txid);
+        expect(createdLockedOutput.vout).toBe(testData.vout);
+        expect(createdLockedOutput.amount).toBe(testData.amount);
+        expect(createdLockedOutput.data).toBe(testData.data);
+        expect(createdLockedOutput.address).toBe(testData.address);
+        expect(createdLockedOutput.scriptPubKey).toBe(testData.scriptPubKey);
     });
 
     test('Should throw ValidationException because we want to create a empty locked output', async () => {
@@ -154,7 +200,7 @@ describe('LockedOutput', () => {
     });
 
     test('Should return one locked output', async () => {
-        const lockedOutputModel: LockedOutput = await lockedOutputService.findOne(createdId);
+        const lockedOutputModel: LockedOutput = await lockedOutputService.findOne(createdLockedOutput.id);
         const result = lockedOutputModel.toJSON();
 
         // test the values
@@ -168,8 +214,7 @@ describe('LockedOutput', () => {
     });
 
     test('Should update the locked output', async () => {
-        // testDataUpdated['related_id'] = 0;
-        const lockedOutputModel: LockedOutput = await lockedOutputService.update(createdId, testDataUpdated);
+        const lockedOutputModel: LockedOutput = await lockedOutputService.update(createdLockedOutput.id, testDataUpdated);
         const result = lockedOutputModel.toJSON();
 
         // test the values
@@ -184,9 +229,9 @@ describe('LockedOutput', () => {
 
     test('Should delete the locked output', async () => {
         expect.assertions(1);
-        await lockedOutputService.destroy(createdId);
-        await lockedOutputService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await lockedOutputService.destroy(createdLockedOutput.id);
+        await lockedOutputService.findOne(createdLockedOutput.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdLockedOutput.id))
         );
     });
 

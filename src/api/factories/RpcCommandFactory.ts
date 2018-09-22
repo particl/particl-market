@@ -2,7 +2,6 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as Bookshelf from 'bookshelf';
 import { inject, named, multiInject } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -62,7 +61,6 @@ import { ItemImageListCommand } from '../commands/itemimage/ItemImageListCommand
 import { ItemImageAddCommand } from '../commands/itemimage/ItemImageAddCommand';
 import { ItemImageRemoveCommand } from '../commands/itemimage/ItemImageRemoveCommand';
 
-import { ItemInformationAddCommand } from '../commands/iteminformation/ItemInformationAddCommand';
 import { ItemInformationGetCommand } from '../commands/iteminformation/ItemInformationGetCommand';
 import { ItemInformationUpdateCommand } from '../commands/iteminformation/ItemInformationUpdateCommand';
 import { ItemInformationRootCommand } from '../commands/iteminformation/ItemInformationRootCommand';
@@ -143,6 +141,9 @@ import { VoteGetCommand } from '../commands/vote/VoteGetCommand';
 import { VoteListCommand } from '../commands/vote/VoteListCommand';
 import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
 
+import { SmsgSearchCommand } from '../commands/smsg/SmsgSearchCommand';
+import { SmsgRootCommand } from '../commands/smsg/SmsgRootCommand';
+
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -187,7 +188,6 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageAddCommand) private itemImageAddCommand: ItemImageAddCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRemoveCommand) private itemImageRemoveCommand: ItemImageRemoveCommand,
 
-        @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationAddCommand) private itemInformationAddCommand: ItemInformationAddCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationGetCommand) private itemInformationGetCommand: ItemInformationGetCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationUpdateCommand) private itemInformationUpdateCommand: ItemInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationRootCommand) private itemInformationRootCommand: ItemInformationRootCommand,
@@ -278,6 +278,9 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.vote.VoteListCommand) private voteListCommand: VoteListCommand,
         @inject(Types.Command) @named(Targets.Command.vote.VoteRootCommand) private voteRootCommand: VoteRootCommand,
 
+        @inject(Types.Command) @named(Targets.Command.smsg.SmsgSearchCommand) private smsgSearchCommand: SmsgSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.smsg.SmsgRootCommand) private smsgRootCommand: SmsgRootCommand,
+
         @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
         //  ---
@@ -323,7 +326,6 @@ export class RpcCommandFactory {
         this.commands.push(itemImageAddCommand);
         this.commands.push(itemImageRemoveCommand);
 
-        this.commands.push(itemInformationAddCommand);
         this.commands.push(itemInformationGetCommand);
         this.commands.push(itemInformationUpdateCommand);
         this.commands.push(itemInformationRootCommand);
@@ -414,6 +416,9 @@ export class RpcCommandFactory {
         this.commands.push(voteGetCommand);
         this.commands.push(voteListCommand);
         this.commands.push(voteRootCommand);
+
+        this.commands.push(smsgSearchCommand);
+        this.commands.push(smsgRootCommand);
 
         this.commands.push(helpCommand);
 

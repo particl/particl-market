@@ -79,7 +79,7 @@ export class PaymentInformationService {
         // finally find and return the created paymentInformation
         const result = await this.findOne(paymentInformation.Id);
 
-        this.log.debug('paymentInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        // this.log.debug('paymentInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         return result;
     }

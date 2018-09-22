@@ -2,17 +2,15 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ProposalOption } from '../../src/api/models/ProposalOption';
-
 import { ProposalOptionService } from '../../src/api/services/ProposalOptionService';
 import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
 import { ProposalOptionUpdateRequest } from '../../src/api/requests/ProposalOptionUpdateRequest';
@@ -21,8 +19,8 @@ import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequ
 import { Proposal } from '../../src/api/models/Proposal';
 import { ProposalService } from '../../src/api/services/ProposalService';
 import * as resources from 'resources';
-import {ObjectHash} from '../../src/core/helpers/ObjectHash';
-import {HashableObjectType} from '../../src/api/enums/HashableObjectType';
+import { ObjectHash } from '../../src/core/helpers/ObjectHash';
+import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 
 describe('ProposalOption', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

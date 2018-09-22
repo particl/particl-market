@@ -37,19 +37,33 @@ export class ProfileAddCommand extends BaseCommand implements RpcCommandInterfac
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Profile> {
-        if (data.params.length < 1) {
-            throw new MessageException('Requires profile name arg.');
-        }
-        const profile = await this.profileService.findOneByName(data.params[0]);
-        // check if profile already exist for the given name
-        if (profile !== null) {
-            throw new MessageException(`Profile already exist for the given name = ${data.params[0]}`);
-        }
-        // create profile
-        return this.profileService.create({
+        return await this.profileService.create({
             name : data.params[0],
             address : (data.params[1] || null)
         } as ProfileCreateRequest);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MessageException('Missing name.');
+        }
+
+        // check if profile already exist for the given name
+        const exists = await this.profileService.findOneByName(data.params[0])
+            .then(async value => {
+                return true;
+            })
+            .catch(async reason => {
+                return false;
+            });
+
+        if (exists) {
+            // if it does, throw
+            throw new MessageException(`Profile already exist for the given name = ${data.params[0]}`);
+        }
+
+        return data;
     }
 
     public usage(): string {

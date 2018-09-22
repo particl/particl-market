@@ -11,6 +11,7 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import * as _ from 'lodash';
 
 export class DataCleanCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -32,8 +33,12 @@ export class DataCleanCommand extends BaseCommand implements RpcCommandInterface
      * @returns {Promise<void>}
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        return await this.testDataService.clean();
+    public async execute(@request(RpcRequest) data: RpcRequest): Promise<void> {
+        let seed = true;
+        if (!_.isEmpty(data.params[0])) {
+            seed = data.params[0] === true;
+        }
+        return await this.testDataService.clean(seed);
     }
 
     public usage(): string {

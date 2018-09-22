@@ -2,37 +2,118 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { LogMock } from '../../lib/LogMock';
 import * as resources from 'resources';
 
 import { ListingItemFactory } from '../../../../src/api/factories/ListingItemFactory';
 import { ItemCategoryFactory } from '../../../../src/api/factories/ItemCategoryFactory';
 import { ListingItemMessage } from '../../../../src/api/messages/ListingItemMessage';
 import { ListingItemCreateRequest } from '../../../../src/api/requests/ListingItemCreateRequest';
-
 import * as listingItemCategoryWithRelated from '../../../testdata/model/listingItemCategoryWithRelated.json';
 import * as listingItemCategoryRootWithRelated from '../../../testdata/model/listingItemCategoryRootWithRelated.json';
-
 import * as listingItemTemplateBasic1 from '../../../testdata/model/listingItemTemplateBasic1.json';
 import * as listingItemTemplateBasic2 from '../../../testdata/model/listingItemTemplateBasic2.json';
 import * as listingItemTemplateBasic3 from '../../../testdata/model/listingItemTemplateBasic3.json';
+import { Logger as LoggerType } from '../../../../src/core/Logger';
+import { TestUtil } from '../../../integration/lib/TestUtil';
 
 describe('ListingItemFactory', () => {
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
-    const itemCategoryFactory = new ItemCategoryFactory(LogMock);
-    const listingItemFactory = new ListingItemFactory(LogMock, itemCategoryFactory);
+    const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new TestUtil();
+
+    const itemCategoryFactory = new ItemCategoryFactory(LoggerType);
+    const listingItemFactory = new ListingItemFactory(LoggerType, itemCategoryFactory);
 
     let createdListingItemMessage: ListingItemMessage;
-    let createdListingItemMessage1: ListingItemMessage;
-    let createdListingItemMessage2: ListingItemMessage;
-    let createdListingItemMessage3: ListingItemMessage;
+    let createdListingItemMessageFromBasic1: ListingItemMessage;
+    let createdListingItemMessageFromBasic2: ListingItemMessage;
+    let createdListingItemMessageFromBasic3: ListingItemMessage;
 
-    const PROPOSAL_HASH = 'proposalHash';
-    const DAYS_RETENTION = 1;
-
-    beforeEach(() => {
+    beforeAll(async () => {
         //
     });
+
+    test('Should create ListingItemMessage', async () => {
+        createdListingItemMessage = await listingItemFactory.getMessage(listingItemTemplateBasic1);
+        expectMessageFromListingItem(createdListingItemMessage, listingItemTemplateBasic1);
+    });
+
+    test('should create ListingItemCreateRequest using the previously created ListingItemMessage', async () => {
+        const marketId = 1;
+        const smsgMessage = {
+            seller: 'smsgMessage.from',
+            daysretention: 4,
+            sent: new Date().getTime(),
+            expiration: new Date().getTime() + 2000,
+            received: new Date().getTime() + 1000
+        } as resources.SmsgMessage;
+
+        const listingItemCreateRequest: ListingItemCreateRequest =
+            await listingItemFactory.getModel(createdListingItemMessage, smsgMessage, marketId, listingItemCategoryRootWithRelated);
+        expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessage);
+    });
+
+    test('Should create ListingItemMessage with listingItemTemplateBasic1 data', async () => {
+        createdListingItemMessageFromBasic1 = await listingItemFactory.getMessage(listingItemTemplateBasic1);
+        expectMessageFromListingItem(createdListingItemMessageFromBasic1, listingItemTemplateBasic1);
+    });
+
+    test('should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic1', async () => {
+        const marketId = 1;
+        const smsgMessage: resources.SmsgMessage = {
+            seller: 'smsgMessage.from',
+            daysretention: 4,
+            sent: new Date().getTime(),
+            expiration: new Date().getTime() + 2000,
+            received: new Date().getTime() + 1000
+        };
+
+        const listingItemCreateRequest: ListingItemCreateRequest =
+            await listingItemFactory.getModel(createdListingItemMessageFromBasic1, smsgMessage, marketId, listingItemCategoryRootWithRelated);
+        expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessageFromBasic1);
+    });
+
+    test('Should create ListingItemMessage with listingItemTemplateBasic2 data', async () => {
+        createdListingItemMessageFromBasic2 = await listingItemFactory.getMessage(listingItemTemplateBasic2);
+        expectMessageFromListingItem(createdListingItemMessageFromBasic2, listingItemTemplateBasic2);
+    });
+
+    test('should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic2', async () => {
+        const marketId = 1;
+        const smsgMessage: resources.SmsgMessage = {
+            seller: 'smsgMessage.from',
+            daysretention: 4,
+            sent: new Date().getTime(),
+            expiration: new Date().getTime() + 2000,
+            received: new Date().getTime() + 1000
+        };
+
+        const listingItemCreateRequest: ListingItemCreateRequest =
+            await listingItemFactory.getModel(createdListingItemMessageFromBasic2, smsgMessage, marketId, listingItemCategoryRootWithRelated);
+        expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessageFromBasic2);
+    });
+
+    test('Should create ListingItemMessage with listingItemTemplateBasic3 data', async () => {
+        createdListingItemMessageFromBasic3 = await listingItemFactory.getMessage(listingItemTemplateBasic3);
+        expectMessageFromListingItem(createdListingItemMessageFromBasic3, listingItemTemplateBasic3);
+    });
+
+    test('should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic3', async () => {
+        const marketId = 1;
+        const smsgMessage: resources.SmsgMessage = {
+            seller: 'smsgMessage.from',
+            daysretention: 4,
+            sent: new Date().getTime(),
+            expiration: new Date().getTime() + 2000,
+            received: new Date().getTime() + 1000
+        };
+
+        const listingItemCreateRequest: ListingItemCreateRequest =
+            await listingItemFactory.getModel(createdListingItemMessageFromBasic3, smsgMessage, marketId, listingItemCategoryRootWithRelated);
+        expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessageFromBasic3);
+    });
+
 
     const expectMessageFromListingItem = (message: ListingItemMessage, testData: resources.ListingItemTemplate) => {
         expect(message.hash).toBe(testData.hash);
@@ -111,7 +192,7 @@ describe('ListingItemFactory', () => {
         expect(message.information.images[0].data.length).toBe(1);
         expect(message.information.images[0].data[0].protocol).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].protocol);
         expect(message.information.images[0].data[0].encoding).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].encoding);
-        expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].data);
+        expect(message.information.images[0].data[0].data).toBe(testData.ItemInformation.ItemImages[0].ItemImageDatas[0].ItemImageDataContent.data);
 
         // message.payment
         expect(message.payment).toBeDefined();
@@ -243,7 +324,15 @@ describe('ListingItemFactory', () => {
     const expectListingItemFromMessage = (result: ListingItemCreateRequest, message: ListingItemMessage) => {
 
         expect(result.hash).toBe(message.hash);
-        expect(result.postedAt).toBeDefined();
+        expect(result.expiryTime).toBeGreaterThan(0);
+        expect(result.postedAt).toBeGreaterThan(0);
+        expect(result.expiredAt).toBeGreaterThan(0);
+        expect(result.receivedAt).toBeGreaterThan(0);
+
+        // expect(result.postedAt).toBe(1);
+        // expect(result.expiredAt).toBe(2);
+        // expect(result.receivedAt).toBe(3);
+        // expect(result.expiryTime).toBe(4);
 
         // fields from message that we dont want to see
         expect(result).not.toHaveProperty('information');
@@ -364,107 +453,4 @@ describe('ListingItemFactory', () => {
         expect(result.listingItemObjects[1].listingItemObjectDatas[1].key).toBe(message.objects[1]['options'][1].name);
         expect(result.listingItemObjects[1].listingItemObjectDatas[1].value).toBe(message.objects[1]['options'][1].value);
     };
-
-    test('Should create ListingItemMessage', async () => {
-
-        createdListingItemMessage = await listingItemFactory.getMessage(listingItemTemplateBasic1, PROPOSAL_HASH, DAYS_RETENTION);
-
-        // console.log('message: ', JSON.stringify(createdListingItemMessage, null, 2));
-
-        // test message conversion
-        expectMessageFromListingItem(createdListingItemMessage, listingItemTemplateBasic1);
-
-    });
-
-    test('should create ListingItemCreateRequest using the previously created ListingItemMessage', async () => {
-
-        const marketId = 1;
-        const sellerAddress = 'asdf';
-
-        const listingItemCreateRequest: ListingItemCreateRequest =
-            await listingItemFactory.getModel(createdListingItemMessage, marketId, sellerAddress, listingItemCategoryRootWithRelated, new Date());
-
-        // console.log('message: ', JSON.stringify(listingItemCreateRequest, null, 2));
-
-        // test message conversion
-        expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessage);
-    });
-
-    test('Should create ListingItemMessage with listingItemTemplateBasic1 data', async () => {
-
-        createdListingItemMessage1 = await listingItemFactory.getMessage(listingItemTemplateBasic1, PROPOSAL_HASH, DAYS_RETENTION);
-
-        // console.log('message: ', JSON.stringify(createdListingItemMessage1, null, 2));
-
-        // test message conversion
-        expectMessageFromListingItem(createdListingItemMessage1, listingItemTemplateBasic1);
-
-    });
-
-    test('should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic1', async () => {
-
-        const marketId = 1;
-        const sellerAddress = 'asdf';
-
-        const listingItemCreateRequest: ListingItemCreateRequest =
-            await listingItemFactory.getModel(createdListingItemMessage1, marketId, sellerAddress, listingItemCategoryRootWithRelated, new Date());
-
-        // console.log('message: ', JSON.stringify(listingItemCreateRequest, null, 2));
-
-        // test message conversion
-        expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessage1);
-    });
-
-
-    test('Should create ListingItemMessage with listingItemTemplateBasic2 data', async () => {
-
-        createdListingItemMessage2 = await listingItemFactory.getMessage(listingItemTemplateBasic2, PROPOSAL_HASH, DAYS_RETENTION);
-
-        // console.log('message: ', JSON.stringify(createdListingItemMessage2, null, 2));
-
-        // test message conversion
-        expectMessageFromListingItem(createdListingItemMessage2, listingItemTemplateBasic2);
-
-    });
-
-    test('should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic2', async () => {
-
-        const marketId = 1;
-        const sellerAddress = 'asdf';
-
-        const listingItemCreateRequest: ListingItemCreateRequest =
-            await listingItemFactory.getModel(createdListingItemMessage2, marketId, sellerAddress, listingItemCategoryRootWithRelated, new Date());
-
-        // console.log('message: ', JSON.stringify(listingItemCreateRequest, null, 2));
-
-        // test message conversion
-        expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessage2);
-    });
-
-
-    test('Should create ListingItemMessage with listingItemTemplateBasic3 data', async () => {
-
-        createdListingItemMessage3 = await listingItemFactory.getMessage(listingItemTemplateBasic3, PROPOSAL_HASH, DAYS_RETENTION);
-
-        // console.log('message: ', JSON.stringify(createdListingItemMessage3, null, 2));
-
-        // test message conversion
-        expectMessageFromListingItem(createdListingItemMessage3, listingItemTemplateBasic3);
-
-    });
-
-    test('should create ListingItemCreateRequest using the previously created ListingItemMessage from listingItemTemplateBasic3', async () => {
-
-        const marketId = 1;
-        const sellerAddress = 'asdf';
-
-        const listingItemCreateRequest: ListingItemCreateRequest =
-            await listingItemFactory.getModel(createdListingItemMessage3, marketId, sellerAddress, listingItemCategoryRootWithRelated, new Date());
-
-        // console.log('message: ', JSON.stringify(listingItemCreateRequest, null, 2));
-
-        // test message conversion
-        expectListingItemFromMessage(listingItemCreateRequest, createdListingItemMessage3);
-    });
-
 });

@@ -31,9 +31,9 @@ export class ProposalFactory {
      * @param {IdValuePair[]} idValuePairObjects
      * @returns {Promise<BidMessage>}
      */
-    public async getMessage(proposalMessageType: ProposalMessageType, proposalType: ProposalType, proposalTitle: string,
+    public async getMessage(proposalMessageType: ProposalMessageType, proposalTitle: string,
                             proposalDescription: string, blockStart: number, blockEnd: number, options: string[],
-                            senderProfile: resources.Profile): Promise<ProposalMessage> {
+                            senderProfile: resources.Profile, itemHash: string | null = null): Promise<ProposalMessage> {
 
         const submitter = senderProfile.address;
 
@@ -49,6 +49,11 @@ export class ProposalFactory {
             optionId++;
         }
 
+        let proposalType = ProposalType.PUBLIC_VOTE;
+        if (itemHash) {
+            proposalType = ProposalType.ITEM_VOTE;
+        }
+
         const message: ProposalMessage = {
             action: proposalMessageType,
             submitter,
@@ -57,7 +62,8 @@ export class ProposalFactory {
             title: proposalTitle,
             description: proposalDescription,
             options: optionsList,
-            type: proposalType
+            type: proposalType,
+            item: itemHash
         } as ProposalMessage;
 
         message.hash = ObjectHash.getHash(message, HashableObjectType.PROPOSAL_MESSAGE);
@@ -85,6 +91,7 @@ export class ProposalFactory {
             type: proposalMessage.type,
             title: proposalMessage.title,
             description: proposalMessage.description,
+            item: proposalMessage.item,
             options: proposalMessage.options as ProposalOptionCreateRequest[]
         } as ProposalCreateRequest;
 

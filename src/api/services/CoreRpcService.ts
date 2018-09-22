@@ -147,8 +147,13 @@ export class CoreRpcService {
      * @param {string} account
      * @returns {Promise<any>}
      */
-    public async addMultiSigAddress(nrequired: number, keys: string[], account: string): Promise<any> {
-        const params: any[] = [nrequired, keys, account];
+    public async addMultiSigAddress(nrequired: number, keys: string[], account?: string): Promise<any> {
+        const params: any[] = [];
+        params.push(nrequired);
+        params.push(keys);
+        if (account) {
+            params.push(account);
+        }
         this.log.debug('params: ', params);
         return await this.call('addmultisigaddress', params);
     }
@@ -182,6 +187,20 @@ export class CoreRpcService {
             params.push(outputs);
         }
         return await this.call('signrawtransactionwithwallet', params);
+    }
+
+    /**
+     * ﻿combinerawtransaction ["hexstring",...]
+     *
+     * Combine multiple partially signed transactions into one transaction.
+     * The combined transaction may be another partially signed transaction or a fully signed transaction
+     *
+     * @param {string} hexstring
+     * @param {any[]} outputs
+     * @returns {Promise<any>}
+     */
+    public async combineRawTransaction(hexstrings: string[]): Promise<any> {
+        return await this.call('combinerawtransaction', [hexstrings]);
     }
 
     /**
@@ -336,17 +355,6 @@ export class CoreRpcService {
         return await this.call('dumpprivkey', params);
     }
 
-    /**
-     * ﻿Return information about the given particl address.
-     *
-     * @param {string} address
-     * @returns {Promise<string>}
-     */
-    public async validateAddress(address: string): Promise<any> {
-        const params: any[] = [address];
-        return await this.call('validateaddress', params);
-    }
-
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {
 
         const id = RPC_REQUEST_ID++;
@@ -361,7 +369,8 @@ export class CoreRpcService {
         const options = this.getOptions();
 
         if (logCall) {
-            this.log.debug('call: ' + method + ' ' + params.toString().replace(new RegExp(',', 'g'), ' '));
+            // TODO: handle [object Object]
+            this.log.debug('call: ' + method + ' ' + JSON.stringify(params).replace(new RegExp(',', 'g'), ' '));
         }
         // this.log.debug('call url:', url);
         // this.log.debug('call postData:', postData);

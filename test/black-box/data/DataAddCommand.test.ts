@@ -2,19 +2,25 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import {CreatableModel} from '../../../src/api/enums/CreatableModel';
+import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('DataAddCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
+
     const dataCommand = Commands.DATA_ROOT.commandName;
-    const addCommand =  Commands.DATA_ADD.commandName;
+    const dataAddCommand =  Commands.DATA_ADD.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
     });
 
     const testProfileData = {
@@ -40,7 +46,7 @@ describe('DataAddCommand', () => {
     };
 
     test('Should create test data for Profile', async () => {
-        const res = await rpc(dataCommand, [addCommand, CreatableModel.PROFILE, JSON.stringify(testProfileData)]);
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand, CreatableModel.PROFILE, JSON.stringify(testProfileData)]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -53,7 +59,7 @@ describe('DataAddCommand', () => {
         const listingItem = await testUtil.generateData(CreatableModel.LISTINGITEM, 1);
         testActionMessage.listing_item_id = listingItem[0].id;
 
-        const res = await rpc(dataCommand, [addCommand, CreatableModel.ACTIONMESSAGE, JSON.stringify(testActionMessage)]);
+        const res = await testUtil.rpc(dataCommand, [dataAddCommand, CreatableModel.ACTIONMESSAGE, JSON.stringify(testActionMessage)]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

@@ -2,23 +2,21 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-// tslint:disable:max-line-length
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
-import {GenerateProposalParams} from '../../../src/api/requests/params/GenerateProposalParams';
-// tslint:enable:max-line-length
+import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
 
 describe('VoteGetCommand', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-
     const testUtil = new BlackBoxTestUtil();
+
     const voteCommand = Commands.VOTE_ROOT.commandName;
     const voteGetCommand = Commands.VOTE_GET.commandName;
     const votePostCommand = Commands.VOTE_POST.commandName;
@@ -26,7 +24,6 @@ describe('VoteGetCommand', () => {
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
-
     let proposal: resources.Proposal;
 
     let currentBlock: 0;
@@ -34,11 +31,8 @@ describe('VoteGetCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // get default profile
+        // get default profile and market
         defaultProfile = await testUtil.getDefaultProfile();
-        log.debug('defaultProfile: ', defaultProfile);
-
-        // fetch default market
         defaultMarket = await testUtil.getDefaultMarket();
 
         const generateProposalParams = new GenerateProposalParams([
@@ -59,7 +53,7 @@ describe('VoteGetCommand', () => {
         proposal = proposals[0];
 
         // post a vote
-        const votePostRes: any = await rpc(voteCommand, [
+        const votePostRes: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
             defaultProfile.id,
             proposal.hash,
@@ -71,7 +65,7 @@ describe('VoteGetCommand', () => {
         expect(result.result).toEqual('Sent.');
 
         // get current block
-        const currentBlockRes: any = await rpc(daemonCommand, ['getblockcount']);
+        const currentBlockRes: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
         currentBlockRes.expectStatusCode(200);
         currentBlock = currentBlockRes.getBody()['result'];
         log.debug('currentBlock:', currentBlock);
@@ -94,8 +88,6 @@ describe('VoteGetCommand', () => {
         voteGetRes.expectStatusCode(200);
 
         const result: resources.Vote = voteGetRes.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
-
         expect(result).hasOwnProperty('ProposalOption');
         expect(result.block).toBe(currentBlock);
         expect(result.weight).toBe(1);
@@ -106,7 +98,7 @@ describe('VoteGetCommand', () => {
     test('Should return Vote with different result after voting again', async () => {
 
         // post a vote
-        const votePostRes: any = await rpc(voteCommand, [
+        const votePostRes: any = await testUtil.rpc(voteCommand, [
             votePostCommand,
             defaultProfile.id,
             proposal.hash,
@@ -118,7 +110,7 @@ describe('VoteGetCommand', () => {
         expect(votePostResult.result).toEqual('Sent.');
 
         // get current block
-        const currentBlockRes: any = await rpc(daemonCommand, ['getblockcount']);
+        const currentBlockRes: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
         currentBlockRes.expectStatusCode(200);
         currentBlock = currentBlockRes.getBody()['result'];
         log.debug('currentBlock:', currentBlock);
@@ -138,8 +130,6 @@ describe('VoteGetCommand', () => {
         voteGetRes.expectStatusCode(200);
 
         const result: resources.Vote = voteGetRes.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
-
         expect(result).hasOwnProperty('ProposalOption');
         expect(result.block).toBe(currentBlock);
         expect(result.weight).toBe(1);

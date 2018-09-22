@@ -117,6 +117,10 @@ export class ListingItemService {
                         withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
         // if valid params
         // todo: check whether category is string or number, if string, try to find the Category by key
+
+        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
+        this.log.debug('search(), Date.now(): ', Date.now());
+
         return await this.listingItemRepo.search(options, withRelated);
     }
 
@@ -127,7 +131,7 @@ export class ListingItemService {
      */
     @validate()
     public async create( @request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
-        const startTime = new Date().getTime();
+        // const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
@@ -147,6 +151,8 @@ export class ListingItemService {
         const actionMessages = body.actionMessages || [];
         delete body.actionMessages;
 
+        // this.log.debug('body:', JSON.stringify(body, null, 2));
+
         // If the request body was valid we will create the listingItem
         const listingItemModel = await this.listingItemRepo.create(body);
         const listingItem = listingItemModel.toJSON();
@@ -164,7 +170,6 @@ export class ListingItemService {
 
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_id = listingItem.id;
-            // this.log.debug('listingItemService.create, msgInfo: ', JSON.stringify(msgInfo, null, 2));
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest)
                 .catch(reason => {
                     this.log.error('Error:', JSON.stringify(reason, null, 2));
@@ -180,8 +185,6 @@ export class ListingItemService {
                 });
         }
 
-        // this.log.debug('create actionMessages:', JSON.stringify(actionMessages, null, 2));
-
         // create actionMessages, only used to create testdata
         for (const actionMessage of actionMessages) {
             actionMessage.listing_item_id = listingItem.id;
@@ -194,7 +197,7 @@ export class ListingItemService {
         // finally find and return the created listingItem
         const result = await this.findOne(listingItem.id);
 
-        this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        // this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         return result;
 
@@ -219,6 +222,10 @@ export class ListingItemService {
 
         // set new values
         listingItem.Hash = body.hash;
+        listingItem.ExpiryTime = body.expiryTime;
+        listingItem.PostedAt = body.postedAt;
+        listingItem.ExpiredAt = body.expiredAt;
+        listingItem.ReceivedAt = body.receivedAt;
 
         // and update the ListingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
@@ -324,20 +331,19 @@ export class ListingItemService {
 
     public async updateListingItemTemplateRelation(id: number): Promise<ListingItem> {
 
-        this.log.debug('updating ListingItem relation to possible ListingItemTemplate.');
-
         let listingItem = await this.findOne(id, false);
         const templateId = await this.listingItemTemplateService.findOneByHash(listingItem.Hash)
             .then(value => {
                 const template = value.toJSON();
-                this.log.debug('found ListingItemTemplate with matching hash, id:', template.id);
+                // this.log.debug('found ListingItemTemplate with matching hash, id:', template.id);
                 return template.id;
             })
             .catch(reason => {
-                this.log.debug('matching ListingItemTemplate for ListingItem not found.');
+                // this.log.debug('matching ListingItemTemplate for ListingItem not found.');
             });
 
         if (templateId) {
+            this.log.debug('updating ListingItem relation to ListingItemTemplate.');
             listingItem.set('listingItemTemplateId', templateId);
             await this.listingItemRepo.update(id, listingItem.toJSON());
         }
@@ -349,20 +355,19 @@ export class ListingItemService {
 
     public async updateProposalRelation(id: number, proposalHash: string): Promise<ListingItem> {
 
-        this.log.debug('updating ListingItem relation to Proposal.');
-
         let listingItem = await this.findOne(id, false);
         const proposalId = await this.proposalService.findOneByHash(proposalHash)
             .then(value => {
                 const proposal = value.toJSON();
-                this.log.debug('found Proposal with matching hash, id:', proposal.id);
+                // this.log.debug('found Proposal with matching hash, id:', proposal.id);
                 return proposal.id;
             })
             .catch(reason => {
-                this.log.debug('matching Proposal for ListingItem not found.');
+                // this.log.debug('matching Proposal for ListingItem not found.');
             });
 
         if (proposalId) {
+            this.log.debug('updating ListingItem relation to Proposal.');
             listingItem.set('proposalId', proposalId);
             await this.listingItemRepo.update(id, listingItem.toJSON());
         }
@@ -383,20 +388,20 @@ export class ListingItemService {
             throw new NotFoundException('Item listing does not exist. id = ' + id);
         }
         const listingItem = listingItemModel.toJSON();
-        this.log.debug('delete listingItem:', listingItem.id);
 
         await this.listingItemRepo.destroy(id);
 
         // remove related CryptocurrencyAddress if it exists
         if (listingItem.PaymentInformation && listingItem.PaymentInformation.ItemPrice
             && listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress) {
-            this.log.debug('delete listingItem cryptocurrencyaddress:', listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress.id);
             await this.cryptocurrencyAddressService.destroy(listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress.id);
         }
     }
 
     /**
      * delete expired listing items
+     *
+     * @returns {Promise<void>}
      */
     public async deleteExpiredListingItems(): Promise<void> {
        const listingItemsModel = await this.findExpired();
@@ -408,20 +413,9 @@ export class ListingItemService {
        }
     }
 
-
-    /**
-     * check if ListingItem already Flagged
-     *
-     * @param {ListingItem} listingItem
-     * @returns {Promise<boolean>}
-     */
-    public async isItemFlagged(listingItem: ListingItem): Promise<boolean> {
-        const flaggedItem = listingItem.related('FlaggedItem').toJSON();
-        return _.size(flaggedItem) !== 0;
-    }
-
     /**
      * check if object is exist in a array
+     * todo: this is utility function, does not belong here
      *
      * @param {string[]} objectArray
      * @param {string} fieldName

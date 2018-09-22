@@ -14,6 +14,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemObjectSearchParams } from '../../requests/ListingItemObjectSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ListingItemObjectSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemObject>> {
 
@@ -39,6 +40,13 @@ export class ListingItemObjectSearchCommand extends BaseCommand implements RpcCo
         return this.listingItemObjectService.search({
             searchString: data.params[0]
         } as ListingItemObjectSearchParams);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length === 0) {
+            throw new MessageException('Missing searchString.');
+        }
+        return data;
     }
 
     public usage(): string {

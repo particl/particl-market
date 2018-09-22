@@ -2,16 +2,20 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { reset } from 'chalk';
 import * as resources from 'resources';
+import {Logger as LoggerType} from '../../../src/core/Logger';
 
 describe('PriceTickerRootCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.PRICETICKER_ROOT.commandName;
+
+    const priceTickerCommand = Commands.PRICETICKER_ROOT.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -39,7 +43,7 @@ describe('PriceTickerRootCommand', () => {
     };
 
     test('Should get PriceTicker by passing single currency (UPPER case)', async () => {
-        const res = await rpc(method, ['ETH']);
+        const res = await testUtil.rpc(priceTickerCommand, ['ETH']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -49,7 +53,7 @@ describe('PriceTickerRootCommand', () => {
     });
 
     test('Should get PriceTicker by passing single currency (LOWER case)', async () => {
-        const res = await rpc(method, ['xrp']);
+        const res = await testUtil.rpc(priceTickerCommand, ['xrp']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -59,7 +63,7 @@ describe('PriceTickerRootCommand', () => {
     });
 
     test('Should fail to fetch PriceTicker without passing currency', async () => {
-        const res = await rpc(method, []);
+        const res = await testUtil.rpc(priceTickerCommand, []);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
@@ -67,7 +71,7 @@ describe('PriceTickerRootCommand', () => {
     });
 
     test('Should get two PriceTickers by passing two currency ( UPPER + UPPER )', async () => {
-        const res = await rpc(method, ['XRP', 'BTC']);
+        const res = await testUtil.rpc(priceTickerCommand, ['XRP', 'BTC']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -81,7 +85,7 @@ describe('PriceTickerRootCommand', () => {
     });
 
     test('Should get two PriceTickers by passing two currency(UPPER + LOWER)', async () => {
-        const res = await rpc(method, ['XRP', 'btc']);
+        const res = await testUtil.rpc(priceTickerCommand, ['XRP', 'btc']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -95,7 +99,7 @@ describe('PriceTickerRootCommand', () => {
     });
 
     test('Should get two PriceTickers by passing two currency(LOWER + LOWER)', async () => {
-        const res = await rpc(method, ['xrp', 'btc']);
+        const res = await testUtil.rpc(priceTickerCommand, ['xrp', 'btc']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

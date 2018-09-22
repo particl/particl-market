@@ -12,9 +12,14 @@ declare module 'resources' {
         blockStart: number;
         blockEnd: number;
         hash: string;
+        item: string;
         type: ProposalType;
         title: string;
         description: string;
+        expiryTime: number;
+        receivedAt: number;
+        postedAt: number;
+        expiredAt: number;
         createdAt: Date;
         updatedAt: Date;
         ProposalOptions: ProposalOption[];

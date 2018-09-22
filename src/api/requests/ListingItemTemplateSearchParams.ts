@@ -19,7 +19,7 @@ export class ListingItemTemplateSearchParams extends RequestBody {
     @IsEnum(SearchOrder)
     public order: SearchOrder;
 
-    @IsNotEmpty()
+    // @IsNotEmpty()
     public profileId: number;
 
     public category: string | number;
