@@ -179,37 +179,13 @@ export class ProposalActionService {
         return SmsgMessageStatus.PROCESSED;
     }
 
-    private async createVote(createdProposal: resources.Proposal, itemVote: ItemVote): Promise<resources.Vote> {
-
-        const currentBlock = await this.coreRpcService.getBlockCount();
-
-        // after creating, updating or fetching existing proposal -> add vote
-        const proposalOption = _.find(createdProposal.ProposalOptions, (option: resources.ProposalOption) => {
-            return option.description === itemVote;
-        });
-
-        if (!proposalOption) {
-            this.log.warn('ItemVote received that doesn\'t have REMOVE option.');
-            throw new MessageException('ItemVote received that doesn\'t have REMOVE option.');
-        }
-
-        const voteRequest: VoteCreateRequest = {
-            proposal_option_id: proposalOption.id,
-            voter: createdProposal.submitter,
-            block: currentBlock,
-            weight: 1
-        } as VoteCreateRequest;
-        const createdVoteModel = await this.voteService.create(voteRequest);
-        return createdVoteModel.toJSON();
-    }
-
     /**
      * creates empty ProposalResult for the Proposal
      *
      * @param {"resources".Proposal} proposal
      * @returns {Promise<"resources".ProposalResult>}
      */
-    private async createProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
+    public async createProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
         const currentBlock: number = await this.coreRpcService.getBlockCount();
 
         let proposalResultModel = await this.proposalResultService.create({
@@ -233,6 +209,30 @@ export class ProposalActionService {
 
         proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
         return proposalResultModel.toJSON();
+    }
+
+    private async createVote(createdProposal: resources.Proposal, itemVote: ItemVote): Promise<resources.Vote> {
+
+        const currentBlock = await this.coreRpcService.getBlockCount();
+
+        // after creating, updating or fetching existing proposal -> add vote
+        const proposalOption = _.find(createdProposal.ProposalOptions, (option: resources.ProposalOption) => {
+            return option.description === itemVote;
+        });
+
+        if (!proposalOption) {
+            this.log.warn('ItemVote received that doesn\'t have REMOVE option.');
+            throw new MessageException('ItemVote received that doesn\'t have REMOVE option.');
+        }
+
+        const voteRequest: VoteCreateRequest = {
+            proposal_option_id: proposalOption.id,
+            voter: createdProposal.submitter,
+            block: currentBlock,
+            weight: 1
+        } as VoteCreateRequest;
+        const createdVoteModel = await this.voteService.create(voteRequest);
+        return createdVoteModel.toJSON();
     }
 
     private configureEventListeners(): void {
