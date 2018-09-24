@@ -66,7 +66,6 @@ describe('FavoriteAddCommand', () => {
     });
 
     test('Should fail to add FavoriteItem because not enough parameters', async () => {
-        // add favorite item
         const res: any = await testUtil.rpc(favoriteCommand, [favoriteAddCommand, defaultProfile.id]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -74,7 +73,6 @@ describe('FavoriteAddCommand', () => {
     });
 
     test('Should fail to add FavoriteItem because a profileId was a string', async () => {
-        // add favorite item
         const res: any = await testUtil.rpc(favoriteCommand, [favoriteAddCommand, 'Some invalid string', createdListingItem1.id]);
         res.expectJson();
         res.expectStatusCode(404);
@@ -82,7 +80,6 @@ describe('FavoriteAddCommand', () => {
     });
 
     test('Should add FavoriteItem with profileId and listingId', async () => {
-        // add favorite item
         const res: any = await testUtil.rpc(favoriteCommand, [favoriteAddCommand, defaultProfile.id, createdListingItem1.id]);
         res.expectJson();
         res.expectStatusCode(200);

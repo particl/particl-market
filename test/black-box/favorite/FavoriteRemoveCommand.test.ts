@@ -91,7 +91,6 @@ describe('FavoriteRemoveCommand', () => {
     });
 
     test('Should fail remove FavoriteItem because its already removed', async () => {
-        // remove favorite
         const res: any = await testUtil.rpc(favoriteCommand, [favoriteRemoveCommand, defaultProfile.id, listingItem1.id]);
         res.expectJson();
         res.expectStatusCode(404);

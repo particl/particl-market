@@ -4,17 +4,12 @@
 
 declare module 'resources' {
 
-    interface Profile {
+    interface Setting {
         id: number;
-        name: string;
-        address: string;
+        key: string;
+        value: string;
         createdAt: Date;
         updatedAt: Date;
-        ShippingAddresses: Address[];
-        CryptocurrencyAddresses: CryptocurrencyAddress[];
-        FavoriteItems: FavoriteItem[];
-        ShoppingCart: ShoppingCart[];
-        Settings: Setting[];
     }
 
 }

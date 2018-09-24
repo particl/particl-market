@@ -7,6 +7,7 @@ import * as _ from 'lodash';
 export interface GenerateProfileParamsInterface {
     generateShippingAddresses: boolean;
     generateCryptocurrencyAddresses: boolean;
+    generateSettings: boolean;
     toParamsArray(): boolean[];
 }
 
@@ -15,6 +16,7 @@ export class GenerateProfileParams implements GenerateProfileParamsInterface {
     // GenerateProfileParamsInterface
     public generateShippingAddresses = true;
     public generateCryptocurrencyAddresses = true;
+    public generateSettings = true;
 
     /**
      * generateParams[]:
@@ -28,11 +30,12 @@ export class GenerateProfileParams implements GenerateProfileParamsInterface {
         if (!_.isEmpty(generateParams) ) {
             this.generateShippingAddresses          = generateParams[0] ? true : false;
             this.generateCryptocurrencyAddresses    = generateParams[1] ? true : false;
+            this.generateSettings                   = generateParams[2] ? true : false;
         }
     }
 
     public toParamsArray(): boolean[] {
-        return [this.generateShippingAddresses, this.generateCryptocurrencyAddresses];
+        return [this.generateShippingAddresses, this.generateCryptocurrencyAddresses, this.generateSettings];
     }
 
 }

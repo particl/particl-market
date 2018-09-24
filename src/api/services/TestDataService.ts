@@ -57,6 +57,7 @@ import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest
 import { FavoriteItemCreateRequest } from '../requests/FavoriteItemCreateRequest';
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
 import { BidCreateRequest } from '../requests/BidCreateRequest';
+import { SettingCreateRequest } from '../requests/SettingCreateRequest';
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
 import { ItemImageCreateRequest } from '../requests/ItemImageCreateRequest';
 import { CreatableModel } from '../enums/CreatableModel';
@@ -659,7 +660,6 @@ export class TestDataService {
                 this.log.debug('GENERATED VOTES: ', JSON.stringify(votes, null, 2));
             }
 
-
             // create and update ProposalResult
             let proposalResult = await this.proposalActionService.createProposalResult(proposal);
             // this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
@@ -774,12 +774,14 @@ export class TestDataService {
         const profile = await this.generateAddressesData(_.random(1, 5));
         const shippingAddresses = generateParams.generateShippingAddresses ? profile : [];
         const cryptocurrencyAddresses = generateParams.generateCryptocurrencyAddresses ? await this.generateCryptocurrencyAddressesData(_.random(1, 5)) : [];
+        const settings = generateParams.generateSettings ? await this.generateSettings(_.random(1, 5)) : [];
 
         return {
             name,
             address,
             shippingAddresses,
-            cryptocurrencyAddresses
+            cryptocurrencyAddresses,
+            settings
         } as ProfileCreateRequest;
     }
 
@@ -800,6 +802,17 @@ export class TestDataService {
             });
         }
         return addresses;
+    }
+
+    private async generateSettings(amount: number): Promise<SettingCreateRequest[]> {
+        const settings: any[] = [];
+        for (let i = amount; i > 0; i--) {
+            settings.push({
+                key: 'key',
+                value: 'value'
+            });
+        }
+        return settings;
     }
 
     private async generateCryptocurrencyAddressesData(amount: number): Promise<CryptocurrencyAddressCreateRequest[]> {
