@@ -55,25 +55,6 @@ export class SettingService {
         throw new NotFoundException(key);
     }
 
-
-    @validate()
-    public async setSetting(@request(SettingUpdateRequest) data: any): Promise<void> {
-        // Create get request
-        const profileId = data.params[0];
-        const key = data.params[1];
-        const settingGetRequest = {
-            profileId,
-            key
-        } as SettingGetRequest;
-
-        // Update setting
-        const setting = await this.getSetting(settingGetRequest);
-        await this.settingService.update(setting.id, data);
-    }
-
-
-
-
     @validate()
     public async create( @request(SettingCreateRequest) data: SettingCreateRequest): Promise<Setting> {
 

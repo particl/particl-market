@@ -8,8 +8,6 @@ import { RequestBody } from '../../core/api/RequestBody';
 // tslint:disable:variable-name
 export class SettingUpdateRequest extends RequestBody {
 
-    public profileId: number;
-
     @IsNotEmpty()
     public key: string;
 
