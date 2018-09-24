@@ -93,6 +93,7 @@ import { ProposalOptionResultService } from './ProposalOptionResultService';
 import { ProposalActionService } from './ProposalActionService';
 import {ItemCategoryUpdateRequest} from '../requests/ItemCategoryUpdateRequest';
 import {BidDataValue} from '../enums/BidDataValue';
+import {SettingCreateRequest} from '../requests/SettingCreateRequest';
 
 export class TestDataService {
 
@@ -774,12 +775,14 @@ export class TestDataService {
         const profile = await this.generateAddressesData(_.random(1, 5));
         const shippingAddresses = generateParams.generateShippingAddresses ? profile : [];
         const cryptocurrencyAddresses = generateParams.generateCryptocurrencyAddresses ? await this.generateCryptocurrencyAddressesData(_.random(1, 5)) : [];
+        const settings = generateParams.generateSettings ? await this.generateSettings(_.random(1, 5)) : [];
 
         return {
             name,
             address,
             shippingAddresses,
-            cryptocurrencyAddresses
+            cryptocurrencyAddresses,
+            settings
         } as ProfileCreateRequest;
     }
 
@@ -811,6 +814,17 @@ export class TestDataService {
             });
         }
         return cryptoAddresses;
+    }
+
+    private async generateSettings(amount: number): Promise<SettingCreateRequest[]> {
+        const settings: any[] = [];
+        for (let i = amount; i > 0; i--) {
+            settings.push({
+                key: Faker.random.word(),
+                value: Faker.random.word()
+            });
+        }
+        return settings;
     }
 
     /**

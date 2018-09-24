@@ -8,6 +8,8 @@ declare module 'resources' {
         id: number;
         key: string;
         value: string;
+        Profile: Profile;
+
         createdAt: Date;
         updatedAt: Date;
     }
