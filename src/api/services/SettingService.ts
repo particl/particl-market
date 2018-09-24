@@ -72,20 +72,7 @@ export class SettingService {
     }
 
 
-    @validate()
-    public async removeSetting(@request(SettingRemoveRequest) data: any): Promise<void> {
-        // Create get request
-        const profileId = data.params[0];
-        const key = data.params[1];
-        const settingGetRequest = {
-            profileId,
-            key
-        } as SettingGetRequest;
 
-        // Remove setting
-        const setting = await this.getSetting(settingGetRequest);
-        await this.settingService.destroy(setting.id);
-    }
 
     @validate()
     public async create( @request(SettingCreateRequest) data: SettingCreateRequest): Promise<Setting> {
@@ -112,4 +99,8 @@ export class SettingService {
         await this.settingRepo.destroy(id);
     }
 
+    public async destroyByKeyAndProfileId(key: string, profileId: number): Promise<void> {
+        const setting = await this.findOneByKeyAndProfileId(key, profileId);
+        await this.destroy(setting.id);
+    }
 }

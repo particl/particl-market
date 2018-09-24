@@ -7,12 +7,12 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Types, Core, Targets } from '../../../constants';
 import { RpcRequest } from '../../requests/RpcRequest';
-import { SettingRemoveRequest } from '../../requests/SettingRemoveRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { ProfileService } from '../../services/ProfileService';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
+import { MessageException } from '../../exceptions/MessageException';
+import { SettingService } from '../../services/SettingService';
 
 export class SettingRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -20,7 +20,7 @@ export class SettingRemoveCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.SettingService) public settingService: SettingService
     ) {
         super(Commands.SETTING_REMOVE);
         this.log = new Logger(__filename);
@@ -39,19 +39,19 @@ export class SettingRemoveCommand extends BaseCommand implements RpcCommandInter
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<void> {
         const profileId = data.params[0];
         const key = data.params[1];
+        return await this.settingService.destroyByKeyAndProfileId(key, profileId);
+    }
 
-        if (!profileId) {
-            throw new Error('No profile_id for a command');
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MessageException('Missing profileId.');
         }
-        if (!key) {
-            throw new Error('No key for a command');
 
+        if (data.params.length < 2) {
+            throw new MessageException('Missing key.');
         }
 
-        return await this.profileService.removeSetting({
-            profileId,
-            key
-        } as SettingRemoveRequest);
+        return data;
     }
 
     public usage(): string {
