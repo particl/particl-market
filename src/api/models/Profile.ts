@@ -17,7 +17,7 @@ export class Profile extends Bookshelf.Model<Profile> {
         'CryptocurrencyAddresses',
         'FavoriteItems',
         'ShoppingCart',
-        'Setting'
+        'Settings'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Profile> {
@@ -73,7 +73,7 @@ export class Profile extends Bookshelf.Model<Profile> {
     }
 
     public Settings(): Collection<Setting> {
-        return this.hasMany(Setting, 'setting_id', 'id');
+        return this.hasMany(Setting, 'profile_id', 'id');
     }
 
     public CryptocurrencyAddresses(): Collection<CryptocurrencyAddress> {

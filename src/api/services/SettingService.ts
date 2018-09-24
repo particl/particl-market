@@ -30,6 +30,10 @@ export class SettingService {
         return this.settingRepo.findAll();
     }
 
+    public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Setting>> {
+        return await this.settingRepo.findAllByProfileId(profileId, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Setting> {
         const setting = await this.settingRepo.findOne(id, withRelated);
         if (setting === null) {

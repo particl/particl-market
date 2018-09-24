@@ -4,22 +4,35 @@
 
 import { Bookshelf } from '../../config/Database';
 import { Profile } from './Profile';
+import {Collection, Model} from 'bookshelf';
 
 
 export class Setting extends Bookshelf.Model<Setting> {
 
     public static RELATIONS = [
-        // TODO:
-        // 'SettingRelated',
-        // 'SettingRelated.Related'
+        'Profile'
     ];
+
+    public static async fetchAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Collection<Setting>> {
+        const SettingCollection = Setting.forge<Model<Setting>>()
+            .query(qb => {
+                qb.where('profile_id', '=', profileId);
+            })
+            .orderBy('id', 'ASC');
+
+        if (withRelated) {
+            return await SettingCollection.fetchAll({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await SettingCollection.fetchAll();
+        }
+    }
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Setting> {
         if (withRelated) {
             return await Setting.where<Setting>({ id: value }).fetch({
-                withRelated: [
-                    'Profile'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await Setting.where<Setting>({ id: value }).fetch();

@@ -26,6 +26,10 @@ export class SettingRepository {
         return list as Bookshelf.Collection<Setting>;
     }
 
+    public async findAllByProfileId(profileId: number, withRelated: boolean = true): Promise<Bookshelf.Collection<Setting>> {
+        return this.SettingModel.fetchAllByProfileId(profileId, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<Setting> {
         return this.SettingModel.fetchById(id, withRelated);
     }

@@ -10,7 +10,6 @@ import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { ProfileRepository } from '../repositories/ProfileRepository';
 import { Profile } from '../models/Profile';
-import { Setting } from '../models/Setting';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
 import { ProfileUpdateRequest } from '../requests/ProfileUpdateRequest';
 import { AddressService } from './AddressService';
@@ -19,15 +18,11 @@ import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { CoreRpcService } from './CoreRpcService';
 import { ShoppingCartService } from './ShoppingCartService';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
-import { AddressUpdateRequest } from '../requests/AddressUpdateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { CryptocurrencyAddressUpdateRequest } from '../requests/CryptocurrencyAddressUpdateRequest';
 import { SettingCreateRequest } from '../requests/SettingCreateRequest';
-import { SettingGetRequest } from '../requests/SettingGetRequest';
-import { SettingRemoveRequest } from '../requests/SettingRemoveRequest';
 import { SettingUpdateRequest } from '../requests/SettingUpdateRequest';
 import { ShoppingCartCreateRequest } from '../requests/ShoppingCartCreateRequest';
-import {MessageException} from '../exceptions/MessageException';
 
 export class ProfileService {
 

@@ -7,13 +7,15 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { Setting } from '../../models/Setting';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
+import { MessageException } from '../../exceptions/MessageException';
+import * as resources from 'resources';
+import { SettingService } from '../../services/SettingService';
 
 export class SettingListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Setting>> {
 
@@ -21,7 +23,7 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService
+        @inject(Types.Service) @named(Targets.Service.SettingService) public settingService: SettingService
     ) {
         super(Commands.SETTING_LIST);
         this.log = new Logger(__filename);
@@ -38,14 +40,14 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Bookshelf.Collection<Setting>> {
         const profileId = data.params[0];
-        if (!profileId) {
-            throw new Error('No profileId for a command');
+        return await this.settingService.findAllByProfileId(profileId, true);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MessageException('Missing profileId.');
         }
-
-        const profile = await this.profileService.findOne(profileId, true);
-
-        // Return all settings
-        return profile.toJSON().Settings;
+        return data;
     }
 
     public usage(): string {
