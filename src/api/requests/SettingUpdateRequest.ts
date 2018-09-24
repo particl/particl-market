@@ -6,12 +6,15 @@ import { IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 
 // tslint:disable:variable-name
-export class ProfileUpdateRequest extends RequestBody {
+export class SettingUpdateRequest extends RequestBody {
+
+    public profileId: number;
 
     @IsNotEmpty()
-    public name: string;
+    public key: string;
 
-    public address: string;
+    @IsNotEmpty()
+    public value: string;
 
 }
 // tslint:enable:variable-name
