@@ -29,7 +29,7 @@ describe('ListingItemFlagCommand', () => {
 
     const invalidListingItemHash = 0;
     const invalidListingItemHashNotFound = 'INVALID-HASH';
-    const invalidProfileId = 'INVALID-PROFILE-ID';;
+    const invalidProfileId = 'INVALID-PROFILE-ID';
     const invalidProfileIdNotFound = 0;
 
     beforeAll(async () => {
@@ -139,7 +139,7 @@ describe('ListingItemFlagCommand', () => {
         res.expectStatusCode(200);
 
         // make sure we got the expected result from posting the proposal
-        let result: any = res.getBody()['result'];
+        const result: any = res.getBody()['result'];
         expect(result.result).toBe('Sent.');
 
         log.debug('==> PROPOSAL SENT.');

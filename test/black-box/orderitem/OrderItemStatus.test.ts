@@ -117,7 +117,7 @@ describe('OrderItemStatus', () => {
         ]);
         res.expectJson();
         res.expectStatusCode(200);
-        let result: any = res.getBody()['result'];
+        const result: any = res.getBody()['result'];
         expect(result.result).toBe('Sent.');
 
 
@@ -179,7 +179,7 @@ describe('OrderItemStatus', () => {
 
         expect(listingItemReceivedBuyerNode).toBeDefined();
 
-        let res = await testUtilBuyerNode.rpc(bidCommand, [
+        const res = await testUtilBuyerNode.rpc(bidCommand, [
             bidSendCommand,
             listingItemReceivedBuyerNode.hash,
             buyerProfile.id,
