@@ -8,17 +8,13 @@ import { app } from '../../app';
 import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
 import { JsonRpc2Request, JsonRpc2Response, RpcErrorCode } from '../../core/api/jsonrpc';
-import { JsonRpcError } from '../../core/api/JsonRpcError';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import * as _ from 'lodash';
 
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { RpcRequest } from '../requests/RpcRequest';
 import { Commands} from '../commands/CommandEnumType';
-import { ServerStartedListener } from '../listeners/ServerStartedListener';
-import { MessageException } from '../exceptions/MessageException';
-import {Command} from '../commands/Command';
-import {RpcCommandInterface} from '../commands/RpcCommandInterface';
+import { RpcCommandInterface } from '../commands/RpcCommandInterface';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);

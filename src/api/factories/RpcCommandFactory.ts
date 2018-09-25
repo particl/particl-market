@@ -144,6 +144,12 @@ import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
 import { SmsgSearchCommand } from '../commands/smsg/SmsgSearchCommand';
 import { SmsgRootCommand } from '../commands/smsg/SmsgRootCommand';
 
+import { SettingGetCommand } from '../commands/setting/SettingGetCommand';
+import { SettingListCommand } from '../commands/setting/SettingListCommand';
+import { SettingRemoveCommand } from '../commands/setting/SettingRemoveCommand';
+import { SettingSetCommand } from '../commands/setting/SettingSetCommand';
+import { SettingRootCommand } from '../commands/setting/SettingRootCommand';
+
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -250,6 +256,12 @@ export class RpcCommandFactory {
 
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectRootCommand) private listingItemObjectRootCommand: ListingItemObjectRootCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectSearchCommand) private listingItemObjectSearchCommand: ListingItemObjectSearchCommand,
+
+        @inject(Types.Command) @named(Targets.Command.setting.SettingGetCommand) private settingGetCommand: SettingGetCommand,
+        @inject(Types.Command) @named(Targets.Command.setting.SettingListCommand) private settingListCommand: SettingListCommand,
+        @inject(Types.Command) @named(Targets.Command.setting.SettingRemoveCommand) private settingRemoveCommand: SettingRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.setting.SettingSetCommand) private settingSetCommand: SettingSetCommand,
+        @inject(Types.Command) @named(Targets.Command.setting.SettingRootCommand) private settingRootCommand: SettingRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartAddCommand) private shoppingCartAddCommand: ShoppingCartAddCommand,
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartUpdateCommand) private shoppingCartUpdateCommand: ShoppingCartUpdateCommand,
@@ -388,6 +400,12 @@ export class RpcCommandFactory {
 
         this.commands.push(listingItemObjectRootCommand);
         this.commands.push(listingItemObjectSearchCommand);
+
+        this.commands.push(settingGetCommand);
+        this.commands.push(settingListCommand);
+        this.commands.push(settingRemoveCommand);
+        this.commands.push(settingSetCommand);
+        this.commands.push(settingRootCommand);
 
         this.commands.push(shoppingCartAddCommand);
         this.commands.push(shoppingCartUpdateCommand);
