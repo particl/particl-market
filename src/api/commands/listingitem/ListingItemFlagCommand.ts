@@ -47,7 +47,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      * data.params[]:
      *  [0]: listingItemHash
      *  [1]: profileId
-     *  [2]: daysRetention
+     *  [2]: expiryTime (from listingitem, set in validate)
      *
      * when data.params[0] is number then findById, else findOneByHash
      *
@@ -64,7 +64,6 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
         const optionsList: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
         const proposalTitle = listingItemHash;
         const proposalDescription = '';
-        const proposalType = ProposalType.ITEM_VOTE;
 
         // TODO: refactor these to startTime and endTime
         // TODO: When we're expiring by time not block make this listingItem.ExpiryTime();
@@ -106,9 +105,8 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
     /**
      * data.params[]:
-     *  [0]: listingItemId or hash
+     *  [0]: listingItemHash
      *  [1]: profileId
-     *  [2]: daysRetention
      *
      * when data.params[0] is hash, fetch the id
      *
@@ -117,28 +115,40 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
 
+        if (data.params.length < 1) {
+            throw new MessageException('Missing listingItemHash.');
+        }
         if (data.params.length < 2) {
-            throw new MessageException('Missing params.');
+            throw new MessageException('Missing profileId.');
         }
 
         let listingItemModel: ListingItem;
         if (typeof data.params[0] === 'number') {
-            listingItemModel = await this.listingItemService.findOne(data.params[0]);
+            throw new MessageException('Invalid listingItemHash.');
         } else {
-            listingItemModel = await this.listingItemService.findOneByHash(data.params[0]);
+            listingItemModel = await this.listingItemService.findOneByHash(data.params[0])
+                .catch(reason => {
+                    throw new MessageException('ListingItem not found.');
+                });
         }
         const listingItem: resources.ListingItem = listingItemModel.toJSON();
+
+        // check if item is already flagged
+        if (!_.isEmpty(listingItem.FlaggedItem)) {
+            throw new MessageException('Item is already flagged.');
+        }
 
         // hash is what we need in execute()
         data.params[0] = listingItem.hash;  // set to hash
 
         if (typeof data.params[1] !== 'number') {
             throw new MessageException('profileId needs to be a number.');
-        }
-
-        // check if item is already flagged
-        if (!_.isEmpty(listingItem.FlaggedItem)) {
-            throw new MessageException('Item is already flagged.');
+        } else {
+            // make sure profile with the id exists
+            await this.profileService.findOne(data.params[1])    // throws if not found
+                .catch(reason => {
+                    throw new MessageException('Profile not found.');
+                });
         }
 
         data.params[2] = listingItem.expiryTime;
@@ -147,17 +157,16 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
     }
 
     public usage(): string {
-        return this.getName() + ' [<listingItemId>|<hash>] <profileId> ';
+        return this.getName() + ' [<listingItemHash>] <profileId> ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + ' \n'
-            + '    <listingItemId>     - Numeric - The ID of the ListingItem we want to report. \n'
-            + '    <hash>             - String - The hash of the ListingItem we want to report. \n'
+            + '    <listingItemHash>  - String - The hash of the ListingItem we want to report. \n'
             + '    <profileId>        - Numeric - The ID of the Profile reporting the item.';
     }
 
     public description(): string {
-        return 'Flag a listing item via given listingItemId or hash.';
+        return 'Report a ListingItem.';
     }
 }

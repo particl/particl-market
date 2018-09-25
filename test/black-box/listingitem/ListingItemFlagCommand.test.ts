@@ -19,22 +19,39 @@ describe('ListingItemFlagCommand', () => {
 
     const itemCommand = Commands.ITEM_ROOT.commandName;
     const itemFlagCommand = Commands.ITEM_FLAG.commandName;
+    const itemGetCommand = Commands.ITEM_GET.commandName;
 
-    let createdListingItem: resources.ListingItem;
-    let createdNewListingItem: resources.ListingItem;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+
+    let createdListingItem1: resources.ListingItem;
+    let createdListingItem2: resources.ListingItem;
+
+    const invalidListingItemHash = 0;
+    const invalidListingItemHashNotFound = 'INVALID-HASH';
+    const invalidProfileId = 'INVALID-PROFILE-ID';;
+    const invalidProfileIdNotFound = 0;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
+        // get default profile and market
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
+
         const generateListingItemParams = new GenerateListingItemParams([
-            false,   // generateItemInformation
-            false,   // generateShippingDestinations
-            false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+            true,                       // generateItemInformation
+            true,                       // generateShippingDestinations
+            false,                      // generateItemImages
+            true,                       // generatePaymentInformation
+            true,                       // generateEscrow
+            true,                       // generateItemPrice
+            true,                       // generateMessagingInformation
+            true,                       // generateListingItemObjects
+            false,                      // generateObjectDatas
+            null,                       // listingItemTemplateHash
+            defaultProfile.address,     // seller
+            null                        // categoryId
         ]).toParamsArray();
 
         // create listing item for testing
@@ -44,86 +61,139 @@ describe('ListingItemFlagCommand', () => {
             true,                   // return model
             generateListingItemParams    // what kind of data to generate
         ) as resources.ListingItem[];
-        createdListingItem = listingItems[0];
-        createdNewListingItem = listingItems[1];
+        createdListingItem1 = listingItems[0];
+        createdListingItem2 = listingItems[1];
 
     });
 
-    test('Should fail to flag item because of invalid listing item id', async () => {
-        const res = await testUtil.rpc(itemCommand, [itemFlagCommand, 0]);
+    test('Should fail to flag ListingItem because of missing listingItemHash', async () => {
+        const res = await testUtil.rpc(itemCommand, [itemFlagCommand]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Missing listingItemHash.');
     });
 
-    test('Should get empty related flagged item for the given item id, because Item not flagged yet', async () => {
-        // get the ListingItem by id
-        const itemRes = await testUtil.rpc(Commands.ITEM_ROOT.commandName, [Commands.ITEM_GET.commandName, createdListingItem.id]);
-        const itemResult: any = itemRes.getBody()['result'];
-        expect(itemResult.FlaggedItem).toMatchObject({});
+    test('Should fail to flag ListingItem because of missing profileId', async () => {
+        const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
+            createdListingItem1.hash
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Missing profileId.');
     });
 
-    test('Should flag the listing item by id', async () => {
-        // add flagged item by item id
-        const res = await testUtil.rpc(itemCommand, [itemFlagCommand, createdListingItem.id]);
+    test('Should fail to flag ListingItem because of invalid listingItemHash (number)', async () => {
+        const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
+            invalidListingItemHash,
+            defaultProfile.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Invalid listingItemHash.`);
+    });
+
+    test('Should fail to flag ListingItem because of invalid profileId (string)', async () => {
+        const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
+            createdListingItem1.hash,
+            invalidProfileId
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`profileId needs to be a number.`);
+    });
+
+    test('Should fail to flag the ListingItem because of invalid profileId (not found)', async () => {
+        const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
+            createdListingItem1.hash,
+            invalidProfileIdNotFound
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Profile not found.`);
+    });
+
+    test('Should fail to flag the ListingItem because of invalid listingItemHash (not found)', async () => {
+        const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
+            invalidListingItemHashNotFound,
+            defaultProfile.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`ListingItem not found.`);
+    });
+
+    test('Should get empty FlaggedItem relation for the ListingItem, because ListingItem is not flagged yet', async () => {
+        const res = await testUtil.rpc(itemCommand, [itemGetCommand, createdListingItem1.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-        expect(result.ListingItem).toBeDefined();
-        expect(result.ListingItem.id).toEqual(createdListingItem.id);
-        expect(result.listingItemId).toBe(createdListingItem.id);
-
-        // get the listing item by id with related FlaggedItem
-        const itemRes = await testUtil.rpc(Commands.ITEM_ROOT.commandName, [Commands.ITEM_GET.commandName, createdListingItem.id]);
-        const itemResult: any = itemRes.getBody()['result'];
-        expect(itemResult.FlaggedItem).toBeDefined();
-        expect(itemResult.FlaggedItem.listingItemId).toBe(createdListingItem.id);
+        expect(result.FlaggedItem).toMatchObject({});
     });
 
-    test('Should fail to flag because the listing item already been flagged by id', async () => {
-        // add flagged item by item id
-        const res = await testUtil.rpc(itemCommand, [itemFlagCommand, createdListingItem.id]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('Item already being flagged!');
-    });
-
-    test('Should fail to flag item because of invalid listing item hash', async () => {
-        const res = await testUtil.rpc(itemCommand, [itemFlagCommand, 'INVALID_HASH']);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('Should get empty related flagged item for the given item hash, because Item not flagged yet', async () => {
-        // get the ListingItem by id
-        const itemRes = await testUtil.rpc(Commands.ITEM_ROOT.commandName, [Commands.ITEM_GET.commandName, createdNewListingItem.hash]);
-        const itemResult: any = itemRes.getBody()['result'];
-        expect(itemResult.FlaggedItem).toMatchObject({});
-    });
-
-    test('Should flag the listing item by hash', async () => {
-        // add flagged item by item hash
-        const res = await testUtil.rpc(itemCommand, [itemFlagCommand, createdNewListingItem.hash]);
+    test('Should flag the ListingItem by listingItemHash and profileId', async () => {
+        let res = await testUtil.rpc(itemCommand, [itemFlagCommand,
+            createdListingItem1.hash,
+            defaultProfile.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.ListingItem).toBeDefined();
-        expect(result.ListingItem.id).toEqual(createdNewListingItem.id);
-        expect(result.listingItemId).toBe(createdNewListingItem.id);
 
-        // get the listing item by id with related FlaggedItem
-        const itemRes = await testUtil.rpc(Commands.ITEM_ROOT.commandName, [Commands.ITEM_GET.commandName, createdNewListingItem.id]);
-        const itemResult: any = itemRes.getBody()['result'];
-        expect(itemResult.FlaggedItem).toBeDefined();
-        expect(itemResult.FlaggedItem.listingItemId).toBe(createdNewListingItem.id);
-    });
+        // make sure we got the expected result from posting the proposal
+        let result: any = res.getBody()['result'];
+        expect(result.result).toBe('Sent.');
 
-    test('Should fail to flag because the listing item already been flagged by hash', async () => {
-        // add flagged item by item hash
-        const res = await testUtil.rpc(itemCommand, [itemFlagCommand, createdNewListingItem.hash]);
+        log.debug('==> PROPOSAL SENT.');
+
+        res = await testUtil.rpcWaitFor(
+            itemCommand,
+            [itemGetCommand, createdListingItem1.id],
+            8 * 60,
+            200,
+            'FlaggedItem.listingItemId',
+            createdListingItem1.id
+        );
+        res.expectJson();
+        res.expectStatusCode(200);
+
+        expect(res.FlaggedItem).toBeDefined();
+        expect(res.FlaggedItem.listingItemId).toEqual(createdListingItem1.id);
+
+    }, 600000); // timeout to 600s
+
+
+    test('Should fail to flag the ListingItem because the ListingItem has already been flagged by id', async () => {
+        // add flagged item by item id
+        const res = await testUtil.rpc(itemCommand, [itemFlagCommand, createdListingItem1.id]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Item already been flagged!');
+    });
+
+
+    test('Should flag the ListingItem by hash', async () => {
+        // add flagged item by item hash
+        let res = await testUtil.rpc(itemCommand, [itemFlagCommand, createdListingItem2.hash]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        let result: any = res.getBody()['result'];
+        expect(result.ListingItem).toBeDefined();
+        expect(result.ListingItem.id).toEqual(createdListingItem2.id);
+        expect(result.listingItemId).toBe(createdListingItem2.id);
+
+        // get the listing item by id with related FlaggedItem
+        res = await testUtil.rpc(itemCommand, [itemGetCommand, createdListingItem2.id]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        result = res.getBody()['result'];
+        expect(result.FlaggedItem).toBeDefined();
+        expect(result.FlaggedItem.listingItemId).toBe(createdListingItem2.id);
+    });
+
+    test('Should fail to flag the ListingItem because the ListingItem has already been flagged by hash', async () => {
+        // add flagged item by item hash
+        const res = await testUtil.rpc(itemCommand, [itemFlagCommand, createdListingItem2.hash]);
+        res.expectJson();
+        res.expectStatusCode(404);
         expect(res.error.error.message).toBe('Item already being flagged!');
     });
 });

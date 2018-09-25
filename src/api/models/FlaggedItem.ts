@@ -25,9 +25,6 @@ export class FlaggedItem extends Bookshelf.Model<FlaggedItem> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
-    public get ListingItemId(): number { return this.get('listing_item_id'); }
-    public set ListingItemId(value: number) { this.set('listing_item_id', value); }
-
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 

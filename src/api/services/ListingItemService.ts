@@ -365,12 +365,13 @@ export class ListingItemService {
             });
 
         if (proposalId) {
-            this.log.debug('updating ListingItem relation to Proposal.');
+            this.log.debug('updating ListingItem (' + id + ') relation to Proposal (' + proposalId + ').');
             listingItem.set('proposalId', proposalId);
             await this.listingItemRepo.update(id, listingItem.toJSON());
         }
 
         listingItem = await this.findOne(id);
+        this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
         return listingItem;
     }

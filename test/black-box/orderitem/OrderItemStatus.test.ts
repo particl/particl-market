@@ -110,26 +110,21 @@ describe('OrderItemStatus', () => {
         const daysRetention = 1;
 
         // Post ListingItemTemplate to create ListingItem
-        const templatePostRes: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
+        let res = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
             listingItemTemplateSellerNode.id,
             daysRetention,
             sellerMarket.id
         ]);
-        templatePostRes.expectJson();
-        templatePostRes.expectStatusCode(200);
-        const postResult: any = templatePostRes.getBody()['result'];
-
-        // this seems to happen randomly...
-        if (postResult.result === 'Send failed.') {
-            log.debug('postResult: ', postResult);
-        }
-        expect(postResult.result).toBe('Sent.');
+        res.expectJson();
+        res.expectStatusCode(200);
+        let result: any = res.getBody()['result'];
+        expect(result.result).toBe('Sent.');
 
 
         log.debug('==> ListingItemTemplate posted.');
 
         // wait for ListingItem to be received on the seller node
-        const response = await testUtilSellerNode.rpcWaitFor(
+        res = await testUtilSellerNode.rpcWaitFor(
             itemCommand,
             [itemGetCommand, listingItemTemplateSellerNode.hash],
             60 * 60,
@@ -137,14 +132,14 @@ describe('OrderItemStatus', () => {
             'hash',
             listingItemTemplateSellerNode.hash
         );
-        response.expectJson();
-        response.expectStatusCode(200);
-        listingItemReceivedSellerNode = response.getBody()['result'];
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemReceivedSellerNode = res.getBody()['result'];
 
         log.debug('==> ListingItem received on seller node.');
 
         // wait for ListingItem to be received on the buyer node
-        listingItemReceivedBuyerNode = await testUtilBuyerNode.rpcWaitFor(
+        res = await testUtilBuyerNode.rpcWaitFor(
             itemCommand,
             [itemGetCommand, listingItemTemplateSellerNode.hash],
             60 * 60,
@@ -152,9 +147,9 @@ describe('OrderItemStatus', () => {
             'hash',
             listingItemTemplateSellerNode.hash
         );
-        response.expectJson();
-        response.expectStatusCode(200);
-        listingItemReceivedBuyerNode = response.getBody()['result'];
+        res.expectJson();
+        res.expectStatusCode(200);
+        listingItemReceivedBuyerNode = res.getBody()['result'];
 
         log.debug('==> ListingItem received on buyer node.');
 

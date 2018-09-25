@@ -100,7 +100,8 @@ export class ProposalActionService {
             mpaction: proposalMessage
         };
 
-        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, true, daysRetention, estimateFee);
+        const paidMessage = proposalMessage.type === ProposalType.PUBLIC_VOTE;
+        return this.smsgService.smsgSend(senderProfile.address, marketplace.address, msg, paidMessage, daysRetention, estimateFee);
     }
 
     /**
@@ -153,16 +154,7 @@ export class ProposalActionService {
                 });
 
             vote = await this.createVote(proposal, ItemVote.REMOVE);
-            this.log.debug('createdVote:', JSON.stringify(vote, null, 2));
-
-            // if listingitem exists && no relation -> add relation to listingitem
-            await this.listingItemService.findOneByHash(proposal.title)
-                .then(async listingItemModel => {
-                    const listingItem: resources.ListingItem = listingItemModel.toJSON();
-                    if (_.isEmpty(listingItem.Proposal)) {
-                        await this.listingItemService.updateProposalRelation(listingItem.id, proposal.hash);
-                    }
-                });
+            // this.log.debug('createdVote:', JSON.stringify(vote, null, 2));
 
         } else { // else (ProposalType.PUBLIC_VOTE)
 
@@ -173,8 +165,17 @@ export class ProposalActionService {
         // finally, create ProposalResult
         const proposalResult: resources.ProposalResult = await this.createProposalResult(proposal);
 
-        this.log.debug('createdProposal:', JSON.stringify(proposal, null, 2));
-        this.log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
+        // this.log.debug('createdProposal:', JSON.stringify(proposal, null, 2));
+        // this.log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
+
+        // if listingitem exists && theres no relation -> add relation to listingitem
+        await this.listingItemService.findOneByHash(proposal.title)
+            .then(async listingItemModel => {
+                const listingItem: resources.ListingItem = listingItemModel.toJSON();
+                if (_.isEmpty(listingItem.Proposal)) {
+                    await this.listingItemService.updateProposalRelation(listingItem.id, proposal.hash);
+                }
+            });
 
         return SmsgMessageStatus.PROCESSED;
     }

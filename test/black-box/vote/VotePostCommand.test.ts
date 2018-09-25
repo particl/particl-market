@@ -51,9 +51,9 @@ describe('VotePostCommand', () => {
         proposal = proposals[0];
 
         // get current block
-        const currentBlockRes: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
-        currentBlockRes.expectStatusCode(200);
-        currentBlock = currentBlockRes.getBody()['result'];
+        const res: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
+        res.expectStatusCode(200);
+        currentBlock = res.getBody()['result'];
         log.debug('currentBlock:', currentBlock);
     });
 
