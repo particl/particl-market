@@ -69,8 +69,7 @@ describe('SettingRemoveCommand', () => {
         expect(res.error.error.message).toBe(`Entity with identifier ${invalidKey} and ${defaultProfile.id} does not exist`);
     });
 
-    test('Should fail to remove Setting because missing profileId and key', async () => {
-        const invalidKey = 'invalid-key';
+    test('Should fail to remove Setting because missing profileId', async () => {
         const res = await testUtil.rpc(settingCommand, [settingRemoveCommand]);
         res.expectJson();
         res.expectStatusCode(404);

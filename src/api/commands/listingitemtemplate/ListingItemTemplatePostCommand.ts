@@ -15,6 +15,8 @@ import { BaseCommand } from '../BaseCommand';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
 import { ListingItemActionService } from '../../services/ListingItemActionService';
 import { MessageException } from '../../exceptions/MessageException';
+import { MarketService } from '../../services/MarketService';
+import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
 
 export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -22,7 +24,9 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.ListingItemActionService) public listingItemActionService: ListingItemActionService
+        @inject(Types.Service) @named(Targets.Service.ListingItemActionService) public listingItemActionService: ListingItemActionService,
+        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService
     ) {
         super(Commands.TEMPLATE_POST);
         this.log = new Logger(__filename);
@@ -33,18 +37,14 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
      *
      * data.params[]:
      *  [0]: listingItemTemplateId
-     *  [1]: daysRetention, default is 4 and set in SmsgService.smsgsend, may be optional.
-     *  [2]: marketId, may be optional
+     *  [1]: daysRetention
+     *  [2]: marketId
      *
      * @param data
      * @returns {Promise<ListingItemTemplate>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
-
-        if (!data.params[0]) {
-            throw new MessageException('Missing listingItemTemplateId');
-        }
 
         const listingItemTemplateId: number = data.params[0];
         const daysRetention: number = data.params[1] || parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10);
@@ -60,6 +60,54 @@ export class ListingItemTemplatePostCommand extends BaseCommand implements RpcCo
 
         this.log.debug('ListingItemTemplatePostCommand.post, response: ', response);
         return response;
+    }
+
+    /**
+     * data.params[]:
+     *  [0]: listingItemTemplateId
+     *  [1]: daysRetention
+     *  [2]: marketId
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MessageException('Missing listingItemTemplateId.');
+        }
+
+        if (data.params.length < 2) {
+            throw new MessageException('Missing daysRetention.');
+        }
+
+        if (data.params.length < 3) {
+            throw new MessageException('Missing marketId.');
+        }
+
+        const listingItemTemplateId = data.params[0];
+        const daysRetention = data.params[1];
+        const marketId = data.params[2];
+
+        if (listingItemTemplateId && typeof listingItemTemplateId !== 'number') {
+            throw new MessageException('listingItemTemplateId should be a number.');
+        } else {
+            // make sure template with the id exists
+            await this.listingItemTemplateService.findOne(listingItemTemplateId);   // throws if not found
+        }
+
+        if (daysRetention && typeof daysRetention !== 'number') {
+            throw new MessageException('daysRetention should be a number.');
+        }
+
+        if (marketId && typeof marketId !== 'number') {
+            throw new MessageException('marketId should be a number.');
+        } else {
+            // make sure market with the id exists
+            await this.marketService.findOne(marketId);   // throws if not found
+        }
+
+        return data;
     }
 
     public usage(): string {

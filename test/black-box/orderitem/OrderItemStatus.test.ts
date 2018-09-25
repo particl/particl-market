@@ -107,12 +107,24 @@ describe('OrderItemStatus', () => {
 
         expect(listingItemTemplateSellerNode).toBeDefined();
 
+        const daysRetention = 1;
+
         // Post ListingItemTemplate to create ListingItem
-        const templatePostRes: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand, listingItemTemplateSellerNode.id, sellerMarket.id]);
+        const templatePostRes: any = await testUtilSellerNode.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplateSellerNode.id,
+            daysRetention,
+            sellerMarket.id
+        ]);
         templatePostRes.expectJson();
         templatePostRes.expectStatusCode(200);
         const postResult: any = templatePostRes.getBody()['result'];
+
+        // this seems to happen randomly...
+        if (postResult.result === 'Send failed.') {
+            log.debug('postResult: ', postResult);
+        }
         expect(postResult.result).toBe('Sent.');
+
 
         log.debug('==> ListingItemTemplate posted.');
 
@@ -149,20 +161,19 @@ describe('OrderItemStatus', () => {
     }, 600000); // timeout to 600s
 
 
-    test('Should return an empty list since there are no bids or orders yet', async () => {
+    test('Should return an empty list since there are no Bids or Orders yet', async () => {
 
         expect(listingItemReceivedBuyerNode).toBeDefined();
 
         // wait for some time to make sure the Bid has been created
         await testUtilBuyerNode.waitFor(5);
 
-        const orderItemStatusRes = await testUtilBuyerNode.rpc(orderItemCommand, [
+        const res = await testUtilBuyerNode.rpc(orderItemCommand, [
             orderItemStatusCommand
         ]);
-
-        orderItemStatusRes.expectJson();
-        orderItemStatusRes.expectStatusCode(200);
-        const myOrderItems = orderItemStatusRes.getBody()['result'];
+        res.expectJson();
+        res.expectStatusCode(200);
+        const myOrderItems = res.getBody()['result'];
         expect(myOrderItems.length).toBe(0);
 
         log.debug('==> Got empty result.');
@@ -173,7 +184,7 @@ describe('OrderItemStatus', () => {
 
         expect(listingItemReceivedBuyerNode).toBeDefined();
 
-        let bidSendRes = await testUtilBuyerNode.rpc(bidCommand, [
+        let res = await testUtilBuyerNode.rpc(bidCommand, [
             bidSendCommand,
             listingItemReceivedBuyerNode.hash,
             buyerProfile.id,
@@ -183,10 +194,10 @@ describe('OrderItemStatus', () => {
             'size',
             'xl'
         ]);
-        bidSendRes.expectJson();
-        bidSendRes.expectStatusCode(200);
-        bidSendRes = bidSendRes.getBody()['result'];
-        expect(bidSendRes.result).toBe('Sent.');
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result = res.getBody()['result'];
+        expect(result.result).toBe('Sent.');
 
         log.debug('==> Bid posted.');
 
@@ -259,7 +270,7 @@ describe('OrderItemStatus', () => {
         expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
         expect(myOrderItems[0].seller).toBe(sellerProfile.address);
 
-        log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
+        // log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
 /*
 myOrderItems:  0=[[
   {
@@ -343,7 +354,7 @@ myOrderItems:  0=[[
         expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
         expect(myOrderItems[0].seller).toBe(sellerProfile.address);
 
-        log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
+        // log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
         log.debug('==> Correct status: MPA_BID got from seller node.');
 
     });
@@ -361,14 +372,14 @@ myOrderItems:  0=[[
         ];
 
         const response: any = await testUtilSellerNode.rpc(bidCommand, bidAcceptCommandParams);
-        log.debug('response:', JSON.stringify(response, null, 2));
+        // log.debug('response:', JSON.stringify(response, null, 2));
 
         response.expectJson();
         response.expectStatusCode(200);
 
         // make sure we got the expected result from sending the bid
         const result: any = response.getBody()['result'];
-        log.debug('result:', JSON.stringify(result, null, 2));
+        // log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.result).toBe('Sent.');
 
         log.debug('==[ accept Bid /// seller (node1) -> buyer (node2) ]=============================');
@@ -406,7 +417,7 @@ myOrderItems:  0=[[
         expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
         expect(myOrderItems[0].seller).toBe(sellerProfile.address);
 
-        log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
+        // log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
 /*
         2018-08-29T18:12:35.500Z - debug: [/home/juha/Work/particl/particl-market/test/black-box/orderItem/OrderItemStatus.test] myOrderItems:  0=[[
             {
@@ -427,7 +438,7 @@ myOrderItems:  0=[[
         // wait for some time to make sure the Order has been created
         await testUtilSellerNode.waitFor(10);
 
-        log.debug('bidOnSellerNode: ', JSON.stringify(bidOnSellerNode, null, 2));
+        // log.debug('bidOnSellerNode: ', JSON.stringify(bidOnSellerNode, null, 2));
         const orderSearchCommandParams = [
             orderSearchCommand,
             bidOnSellerNode.ListingItem.hash,
@@ -567,7 +578,7 @@ myOrderItems:  0=[[
         expect(myOrderItems[0].buyer).toBe(buyerProfile.address);
         expect(myOrderItems[0].seller).toBe(sellerProfile.address);
 
-        log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
+        // log.debug('myOrderItems: ', JSON.stringify(myOrderItems, null, 2));
         log.debug('==> Correct status got from seller node.');
 
     });

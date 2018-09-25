@@ -161,6 +161,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                     qb.where('listing_item_templates.profile_id', '=', options.profileId);
                     ListingItem.log.debug('...search by profileId: ', options.profileId);
+
                 } else if (options.profileId === 'OWN') { // ListingItems belonging to any profile
                     qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                 }
@@ -207,8 +208,8 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
 
         if (withRelated) {
             return await listingCollection.fetchAll({
-                withRelated: this.RELATIONS,
-                debug: true
+                withRelated: this.RELATIONS
+                // debug: true
             });
         } else {
             return await listingCollection.fetchAll();
