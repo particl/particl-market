@@ -47,7 +47,8 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      * data.params[]:
      *  [0]: listingItemHash
      *  [1]: profileId
-     *  [2]: expiryTime (from listingitem, set in validate)
+     *  [2]: reason, optional
+     *  [3]: expiryTime (from listingitem, set in validate)
      *
      * when data.params[0] is number then findById, else findOneByHash
      *
@@ -59,11 +60,11 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
 
         const listingItemHash = data.params.shift();
         const profileId = data.params.shift();
+        const proposalDescription = data.params.shift();
         const daysRetention = data.params.shift();  // not perfect, but more than needed
 
         const optionsList: string[] = [ItemVote.KEEP, ItemVote.REMOVE];
         const proposalTitle = listingItemHash;
-        const proposalDescription = '';
 
         // TODO: refactor these to startTime and endTime
         // TODO: When we're expiring by time not block make this listingItem.ExpiryTime();
@@ -107,8 +108,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
      * data.params[]:
      *  [0]: listingItemHash
      *  [1]: profileId
-     *
-     * when data.params[0] is hash, fetch the id
+     *  [2]: reason, optional
      *
      * @param {RpcRequest} data
      * @returns {Promise<RpcRequest>}
@@ -151,7 +151,8 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
                 });
         }
 
-        data.params[2] = listingItem.expiryTime;
+        data.params[2] = data.params.length === 3 ? data.params[2] : 'This ListingItem should be removed.';
+        data.params[3] = listingItem.expiryTime;
 
         return data;
     }

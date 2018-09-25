@@ -10,7 +10,8 @@ export class Vote extends Bookshelf.Model<Vote> {
     public static RELATIONS = [
         'ProposalOption',
         'ProposalOption.Proposal',
-        'ProposalOption.Proposal.ListingItem'
+        'ProposalOption.Proposal.FlaggedItem',
+        'ProposalOption.Proposal.FlaggedItem.ListingItem'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<Vote> {

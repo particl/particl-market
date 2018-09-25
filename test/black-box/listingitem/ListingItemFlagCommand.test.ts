@@ -149,51 +149,28 @@ describe('ListingItemFlagCommand', () => {
             [itemGetCommand, createdListingItem1.id],
             8 * 60,
             200,
-            'FlaggedItem.listingItemId',
-            createdListingItem1.id
+            'FlaggedItem.reason',
+            'This ListingItem should be removed.'
         );
         res.expectJson();
         res.expectStatusCode(200);
 
-        expect(res.FlaggedItem).toBeDefined();
-        expect(res.FlaggedItem.listingItemId).toEqual(createdListingItem1.id);
+        const listingItem: resources.ListingItem = res.getBody()['result'];
+        log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
+        expect(listingItem.FlaggedItem.Proposal.title).toBe(createdListingItem1.hash);
     }, 600000); // timeout to 600s
 
 
-    test('Should fail to flag the ListingItem because the ListingItem has already been flagged by id', async () => {
+    test('Should fail to flag the ListingItem because the ListingItem has already been flagged', async () => {
         // add flagged item by item id
-        const res = await testUtil.rpc(itemCommand, [itemFlagCommand, createdListingItem1.id]);
+        const res = await testUtil.rpc(itemCommand, [itemFlagCommand,
+            createdListingItem1.hash,
+            defaultProfile.id
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Item already been flagged!');
+        expect(res.error.error.message).toBe('Item is already flagged.');
     });
 
-
-    test('Should flag the ListingItem by hash', async () => {
-        // add flagged item by item hash
-        let res = await testUtil.rpc(itemCommand, [itemFlagCommand, createdListingItem2.hash]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        let result: any = res.getBody()['result'];
-        expect(result.ListingItem).toBeDefined();
-        expect(result.ListingItem.id).toEqual(createdListingItem2.id);
-        expect(result.listingItemId).toBe(createdListingItem2.id);
-
-        // get the listing item by id with related FlaggedItem
-        res = await testUtil.rpc(itemCommand, [itemGetCommand, createdListingItem2.id]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        result = res.getBody()['result'];
-        expect(result.FlaggedItem).toBeDefined();
-        expect(result.FlaggedItem.listingItemId).toBe(createdListingItem2.id);
-    });
-
-    test('Should fail to flag the ListingItem because the ListingItem has already been flagged by hash', async () => {
-        // add flagged item by item hash
-        const res = await testUtil.rpc(itemCommand, [itemFlagCommand, createdListingItem2.hash]);
-        res.expectJson();
-        res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Item already being flagged!');
-    });
 });

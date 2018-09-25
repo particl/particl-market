@@ -52,16 +52,7 @@ export class VoteService {
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create Vote, body: ', JSON.stringify(body, null, 2));
 
-        // TODO: extract and remove related models from request
-        // const voteRelated = body.related;
-        // delete body.related;
-
-        // If the request body was valid we will create the vote
         const vote = await this.voteRepo.create(body);
-
-        // TODO: create related models
-        // voteRelated._id = vote.Id;
-        // await this.voteRelatedService.create(voteRelated);
 
         // finally find and return the created vote
         const newVote = await this.findOne(vote.id);

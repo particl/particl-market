@@ -26,19 +26,18 @@ import { ProposalType } from '../enums/ProposalType';
 import { ProposalMessage } from '../messages/ProposalMessage';
 import { ListingItemService } from './ListingItemService';
 import { MarketService } from './MarketService';
-import { VoteMessageType } from '../enums/VoteMessageType';
 import { ProfileService } from './ProfileService';
 import { VoteFactory } from '../factories/VoteFactory';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
 import { VoteService } from './VoteService';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
-import { VoteActionService } from './VoteActionService';
 import { ProposalResult } from '../models/ProposalResult';
 import { ItemVote } from '../enums/ItemVote';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemService } from './FlaggedItemService';
+import {Vote} from '../models/Vote';
 
 export class ProposalActionService {
 
@@ -153,11 +152,13 @@ export class ProposalActionService {
                     return createdProposalModel.toJSON();
                 });
 
+            // this.log.debug('proposal:', JSON.stringify(proposal, null, 2));
+
             vote = await this.createVote(proposal, ItemVote.REMOVE);
             // this.log.debug('vote:', JSON.stringify(vote, null, 2));
 
             const flaggedItem = await this.createFlaggedItem(proposal);
-            this.log.debug('flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+            // this.log.debug('flaggedItem:', JSON.stringify(flaggedItem, null, 2));
 
         } else { // else (ProposalType.PUBLIC_VOTE)
 
@@ -228,6 +229,8 @@ export class ProposalActionService {
         const proposalOption = _.find(createdProposal.ProposalOptions, (option: resources.ProposalOption) => {
             return option.description === itemVote;
         });
+
+        // this.log.debug('proposalOption:', JSON.stringify(proposalOption, null, 2));
 
         if (!proposalOption) {
             this.log.warn('ItemVote received that doesn\'t have REMOVE option.');
