@@ -74,9 +74,9 @@ describe('SettingGetCommand', () => {
     });
 
     test('Should fail to return Setting for invalid profileId', async () => {
-        const invalidProfile = 0;
+        const invalidProfileId = 0;
         const res = await testUtil.rpc(settingCommand, [settingGetCommand,
-            invalidProfile,
+            invalidProfileId,
             testData.key
         ]);
         res.expectJson();

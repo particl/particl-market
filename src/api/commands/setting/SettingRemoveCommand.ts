@@ -13,6 +13,7 @@ import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
 import { SettingService } from '../../services/SettingService';
+import { ProfileService } from '../../services/ProfileService';
 
 export class SettingRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -20,7 +21,8 @@ export class SettingRemoveCommand extends BaseCommand implements RpcCommandInter
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.SettingService) public settingService: SettingService
+        @inject(Types.Service) @named(Targets.Service.SettingService) public settingService: SettingService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
     ) {
         super(Commands.SETTING_REMOVE);
         this.log = new Logger(__filename);
@@ -49,6 +51,17 @@ export class SettingRemoveCommand extends BaseCommand implements RpcCommandInter
 
         if (data.params.length < 2) {
             throw new MessageException('Missing key.');
+        }
+
+        const profileId = data.params[0];
+        if (profileId && typeof profileId === 'string') {
+            throw new MessageException('profileId cant be a string.');
+        } else {
+            // make sure Profile with the id exists
+            await this.profileService.findOne(profileId) // throws if not found
+                .catch(reason => {
+                    throw new MessageException('Profile not found.');
+                });
         }
 
         return data;
