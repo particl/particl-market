@@ -108,10 +108,6 @@ describe('ItemCategoryRemoveCommand', () => {
             generateListingItemParams           // what kind of data to generate
         );
 
-        log.debug('createdCategory.id: ', createdCategory.id);
-        log.debug('listingItems:', JSON.stringify(listingItems, null, 2));
-
-
         res = await testUtil.rpc(categoryCommand, [categoryRemoveCommand, createdCategory.id]);
         res.expectJson();
         res.expectStatusCode(404);

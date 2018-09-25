@@ -109,7 +109,7 @@ describe('ListingItemTemplatePostCommand', () => {
         // -> meaning item hash was matched with the existing template hash
         const result: resources.ListingItem = response.getBody()['result'];
 
-        log.debug('listingItem: ', JSON.stringify(result, null, 2));
+        // log.debug('listingItem: ', JSON.stringify(result, null, 2));
 
         expect(result.hash).toBe(listingItemTemplate.hash);
         expect(result.ListingItemTemplate.hash).toBe(listingItemTemplate.hash);

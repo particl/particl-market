@@ -56,8 +56,6 @@ describe('ProposalGetCommand', () => {
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-
-        log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.submitter).toBe(createdProposal.submitter);
         expect(result.blockStart).toBe(createdProposal.blockStart);
         expect(result.blockEnd).toBe(createdProposal.blockEnd);

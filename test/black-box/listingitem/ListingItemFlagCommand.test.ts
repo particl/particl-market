@@ -156,7 +156,7 @@ describe('ListingItemFlagCommand', () => {
         res.expectStatusCode(200);
 
         const listingItem: resources.ListingItem = res.getBody()['result'];
-        log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
+        // log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
         expect(listingItem.FlaggedItem.Proposal.title).toBe(createdListingItem1.hash);
     }, 600000); // timeout to 600s

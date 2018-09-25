@@ -262,9 +262,9 @@ describe('ListingItemSearchCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
-        log.debug('params:', JSON.stringify(params, null, 2));
-        log.debug('result[0].ItemInformation.ItemCategory.id:', result[0].ItemInformation.ItemCategory.id);
-        log.debug('result:', JSON.stringify(result, null, 2));
+        // log.debug('params:', JSON.stringify(params, null, 2));
+        // log.debug('result[0].ItemInformation.ItemCategory.id:', result[0].ItemInformation.ItemCategory.id);
+        // log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result.length).toBe(itemCount);
         expect(result[0].ItemInformation.ItemCategory.id).toBe(params.category);

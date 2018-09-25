@@ -415,8 +415,6 @@ describe('Happy Buy Flow', () => {
         ];
 
         const response: any = await testUtilSellerNode.rpc(bidCommand, bidAcceptCommandParams);
-        log.debug('response:', JSON.stringify(response, null, 2));
-
         response.expectJson();
         response.expectStatusCode(200);
 
@@ -489,7 +487,7 @@ describe('Happy Buy Flow', () => {
         // wait for some time to make sure the Order has been created
         await testUtilSellerNode.waitFor(10);
 
-        log.debug('bidOnSellerNode: ', JSON.stringify(bidOnSellerNode, null, 2));
+        // log.debug('bidOnSellerNode: ', JSON.stringify(bidOnSellerNode, null, 2));
         const orderSearchCommandParams = [
             orderSearchCommand,
             bidOnSellerNode.ListingItem.hash,

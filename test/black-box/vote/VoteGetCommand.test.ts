@@ -89,7 +89,7 @@ describe('VoteGetCommand', () => {
 
         const result: resources.Vote = voteGetRes.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBe(currentBlock);
+        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[0].optionId);
@@ -131,7 +131,7 @@ describe('VoteGetCommand', () => {
 
         const result: resources.Vote = voteGetRes.getBody()['result'];
         expect(result).hasOwnProperty('ProposalOption');
-        expect(result.block).toBe(currentBlock);
+        expect(result.block).toBeGreaterThanOrEqual(currentBlock);
         expect(result.weight).toBe(1);
         expect(result.voter).toBe(defaultProfile.address);
         expect(result.ProposalOption.optionId).toBe(proposal.ProposalOptions[1].optionId);
