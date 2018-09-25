@@ -70,55 +70,41 @@ describe('ProposalListCommand', () => {
 
         const res: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
         currentBlock = res.getBody()['result'];
-        log.debug('currentBlock:', currentBlock);
+        // log.debug('currentBlock:', currentBlock);
 
     });
 
     test('Should list all proposals', async () => {
-
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*']);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-
-        log.debug('result:', JSON.stringify(result, null, 2));
+        // log.debug('result:', JSON.stringify(result, null, 2));
         expect(result).toHaveLength(3);
     });
 
     test('Should list past proposals', async () => {
-
-        log.debug('search * -> ' + currentBlock);
-
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', currentBlock]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-
-        log.debug('result:', JSON.stringify(result, null, 2));
+        // log.debug('result:', JSON.stringify(result, null, 2));
         expect(result).toHaveLength(2);
     });
 
     test('Should list active proposals', async () => {
-
-        log.debug('search ' + currentBlock + ' -> *');
-
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, currentBlock, '*']);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-
-        log.debug('result:', JSON.stringify(result, null, 2));
+        // log.debug('result:', JSON.stringify(result, null, 2));
         expect(result).toHaveLength(1);
     });
 
     test('Should list 3 proposals with type PUBLIC_VOTE', async () => {
-
-        log.debug('search ' + currentBlock + ' -> *');
-
-        // all generated ones are public at the moment
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*', ProposalType.PUBLIC_VOTE]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -128,8 +114,6 @@ describe('ProposalListCommand', () => {
     });
 
     test('Should not list any proposals with type ITEM_VOTE', async () => {
-
-        // all generated ones are public at the moment
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*', ProposalType.ITEM_VOTE]);
         res.expectJson();
         res.expectStatusCode(200);

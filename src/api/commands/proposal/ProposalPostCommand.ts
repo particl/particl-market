@@ -38,7 +38,7 @@ export class ProposalPostCommand extends BaseCommand implements RpcCommandInterf
      * [0] profileId
      * [1] proposalTitle
      * [2] proposalDescription
-     * [3] blockStart
+     * [3] blockStart TODO: blockStart and blockEnd should be replaced with daysRetention
      * [4] blockEnd
      * [5] estimateFee
      * [6] option1Description

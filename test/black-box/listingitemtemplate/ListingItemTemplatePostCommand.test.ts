@@ -58,14 +58,23 @@ describe('ListingItemTemplatePostCommand', () => {
 
     test('Should post a ListingItem in to the default marketplace', async () => {
 
-        const res: any = await testUtil.rpc(templateCommand, [templatePostCommand, listingItemTemplate.id, defaultMarket.id]);
+        expect(listingItemTemplate.id).toBeDefined();
+
+        const daysRetention = 4;
+        const res: any = await testUtil.rpc(templateCommand, [templatePostCommand,
+            listingItemTemplate.id,
+            daysRetention,
+            defaultMarket.id
+        ]);
         res.expectJson();
-        res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
         if (result.result === 'Send failed.') {
             log.debug(JSON.stringify(result, null, 2));
         }
+
+        res.expectStatusCode(200);
+
         expect(result.result).toBe('Sent.');
         expect(result.txid).toBeDefined();
         expect(result.fee).toBeGreaterThan(0);
