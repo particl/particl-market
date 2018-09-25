@@ -5,7 +5,7 @@
 import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import {Logger as LoggerType} from '../../../src/core/Logger';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 import * as resources from 'resources';
 
 describe('SettingRemoveCommand', () => {

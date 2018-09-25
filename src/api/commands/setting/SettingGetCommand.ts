@@ -14,7 +14,7 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
-import {ProfileService} from '../../services/ProfileService';
+import { ProfileService } from '../../services/ProfileService';
 
 export class SettingGetCommand extends BaseCommand implements RpcCommandInterface<Setting> {
 
