@@ -14,7 +14,9 @@ import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { SettingUpdateRequest } from '../../requests/SettingUpdateRequest';
 import { SettingService } from '../../services/SettingService';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
+import { SettingCreateRequest } from '../../requests/SettingCreateRequest';
+import { ProfileService } from '../../services/ProfileService';
 
 export class SettingSetCommand extends BaseCommand implements RpcCommandInterface<Setting> {
 
@@ -22,7 +24,8 @@ export class SettingSetCommand extends BaseCommand implements RpcCommandInterfac
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.SettingService) private settingService: SettingService
+        @inject(Types.Service) @named(Targets.Service.SettingService) private settingService: SettingService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
     ) {
         super(Commands.SETTING_SET);
         this.log = new Logger(__filename);
@@ -30,7 +33,7 @@ export class SettingSetCommand extends BaseCommand implements RpcCommandInterfac
 
     /**
      * data.params[]:
-     *  [0]: profile id
+     *  [0]: profileId
      *  [1]: key
      *  [2]: value
      *
@@ -42,14 +45,43 @@ export class SettingSetCommand extends BaseCommand implements RpcCommandInterfac
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Setting> {
         const profileId = data.params[0];
         const key = data.params[1];
-        const settingModel = await this.settingService.findOneByKeyAndProfileId(key, profileId);
-        const setting = settingModel.toJSON();
-        return await this.settingService.update(setting.id, {
-            key : data.params[1],
-            value : data.params[2]
-        } as SettingUpdateRequest);
+        const settingModel = await this.settingService.findOneByKeyAndProfileId(key, profileId)
+            .then(async value => {
+                return value;
+            })
+            .catch(async reason => {
+                return null;
+            });
+
+        if (settingModel) {
+            // found -> update
+            const setting = settingModel.toJSON();
+            return await this.settingService.update(setting.id, {
+                key: data.params[1],
+                value: data.params[2]
+            } as SettingUpdateRequest);
+
+        } else {
+            // not found -> create
+            return await this.settingService.create({
+                profile_id: data.params[0],
+                key: data.params[1],
+                value: data.params[2]
+            } as SettingCreateRequest);
+
+        }
+
     }
 
+    /**
+     * data.params[]:
+     *  [0]: profileId
+     *  [1]: key
+     *  [2]: value
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
         if (data.params.length < 1) {
             throw new MessageException('Missing profileId.');
@@ -57,6 +89,21 @@ export class SettingSetCommand extends BaseCommand implements RpcCommandInterfac
 
         if (data.params.length < 2) {
             throw new MessageException('Missing key.');
+        }
+
+        if (data.params.length < 3) {
+            throw new MessageException('Missing value.');
+        }
+
+        const profileId = data.params[0];
+        if (profileId && typeof profileId === 'string') {
+            throw new MessageException('profileId cant be a string.');
+        } else {
+            // make sure Profile with the id exists
+            await this.profileService.findOne(profileId) // throws if not found
+                .catch(reason => {
+                    throw new MessageException('Profile not found.');
+                });
         }
 
         return data;
