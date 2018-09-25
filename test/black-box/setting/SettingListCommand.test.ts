@@ -2,57 +2,86 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as _ from 'lodash';
-import { api, rpc } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
+import {Logger as LoggerType} from '../../../src/core/Logger';
+import * as resources from 'resources';
 
-describe('SettingGetCommand', () => {
+describe('SettingListCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.SETTING_ROOT.commandName;
-    const subCommand = Commands.SETTING_LIST.commandName;
 
+    const settingCommand = Commands.SETTING_ROOT.commandName;
+    const settingListCommand = Commands.SETTING_LIST.commandName;
+    const settingSetCommand = Commands.SETTING_SET.commandName;
 
-    let defaultProfile;
+    let defaultMarket: resources.Market;
+    let defaultProfile: resources.Profile;
+    let createdSetting1: resources.Setting;
+    let createdSetting2: resources.Setting;
+
+    const testData1 = {
+        key: 'key1',
+        value: 'value1'
+    };
+
+    const testData2 = {
+        key: 'key2',
+        value: 'value2'
+    };
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
+        // get default profile and market
         defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
+
+        // create setting
+        let res = await testUtil.rpc(settingCommand, [settingSetCommand,
+            defaultProfile.id,
+            testData1.key,
+            testData1.value
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        createdSetting1 = res.getBody()['result'];
+
+        // create setting
+        res = await testUtil.rpc(settingCommand, [settingSetCommand,
+            defaultProfile.id,
+            testData2.key,
+            testData2.value
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        createdSetting2 = res.getBody()['result'];
+
     });
 
-    test('Should list two setting by id and key', async () => {
-        // create setting
-        const res1 = await testUtil.rpc(method, [Commands.SETTING_SET.commandName, defaultProfile.id, 'key1', 'value1']);
-        // call rpc api
-        res1.expectJson();
-        res1.expectStatusCode(200);
-        // create setting
-        const res2 = await testUtil.rpc(method, [Commands.SETTING_SET.commandName, defaultProfile.id, 'key2', 'value2']);
-        // call rpc api
-        res2.expectJson();
-        res2.expectStatusCode(200);
-        //
-        const resMain = await testUtil.rpc(method, [subCommand, defaultProfile.id]);
-        resMain.expectJson();
-        resMain.expectStatusCode(200);
-        const resultMain: any = resMain.getBody()['result'];
-        expect(resultMain.length).toBe(2);
-        expect(resultMain[0].Profile).toBeDefined();
-        expect(resultMain[0].Profile.id).toBe(defaultProfile.id);
-        expect(resultMain[0].key).toBe('key1');
-        expect(resultMain[0].value).toBe('value1');
-        expect(resultMain[1].Profile).toBeDefined();
-        expect(resultMain[1].Profile.id).toBe(defaultProfile.id);
-        expect(resultMain[1].key).toBe('key2');
-        expect(resultMain[1].value).toBe('value2');
+    test('Should list two Settings using profileId', async () => {
+        const res = await testUtil.rpc(settingCommand, [settingListCommand, defaultProfile.id]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
+        expect(result.length).toBe(2);
+        expect(result[0].Profile.id).toBe(defaultProfile.id);
+        expect(result[0].key).toBe(testData1.key);
+        expect(result[0].value).toBe(testData1.value);
+        expect(result[1].Profile.id).toBe(defaultProfile.id);
+        expect(result[1].key).toBe(testData2.key);
+        expect(result[1].value).toBe(testData2.value);
     });
 
-    test('Should fail to list settings with wrong profile', async () => {
-        const resMain = await rpc(method, [subCommand, 123123]);
+    test('Should fail to list Settings using invalid profileId', async () => {
+        const invalidProfile = 0;
+        const resMain = await testUtil.rpc(settingCommand, [settingListCommand, invalidProfile]);
         resMain.expectJson();
         resMain.expectStatusCode(404);
-        expect(resMain.error.error.success).toBe(false);
-        expect(resMain.error.error.message).toBe(`Entity with identifier 123123 does not exist`);
+        expect(resMain.error.error.message).toBe(`Profile not found.`);
     });
 });

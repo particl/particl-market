@@ -14,8 +14,8 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { MessageException } from '../../exceptions/MessageException';
-import * as resources from 'resources';
 import { SettingService } from '../../services/SettingService';
+import { ProfileService } from '../../services/ProfileService';
 
 export class SettingListCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<Setting>> {
 
@@ -23,7 +23,8 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
 
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
-        @inject(Types.Service) @named(Targets.Service.SettingService) public settingService: SettingService
+        @inject(Types.Service) @named(Targets.Service.SettingService) public settingService: SettingService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService
     ) {
         super(Commands.SETTING_LIST);
         this.log = new Logger(__filename);
@@ -47,6 +48,18 @@ export class SettingListCommand extends BaseCommand implements RpcCommandInterfa
         if (data.params.length < 1) {
             throw new MessageException('Missing profileId.');
         }
+
+        const profileId = data.params[0];
+        if (profileId && typeof profileId === 'string') {
+            throw new MessageException('profileId cant be a string.');
+        } else {
+            // make sure Profile with the id exists
+            await this.profileService.findOne(profileId) // throws if not found
+                .catch(reason => {
+                    throw new MessageException('Profile not found.');
+                });
+        }
+
         return data;
     }
 
