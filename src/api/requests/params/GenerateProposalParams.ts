@@ -30,9 +30,6 @@ export class GenerateProposalParams implements GenerateProposalParamsInterface {
             this.listingItemHash = generateParams[2] ? generateParams[2] : null;
             this.generatePastProposal = generateParams[3] ? generateParams[3] : false;
             this.voteCount = generateParams[4] ? generateParams[4] : 0;
-
-            // if item hash was given, set generateListingItem to false
-            this.generateListingItem = this.listingItemHash ? false : true;
         }
     }
 

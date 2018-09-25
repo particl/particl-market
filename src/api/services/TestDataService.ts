@@ -722,7 +722,11 @@ export class TestDataService {
             blockEnd,
             type: ProposalType.PUBLIC_VOTE,
             title: Faker.lorem.words(4),
-            description: Faker.lorem.words(40)
+            description: Faker.lorem.words(40),
+            expiryTime: 4,
+            postedAt: new Date().getTime(),
+            expiredAt: new Date().getTime() + 100000000,
+            receivedAt: new Date().getTime()
         } as ProposalCreateRequest;
 
         const options: ProposalOptionCreateRequest[] = [];
