@@ -17,10 +17,16 @@ describe('SettingGetCommand', () => {
 
     const settingCommand = Commands.SETTING_ROOT.commandName;
     const settingGetCommand = Commands.SETTING_GET.commandName;
+    const settingSetCommand = Commands.SETTING_SET.commandName;
 
     let defaultProfile: resources.Profile;
     let defaultMarket: resources.Market;
     let createdSetting: resources.Setting;
+
+    const testData = {
+        key: 'key',
+        value: 'value'
+    };
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -30,14 +36,18 @@ describe('SettingGetCommand', () => {
         defaultMarket = await testUtil.getDefaultMarket();
 
         // create setting
-        const res = await testUtil.rpc(settingCommand, [Commands.SETTING_SET.commandName, defaultProfile.id, 'key', 'value']);
+        const res = await testUtil.rpc(settingCommand, [settingSetCommand,
+            defaultProfile.id,
+            testData.key,
+            testData.value
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         createdSetting = res.getBody()['result'];
 
     });
 
-    test('Should return setting by id and key', async () => {
+    test('Should return Setting using profileId and key', async () => {
         //
         const res = await testUtil.rpc(settingCommand, [settingGetCommand, defaultProfile.id, createdSetting.key]);
         res.expectJson();
@@ -49,17 +59,28 @@ describe('SettingGetCommand', () => {
         expect(result.value).toBe('value');
     });
 
-    test('Should fail to return setting without key', async () => {
+    test('Should fail to return Setting when missing profileId and key', async () => {
+        const res = await testUtil.rpc(settingCommand, [settingGetCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Missing profileId.');
+    });
+
+    test('Should fail to return Setting when missing key', async () => {
         const res = await testUtil.rpc(settingCommand, [settingGetCommand, defaultProfile.id]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe('Missing params!');
+        expect(res.error.error.message).toBe('Missing key.');
     });
 
-    test('Should fail to return setting for invalid profile', async () => {
-        const res = await testUtil.rpc(settingCommand, [settingGetCommand, 123123, 'key']);
+    test('Should fail to return Setting for invalid profileId', async () => {
+        const invalidProfile = 0;
+        const res = await testUtil.rpc(settingCommand, [settingGetCommand,
+            invalidProfile,
+            testData.key
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.message).toBe(`Entity with identifier 123123 does not exist`);
+        expect(res.error.error.message).toBe(`Profile not found.`);
     });
 });
