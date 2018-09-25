@@ -6,6 +6,8 @@ declare module 'resources' {
 
     interface FlaggedItem {
         id: number;
+        Proposal: Proposal;
+        ListingItem: ListingItem;
         createdAt: Date;
         updatedAt: Date;
     }

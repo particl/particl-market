@@ -11,11 +11,9 @@ import { ListingItemService } from '../../services/ListingItemService';
 import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { NotFoundException } from '../../exceptions/NotFoundException';
-import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
 
 /**
  * Command for removing an item from your favorites, identified by ID or hash.

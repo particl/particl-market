@@ -3,42 +3,42 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 import * as _ from 'lodash';
-import {inject, named} from 'inversify';
-import {Logger as LoggerType} from '../../core/Logger';
-import {Types, Core, Targets, Events} from '../../constants';
-import {Proposal} from '../models/Proposal';
-import {ProposalCreateRequest} from '../requests/ProposalCreateRequest';
-import {ProposalResultCreateRequest} from '../requests/ProposalResultCreateRequest';
-import {ProposalOptionResultCreateRequest} from '../requests/ProposalOptionResultCreateRequest';
-
-import {SmsgService} from './SmsgService';
-import {MarketplaceMessage} from '../messages/MarketplaceMessage';
-import {EventEmitter} from 'events';
+import { inject, named} from 'inversify';
+import { Logger as LoggerType } from '../../core/Logger';
+import { Types, Core, Targets, Events } from '../../constants';
+import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
+import { ProposalResultCreateRequest } from '../requests/ProposalResultCreateRequest';
+import { ProposalOptionResultCreateRequest } from '../requests/ProposalOptionResultCreateRequest';
+import { SmsgService } from './SmsgService';
+import { MarketplaceMessage } from '../messages/MarketplaceMessage';
+import { EventEmitter } from 'events';
 import * as resources from 'resources';
-import {MarketplaceEvent} from '../messages/MarketplaceEvent';
-import {ProposalMessageType} from '../enums/ProposalMessageType';
-import {ProposalFactory} from '../factories/ProposalFactory';
-import {ProposalService} from './ProposalService';
-import {ProposalResultService} from './ProposalResultService';
-import {ProposalOptionResultService} from './ProposalOptionResultService';
-import {CoreRpcService} from './CoreRpcService';
-import {MessageException} from '../exceptions/MessageException';
-import {SmsgSendResponse} from '../responses/SmsgSendResponse';
-import {ProposalType} from '../enums/ProposalType';
-import {ProposalMessage} from '../messages/ProposalMessage';
-import {ListingItemService} from './ListingItemService';
-import {MarketService} from './MarketService';
-import {VoteMessageType} from '../enums/VoteMessageType';
-import {ProfileService} from './ProfileService';
-import {VoteFactory} from '../factories/VoteFactory';
-import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
-import {SmsgMessageService} from './SmsgMessageService';
-
-import {VoteService} from './VoteService';
-import {VoteCreateRequest} from '../requests/VoteCreateRequest';
-import {VoteActionService} from './VoteActionService';
-import {ProposalResult} from '../models/ProposalResult';
-import {ItemVote} from '../enums/ItemVote';
+import { MarketplaceEvent } from '../messages/MarketplaceEvent';
+import { ProposalMessageType } from '../enums/ProposalMessageType';
+import { ProposalFactory } from '../factories/ProposalFactory';
+import { ProposalService } from './ProposalService';
+import { ProposalResultService } from './ProposalResultService';
+import { ProposalOptionResultService } from './ProposalOptionResultService';
+import { CoreRpcService } from './CoreRpcService';
+import { MessageException } from '../exceptions/MessageException';
+import { SmsgSendResponse } from '../responses/SmsgSendResponse';
+import { ProposalType } from '../enums/ProposalType';
+import { ProposalMessage } from '../messages/ProposalMessage';
+import { ListingItemService } from './ListingItemService';
+import { MarketService } from './MarketService';
+import { VoteMessageType } from '../enums/VoteMessageType';
+import { ProfileService } from './ProfileService';
+import { VoteFactory } from '../factories/VoteFactory';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { SmsgMessageService } from './SmsgMessageService';
+import { VoteService } from './VoteService';
+import { VoteCreateRequest } from '../requests/VoteCreateRequest';
+import { VoteActionService } from './VoteActionService';
+import { ProposalResult } from '../models/ProposalResult';
+import { ItemVote } from '../enums/ItemVote';
+import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
+import { FlaggedItem } from '../models/FlaggedItem';
+import { FlaggedItemService } from './FlaggedItemService';
 
 export class ProposalActionService {
 
@@ -56,7 +56,7 @@ export class ProposalActionService {
                 @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
                 @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
                 @inject(Types.Service) @named(Targets.Service.VoteService) private voteService: VoteService,
-                @inject(Types.Service) @named(Targets.Service.VoteActionService) private voteActionService: VoteActionService,
+                @inject(Types.Service) @named(Targets.Service.FlaggedItemService) private flaggedItemService: FlaggedItemService,
                 @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
                 @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType) {
         this.log = new Logger(__filename);
@@ -154,7 +154,10 @@ export class ProposalActionService {
                 });
 
             vote = await this.createVote(proposal, ItemVote.REMOVE);
-            // this.log.debug('createdVote:', JSON.stringify(vote, null, 2));
+            // this.log.debug('vote:', JSON.stringify(vote, null, 2));
+
+            const flaggedItem = await this.createFlaggedItem(proposal);
+            this.log.debug('flaggedItem:', JSON.stringify(flaggedItem, null, 2));
 
         } else { // else (ProposalType.PUBLIC_VOTE)
 
@@ -167,15 +170,6 @@ export class ProposalActionService {
 
         // this.log.debug('createdProposal:', JSON.stringify(proposal, null, 2));
         // this.log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
-
-        // if listingitem exists && theres no relation -> add relation to listingitem
-        await this.listingItemService.findOneByHash(proposal.title)
-            .then(async listingItemModel => {
-                const listingItem: resources.ListingItem = listingItemModel.toJSON();
-                if (_.isEmpty(listingItem.Proposal)) {
-                    await this.listingItemService.updateProposalRelation(listingItem.id, proposal.hash);
-                }
-            });
 
         return SmsgMessageStatus.PROCESSED;
     }
@@ -212,11 +206,25 @@ export class ProposalActionService {
         return proposalResultModel.toJSON();
     }
 
+    private async createFlaggedItem(proposal: resources.Proposal): Promise<resources.FlaggedItem> {
+        // if listingitem exists && theres no relation -> add relation to listingitem
+
+        const listingItemModel = await this.listingItemService.findOneByHash(proposal.title);
+        const listingItem: resources.ListingItem = listingItemModel.toJSON();
+
+        const flaggedItemCreateRequest = {
+            listing_item_id: listingItem.id,
+            proposal_id: proposal.id,
+            reason: proposal.description
+        } as FlaggedItemCreateRequest;
+
+        const flaggedItemModel: FlaggedItem = await this.flaggedItemService.create(flaggedItemCreateRequest);
+        return flaggedItemModel.toJSON();
+    }
+
     private async createVote(createdProposal: resources.Proposal, itemVote: ItemVote): Promise<resources.Vote> {
 
         const currentBlock = await this.coreRpcService.getBlockCount();
-
-        // after creating, updating or fetching existing proposal -> add vote
         const proposalOption = _.find(createdProposal.ProposalOptions, (option: resources.ProposalOption) => {
             return option.description === itemVote;
         });
@@ -226,12 +234,15 @@ export class ProposalActionService {
             throw new MessageException('ItemVote received that doesn\'t have REMOVE option.');
         }
 
+        // TODO: use VoteFactory
+        // TODO: replace block with time
         const voteRequest: VoteCreateRequest = {
             proposal_option_id: proposalOption.id,
             voter: createdProposal.submitter,
             block: currentBlock,
             weight: 1
         } as VoteCreateRequest;
+
         const createdVoteModel = await this.voteService.create(voteRequest);
         return createdVoteModel.toJSON();
     }

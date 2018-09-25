@@ -19,7 +19,6 @@ import { ItemInformationService } from './ItemInformationService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { MarketService } from './MarketService';
 import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
-
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
 import { ItemInformationUpdateRequest } from '../requests/ItemInformationUpdateRequest';
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
@@ -28,11 +27,9 @@ import { MessagingInformationCreateRequest } from '../requests/MessagingInformat
 import { MessagingInformationUpdateRequest } from '../requests/MessagingInformationUpdateRequest';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
-
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { SmsgService } from './SmsgService';
-import { FlaggedItem } from '../models/FlaggedItem';
 import { ListingItemObjectService } from './ListingItemObjectService';
 import { FlaggedItemService } from './FlaggedItemService';
 import { EventEmitter } from 'events';
@@ -72,13 +69,6 @@ export class ListingItemService {
 
     public async findExpired(): Promise<Bookshelf.Collection<ListingItem>> {
         return await this.listingItemRepo.findExpired();
-    }
-
-
-    // TODO: we have search, remove this
-    public async findByCategory(categoryId: number): Promise<Bookshelf.Collection<ListingItem>> {
-        this.log.debug('find by category:', categoryId);
-        return await this.listingItemRepo.findByCategory(categoryId);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ListingItem> {
@@ -220,6 +210,7 @@ export class ListingItemService {
 
         // set new values
         listingItem.Hash = body.hash;
+        listingItem.Seller = body.seller;
         listingItem.ExpiryTime = body.expiryTime;
         listingItem.PostedAt = body.postedAt;
         listingItem.ExpiredAt = body.expiredAt;
@@ -347,31 +338,6 @@ export class ListingItemService {
         }
 
         listingItem = await this.findOne(id);
-
-        return listingItem;
-    }
-
-    public async updateProposalRelation(id: number, proposalHash: string): Promise<ListingItem> {
-
-        let listingItem = await this.findOne(id, false);
-        const proposalId = await this.proposalService.findOneByHash(proposalHash)
-            .then(value => {
-                const proposal = value.toJSON();
-                // this.log.debug('found Proposal with matching hash, id:', proposal.id);
-                return proposal.id;
-            })
-            .catch(reason => {
-                // this.log.debug('matching Proposal for ListingItem not found.');
-            });
-
-        if (proposalId) {
-            this.log.debug('updating ListingItem (' + id + ') relation to Proposal (' + proposalId + ').');
-            listingItem.set('proposalId', proposalId);
-            await this.listingItemRepo.update(id, listingItem.toJSON());
-        }
-
-        listingItem = await this.findOne(id);
-        this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
         return listingItem;
     }

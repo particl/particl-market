@@ -4,6 +4,7 @@
 
 import { Bookshelf } from '../../config/Database';
 import { ListingItem } from './ListingItem';
+import { Proposal } from './Proposal';
 
 export class FlaggedItem extends Bookshelf.Model<FlaggedItem> {
 
@@ -11,7 +12,8 @@ export class FlaggedItem extends Bookshelf.Model<FlaggedItem> {
         if (withRelated) {
             return await FlaggedItem.where<FlaggedItem>({ id: value }).fetch({
                 withRelated: [
-                    'ListingItem'
+                    'ListingItem',
+                    'Proposal'
                 ]
             });
         } else {
@@ -25,6 +27,9 @@ export class FlaggedItem extends Bookshelf.Model<FlaggedItem> {
     public get Id(): number { return this.get('id'); }
     public set Id(value: number) { this.set('id', value); }
 
+    public get Reason(): string { return this.get('reason'); }
+    public set Reason(value: string) { this.set('reason', value); }
+
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }
 
@@ -34,4 +39,9 @@ export class FlaggedItem extends Bookshelf.Model<FlaggedItem> {
     public ListingItem(): ListingItem {
         return this.belongsTo(ListingItem, 'listing_item_id', 'id');
     }
+
+    public Proposal(): Proposal {
+        return this.belongsTo(Proposal, 'proposal_id', 'id');
+    }
+
 }

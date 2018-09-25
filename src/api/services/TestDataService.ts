@@ -94,6 +94,8 @@ import { ProposalActionService } from './ProposalActionService';
 import {ItemCategoryUpdateRequest} from '../requests/ItemCategoryUpdateRequest';
 import {BidDataValue} from '../enums/BidDataValue';
 import {SettingCreateRequest} from '../requests/SettingCreateRequest';
+import {ItemVote} from '../enums/ItemVote';
+import {Proposal} from '../models/Proposal';
 
 export class TestDataService {
 
@@ -607,7 +609,7 @@ export class TestDataService {
         this.log.debug('generateProposals, generateParams: ', generateParams);
 
         /*
-        TODO: LATER
+        TODO: add template and item generation
 
         const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams();
         const listingItemGenerateParams = new GenerateListingItemParams();
@@ -699,10 +701,22 @@ export class TestDataService {
     }
 
     private async generateProposalData(generateParams: GenerateProposalParams): Promise<ProposalCreateRequest> {
-        // TODO: defaultProfile might not be the correct one
-        const defaultProfile = await this.profileService.getDefault();
-        const currentblock: number = await this.coreRpcService.getBlockCount();
 
+        let submitter;
+        if (!generateParams.submitter) {
+            const defaultProfile = await this.profileService.getDefault();
+            const profile = defaultProfile.toJSON();
+            submitter = profile.address;
+        } else {
+            submitter = generateParams.submitter;
+        }
+
+        const type = generateParams.listingItemHash ? ProposalType.ITEM_VOTE : ProposalType.PUBLIC_VOTE;
+        const title = generateParams.listingItemHash ? generateParams.listingItemHash : Faker.lorem.words(4);
+        const item = generateParams.listingItemHash ? generateParams.listingItemHash : null;
+        const description = generateParams.listingItemHash ? 'ILLEGAL ITEM' : Faker.lorem.words(40);
+
+        const currentblock: number = await this.coreRpcService.getBlockCount();
         const blockStart = generateParams.generatePastProposal
             ? _.random(1, (currentblock / 2), false)
             : _.random(currentblock + 100, currentblock + 1000, false);
@@ -717,12 +731,13 @@ export class TestDataService {
         // this.log.debug('blockEnd: ', blockEnd);
 
         const proposalCreateRequest = {
-            submitter: defaultProfile.Address,
+            submitter,
             blockStart,
             blockEnd,
-            type: ProposalType.PUBLIC_VOTE,
-            title: Faker.lorem.words(4),
-            description: Faker.lorem.words(40),
+            type,
+            item,
+            title,
+            description,
             expiryTime: 4,
             postedAt: new Date().getTime(),
             expiredAt: new Date().getTime() + 100000000,
@@ -732,13 +747,13 @@ export class TestDataService {
         const options: ProposalOptionCreateRequest[] = [];
         options.push({
             optionId: 0,
-            description: 'YES'
-        } as ProposalOptionCreateRequest); // TODO: Generate this automatically
+            description: ItemVote.KEEP.toString()
+        } as ProposalOptionCreateRequest);
 
         options.push({
             optionId: 1,
-            description: 'NO'
-        } as ProposalOptionCreateRequest); // TODO: Generate this automatically
+            description: ItemVote.REMOVE.toString()
+        } as ProposalOptionCreateRequest);
 
         // TODO: Generate a random number of proposal options, or a number specified in the generateParams
         proposalCreateRequest.options = options;

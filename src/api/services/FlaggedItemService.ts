@@ -55,7 +55,7 @@ export class FlaggedItemService {
         const flaggedItem = await this.findOne(id, false);
 
         // set new values
-        // flaggedItem.ListingItemId = body.listingItemId;
+        flaggedItem.Reason = body.reason;
 
         // update flaggedItem record
         const updatedFlaggedItem = await this.flaggedItemRepo.update(id, flaggedItem.toJSON());

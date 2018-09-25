@@ -23,7 +23,6 @@ declare module 'resources' {
         ActionMessages: ActionMessage[];
         ListingItemTemplate: ListingItemTemplate;
         FlaggedItem: FlaggedItem;
-        Proposal: Proposal;
 
         createdAt: Date;
         updatedAt: Date;

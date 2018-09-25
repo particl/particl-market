@@ -9,7 +9,6 @@ import { FavoriteItem } from '../models/FavoriteItem';
 import { DatabaseException } from '../exceptions/DatabaseException';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import { Logger as LoggerType } from '../../core/Logger';
-import { FavoriteSearchParams  } from '../requests/FavoriteSearchParams';
 
 export class FavoriteItemRepository {
 

@@ -17,7 +17,7 @@ import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
 import { ActionMessage } from './ActionMessage';
 import { Proposal } from './Proposal';
-import {Logger as LoggerType} from '../../core/Logger';
+import { Logger as LoggerType } from '../../core/Logger';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
 
@@ -55,11 +55,11 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'Bids.OrderItem.Order',
         'Market',
         'FlaggedItem',
+        'FlaggedItem.Proposal',
+        'FlaggedItem.Proposal.ProposalOptions',
+        'FlaggedItem.Proposal.ProposalResult',
         'ListingItemTemplate',
-        'ListingItemTemplate.Profile',
-        'Proposal',
-        'Proposal.ProposalOptions',
-        'Proposal.ProposalResult'
+        'ListingItemTemplate.Profile'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {

@@ -6,8 +6,8 @@ import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { ProposalOption } from './ProposalOption';
 import { ProposalResult } from './ProposalResult';
-import { ListingItem } from './ListingItem';
 import { ProposalSearchParams } from '../requests/ProposalSearchParams';
+import { FlaggedItem } from './FlaggedItem';
 
 export class Proposal extends Bookshelf.Model<Proposal> {
 
@@ -15,7 +15,7 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         'ProposalOptions',
         // 'ProposalOptions.Votes',
         'ProposalResult',
-        'ListingItem'
+        'FlaggedItem'
     ];
 
     /**
@@ -150,8 +150,8 @@ export class Proposal extends Bookshelf.Model<Proposal> {
        return this.hasOne(ProposalResult);
     }
 
-    public ListingItem(): ListingItem {
-        return this.hasOne(ListingItem);
+    public FlaggedItem(): FlaggedItem {
+        return this.hasOne(FlaggedItem);
     }
 
 }

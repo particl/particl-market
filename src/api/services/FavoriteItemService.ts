@@ -8,15 +8,12 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
-import { MessageException } from '../exceptions/MessageException';
 import { FavoriteItemRepository } from '../repositories/FavoriteItemRepository';
 import { FavoriteItem } from '../models/FavoriteItem';
 import { FavoriteItemCreateRequest } from '../requests/FavoriteItemCreateRequest';
 import { FavoriteItemUpdateRequest } from '../requests/FavoriteItemUpdateRequest';
-import { FavoriteSearchParams } from '../requests/FavoriteSearchParams';
 import { ListingItemService } from './ListingItemService';
 import { ProfileService } from './ProfileService';
-import {RpcRequest} from '../requests/RpcRequest';
 
 export class FavoriteItemService {
 
