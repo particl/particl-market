@@ -81,7 +81,7 @@ export class ProposalFactory {
      * @param {ProposalMessage} proposalMessage
      * @returns {Promise<ProposalCreateRequest>}
      */
-    public async getModel(proposalMessage: ProposalMessage): Promise<ProposalCreateRequest> {
+    public async getModel(proposalMessage: ProposalMessage, smsgMessage: resources.SmsgMessage): Promise<ProposalCreateRequest> {
 
         const proposalCreateRequest = {
             submitter: proposalMessage.submitter,
@@ -92,6 +92,10 @@ export class ProposalFactory {
             title: proposalMessage.title,
             description: proposalMessage.description,
             item: proposalMessage.item,
+            expiryTime: smsgMessage.daysretention,
+            postedAt: smsgMessage.sent,
+            expiredAt: smsgMessage.expiration,
+            receivedAt: smsgMessage.received,
             options: proposalMessage.options as ProposalOptionCreateRequest[]
         } as ProposalCreateRequest;
 

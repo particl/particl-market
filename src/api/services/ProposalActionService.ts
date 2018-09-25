@@ -127,7 +127,7 @@ export class ProposalActionService {
         const marketplaceMessage: MarketplaceMessage = event.marketplaceMessage;
         const proposalMessage: ProposalMessage = marketplaceMessage.mpaction as ProposalMessage;
 
-        const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage);
+        const proposalCreateRequest: ProposalCreateRequest = await this.proposalFactory.getModel(proposalMessage, smsgMessage);
 
         let proposal: resources.Proposal;
         let vote: resources.Vote;
