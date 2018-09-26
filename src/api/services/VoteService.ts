@@ -37,8 +37,8 @@ export class VoteService {
         return vote;
     }
 
-    public async findOneByVoterAndProposal(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {
-        const vote = await this.voteRepo.findOneByVoterAndProposal(voter, proposalId, withRelated);
+    public async findOneByVoterAndProposalId(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {
+        const vote = await this.voteRepo.findOneByVoterAndProposalId(voter, proposalId, withRelated);
         if (!vote) {
             this.log.warn(`Vote with the voter=${voter} and proposalId=${proposalId} was not found!`);
             throw new NotFoundException(proposalId);

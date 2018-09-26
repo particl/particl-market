@@ -25,7 +25,7 @@ import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
 import { ProposalOption } from '../../src/api/models/ProposalOption';
 import { ProposalOptionService } from '../../src/api/services/ProposalOptionService';
-import {ProposalOptionResultUpdateRequest} from '../../src/api/requests/ProposalOptionResultUpdateRequest';
+import { ProposalOptionResultUpdateRequest } from '../../src/api/requests/ProposalOptionResultUpdateRequest';
 
 describe('ProposalOptionResult', () => {
 

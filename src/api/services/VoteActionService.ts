@@ -235,7 +235,7 @@ export class VoteActionService {
 
         let lastVote: any;
         try {
-            const lastVoteModel = await this.voteService.findOneByVoterAndProposal(voteMessage.voter, proposal.id);
+            const lastVoteModel = await this.voteService.findOneByVoterAndProposalId(voteMessage.voter, proposal.id);
             lastVote = lastVoteModel.toJSON();
         } catch (ex) {
             lastVote = null;

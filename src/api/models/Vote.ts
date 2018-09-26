@@ -25,7 +25,7 @@ export class Vote extends Bookshelf.Model<Vote> {
     }
 
 
-    public static async fetchByVoterAndProposal(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {
+    public static async fetchByVoterAndProposalId(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {
         if (withRelated) {
             const vote = Vote.forge<Vote>()
             .query(qb => {

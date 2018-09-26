@@ -19,6 +19,12 @@ import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequ
 import { Proposal } from '../../src/api/models/Proposal';
 import { ProposalService } from '../../src/api/services/ProposalService';
 import * as resources from 'resources';
+import {ProfileService} from '../../src/api/services/ProfileService';
+import {MarketService} from '../../src/api/services/MarketService';
+import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
+import {GenerateProposalParams} from '../../src/api/requests/params/GenerateProposalParams';
+import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
+import {CreatableModel} from '../../src/api/enums/CreatableModel';
 
 describe('Vote', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -29,22 +35,14 @@ describe('Vote', () => {
     let testDataService: TestDataService;
     let voteService: VoteService;
     let proposalService: ProposalService;
+    let profileService: ProfileService;
+    let marketService: MarketService;
 
-    let createdId;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
     let createdProposal: resources.Proposal;
-
-    const testData = {
-        // proposal_option_id: 0,
-        voter: 'voteraddress1',
-        block: 1,
-        weight: 1
-    } as VoteCreateRequest;
-
-    const testDataUpdated = {
-        voter: 'voteraddress2',
-        block: 2,
-        weight: 2
-    } as VoteUpdateRequest;
+    let createdListingItem: resources.ListingItem;
+    let createdVote: resources.Vote;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -52,34 +50,60 @@ describe('Vote', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         voteService = app.IoC.getNamed<VoteService>(Types.Service, Targets.Service.VoteService);
         proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.ProposalService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        const proposalOptions = [{
-            optionId: 0,
-            // hash: 'asdf',
-            description: 'Yes'
-        }, {
-            optionId: 1,
-            // hash: 'asdf',
-            description: 'No'
-        }];
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        defaultProfile = defaultProfileModel.toJSON();
 
-        // create proposal
-        const proposalTestData = {
-            submitter: 'psubmitter',
-            blockStart: 1000,
-            blockEnd: 1010,
-            // hash: 'asdf',
-            type: ProposalType.PUBLIC_VOTE,
-            title: 'titlex',
-            description: 'proposal to x',
-            options: proposalOptions
-        } as ProposalCreateRequest;
+        // get default market
+        const defaultMarketModel = await marketService.getDefault();
+        defaultMarket = defaultMarketModel.toJSON();
 
-        const proposalModel: Proposal = await proposalService.create(proposalTestData);
-        createdProposal = proposalModel.toJSON();
+        // create ListingItems
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,                                       // generateItemInformation
+            true,                                       // generateShippingDestinations
+            false,                                      // generateItemImages
+            true,                                       // generatePaymentInformation
+            true,                                       // generateEscrow
+            true,                                       // generateItemPrice
+            true,                                       // generateMessagingInformation
+            true,                                       // generateListingItemObjects
+            false,                                      // generateObjectDatas
+            null,                                       // listingItemTemplateHash
+            defaultProfile.address                      // seller
+        ]).toParamsArray();
+
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,          // what to generate
+            amount: 1,                                  // how many to generate
+            withRelated: true,                          // return model
+            generateParams: generateListingItemParams   // what kind of data to generate
+        } as TestDataGenerateRequest);
+        createdListingItem = listingItems[0];
+
+        // create Proposal
+        const generateProposalParams = new GenerateProposalParams([
+            false,                                      // generateListingItemTemplate
+            false,                                      // generateListingItem
+            createdListingItem.hash,                    // listingItemHash,
+            false,                                      // generatePastProposal,
+            20,                                         // voteCount
+            defaultProfile.address                      // submitter
+        ]).toParamsArray();
+
+        const proposals = await testDataService.generate({
+            model: CreatableModel.PROPOSAL,             // what to generate
+            amount: 1,                                  // how many to generate
+            withRelated: true,                          // return model
+            generateParams: generateProposalParams      // what kind of data to generate
+        } as TestDataGenerateRequest);
+        createdProposal = proposals[0];
 
         log.debug('createdProposal:', JSON.stringify(createdProposal, null, 2));
 
@@ -90,6 +114,12 @@ describe('Vote', () => {
     });
 
     test('Should throw ValidationException because there is no related_id', async () => {
+        const testData = {
+            voter: defaultProfile.address,
+            block: 2,
+            weight: 2
+        } as VoteCreateRequest;
+
         expect.assertions(1);
         await voteService.create(testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
@@ -98,85 +128,75 @@ describe('Vote', () => {
 
     test('Should throw ValidationException because we want to create a empty vote', async () => {
         expect.assertions(1);
-        await voteService.create({}).catch(e =>
+        await voteService.create({} as VoteCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should create a new vote', async () => {
-        testData.proposal_option_id = createdProposal.ProposalOptions[0].id;
-
-        const voteModel: Vote = await voteService.create(testData);
-        createdId = voteModel.Id;
-
-        const result = voteModel.toJSON();
-
-        // test the values
-        expect(result.ProposalOption).toBeDefined();
-        expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);
-        expect(result.voter).toBe(testData.voter);
-        expect(result.block).toBe(testData.block);
-        expect(result.weight).toBe(testData.weight);
-    });
-
-    test('Should list votes with our new create one', async () => {
-        const voteCollection = await voteService.findAll();
-        const vote = voteCollection.toJSON();
-        expect(vote.length).toBe(1);
-
-        const result = vote[0];
-
-        // test the values
-        // expect(result.value).toBe(testData.value);
-        expect(result.voter).toBe(testData.voter);
-        expect(result.block).toBe(testData.block);
-        expect(result.weight).toBe(testData.weight);
-    });
-
-    test('Should return one vote', async () => {
-        const voteModel: Vote = await voteService.findOne(createdId);
-        const result = voteModel.toJSON();
-
-        // test the values
-        // expect(result.value).toBe(testData.value);
-        expect(result.ProposalOption).toBeDefined();
-        expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);
-        expect(result.voter).toBe(testData.voter);
-        expect(result.block).toBe(testData.block);
-        expect(result.weight).toBe(testData.weight);
-    });
-
-
-    test('Should get a vote by proposal id and voter address', async () => {
-
-        const voter = 'voteraddress2';
-        // create another vote
-        const anotherVoteCreateRequest = {
+    test('Should create a new Vote', async () => {
+        const testData = {
             proposal_option_id: createdProposal.ProposalOptions[0].id,
-            voter,
+            voter: defaultProfile.address,
             block: 1,
             weight: 1
         } as VoteCreateRequest;
-        const anotherVoteModel: Vote = await voteService.create(anotherVoteCreateRequest);
 
-        const voteModel: Vote = await voteService.findOneByVoterAndProposal(voter, createdProposal.id);
-        const result = voteModel.toJSON();
+        const voteModel: Vote = await voteService.create(testData);
+        createdVote = voteModel.toJSON();
+        const result = createdVote;
 
-        // test the values
-        expect(result).toBeDefined();
         expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);
-        expect(result.ProposalOption.optionId).toBe(createdProposal.ProposalOptions[0].optionId);
-        expect(result.voter).toBe(anotherVoteCreateRequest.voter);
-        expect(result.block).toBe(anotherVoteCreateRequest.block);
-        expect(result.weight).toBe(anotherVoteCreateRequest.weight);
+        expect(result.voter).toBe(testData.voter);
+        expect(result.block).toBe(testData.block);
+        expect(result.weight).toBe(testData.weight);
     });
 
-    test('Should update the vote', async () => {
-        const voteModel: Vote = await voteService.update(createdId, testDataUpdated);
+    test('Should list Votes with our newly created one', async () => {
+        const voteCollection = await voteService.findAll();
+        const vote = voteCollection.toJSON();
+        expect(vote.length).toBe(21); // 20 + the one created
+
+        const result = vote[20];
+        expect(result.voter).toBe(createdVote.voter);
+        expect(result.block).toBe(createdVote.block);
+        expect(result.weight).toBe(createdVote.weight);
+    });
+
+    test('Should return one Vote', async () => {
+        const voteModel: Vote = await voteService.findOne(createdVote.id);
+        const result = voteModel.toJSON();
+
+        expect(result.ProposalOption).toBeDefined();
+        expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);
+        expect(result.voter).toBe(createdVote.voter);
+        expect(result.block).toBe(createdVote.block);
+        expect(result.weight).toBe(createdVote.weight);
+    });
+
+    test('Should get a Vote by proposalId and voterAddress', async () => {
+
+        const voteModel: Vote = await voteService.findOneByVoterAndProposalId(createdVote.voter, createdProposal.id);
         const result = voteModel.toJSON();
 
         // test the values
-        expect(result.ProposalOption).toBeDefined();
+        expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);
+        expect(result.ProposalOption.optionId).toBe(createdProposal.ProposalOptions[0].optionId);
+        expect(result.voter).toBe(createdVote.voter);
+        expect(result.block).toBe(createdVote.block);
+        expect(result.weight).toBe(createdVote.weight);
+    });
+
+    test('Should update the Vote', async () => {
+
+        const testDataUpdated = {
+            voter: defaultProfile.address,
+            block: 3,
+            weight: 3
+        } as VoteUpdateRequest;
+
+        const voteModel: Vote = await voteService.update(createdVote.id, testDataUpdated);
+        const result = voteModel.toJSON();
+
         expect(result.ProposalOption.id).toBe(createdProposal.ProposalOptions[0].id);
         expect(result.voter).toBe(testDataUpdated.voter);
         expect(result.block).toBe(testDataUpdated.block);
@@ -185,9 +205,9 @@ describe('Vote', () => {
 
     test('Should delete the vote', async () => {
         expect.assertions(1);
-        await voteService.destroy(createdId);
-        await voteService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await voteService.destroy(createdVote.id);
+        await voteService.findOne(createdVote.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdVote.id))
         );
     });
 
