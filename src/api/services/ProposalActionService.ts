@@ -25,8 +25,6 @@ import { SmsgSendResponse } from '../responses/SmsgSendResponse';
 import { ProposalType } from '../enums/ProposalType';
 import { ProposalMessage } from '../messages/ProposalMessage';
 import { ListingItemService } from './ListingItemService';
-import { MarketService } from './MarketService';
-import { ProfileService } from './ProfileService';
 import { VoteFactory } from '../factories/VoteFactory';
 import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 import { SmsgMessageService } from './SmsgMessageService';
@@ -34,10 +32,9 @@ import { VoteService } from './VoteService';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { ProposalResult } from '../models/ProposalResult';
 import { ItemVote } from '../enums/ItemVote';
+import { FlaggedItemService } from './FlaggedItemService';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItem } from '../models/FlaggedItem';
-import { FlaggedItemService } from './FlaggedItemService';
-import {Vote} from '../models/Vote';
 
 export class ProposalActionService {
 
@@ -47,11 +44,9 @@ export class ProposalActionService {
                 @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
                 @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
                 @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-                @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
                 @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
                 @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
                 @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
-                @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
                 @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
                 @inject(Types.Factory) @named(Targets.Factory.VoteFactory) private voteFactory: VoteFactory,
                 @inject(Types.Service) @named(Targets.Service.VoteService) private voteService: VoteService,
@@ -157,7 +152,7 @@ export class ProposalActionService {
             vote = await this.createVote(proposal, ItemVote.REMOVE);
             // this.log.debug('vote:', JSON.stringify(vote, null, 2));
 
-            const flaggedItem = await this.createFlaggedItem(proposal);
+            const flaggedItem = await this.createFlaggedItemForProposal(proposal);
             // this.log.debug('flaggedItem:', JSON.stringify(flaggedItem, null, 2));
 
         } else { // else (ProposalType.PUBLIC_VOTE)
@@ -207,7 +202,12 @@ export class ProposalActionService {
         return proposalResultModel.toJSON();
     }
 
-    private async createFlaggedItem(proposal: resources.Proposal): Promise<resources.FlaggedItem> {
+    /**
+     *
+     * @param {module:resources.Proposal} proposal
+     * @returns {Promise<module:resources.FlaggedItem>}
+     */
+    public async createFlaggedItemForProposal(proposal: resources.Proposal): Promise<resources.FlaggedItem> {
         // if listingitem exists && theres no relation -> add relation to listingitem
 
         const listingItemModel = await this.listingItemService.findOneByHash(proposal.title);
@@ -223,6 +223,12 @@ export class ProposalActionService {
         return flaggedItemModel.toJSON();
     }
 
+    /**
+     *
+     * @param {module:resources.Proposal} createdProposal
+     * @param {ItemVote} itemVote
+     * @returns {Promise<module:resources.Vote>}
+     */
     private async createVote(createdProposal: resources.Proposal, itemVote: ItemVote): Promise<resources.Vote> {
 
         const currentBlock = await this.coreRpcService.getBlockCount();
