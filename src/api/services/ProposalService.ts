@@ -72,7 +72,7 @@ export class ProposalService {
         const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('create Proposal, body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('create Proposal, body: ', JSON.stringify(body, null, 2));
 
         body.hash = ObjectHash.getHash(body, HashableObjectType.PROPOSAL_CREATEREQUEST);
 
@@ -80,11 +80,8 @@ export class ProposalService {
         const options = body.options || [];
         delete body.options;
 
-
         // if the request body was valid we will create the proposal
         const proposal = await this.proposalRepo.create(body);
-
-        this.log.debug('proposal DONE');
 
         // TODO: remove skipOptions
         // skipOptions is just for tests
