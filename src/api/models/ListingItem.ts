@@ -57,7 +57,7 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'FlaggedItem',
         'FlaggedItem.Proposal',
         'FlaggedItem.Proposal.ProposalOptions',
-        'FlaggedItem.Proposal.ProposalResult',
+        'FlaggedItem.Proposal.ProposalResults',
         'ListingItemTemplate',
         'ListingItemTemplate.Profile'
     ];

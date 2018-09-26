@@ -116,7 +116,7 @@ export class VoteActionService {
                     const createdVote = await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
                     this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
-                    const proposalResult: resources.ProposalResult = await this.updateProposalResult(proposal.ProposalResult.id);
+                    const proposalResult: resources.ProposalResult = await this.updateProposalResult(proposal);
 
                     // todo: extract method
                     if (proposal.type === ProposalType.ITEM_VOTE) {
@@ -148,11 +148,13 @@ export class VoteActionService {
     }
 
     /**
+     * todo: this is actually just updating the latest one.. we should propably modify this so that we create a new
+     * one periodically so we can track the voting progress
      *
      * @param {number} proposalResultId
      * @returns {Promise<"resources".ProposalResult>}
      */
-    public async updateProposalResult(proposalResultId: number): Promise<resources.ProposalResult> {
+    public async updateProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
 
         const currentBlock: number = await this.coreRpcService.getBlockCount();
 
@@ -160,9 +162,10 @@ export class VoteActionService {
         // const proposalModel = await this.proposalService.findOne(proposalId);
         // const proposal = proposalModel.toJSON();
 
-        this.log.debug('updateProposalResult(), proposalResultId: ', proposalResultId);
+        this.log.debug('updateProposalResult(), proposal.id: ', proposal.id);
 
-        let proposalResultModel = await this.proposalResultService.findOne(proposalResultId);
+        // fetch the latest ProposalResult to get the latest id
+        let proposalResultModel = await this.proposalResultService.findOneByProposalHash(proposal.hash);
         let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
 
         // first update the block in ProposalResult
