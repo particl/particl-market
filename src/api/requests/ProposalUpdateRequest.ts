@@ -28,11 +28,12 @@ export class ProposalUpdateRequest extends RequestBody {
     public receivedAt: number;
 
     public hash: string;
-    @IsEnum(ProposalType)
     public item: string;
+
     @IsNotEmpty()
     @IsEnum(ProposalType)
     public type: ProposalType;
+
     @IsNotEmpty()
     public title: string;
     public description: string;
