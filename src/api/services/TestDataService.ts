@@ -654,8 +654,8 @@ export class TestDataService {
         const items: resources.Proposal[] = [];
         for (let i = amount; i > 0; i--) {
             const proposalCreateRequest = await this.generateProposalData(generateParams);
-            const savedProposalModel = await this.proposalService.create(proposalCreateRequest);
-            const proposal = savedProposalModel.toJSON();
+            let proposalModel = await this.proposalService.create(proposalCreateRequest);
+            let proposal: resources.Proposal = proposalModel.toJSON();
 
             if (generateParams.voteCount > 0) {
                 const votes = await this.generateVotesForProposal(generateParams.voteCount, proposal);
@@ -663,19 +663,18 @@ export class TestDataService {
 
             // create and update ProposalResult
             let proposalResult = await this.proposalActionService.createProposalResult(proposal);
-            // this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
-
             proposalResult = await this.voteActionService.updateProposalResult(proposalResult.id);
             // this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
 
+            proposalModel = await this.proposalService.findOne(proposal.id);
+            proposal = proposalModel.toJSON();
             items.push(proposal);
         }
 
         return this.generateResponse(items, withRelated);
     }
 
-    private async generateVotesForProposal(
-        amount: number, proposal: resources.Proposal): Promise<resources.Vote[]> {
+    private async generateVotesForProposal(amount: number, proposal: resources.Proposal): Promise<resources.Vote[]> {
 
         const items: resources.Vote[] = [];
         for (let i = amount; i > 0; i--) {
@@ -692,7 +691,8 @@ export class TestDataService {
             } as VoteCreateRequest;
 
             const voteModel = await this.voteService.create(voteCreateRequest);
-            const vote = voteModel.toJSON();
+            const vote: resources.Vote = voteModel.toJSON();
+            this.log.debug('proposal.id : ' + proposal.id + ' : created vote: ' + vote.voter + ' : ' + vote.ProposalOption.optionId + ' : ' + vote.ProposalOption.description);
             items.push(vote);
         }
         return items;

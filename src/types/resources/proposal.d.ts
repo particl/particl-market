@@ -23,7 +23,7 @@ declare module 'resources' {
         createdAt: Date;
         updatedAt: Date;
         ProposalOptions: ProposalOption[];
-        ProposalResult: ProposalResult;
+        ProposalResults: ProposalResult[];
         ListingItem: ListingItem;
     }
 

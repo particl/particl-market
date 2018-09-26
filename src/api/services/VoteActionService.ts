@@ -6,7 +6,6 @@ import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
-import { VoteRepository } from '../repositories/VoteRepository';
 import { Vote } from '../models/Vote';
 import { VoteCreateRequest } from '../requests/VoteCreateRequest';
 import { SmsgService } from './SmsgService';
@@ -32,7 +31,7 @@ import { ProposalType } from '../enums/ProposalType';
 import { ProposalOptionResult } from '../models/ProposalOptionResult';
 import { ListingItemService } from './ListingItemService';
 import { SmsgMessageService } from './SmsgMessageService';
-import {SmsgMessageStatus} from '../enums/SmsgMessageStatus';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
 
 export class VoteActionService {
 
@@ -105,7 +104,8 @@ export class VoteActionService {
 
                 const proposal: resources.Proposal = proposalModel.toJSON();
 
-                if (_.isEmpty(proposal.ProposalResult)) {
+                // just make sure we have one
+                if (_.isEmpty(proposal.ProposalResults)) {
                     throw new MessageException('ProposalResult should not be empty!');
                 }
 
@@ -160,10 +160,10 @@ export class VoteActionService {
         // const proposalModel = await this.proposalService.findOne(proposalId);
         // const proposal = proposalModel.toJSON();
 
-        // this.log.debug('updateProposalResult(), proposalResultId: ', proposalResultId);
+        this.log.debug('updateProposalResult(), proposalResultId: ', proposalResultId);
 
         let proposalResultModel = await this.proposalResultService.findOne(proposalResultId);
-        let proposalResult = proposalResultModel.toJSON();
+        let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
 
         // first update the block in ProposalResult
         proposalResultModel = await this.proposalResultService.update(proposalResult.id, {
@@ -175,20 +175,25 @@ export class VoteActionService {
         for (const proposalOptionResult of proposalResult.ProposalOptionResults) {
             // get the votes
             const proposalOptionModel = await this.proposalOptionService.findOne(proposalOptionResult.ProposalOption.id);
-            const proposalOption = proposalOptionModel.toJSON();
+            const proposalOption: resources.ProposalOption = proposalOptionModel.toJSON();
 
             // this.log.debug('updateProposalResult(), proposalOption: ', JSON.stringify(proposalOption, null, 2));
-            // this.log.debug('updateProposalResult(), proposalOption.Votes.length: ', proposalOption.Votes.length);
+            this.log.debug('updateProposalResult(), proposalOption.Votes.length: ', proposalOption.Votes.length);
 
             // update
             const updatedProposalOptionResultModel = await this.proposalOptionResultService.update(proposalOptionResult.id, {
                 weight: proposalOption.Votes.length,
                 voters: proposalOption.Votes.length
             } as ProposalOptionResultUpdateRequest);
+            const updatedProposalOptionResult = updatedProposalOptionResultModel.toJSON();
+            // this.log.debug('updateProposalResult(), proposalOption: ', JSON.stringify(updatedProposalOptionResult, null, 2));
         }
 
         proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
-        return proposalResultModel.toJSON();
+        proposalResult = proposalResultModel.toJSON();
+        // this.log.debug('updateProposalResult(), proposalResult: ', JSON.stringify(proposalResult, null, 2));
+
+        return proposalResult;
     }
 
     /**

@@ -183,12 +183,10 @@ export class ProposalActionService {
             block: currentBlock,
             proposal_id: proposal.id
         } as ProposalResultCreateRequest);
-        const proposalResult = proposalResultModel.toJSON();
 
-        // this.log.debug('proposalResult: ', JSON.stringify(proposalResult));
+        let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
 
-        const proposalOptions: any = proposal.ProposalOptions;
-        for (const proposalOption of proposalOptions) {
+        for (const proposalOption of proposal.ProposalOptions) {
             const proposalOptionResult = await this.proposalOptionResultService.create({
                 weight: 0,
                 voters: 0,
@@ -199,7 +197,10 @@ export class ProposalActionService {
         }
 
         proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
-        return proposalResultModel.toJSON();
+        proposalResult = proposalResultModel.toJSON();
+
+        this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
+        return proposalResult;
     }
 
     /**

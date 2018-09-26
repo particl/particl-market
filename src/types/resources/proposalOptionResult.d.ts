@@ -2,19 +2,17 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import * as resources from 'resources';
-
 declare module 'resources' {
 
     interface ProposalOptionResult {
         id: number;
-        proposalResultId: number;
-        proposalOptionId: number;
         weight: number;
         voterCount: number;
+        ProposalOption: ProposalOption;
+        ProposalResult: ProposalResult;
+
         createdAt: Date;
         updatedAt: Date;
-        ProposalOption: resources.ProposalOption;
     }
 
 }

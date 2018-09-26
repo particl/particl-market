@@ -24,8 +24,7 @@ import { GenerateListingItemParams } from '../../src/api/requests/params/Generat
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { MarketService } from '../../src/api/services/MarketService';
-import {Proposal} from '../../src/api/models/Proposal';
-import {ProposalResultService} from '../../src/api/services/ProposalResultService';
+import { Proposal } from '../../src/api/models/Proposal';
 
 describe('ProposalOption', () => {
 

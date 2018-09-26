@@ -41,7 +41,8 @@ export class GenerateProposalParams implements GenerateProposalParamsInterface {
             this.generateListingItem,
             this.listingItemHash,
             this.generatePastProposal,
-            this.voteCount
+            this.voteCount,
+            this.submitter
         ];
     }
 }
