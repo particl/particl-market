@@ -8,13 +8,14 @@ import { ProposalOption } from './ProposalOption';
 import { ProposalResult } from './ProposalResult';
 import { ProposalSearchParams } from '../requests/ProposalSearchParams';
 import { FlaggedItem } from './FlaggedItem';
+import {FavoriteItem} from './FavoriteItem';
 
 export class Proposal extends Bookshelf.Model<Proposal> {
 
     public static RELATIONS = [
         'ProposalOptions',
         // 'ProposalOptions.Votes',
-        'ProposalResult',
+        'ProposalResults',
         'FlaggedItem'
     ];
 
@@ -146,8 +147,8 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         return this.hasMany(ProposalOption, 'proposal_id', 'id');
     }
 
-    public ProposalResult(): ProposalResult {
-       return this.hasOne(ProposalResult);
+    public ProposalResults(): Collection<ProposalResult> {
+        return this.hasMany(ProposalResult, 'proposal_id', 'id');
     }
 
     public FlaggedItem(): FlaggedItem {

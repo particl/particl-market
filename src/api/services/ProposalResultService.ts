@@ -30,6 +30,12 @@ export class ProposalResultService {
         return this.proposalResultRepo.findAll();
     }
 
+    public async findAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ProposalResult>> {
+        this.log.debug('hash:', hash);
+        this.log.debug('withRelated:', withRelated);
+        return await this.proposalResultRepo.findAllByProposalHash(hash, withRelated);
+    }
+
     public async findOne(id: number, withRelated: boolean = true): Promise<ProposalResult> {
         const proposalResult = await this.proposalResultRepo.findOne(id, withRelated);
         if (proposalResult === null) {

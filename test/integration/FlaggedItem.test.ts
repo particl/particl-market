@@ -9,25 +9,21 @@ import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-import { FavoriteItemService } from '../../src/api/services/FavoriteItemService';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { FavoriteItem } from '../../src/api/models/FavoriteItem';
-import { FavoriteItemCreateRequest } from '../../src/api/requests/FavoriteItemCreateRequest';
-import { FavoriteItemUpdateRequest } from '../../src/api/requests/FavoriteItemUpdateRequest';
 import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { FlaggedItemService } from '../../src/api/services/FlaggedItemService';
 import { ProposalService } from '../../src/api/services/ProposalService';
-import {GenerateProposalParams} from '../../src/api/requests/params/GenerateProposalParams';
-import {FlaggedItemCreateRequest} from '../../src/api/requests/FlaggedItemCreateRequest';
-import {FlaggedItem} from '../../src/api/models/FlaggedItem';
-import {FlaggedItemUpdateRequest} from '../../src/api/requests/FlaggedItemUpdateRequest';
+import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
+import { FlaggedItemCreateRequest } from '../../src/api/requests/FlaggedItemCreateRequest';
+import { FlaggedItem } from '../../src/api/models/FlaggedItem';
+import { FlaggedItemUpdateRequest } from '../../src/api/requests/FlaggedItemUpdateRequest';
 
 describe('FlaggedItem', () => {
 
@@ -116,7 +112,7 @@ describe('FlaggedItem', () => {
 
     test('Should throw ValidationException because invalid request body', async () => {
         expect.assertions(1);
-        await flaggedItemService.create({} as FavoriteItemCreateRequest).catch(e =>
+        await flaggedItemService.create({} as FlaggedItemCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });

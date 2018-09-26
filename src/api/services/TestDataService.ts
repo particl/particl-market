@@ -659,9 +659,7 @@ export class TestDataService {
 
             if (generateParams.voteCount > 0) {
                 const votes = await this.generateVotesForProposal(generateParams.voteCount, proposal);
-                this.log.debug('GENERATED VOTES: ', JSON.stringify(votes, null, 2));
             }
-
 
             // create and update ProposalResult
             let proposalResult = await this.proposalActionService.createProposalResult(proposal);
