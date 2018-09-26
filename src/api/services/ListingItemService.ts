@@ -31,7 +31,6 @@ import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { SmsgService } from './SmsgService';
 import { ListingItemObjectService } from './ListingItemObjectService';
-import { FlaggedItemService } from './FlaggedItemService';
 import { EventEmitter } from 'events';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
@@ -52,7 +51,6 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
