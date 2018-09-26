@@ -114,7 +114,7 @@ describe('LockedOutput', () => {
             defaultMarket.id  // marketId
         ]).toParamsArray();
 
-        log.debug('templateGenerateParams:', JSON.stringify(templateGenerateParams, null, 2));
+        // log.debug('templateGenerateParams:', JSON.stringify(templateGenerateParams, null, 2));
 
         const listingItemTemplates = await testDataService.generate({
             model: CreatableModel.LISTINGITEMTEMPLATE,
@@ -124,7 +124,7 @@ describe('LockedOutput', () => {
         } as TestDataGenerateRequest);
         listingItemTemplate = listingItemTemplates[0];
 
-        log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
+        // log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
 
         const createdListingItemModel = await listingItemService.findOne(listingItemTemplate.ListingItems[0].id);
         listingItem = createdListingItemModel.toJSON();
@@ -146,7 +146,7 @@ describe('LockedOutput', () => {
         } as TestDataGenerateRequest);
         bid = bids[0];
 
-        log.debug('bid:', JSON.stringify(bid, null, 2));
+        // log.debug('bid:', JSON.stringify(bid, null, 2));
     });
 
     afterAll(async () => {

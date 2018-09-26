@@ -118,7 +118,7 @@ describe('OrderItemObject', () => {
         createdListingItemTemplate = listingItemTemplates[0];
         createdListingItem = listingItemTemplates[0].ListingItems[0];
 
-        log.debug('createdListingItem.hash: ', JSON.stringify(createdListingItem.hash, null, 2));
+        // log.debug('createdListingItem.hash: ', JSON.stringify(createdListingItem.hash, null, 2));
 
         // create a new bid from defaultProfile for ListingItem that is being sold by createdSellerProfile
         const bidParams = new GenerateBidParams([
@@ -140,7 +140,7 @@ describe('OrderItemObject', () => {
         });
         createdBid = bids[0];
 
-        log.debug('createdBid: ', JSON.stringify(createdBid, null, 2));
+        // log.debug('createdBid: ', JSON.stringify(createdBid, null, 2));
 
         const orderGenerateParams = new GenerateOrderParams([
             false,                      // generateListingItemTemplate
@@ -162,8 +162,8 @@ describe('OrderItemObject', () => {
 
         createdOrder = generatedOrders[0];
         createdOrderItem = generatedOrders[0].OrderItems[0];
-        log.debug('createdOrder: ', JSON.stringify(createdOrder, null, 2));
-        log.debug('createdOrderItem: ', JSON.stringify(createdOrderItem, null, 2));
+        // log.debug('createdOrder: ', JSON.stringify(createdOrder, null, 2));
+        // log.debug('createdOrderItem: ', JSON.stringify(createdOrderItem, null, 2));
 
     });
 

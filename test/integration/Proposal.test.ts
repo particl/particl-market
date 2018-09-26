@@ -39,7 +39,11 @@ describe('Proposal', () => {
         // hash: 'asdf',
         type: ProposalType.PUBLIC_VOTE,
         title:  'proposal x title',
-        description: 'proposal to x'
+        description: 'proposal to x',
+        expiryTime: 4,
+        postedAt: new Date().getTime(),
+        expiredAt: new Date().getTime() + 100000000,
+        receivedAt: new Date().getTime()
     } as ProposalCreateRequest;
 
     const testDataOptions = [{

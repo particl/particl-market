@@ -112,18 +112,11 @@ describe('ItemLocation', () => {
             generateParams                      // what kind of data to generate
         } as TestDataGenerateRequest);
         createdListingItem = listingItems[0];
-
-        log.debug('createdListingItem: ', createdListingItem.id);
-        log.debug('createdListingItem: ', createdListingItem.hash);
-
         itemInformation = createdListingItem.ItemInformation;
 
         await itemLocationService.destroy(itemInformation.ItemLocation.id);
-
         const listingItemModel = await listingItemService.findOne(createdListingItem.id);
         createdListingItem = listingItemModel.toJSON();
-
-        log.debug('createdListingItem: ', JSON.stringify(createdListingItem, null,2));
 
     });
 

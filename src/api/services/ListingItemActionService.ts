@@ -167,15 +167,19 @@ export class ListingItemActionService {
             let listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
             let listingItem = listingItemModel.toJSON();
 
-            await this.proposalService.findOneByItemHash(listingItem.hash || '')
+            const proposal = await this.proposalService.findOneByItemHash(listingItem.hash)
                 .then(async proposalModel => {
-
-                    // if proposal for the listingitem is found, create flaggeditem
-                    const proposal: resources.Proposal = proposalModel.toJSON();
-                    const flaggedItem = await this.createFlaggedItemForProposal(proposal);
-                    // this.log.debug('flaggedItem:', JSON.stringify(flaggedItem, null, 2));
-
+                    return proposalModel.toJSON();
+                })
+                .catch(reason => {
+                    return null;
                 });
+
+            if (proposal) {
+                // if proposal for the listingitem is found, create flaggeditem
+                const flaggedItem = await this.createFlaggedItemForProposal(proposal);
+                // this.log.debug('flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+            }
 
             // todo: there should be no need for these two updates, set the relations up in the createRequest
             // update the template relation

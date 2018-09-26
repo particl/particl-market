@@ -44,7 +44,7 @@ export class OrderItemService {
     public async create( @request(OrderItemCreateRequest) data: OrderItemCreateRequest): Promise<OrderItem> {
 
         const body = JSON.parse(JSON.stringify(data));
-        this.log.debug('OrderItemCreateRequest: ', JSON.stringify(body, null, 2));
+        // this.log.debug('OrderItemCreateRequest: ', JSON.stringify(body, null, 2));
 
         const orderItemObjects = body.orderItemObjects || [];
         delete body.orderItemObjects;
@@ -97,7 +97,6 @@ export class OrderItemService {
             await this.orderItemObjectService.destroy(orderItemObject.id);
         }
 
-        this.log.debug('removing orderItem:', id);
         await this.orderItemRepo.destroy(id);
     }
 

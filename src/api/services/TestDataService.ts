@@ -562,7 +562,7 @@ export class TestDataService {
         for (let i = amount; i > 0; i--) {
             const orderCreateRequest = await this.generateOrderData(generateParams);
 
-            this.log.debug('orderCreateRequest:', JSON.stringify(orderCreateRequest, null, 2));
+            // this.log.debug('orderCreateRequest:', JSON.stringify(orderCreateRequest, null, 2));
 
             const savedOrderModel = await this.orderService.create(orderCreateRequest);
             const result = savedOrderModel.toJSON();

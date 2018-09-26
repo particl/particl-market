@@ -82,12 +82,12 @@ describe('Order', () => {
         // get default profile
         const defaultProfileModel = await profileService.getDefault();
         defaultProfile = defaultProfileModel.toJSON();
-        log.debug('defaultProfile: ', defaultProfile);
+        // log.debug('defaultProfile: ', defaultProfile);
 
         // get market
         const defaultMarketModel = await marketService.getDefault();
         defaultMarket = defaultMarketModel.toJSON();
-        log.debug('defaultMarket: ', defaultMarket);
+        // log.debug('defaultMarket: ', defaultMarket);
 
         // generate a seller profile in addition to the default one used for buyer
         const generateProfileParams = new GenerateProfileParams().toParamsArray();
@@ -98,7 +98,7 @@ describe('Order', () => {
             generateParams: generateProfileParams       // what kind of data to generate
         } as TestDataGenerateRequest);
         createdSellerProfile = profiles[0];
-        log.debug('createdSellerProfile: ', createdSellerProfile.id);
+        // log.debug('createdSellerProfile: ', createdSellerProfile.id);
 
         const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
             true,   // generateItemInformation
@@ -128,8 +128,8 @@ describe('Order', () => {
         createdListingItem1 = listingItemTemplates[0].ListingItems[0];
         createdListingItem2 = listingItemTemplates[1].ListingItems[0];
 
-        log.debug('createdListingItem1.hash: ', JSON.stringify(createdListingItem1.hash, null, 2));
-        log.debug('createdListingItem2.hash: ', JSON.stringify(createdListingItem2.hash, null, 2));
+        // log.debug('createdListingItem1.hash: ', JSON.stringify(createdListingItem1.hash, null, 2));
+        // log.debug('createdListingItem2.hash: ', JSON.stringify(createdListingItem2.hash, null, 2));
 
         // create a new bid from defaultProfile for ListingItem that is being sold by createdSellerProfile
         const bidParams = new GenerateBidParams([
@@ -151,7 +151,7 @@ describe('Order', () => {
         });
         createdBid1 = bids[0];
 
-        log.debug('createdBid1: ', JSON.stringify(createdBid1, null, 2));
+        // log.debug('createdBid1: ', JSON.stringify(createdBid1, null, 2));
 
 /*
         // create a new bid for ListingItem that is being bought by local profile
@@ -208,7 +208,7 @@ describe('Order', () => {
         const result = orderModel.toJSON();
         createdOrder = result;
 
-        log.debug('order result: ', JSON.stringify(result, null, 2));
+        // log.debug('order result: ', JSON.stringify(result, null, 2));
 
         // test the result
         expect(result.hash).toBe(ObjectHash.getHash(testData, HashableObjectType.ORDER_CREATEREQUEST));
