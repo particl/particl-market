@@ -15,16 +15,13 @@ import { ProposalResultService } from '../../src/api/services/ProposalResultServ
 import { ProposalResultCreateRequest } from '../../src/api/requests/ProposalResultCreateRequest';
 import { ProposalResultUpdateRequest } from '../../src/api/requests/ProposalResultUpdateRequest';
 import { ProposalService } from '../../src/api/services/ProposalService';
-import { ProposalType } from '../../src/api/enums/ProposalType';
-import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequest';
-import { Proposal } from '../../src/api/models/Proposal';
 import * as resources from 'resources';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import {GenerateProposalParams} from '../../src/api/requests/params/GenerateProposalParams';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
-import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
-import {ProfileService} from '../../src/api/services/ProfileService';
-import {MarketService} from '../../src/api/services/MarketService';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { ProfileService } from '../../src/api/services/ProfileService';
+import { MarketService } from '../../src/api/services/MarketService';
 
 describe('ProposalResult', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

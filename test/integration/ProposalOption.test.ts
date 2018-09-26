@@ -14,15 +14,21 @@ import { ProposalOption } from '../../src/api/models/ProposalOption';
 import { ProposalOptionService } from '../../src/api/services/ProposalOptionService';
 import { ProposalOptionCreateRequest } from '../../src/api/requests/ProposalOptionCreateRequest';
 import { ProposalOptionUpdateRequest } from '../../src/api/requests/ProposalOptionUpdateRequest';
-import { ProposalType } from '../../src/api/enums/ProposalType';
-import { ProposalCreateRequest } from '../../src/api/requests/ProposalCreateRequest';
-import { Proposal } from '../../src/api/models/Proposal';
 import { ProposalService } from '../../src/api/services/ProposalService';
 import * as resources from 'resources';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { ProfileService } from '../../src/api/services/ProfileService';
+import { MarketService } from '../../src/api/services/MarketService';
+import {Proposal} from '../../src/api/models/Proposal';
+import {ProposalResultService} from '../../src/api/services/ProposalResultService';
 
 describe('ProposalOption', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
@@ -31,23 +37,24 @@ describe('ProposalOption', () => {
     let testDataService: TestDataService;
     let proposalService: ProposalService;
     let proposalOptionService: ProposalOptionService;
+    let profileService: ProfileService;
+    let marketService: MarketService;
 
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let createdListingItem: resources.ListingItem;
     let createdProposal: resources.Proposal;
     let createdProposalOption: resources.ProposalOption;
 
     const testData = {
-        optionId: 0,
-        // hash: 'asdf',
-        description: 'Yes'
+        optionId: 2,
+        description: 'REMOVE_MAYBE'
     } as ProposalOptionCreateRequest;
 
     const testDataUpdated = {
-        optionId: 0,
-        // hash: 'asdf',
-        description: 'No'
+        optionId: 3,
+        description: 'KEEP_MAYBE'
     } as ProposalOptionUpdateRequest;
-
-    let testDataHash;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
@@ -55,29 +62,61 @@ describe('ProposalOption', () => {
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.ProposalService);
         proposalOptionService = app.IoC.getNamed<ProposalOptionService>(Types.Service, Targets.Service.ProposalOptionService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        // create proposal
-        const proposalTestData = {
-            submitter: 'psubmitter',
-            blockStart: 1000,
-            blockEnd: 1010,
-            // hash: 'asdf',
-            type: ProposalType.PUBLIC_VOTE,
-            title: 'titlex',
-            description: 'proposal to x',
-            options: [testData]
-        } as ProposalCreateRequest;
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        defaultProfile = defaultProfileModel.toJSON();
 
-        const proposalModel: Proposal = await proposalService.create(proposalTestData, true);
-        createdProposal = proposalModel.toJSON();
+        // get default market
+        const defaultMarketModel = await marketService.getDefault();
+        defaultMarket = defaultMarketModel.toJSON();
 
-    });
+        // create ListingItems
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,                                       // generateItemInformation
+            true,                                       // generateShippingDestinations
+            false,                                      // generateItemImages
+            true,                                       // generatePaymentInformation
+            true,                                       // generateEscrow
+            true,                                       // generateItemPrice
+            true,                                       // generateMessagingInformation
+            true,                                       // generateListingItemObjects
+            false,                                      // generateObjectDatas
+            null,                                       // listingItemTemplateHash
+            defaultProfile.address                      // seller
+        ]).toParamsArray();
 
-    afterAll(async () => {
-        //
+        const listingItems = await testDataService.generate({
+            model: CreatableModel.LISTINGITEM,          // what to generate
+            amount: 1,                                  // how many to generate
+            withRelated: true,                          // return model
+            generateParams: generateListingItemParams   // what kind of data to generate
+        } as TestDataGenerateRequest);
+        createdListingItem = listingItems[0];
+
+        // create Proposal
+        const generateProposalParams = new GenerateProposalParams([
+            false,                                      // generateListingItemTemplate
+            false,                                      // generateListingItem
+            createdListingItem.hash,                    // listingItemHash,
+            false,                                      // generatePastProposal,
+            2,                                          // voteCount
+            defaultProfile.address                      // submitter
+        ]).toParamsArray();
+
+        const proposals = await testDataService.generate({
+            model: CreatableModel.PROPOSAL,             // what to generate
+            amount: 1,                                  // how many to generate
+            withRelated: true,                          // return model
+            generateParams: generateProposalParams      // what kind of data to generate
+        } as TestDataGenerateRequest);
+        createdProposal = proposals[0];
+
     });
 
     test('Should throw ValidationException because there is no related_id', async () => {
@@ -87,51 +126,48 @@ describe('ProposalOption', () => {
         );
     });
 
-    test('Should throw ValidationException because we want to create a empty proposal option', async () => {
+    test('Should throw ValidationException because we want to create a empty ProposalOption', async () => {
         expect.assertions(1);
-        await proposalOptionService.create({}).catch(e =>
+        await proposalOptionService.create({} as ProposalOptionCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should create a new proposal option', async () => {
+    test('Should create a new ProposalOption', async () => {
 
         testData.proposal_id = createdProposal.id;
         testData.proposalHash = createdProposal.hash;
-        testDataHash = ObjectHash.getHash(testData, HashableObjectType.PROPOSALOPTION_CREATEREQUEST);
 
         const proposalOptionModel: ProposalOption = await proposalOptionService.create(testData);
         createdProposalOption = proposalOptionModel.toJSON();
-
-        const result = proposalOptionModel.toJSON();
+        const result = createdProposalOption;
 
         log.debug('ProposalOption, result:', JSON.stringify(result, null, 2));
         log.debug('createdProposal:', JSON.stringify(createdProposal, null, 2));
 
-        // test the values
-        expect(result.Proposal).toBeDefined();
         expect(result.Proposal.id).toBe(createdProposal.id);
         expect(result.optionId).toBe(testData.optionId);
         expect(result.description).toBe(testData.description);
-        expect(result.hash).toBe(testDataHash);
+
+        const proposalModel: Proposal = await proposalService.findOne(createdProposal.id);
+        const proposal: resources.Proposal = proposalModel.toJSON();
+        expect(proposal.ProposalOptions.length).toBe(3);
+
+        createdProposal = proposal;
     });
 
-    test('Should list proposal options with our new create one', async () => {
+    test('Should list ProposalOptions with our newly created one', async () => {
         const proposalOptionCollection = await proposalOptionService.findAll();
         const proposalOption = proposalOptionCollection.toJSON();
-        expect(proposalOption.length).toBe(1);
+        expect(proposalOption.length).toBe(3);
 
-        const result = proposalOption[0];
-
-        // test the values
-        // expect(result.value).toBe(testData.value);
+        const result = proposalOption[2];
         expect(result.id).toBe(createdProposalOption.id);
-        expect(result.optionId).toBe(testData.optionId);
-        expect(result.description).toBe(testData.description);
-        expect(result.hash).toBe(testDataHash);
+        expect(result.optionId).toBe(createdProposalOption.optionId);
+        expect(result.description).toBe(createdProposalOption.description);
     });
 
-    test('Should return one proposal option', async () => {
+    test('Should return one ProposalOption', async () => {
         const proposalOptionModel: ProposalOption = await proposalOptionService.findOne(createdProposalOption.id);
         const result = proposalOptionModel.toJSON();
 
@@ -141,29 +177,9 @@ describe('ProposalOption', () => {
         expect(result.Proposal.id).toBe(createdProposal.id);
         expect(result.optionId).toBe(testData.optionId);
         expect(result.description).toBe(testData.description);
-        expect(result.hash).toBe(testDataHash);
     });
 
-/*
-    update not needed, to be able to update, we'd need to update also the Proposal
-
-    test('Should update the proposal option', async () => {
-        // testDataUpdated['related_id'] = 0;
-        const proposalOptionModel: ProposalOption = await proposalOptionService.update(createdProposalOption.id, testDataUpdated);
-        const result = proposalOptionModel.toJSON();
-
-        testDataHash = ObjectHash.getHash(testDataUpdated, HashableObjectType.PROPOSALOPTION_CREATEREQUEST);
-
-        // test the values
-        // expect(result.value).toBe(testDataUpdated.value);
-        expect(result.Proposal).toBeDefined();
-        expect(result.Proposal.id).toBe(createdProposal.id);
-        expect(result.optionId).toBe(testDataUpdated.optionId);
-        expect(result.description).toBe(testDataUpdated.description);
-        expect(result.hash).toBe(testDataHash);
-    });
-*/
-    test('Should delete the proposal option', async () => {
+    test('Should delete the ProposalOption', async () => {
         expect.assertions(1);
         await proposalOptionService.destroy(createdProposalOption.id);
         await proposalOptionService.findOne(createdProposalOption.id).catch(e =>
