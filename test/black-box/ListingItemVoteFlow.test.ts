@@ -23,14 +23,13 @@ describe('Happy ListingItem Vote Flow', () => {
     const log: LoggerType = new LoggerType(__filename);
 
     // const testUtilNode0 = new BlackBoxTestUtil(0);
-    // const randomBoolean: boolean = Math.random() >= 0.5;
-    // const testUtilNode1 = new BlackBoxTestUtil(randomBoolean ? 1 : 2);
-    // const testUtilNode2 = new BlackBoxTestUtil(randomBoolean ? 2 : 1);
-    const testUtilNode1 = new BlackBoxTestUtil(0);
-    const testUtilNode2 = new BlackBoxTestUtil(1);
+    const randomBoolean: boolean = Math.random() >= 0.5;
+    const testUtilNode1 = new BlackBoxTestUtil(randomBoolean ? 1 : 2);
+    const testUtilNode2 = new BlackBoxTestUtil(randomBoolean ? 2 : 1);
+    // const testUtilNode1 = new BlackBoxTestUtil(0);
+    // const testUtilNode2 = new BlackBoxTestUtil(1);
 
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
-    const proposalPostCommand = Commands.PROPOSAL_POST.commandName;
     const proposalListCommand = Commands.PROPOSAL_LIST.commandName;
     const proposalGetCommand = Commands.PROPOSAL_GET.commandName;
     const proposalResultCommand = Commands.PROPOSAL_RESULT.commandName;
@@ -59,13 +58,7 @@ describe('Happy ListingItem Vote Flow', () => {
     let proposalNode1: resources.Proposal;
     let proposalNode2: resources.Proposal;
 
-
     let currentBlock: number;
-    const estimateFee = false;
-
-    const PAGE = 0;
-    const PAGE_LIMIT = 10;
-    const ORDERING = SearchOrder.ASC;
     const DAYS_RETENTION = 2;
 
     beforeAll(async () => {
