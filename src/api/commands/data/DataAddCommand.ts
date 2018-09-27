@@ -12,6 +12,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { TestDataCreateRequest } from '../../requests/TestDataCreateRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class DataAddCommand extends BaseCommand implements RpcCommandInterface<any> {
 
@@ -44,6 +45,16 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
         } as TestDataCreateRequest);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MessageException('Missing model.');
+        }
+        if (data.params.length < 2) {
+            throw new MessageException('Missing json.');
+        }
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' <model> <json> [<withRelated>] ';
     }
@@ -53,8 +64,8 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
             + '    <model>                  - ENUM{listingitemtemplate|listingitem|profile|itemcategory \n'
             + '                                |favoriteitem|iteminformation|bid|paymentinformation|itemimage} \n'
             + '                                - The type of data we want to generate. \n'
-            + '    <json>                   - String - [TODO] \n'
-            + '    <withRelated>            - [optional] Boolean - [TODO] ';
+            + '    <json>                   - String - json for the object to add. \n'
+            + '    <withRelated>            - [optional] Boolean - Whether to return full objects or just id. ';
     }
 
     public description(): string {
