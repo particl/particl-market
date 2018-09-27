@@ -7,17 +7,16 @@ import * from 'jest';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
 import { Commands } from '../../src/api/commands/CommandEnumType';
-import * as Faker from 'faker';
 import * as resources from 'resources';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { SearchOrder } from '../../src/api/enums/SearchOrder';
-import {ProposalType} from '../../src/api/enums/ProposalType';
-import {ItemVote} from '../../src/api/enums/ItemVote';
-import {GenerateProfileParams} from '../../src/api/requests/params/GenerateProfileParams';
+import { ProposalType } from '../../src/api/enums/ProposalType';
+import { ItemVote } from '../../src/api/enums/ItemVote';
+import { GenerateProfileParams } from '../../src/api/requests/params/GenerateProfileParams';
 // tslint:enable:max-line-length
 
-describe('Happy Vote Flow', () => {
+describe('Happy ListingItem Vote Flow', () => {
 
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
@@ -266,7 +265,7 @@ describe('Happy Vote Flow', () => {
         log.debug('==> Node2 sent MP_PROPOSAL_ADD.');
     });
 
-    test('Receive Proposal on node1', async () => {
+    test('Receive Proposal to remove ListingItem on node1', async () => {
 
         log.debug('========================================================================================');
         log.debug('Node1 RECEIVES MP_PROPOSAL_ADD');
@@ -312,7 +311,7 @@ describe('Happy Vote Flow', () => {
 
     }, 600000); // timeout to 600s
 
-    test('Receive Proposal on node2', async () => {
+    test('Receive Proposal to remove ListingItem on node2', async () => {
 
         log.debug('========================================================================================');
         log.debug('Node2 RECEIVES MP_PROPOSAL_ADD');
@@ -361,7 +360,7 @@ describe('Happy Vote Flow', () => {
 
     }, 600000); // timeout to 600s
 
-    test('Post Vote1 from node1', async () => {
+    test('Post Vote1 from node1 (voter1)', async () => {
 
         log.debug('========================================================================================');
         log.debug('Node1 POSTS MP_VOTE_ADD (ItemVote.REMOVE)');
@@ -458,18 +457,20 @@ describe('Happy Vote Flow', () => {
             [proposalResultCommand, proposalNode2.hash],
             8 * 60,
             200,
-            'ProposalOptionResults[0].voters',
-            1
+            'ProposalOptionResults[1].voters',
+            2
         );
         response.expectJson();
         response.expectStatusCode(200);
 
         const result: any = response.getBody()['result'];
-        expect(result.ProposalOptionResults[0].voters).toBe(1);
-        expect(result.ProposalOptionResults[0].weight).toBe(1);
+        expect(result.ProposalOptionResults[0].voters).toBe(0);
+        expect(result.ProposalOptionResults[0].weight).toBe(0);
+        expect(result.ProposalOptionResults[1].voters).toBe(2);
+        expect(result.ProposalOptionResults[1].weight).toBe(2);
     });
 
-    test('Post Vote2 from node2', async () => {
+    test('Post Vote2 from node2 (voter2)', async () => {
 
         log.debug('========================================================================================');
         log.debug('Node2 POSTS MP_VOTE_ADD (default profile)');
@@ -477,9 +478,9 @@ describe('Happy Vote Flow', () => {
 
         const response: any = await testUtilNode2.rpc(voteCommand, [
             votePostCommand,
-            profileNode2.id,
+            voterProfileNode2.id,
             proposalNode2.hash,
-            proposalNode2.ProposalOptions[0].optionId
+            proposalNode2.ProposalOptions[1].optionId
         ]);
         response.expectJson();
         response.expectStatusCode(200);
@@ -504,21 +505,21 @@ describe('Happy Vote Flow', () => {
 
         const response: any = await testUtilNode2.rpcWaitFor(
             voteCommand,
-            [voteGetCommand, profileNode2.id, proposalNode2.hash],
+            [voteGetCommand, voterProfileNode2.id, proposalNode2.hash],
             8 * 60,
             200,
             'ProposalOption.optionId',
-            proposalNode2.ProposalOptions[0].optionId
+            proposalNode1.ProposalOptions[1].optionId
         );
         response.expectJson();
         response.expectStatusCode(200);
 
         const result: resources.Vote = response.getBody()['result'];
-        expect(result).hasOwnProperty('ProposalOption');
         expect(result.block).toBeGreaterThanOrEqual(currentBlock);
         expect(result.weight).toBe(1);
-        expect(result.voter).toBe(profileNode2.address);
-        expect(result.ProposalOption.optionId).toBe(proposalNode2.ProposalOptions[0].optionId);
+        expect(result.voter).toBe(voterProfileNode2.address);
+        expect(result.ProposalOption.optionId).toBe(proposalNode1.ProposalOptions[1].optionId);
+
     });
 
     test('Receive Vote2 on node1', async () => {
@@ -532,8 +533,8 @@ describe('Happy Vote Flow', () => {
             [proposalResultCommand, proposalNode1.hash],
             8 * 60,
             200,
-            'ProposalOptionResults[0].voters',
-            2
+            'ProposalOptionResults[1].voters',
+            3
         );
         response.expectJson();
         response.expectStatusCode(200);
@@ -541,10 +542,10 @@ describe('Happy Vote Flow', () => {
         const result: any = response.getBody()['result'];
         expect(result).hasOwnProperty('Proposal');
         expect(result).hasOwnProperty('ProposalOptionResults');
-        expect(result.ProposalOptionResults[0].voters).toBe(2);
-        expect(result.ProposalOptionResults[0].weight).toBe(2);
-        expect(result.ProposalOptionResults[1].voters).toBe(0);
-        expect(result.ProposalOptionResults[1].weight).toBe(0);
+        expect(result.ProposalOptionResults[0].voters).toBe(0);
+        expect(result.ProposalOptionResults[0].weight).toBe(0);
+        expect(result.ProposalOptionResults[1].voters).toBe(3);
+        expect(result.ProposalOptionResults[1].weight).toBe(3);
     });
 
     // right now we have 2 votes for optionId=0 on both nodes
@@ -553,14 +554,14 @@ describe('Happy Vote Flow', () => {
     test('Post Vote2 again from node2 changing the vote optionId', async () => {
 
         log.debug('========================================================================================');
-        log.debug('Node2 POSTS MP_VOTE_ADD (default profile)');
+        log.debug('Node2 POSTS MP_VOTE_ADD (voter2)');
         log.debug('========================================================================================');
 
         const response: any = await testUtilNode2.rpc(voteCommand, [
             votePostCommand,
-            profileNode2.id,
+            voterProfileNode2.id,
             proposalNode2.hash,
-            proposalNode2.ProposalOptions[1].optionId
+            proposalNode2.ProposalOptions[0].optionId
         ]);
         response.expectJson();
         response.expectStatusCode(200);
@@ -590,12 +591,10 @@ describe('Happy Vote Flow', () => {
         response.expectStatusCode(200);
 
         const result: any = response.getBody()['result'];
-        expect(result).hasOwnProperty('Proposal');
-        expect(result).hasOwnProperty('ProposalOptionResults');
         expect(result.ProposalOptionResults[0].voters).toBe(1);
         expect(result.ProposalOptionResults[0].weight).toBe(1);
-        expect(result.ProposalOptionResults[1].voters).toBe(1);
-        expect(result.ProposalOptionResults[1].weight).toBe(1);
+        expect(result.ProposalOptionResults[1].voters).toBe(2);
+        expect(result.ProposalOptionResults[1].weight).toBe(2);
     });
 
 });

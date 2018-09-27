@@ -8,13 +8,15 @@ import { Proposal } from './Proposal';
 
 export class FlaggedItem extends Bookshelf.Model<FlaggedItem> {
 
+    public static RELATIONS = [
+        'ListingItem',
+        'Proposal'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<FlaggedItem> {
         if (withRelated) {
             return await FlaggedItem.where<FlaggedItem>({ id: value }).fetch({
-                withRelated: [
-                    'ListingItem',
-                    'Proposal'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await FlaggedItem.where<FlaggedItem>({ id: value }).fetch();
