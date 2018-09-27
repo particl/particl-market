@@ -52,11 +52,13 @@ describe('Happy ListingItem Vote Flow', () => {
     let voterProfileNode2: resources.Profile;
 
     let listingItemTemplateNode1: resources.ListingItemTemplate;
-
     let listingItemNode1: resources.ListingItem;
     let listingItemNode2: resources.ListingItem;
     let proposalNode1: resources.Proposal;
     let proposalNode2: resources.Proposal;
+    let voteNode1: resources.Vote;
+    let voteNode2: resources.Vote;
+    let proposalResultNode1: resources.ProposalResult;
 
     let currentBlock: number;
     const DAYS_RETENTION = 2;
@@ -208,6 +210,8 @@ describe('Happy ListingItem Vote Flow', () => {
 
     test('Receive ListingItem on node2', async () => {
 
+        expect(listingItemNode1).toBeDefined();
+
         log.debug('========================================================================================');
         log.debug('Node2 RECEIVES MP_ITEM_ADD');
         log.debug('========================================================================================');
@@ -237,6 +241,9 @@ describe('Happy ListingItem Vote Flow', () => {
 
     test('Report ListingItem from node2', async () => {
 
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
+
         log.debug('========================================================================================');
         log.debug('Node2 POSTS MP_PROPOSAL_ADD');
         log.debug('========================================================================================');
@@ -259,6 +266,9 @@ describe('Happy ListingItem Vote Flow', () => {
     });
 
     test('Receive Proposal to remove ListingItem on node1', async () => {
+
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Node1 RECEIVES MP_PROPOSAL_ADD');
@@ -305,6 +315,10 @@ describe('Happy ListingItem Vote Flow', () => {
     }, 600000); // timeout to 600s
 
     test('Receive Proposal to remove ListingItem on node2', async () => {
+
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
+        expect(proposalNode1).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Node2 RECEIVES MP_PROPOSAL_ADD');
@@ -355,6 +369,11 @@ describe('Happy ListingItem Vote Flow', () => {
 
     test('Post Vote1 from node1 (voter1)', async () => {
 
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
+        expect(proposalNode1).toBeDefined();
+        expect(proposalNode2).toBeDefined();
+
         log.debug('========================================================================================');
         log.debug('Node1 POSTS MP_VOTE_ADD (ItemVote.REMOVE)');
         log.debug('========================================================================================');
@@ -381,6 +400,11 @@ describe('Happy ListingItem Vote Flow', () => {
 
     test('Receive Vote1 on node1', async () => {
 
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
+        expect(proposalNode1).toBeDefined();
+        expect(proposalNode2).toBeDefined();
+
         log.debug('========================================================================================');
         log.debug('Node1 RECEIVES MP_VOTE_ADD (confirm with: vote get)');
         log.debug('========================================================================================');
@@ -404,9 +428,17 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(result.voter).toBe(voterProfileNode1.address);
         expect(result.ProposalOption.optionId).toBe(proposalNode1.ProposalOptions[1].optionId);
 
+        voteNode1 = result;
+
     });
 
     test('ProposalResults are recalculated on node1', async () => {
+
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
+        expect(proposalNode1).toBeDefined();
+        expect(proposalNode2).toBeDefined();
+        expect(voteNode1).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Node1 ProposalResults recalculated');
@@ -437,9 +469,18 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(result.ProposalOptionResults[1].voters).toBe(2);
         expect(result.ProposalOptionResults[1].weight).toBe(2);
 
+        proposalResultNode1 = result;
+
     });
 
     test('Receive Vote1 on node2', async () => {
+
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
+        expect(proposalNode1).toBeDefined();
+        expect(proposalNode2).toBeDefined();
+        expect(voteNode1).toBeDefined();
+        expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Node2 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
@@ -465,6 +506,13 @@ describe('Happy ListingItem Vote Flow', () => {
 
     test('Post Vote2 from node2 (voter2)', async () => {
 
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
+        expect(proposalNode1).toBeDefined();
+        expect(proposalNode2).toBeDefined();
+        expect(voteNode1).toBeDefined();
+        expect(proposalResultNode1).toBeDefined();
+
         log.debug('========================================================================================');
         log.debug('Node2 POSTS MP_VOTE_ADD (default profile)');
         log.debug('========================================================================================');
@@ -489,6 +537,13 @@ describe('Happy ListingItem Vote Flow', () => {
     });
 
     test('Receive Vote2 on node2', async () => {
+
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
+        expect(proposalNode1).toBeDefined();
+        expect(proposalNode2).toBeDefined();
+        expect(voteNode1).toBeDefined();
+        expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Node2 RECEIVES MP_VOTE_ADD (confirm with: vote get)');
@@ -516,6 +571,14 @@ describe('Happy ListingItem Vote Flow', () => {
     });
 
     test('Receive Vote2 on node1', async () => {
+
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
+        expect(proposalNode1).toBeDefined();
+        expect(proposalNode2).toBeDefined();
+        expect(voteNode1).toBeDefined();
+        expect(voteNode2).toBeDefined();
+        expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Node1 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
@@ -564,6 +627,14 @@ describe('Happy ListingItem Vote Flow', () => {
     });
 
     test('Receive Vote2 on node2 again', async () => {
+
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
+        expect(proposalNode1).toBeDefined();
+        expect(proposalNode2).toBeDefined();
+        expect(voteNode1).toBeDefined();
+        expect(voteNode2).toBeDefined();
+        expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Node2 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
