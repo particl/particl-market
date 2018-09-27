@@ -24,8 +24,8 @@ describe('Happy ListingItem Vote Flow', () => {
 
     // const testUtilNode0 = new BlackBoxTestUtil(0);
     const randomBoolean: boolean = Math.random() >= 0.5;
-    const testUtilNode1 = new BlackBoxTestUtil(randomBoolean ? 1 : 2);
-    const testUtilNode2 = new BlackBoxTestUtil(randomBoolean ? 2 : 1);
+    const testUtilNode1 = new BlackBoxTestUtil(randomBoolean ? 0 : 1);
+    const testUtilNode2 = new BlackBoxTestUtil(randomBoolean ? 1 : 0);
     // const testUtilNode1 = new BlackBoxTestUtil(0);
     // const testUtilNode2 = new BlackBoxTestUtil(1);
 
