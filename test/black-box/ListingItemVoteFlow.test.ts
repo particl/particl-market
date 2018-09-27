@@ -577,7 +577,6 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalNode1).toBeDefined();
         expect(proposalNode2).toBeDefined();
         expect(voteNode1).toBeDefined();
-        expect(voteNode2).toBeDefined();
         expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
@@ -608,6 +607,14 @@ describe('Happy ListingItem Vote Flow', () => {
     // default profiles on both nodes have voted
 
     test('Post Vote2 again from node2 changing the vote optionId', async () => {
+
+        expect(listingItemNode1).toBeDefined();
+        expect(listingItemNode2).toBeDefined();
+        expect(proposalNode1).toBeDefined();
+        expect(proposalNode2).toBeDefined();
+        expect(voteNode1).toBeDefined();
+        expect(voteNode2).toBeDefined();
+        expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');
         log.debug('Node2 POSTS MP_VOTE_ADD (voter2)');
