@@ -14,7 +14,6 @@ import { Address } from './Address';
 import { OrderItem } from './OrderItem';
 import { OrderStatus } from '../enums/OrderStatus';
 
-
 export class Bid extends Bookshelf.Model<Bid> {
 
     public static RELATIONS = [

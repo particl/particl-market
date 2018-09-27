@@ -355,10 +355,15 @@ export class BidActionService {
      * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async accept(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
+    public async accept(bid: resources.Bid): Promise<SmsgSendResponse> {
 
         // previous bids action needs to be MPA_BID
         if (bid.action === BidMessageType.MPA_BID) {
+
+            const listingItem = this.listingItemService.findOne(bid.ListingItem.id, true)
+                .then(value => {
+                    return value.toJSON();
+                });
 
             // todo: create order before biddatas so order hash can be added to biddata in generateBidDatasForMPA_ACCEPT
             // generate bidDatas for MPA_ACCEPT
