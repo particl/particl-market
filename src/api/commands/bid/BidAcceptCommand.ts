@@ -48,12 +48,6 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
         const listingItemModel = await this.listingItemService.findOne(itemId);
         const listingItem = listingItemModel.toJSON();
 
-        // make sure we have a ListingItemTemplate, so we know it's our item
-        if (_.isEmpty(listingItem.ListingItemTemplate)) {
-            this.log.error('Not your item.'); // Added for Unit Tests
-            throw new MessageException('Not your item.');
-        }
-
         // find the bid
         const bids: resources.Bid[] = listingItem.Bids;
         const bidToAccept = bids.find(bid => {
@@ -77,25 +71,47 @@ export class BidAcceptCommand extends BaseCommand implements RpcCommandInterface
      * @returns {Promise<RpcRequest>}
      */
     public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MessageException('Missing itemHash.');
+        }
         if (data.params.length < 2) {
-            throw new MessageException('Missing params.');
+            throw new MessageException('Missing bidId.');
+        }
+
+        const itemHash = data.params[0];
+        const bidId = data.params[1];
+
+        if (typeof itemHash !== 'string') {
+            throw new MessageException('itemHash should be a string.');
+        }
+
+        if (typeof bidId !== 'number') {
+            throw new MessageException('bidId should be a number.');
         }
 
         // find listingItem by hash
-        const listingItemModel = await this.listingItemService.findOneByHash(data.params[0]);
+        const listingItemModel = await this.listingItemService.findOneByHash(itemHash);
         const listingItem = listingItemModel.toJSON();
+
+        // make sure we have a ListingItemTemplate, so we know it's our item
+        if (_.isEmpty(listingItem.ListingItemTemplate)) {
+            this.log.error('Not your item.');
+            throw new MessageException('Not your item.');
+        }
 
         data.params[0] = listingItem.id;
         return data;
     }
 
     public usage(): string {
-        return this.getName() + ' <itemhash> ';
+        return this.getName() + ' <itemhash> <bidId>';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
-            + '    <itemhash>               - String - The hash of the item we want to accept. ';
+            + '    <itemhash>               - string - The hash of the item we want to accept. '
+            + '    <bidId>                  - number - The id of the item we want to accept. ';
     }
 
     public description(): string {
