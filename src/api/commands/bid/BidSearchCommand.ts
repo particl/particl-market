@@ -118,13 +118,6 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
             throw new MessageException('parameter pageLimit should be a number.');
         }
 
-        if (!_.includes([
-            SearchOrder.ASC,
-            SearchOrder.DESC
-        ], data.params[2])) {
-            throw new MessageException('Invalid SearchOrder: ' + data.params[2]);
-        }
-
         if (data.params[2] === 'ASC') {
             data.params[2] = SearchOrder.ASC;
         } else {
@@ -163,7 +156,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public description(): string {
-            return 'Search bids by itemhash, bid status, or bidder address';
+            return 'Search Bids by item hash, bid status, or bidder address';
     }
 
     public example(): string {

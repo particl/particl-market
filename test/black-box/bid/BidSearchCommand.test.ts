@@ -155,8 +155,10 @@ describe('BidSearchCommand', () => {
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result.length).toBe(2);
-        expect(result[0].action).toBe(BidMessageType.MPA_BID);
+        expect(result[0].action).toBe(BidMessageType.MPA_ACCEPT);
         expect(result[0].ListingItem.hash).toBe(listingItems[0].hash);
+        expect(result[1].action).toBe(BidMessageType.MPA_BID);
+        expect(result[1].ListingItem.hash).toBe(listingItems[0].hash);
     });
 
     // TODO: add test where bids are searched using bid.OrderItems status
