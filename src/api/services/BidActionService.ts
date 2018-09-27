@@ -360,7 +360,7 @@ export class BidActionService {
         // previous bids action needs to be MPA_BID
         if (bid.action === BidMessageType.MPA_BID) {
 
-            const listingItem = this.listingItemService.findOne(bid.ListingItem.id, true)
+            const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
                 .then(value => {
                     return value.toJSON();
                 });
