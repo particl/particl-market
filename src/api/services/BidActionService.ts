@@ -351,7 +351,6 @@ export class BidActionService {
     /**
      * Accept a Bid
      *
-     * @param {module:resources.ListingItem} listingItem
      * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
@@ -672,7 +671,6 @@ export class BidActionService {
     /**
      * Cancel a Bid
      *
-     * @param {module:resources.ListingItem} listingItem
      * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
@@ -728,13 +726,18 @@ export class BidActionService {
      * Reject a Bid
      * todo: add the bid as param, so we know whose bid we are rejecting. now supports just one bidder.
      *
-     * @param {module:resources.ListingItem} listingItem
      * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async reject(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
+    public async reject(bid: resources.Bid): Promise<SmsgSendResponse> {
 
         if (bid.action === BidMessageType.MPA_BID) {
+
+            const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
+                .then(value => {
+                    return value.toJSON();
+                });
+
             // fetch the seller profile
             const sellerProfileModel: Profile = await this.profileService.findOneByAddress(listingItem.seller);
             if (!sellerProfileModel) {

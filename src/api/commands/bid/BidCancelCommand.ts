@@ -8,7 +8,6 @@ import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import * as resources from 'resources';
-
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemService } from '../../services/ListingItemService';
@@ -78,12 +77,6 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
         if (_.isEmpty(bid.ListingItem)) {
             this.log.error('ListingItem not found.');
             throw new MessageException('ListingItem not found.');
-        }
-
-        // make sure we have a ListingItemTemplate, so we know it's our item
-        if (_.isEmpty(bid.ListingItem.ListingItemTemplate)) {
-            this.log.error('Not your ListingItem.');
-            throw new MessageException('Not your ListingItem.');
         }
 
         return data;
