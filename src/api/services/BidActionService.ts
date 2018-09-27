@@ -676,9 +676,14 @@ export class BidActionService {
      * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async cancel(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
+    public async cancel(bid: resources.Bid): Promise<SmsgSendResponse> {
 
         if (bid.action === BidMessageType.MPA_BID) {
+
+            const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
+                .then(value => {
+                    return value.toJSON();
+                });
 
             // create the bid cancel message
             const bidMessage: BidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_CANCEL, listingItem.hash);
