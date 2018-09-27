@@ -17,6 +17,14 @@ import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
 import { ProposalOptionService } from './ProposalOptionService';
 import { ProposalSearchParams } from '../requests/ProposalSearchParams';
+import {ProposalOptionResultUpdateRequest} from '../requests/ProposalOptionResultUpdateRequest';
+import {ProposalResultUpdateRequest} from '../requests/ProposalResultUpdateRequest';
+import {CoreRpcService} from './CoreRpcService';
+import {ProposalResultService} from './ProposalResultService';
+import {ProposalOptionResultService} from './ProposalOptionResultService';
+import * as resources from 'resources';
+import {ProposalOptionResultCreateRequest} from '../requests/ProposalOptionResultCreateRequest';
+import {ProposalResultCreateRequest} from '../requests/ProposalResultCreateRequest';
 
 export class ProposalService {
 
@@ -24,6 +32,9 @@ export class ProposalService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ProposalOptionService) public proposalOptionService: ProposalOptionService,
+        @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Service) @named(Targets.Service.ProposalResultService) public proposalResultService: ProposalResultService,
+        @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) public proposalOptionResultService: ProposalOptionResultService,
         @inject(Types.Repository) @named(Targets.Repository.ProposalRepository) public proposalRepo: ProposalRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -141,6 +152,96 @@ export class ProposalService {
 
     public async destroy(id: number): Promise<void> {
         await this.proposalRepo.destroy(id);
+    }
+
+
+    /**
+     * creates empty ProposalResult for the Proposal
+     * todo: create one after call to proposalservice.create, so this doesnt need to be called from anywhere else
+     *
+     * @param {"resources".Proposal} proposal
+     * @returns {Promise<"resources".ProposalResult>}
+     */
+    public async createProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
+        const currentBlock: number = await this.coreRpcService.getBlockCount();
+
+        let proposalResultModel = await this.proposalResultService.create({
+            block: currentBlock,
+            proposal_id: proposal.id
+        } as ProposalResultCreateRequest);
+
+        let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
+
+        for (const proposalOption of proposal.ProposalOptions) {
+            const proposalOptionResult = await this.proposalOptionResultService.create({
+                weight: 0,
+                voters: 0,
+                proposal_option_id: proposalOption.id,
+                proposal_result_id: proposalResult.id
+            } as ProposalOptionResultCreateRequest);
+            // this.log.debug('processProposalReceivedEvent.proposalOptionResult = ' + JSON.stringify(proposalOptionResult, null, 2));
+        }
+
+        proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
+        proposalResult = proposalResultModel.toJSON();
+
+        // this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
+        return proposalResult;
+    }
+
+
+    /**
+     * todo: needs refactoring, perhaps combine with createProposalResult
+     * todo: and move to proposalresultservice?
+     * todo: this is just updating the latest one.. we should propably modify this so that we create a new
+     * one periodically and can track the voting progress while proposal is active
+     *
+     * @param {number} proposalResultId
+     * @returns {Promise<"resources".ProposalResult>}
+     */
+    public async recalculateProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
+
+        const currentBlock: number = await this.coreRpcService.getBlockCount();
+
+        // get the proposal
+        // const proposalModel = await this.proposalService.findOne(proposalId);
+        // const proposal = proposalModel.toJSON();
+
+        this.log.debug('recalculateProposalResult(), proposal.id: ', proposal.id);
+
+        // fetch the latest ProposalResult to get the latest id
+        let proposalResultModel = await this.proposalResultService.findOneByProposalHash(proposal.hash);
+        let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
+
+        // first update the block in ProposalResult
+        proposalResultModel = await this.proposalResultService.update(proposalResult.id, {
+            block: currentBlock
+        } as ProposalResultUpdateRequest);
+        proposalResult = proposalResultModel.toJSON();
+
+        // then loop through ProposalOptionResults and update values
+        for (const proposalOptionResult of proposalResult.ProposalOptionResults) {
+            // get the votes
+            const proposalOptionModel = await this.proposalOptionService.findOne(proposalOptionResult.ProposalOption.id);
+            const proposalOption: resources.ProposalOption = proposalOptionModel.toJSON();
+
+            // this.log.debug('recalculateProposalResult(), proposalOption: ', JSON.stringify(proposalOption, null, 2));
+            this.log.debug('recalculateProposalResult(), proposalOption.Votes.length: ', proposalOption.Votes.length);
+
+            // update
+            const updatedProposalOptionResultModel = await this.proposalOptionResultService.update(proposalOptionResult.id, {
+                weight: proposalOption.Votes.length,
+                voters: proposalOption.Votes.length
+            } as ProposalOptionResultUpdateRequest);
+            const updatedProposalOptionResult = updatedProposalOptionResultModel.toJSON();
+            // this.log.debug('recalculateProposalResult(), proposalOption: ', JSON.stringify(updatedProposalOptionResult, null, 2));
+        }
+
+        proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
+        proposalResult = proposalResultModel.toJSON();
+        // this.log.debug('recalculateProposalResult(), proposalResult: ', JSON.stringify(proposalResult, null, 2));
+
+        return proposalResult;
     }
 
 }

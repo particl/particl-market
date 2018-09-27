@@ -147,6 +147,7 @@ export class ListingItemFlagCommand extends BaseCommand implements RpcCommandInt
             // make sure profile with the id exists
             await this.profileService.findOne(data.params[1])    // throws if not found
                 .catch(reason => {
+                    this.log.error(reason);
                     throw new MessageException('Profile not found.');
                 });
         }

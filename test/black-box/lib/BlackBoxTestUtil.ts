@@ -177,7 +177,7 @@ export class BlackBoxTestUtil {
      */
     public async waitFor(maxSeconds: number): Promise<boolean> {
         for (let i = 0; i < maxSeconds; i++) {
-            this.log.debug('waiting... ');
+            this.log.debug('... ');
             await this.waitTimeOut(1000);
         }
         return true;
@@ -233,7 +233,7 @@ export class BlackBoxTestUtil {
                         // this.log.debug('objectPropertyValue: ' + objectPropertyValue);
 
                         if (objectPropertyValue === waitForObjectPropertyValue) {
-                            this.log.debug('success! statusCode === ' + waitForStatusCode
+                            this.log.debug('SUCCESS! statusCode === ' + waitForStatusCode
                                 + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
                             return response;
                         } else {
@@ -254,7 +254,7 @@ export class BlackBoxTestUtil {
                             // throw new MessageException('rpcWaitFor received non-matching waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
                         }
                     } else {
-                        this.log.debug('success! statusCode === ' + waitForStatusCode);
+                        this.log.debug('SUCCESS! statusCode === ' + waitForStatusCode);
                         return response;
                     }
                 } else {

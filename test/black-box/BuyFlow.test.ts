@@ -28,25 +28,19 @@ describe('Happy Buy Flow', () => {
     const templateCommand = Commands.TEMPLATE_ROOT.commandName;
     const templatePostCommand = Commands.TEMPLATE_POST.commandName;
     const templateGetCommand = Commands.TEMPLATE_GET.commandName;
-
     const imageCommand = Commands.ITEMIMAGE_ROOT.commandName;
     const imageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
-
     const listingItemCommand = Commands.ITEM_ROOT.commandName;
     const listingItemGetCommand = Commands.ITEM_GET.commandName;
-
     const bidCommand = Commands.BID_ROOT.commandName;
     const bidSendCommand = Commands.BID_SEND.commandName;
     const bidSearchCommand = Commands.BID_SEARCH.commandName;
     const bidAcceptCommand = Commands.BID_ACCEPT.commandName;
-
     const orderCommand = Commands.ORDER_ROOT.commandName;
     const orderSearchCommand = Commands.ORDER_SEARCH.commandName;
-
     const escrowCommand = Commands.ESCROW_ROOT.commandName;
     const escrowLockCommand = Commands.ESCROW_LOCK.commandName;
     const escrowReleaseCommand = Commands.ESCROW_RELEASE.commandName;
-
     const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let sellerProfile: resources.Profile;

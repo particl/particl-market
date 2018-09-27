@@ -116,7 +116,7 @@ export class VoteActionService {
                     const createdVote = await this.createOrUpdateVote(voteMessage, proposal, currentBlock, 1);
                     this.log.debug('created/updated Vote:', JSON.stringify(createdVote, null, 2));
 
-                    const proposalResult: resources.ProposalResult = await this.updateProposalResult(proposal);
+                    const proposalResult: resources.ProposalResult = await this.proposalService.recalculateProposalResult(proposal);
 
                     // todo: extract method
                     if (proposal.type === ProposalType.ITEM_VOTE) {
@@ -145,58 +145,6 @@ export class VoteActionService {
                 return SmsgMessageStatus.WAITING;
             });
 
-    }
-
-    /**
-     * todo: this is actually just updating the latest one.. we should propably modify this so that we create a new
-     * one periodically so we can track the voting progress
-     *
-     * @param {number} proposalResultId
-     * @returns {Promise<"resources".ProposalResult>}
-     */
-    public async updateProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
-
-        const currentBlock: number = await this.coreRpcService.getBlockCount();
-
-        // get the proposal
-        // const proposalModel = await this.proposalService.findOne(proposalId);
-        // const proposal = proposalModel.toJSON();
-
-        this.log.debug('updateProposalResult(), proposal.id: ', proposal.id);
-
-        // fetch the latest ProposalResult to get the latest id
-        let proposalResultModel = await this.proposalResultService.findOneByProposalHash(proposal.hash);
-        let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
-
-        // first update the block in ProposalResult
-        proposalResultModel = await this.proposalResultService.update(proposalResult.id, {
-            block: currentBlock
-        } as ProposalResultUpdateRequest);
-        proposalResult = proposalResultModel.toJSON();
-
-        // then loop through ProposalOptionResults and update values
-        for (const proposalOptionResult of proposalResult.ProposalOptionResults) {
-            // get the votes
-            const proposalOptionModel = await this.proposalOptionService.findOne(proposalOptionResult.ProposalOption.id);
-            const proposalOption: resources.ProposalOption = proposalOptionModel.toJSON();
-
-            // this.log.debug('updateProposalResult(), proposalOption: ', JSON.stringify(proposalOption, null, 2));
-            this.log.debug('updateProposalResult(), proposalOption.Votes.length: ', proposalOption.Votes.length);
-
-            // update
-            const updatedProposalOptionResultModel = await this.proposalOptionResultService.update(proposalOptionResult.id, {
-                weight: proposalOption.Votes.length,
-                voters: proposalOption.Votes.length
-            } as ProposalOptionResultUpdateRequest);
-            const updatedProposalOptionResult = updatedProposalOptionResultModel.toJSON();
-            // this.log.debug('updateProposalResult(), proposalOption: ', JSON.stringify(updatedProposalOptionResult, null, 2));
-        }
-
-        proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
-        proposalResult = proposalResultModel.toJSON();
-        // this.log.debug('updateProposalResult(), proposalResult: ', JSON.stringify(proposalResult, null, 2));
-
-        return proposalResult;
     }
 
     /**

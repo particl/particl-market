@@ -74,7 +74,7 @@ describe('ProposalListCommand', () => {
 
     });
 
-    test('Should list all proposals', async () => {
+    test('Should list all Proposals', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*']);
         res.expectJson();
         res.expectStatusCode(200);
@@ -84,7 +84,7 @@ describe('ProposalListCommand', () => {
         expect(result).toHaveLength(3);
     });
 
-    test('Should list past proposals', async () => {
+    test('Should list past Proposals', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', currentBlock]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -94,7 +94,7 @@ describe('ProposalListCommand', () => {
         expect(result).toHaveLength(2);
     });
 
-    test('Should list active proposals', async () => {
+    test('Should list active Proposals', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, currentBlock, '*']);
         res.expectJson();
         res.expectStatusCode(200);
@@ -104,7 +104,7 @@ describe('ProposalListCommand', () => {
         expect(result).toHaveLength(1);
     });
 
-    test('Should list 3 proposals with type PUBLIC_VOTE', async () => {
+    test('Should list 3 Proposals with type PUBLIC_VOTE', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*', ProposalType.PUBLIC_VOTE]);
         res.expectJson();
         res.expectStatusCode(200);
@@ -113,7 +113,7 @@ describe('ProposalListCommand', () => {
         expect(result).toHaveLength(3);
     });
 
-    test('Should not list any proposals with type ITEM_VOTE', async () => {
+    test('Should not list any Proposals with type ITEM_VOTE', async () => {
         const res: any = await testUtil.rpc(proposalCommand, [proposalListCommand, '*', '*', ProposalType.ITEM_VOTE]);
         res.expectJson();
         res.expectStatusCode(200);

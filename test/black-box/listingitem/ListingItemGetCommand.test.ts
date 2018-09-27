@@ -95,6 +95,8 @@ describe('ListingItemGetCommand', () => {
 
         expect(result.MessagingInformation[0].protocol).toBe(createdListingItem.MessagingInformation[0].protocol);
         expect(result.MessagingInformation[0].publicKey).toBe(createdListingItem.MessagingInformation[0].publicKey);
+
+        // todo: missing FlaggedItem, Proposal, ...
     });
 
     test('Should get the ListingItem by id', async () => {

@@ -17,6 +17,7 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         // 'ProposalOptions.Votes',
         'ProposalResults',
         'ProposalResults.ProposalOptionResults',
+        'ProposalResults.ProposalOptionResults.ProposalOption',
         'FlaggedItem'
     ];
 

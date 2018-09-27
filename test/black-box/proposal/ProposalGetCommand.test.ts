@@ -39,7 +39,7 @@ describe('ProposalGetCommand', () => {
             false // generatePastProposal = false;
         ]).toParamsArray();
 
-        // create listing item for testing
+        // create Proposal for testing
         const proposals = await testUtil.generateData(
             CreatableModel.PROPOSAL,     // what to generate
             1,                           // how many to generate
@@ -50,7 +50,7 @@ describe('ProposalGetCommand', () => {
 
     });
 
-    test('Should get the proposal', async () => {
+    test('Should get the Proposal', async () => {
         const res: any = await  testUtil.rpc(proposalCommand, [proposalGetCommand, createdProposal.hash]);
         res.expectJson();
         res.expectStatusCode(200);

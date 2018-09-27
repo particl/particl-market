@@ -149,58 +149,29 @@ export class ProposalActionService {
 
             // this.log.debug('proposal:', JSON.stringify(proposal, null, 2));
 
+            // finally, create ProposalResult, vote and recalculate proposalresult
+            let proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
             vote = await this.createVote(proposal, ItemVote.REMOVE);
-            // this.log.debug('vote:', JSON.stringify(vote, null, 2));
-
             const flaggedItem = await this.createFlaggedItemForProposal(proposal);
-            // this.log.debug('flaggedItem:', JSON.stringify(flaggedItem, null, 2));
+            proposalResult = await this.proposalService.recalculateProposalResult(proposal);
+
+            this.log.debug('vote:', JSON.stringify(vote, null, 2));
+            this.log.debug('flaggedItem:', JSON.stringify(flaggedItem, null, 2));
 
         } else { // else (ProposalType.PUBLIC_VOTE)
 
             const createdProposalModel = await this.proposalService.create(proposalCreateRequest);
             proposal = createdProposalModel.toJSON();
+
+            // finally, create ProposalResult
+            const proposalResult: resources.ProposalResult = await this.proposalService.createProposalResult(proposal);
         }
 
-        // finally, create ProposalResult
-        const proposalResult: resources.ProposalResult = await this.createProposalResult(proposal);
 
         // this.log.debug('createdProposal:', JSON.stringify(proposal, null, 2));
         // this.log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
 
         return SmsgMessageStatus.PROCESSED;
-    }
-
-    /**
-     * creates empty ProposalResult for the Proposal
-     *
-     * @param {"resources".Proposal} proposal
-     * @returns {Promise<"resources".ProposalResult>}
-     */
-    public async createProposalResult(proposal: resources.Proposal): Promise<resources.ProposalResult> {
-        const currentBlock: number = await this.coreRpcService.getBlockCount();
-
-        let proposalResultModel = await this.proposalResultService.create({
-            block: currentBlock,
-            proposal_id: proposal.id
-        } as ProposalResultCreateRequest);
-
-        let proposalResult: resources.ProposalResult = proposalResultModel.toJSON();
-
-        for (const proposalOption of proposal.ProposalOptions) {
-            const proposalOptionResult = await this.proposalOptionResultService.create({
-                weight: 0,
-                voters: 0,
-                proposal_option_id: proposalOption.id,
-                proposal_result_id: proposalResult.id
-            } as ProposalOptionResultCreateRequest);
-            // this.log.debug('processProposalReceivedEvent.proposalOptionResult = ' + JSON.stringify(proposalOptionResult, null, 2));
-        }
-
-        proposalResultModel = await this.proposalResultService.findOne(proposalResult.id);
-        proposalResult = proposalResultModel.toJSON();
-
-        this.log.debug('proposalResult: ', JSON.stringify(proposalResult, null, 2));
-        return proposalResult;
     }
 
     /**

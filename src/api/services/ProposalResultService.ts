@@ -31,8 +31,6 @@ export class ProposalResultService {
     }
 
     public async findAllByProposalHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<ProposalResult>> {
-        this.log.debug('hash:', hash);
-        this.log.debug('withRelated:', withRelated);
         return await this.proposalResultRepo.findAllByProposalHash(hash, withRelated);
     }
 
@@ -47,7 +45,7 @@ export class ProposalResultService {
 
     public async findOneByProposalHash(hash: string, withRelated: boolean = true): Promise<ProposalResult> {
         const proposalResult = await this.proposalResultRepo.findAllByProposalHash(hash, withRelated);
-        this.log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
+        // this.log.debug('proposalResult:', JSON.stringify(proposalResult, null, 2));
 
         if (proposalResult === null) {
             this.log.warn(`ProposalResult with the hash=${hash} was not found!`);
