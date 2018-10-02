@@ -1,0 +1,43 @@
+version: '2'
+
+options:
+  # compose-file-path: 'docker-compose.yml'
+  # compose-dev-file-path: 'docker-compose-dev.yml'
+
+  # optional, activate this if you need to debug something, default is false
+  # IMPORTANT: do not run stable with this, it creates a memory leak, turn off verbose when you are done testing
+  verbose: false
+
+syncs:
+  app1-sync1:
+    src: '.'
+    sync_excludes: ['data', 'node_modules', 'dist', '.circleci', '.idea', '.Trash-0', '.vscode', '.DS_Store', 'test']
+    monit_enable: false         # monitor the health of unison in the native_osx strategy and can restart unison in case of a problem
+    monit_interval: 5           # amount of seconds between each monit check (cycle)
+    monit_high_cpu_cycles: 2    # amount of consecutive times high cpu usage must be observed before unison is restarted
+  app1-sync2:
+    src: './data/app1'
+    monit_enable: false         # monitor the health of unison in the native_osx strategy and can restart unison in case of a problem
+    monit_interval: 5           # amount of seconds between each monit check (cycle)
+    monit_high_cpu_cycles: 2    # amount of consecutive times high cpu usage must be observed before unison is restarted
+  app1-sync3:
+    src: './data/app1_node_modules'
+    monit_enable: false         # monitor the health of unison in the native_osx strategy and can restart unison in case of a problem
+    monit_interval: 5           # amount of seconds between each monit check (cycle)
+    monit_high_cpu_cycles: 2    # amount of consecutive times high cpu usage must be observed before unison is restarted
+  app2-sync1:
+    src: '.'
+    sync_excludes: ['data', 'node_modules', 'dist', '.circleci', '.idea', '.Trash-0', '.vscode', 'test']
+    monit_enable: false         # monitor the health of unison in the native_osx strategy and can restart unison in case of a problem
+    monit_interval: 5           # amount of seconds between each monit check (cycle)
+    monit_high_cpu_cycles: 2    # amount of consecutive times high cpu usage must be observed before unison is restarted
+  app2-sync2:
+    src: './data/app2'
+    monit_enable: false         # monitor the health of unison in the native_osx strategy and can restart unison in case of a problem
+    monit_interval: 5           # amount of seconds between each monit check (cycle)
+    monit_high_cpu_cycles: 2    # amount of consecutive times high cpu usage must be observed before unison is restarted
+  app2-sync3:
+    src: './data/app2_node_modules'
+    monit_enable: false         # monitor the health of unison in the native_osx strategy and can restart unison in case of a problem
+    monit_interval: 5           # amount of seconds between each monit check (cycle)
+    monit_high_cpu_cycles: 2    # amount of consecutive times high cpu usage must be observed before unison is restarted
