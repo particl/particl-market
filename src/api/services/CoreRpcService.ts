@@ -25,6 +25,7 @@ export class CoreRpcService {
 
     private DEFAULT_MAINNET_PORT = 51735;
     private DEFAULT_TESTNET_PORT = 51935;
+    private DEFAULT_REGTEST_PORT = 19792;
     private DEFAULT_HOSTNAME = 'localhost';
     // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
 
@@ -425,9 +426,15 @@ export class CoreRpcService {
         // this.log.debug('process.env.TESTNET:', process.env.TESTNET);
 
         const host = (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.DEFAULT_HOSTNAME);
-        const port = (Environment.isTestnet() ?
-            (process.env.TESTNET_PORT ? process.env.TESTNET_PORT : this.DEFAULT_TESTNET_PORT) :
-            (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT));
+        const port = process.env.RPC_PORT ?
+            process.env.RPC_PORT :
+            (Environment.isRegtest() ?
+                (process.env.REGTEST_PORT ? process.env.REGTEST_PORT : this.DEFAULT_REGTEST_PORT) :
+                (Environment.isTestnet() ?
+                    (process.env.TESTNET_PORT ? process.env.TESTNET_PORT : this.DEFAULT_TESTNET_PORT) :
+                    (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT)
+                )
+            );
         return 'http://' + host + ':' + port;
     }
 

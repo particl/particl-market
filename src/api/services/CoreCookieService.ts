@@ -124,7 +124,7 @@ export class CoreCookieService {
         // just check if it exist so it logs an error just in case
         if (this.checkIfExists(dir)) {
             // return path to cookie
-            const cookiePath = path.join(dir, (Environment.isTestnet() ? 'testnet' : ''), '.cookie');
+            const cookiePath = path.join(dir, (Environment.isTestnet() ? 'testnet' : ( Environment.isRegtest() ? 'regtest' : '') ), '.cookie');
             this.PATH_TO_COOKIE = cookiePath;
             return cookiePath;
         }
