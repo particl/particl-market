@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
@@ -32,7 +36,7 @@ export class ShoppingCartItemListCommand extends BaseCommand implements RpcComma
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ShoppingCartItem>> {
-        return this.shoppingCartItemService.findListItemsByCartId(data.params[0]);
+        return this.shoppingCartItemService.findAllByCartId(data.params[0]);
     }
 
     public usage(): string {

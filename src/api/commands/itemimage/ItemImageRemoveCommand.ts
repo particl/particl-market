@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -23,10 +27,13 @@ export class ItemImageRemoveCommand extends BaseCommand implements RpcCommandInt
 
     /**
      * data.params[]:
-     *  [0]: ItemImage.Id
+     *  [0]: ItemImageId
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+        if (data.params.length < 1) {
+            throw new MessageException('Requires arg: ItemImageId');
+        }
         // find itemImage
         const itemImage = await this.itemImageService.findOne(data.params[0]);
 

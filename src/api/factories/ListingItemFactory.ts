@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -29,6 +33,8 @@ export class ListingItemFactory {
 
     public log: LoggerType;
 
+    private dayMilliseconds = 24 * 60 * 60 * 1000;
+
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Factory) @named(Targets.Factory.ItemCategoryFactory) private itemCategoryFactory: ItemCategoryFactory
@@ -39,8 +45,9 @@ export class ListingItemFactory {
     /**
      * Creates a ListingItemMessage from given data
      *
-     * @param {'resources'.ListingItemTemplate} listingItemTemplate
-     * @param {'resources'.ItemCategory} listingItemCategory
+     * @param {module:resources.ListingItemTemplate} listingItemTemplate
+     * @param {string} proposalHash
+     * @param {number} expiryTime
      * @returns {Promise<ListingItemMessage>}
      */
     public async getMessage(listingItemTemplate: resources.ListingItemTemplate): Promise<ListingItemMessage> {
@@ -64,12 +71,12 @@ export class ListingItemFactory {
     /**
      *
      * @param {ListingItemMessage} listingItemMessage
+     * @param {module:resources.SmsgMessage} smsgMessage
      * @param {number} marketId
-     * @param {string} seller
-     * @param {"resources".ItemCategory} rootCategory
+     * @param {module:resources.ItemCategory} rootCategory
      * @returns {Promise<ListingItemCreateRequest>}
      */
-    public async getModel(listingItemMessage: ListingItemMessage, marketId: number, seller: string,
+    public async getModel(listingItemMessage: ListingItemMessage, smsgMessage: resources.SmsgMessage, marketId: number,
                           rootCategory: resources.ItemCategory): Promise<ListingItemCreateRequest> {
 
         const itemInformation = await this.getModelItemInformation(listingItemMessage.information, rootCategory);
@@ -78,9 +85,13 @@ export class ListingItemFactory {
         const listingItemObjects = await this.getModelListingItemObjects(listingItemMessage.objects);
 
         return {
-            seller,
             hash: listingItemMessage.hash,
+            seller: smsgMessage.from,
             market_id: marketId,
+            expiryTime: smsgMessage.daysretention,
+            postedAt: smsgMessage.sent,
+            expiredAt: smsgMessage.expiration,
+            receivedAt: smsgMessage.received,
             itemInformation,
             paymentInformation,
             messagingInformation,
@@ -93,7 +104,6 @@ export class ListingItemFactory {
     // ---------------
     private async getModelListingItemObjects(objects: any[]): Promise<ListingItemObjectCreateRequest[]> {
         const objectArray: ListingItemObjectCreateRequest[] = [];
-        this.log.debug('objectArray: ', JSON.stringify(objectArray, null, 2));
         for (const object of objects) {
             let objectData;
             if ('TABLE' === object.type) {

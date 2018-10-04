@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -10,7 +14,8 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { EscrowCreateRequest } from '../../requests/EscrowCreateRequest';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
-import {MessageException} from '../../exceptions/MessageException';
+import { MessageException } from '../../exceptions/MessageException';
+import * as _ from 'lodash';
 
 export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface<Escrow> {
 
@@ -42,11 +47,6 @@ export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
         const listingItemTemplate = listingItemTemplateModel.toJSON();
 
-        // template allready has listingitems so for now, it cannot be modified
-        if (listingItemTemplate.ListingItems.length > 0) {
-            throw new MessageException(`Escrow cannot be added because ListingItems allready exist for the ListingItemTemplate.`);
-        }
-
         // creates an Escrow related to PaymentInformation related to ListingItemTemplate
         return this.escrowService.create({
             payment_information_id: listingItemTemplate.PaymentInformation.id,
@@ -56,6 +56,29 @@ export class EscrowAddCommand extends BaseCommand implements RpcCommandInterface
                 seller: data.params[3]
             }
         } as EscrowCreateRequest);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 4) {
+            throw new MessageException('Missing params.');
+        }
+
+        // get the template
+        const listingItemTemplateId = data.params[0];
+        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
+        const listingItemTemplate = listingItemTemplateModel.toJSON();
+
+        // template allready has listingitems so for now, it cannot be modified
+        if (listingItemTemplate.ListingItems.length > 0) {
+            throw new MessageException(`Escrow cannot be added because ListingItems allready exist for the ListingItemTemplate.`);
+        }
+
+        this.log.debug('escrow: ', JSON.stringify(listingItemTemplate.PaymentInformation, null, 2));
+        if (!_.isEmpty(listingItemTemplate.PaymentInformation.Escrow)) {
+            throw new MessageException(`Escrow allready exists.`);
+        }
+
+        return data;
     }
 
     public usage(): string {

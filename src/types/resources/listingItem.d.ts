@@ -1,11 +1,19 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 declare module 'resources' {
 
     interface ListingItem {
         id: number;
         hash: string;
         seller: string;
-        createdAt: Date;
-        updatedAt: Date;
+        expiryTime: number;
+
+        receivedAt: number;
+        postedAt: number;
+        expiredAt: number;
+
         ItemInformation: ItemInformation;
         PaymentInformation: PaymentInformation;
         MessagingInformation: MessagingInformation[];
@@ -14,6 +22,10 @@ declare module 'resources' {
         Bids: Bid[];
         ActionMessages: ActionMessage[];
         ListingItemTemplate: ListingItemTemplate;
+        FlaggedItem: FlaggedItem;
+
+        createdAt: Date;
+        updatedAt: Date;
     }
 
 }

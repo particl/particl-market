@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
@@ -30,9 +34,8 @@ export class PriceTickerRootCommand extends BaseCommand implements RpcCommandInt
     /**
      *
      * data.params[]:
-     * [0] currecny
-     *  .
-     * [n] currency
+     * [0] currency
+     * [...n] currency
      *
      * example: [ETH, BTC, XRP]
      *

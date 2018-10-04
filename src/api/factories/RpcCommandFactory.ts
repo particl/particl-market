@@ -1,4 +1,7 @@
-import * as Bookshelf from 'bookshelf';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named, multiInject } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -11,8 +14,6 @@ import { AddressListCommand } from '../commands/address/AddressListCommand';
 import { AddressAddCommand } from '../commands/address/AddressAddCommand';
 import { AddressUpdateCommand } from '../commands/address/AddressUpdateCommand';
 import { AddressRemoveCommand } from '../commands/address/AddressRemoveCommand';
-
-import { AdminCommand } from '../commands/admin/AdminCommand';
 
 import { BidRootCommand } from '../commands/bid/BidRootCommand';
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
@@ -29,8 +30,10 @@ import { DaemonRootCommand } from '../commands/daemon/DaemonRootCommand';
 
 import { DataAddCommand } from '../commands/data/DataAddCommand';
 import { DataCleanCommand } from '../commands/data/DataCleanCommand';
-import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
 import { DataRootCommand } from '../commands/data/DataRootCommand';
+import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
+
+import { AdminCommand } from '../commands/admin/AdminCommand';
 
 import { EscrowRootCommand } from '../commands/escrow/EscrowRootCommand';
 import { EscrowAddCommand } from '../commands/escrow/EscrowAddCommand';
@@ -58,7 +61,6 @@ import { ItemImageListCommand } from '../commands/itemimage/ItemImageListCommand
 import { ItemImageAddCommand } from '../commands/itemimage/ItemImageAddCommand';
 import { ItemImageRemoveCommand } from '../commands/itemimage/ItemImageRemoveCommand';
 
-import { ItemInformationAddCommand } from '../commands/iteminformation/ItemInformationAddCommand';
 import { ItemInformationGetCommand } from '../commands/iteminformation/ItemInformationGetCommand';
 import { ItemInformationUpdateCommand } from '../commands/iteminformation/ItemInformationUpdateCommand';
 import { ItemInformationRootCommand } from '../commands/iteminformation/ItemInformationRootCommand';
@@ -73,7 +75,6 @@ import { HelpCommand } from '../commands/HelpCommand';
 import { ListingItemGetCommand } from '../commands/listingitem/ListingItemGetCommand';
 import { ListingItemSearchCommand } from '../commands/listingitem/ListingItemSearchCommand';
 import { ListingItemFlagCommand } from '../commands/listingitem/ListingItemFlagCommand';
-import { ListingItemUpdateCommand } from '../commands/listingitem/ListingItemUpdateCommand';
 import { ListingItemRootCommand } from '../commands/listingitem/ListingItemRootCommand';
 
 import { ListingItemTemplateAddCommand } from '../commands/listingitemtemplate/ListingItemTemplateAddCommand';
@@ -93,13 +94,19 @@ import { MessagingInformationRootCommand } from '../commands/messaginginformatio
 import { OrderRootCommand } from '../commands/order/OrderRootCommand';
 import { OrderSearchCommand } from '../commands/order/OrderSearchCommand';
 
-import { OrderItemRootCommand } from '../commands/orderItem/OrderItemRootCommand';
-import { OrderItemStatusCommand } from '../commands/orderItem/OrderItemStatusCommand';
+import { OrderItemRootCommand } from '../commands/orderitem/OrderItemRootCommand';
+import { OrderItemStatusCommand } from '../commands/orderitem/OrderItemStatusCommand';
 
 import { PaymentInformationUpdateCommand } from '../commands/paymentinformation/PaymentInformationUpdateCommand';
 import { PaymentInformationRootCommand } from '../commands/paymentinformation/PaymentInformationRootCommand';
 
 import { PriceTickerRootCommand } from '../commands/priceticker/PriceTickerRootCommand';
+
+import { ProposalGetCommand } from '../commands/proposal/ProposalGetCommand';
+import { ProposalPostCommand } from '../commands/proposal/ProposalPostCommand';
+import { ProposalListCommand } from '../commands/proposal/ProposalListCommand';
+import { ProposalResultCommand } from '../commands/proposal/ProposalResultCommand';
+import { ProposalRootCommand } from '../commands/proposal/ProposalRootCommand';
 
 import { ProfileAddCommand } from '../commands/profile/ProfileAddCommand';
 import { ProfileRemoveCommand } from '../commands/profile/ProfileRemoveCommand';
@@ -129,6 +136,19 @@ import { ShoppingCartItemRemoveCommand } from '../commands/shoppingcartitem/Shop
 import { ShoppingCartItemListCommand } from '../commands/shoppingcartitem/ShoppingCartItemListCommand';
 import { ShoppingCartItemRootCommand } from '../commands/shoppingcartitem/ShoppingCartItemRootCommand';
 
+import { VotePostCommand } from '../commands/vote/VotePostCommand';
+import { VoteGetCommand } from '../commands/vote/VoteGetCommand';
+import { VoteListCommand } from '../commands/vote/VoteListCommand';
+import { VoteRootCommand } from '../commands/vote/VoteRootCommand';
+
+import { SmsgSearchCommand } from '../commands/smsg/SmsgSearchCommand';
+import { SmsgRootCommand } from '../commands/smsg/SmsgRootCommand';
+
+import { SettingGetCommand } from '../commands/setting/SettingGetCommand';
+import { SettingListCommand } from '../commands/setting/SettingListCommand';
+import { SettingRemoveCommand } from '../commands/setting/SettingRemoveCommand';
+import { SettingSetCommand } from '../commands/setting/SettingSetCommand';
+import { SettingRootCommand } from '../commands/setting/SettingRootCommand';
 
 // tslint:disable:array-type
 // tslint:disable:max-line-length
@@ -146,6 +166,13 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.bid.BidCancelCommand) private bidCancelCommand: BidCancelCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidRejectCommand) private bidRejectCommand: BidRejectCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidSendCommand) private bidSendCommand: BidSendCommand,
+
+        @inject(Types.Command) @named(Targets.Command.admin.AdminCommand) private adminCommand: AdminCommand,
+
+        @inject(Types.Command) @named(Targets.Command.data.DataAddCommand) private dataAddCommand: DataAddCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRootCommand) private escrowRootCommand: EscrowRootCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowAddCommand) private escrowAddCommand: EscrowAddCommand,
@@ -173,7 +200,6 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageAddCommand) private itemImageAddCommand: ItemImageAddCommand,
         @inject(Types.Command) @named(Targets.Command.itemimage.ItemImageRemoveCommand) private itemImageRemoveCommand: ItemImageRemoveCommand,
 
-        @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationAddCommand) private itemInformationAddCommand: ItemInformationAddCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationGetCommand) private itemInformationGetCommand: ItemInformationGetCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationUpdateCommand) private itemInformationUpdateCommand: ItemInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.iteminformation.ItemInformationRootCommand) private itemInformationRootCommand: ItemInformationRootCommand,
@@ -186,7 +212,6 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemGetCommand) private listingItemGetCommand: ListingItemGetCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemFlagCommand) private listingItemFlagCommand: ListingItemFlagCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemSearchCommand) private listingItemSearchCommand: ListingItemSearchCommand,
-        @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemUpdateCommand) private listingItemUpdateCommand: ListingItemUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.listingitem.ListingItemRootCommand) private listingItemRootCommand: ListingItemRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.listingitemtemplate.ListingItemTemplateAddCommand) private listingItemTemplateAddCommand: ListingItemTemplateAddCommand,
@@ -206,8 +231,8 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.order.OrderRootCommand) private orderRootCommand: OrderRootCommand,
         @inject(Types.Command) @named(Targets.Command.order.OrderSearchCommand) private orderSearchCommand: OrderSearchCommand,
 
-        @inject(Types.Command) @named(Targets.Command.orderItem.OrderItemRootCommand) private orderItemRootCommand: OrderItemRootCommand,
-        @inject(Types.Command) @named(Targets.Command.orderItem.OrderItemStatusCommand) private orderItemStatusCommand: OrderItemStatusCommand,
+        @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemRootCommand) private orderItemRootCommand: OrderItemRootCommand,
+        @inject(Types.Command) @named(Targets.Command.orderitem.OrderItemStatusCommand) private orderItemStatusCommand: OrderItemStatusCommand,
 
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationUpdateCommand) private paymentInformationUpdateCommand: PaymentInformationUpdateCommand,
         @inject(Types.Command) @named(Targets.Command.paymentinformation.PaymentInformationRootCommand) private paymentInformationRootCommand: PaymentInformationRootCommand,
@@ -230,13 +255,14 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationAddCommand) private shippingDestinationAddCommand: ShippingDestinationAddCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationRemoveCommand) private shippingDestinationRemoveCommand: ShippingDestinationRemoveCommand,
 
-        @inject(Types.Command) @named(Targets.Command.data.DataAddCommand) private dataAddCommand: DataAddCommand,
-        @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
-        @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
-        @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
-
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectRootCommand) private listingItemObjectRootCommand: ListingItemObjectRootCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectSearchCommand) private listingItemObjectSearchCommand: ListingItemObjectSearchCommand,
+
+        @inject(Types.Command) @named(Targets.Command.setting.SettingGetCommand) private settingGetCommand: SettingGetCommand,
+        @inject(Types.Command) @named(Targets.Command.setting.SettingListCommand) private settingListCommand: SettingListCommand,
+        @inject(Types.Command) @named(Targets.Command.setting.SettingRemoveCommand) private settingRemoveCommand: SettingRemoveCommand,
+        @inject(Types.Command) @named(Targets.Command.setting.SettingSetCommand) private settingSetCommand: SettingSetCommand,
+        @inject(Types.Command) @named(Targets.Command.setting.SettingRootCommand) private settingRootCommand: SettingRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartAddCommand) private shoppingCartAddCommand: ShoppingCartAddCommand,
         @inject(Types.Command) @named(Targets.Command.shoppingcart.ShoppingCartUpdateCommand) private shoppingCartUpdateCommand: ShoppingCartUpdateCommand,
@@ -254,8 +280,21 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.priceticker.PriceTickerRootCommand) private priceTickerRootCommand: PriceTickerRootCommand,
         @inject(Types.Command) @named(Targets.Command.currencyprice.CurrencyPriceRootCommand) private currencyPriceRootCommand: CurrencyPriceRootCommand,
 
-        @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalGetCommand) private proposalGetCommand: ProposalGetCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalPostCommand) private proposalPostCommand: ProposalPostCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalListCommand) private proposalListCommand: ProposalListCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalResultCommand) private proposalResultCommand: ProposalResultCommand,
+        @inject(Types.Command) @named(Targets.Command.proposal.ProposalRootCommand) private proposalRootCommand: ProposalRootCommand,
 
+        @inject(Types.Command) @named(Targets.Command.vote.VotePostCommand) private votePostCommand: VotePostCommand,
+        @inject(Types.Command) @named(Targets.Command.vote.VoteGetCommand) private voteGetCommand: VoteGetCommand,
+        @inject(Types.Command) @named(Targets.Command.vote.VoteListCommand) private voteListCommand: VoteListCommand,
+        @inject(Types.Command) @named(Targets.Command.vote.VoteRootCommand) private voteRootCommand: VoteRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.smsg.SmsgSearchCommand) private smsgSearchCommand: SmsgSearchCommand,
+        @inject(Types.Command) @named(Targets.Command.smsg.SmsgRootCommand) private smsgRootCommand: SmsgRootCommand,
+
+        @inject(Types.Command) @named(Targets.Command.HelpCommand) private helpCommand: HelpCommand,
 
         //  ---
         // @multiInject(Types.Command) public commands: RpcCommand<any>[],
@@ -273,6 +312,13 @@ export class RpcCommandFactory {
         this.commands.push(bidCancelCommand);
         this.commands.push(bidRejectCommand);
         this.commands.push(bidSendCommand);
+
+        this.commands.push(adminCommand);
+
+        this.commands.push(dataAddCommand);
+        this.commands.push(dataCleanCommand);
+        this.commands.push(dataGenerateCommand);
+        this.commands.push(dataRootCommand);
 
         this.commands.push(escrowRootCommand);
         this.commands.push(escrowAddCommand);
@@ -300,7 +346,6 @@ export class RpcCommandFactory {
         this.commands.push(itemImageAddCommand);
         this.commands.push(itemImageRemoveCommand);
 
-        this.commands.push(itemInformationAddCommand);
         this.commands.push(itemInformationGetCommand);
         this.commands.push(itemInformationUpdateCommand);
         this.commands.push(itemInformationRootCommand);
@@ -313,7 +358,6 @@ export class RpcCommandFactory {
         this.commands.push(listingItemGetCommand);
         this.commands.push(listingItemFlagCommand);
         this.commands.push(listingItemSearchCommand);
-        this.commands.push(listingItemUpdateCommand);
         this.commands.push(listingItemRootCommand);
 
         this.commands.push(listingItemTemplatePostCommand);
@@ -357,13 +401,14 @@ export class RpcCommandFactory {
         this.commands.push(shippingDestinationAddCommand);
         this.commands.push(shippingDestinationRemoveCommand);
 
-        this.commands.push(dataAddCommand);
-        this.commands.push(dataCleanCommand);
-        this.commands.push(dataGenerateCommand);
-        this.commands.push(dataRootCommand);
-
         this.commands.push(listingItemObjectRootCommand);
         this.commands.push(listingItemObjectSearchCommand);
+
+        this.commands.push(settingGetCommand);
+        this.commands.push(settingListCommand);
+        this.commands.push(settingRemoveCommand);
+        this.commands.push(settingSetCommand);
+        this.commands.push(settingRootCommand);
 
         this.commands.push(shoppingCartAddCommand);
         this.commands.push(shoppingCartUpdateCommand);
@@ -380,7 +425,21 @@ export class RpcCommandFactory {
 
         this.commands.push(priceTickerRootCommand);
 
+        this.commands.push(proposalGetCommand);
+        this.commands.push(proposalPostCommand);
+        this.commands.push(proposalListCommand);
+        this.commands.push(proposalResultCommand);
+        this.commands.push(proposalRootCommand);
+
         this.commands.push(currencyPriceRootCommand);
+
+        this.commands.push(votePostCommand);
+        this.commands.push(voteGetCommand);
+        this.commands.push(voteListCommand);
+        this.commands.push(voteRootCommand);
+
+        this.commands.push(smsgSearchCommand);
+        this.commands.push(smsgRootCommand);
 
         this.commands.push(helpCommand);
 

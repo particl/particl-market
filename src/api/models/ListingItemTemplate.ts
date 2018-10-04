@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { ItemInformation } from './ItemInformation';
@@ -85,9 +89,10 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
             })
-            .orderBy('item_informations.title', options.order).query({
+            .orderBy('updated_at', options.order)
+            .query({
                 limit: options.pageLimit,
-                offset: (options.page - 1) * options.pageLimit
+                offset: options.page * options.pageLimit
             });
 
         if (withRelated) {

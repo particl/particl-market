@@ -1,17 +1,26 @@
-import { rpc, api } from '../lib/api';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import { ListingItem } from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import * as resources from 'resources';
 
 describe('ListingItemGetCommand', () => {
 
-    const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ITEM_ROOT.commandName;
-    const subCommand = Commands.ITEM_GET.commandName;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
-    let createdListingItem;
+    const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new BlackBoxTestUtil();
+
+    const itemCommand = Commands.ITEM_ROOT.commandName;
+    const itemGetCommand = Commands.ITEM_GET.commandName;
+
+    let createdListingItem: resources.ListingItem;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -33,19 +42,20 @@ describe('ListingItemGetCommand', () => {
             1,                      // how many to generate
             true,                // return model
         generateListingItemParams           // what kind of data to generate
-        ) as ListingItem[];
+        ) as resources.ListingItem[];
         createdListingItem = listingItems[0];
 
     });
 
-    test('Should get the listing item by hash', async () => {
+    test('Should get the ListingItem by hash', async () => {
 
         // find listing item using hash
-        const res = await rpc(method, [subCommand, createdListingItem.hash]);
+        const res = await testUtil.rpc(itemCommand, [itemGetCommand, createdListingItem.hash]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
+        // log.debug('listingItem:', JSON.stringify(result, null, 2));
         expect(result).hasOwnProperty('ItemInformation');
         expect(result).hasOwnProperty('PaymentInformation');
         expect(result).hasOwnProperty('MessagingInformation');
@@ -85,12 +95,14 @@ describe('ListingItemGetCommand', () => {
 
         expect(result.MessagingInformation[0].protocol).toBe(createdListingItem.MessagingInformation[0].protocol);
         expect(result.MessagingInformation[0].publicKey).toBe(createdListingItem.MessagingInformation[0].publicKey);
+
+        // todo: missing FlaggedItem, Proposal, ...
     });
 
-    test('Should get the listing item by id', async () => {
+    test('Should get the ListingItem by id', async () => {
 
         // find listing item using id
-        const res = await rpc(method, [subCommand, createdListingItem.id]);
+        const res = await testUtil.rpc(itemCommand, [itemGetCommand, createdListingItem.id]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

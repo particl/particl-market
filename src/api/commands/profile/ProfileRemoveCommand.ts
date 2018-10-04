@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -7,6 +11,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ProfileService } from '../../services/ProfileService';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
     public log: LoggerType;
@@ -30,8 +35,12 @@ export class ProfileRemoveCommand extends BaseCommand implements RpcCommandInter
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+        if (data.params.length < 1) {
+            throw new MessageException('Missing paramater id or name.');
+        }
+
         let profileId = data.params[0];
-        // if params is string then find profile by name to delete
+
         if (typeof data.params[0] === 'string') {
            const profile = await this.profileService.findOneByName(data.params[0]);
            profileId = profile ? profile.id : data.params[0];

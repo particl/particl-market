@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -30,7 +34,7 @@ export class ShoppingCartGetCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ShoppingCart> {
-        return this.shoppingCartService.findOne(data.params[0]);
+        return await this.shoppingCartService.findOne(data.params[0]);
     }
 
     public usage(): string {

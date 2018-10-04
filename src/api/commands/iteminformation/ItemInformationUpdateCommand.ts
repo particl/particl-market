@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -9,6 +13,7 @@ import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ItemInformationUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -44,6 +49,28 @@ export class ItemInformationUpdateCommand extends BaseCommand implements RpcComm
                 id: data.params[4]
             }
         } as ItemInformationUpdateRequest);
+    }
+
+    /**
+     * - should have 4 params
+     * - if category has key, it cant be edited
+     * - ...
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<void>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 5) {
+            this.log.error('Not enough args.');
+            throw new MessageException('Not enough args.');
+        } else if (typeof data.params[0] !== 'number') {
+            this.log.error('ListingItemTemplate ID must be numeric.');
+            throw new MessageException('ListingItemTemplate ID must be numeric.');
+        } else if (typeof data.params[4] !== 'number') {
+            this.log.error('Category ID must be numeric.');
+            throw new MessageException('Category ID must be numeric.');
+        }
+        return data;
     }
 
     public usage(): string {

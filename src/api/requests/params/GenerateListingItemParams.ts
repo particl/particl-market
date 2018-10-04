@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as _ from 'lodash';
 import { GenerateItemInformationParamsInterface, GeneratePaymentInformationParamsInterface } from './GenerateListingItemTemplateParams';
 
@@ -31,6 +35,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
 
     public listingItemTemplateHash: string | null = null;
     public seller: string | null = null;
+    public categoryId: number | null = null;
 
     /**
      * generateParams[]:
@@ -45,6 +50,9 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
      * [8]: generateObjectDatas
      * [9]: listingItemTemplateHash
      * [10]: seller
+     * [10]: categoryId
+     *
+     * TODO: add proposal generation
      *
      * @param generateParams
      */
@@ -62,6 +70,7 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.generateObjectDatas            = generateParams[8] ? true : false;
             this.listingItemTemplateHash        = generateParams[9] ? generateParams[9] : null;
             this.seller                         = generateParams[10] ? generateParams[10] : null;
+            this.categoryId                     = generateParams[11] ? generateParams[11] : null;
         }
     }
 
@@ -77,7 +86,8 @@ export class GenerateListingItemParams implements GenerateListingItemParamsInter
             this.generateListingItemObjects,
             this.generateObjectDatas,
             this.listingItemTemplateHash,
-            this.seller
+            this.seller,
+            this.categoryId
         ];
     }
 

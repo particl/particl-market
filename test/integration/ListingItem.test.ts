@@ -1,23 +1,23 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import * as _ from 'lodash';
-
 import { TestUtil } from './lib/TestUtil';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ListingItem } from '../../src/api/models/ListingItem';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-
 import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
 import { ItemInformationCreateRequest } from '../../src/api/requests/ItemInformationCreateRequest';
 import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
 import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
-
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
@@ -37,15 +37,11 @@ import { CryptocurrencyAddressService } from '../../src/api/services/Cryptocurre
 import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
 import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
 import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
-
 import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
 import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
-
+import * as listingItemCreateRequestExpired from '../testdata/createrequest/listingItemCreateRequestExpired.json';
 import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
-
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
-
 import * as resources from 'resources';
 
 describe('ListingItem', () => {
@@ -474,6 +470,10 @@ describe('ListingItem', () => {
         testDataToSave.listing_item_template_id = listingItemTemplate.Id;
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.expiryTime = 4;
+        testDataToSave.postedAt = new Date().getTime();
+        testDataToSave.expiredAt = new Date().getTime();
+        testDataToSave.receivedAt = new Date().getTime();
 
         const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
         createdListingItem3 = listingItemModel.toJSON();
@@ -486,6 +486,25 @@ describe('ListingItem', () => {
         expect.assertions(22);
         await listingItemService.destroy(createdListingItem3.id);
         await expectListingItemWasDeleted(createdListingItem3);
+    });
+
+    test('Should delete expired ListingItem', async () => {
+        const testDataToSave = JSON.parse(JSON.stringify(listingItemCreateRequestExpired));
+
+        delete testDataToSave.itemInformation;
+        delete testDataToSave.paymentInformation;
+        delete testDataToSave.messagingInformation;
+        delete testDataToSave.listingItemObjects;
+
+        testDataToSave.market_id = defaultMarket.id;
+        testDataToSave.seller = defaultProfile.address;
+
+        const listingItemModel: ListingItem = await listingItemService.create(testDataToSave);
+        const expiredListingItem = listingItemModel.toJSON();
+        await listingItemService.deleteExpiredListingItems();
+        await listingItemService.findOne(expiredListingItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(expiredListingItem.id))
+        );
     });
 
     /*

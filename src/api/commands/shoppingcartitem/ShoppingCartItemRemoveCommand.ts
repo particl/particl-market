@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -40,7 +44,7 @@ export class ShoppingCartItemRemoveCommand extends BaseCommand implements RpcCom
                 const listingItem = await this.listingItemService.findOneByHash(listingItemId);
                 listingItemId = listingItem.id;
             }
-            const isItemExistOnCart = await this.shoppingCartItemService.findOneByListingItemOnCart(data.params[0], listingItemId);
+            const isItemExistOnCart = await this.shoppingCartItemService.findOneByCartIdAndListingItemId(data.params[0], listingItemId);
             if (isItemExistOnCart === null) {
                 this.log.warn(`listing item not exist on shopping cart`);
                 throw new MessageException(`listing item not exist on shopping cart`);

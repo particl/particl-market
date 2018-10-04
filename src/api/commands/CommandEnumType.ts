@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Enum, EnumValue } from 'ts-enums';
 import { Command } from './Command';
 import { EnvironmentType } from '../../core/helpers/Environment';
@@ -68,10 +72,9 @@ export class CommandEnumType extends Enum<Command> {
         [this.ITEMIMAGE_LIST, this.ITEMIMAGE_ADD, this.ITEMIMAGE_REMOVE], EnvironmentType.ALL);
 
     public ITEMINFORMATION_GET: Command    = new Command('iteminformationget', 'get', false);
-    public ITEMINFORMATION_ADD: Command     = new Command('iteminformationadd', 'add', false);
     public ITEMINFORMATION_UPDATE: Command  = new Command('iteminformationupdate', 'update', false);
     public ITEMINFORMATION_ROOT: Command    = new Command('iteminformation', 'information', true,
-        [this.ITEMINFORMATION_GET, this.ITEMINFORMATION_ADD, this.ITEMINFORMATION_UPDATE], EnvironmentType.ALL);
+        [this.ITEMINFORMATION_GET, this.ITEMINFORMATION_UPDATE], EnvironmentType.ALL);
 
     public TEMPLATE_SEARCH: Command         = new Command('templatesearch', 'search', false);
     public TEMPLATE_GET: Command            = new Command('templateget', 'get', false);
@@ -117,6 +120,13 @@ export class CommandEnumType extends Enum<Command> {
         [this.PROFILE_LIST, this.PROFILE_GET, this.PROFILE_ADD, this.PROFILE_UPDATE, this.PROFILE_REMOVE,
             this.ADDRESS_ROOT, this.FAVORITE_ROOT], EnvironmentType.ALL);
 
+    public PROPOSAL_GET: Command         = new Command('proposalget', 'get', false);
+    public PROPOSAL_POST: Command        = new Command('proposalpost', 'post', false);
+    public PROPOSAL_LIST: Command        = new Command('proposallist', 'list', false);
+    public PROPOSAL_RESULT: Command      = new Command('proposalresult', 'result', false);
+    public PROPOSAL_ROOT: Command        = new Command('proposal', 'proposal', true,
+        [this.PROPOSAL_GET, this.PROPOSAL_POST, this.PROPOSAL_LIST, this.PROPOSAL_RESULT], EnvironmentType.ALL);
+
     public MARKET_LIST: Command         = new Command('marketlist', 'list', false);
     public MARKET_ADD: Command          = new Command('marketadd', 'add', false);
     public MARKET_ROOT: Command         = new Command('market', 'market', true,
@@ -153,6 +163,23 @@ export class CommandEnumType extends Enum<Command> {
     public PRICETICKER_ROOT: Command           = new Command('priceticker', 'priceticker', true);
 
     public CURRENCYPRICE_ROOT: Command        = new Command('currencyprice', 'currencyprice', true);
+
+    public VOTE_POST: Command         = new Command('votepost', 'post', false);
+    public VOTE_GET: Command         = new Command('voteget', 'get', false);
+    public VOTE_LIST: Command         = new Command('votelist', 'list', false);
+    public VOTE_ROOT: Command           = new Command('vote', 'vote', true,
+        [this.VOTE_POST, this.VOTE_GET, this.VOTE_LIST], EnvironmentType.ALL);
+
+    public SETTING_REMOVE: Command         = new Command('settingremove', 'remove', false);
+    public SETTING_GET: Command         = new Command('settingget', 'get', false);
+    public SETTING_LIST: Command         = new Command('settinglist', 'list', false);
+    public SETTING_SET: Command           = new Command('settingset', 'set', false);
+    public SETTING_ROOT: Command           = new Command('setting', 'setting', true,
+        [this.SETTING_REMOVE, this.SETTING_GET, this.SETTING_LIST, this.SETTING_SET], EnvironmentType.ALL);
+
+    public SMSG_SEARCH: Command      = new Command('smsgsearch', 'search', false);
+    public SMSG_ROOT: Command        = new Command('smsg', 'smsg', true,
+        [this.SMSG_SEARCH], EnvironmentType.ALL);
 
     constructor() {
         super();

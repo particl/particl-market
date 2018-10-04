@@ -1,13 +1,22 @@
-import { rpc, api } from '../lib/api';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands} from '../../../src/api/commands/CommandEnumType';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('MarketListCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method =  Commands.MARKET_ROOT.commandName;
-    const subCommand =  Commands.MARKET_LIST.commandName;
-    const addMarketCommand =  Commands.MARKET_ADD.commandName;
+
+    const marketCommand = Commands.MARKET_ROOT.commandName;
+    const marketListCommand = Commands.MARKET_LIST.commandName;
+    const marketAddCommand = Commands.MARKET_ADD.commandName;
 
     const marketData = {
         name: 'Test Market',
@@ -19,28 +28,28 @@ describe('MarketListCommand', () => {
         await testUtil.cleanDb();
     });
 
-    test('Should return only one default market', async () => {
-        const res = await rpc(method, [subCommand]);
+    test('Should return only one default Market', async () => {
+        const res = await testUtil.rpc(marketCommand, [marketListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(1);
     });
 
-    test('Should list all created markets', async () => {
-        // add markets
-        await rpc(method, [addMarketCommand, marketData.name, marketData.private_key, marketData.address]);
+    test('Should list all created Markets', async () => {
+        // add market
+        await testUtil.rpc(marketCommand, [marketAddCommand, marketData.name, marketData.private_key, marketData.address]);
 
-        const res = await rpc(method, [subCommand]);
+        const res = await testUtil.rpc(marketCommand, [marketListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(2);
     });
 
-    test('Should fail to create market if try with existing market name', async () => {
-        // add markets
-        const marketRes = await rpc(method, [addMarketCommand, marketData.name, marketData.private_key, marketData.address]);
+    test('Should fail to create Market with allready existing name', async () => {
+        // todo: should this be a problem?
+        const marketRes = await testUtil.rpc(marketCommand, [marketAddCommand, marketData.name, marketData.private_key, marketData.address]);
         marketRes.expectJson();
         marketRes.expectStatusCode(400);
         expect(marketRes.error.error.success).toBe(false);

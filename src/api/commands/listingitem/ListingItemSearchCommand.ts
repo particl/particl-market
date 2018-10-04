@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -28,7 +32,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
 
     /**
      * data.params[]:
-     *  [0]: page, number
+     *  [0]: page, number, 0-based
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: category, number|string, if string, try to find using key, can be null
@@ -54,7 +58,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             throw new MessageException('Type should be FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL');
         }
 
-        // check vaild profile profileId search params
+        // check valid profile profileId search params
         if (typeof profileId !== 'number' && profileId !== 'OWN' && profileId !== 'ALL' && profileId !== '*') {
             throw new MessageException('Value needs to be number | OWN | ALL. you could pass * as all too');
         }
@@ -73,8 +77,8 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
         // TODO: searching for items that youre buying or selling should be done with bid or orderitem search
         // TODO: ...so remove type
         return await this.listingItemService.search({
-            page: data.params[0] || 1,
-            pageLimit: data.params[1] || 5, // default page limit 5
+            page: data.params[0] || 0,
+            pageLimit: data.params[1] || 10, // default page limit 10
             order: data.params[2] || 'ASC',
             category: data.params[3],
             type,
@@ -89,7 +93,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
 
     // tslint:disable:max-line-length
     public usage(): string {
-        return this.getName() + ' [<page> [<pageLimit> [<order> ' +
+        return this.getName() + ' [<page> [<pageLimit> [<ordering> ' +
         '[(<categoryId> | <categoryName>)[ <type> [(<profileId>| OWN | ALL) [<minPrice> [ <maxPrice> [ <country> [ <shippingDestination> [<searchString>]]]]]]]]]]';
     }
 
@@ -98,7 +102,7 @@ export class ListingItemSearchCommand extends BaseCommand implements RpcCommandI
             + '    <page>                   - [optional] Numeric - The number page we want to \n'
             + '                                view of search listing item results. \n'
             + '    <pageLimit>              - [optional] Numeric - The number of results per page. \n'
-            + '    <order>                  - [optional] ENUM{ASC} - The order of the returned results. \n'
+            + '    <ordering>               - [optional] ENUM{ASC,DESC} - The ordering of the search results. \n'
             + '    <categoryId>             - [optional] Numeric - The ID identifying the category associated \n'
             + '                                with the listing items we want to search for. \n'
             + '    <categoryName>           - [optional] String - The key identifying the category associated \n'

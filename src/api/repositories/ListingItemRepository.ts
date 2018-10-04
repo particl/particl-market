@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
@@ -31,6 +35,11 @@ export class ListingItemRepository {
         return this.ListingItemModel.fetchById(id, withRelated);
     }
 
+    public async findExpired(): Promise<Bookshelf.Collection<ListingItem>> {
+        return this.ListingItemModel.fetchExpired();
+    }
+
+
     /**
      *
      * @param {string} hash
@@ -52,13 +61,10 @@ export class ListingItemRepository {
     }
 
     public async create(data: any): Promise<ListingItem> {
-        const startTime = new Date().getTime();
         const listingItem = this.ListingItemModel.forge<ListingItem>(data);
         try {
             const listingItemCreated = await listingItem.save();
             const result = this.ListingItemModel.fetchById(listingItemCreated.id);
-
-            this.log.debug('listingItemRepository.create: ' + (new Date().getTime() - startTime) + 'ms');
             return result;
         } catch (error) {
             this.log.error(error);

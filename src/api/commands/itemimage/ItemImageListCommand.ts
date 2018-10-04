@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -37,6 +41,12 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
         if ( data.params.length !== 2 ) {
             throw new MessageException('Invalid number of args. Expected 2, got <' + data.params.length + '>.');
         }
+
+        if (typeof data.params[1] !== 'number') {
+            this.log.error('Second arg must be numeric.');
+            throw new MessageException('Second arg must be numeric.');
+        }
+
         const idType = data.params[0];
         if ( idType === 'template' ) {
             const listingItemTemplateId = data.params[1];
@@ -46,7 +56,6 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
         } else if ( idType === 'item' ) {
             const listingItemId = data.params[1];
             const retval: ListingItem = await this.listingItemService.findOne(listingItemId, true);
-            // this.log.debug('ADSDAS: ' + JSON.stringify(retval, null, 2));
             return retval.toJSON().ItemInformation.ItemImages;
         } else {
             throw new MessageException(`Invalid ID type detected <${idType}>. Expected 'template' or 'item'.`);

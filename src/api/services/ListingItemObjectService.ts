@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -49,8 +53,7 @@ export class ListingItemObjectService {
      */
     @validate()
     public async search(
-        @request(ListingItemObjectSearchParams) options: ListingItemObjectSearchParams
-        ): Promise<Bookshelf.Collection<ListingItemObject>> {
+        @request(ListingItemObjectSearchParams) options: ListingItemObjectSearchParams): Promise<Bookshelf.Collection<ListingItemObject>> {
         return this.listingItemObjectRepo.search(options);
     }
 

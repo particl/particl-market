@@ -1,18 +1,20 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { controller, httpPost, response, requestBody } from 'inversify-express-utils';
 import { app } from '../../app';
 import { Types, Core, Targets } from '../../constants';
 import { Logger as LoggerType } from '../../core/Logger';
 import { JsonRpc2Request, JsonRpc2Response, RpcErrorCode } from '../../core/api/jsonrpc';
-import { JsonRpcError } from '../../core/api/JsonRpcError';
 import { NotFoundException } from '../exceptions/NotFoundException';
 import * as _ from 'lodash';
 
 import { RpcCommandFactory } from '../factories/RpcCommandFactory';
 import { RpcRequest } from '../requests/RpcRequest';
 import { Commands} from '../commands/CommandEnumType';
-import { ServerStartedListener } from '../listeners/ServerStartedListener';
-import { MessageException } from '../exceptions/MessageException';
+import { RpcCommandInterface } from '../commands/RpcCommandInterface';
 
 // Get middlewares
 const rpc = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.RpcMiddleware);
@@ -36,14 +38,17 @@ export class RpcController {
     @httpPost('/')
     public async handleRPC( @response() res: myExpress.Response, @requestBody() body: any): Promise<any> {
 
-        const rpcRequest = this.createRequest(body.method, body.params, body.id);
+        let rpcRequest = this.createRequest(body.method, body.params, body.id);
         this.log.debug('controller.handleRPC():', rpcRequest.method + ' ' + rpcRequest.params);
 
         // get the commandType for the method name
         const commandType = _.find(Commands.rootCommands, command => command.commandName === body.method);
         if (commandType) {
             // ... use the commandType to get the correct RpcCommand implementation and execute
-            const result = await this.rpcCommandFactory.get(commandType).execute(rpcRequest, this.rpcCommandFactory);
+            const rpcCommand: RpcCommandInterface<any> = this.rpcCommandFactory.get(commandType);
+            const newRpcRequest = await rpcCommand.validate(rpcRequest);
+            rpcRequest = newRpcRequest ? newRpcRequest : rpcRequest;
+            const result = await rpcCommand.execute(rpcRequest, this.rpcCommandFactory);
             return this.createResponse(rpcRequest.id, result);
         } else {
             throw new NotFoundException('Unknown command: ' + body.method + '\n');

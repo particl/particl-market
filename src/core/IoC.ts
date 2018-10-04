@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * IOC - CONTAINER
  * ----------------------------------------
@@ -121,7 +125,7 @@ export class IoC {
 
     private bindMessageProcessors(): Promise<void> {
         return this.bindFiles(
-            '/messageprocessors/**/*MessageProcessor.ts',
+            '/messageprocessors/**/*Processor.ts',
             Targets.MessageProcessor,
             (name: any, value: any) => this.bindFile(Types.MessageProcessor, name, value));
     }

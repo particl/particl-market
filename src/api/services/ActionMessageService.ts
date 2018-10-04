@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -101,8 +105,7 @@ export class ActionMessageService {
             object.action_message_id = actionMessage.id;
             const messageObjectModel = await this.messageObjectService.create(object);
             const messageObject = messageObjectModel.toJSON();
-            this.log.debug('created messageObject: ', JSON.stringify(messageObject, null, 2));
-
+            // this.log.debug('created messageObject: ', JSON.stringify(messageObject, null, 2));
         }
         actionMessageModel = await this.findOne(actionMessage.id);
         actionMessage = actionMessageModel.toJSON();

@@ -1,120 +1,121 @@
-import { rpc, api } from '../lib/api';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
-import {ObjectHash} from '../../../src/core/helpers/ObjectHash';
+import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('ItemCategoryUpdateCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.CATEGORY_ROOT.commandName;
-    const subCommand = Commands.CATEGORY_UPDATE.commandName;
-    const makretMethod = Commands.MARKET_ROOT.commandName;
-    const subCommandMarket = Commands.MARKET_ADD.commandName;
 
-    const categoryMethod = Commands.CATEGORY_ROOT.commandName;
-    const subCommandCategory = Commands.CATEGORY_ADD.commandName;
+    const categoryCommand = Commands.CATEGORY_ROOT.commandName;
+    const categoryAddCommand = Commands.CATEGORY_ADD.commandName;
+    const categoryUpdateCommand = Commands.CATEGORY_UPDATE.commandName;
 
-    const parentCategory = {
-        id: 0,
-        key: 'cat_high_real_estate',
-        parentItemCategoryId: 0
-    };
-
-    let newCategory;
-    let marketId;
+    let rootCategory: resources.ItemCategory;
+    let childCategory1: resources.ItemCategory;
+    let childCategory2: resources.ItemCategory;
+    let childCategory11: resources.ItemCategory;
+    let defaultCategory: resources.ItemCategory;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // create category
-        const res = await rpc(categoryMethod, [subCommandCategory, parentCategory.key, '', 'cat_ROOT']);
-        const categoryResult: any = res.getBody()['result'];
-        parentCategory.id = categoryResult.id;
-        const addCategoryRes: any = await testUtil.addData(CreatableModel.ITEMCATEGORY, {
-            name: 'sample category',
-            description: 'sample category description',
-            parent_item_category_id: parentCategory.id
+        rootCategory = await testUtil.addData(CreatableModel.ITEMCATEGORY, {
+            key: 'cat_DEFAULT_TESTING_CATEGORY',
+            name: 'ROOT CATEGORY NAME',
+            description: 'root category description',
+            parent_item_category_id: 0
         });
-        newCategory = addCategoryRes;
-        // market
-        const resMarket = await rpc(makretMethod, [subCommandMarket, 'Test Market', 'privateKey', 'Market Address']);
-        const resultMarket: any = resMarket.getBody()['result'];
-        marketId = resultMarket.id;
+
+        // add child1 category
+        let response = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            'child1',           // name
+            'description',      // description
+            rootCategory.id     // parent key/id
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+        childCategory1 = response.getBody()['result'];
+
+        // add child2 category
+        response = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            'child2',           // name
+            'description',      // description
+            rootCategory.id     // parent key/id
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+        childCategory2 = response.getBody()['result'];
+
+        // add child1_1 category
+        response = await testUtil.rpc(categoryCommand, [categoryAddCommand,
+            'child1_1',         // name
+            'description',      // description
+            childCategory1.id   // parent key/id
+        ]);
+        response.expectJson();
+        response.expectStatusCode(200);
+        childCategory11 = response.getBody()['result'];
+
+        defaultCategory = await testUtil.addData(CreatableModel.ITEMCATEGORY, {
+            key: 'cat_DEFAULT',
+            name: 'default category',
+            description: 'default description',
+            parent_item_category_id: childCategory2.id
+        });
+
     });
 
-    let categoryData = {
-        id: 0,
-        name: 'Sample Category update',
-        description: 'Sample Category Description update'
-    };
+    test('Should update the ItemCategory with new name, description and parent using id', async () => {
 
-    test('Should update the category with parent category id', async () => {
-        /*
-         *  [0]: category id
-         *  [1]: category name
-         *  [2]: description
-         *  [3]: parentItemCategoryId
-         */
-        categoryData.id = newCategory.id;
-        const res = await rpc(method, [subCommand, categoryData.id, categoryData.name, categoryData.description, parentCategory.id]);
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            childCategory11.id,
+            'newname',
+            'newdesc',
+            childCategory2.id
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
-        expect(result.name).toBe(categoryData.name);
-        expect(result.description).toBe(categoryData.description);
-        expect(result.parentItemCategoryId).toBe(parentCategory.id);
-        expect(result.ParentItemCategory.name).toBe(parentCategory.key);
+
+        expect(result.name).toBe('newname');
+        expect(result.description).toBe('newdesc');
+        expect(result.parentItemCategoryId).toBe(childCategory2.id);
+        expect(result.ParentItemCategory.name).toBe(childCategory2.name);
     });
 
-    categoryData = {
-        id: 0,
-        name: 'Sample Cat update',
-        description: 'Sample Cat Description update'
-    };
-
-    let defaultCategory;
-
-    test('Should update the category with parent category key', async () => {
-        categoryData.id = newCategory.id;
-        const res = await rpc(method, [subCommand, categoryData.id, categoryData.name, categoryData.description, parentCategory.key]);
-        res.expectJson();
-        res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.name).toBe(categoryData.name);
-        expect(result.description).toBe(categoryData.description);
-        expect(result.parentItemCategoryId).toBe(parentCategory.id);
-        expect(result.ParentItemCategory.name).toBe(parentCategory.key);
-
-        defaultCategory = result.ParentItemCategory.ParentItemCategory;
-    });
-
-    test('Should not update the default category', async () => {
-        const res = await rpc(method, [subCommand, defaultCategory.id, categoryData.name, categoryData.description, parentCategory.parentItemCategoryId]);
+    test('Should not update ItemCategory, because missing params', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            defaultCategory.id,
+            'newname',
+            'newdesc'
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Missing parameters.');
     });
 
-    test('Should not update the category if listing-item related with category', async () => {
-        const listingitemData = {
-            market_id: marketId,
-            hash: '',
-            seller: 'some seller',
-            itemInformation: {
-                title: 'item title1',
-                shortDescription: 'item short desc1',
-                longDescription: 'item long desc1',
-                itemCategory: {
-                    id: categoryData.id
-                }
-            }
-        };
-        listingitemData.hash = ObjectHash.getHash(listingitemData, HashableObjectType.LISTINGITEM);
-        const listingItems = await testUtil.addData(CreatableModel.LISTINGITEM, listingitemData);
-        const res = await rpc(method, [subCommand, categoryData.id, categoryData.name, categoryData.description, parentCategory.id]);
+    test('Should not update ItemCategory, because its a default ItemCategory', async () => {
+        const res = await testUtil.rpc(categoryCommand, [categoryUpdateCommand,
+            defaultCategory.id,
+            'newname',
+            'newdesc',
+            childCategory2.id
+        ]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe('Default category can\'t be updated or deleted.');
     });
 
 });

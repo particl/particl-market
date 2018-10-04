@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -8,12 +12,15 @@ import { FlaggedItemRepository } from '../repositories/FlaggedItemRepository';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItemUpdateRequest } from '../requests/FlaggedItemUpdateRequest';
+import * as resources from 'resources';
+import { ListingItemService } from './ListingItemService';
 
 export class FlaggedItemService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Repository) @named(Targets.Repository.FlaggedItemRepository) public flaggedItemRepo: FlaggedItemRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -51,7 +58,7 @@ export class FlaggedItemService {
         const flaggedItem = await this.findOne(id, false);
 
         // set new values
-        flaggedItem.ListingItemId = body.listingItemId;
+        flaggedItem.Reason = body.reason;
 
         // update flaggedItem record
         const updatedFlaggedItem = await this.flaggedItemRepo.update(id, flaggedItem.toJSON());

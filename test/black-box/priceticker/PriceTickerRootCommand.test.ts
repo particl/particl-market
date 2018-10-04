@@ -1,82 +1,69 @@
-import { rpc, api } from '../lib/api';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { reset } from 'chalk';
+import * as resources from 'resources';
+import {Logger as LoggerType} from '../../../src/core/Logger';
 
 describe('PriceTickerRootCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.PRICETICKER_ROOT.commandName;
+
+    const priceTickerCommand = Commands.PRICETICKER_ROOT.commandName;
+
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
 
-    let lastUpdated;
+    const expectCoinData = (result: resources.PriceTicker, cryptoId: string, cryptoName: string, cryptoSymbol: string) => {
+        expect(result.cryptoId).toBe(cryptoId);
+        expect(result.cryptoName).toBe(cryptoName);
+        expect(result.cryptoSymbol).toBe(cryptoSymbol);
+        expect(result.cryptoRank).toBeDefined();
+        expect(result.crypto24HVolumeUsd).toBeDefined();
+        expect(result.cryptoPriceUsd).toBeDefined();
+        expect(result.cryptoPriceBtc).toBeDefined();
+        expect(result.cryptoMarketCapUsd).toBeDefined();
+        expect(result.cryptoAvailableSupply).toBeDefined();
+        expect(result.cryptoTotalSupply).toBeDefined();
+        expect(result.cryptoMaxSupply).toBeDefined();
+        expect(result.cryptoPercentChange1H).toBeDefined();
+        expect(result.cryptoPercentChange24H).toBeDefined();
+        expect(result.cryptoPercentChange7D).toBeDefined();
+        expect(result.cryptoLastUpdated).toBeDefined();
+        expect(result.cryptoPriceEur).toBeDefined();
+        expect(result.crypto24HVolumeEur).toBeDefined();
+        expect(result.cryptoMarketCapEur).toBeDefined();
+    };
 
     test('Should get PriceTicker by passing single currency (UPPER case)', async () => {
-        const res = await rpc(method, ['ETH']);
+        const res = await testUtil.rpc(priceTickerCommand, ['ETH']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         const data = result[0];
 
-        lastUpdated = data.updatedAt;
-
-        expect(data.cryptoId).toBe('ethereum');
-        expect(data.cryptoName).toBe('Ethereum');
-        expect(data.cryptoSymbol).toBe('ETH');
-        expect(data.cryptoRank).toBeDefined();
-        expect(data.crypto24HVolumeUsd).toBeDefined();
-        expect(data.cryptoPriceUsd).toBeDefined();
-        expect(data.cryptoPriceBtc).toBeDefined();
-        expect(data.cryptoMarketCapUsd).toBeDefined();
-        expect(data.cryptoAvailableSupply).toBeDefined();
-        expect(data.cryptoTotalSupply).toBeDefined();
-        expect(data.cryptoMaxSupply).toBeDefined();
-        expect(data.cryptoPercentChange1H).toBeDefined();
-        expect(data.cryptoPercentChange24H).toBeDefined();
-        expect(data.cryptoPercentChange7D).toBeDefined();
-        expect(data.cryptoLastUpdated).toBeDefined();
-        expect(data.cryptoPriceEur).toBeDefined();
-        expect(data.crypto24HVolumeEur).toBeDefined();
-        expect(data.cryptoMarketCapEur).toBeDefined();
-
-        expect(data.updatedAt).toBe(data.createdAt);
+        expectCoinData(data, 'ethereum', 'Ethereum', 'ETH');
     });
 
     test('Should get PriceTicker by passing single currency (LOWER case)', async () => {
-        const res = await rpc(method, ['xrp']);
+        const res = await testUtil.rpc(priceTickerCommand, ['xrp']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         const data = result[0];
 
-        lastUpdated = data.updatedAt;
-
-        expect(data.cryptoId).toBe('ripple');
-        expect(data.cryptoName).toBe('Ripple');
-        expect(data.cryptoSymbol).toBe('XRP');
-        expect(data.cryptoRank).toBeDefined();
-        expect(data.crypto24HVolumeUsd).toBeDefined();
-        expect(data.cryptoPriceUsd).toBeDefined();
-        expect(data.cryptoPriceBtc).toBeDefined();
-        expect(data.cryptoMarketCapUsd).toBeDefined();
-        expect(data.cryptoAvailableSupply).toBeDefined();
-        expect(data.cryptoTotalSupply).toBeDefined();
-        expect(data.cryptoMaxSupply).toBeDefined();
-        expect(data.cryptoPercentChange1H).toBeDefined();
-        expect(data.cryptoPercentChange24H).toBeDefined();
-        expect(data.cryptoPercentChange7D).toBeDefined();
-        expect(data.cryptoLastUpdated).toBeDefined();
-        expect(data.cryptoPriceEur).toBeDefined();
-        expect(data.crypto24HVolumeEur).toBeDefined();
-        expect(data.cryptoMarketCapEur).toBeDefined();
-
-        expect(data.updatedAt).toBe(data.createdAt);
+        expectCoinData(data, 'ripple', 'XRP', 'XRP');
     });
 
     test('Should fail to fetch PriceTicker without passing currency', async () => {
-        const res = await rpc(method, []);
+        const res = await testUtil.rpc(priceTickerCommand, []);
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
@@ -84,147 +71,45 @@ describe('PriceTickerRootCommand', () => {
     });
 
     test('Should get two PriceTickers by passing two currency ( UPPER + UPPER )', async () => {
-        const res = await rpc(method, ['XRP', 'BTC']);
+        const res = await testUtil.rpc(priceTickerCommand, ['XRP', 'BTC']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
         const data = result[0];
-        expect(data.cryptoId).toBe('ripple');
-        expect(data.cryptoName).toBe('Ripple');
-        expect(data.cryptoSymbol).toBe('XRP');
-        expect(data.cryptoRank).toBeDefined();
-        expect(data.crypto24HVolumeUsd).toBeDefined();
-        expect(data.cryptoPriceUsd).toBeDefined();
-        expect(data.cryptoPriceBtc).toBeDefined();
-        expect(data.cryptoMarketCapUsd).toBeDefined();
-        expect(data.cryptoAvailableSupply).toBeDefined();
-        expect(data.cryptoTotalSupply).toBeDefined();
-        expect(data.cryptoMaxSupply).toBeDefined();
-        expect(data.cryptoPercentChange1H).toBeDefined();
-        expect(data.cryptoPercentChange24H).toBeDefined();
-        expect(data.cryptoPercentChange7D).toBeDefined();
-        expect(data.cryptoLastUpdated).toBeDefined();
-        expect(data.cryptoPriceEur).toBeDefined();
-        expect(data.crypto24HVolumeEur).toBeDefined();
-        expect(data.cryptoMarketCapEur).toBeDefined();
+        expectCoinData(data, 'ripple', 'XRP', 'XRP');
 
         const data2 = result[1];
+        expectCoinData(data2, 'bitcoin', 'Bitcoin', 'BTC');
 
-        expect(data2.cryptoId).toBe('bitcoin');
-        expect(data2.cryptoName).toBe('Bitcoin');
-        expect(data2.cryptoSymbol).toBe('BTC');
-        expect(data2.cryptoRank).toBeDefined();
-        expect(data2.crypto24HVolumeUsd).toBeDefined();
-        expect(data2.cryptoPriceUsd).toBeDefined();
-        expect(data2.cryptoPriceBtc).toBeDefined();
-        expect(data2.cryptoMarketCapUsd).toBeDefined();
-        expect(data2.cryptoAvailableSupply).toBeDefined();
-        expect(data2.cryptoTotalSupply).toBeDefined();
-        expect(data2.cryptoMaxSupply).toBeDefined();
-        expect(data2.cryptoPercentChange1H).toBeDefined();
-        expect(data2.cryptoPercentChange24H).toBeDefined();
-        expect(data2.cryptoPercentChange7D).toBeDefined();
-        expect(data2.cryptoLastUpdated).toBeDefined();
-        expect(data2.cryptoPriceEur).toBeDefined();
-        expect(data2.crypto24HVolumeEur).toBeDefined();
-        expect(data2.cryptoMarketCapEur).toBeDefined();
     });
 
     test('Should get two PriceTickers by passing two currency(UPPER + LOWER)', async () => {
-        const res = await rpc(method, ['XRP', 'btc']);
+        const res = await testUtil.rpc(priceTickerCommand, ['XRP', 'btc']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
         const data = result[0];
-        expect(data.cryptoId).toBe('ripple');
-        expect(data.cryptoName).toBe('Ripple');
-        expect(data.cryptoSymbol).toBe('XRP');
-        expect(data.cryptoRank).toBeDefined();
-        expect(data.crypto24HVolumeUsd).toBeDefined();
-        expect(data.cryptoPriceUsd).toBeDefined();
-        expect(data.cryptoPriceBtc).toBeDefined();
-        expect(data.cryptoMarketCapUsd).toBeDefined();
-        expect(data.cryptoAvailableSupply).toBeDefined();
-        expect(data.cryptoTotalSupply).toBeDefined();
-        expect(data.cryptoMaxSupply).toBeDefined();
-        expect(data.cryptoPercentChange1H).toBeDefined();
-        expect(data.cryptoPercentChange24H).toBeDefined();
-        expect(data.cryptoPercentChange7D).toBeDefined();
-        expect(data.cryptoLastUpdated).toBeDefined();
-        expect(data.cryptoPriceEur).toBeDefined();
-        expect(data.crypto24HVolumeEur).toBeDefined();
-        expect(data.cryptoMarketCapEur).toBeDefined();
+        expectCoinData(data, 'ripple', 'XRP', 'XRP');
 
         const data2 = result[1];
+        expectCoinData(data2, 'bitcoin', 'Bitcoin', 'BTC');
 
-        expect(data2.cryptoId).toBe('bitcoin');
-        expect(data2.cryptoName).toBe('Bitcoin');
-        expect(data2.cryptoSymbol).toBe('BTC');
-        expect(data2.cryptoRank).toBeDefined();
-        expect(data2.crypto24HVolumeUsd).toBeDefined();
-        expect(data2.cryptoPriceUsd).toBeDefined();
-        expect(data2.cryptoPriceBtc).toBeDefined();
-        expect(data2.cryptoMarketCapUsd).toBeDefined();
-        expect(data2.cryptoAvailableSupply).toBeDefined();
-        expect(data2.cryptoTotalSupply).toBeDefined();
-        expect(data2.cryptoMaxSupply).toBeDefined();
-        expect(data2.cryptoPercentChange1H).toBeDefined();
-        expect(data2.cryptoPercentChange24H).toBeDefined();
-        expect(data2.cryptoPercentChange7D).toBeDefined();
-        expect(data2.cryptoLastUpdated).toBeDefined();
-        expect(data2.cryptoPriceEur).toBeDefined();
-        expect(data2.crypto24HVolumeEur).toBeDefined();
-        expect(data2.cryptoMarketCapEur).toBeDefined();
     });
 
     test('Should get two PriceTickers by passing two currency(LOWER + LOWER)', async () => {
-        const res = await rpc(method, ['xrp', 'btc']);
+        const res = await testUtil.rpc(priceTickerCommand, ['xrp', 'btc']);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
 
         const data = result[0];
-        expect(data.cryptoId).toBe('ripple');
-        expect(data.cryptoName).toBe('Ripple');
-        expect(data.cryptoSymbol).toBe('XRP');
-        expect(data.cryptoRank).toBeDefined();
-        expect(data.crypto24HVolumeUsd).toBeDefined();
-        expect(data.cryptoPriceUsd).toBeDefined();
-        expect(data.cryptoPriceBtc).toBeDefined();
-        expect(data.cryptoMarketCapUsd).toBeDefined();
-        expect(data.cryptoAvailableSupply).toBeDefined();
-        expect(data.cryptoTotalSupply).toBeDefined();
-        expect(data.cryptoMaxSupply).toBeDefined();
-        expect(data.cryptoPercentChange1H).toBeDefined();
-        expect(data.cryptoPercentChange24H).toBeDefined();
-        expect(data.cryptoPercentChange7D).toBeDefined();
-        expect(data.cryptoLastUpdated).toBeDefined();
-        expect(data.cryptoPriceEur).toBeDefined();
-        expect(data.crypto24HVolumeEur).toBeDefined();
-        expect(data.cryptoMarketCapEur).toBeDefined();
+        expectCoinData(data, 'ripple', 'XRP', 'XRP');
 
         const data2 = result[1];
+        expectCoinData(data2, 'bitcoin', 'Bitcoin', 'BTC');
 
-        expect(data2.cryptoId).toBe('bitcoin');
-        expect(data2.cryptoName).toBe('Bitcoin');
-        expect(data2.cryptoSymbol).toBe('BTC');
-        expect(data2.cryptoRank).toBeDefined();
-        expect(data2.crypto24HVolumeUsd).toBeDefined();
-        expect(data2.cryptoPriceUsd).toBeDefined();
-        expect(data2.cryptoPriceBtc).toBeDefined();
-        expect(data2.cryptoMarketCapUsd).toBeDefined();
-        expect(data2.cryptoAvailableSupply).toBeDefined();
-        expect(data2.cryptoTotalSupply).toBeDefined();
-        expect(data2.cryptoMaxSupply).toBeDefined();
-        expect(data2.cryptoPercentChange1H).toBeDefined();
-        expect(data2.cryptoPercentChange24H).toBeDefined();
-        expect(data2.cryptoPercentChange7D).toBeDefined();
-        expect(data2.cryptoLastUpdated).toBeDefined();
-        expect(data2.cryptoPriceEur).toBeDefined();
-        expect(data2.crypto24HVolumeEur).toBeDefined();
-        expect(data2.cryptoMarketCapEur).toBeDefined();
     });
 });
 

@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -120,7 +124,7 @@ export class CoreCookieService {
         // just check if it exist so it logs an error just in case
         if (this.checkIfExists(dir)) {
             // return path to cookie
-            const cookiePath = path.join(dir, (Environment.isTestnet() ? 'testnet' : ''), '.cookie');
+            const cookiePath = path.join(dir, (Environment.isRegtest() ? 'regtest' : ( Environment.isTestnet() ? 'testnet' : '') ), '.cookie');
             this.PATH_TO_COOKIE = cookiePath;
             return cookiePath;
         }

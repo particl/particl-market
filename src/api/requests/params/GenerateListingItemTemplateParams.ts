@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as _ from 'lodash';
 
 export interface GenerateListingItemTemplateParamsInterface {
@@ -39,6 +43,7 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
     public profileId: number | null = null;
     public generateListingItem = false;
     public marketId: number | null = null;
+    public categoryId: number | null = null;
 
     /**
      * generateParams[]:
@@ -54,24 +59,26 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
      * [9]: profileId
      * [10]: generateListingItem
      * [11]: marketId
+     * [12]: categoryId
      *
      * @param generateParams
      */
     constructor(generateParams: any[] = []) {
         // set params only if there are some -> by default all are true
         if (!_.isEmpty(generateParams)) {
-            this.generateItemInformation = generateParams[0] ? true : false;
-            this.generateShippingDestinations = generateParams[1] ? true : false;
-            this.generateItemImages = generateParams[2] ? true : false;
-            this.generatePaymentInformation = generateParams[3] ? true : false;
-            this.generateEscrow = generateParams[4] ? true : false;
-            this.generateItemPrice = generateParams[5] ? true : false;
-            this.generateMessagingInformation = generateParams[6] ? true : false;
-            this.generateListingItemObjects = generateParams[7] ? true : false;
-            this.generateObjectDatas = generateParams[8] ? true : false;
-            this.profileId = generateParams[9] ? generateParams[9] : null;
-            this.generateListingItem = generateParams[10] ? true : false;
-            this.marketId = generateParams[11] ? generateParams[11] : null;
+            this.generateItemInformation        = generateParams[0] ? true : false;
+            this.generateShippingDestinations   = generateParams[1] ? true : false;
+            this.generateItemImages             = generateParams[2] ? true : false;
+            this.generatePaymentInformation     = generateParams[3] ? true : false;
+            this.generateEscrow                 = generateParams[4] ? true : false;
+            this.generateItemPrice              = generateParams[5] ? true : false;
+            this.generateMessagingInformation   = generateParams[6] ? true : false;
+            this.generateListingItemObjects     = generateParams[7] ? true : false;
+            this.generateObjectDatas            = generateParams[8] ? true : false;
+            this.profileId                      = generateParams[9] ? generateParams[9] : null;
+            this.generateListingItem            = generateParams[10] ? true : false;
+            this.marketId                       = generateParams[11] ? generateParams[11] : null;
+            this.categoryId                     = generateParams[12] ? generateParams[12] : null;
         }
     }
 
@@ -88,7 +95,8 @@ export class GenerateListingItemTemplateParams implements GenerateListingItemTem
             this.generateObjectDatas,
             this.profileId,
             this.generateListingItem,
-            this.marketId
+            this.marketId,
+            this.categoryId
         ];
     }
 

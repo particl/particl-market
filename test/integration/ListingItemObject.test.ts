@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -7,20 +12,15 @@ import { ProfileService } from '../../src/api/services/ProfileService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
 import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ListingItemObject } from '../../src/api/models/ListingItemObject';
 import { ListingItemObjectType } from '../../src/api/enums/ListingItemObjectType';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../../src/api/requests/ListingItemObjectUpdateRequest';
-
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
-
 import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
 import { ObjectHash } from '../../src/core/helpers/ObjectHash';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';

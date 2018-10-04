@@ -1,52 +1,31 @@
-import { rpc, api } from '../lib/api';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { EscrowType } from '../../../src/api/enums/EscrowType';
 import { Currency } from '../../../src/api/enums/Currency';
 import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
 import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import * as resources from 'resources';
+import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 
-describe('/PaymentInformationUpdateCommand', () => {
+describe('PaymentInformationUpdateCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method =  Commands.PAYMENTINFORMATION_ROOT.commandName;
-    const subCommand =  Commands.PAYMENTINFORMATION_UPDATE.commandName;
 
-    let profileId;
-    const testDataListingItemTemplate = {
-        profile_id: 0,
-        itemInformation: {
-            title: 'Item Information with Templates',
-            shortDescription: 'Item short description with Templates',
-            longDescription: 'Item long description with Templates',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            }
-        },
-        paymentInformation: {
-            type: PaymentType.SALE,
-            escrow: {
-                type: EscrowType.MAD,
-                ratio: {
-                    buyer: 100,
-                    seller: 100
-                }
-            },
-            itemPrice: {
-                currency: Currency.BITCOIN,
-                basePrice: 0.0001,
-                shippingPrice: {
-                    domestic: 0.123,
-                    international: 1.234
-                },
-                cryptocurrencyAddress: {
-                    type: CryptocurrencyAddressType.NORMAL,
-                    address: 'This is temp address.'
-                }
-            }
-        }
-    };
+    const paymentInformationCommand =  Commands.PAYMENTINFORMATION_ROOT.commandName;
+    const paymentInformationUpdateCommand =  Commands.PAYMENTINFORMATION_UPDATE.commandName;
+
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let listingItemTemplate: resources.ListingItemTemplate;
 
     const testData = {
         type: PaymentType.FREE,
@@ -66,43 +45,71 @@ describe('/PaymentInformationUpdateCommand', () => {
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        const defaultProfile = await testUtil.getDefaultProfile();
-        profileId = defaultProfile.id;
+
+        // get default profile and market
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
+
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            false,  // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            true    // generateListingItemObjects
+        ]).toParamsArray();
+
+        // generate listingItemTemplate
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                       // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplates[];
+        listingItemTemplate = listingItemTemplates[0];
     });
 
-    test('Should update Payment-information by RPC', async () => {
+    test('Should update PaymentInformation', async () => {
 
-        testDataListingItemTemplate.profile_id = profileId;
+        const res: any = await testUtil.rpc(paymentInformationCommand, [paymentInformationUpdateCommand,
+            listingItemTemplate.id,
+            testData.type,
+            testData.itemPrice.currency,
+            testData.itemPrice.basePrice,
+            testData.itemPrice.shippingPrice.domestic,
+            testData.itemPrice.shippingPrice.international,
+            testData.itemPrice.cryptocurrencyAddress.address
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        const result: any = res.getBody()['result'];
+        expect(result.listingItemTemplateId).toBe(listingItemTemplate.id);
+        expect(result.type).toBe(testData.type);
 
-        const addListingItemTempResult = addListingItemTempRes;
-        const createdTemplateId = addListingItemTempResult.id;
-        const paymentInformationId = addListingItemTempResult.PaymentInformation.id;
-        const updateDataRes: any = await rpc(method, [subCommand, createdTemplateId, testData.type,
-            testData.itemPrice.currency, testData.itemPrice.basePrice,
-            testData.itemPrice.shippingPrice.domestic, testData.itemPrice.shippingPrice.international,
-            testData.itemPrice.cryptocurrencyAddress.address]);
-        updateDataRes.expectJson();
-        updateDataRes.expectStatusCode(200);
-        const resultUpdate: any = updateDataRes.getBody()['result'];
-        expect(resultUpdate.listingItemTemplateId).toBe(createdTemplateId);
-        expect(resultUpdate.type).toBe(testData.type);
+        expect(result.ItemPrice.currency).toBe(testData.itemPrice.currency);
+        expect(result.ItemPrice.basePrice).toBe(testData.itemPrice.basePrice);
 
-        expect(resultUpdate.ItemPrice.currency).toBe(testData.itemPrice.currency);
-        expect(resultUpdate.ItemPrice.basePrice).toBe(testData.itemPrice.basePrice);
-
-        expect(resultUpdate.ItemPrice.ShippingPrice.domestic).toBe(testData.itemPrice.shippingPrice.domestic);
-        expect(resultUpdate.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
-        expect(resultUpdate.ItemPrice.CryptocurrencyAddress.address).toBe(testData.itemPrice.cryptocurrencyAddress.address);
+        expect(result.ItemPrice.ShippingPrice.domestic).toBe(testData.itemPrice.shippingPrice.domestic);
+        expect(result.ItemPrice.ShippingPrice.international).toBe(testData.itemPrice.shippingPrice.international);
+        expect(result.ItemPrice.CryptocurrencyAddress.address).toBe(testData.itemPrice.cryptocurrencyAddress.address);
     });
 
-    test('Should fail update Payment Information, payment-information is not related with item-template', async () => {
-        const updateDataRes: any = await rpc(method, [subCommand, 0, testData.type,
-            testData.itemPrice.currency, testData.itemPrice.basePrice,
-            testData.itemPrice.shippingPrice.domestic, testData.itemPrice.shippingPrice.international,
-            testData.itemPrice.cryptocurrencyAddress.address]);
-        updateDataRes.expectJson();
-        updateDataRes.expectStatusCode(404);
+    test('Should fail to update PaymentInformation using invalid id', async () => {
+        const res: any = await testUtil.rpc(paymentInformationCommand, [paymentInformationUpdateCommand,
+            0,
+            testData.type,
+            testData.itemPrice.currency,
+            testData.itemPrice.basePrice,
+            testData.itemPrice.shippingPrice.domestic,
+            testData.itemPrice.shippingPrice.international,
+            testData.itemPrice.cryptocurrencyAddress.address
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Entity with identifier 0 does not exist');
+
     });
 });

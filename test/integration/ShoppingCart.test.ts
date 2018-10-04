@@ -1,17 +1,18 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ShoppingCart } from '../../src/api/models/ShoppingCart';
-
 import { ShoppingCartService } from '../../src/api/services/ShoppingCartService';
 import { ProfileService } from '../../src/api/services/ProfileService';
-
 import { ShoppingCartCreateRequest } from '../../src/api/requests/ShoppingCartCreateRequest';
 import { ShoppingCartUpdateRequest } from '../../src/api/requests/ShoppingCartUpdateRequest';
 import * as resources from 'resources';

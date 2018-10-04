@@ -1,22 +1,32 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { app } from '../../src/app';
+import * as Bookshelf from 'bookshelf';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
+import { ProfileService } from '../../src/api/services/ProfileService';
+import { MarketService } from '../../src/api/services/MarketService';
+import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
-import { FlaggedItem } from '../../src/api/models/FlaggedItem';
-
-import { FlaggedItemService } from '../../src/api/services/FlaggedItemService';
-import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import * as resources from 'resources';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { FlaggedItemService } from '../../src/api/services/FlaggedItemService';
+import { ProposalService } from '../../src/api/services/ProposalService';
+import { GenerateProposalParams } from '../../src/api/requests/params/GenerateProposalParams';
 import { FlaggedItemCreateRequest } from '../../src/api/requests/FlaggedItemCreateRequest';
+import { FlaggedItem } from '../../src/api/models/FlaggedItem';
 import { FlaggedItemUpdateRequest } from '../../src/api/requests/FlaggedItemUpdateRequest';
 
 describe('FlaggedItem', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
@@ -24,128 +34,145 @@ describe('FlaggedItem', () => {
 
     let testDataService: TestDataService;
     let flaggedItemService: FlaggedItemService;
+    let profileService: ProfileService;
+    let marketService: MarketService;
+    let listingItemService: ListingItemService;
+    let proposalService: ProposalService;
 
-    let createdId;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
 
-    const testData = {
-        listingItemId: null;
-    };
-
-    const testDataUpdated = {
-        listingItemId: null;
-    };
-
-    let createdListingItem;
-    let createdListingItemSecond;
+    let createdListingItem: resources.ListingItem;
+    let createdProposal: resources.Proposal;
+    let createdFlaggedItem: resources.FlaggedItem;
 
     beforeAll(async () => {
         await testUtil.bootstrapAppContainer(app);  // bootstrap the app
 
         testDataService = app.IoC.getNamed<TestDataService>(Types.Service, Targets.Service.TestDataService);
         flaggedItemService = app.IoC.getNamed<FlaggedItemService>(Types.Service, Targets.Service.FlaggedItemService);
+        proposalService = app.IoC.getNamed<ProposalService>(Types.Service, Targets.Service.ProposalService);
+        profileService = app.IoC.getNamed<ProfileService>(Types.Service, Targets.Service.ProfileService);
+        marketService = app.IoC.getNamed<MarketService>(Types.Service, Targets.Service.MarketService);
+        listingItemService = app.IoC.getNamed<ListingItemService>(Types.Service, Targets.Service.ListingItemService);
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testDataService.clean();
 
-        const generateParams = new GenerateListingItemParams([
-            false,   // generateItemInformation
-            false,   // generateShippingDestinations
-            false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
-            false,   // generateMessagingInformation
-            false    // generateListingItemObjects
+        // get default profile
+        const defaultProfileModel = await profileService.getDefault();
+        defaultProfile = defaultProfileModel.toJSON();
+
+        // get default market
+        const defaultMarketModel = await marketService.getDefault();
+        defaultMarket = defaultMarketModel.toJSON();
+
+        // create ListingItems
+        const generateListingItemParams = new GenerateListingItemParams([
+            true,                                       // generateItemInformation
+            true,                                       // generateShippingDestinations
+            false,                                      // generateItemImages
+            true,                                       // generatePaymentInformation
+            true,                                       // generateEscrow
+            true,                                       // generateItemPrice
+            true,                                       // generateMessagingInformation
+            true,                                       // generateListingItemObjects
+            false,                                      // generateObjectDatas
+            null,                                       // listingItemTemplateHash
+            defaultProfile.address                      // seller
         ]).toParamsArray();
 
-        // generate listingitem
         const listingItems = await testDataService.generate({
-            model: CreatableModel.LISTINGITEM,  // what to generate
-            amount: 1,                          // how many to generate
-            withRelated: true,                  // return model
-            generateParams                      // what kind of data to generate
+            model: CreatableModel.LISTINGITEM,          // what to generate
+            amount: 1,                                  // how many to generate
+            withRelated: true,                          // return model
+            generateParams: generateListingItemParams   // what kind of data to generate
         } as TestDataGenerateRequest);
         createdListingItem = listingItems[0];
 
-        // generate another listingitem
-        const listingItemsTwo = await testDataService.generate({
-            model: CreatableModel.LISTINGITEM,  // what to generate
-            amount: 1,                          // how many to generate
-            withRelated: true,                  // return model
-            generateParams                      // what kind of data to generate
+        // create Proposal
+        const generateProposalParams = new GenerateProposalParams([
+            false,                                      // generateListingItemTemplate
+            false,                                      // generateListingItem
+            createdListingItem.hash,                    // listingItemHash,
+            false,                                      // generatePastProposal,
+            0                                           // voteCount
+        ]).toParamsArray();
+
+        const proposals = await testDataService.generate({
+            model: CreatableModel.PROPOSAL,             // what to generate
+            amount: 1,                                  // how many to generate
+            withRelated: true,                          // return model
+            generateParams: generateProposalParams      // what kind of data to generate
         } as TestDataGenerateRequest);
-        createdListingItemSecond = listingItemsTwo[0];
-    });
+        createdProposal = proposals[0];
 
-    afterAll(async () => {
-        //
     });
 
 
-    test('Should throw ValidationException because there is no listing_item_id', async () => {
-        expect.assertions(1);
-        await flaggedItemService.create(testData as FlaggedItemCreateRequest).catch(e =>
-            expect(e).toEqual(new ValidationException('Request body is not valid', []))
-        );
-    });
-
-    test('Should create a new flagged item', async () => {
-        testData['listingItemId'] = createdListingItem.id;
-        const flaggedItemModel: FlaggedItem = await flaggedItemService.create(testData as FlaggedItemCreateRequest);
-        createdId = flaggedItemModel.Id;
-
-        const result = flaggedItemModel.toJSON();
-
-        // test the values
-        expect(result.listingItemId).toBe(testData.listingItemId);
-    });
-
-    test('Should throw ValidationException because we want to create a empty flagged item', async () => {
+    test('Should throw ValidationException because invalid request body', async () => {
         expect.assertions(1);
         await flaggedItemService.create({} as FlaggedItemCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list flagged items with our new create one', async () => {
+    test('Should create a new FlaggedItem', async () => {
+        const testData = {
+            listing_item_id: createdListingItem.id,
+            proposal_id: createdProposal.id,
+            reason: 'I AM SO OFFENDED BY THIS'
+        } as FlaggedItemCreateRequest;
+
+        const flaggedItemModel: FlaggedItem = await flaggedItemService.create(testData);
+        createdFlaggedItem = flaggedItemModel.toJSON();
+
+        expect(createdFlaggedItem.Proposal.id).toBe(createdProposal.id);
+        expect(createdFlaggedItem.ListingItem.id).toBe(createdListingItem.id);
+    });
+
+    test('Should list FlaggedItems with our newly created one', async () => {
         const flaggedItemCollection = await flaggedItemService.findAll();
-        const flaggedItem = flaggedItemCollection.toJSON();
-        expect(flaggedItem.length).toBe(1);
-
-        const result = flaggedItem[0];
-
-        // test the values
-        expect(result.listingItemId).toBe(testData.listingItemId);
+        const flaggedItems = flaggedItemCollection.toJSON();
+        expect(flaggedItems.length).toBe(1);
     });
 
-    test('Should return one flagged item', async () => {
-        const flaggedItemModel: FlaggedItem = await flaggedItemService.findOne(createdId);
-        const result = flaggedItemModel.toJSON();
-
-        // test the values
-        expect(result.listingItemId).toBe(testData.listingItemId);
+    test('Should return one FlaggedItem', async () => {
+        const flaggedItemModel: FlaggedItem = await flaggedItemService.findOne(createdFlaggedItem.id);
+        const result: resources.FlaggedItem = flaggedItemModel.toJSON();
+        expect(result.Proposal.id).toBe(createdFlaggedItem.Proposal.id);
+        expect(result.ListingItem.id).toBe(createdListingItem.id);
     });
 
-    test('Should throw ValidationException because there is no related_id', async () => {
+    test('Should throw ValidationException because there is no reason', async () => {
         expect.assertions(1);
-        await flaggedItemService.update(createdId, testDataUpdated as FlaggedItemUpdateRequest).catch(e =>
+        const testData = {} as FlaggedItemUpdateRequest;
+
+        await flaggedItemService.update(createdFlaggedItem.id, testData).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should update the flagged item', async () => {
-        testDataUpdated['listingItemId'] = createdListingItem.id;
-        const flaggedItemModel: FlaggedItem = await flaggedItemService.update(createdId, testDataUpdated as FlaggedItemUpdateRequest);
-        const result = flaggedItemModel.toJSON();
+    test('Should update the FlaggedItem', async () => {
+        const testData = {
+            reason: 'REASON'
+        } as FlaggedItemUpdateRequest;
 
-        expect(result.listingItemId).toBe(testDataUpdated.listingItemId);
+        const flaggedItemModel: FlaggedItem = await flaggedItemService.update(createdFlaggedItem.id, testData);
+        const result: resources.FlaggedItem = flaggedItemModel.toJSON();
+
+        // test the values
+        expect(result.Proposal.id).toBe(createdFlaggedItem.Proposal.id);
+        expect(result.ListingItem.id).toBe(createdFlaggedItem.ListingItem.id);
+
+        createdFlaggedItem = result;
     });
 
-    test('Should delete the flagged item', async () => {
+    test('Should delete the FlaggedItem', async () => {
         expect.assertions(1);
-        await flaggedItemService.destroy(createdId);
-        await flaggedItemService.findOne(createdId).catch(e =>
-            expect(e).toEqual(new NotFoundException(createdId))
+        await flaggedItemService.destroy(createdFlaggedItem.id);
+        await flaggedItemService.findOne(createdFlaggedItem.id).catch(e =>
+            expect(e).toEqual(new NotFoundException(createdFlaggedItem.id))
         );
     });
 

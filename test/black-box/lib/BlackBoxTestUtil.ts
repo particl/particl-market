@@ -1,5 +1,8 @@
-import { app } from '../../../src/app';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import { app } from '../../../src/app';
 import { api, rpc, ApiOptions } from './api';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
@@ -8,7 +11,6 @@ import * as resources from 'resources';
 import { LoggerConfig } from '../../../src/config/LoggerConfig';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { AddressType } from '../../../src/api/enums/AddressType';
-
 import * as addressCreateRequestSHIPPING_OWN from '../../testdata/createrequest/addressCreateRequestSHIPPING_OWN.json';
 import { MessageException } from '../../../src/api/exceptions/MessageException';
 
@@ -28,10 +30,10 @@ export class BlackBoxTestUtil {
      *
      * @returns {Promise<void>}
      */
-    public async cleanDb(): Promise<any> {
+    public async cleanDb(seed: boolean = true): Promise<any> {
 
         this.log.debug('cleanDb, this.node', this.node);
-        const res = await this.rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName]);
+        const res = await this.rpc(Commands.DATA_ROOT.commandName, [Commands.DATA_CLEAN.commandName, seed]);
         res.expectJson();
         res.expectStatusCode(200);
         return { result: 'success' };
@@ -162,7 +164,7 @@ export class BlackBoxTestUtil {
     public async rpc(method: string, params: any[] = [], logError: boolean = true): Promise<any> {
         const response = await rpc(method, params, this.node);
         if (logError && response.error) {
-            this.log.error(response.error.error.message);
+            this.log.error('ERROR: ' + JSON.stringify(response.error.error.message));
         }
         return response;
     }
@@ -175,7 +177,7 @@ export class BlackBoxTestUtil {
      */
     public async waitFor(maxSeconds: number): Promise<boolean> {
         for (let i = 0; i < maxSeconds; i++) {
-            this.log.debug('waiting... ');
+            this.log.debug('... ');
             await this.waitTimeOut(1000);
         }
         return true;
@@ -231,7 +233,8 @@ export class BlackBoxTestUtil {
                         // this.log.debug('objectPropertyValue: ' + objectPropertyValue);
 
                         if (objectPropertyValue === waitForObjectPropertyValue) {
-                            this.log.debug('success! statusCode === ' + waitForStatusCode + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
+                            this.log.debug('SUCCESS! statusCode === ' + waitForStatusCode
+                                + ' && ' + waitForObjectProperty + ' === ' + waitForObjectPropertyValue);
                             return response;
                         } else {
 
@@ -251,7 +254,7 @@ export class BlackBoxTestUtil {
                             // throw new MessageException('rpcWaitFor received non-matching waitForObjectPropertyValue: ' + waitForObjectPropertyValue);
                         }
                     } else {
-                        this.log.debug('success! statusCode === ' + waitForStatusCode);
+                        this.log.debug('SUCCESS! statusCode === ' + waitForStatusCode);
                         return response;
                     }
                 } else {

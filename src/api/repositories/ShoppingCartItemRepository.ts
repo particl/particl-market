@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
@@ -26,12 +30,12 @@ export class ShoppingCartItemRepository {
         return this.ShoppingCartItemModel.fetchById(id, withRelated);
     }
 
-    public async findOneByListingItemOnCart(cartId: number, listingItemId: number): Promise<ShoppingCartItem> {
-        return this.ShoppingCartItemModel.findOneByListingItemOnCart(cartId, listingItemId);
+    public async findOneByCartIdAndListingItemId(cartId: number, listingItemId: number): Promise<ShoppingCartItem> {
+        return this.ShoppingCartItemModel.fetchByCartIdAndListingItemId(cartId, listingItemId);
     }
 
-    public async findListItemsByCartId(cartId: number): Promise<Bookshelf.Collection<ShoppingCartItem>> {
-        return this.ShoppingCartItemModel.findListItemsByCartId(cartId);
+    public async findAllByCartId(cartId: number): Promise<Bookshelf.Collection<ShoppingCartItem>> {
+        return this.ShoppingCartItemModel.fetchAllByCartId(cartId);
     }
 
     public async create(data: any): Promise<ShoppingCartItem> {

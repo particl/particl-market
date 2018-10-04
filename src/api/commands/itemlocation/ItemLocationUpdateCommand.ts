@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -31,11 +35,11 @@ export class ItemLocationUpdateCommand extends BaseCommand implements RpcCommand
      * data.params[]:
      * [0]: listing_item_template_id
      * [1]: region (country/countryCode)
-     * [2]: address
-     * [3]: gps marker title
-     * [4]: gps marker description
-     * [5]: gps marker latitude
-     * [6]: gps marker longitude
+     * [2]: address, optional
+     * [3]: gps marker title, optional
+     * [4]: gps marker description, optional
+     * [5]: gps marker latitude, optional
+     * [6]: gps marker longitude, optional
      *
      * @param data
      * @returns {Promise<ItemLocation>}

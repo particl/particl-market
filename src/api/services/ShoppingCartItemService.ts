@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -35,19 +39,19 @@ export class ShoppingCartItemService {
         return shoppingCartItem;
     }
 
-    public async findOneByListingItemOnCart(cartId: number, listingItemId: number): Promise<ShoppingCartItem> {
-        return await this.shoppingCartItemRepo.findOneByListingItemOnCart(cartId, listingItemId);
+    public async findOneByCartIdAndListingItemId(cartId: number, listingItemId: number): Promise<ShoppingCartItem> {
+        return await this.shoppingCartItemRepo.findOneByCartIdAndListingItemId(cartId, listingItemId);
     }
 
-    public async findListItemsByCartId(cartId: number): Promise<Bookshelf.Collection<ShoppingCartItem>> {
-        return await this.shoppingCartItemRepo.findListItemsByCartId(cartId);
+    public async findAllByCartId(cartId: number): Promise<Bookshelf.Collection<ShoppingCartItem>> {
+        return await this.shoppingCartItemRepo.findAllByCartId(cartId);
     }
 
     @validate()
     public async create( @request(ShoppingCartItemCreateRequest) body: any): Promise<ShoppingCartItem> {
 
         // check that listingItems already added or not
-        const isItemExistOnCart = await this.findOneByListingItemOnCart(body.shopping_cart_id, body.listing_item_id);
+        const isItemExistOnCart = await this.findOneByCartIdAndListingItemId(body.shopping_cart_id, body.listing_item_id);
 
         if (isItemExistOnCart !== null) {
             this.log.warn(`ListingItem already exist in ShoppingCart`);
@@ -82,6 +86,8 @@ export class ShoppingCartItemService {
         await this.shoppingCartItemRepo.destroy(id);
     }
 
+    // TODO: rename to destroyByCartId and add clearCart method to ShoppingCartService, it doesn't make sense to look
+    // TODO: for a method called clearCart in ShoppingCartItemService.
     public async clearCart(cartId: number): Promise<void> {
         await this.shoppingCartItemRepo.clearCart(cartId);
     }

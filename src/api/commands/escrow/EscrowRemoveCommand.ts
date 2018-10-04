@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -9,6 +13,7 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateService } from '../../services/ListingItemTemplateService';
+import * as resources from 'resources';
 
 export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -32,17 +37,20 @@ export class EscrowRemoveCommand extends BaseCommand implements RpcCommandInterf
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
 
-        // get the template
+        if (data.params.length < 1) {
+            throw new MessageException('Expected ListingItemTemplate id but received no params.');
+        }
+
         const listingItemTemplateId = data.params[0];
         const listingItemTemplateModel = await this.listingItemTemplateService.findOne(listingItemTemplateId);
-        const listingItemTemplate = listingItemTemplateModel.toJSON();
+        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
 
         // template allready has listingitems so for now, it cannot be modified
         if (listingItemTemplate.ListingItems.length > 0) {
             throw new MessageException(`Escrow cannot be deleted because ListingItems allready exist for the ListingItemTemplate.`);
         }
 
-        return this.escrowService.destroy(data.params[0]);
+        return this.escrowService.destroy(listingItemTemplate.PaymentInformation.Escrow.id);
     }
 
     public usage(): string {

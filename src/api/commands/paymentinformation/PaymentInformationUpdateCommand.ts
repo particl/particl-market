@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -35,7 +39,7 @@ export class PaymentInformationUpdateCommand extends BaseCommand implements RpcC
      *  [3]: base price
      *  [4]: domestic shipping price
      *  [5]: international shipping price
-     *  [6]: payment address
+     *  [6]: payment address, optional
      *
      * @param data
      * @returns {Promise<PaymentInformation>}

@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -8,6 +12,7 @@ import { ItemInformation } from '../../models/ItemInformation';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ItemInformationGetCommand extends BaseCommand implements RpcCommandInterface<ItemInformation> {
 
@@ -31,6 +36,25 @@ export class ItemInformationGetCommand extends BaseCommand implements RpcCommand
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemInformation> {
         return this.itemInformationService.findByItemTemplateId(data.params[0]);
+    }
+
+    /**
+     * - should have 4 params
+     * - if category has key, it cant be edited
+     * - ...
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<void>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            this.log.error('ListingItemTemplate ID missing.');
+            throw new MessageException('ListingItemTemplate ID missing.');
+        } else if (typeof data.params[0] !== 'number') {
+            this.log.error('ListingItemTemplate ID must be numeric.');
+            throw new MessageException('ListingItemTemplate ID must be numeric.');
+        }
+        return data;
     }
 
     public usage(): string {

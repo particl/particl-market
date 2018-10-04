@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { app } from '../../src/app';
 import * as _ from 'lodash';
 import { Logger as LoggerType } from '../../src/core/Logger';
@@ -9,18 +14,13 @@ import { ListingItemTemplateService } from '../../src/api/services/ListingItemTe
 import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
 import { EscrowService } from '../../src/api/services/EscrowService';
 import { ItemPriceService } from '../../src/api/services/ItemPriceService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { PaymentInformation } from '../../src/api/models/PaymentInformation';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { Currency } from '../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../src/api/enums/CryptocurrencyAddressType';
-
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
 import { PaymentInformationUpdateRequest } from '../../src/api/requests/PaymentInformationUpdateRequest';

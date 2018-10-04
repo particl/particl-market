@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Types, Core, Targets } from '../../constants';
@@ -42,7 +46,7 @@ export class CurrencyPriceRepository {
             const currencyPriceCreated = await currencyPrice.save();
             return this.CurrencyPriceModel.fetchById(currencyPriceCreated.id);
         } catch (error) {
-            throw new DatabaseException('Could not create the currencyPrice!', error);
+            throw new DatabaseException('Could not create the currencyPrice!' + error, error);
         }
     }
 
@@ -52,7 +56,7 @@ export class CurrencyPriceRepository {
             const currencyPriceUpdated = await currencyPrice.save(data, { patch: true });
             return this.CurrencyPriceModel.fetchById(currencyPriceUpdated.id);
         } catch (error) {
-            throw new DatabaseException('Could not update the currencyPrice!', error);
+            throw new DatabaseException('Could not update the currencyPrice! ' + error, error);
         }
     }
 
@@ -68,7 +72,7 @@ export class CurrencyPriceRepository {
             await currencyPrice.destroy();
             return;
         } catch (error) {
-            throw new DatabaseException('Could not delete the currencyPrice!', error);
+            throw new DatabaseException('Could not delete the currencyPrice!' + error, error);
         }
     }
 

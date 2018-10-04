@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as _ from 'lodash';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
@@ -20,6 +24,8 @@ export class EnvConfig {
         MAINNET_PORT: 51738,
         TESTNET_PORT: 51935,
         TESTNET: true,
+        REGTEST_PORT: 19792,
+        REGTEST: false,
         INIT: true,
         MIGRATE: true,
         JASMINE_TIMEOUT: 100000,
@@ -50,7 +56,8 @@ export class EnvConfig {
         DB_MIGRATION_TABLE: 'version',
         DATA_CHECK_DELAY: 60,
         CHASING_COINS_API: 'https://chasing-coins.com/api/v1/convert',
-        CHASING_COINS_API_DELAY: 60
+        CHASING_COINS_API_DELAY: 60,
+        LISTING_ITEMS_EXPIRED_INTERVAL: 10 // minutes
     };
 
     /**

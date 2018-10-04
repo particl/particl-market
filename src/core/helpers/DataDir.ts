@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Environment } from '../../core/helpers/Environment';
 import * as os from 'os';
 import * as path from 'path';
@@ -54,7 +58,7 @@ export class DataDir {
 
         // return path to datadir (mainnet vs testnet)
         // and set the main datadir variable.
-        const dataDir = path.join(dir, (Environment.isTestnet() ? 'testnet' : ''));
+        const dataDir = path.join(dir, (Environment.isRegtest() ? 'regtest' : ( Environment.isTestnet() ? 'testnet' : '') ));
         return dataDir;
     }
 
@@ -110,7 +114,7 @@ export class DataDir {
         // may also be the particl-market/testnet
         // so check if upper directory exists.
         // TODO: what is this tesnet?!
-        if (this.datadir.endsWith('testnet') || this.datadir.endsWith('tesnet/')) {
+        if (this.datadir.endsWith('testnet') || this.datadir.endsWith('tesnet/') || this.datadir.endsWith('regtest')) {
             const dir = path.dirname(this.datadir); // pop the 'testnet' folder name
             if (!this.checkIfExists(dir, true)) {
                 fs.mkdirSync(dir);

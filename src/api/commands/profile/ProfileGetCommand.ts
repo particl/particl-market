@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -32,15 +36,18 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Profile> {
-        if (data.params.length === 0) {
-            data.params[0] = 'DEFAULT';
-        }
-
         if (typeof data.params[0] === 'number') {
             return await this.profileService.findOne(data.params[0]);
         } else {
             return await this.profileService.findOneByName(data.params[0]);
         }
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length === 0) {
+            data.params[0] = 'DEFAULT';
+        }
+        return data;
     }
 
     public usage(): string {
@@ -60,6 +67,7 @@ export class ProfileGetCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public example(): string {
-        return 'profile ' + this.getName() + ' 2 myProfile ';
+        return 'profile ' + this.getName() + ' 2\n'
+            + 'profile ' + this.getName() + ' myProfileName\n';
     }
 }

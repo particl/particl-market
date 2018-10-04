@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as dotenv from 'dotenv';
 dotenv.config({path: './.env.blackbox'}); // TODO: ???
 import * as _ from 'lodash';

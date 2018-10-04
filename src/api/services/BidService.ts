@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
@@ -54,7 +58,7 @@ export class BidService {
         return bid;
     }
 
-    public async findAllByHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
+    public async findAllByListingItemHash(hash: string, withRelated: boolean = true): Promise<Bookshelf.Collection<Bid>> {
         // TODO: this does not seem to be implemented, see repo/model
         const params = {
             listingItemHash: hash
@@ -82,12 +86,11 @@ export class BidService {
     @validate()
     public async getLatestBid(listingItemId: number, bidder: string): Promise<Bid> {
         // return await this.bidRepo.getLatestBid(listingItemId, bidder);
-        return await this.search(
-            {
-                listingItemId,
-                bidders: [ bidder ],
-                ordering: SearchOrder.DESC
-            } as BidSearchParams, true)[0];
+        return await this.search({
+            listingItemId,
+            bidders: [ bidder ],
+            ordering: SearchOrder.DESC
+        } as BidSearchParams, true)[0];
     }
 
     @validate()

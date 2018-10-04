@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
@@ -12,6 +16,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { MessageException } from '../../exceptions/MessageException';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import * as resources from 'resources';
 
 export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommandInterface<ItemCategory> {
 
@@ -42,18 +47,43 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<ItemCategory> {
-        const isUpdateable = await this.isDoable(data.params[0]);
-        if (isUpdateable) {
-            const parentItemCategory = data.params[3] || 'cat_ROOT'; // if null then default_category will be parent
-            const parentItemCategoryId = await this.getCategoryIdByKey(parentItemCategory);
-            return await this.itemCategoryService.update(data.params[0], {
-                name: data.params[1],
-                description: data.params[2],
-                parent_item_category_id: parentItemCategoryId
-            } as ItemCategoryUpdateRequest);
-        } else {
-            throw new MessageException(`category can't be update. id= ${data.params[0]}`);
+
+        const categoryId = data.params[0];
+        const name = data.params[1];
+        const description = data.params[2];
+        const parentItemCategoryId = data.params[3] || 'cat_ROOT';
+
+        return await this.itemCategoryService.update(categoryId, {
+            name,
+            description,
+            parent_item_category_id: parentItemCategoryId
+        } as ItemCategoryUpdateRequest);
+    }
+
+    /**
+     * - should have 4 params
+     * - if category has key, it cant be edited
+     * - ...
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<void>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 4) {
+            throw new MessageException('Missing parameters.');
         }
+
+        const categoryId = data.params[0];
+        const itemCategoryModel = await this.itemCategoryService.findOne(categoryId);
+        const itemCategory: resources.ItemCategory = itemCategoryModel.toJSON();
+
+        // if category has a key, its a default category and cant be updated
+        if (itemCategory.key != null) {
+            throw new MessageException(`Default category can't be updated or deleted.`);
+        }
+
+        return data;
     }
 
     public usage(): string {
@@ -82,44 +112,4 @@ export class ItemCategoryUpdateCommand extends BaseCommand implements RpcCommand
     }
 
 
-    /**
-     * function to check category is default, check category is not associated with listing-item
-     * TODO: NOTE: This function may be duplicated between commands.
-     *
-     * @param {number} categoryId
-     * @returns {Promise<boolean>}
-     */
-    private async isDoable(categoryId: number): Promise<boolean> {
-        const itemCategory = await this.itemCategoryService.findOne(categoryId);
-        // check category has key
-        if (itemCategory.Key != null) {
-            // not be update/delete its a default category
-            throw new MessageException(`Default category can't be update or delete. id= ${categoryId}`);
-        }
-        // check listingItem realted with category id
-        const listingItem = await this.listingItemService.findByCategory(categoryId);
-        if (listingItem.toJSON().length > 0) {
-            // not be update/delete its a related with listing-items
-            throw new MessageException(`Category related with listing-items can't be update or delete. id= ${categoryId}`);
-        }
-        return true;
-    }
-
-    /**
-     * function to return category id
-     * TODO: NOTE: This function may be duplicated between commands.
-     *
-     * @param parentItemCategory
-     * @returns {Promise<number>}
-     */
-    private async getCategoryIdByKey(parentItemCategory: any): Promise<number> {
-        let parentItemCategoryId;
-        if (typeof parentItemCategory === 'number') {
-            parentItemCategoryId = parentItemCategory;
-        } else { // get category id by key
-            parentItemCategory = await this.itemCategoryService.findOneByKey(parentItemCategory);
-            parentItemCategoryId = parentItemCategory.id;
-        }
-        return parentItemCategoryId;
-    }
 }

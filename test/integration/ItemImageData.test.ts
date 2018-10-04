@@ -1,40 +1,24 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
-
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ItemImageDataService } from '../../src/api/services/ItemImageDataService';
 import { ItemImageService } from '../../src/api/services/ItemImageService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-
-import { ValidationException } from '../../src/api/exceptions/ValidationException';
-import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-import { DatabaseException } from '../../src/api/exceptions/DatabaseException';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-
 import { ItemImageData } from '../../src/api/models/ItemImageData';
-import { ItemImage } from '../../src/api/models/ItemImage';
-import { ItemInformation } from '../../src/api/models/ItemInformation';
-import { ListingItem } from '../../src/api/models/ListingItem';
-
-import { ItemImageCreateRequest } from '../../src/api/requests/ItemImageCreateRequest';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ItemImageDataCreateRequest } from '../../src/api/requests/ItemImageDataCreateRequest';
 import { ItemImageDataUpdateRequest } from '../../src/api/requests/ItemImageDataUpdateRequest';
-
-import { ImageProcessing, MEDIUM_IMAGE_SIZE, THUMBNAIL_IMAGE_SIZE } from '../../src/core/helpers/ImageProcessing';
-import { ImageTriplet } from '../../src/core/helpers/ImageTriplet';
-
-import Jimp = require('jimp');
-import piexif = require('piexifjs');
-import {ImageVersions} from '../../src/core/helpers/ImageVersionEnumType';
-import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import {IsNotEmpty} from 'class-validator';
+import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
+import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 
 describe('ItemImageData', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

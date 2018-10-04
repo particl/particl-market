@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
@@ -39,8 +43,6 @@ export class ItemLocationService {
 
     @validate()
     public async create(@request(ItemLocationCreateRequest) data: ItemLocationCreateRequest): Promise<ItemLocation> {
-        const startTime = new Date().getTime();
-
         const body = JSON.parse(JSON.stringify(data));
 
         // extract and remove related models from request
@@ -58,7 +60,6 @@ export class ItemLocationService {
 
         // finally find and return the created itemLocation
         const result = await this.findOne(itemLocation.Id);
-        this.log.debug('itemLocationService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return result;
     }
 

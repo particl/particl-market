@@ -1,15 +1,17 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
-import { MessageException } from '../exceptions/MessageException';
 import { FavoriteItemRepository } from '../repositories/FavoriteItemRepository';
 import { FavoriteItem } from '../models/FavoriteItem';
 import { FavoriteItemCreateRequest } from '../requests/FavoriteItemCreateRequest';
 import { FavoriteItemUpdateRequest } from '../requests/FavoriteItemUpdateRequest';
-import { FavoriteSearchParams } from '../requests/FavoriteSearchParams';
 import { ListingItemService } from './ListingItemService';
 import { ProfileService } from './ProfileService';
 
@@ -40,17 +42,20 @@ export class FavoriteItemService {
     }
 
     /**
-     * search favorite item using given FavoriteSearchParams
+     * search favorite item by profileId and itemId
      *
-     * @param options
-     * @returns {Promise<FavoriteItem> }
+     * @param {number} profileId
+     * @param {number} itemId
+     * @param {boolean} withRelated
+     * @returns {Promise<FavoriteItem>}
      */
-
-    @validate()
-    public async search(
-        @request(FavoriteSearchParams) options: FavoriteSearchParams): Promise<FavoriteItem> {
-        const searchParams = await this.checkSearchByItemHashOrProfileName(options);
-        return this.favoriteItemRepo.search(searchParams);
+    public async findOneByProfileIdAndListingItemId(profileId: number, itemId: number, withRelated: boolean = true): Promise<FavoriteItem> {
+        const favoriteItem = await this.favoriteItemRepo.findOneByProfileIdAndListingItemId(profileId, itemId, withRelated);
+        if (favoriteItem === null) {
+            this.log.warn(`FavoriteItem with the profileId=${profileId} or listingItemId=${itemId} was not found!`);
+            throw new NotFoundException(profileId + ' or ' + itemId);
+        }
+        return favoriteItem;
     }
 
     /**
@@ -60,8 +65,8 @@ export class FavoriteItemService {
      * @param withRelated
      * @returns {Promise<Bookshelf.Collection<FavoriteItem>> }
      */
-    public async findFavoritesByProfileId(profileId: number, withRelated: boolean): Promise<Bookshelf.Collection<FavoriteItem>> {
-        return this.favoriteItemRepo.findFavoritesByProfileId(profileId, withRelated);
+    public async findAllByProfileId(profileId: number, withRelated: boolean): Promise<Bookshelf.Collection<FavoriteItem>> {
+        return this.favoriteItemRepo.findAllByProfileId(profileId, withRelated);
     }
 
 
@@ -93,31 +98,4 @@ export class FavoriteItemService {
         await this.favoriteItemRepo.destroy(id);
     }
 
-    /**
-     * search favorite item using given FavoriteSearchParams
-     * when itemId is string then find by item hash
-     * when profileId is string then find by profile name
-     *
-     * @param options
-     * @returns {Promise<FavoriteSearchParams> }
-     */
-
-    private async checkSearchByItemHashOrProfileName(options: FavoriteSearchParams): Promise<FavoriteSearchParams> {
-
-        // if options.itemId is string then find by hash
-        if (typeof options.itemId === 'string') {
-            const listingItem = await this.listingItemService.findOneByHash(options.itemId);
-            options.itemId = listingItem.id;
-        }
-        // if options.profileId is string then find by profile name
-        if (typeof options.profileId === 'string') {
-            const profile = await this.profileService.findOneByName(options.profileId);
-            if (profile === null) {
-                throw new MessageException(`Profile not found for the given name = ${options.profileId}`);
-            }
-            options.profileId = profile.id;
-        }
-
-        return options;
-    }
 }

@@ -1,43 +1,51 @@
-import * as _ from 'lodash';
-import { rpc, api } from '../lib/api';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
-describe('/ProfileListCommand', () => {
+describe('ProfileListCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.PROFILE_ROOT.commandName;
-    const subCommand = Commands.PROFILE_LIST.commandName;
+
+    const profileCommand = Commands.PROFILE_ROOT.commandName;
+    const profileListCommand = Commands.PROFILE_LIST.commandName;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
     });
 
-    test('Should return no profile', async () => {
-        const res = await rpc(method, [subCommand]);
+    test('Should return no Profile', async () => {
+        const res = await testUtil.rpc(profileCommand, [profileListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(1); // getting default one
     });
 
-    test('Should return one profile', async () => {
+    test('Should return one Profile', async () => {
         // generate single profile
         const generateRes = await testUtil.generateData(CreatableModel.PROFILE, 1);
-        // get list of profile
-        const res = await rpc(method, [subCommand]);
+
+        const res = await testUtil.rpc(profileCommand, [profileListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
         expect(result).toHaveLength(2);
     });
 
-    test('Should return 4 profile', async () => {
+    test('Should return 4 Profile', async () => {
         // generate three more profile
         const generateRes = await testUtil.generateData(CreatableModel.PROFILE, 3);
 
-        // get list of profile
-        const res = await rpc(method, [subCommand]);
+        const res = await testUtil.rpc(profileCommand, [profileListCommand]);
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

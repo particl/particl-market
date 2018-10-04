@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * constants.Targets
  * ------------------------------------------------
@@ -45,11 +49,18 @@ export const Targets = {
         PaymentInformation: 'PaymentInformation',
         PriceTicker: 'PriceTicker',
         Profile: 'Profile',
+        Proposal: 'Proposal',
+        ProposalOption: 'ProposalOption',
+        ProposalOptionResult: 'ProposalOptionResult',
+        ProposalResult: 'ProposalResult',
+        Setting: 'Setting',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
         ShoppingCart: 'ShoppingCart',
         ShoppingCartItem: 'ShoppingCartItem',
-        User: 'User'
+        SmsgMessage: 'SmsgMessage',
+        User: 'User',
+        Vote: 'Vote'
     },
     Repository:     {
         ActionMessageRepository: 'ActionMessageRepository',
@@ -87,11 +98,18 @@ export const Targets = {
         PaymentInformationRepository: 'PaymentInformationRepository',
         PriceTickerRepository: 'PriceTickerRepository',
         ProfileRepository: 'ProfileRepository',
+        ProposalOptionRepository: 'ProposalOptionRepository',
+        ProposalOptionResultRepository: 'ProposalOptionResultRepository',
+        ProposalRepository: 'ProposalRepository',
+        ProposalResultRepository: 'ProposalResultRepository',
+        SettingRepository: 'SettingRepository',
         ShippingDestinationRepository: 'ShippingDestinationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
         ShoppingCartItemRepository: 'ShoppingCartItemRepository',
         ShoppingCartRepository: 'ShoppingCartRepository',
-        UserRepository: 'UserRepository'
+        SmsgMessageRepository: 'SmsgMessageRepository',
+        UserRepository: 'UserRepository',
+        VoteRepository: 'VoteRepository'
     },
     Service:     {
         ActionMessageService: 'ActionMessageService',
@@ -138,13 +156,22 @@ export const Targets = {
         PaymentInformationService: 'PaymentInformationService',
         PriceTickerService: 'PriceTickerService',
         ProfileService: 'ProfileService',
+        ProposalActionService: 'ProposalActionService',
+        ProposalOptionResultService: 'ProposalOptionResultService',
+        ProposalOptionService: 'ProposalOptionService',
+        ProposalResultService: 'ProposalResultService',
+        ProposalService: 'ProposalService',
+        SettingService: 'SettingService',
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
         ShoppingCartItemService: 'ShoppingCartItemService',
         ShoppingCartService: 'ShoppingCartService',
+        SmsgMessageService: 'SmsgMessageService',
         SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
-        UserService: 'UserService'
+        UserService: 'UserService',
+        VoteActionService: 'VoteActionService',
+        VoteService: 'VoteService'
     },
     Command:     {
         address: {
@@ -212,7 +239,6 @@ export const Targets = {
             ItemImageRootCommand: 'ItemImageRootCommand'
         },
         iteminformation: {
-            ItemInformationAddCommand: 'ItemInformationAddCommand',
             ItemInformationGetCommand: 'ItemInformationGetCommand',
             ItemInformationRootCommand: 'ItemInformationRootCommand',
             ItemInformationUpdateCommand: 'ItemInformationUpdateCommand'
@@ -227,8 +253,7 @@ export const Targets = {
             ListingItemFlagCommand: 'ListingItemFlagCommand',
             ListingItemGetCommand: 'ListingItemGetCommand',
             ListingItemRootCommand: 'ListingItemRootCommand',
-            ListingItemSearchCommand: 'ListingItemSearchCommand',
-            ListingItemUpdateCommand: 'ListingItemUpdateCommand'
+            ListingItemSearchCommand: 'ListingItemSearchCommand'
         },
         listingitemobject: {
             ListingItemObjectRootCommand: 'ListingItemObjectRootCommand',
@@ -242,7 +267,6 @@ export const Targets = {
             ListingItemTemplateRootCommand: 'ListingItemTemplateRootCommand',
             ListingItemTemplateSearchCommand: 'ListingItemTemplateSearchCommand'
         },
-        LockedOutputCommand: 'LockedOutputCommand',
         market: {
             MarketAddCommand: 'MarketAddCommand',
             MarketListCommand: 'MarketListCommand',
@@ -256,7 +280,7 @@ export const Targets = {
             OrderRootCommand: 'OrderRootCommand',
             OrderSearchCommand: 'OrderSearchCommand'
         },
-        orderItem: {
+        orderitem: {
             OrderItemRootCommand: 'OrderItemRootCommand',
             OrderItemStatusCommand: 'OrderItemStatusCommand'
         },
@@ -275,7 +299,21 @@ export const Targets = {
             ProfileRootCommand: 'ProfileRootCommand',
             ProfileUpdateCommand: 'ProfileUpdateCommand'
         },
+        proposal: {
+            ProposalGetCommand: 'ProposalGetCommand',
+            ProposalListCommand: 'ProposalListCommand',
+            ProposalPostCommand: 'ProposalPostCommand',
+            ProposalResultCommand: 'ProposalResultCommand',
+            ProposalRootCommand: 'ProposalRootCommand'
+        },
         RpcCommandInterface: 'RpcCommandInterface',
+        setting: {
+            SettingGetCommand: 'SettingGetCommand',
+            SettingListCommand: 'SettingListCommand',
+            SettingRemoveCommand: 'SettingRemoveCommand',
+            SettingRootCommand: 'SettingRootCommand',
+            SettingSetCommand: 'SettingSetCommand'
+        },
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
             ShippingDestinationListCommand: 'ShippingDestinationListCommand',
@@ -296,6 +334,16 @@ export const Targets = {
             ShoppingCartItemListCommand: 'ShoppingCartItemListCommand',
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
+        },
+        smsg: {
+            SmsgRootCommand: 'SmsgRootCommand',
+            SmsgSearchCommand: 'SmsgSearchCommand'
+        },
+        vote: {
+            VoteGetCommand: 'VoteGetCommand',
+            VoteListCommand: 'VoteListCommand',
+            VotePostCommand: 'VotePostCommand',
+            VoteRootCommand: 'VoteRootCommand'
         }
     },
     Factory:     {
@@ -307,20 +355,16 @@ export const Targets = {
         ListingItemFactory: 'ListingItemFactory',
         MessagingInformationFactory: 'MessagingInformationFactory',
         OrderFactory: 'OrderFactory',
-        RpcCommandFactory: 'RpcCommandFactory'
+        ProposalFactory: 'ProposalFactory',
+        RpcCommandFactory: 'RpcCommandFactory',
+        SmsgMessageFactory: 'SmsgMessageFactory',
+        VoteFactory: 'VoteFactory'
     },
     MessageProcessor:     {
-        deprecated: {
-            AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
-            BidMessageProcessor: 'BidMessageProcessor',
-            CancelBidMessageProcessor: 'CancelBidMessageProcessor',
-            ListingItemMessageProcessor: 'ListingItemMessageProcessor',
-            RejectBidMessageProcessor: 'RejectBidMessageProcessor',
-            TestMessageProcessor: 'TestMessageProcessor',
-            UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
-        },
+        ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
         MessageProcessor: 'MessageProcessor',
-        MessageProcessorInterface: 'MessageProcessorInterface'
+        MessageProcessorInterface: 'MessageProcessorInterface',
+        SmsgMessageProcessor: 'SmsgMessageProcessor'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',

@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 /**
  * core.Environment
  * ------------------------------------
@@ -63,6 +67,10 @@ export class Environment {
 
     public static isTestnet(): boolean {
         return this.isTruthy(process.env.TESTNET) || this.isAlpha();
+    }
+
+    public static isRegtest(): boolean {
+        return this.isTruthy(process.env.REGTEST);
     }
 
     public static isTruthy(bool: string): boolean {

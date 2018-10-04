@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -57,7 +61,6 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
 
     /**
      * Posts a Bid to the network
-     * If addressId is null then one of bidDataId must be equal to addressId
      *
      * data.params[]:
      * [0]: itemhash, string
@@ -85,22 +88,28 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
 
-        this.validateParams(data.params);
+        // todo: make sure listingitem exists in validate()
+        // todo: make sure profile exists in validate()
+
         // listingitem we are bidding for
         const listingItemHash = data.params.shift();
-        const listingItemModel = await this.listingItemService.findOneByHash(listingItemHash);
-        const listingItem = listingItemModel.toJSON();
+        const listingItem: resources.ListingItem = await this.listingItemService.findOneByHash(listingItemHash)
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new MessageException('ListingItem not found.');
+            });
 
         // profile that is doing the bidding
         const profileId = data.params.shift();
-        let profile: any;
-        try {
-            profile = await this.profileService.findOne(profileId);
-            profile = profile.toJSON();
-        } catch ( ex ) {
-            this.log.error(ex);
-            throw new MessageException('No correct profile id.');
-        }
+        const profile: resources.Profile = await this.profileService.findOne(profileId)
+            .then(value => {
+                return value.toJSON();
+            })
+            .catch(reason => {
+                throw new MessageException('Profile not found.');
+            });
 
         const addressId = data.params.shift();
         const additionalParams: IdValuePair[] = [];
@@ -140,17 +149,71 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
         return this.bidActionService.send(listingItem, profile, additionalParams);
     }
 
+    /**
+     * data.params[]:
+     * [0]: itemhash, string
+     * [1]: profileId, number
+     * [2]: addressId (from profile shipping addresses), number|false
+     *                         if false, the address must be passed as bidData id/value pairs
+     *                         in following format:
+     *                         'ship.firstName',
+     *                         'ship.lastName',
+     *                         'ship.addressLine1',
+     *                         'ship.addressLine2', (not required)
+     *                         'ship.city',
+     *                         'ship.state',
+     *                         'ship.country'
+     *                         'ship.zipCode',
+     * [3]: bidDataId, string
+     * [4]: bidDataValue, string
+     * [5]: bidDataId, string
+     * [6]: bidDataValue, string
+     * ......
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        // TODO: move the validation here, add separate error messages for missing parameters
+
+        if (data.params.length < 3) {
+            throw new MessageException('Missing parameters.');
+        }
+
+        if (typeof data.params[0] !== 'string') {
+            throw new MessageException('Invalid hash.');
+        }
+
+        if (typeof data.params[1] !== 'number') {
+            throw new MessageException('Invalid profileId.');
+        }
+
+        if (typeof data.params[2] === 'boolean' && data.params[2] === false) {
+            // make sure that required keys are there
+            for (const addressKey of this.REQUIRED_ADDRESS_KEYS) {
+                if (!_.includes(data.params, addressKey.toString()) ) {
+                    throw new MessageException('Missing required param: ' + addressKey);
+                }
+            }
+        } else if (typeof data.params[2] !== 'number') {
+            throw new MessageException('Invalid addressId.');
+        }
+
+        return data;
+    }
+
     public usage(): string {
-        return this.getName() + ' <itemhash> <profileId> <AddressId> [(<bidDataId>, <bidDataValue>), ...] ';
+        return this.getName() + ' <itemhash> <profileId> <addressId | false> [(<bidDataKey>, <bidDataValue>), ...] ';
     }
 
     public help(): string {
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <itemhash>               - String - The hash of the item we want to send bids for. \n'
             + '    <profileId>              - Numeric - The id of the profile we want to associate with the bid. \n'
-            + '    <AddressId>              - Numeric - The id of the address we want to associated with the bid. \n'
-            + '    <bidDataId>              - [optional] Numeric - The id of the bid we want to send. \n'
-            + '    <bidDataValue>           - [optional] String - The value of the bid we want to send. ';
+            + '    <addressId>              - Numeric - The id of the address we want to associated with the bid. \n'
+            + '    <bidDataKey>             - [optional] String - The key for additional data for the bid we want to send. \n'
+            + '    <bidDataValue>           - [optional] String - The value for additional data for the bid we want to send. ';
     }
 
     public description(): string {
@@ -158,36 +221,8 @@ export class BidSendCommand extends BaseCommand implements RpcCommandInterface<S
     }
 
     public example(): string {
-        return '';
-        // return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb 1 [TODO] ';
-    }
-
-    private validateParams(params: any[]): boolean {
-
-        if (params.length < 3) {
-            throw new MessageException('Missing parameters.');
-        }
-
-        if (typeof params[0] !== 'string') {
-            throw new MessageException('Invalid hash.');
-        }
-
-        if (typeof params[1] !== 'number') {
-            throw new MessageException('Invalid profileId.');
-        }
-
-        if (typeof params[2] === 'boolean' && params[2] === false) {
-            // make sure that required keys are there
-            for (const addressKey of this.REQUIRED_ADDRESS_KEYS) {
-                if (!_.includes(params, addressKey.toString()) ) {
-                    throw new MessageException('Missing required param: ' + addressKey);
-                }
-            }
-        } else if (typeof params[2] !== 'number') {
-            throw new MessageException('Invalid addressId.');
-        }
-
-        return true;
+        return 'bid ' + this.getName() + ' 6e8c05ef939b1e30267a9912ecfe7560d758739c126f61926b956c087a1fedfe 1 1 ';
+        // return 'bid ' + this.getName() + ' b90cee25-036b-4dca-8b17-0187ff325dbb 1 ';
     }
 
 }

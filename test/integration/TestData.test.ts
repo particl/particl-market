@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import * as Bookshelf from 'bookshelf';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
@@ -10,14 +15,11 @@ import { ProfileService } from '../../src/api/services/ProfileService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { MessageException } from '../../src/api/exceptions/MessageException';
-
 import { ListingItemMessageType } from '../../src/api/enums/ListingItemMessageType';
 import { ListingItem } from '../../src/api/models/ListingItem';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
-
 import { ActionMessage } from '../../src/api/models/ActionMessage';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { GenerateBidParams } from '../../src/api/requests/params/GenerateBidParams';
@@ -25,13 +27,10 @@ import { Profile } from '../../src/api/models/Profile';
 import { BidMessageType } from '../../src/api/enums/BidMessageType';
 import { GenerateActionMessageParams } from '../../src/api/requests/params/GenerateActionMessageParams';
 import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-
-import { ListingItemMessageType } from '../../src/api/enums/ListingItemMessageType';
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 import * as resources from 'resources';
 import { OrderStatus } from '../../src/api/enums/OrderStatus';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
-import { GenerateActionMessageParams } from '../../src/api/requests/params/GenerateActionMessageParams';
 import { GenerateOrderParams } from '../../src/api/requests/params/GenerateOrderParams'
 
 describe('TestDataService', () => {
@@ -177,9 +176,8 @@ describe('TestDataService', () => {
 
         expect(result.hash).toBeDefined();
 
-        expect(result.OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
-
         if (orderGenerateParams.generateListingItem) {
+            expect(result.OrderItems[0].status).toBe(OrderStatus.AWAITING_ESCROW);
             expect(result.OrderItems[0].Bid.ListingItem).toBeDefined();
             expect(result.OrderItems[0].Bid.ListingItem.hash).not.toBeNull();
 
@@ -211,7 +209,7 @@ describe('TestDataService', () => {
         // clean removes all
         await testDataService.clean(true);
         const categories = await itemCategoryService.findAll();
-        expect(categories).toHaveLength(80);
+        expect(categories).toHaveLength(82);
 
         const profile = await profileService.findAll();
         expect(profile).toHaveLength(1);
@@ -472,7 +470,7 @@ describe('TestDataService', () => {
 
         const bid = generatedBids[0];
 
-        expectGenerateBid(bidGenerateParams, bid, false, true);
+        expectGenerateBid(bidGenerateParams, bid, true, true);
     });
 
     test('Should generate Bid using GenerateBidParams, with a relation to existing ListingItem', async () => {
@@ -508,7 +506,7 @@ describe('TestDataService', () => {
         } as TestDataGenerateRequest);
 
         const bid = generatedBids[0];
-        expectGenerateBid(bidGenerateParams, bid, false, true);
+        expectGenerateBid(bidGenerateParams, bid, true, true);
 
         expect(bid.ListingItem.hash).toBe(listingItems[0].hash);
         // expect(bid.ListingItem.seller).toBe(defaultProfile.address);
@@ -525,15 +523,17 @@ describe('TestDataService', () => {
         // [0]: generateListingItemTemplate, generate a ListingItemTemplate
         // [1]: generateListingItem, generate a ListingItem
         // [2]: generateBid, generate a Bid
-        // [3]: listingItemhash, attach bid to existing ListingItem
-        // [4]: bidId, attach Order to existing Bid
-        // [5]: bidder, bidders address
-        // [6]: listingItemSeller, ListingItem sellers address
+        // [3]: generateOrderItem, generate OrderItem
+        // [4]: listingItemhash, attach bid to existing ListingItem
+        // [5]: bidId, attach Order to existing Bid
+        // [6]: bidder, bidders address
+        // [7]: listingItemSeller, ListingItem sellers address
 
         const orderGenerateParams = new GenerateOrderParams([
             true,                       // generateListingItemTemplate
             true,                       // generateListingItem
             true,                       // generateBid
+            true,                      // generateOrderItem
             null,                       // listingItemhash
             null,                       // bidId
             null,                       // bidder
@@ -563,7 +563,7 @@ describe('TestDataService', () => {
         await testDataService.clean();
 
         const categories = await itemCategoryService.findAll();
-        expect(categories).toHaveLength(80);
+        expect(categories).toHaveLength(82);
 
         // default profile should not contain addresses
         const addresses = await addressService.findAll();

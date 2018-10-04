@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -6,6 +10,7 @@ import { Profile } from '../models/Profile';
 import { ProfileService } from './ProfileService';
 import { CoreRpcService } from './CoreRpcService';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
+import {MessageException} from '../exceptions/MessageException';
 
 export class DefaultProfileService {
 
@@ -32,18 +37,24 @@ export class DefaultProfileService {
     }
 
     public async insertOrUpdateProfile(profile: ProfileCreateRequest): Promise<Profile> {
-        let newProfile = await this.profileService.findOneByName(profile.name);
-        if (newProfile === null) {
-            this.log.debug('creating new default profile');
-            newProfile = await this.profileService.create(profile);
-            this.log.debug('created new default profile');
-        } else {
-            if (newProfile.Address === 'ERROR_NO_ADDRESS') {
-                this.log.debug('updating default profile');
-                profile.address = await this.profileService.getNewAddress();
-                newProfile = await this.profileService.update(newProfile.Id, profile);
-            }
-        }
-        return newProfile;
+
+        // check if profile already exist for the given name
+        return await this.profileService.findOneByName(profile.name)
+            .then(async value => {
+                const newProfile = value.toJSON();
+                // it does, update
+                if (newProfile.address === 'ERROR_NO_ADDRESS') {
+                    this.log.debug('updating default profile');
+                    newProfile.address = await this.profileService.getNewAddress();
+                    return await this.profileService.update(newProfile.id, profile);
+                } else {
+                    return value;
+                }
+            })
+            .catch(async reason => {
+                // it doesnt, create
+                this.log.debug('creating new default profile');
+                return await this.profileService.create(profile);
+            });
     }
 }

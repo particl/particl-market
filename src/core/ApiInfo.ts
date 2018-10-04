@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as express from 'express';
 import { Environment } from './helpers/Environment';
 import { SwaggerUI } from './SwaggerUI';

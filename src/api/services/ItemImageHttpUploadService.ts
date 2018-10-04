@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
@@ -25,12 +29,11 @@ export class ItemImageHttpUploadService {
     @validate()
     public async httpPostImageUpload(@request(ImagePostUploadRequest) uploadRequest: ImagePostUploadRequest): Promise<resources.ItemImage[]> {
 
-        // TODO: ImagePostUploadRequest.id, should be names templateId and not just some random id
         const createdItemImages: resources.ItemImage[] = [];
-        const listingItemTemplate: ListingItemTemplate = await this.listingItemTemplateService.findOne(uploadRequest.id);
+        const listingItemTemplate: ListingItemTemplate = await this.listingItemTemplateService.findOne(uploadRequest.listingItemTemplateId);
 
-        for ( const file of uploadRequest.request.files ) {
-            const createdItemImage = await this.itemImageService.createFile(file, listingItemTemplate);
+        for (const file of uploadRequest.request.files) {
+            const createdItemImage = await this.itemImageService.createFromFile(file, listingItemTemplate);
             createdItemImages.push(createdItemImage.toJSON());
         }
         return createdItemImages;

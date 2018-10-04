@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as _ from 'lodash';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
@@ -33,6 +37,8 @@ import { BidDataService } from './BidDataService';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 import { LockedOutputService } from './LockedOutputService';
 import { BidDataValue } from '../enums/BidDataValue';
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { SmsgMessageService } from './SmsgMessageService';
 
 // todo: move
 export interface OutputData {
@@ -53,19 +59,20 @@ export class BidActionService {
 
     constructor(
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.MarketService) public marketService: MarketService,
-        @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
-        @inject(Types.Service) @named(Targets.Service.ProfileService) public profileService: ProfileService,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.BidService) public bidService: BidService,
-        @inject(Types.Service) @named(Targets.Service.BidDataService) public bidDataService: BidDataService,
-        @inject(Types.Service) @named(Targets.Service.OrderService) public orderService: OrderService,
+        @inject(Types.Service) @named(Targets.Service.MarketService) private marketService: MarketService,
+        @inject(Types.Service) @named(Targets.Service.ActionMessageService) private actionMessageService: ActionMessageService,
+        @inject(Types.Service) @named(Targets.Service.ProfileService) private profileService: ProfileService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
+        @inject(Types.Service) @named(Targets.Service.BidDataService) private bidDataService: BidDataService,
+        @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
+        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.BidFactory) private bidFactory: BidFactory,
         @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Events) private eventEmitter: EventEmitter,
+        @inject(Types.Core) @named(Core.Logger) private Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
         this.configureEventListeners();
@@ -166,14 +173,13 @@ export class BidActionService {
         this.log.debug('buyerEscrowPubAddress: ', buyerEscrowPubAddress);
         this.log.debug('buyerEscrowChangeAddress: ', buyerEscrowChangeAddress);
 
-        // TODO: this is not on 0.16.0.3 yet ...
-        // const addressInfo = await this.coreRpcService.getAddressInfo(addr);
-        // this.log.debug('addressInfo: ', JSON.stringify(addressInfo, null, 2));
-        // const pubkey = addressInfo.pubkey;
-
         // 0.16.0.3
-        const buyerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(buyerEscrowPubAddress);
-        const buyerEcrowPubAddressPublicKey = buyerEscrowPubAddressInformation.pubkey;
+        // const buyerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(buyerEscrowPubAddress);
+        // const buyerEcrowPubAddressPublicKey = buyerEscrowPubAddressInformation.pubkey;
+
+        // 0.17++ ...
+        const buyerEscrowPubAddressInformation = await this.coreRpcService.getAddressInfo(buyerEscrowPubAddress);
+        const buyerEcrowPubAddressPublicKey = buyerEscrowPubAddressInformation.pubkey || buyerEscrowPubAddressInformation.scriptPubKey;
 
         this.log.debug('buyerEscrowPubAddressInformation: ', JSON.stringify(buyerEscrowPubAddressInformation, null, 2));
 
@@ -196,7 +202,7 @@ export class BidActionService {
             BidDataValue.BUYER_RELEASE_ADDRESS, buyerEscrowReleaseAddress
         ]).concat(additionalParams);
 
-        this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
+        // this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
 
         return bidDatas;
     }
@@ -209,47 +215,125 @@ export class BidActionService {
      */
     public async findUnspentOutputs(requiredAmount: number): Promise<OutputData> {
 
-        // get all unspent transaction outputs
-        const unspentOutputs = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+        // requiredAmount, for MPA_BID: (totalPrice * 2)
+        // requiredAmount, for MPA_ACCEPT: totalPrice
 
-        if (!unspentOutputs || unspentOutputs.length === 0) {
-            this.log.warn('No unspent outputs');
-            throw new MessageException('No unspent outputs');
-        }
-
-        this.log.debug('unspent outputs amount: ', unspentOutputs.length);
+        // todo: get the actual fee
+        const TRANSACTION_FEE = 0.0002;
+        const adjustedRequiredAmount: number = this.correctNumberDecimals(requiredAmount + TRANSACTION_FEE);
 
         const selectedOutputs: Output[] = [];
         let selectedOutputsSum = 0;
         let selectedOutputsChangeAmount = 0;
 
-        unspentOutputs.find(output => {
-            if (output.spendable && output.solvable) {
-                selectedOutputsSum += output.amount;
-                selectedOutputs.push({
-                    txid: output.txid,
-                    vout: output.vout,
-                    amount: output.amount
-                });
+        const utxoLessThanReqestedAmount: number[] = [];
+        let utxoIdxs: number[] = [];
+
+        let exactMatchIdx = -1;
+        let maxOutputIdx = -1;
+        const defaultselectedOutputsIdxs: number[] = [];
+
+        // get all unspent transaction outputs
+        const unspentOutputs = await this.coreRpcService.listUnspent(1, 99999999, [], false);
+
+        // Loop over all outputs once to obtain various fitlering information
+        unspentOutputs.filter(
+            (output: any, outIdx: number) => {
+                if (output.spendable && output.solvable && output.safe ) {
+                    if ( (exactMatchIdx === -1) && ( this.correctNumberDecimals(output.amount - adjustedRequiredAmount) === 0) ) {
+                        // Found a utxo with amount that is an exact match for the requested amount.
+                        exactMatchIdx = outIdx;
+                    } else if (output.amount < adjustedRequiredAmount) {
+                        // utxo is less than the amount requested, so may be summable with others to get to the exact value (or within a close threshold).
+                        utxoLessThanReqestedAmount.push(outIdx);
+                    }
+
+                    // Get the max utxo amount in case an output needs to be split
+                    if (maxOutputIdx === -1) {
+                        maxOutputIdx = outIdx;
+                    } else if (unspentOutputs[maxOutputIdx].amount < output.amount) {
+                        maxOutputIdx = outIdx;
+                    }
+
+                    // Sum up output amounts for the default case
+                    if (selectedOutputsSum < adjustedRequiredAmount) {
+                        selectedOutputsSum += output.amount;
+                        defaultselectedOutputsIdxs.push(outIdx);
+                    }
+
+                    return true;
+                }
+                return false;
+            }
+        );
+
+        // Step 1: Check whether an exact match was found.
+        if (exactMatchIdx === -1) {
+            // No exact match found, so...
+            //  ... Step 2: Sum utxos to find a summed group that matches exactly or is greater than the requried amount by no more than 1%.
+            for (let ii = 0; ii < Math.pow(2, utxoLessThanReqestedAmount.length); ii++) {
+                const potentialIdxs: number[] = utxoLessThanReqestedAmount.filter((num: number, index: number) => ii & (1 << index) );
+                const summed: number = this.correctNumberDecimals( potentialIdxs.reduce((acc: number, idx: number) => acc + unspentOutputs[idx].amount, 0) );
+
+                if ((summed >= adjustedRequiredAmount) && ((summed - adjustedRequiredAmount) < (adjustedRequiredAmount / 100)) ) {
+                    // Sum of utxos is within a 1 percent upper margin of the requested amount.
+                    if (summed === adjustedRequiredAmount) {
+                        // Found the exact required amount.
+                        utxoIdxs = potentialIdxs;
+                        break;
+                    } else if (!utxoIdxs.length) {
+                        utxoIdxs.length = 0;
+                        utxoIdxs = potentialIdxs;
+                    }
+                }
             }
 
-            // todo: get the actual fee
-            // check whether we have collected enough outputs to pay for the item and
-            // calculate the change amount
-            // requiredAmount, for MPA_BID: (totalPrice * 2)
-            // requiredAmount, for MPA_ACCEPT: totalPrice
+            // ... Step 3: If no summed values found, attempt to split a large enough output.
+            if (utxoIdxs.length === 0 && maxOutputIdx !== -1 && unspentOutputs[maxOutputIdx].amount > adjustedRequiredAmount) {
+                const newAddress = await this.coreRpcService.getNewAddress([], false);
+                // sendtoaddress will create a new transaction with its own selection of utxos to use, ie: the output with the max amount is not necessary used
+                const txid: string = await this.coreRpcService.call('sendtoaddress', [newAddress, adjustedRequiredAmount.toFixed(8), 'Split output']);
+                const txData: any = await this.coreRpcService.call('getrawtransaction', [txid, true]);
+                const outputData: any = txData.vout.find( outputObject => outputObject.value.toFixed(8) === adjustedRequiredAmount.toFixed(8) );
 
-            if (selectedOutputsSum > requiredAmount) {
-                selectedOutputsChangeAmount = +(selectedOutputsSum - requiredAmount - 0.0002).toFixed(8);
-                return true;
+                if (outputData) {
+                    selectedOutputs.push({
+                        txid: txData.txid,
+                        vout: outputData.n,
+                        amount: outputData.value
+                    });
+                    selectedOutputsSum = outputData.value;
+                }
             }
-            return false;
-        });
-
-        if (selectedOutputsSum < requiredAmount) {
-            this.log.warn('Not enough funds');
-            throw new MessageException('Not enough funds');
+        } else {
+            // Push the exact match.
+            utxoIdxs.push(exactMatchIdx);
         }
+
+        // Step 4: Default to the summed utxos if no other method was successful
+        if (!selectedOutputs.length && !utxoIdxs.length) {
+            if (selectedOutputsSum >= adjustedRequiredAmount) {
+                utxoIdxs = defaultselectedOutputsIdxs;
+            } else {
+                this.log.warn('Not enough funds');
+                throw new MessageException('Not enough funds');
+            }
+        }
+
+        if (utxoIdxs.length) {
+            selectedOutputsSum = 0;
+            utxoIdxs.forEach( utxoIdx => {
+                const utxo: any = unspentOutputs[utxoIdx];
+                selectedOutputs.push({
+                    txid: utxo.txid,
+                    vout: utxo.vout,
+                    amount: utxo.amount
+                });
+                selectedOutputsSum += utxo.amount;
+            });
+        }
+
+        selectedOutputsChangeAmount = +(selectedOutputsSum - adjustedRequiredAmount).toFixed(8);
 
         // todo: type
         const response: OutputData = {
@@ -267,14 +351,18 @@ export class BidActionService {
     /**
      * Accept a Bid
      *
-     * @param {module:resources.ListingItem} listingItem
      * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async accept(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
+    public async accept(bid: resources.Bid): Promise<SmsgSendResponse> {
 
         // previous bids action needs to be MPA_BID
         if (bid.action === BidMessageType.MPA_BID) {
+
+            const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
+                .then(value => {
+                    return value.toJSON();
+                });
 
             // todo: create order before biddatas so order hash can be added to biddata in generateBidDatasForMPA_ACCEPT
             // generate bidDatas for MPA_ACCEPT
@@ -295,7 +383,7 @@ export class BidActionService {
             const orderModel = await this.orderService.create(orderCreateRequest);
             const order = orderModel.toJSON();
 
-            // this.log.debug('accept(), created Order: ', order);
+            this.log.debug('accept(), created Order: ', JSON.stringify(order, null, 2));
             // this.log.debug('accept(), created bidMessage.objects: ', bidMessage.objects);
 
             // put the order.hash in BidMessage and also save it
@@ -408,14 +496,14 @@ export class BidActionService {
         this.log.debug('sellerEscrowPubAddress: ', sellerEscrowPubAddress);
         this.log.debug('sellerEscrowChangeAddress: ', sellerEscrowChangeAddress);
 
-        // TODO: this is not on 0.16.0.3 yet ...
-        // const addressInfo = await this.coreRpcService.getAddressInfo(addr);
-        // this.log.debug('addressInfo: ', JSON.stringify(addressInfo, null, 2));
-        // const pubkey = addressInfo.pubkey;
-
         // 0.16.0.3
-        const sellerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(sellerEscrowPubAddress);
+        // const sellerEscrowPubAddressInformation = await this.coreRpcService.validateAddress(sellerEscrowPubAddress);
+        // const sellerEscrowPubAddressPublicKey = sellerEscrowPubAddressInformation.pubkey;
+
+        // 0.17++ ...
+        const sellerEscrowPubAddressInformation = await this.coreRpcService.getAddressInfo(sellerEscrowPubAddress);
         const sellerEscrowPubAddressPublicKey = sellerEscrowPubAddressInformation.pubkey;
+
         const buyerEscrowPubAddressPublicKey = this.getValueFromBidDatas(BidDataValue.BUYER_PUBKEY, bid.BidDatas);
 
         // create multisig escrow address
@@ -454,19 +542,21 @@ export class BidActionService {
         this.log.debug('MPA_ACCEPT, txout: ', JSON.stringify(txout, null, 2));
         this.log.debug('MPA_ACCEPT, rawtx: ', JSON.stringify(rawtx, null, 2));
 
-        // TODO: At this stage we need to store the unsigned transaction, as we will need user interaction to sign the transaction
-        // TODO: this is not on 0.16.0.3 yet ...
-        // let signed;
+        // 0.16.0.3
+        // const signed = await this.coreRpcService.signRawTransaction(rawtx);
+        // this.log.debug('signed: ', JSON.stringify(signed, null, 2));
+
+        // 0.17++
         // if (Environment.isDevelopment() || Environment.isTest()) {
         //    const privKey = await this.coreRpcService.dumpPrivKey(addr);
         //    signed = await this.coreRpcService.signRawTransactionWithKey(rawtx, [privKey]);
         // } else {
-        //    signed = await this.coreRpcService.signRawTransactionWithWallet(rawtx);
+        const signed = await this.coreRpcService.signRawTransactionWithWallet(rawtx);
         // }
 
-        // 0.16.0.3
-        const signed = await this.coreRpcService.signRawTransaction(rawtx);
-        this.log.debug('signed: ', JSON.stringify(signed, null, 2));
+        this.log.info('===========================================================================');
+        this.log.info('signed: ', JSON.stringify(signed, null, 2));
+        this.log.info('===========================================================================');
 
         // TODO: duplicate code, use the same signRawTx function as in EscrowActionService
         if (!signed || (signed.errors && (
@@ -481,9 +571,6 @@ export class BidActionService {
             throw new MessageException('Transaction should not be complete at this stage, will not send insecure message');
         }
 
-        // - Most likely the transaction building and signing will happen in a different command that takes place before this..
-        // End - Ryno Hacks
-
         const bidDatas: IdValuePair[] = this.getIdValuePairsFromArray([
             BidDataValue.SELLER_OUTPUTS, sellerSelectedOutputData.outputs,
             BidDataValue.BUYER_OUTPUTS, buyerSelectedOutputData.outputs, // allready in BidData, not necessarily needed here
@@ -492,7 +579,8 @@ export class BidActionService {
             BidDataValue.BUYER_PUBKEY, buyerEscrowPubAddressPublicKey, // allready in BidData, not necessarily needed here
             BidDataValue.RAW_TX, signed.hex
         ]);
-        // this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
+
+        this.log.debug('bidDatas: ', JSON.stringify(bidDatas, null, 2));
 
         return bidDatas;
     }
@@ -583,13 +671,17 @@ export class BidActionService {
     /**
      * Cancel a Bid
      *
-     * @param {module:resources.ListingItem} listingItem
      * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async cancel(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
+    public async cancel(bid: resources.Bid): Promise<SmsgSendResponse> {
 
         if (bid.action === BidMessageType.MPA_BID) {
+
+            const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
+                .then(value => {
+                    return value.toJSON();
+                });
 
             // create the bid cancel message
             const bidMessage: BidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_CANCEL, listingItem.hash);
@@ -634,13 +726,18 @@ export class BidActionService {
      * Reject a Bid
      * todo: add the bid as param, so we know whose bid we are rejecting. now supports just one bidder.
      *
-     * @param {module:resources.ListingItem} listingItem
      * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async reject(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
+    public async reject(bid: resources.Bid): Promise<SmsgSendResponse> {
 
         if (bid.action === BidMessageType.MPA_BID) {
+
+            const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
+                .then(value => {
+                    return value.toJSON();
+                });
+
             // fetch the seller profile
             const sellerProfileModel: Profile = await this.profileService.findOneByAddress(listingItem.seller);
             if (!sellerProfileModel) {
@@ -685,54 +782,58 @@ export class BidActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.Bid>}
      */
-    public async processBidReceivedEvent(event: MarketplaceEvent): Promise<resources.Bid> {
-        this.log.debug('Received event:', event);
-
-        // todo: fix
-        event.smsgMessage.received = new Date().toISOString();
+    public async processBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
         const message = event.marketplaceMessage;
 
-        if (!message.mpaction) {   // ACTIONEVENT
+        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
 
-        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
-        const listingItem = listingItemModel.toJSON();
+        return await this.listingItemService.findOneByHash(message.mpaction.item)
+            .then(async listingItemModel => {
 
-        // todo: check that the listingitem is yours
+                const listingItem = listingItemModel.toJSON();
 
-        // first save actionmessage
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-        const actionMessage = actionMessageModel.toJSON();
+                // todo: check that the listingitem is yours
 
-        // TODO: should someone be able to bid more than once?
-        // TODO: for that to be possible, we need to be able to identify different bids from one address
-        // -> needs bid.hash
-        // TODO: when testing locally, bid gets created first for the bidder after which it can be found here when receiving the bid
+                // first save actionmessage
+                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+                const actionMessage = actionMessageModel.toJSON();
 
-        const biddersExistingBidsForItem = await this.bidService.search({
-            listingItemHash: bidMessage.item,
-            bidders: [bidder]
-        } as BidSearchParams);
+                // TODO: should someone be able to bid more than once?
+                // TODO: for that to be possible, we need to be able to identify different bids from one address
+                // -> needs bid.hash
+                // TODO: when testing locally, bid gets created first for the bidder after which it can be found here when receiving the bid
 
-        if (biddersExistingBidsForItem && biddersExistingBidsForItem.length > 0) {
-            this.log.debug('biddersExistingBidsForItem:', JSON.stringify(biddersExistingBidsForItem, null, 2));
-            throw new MessageException('Bids allready exist for the ListingItem for the bidder.');
-        }
+                const biddersExistingBidsForItem = await this.bidService.search({
+                    listingItemHash: bidMessage.item,
+                    bidders: [bidder]
+                } as BidSearchParams);
 
-        if (bidMessage) {
-            const createdBid = await this.createBid(bidMessage, listingItem, bidder);
-            // this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
+                if (biddersExistingBidsForItem && biddersExistingBidsForItem.length > 0) {
+                    this.log.debug('biddersExistingBidsForItem:', JSON.stringify(biddersExistingBidsForItem, null, 2));
+                    throw new MessageException('Bids allready exist for the ListingItem for the bidder.');
+                }
 
-            // TODO: do whatever else needs to be done
+                if (bidMessage) {
+                    const createdBid = await this.createBid(bidMessage, listingItem, bidder);
+                    // this.log.debug('createdBid:', JSON.stringify(createdBid, null, 2));
 
-            return createdBid;
-        } else {
-            throw new MessageException('Missing BidMessage');
-        }
+                    // TODO: do whatever else needs to be done
+
+                    return SmsgMessageStatus.PROCESSED;
+                } else {
+                    throw new MessageException('Missing BidMessage');
+                }
+            })
+            .catch(reason => {
+                // ListingItem not found
+                return SmsgMessageStatus.WAITING;
+            });
+
     }
 
     /**
@@ -743,70 +844,77 @@ export class BidActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.Bid>}
      */
-    public async processAcceptBidReceivedEvent(event: MarketplaceEvent): Promise<resources.Bid> {
+    public async processAcceptBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         const bidMessage: BidMessage = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.to; // from seller to buyer
 
         // find the ListingItem
         const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
+        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
-        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
-        const listingItem = listingItemModel.toJSON();
 
-        // TODO: save incoming and outgoing actionmessages
-        // TODO: ... and do it in one place
-        // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-        const actionMessage = actionMessageModel.toJSON();
+        return await this.listingItemService.findOneByHash(message.mpaction.item)
+            .then(async listingItemModel => {
 
-        if (bidMessage) {
+                const listingItem = listingItemModel.toJSON();
 
-            // find the Bid
-            const existingBid = _.find(listingItem.Bids, (o: resources.Bid) => {
-                return o.action === BidMessageType.MPA_BID && o.bidder === bidder;
-            });
+                // TODO: save incoming and outgoing actionmessages
+                // TODO: ... and do it in one place
+                // first save it
+                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+                const actionMessage = actionMessageModel.toJSON();
 
-            // this.log.debug('existingBid:', JSON.stringify(existingBid, null, 2));
+                if (bidMessage) {
 
-            if (existingBid) {
+                    // find the Bid
+                    const existingBid = _.find(listingItem.Bids, (o: resources.Bid) => {
+                        return o.action === BidMessageType.MPA_BID && o.bidder === bidder;
+                    });
 
-                // update the bid locally
-                const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, existingBid);
-                // this.log.debug('bidUpdateRequest:', JSON.stringify(bidUpdateRequest, null, 2));
-                const updatedBidModel = await this.bidService.update(existingBid.id, bidUpdateRequest);
-                let updatedBid: resources.Bid = updatedBidModel.toJSON();
-                // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
+                    // this.log.debug('existingBid:', JSON.stringify(existingBid, null, 2));
 
-                // create the order from the bid
-                const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
-                const orderModel = await this.orderService.create(orderCreateRequest);
-                const order = orderModel.toJSON();
+                    if (existingBid) {
 
-                this.log.debug('processAcceptBidReceivedEvent(), created Order: ', JSON.stringify(order, null, 2));
+                        // update the bid locally
+                        const bidUpdateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, existingBid);
+                        // this.log.debug('bidUpdateRequest:', JSON.stringify(bidUpdateRequest, null, 2));
+                        const updatedBidModel = await this.bidService.update(existingBid.id, bidUpdateRequest);
+                        let updatedBid: resources.Bid = updatedBidModel.toJSON();
+                        // this.log.debug('updatedBid:', JSON.stringify(updatedBid, null, 2));
 
-                const orderHash = this.getValueFromBidDatas(BidDataValue.ORDER_HASH, updatedBid.BidDatas);
-                this.log.debug('seller orderHash: ', orderHash);
-                this.log.debug('local orderHash: ', order.hash);
+                        // create the order from the bid
+                        const orderCreateRequest = await this.orderFactory.getModelFromBid(updatedBid);
+                        const orderModel = await this.orderService.create(orderCreateRequest);
+                        const order = orderModel.toJSON();
 
-                if (orderHash !== order.hash) {
-                    throw new MessageException('Created Order.hash does not match with the received orderHash.');
+                        this.log.debug('processAcceptBidReceivedEvent(), created Order: ', JSON.stringify(order, null, 2));
+
+                        const orderHash = this.getValueFromBidDatas(BidDataValue.ORDER_HASH, updatedBid.BidDatas);
+                        this.log.debug('seller orderHash: ', orderHash);
+                        this.log.debug('local orderHash: ', order.hash);
+
+                        if (orderHash !== order.hash) {
+                            throw new MessageException('Created Order.hash does not match with the received orderHash.');
+                        }
+                        await updatedBidModel.fetch({withRelated: ['OrderItem']});
+                        updatedBid = updatedBidModel.toJSON();
+                        // TODO: do whatever else needs to be done
+
+                        // this.log.debug('processAcceptBidReceivedEvent(), updatedBid: ', JSON.stringify(updatedBid, null, 2));
+                        return SmsgMessageStatus.PROCESSED;
+                    } else {
+                        return SmsgMessageStatus.WAITING;
+                    }
+                } else {
+                    throw new MessageException('Missing BidMessage.');
                 }
-                await updatedBidModel.fetch({withRelated: ['OrderItem']});
-                updatedBid = updatedBidModel.toJSON();
-                // TODO: do whatever else needs to be done
-
-                // this.log.debug('processAcceptBidReceivedEvent(), updatedBid: ', JSON.stringify(updatedBid, null, 2));
-
-                return updatedBid;
-            } else {
-                throw new MessageException('There is no existing Bid to accept.');
-            }
-        } else {
-            throw new MessageException('Missing BidMessage.');
-        }
+            })
+            .catch(reason => {
+                // ListingItem not found
+                return SmsgMessageStatus.WAITING;
+            });
     }
 
     /**
@@ -815,48 +923,58 @@ export class BidActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.ActionMessage>}
      */
-    public async processCancelBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
-        this.log.info('Received event:', event);
+    public async processCancelBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
+
         const bidMessage: any = event.marketplaceMessage.mpaction as BidMessage;
         const bidder = event.smsgMessage.from;
         // find the ListingItem
         const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
+        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
-        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
-        const listingItem = listingItemModel.toJSON();
 
-        // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-        const actionMessage = actionMessageModel.toJSON();
+        return await this.listingItemService.findOneByHash(message.mpaction.item)
+            .then(async listingItemModel => {
 
-        // Get latest bid from listingItemId and bidder so we can get bidId.
-        const params: BidSearchParams = new BidSearchParams({
-            listingItemId: listingItem.id,
-            action: BidMessageType.MPA_BID,
-            bidders: [ bidder ],
-            ordering: SearchOrder.DESC
-        });
-        const oldBids: Bookshelf.Collection<Bid> = await this.bidService.search(params);
-        let oldBid: any = oldBids.pop();
-        if (!oldBid) {
-            throw new MessageException('Missing old bid.');
-        }
-        oldBid = oldBid.toJSON();
+                const listingItem = listingItemModel.toJSON();
 
-        // Update the bid in the database with new action.
-        const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, oldBid);
-        const bidUpdateRequest: BidUpdateRequest = {
-            listing_item_id: tmpBidCreateRequest.listing_item_id,
-            action: BidMessageType.MPA_CANCEL,
-            bidder: tmpBidCreateRequest.bidder,
-            bidDatas: tmpBidCreateRequest.bidDatas
-        } as BidUpdateRequest;
-        const updatedBid = await this.bidService.update(oldBid.id, bidUpdateRequest);
+                // first save it
+                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+                const actionMessage = actionMessageModel.toJSON();
 
-        // todo: return Bid
-        return actionMessage;
+                // Get latest bid from listingItemId and bidder so we can get bidId.
+                const params: BidSearchParams = new BidSearchParams({
+                    listingItemId: listingItem.id,
+                    action: BidMessageType.MPA_BID,
+                    bidders: [ bidder ],
+                    ordering: SearchOrder.DESC
+                });
+                const oldBids: Bookshelf.Collection<Bid> = await this.bidService.search(params);
+                let oldBid: any = oldBids.pop();
+                if (!oldBid) {
+                    // throw new MessageException('Missing old bid.');
+                    this.log.error('Missing old bid.');
+                    return SmsgMessageStatus.WAITING;
+                }
+                oldBid = oldBid.toJSON();
+
+                // Update the bid in the database with new action.
+                const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, oldBid);
+                const bidUpdateRequest: BidUpdateRequest = {
+                    listing_item_id: tmpBidCreateRequest.listing_item_id,
+                    action: BidMessageType.MPA_CANCEL,
+                    bidder: tmpBidCreateRequest.bidder,
+                    bidDatas: tmpBidCreateRequest.bidDatas
+                } as BidUpdateRequest;
+                const updatedBid = await this.bidService.update(oldBid.id, bidUpdateRequest);
+
+                return SmsgMessageStatus.PROCESSED;
+            })
+            .catch(reason => {
+                // ListingItem not found
+                return SmsgMessageStatus.WAITING;
+            });
+
     }
 
     /**
@@ -865,9 +983,8 @@ export class BidActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.ActionMessage>}
      */
-    public async processRejectBidReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
+    public async processRejectBidReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
-        this.log.info('Received event:', event);
         const message = event.marketplaceMessage;
         const bidMessage: any = message.mpaction as BidMessage;
         const bidder = event.smsgMessage.to;
@@ -876,52 +993,57 @@ export class BidActionService {
         if (!bidMessage) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
-        const listingItemModel = await this.listingItemService.findOneByHash(bidMessage.item);
-        const listingItem = listingItemModel.toJSON();
 
-        // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-        const actionMessage = actionMessageModel.toJSON();
+        return await this.listingItemService.findOneByHash(bidMessage.item)
+            .then(async listingItemModel => {
+                const listingItem = listingItemModel.toJSON();
 
-        // Get latest bid from listingItemId and bidder so we can get bidId.
-        const params: BidSearchParams = new BidSearchParams({
-            listingItemId: listingItem.id,
-            action: BidMessageType.MPA_BID,
-            bidders: [ bidder ],
-            ordering: SearchOrder.DESC
-        });
-        const oldBids: Bookshelf.Collection<Bid> = await this.bidService.search(params);
-        let oldBid: any = oldBids.pop();
-        if (!oldBid) {
-            throw new MessageException('Missing old bid.');
-        }
-        oldBid = oldBid.toJSON();
+                // first save it
+                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+                const actionMessage = actionMessageModel.toJSON();
 
-        // Update the bid in the database with new action.
-        const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, oldBid);
-        const bidUpdateRequest: BidUpdateRequest = {
-            listing_item_id: tmpBidCreateRequest.listing_item_id,
-            action: BidMessageType.MPA_REJECT,
-            bidder: tmpBidCreateRequest.bidder,
-            bidDatas: tmpBidCreateRequest.bidDatas
-        } as BidUpdateRequest;
-        const bidModel = await this.bidService.update(oldBid.id, bidUpdateRequest);
-        const bid = bidModel.toJSON();
+                // Get latest bid from listingItemId and bidder so we can get bidId.
+                const params: BidSearchParams = new BidSearchParams({
+                    listingItemId: listingItem.id,
+                    action: BidMessageType.MPA_BID,
+                    bidders: [ bidder ],
+                    ordering: SearchOrder.DESC
+                });
+                const oldBids: Bookshelf.Collection<Bid> = await this.bidService.search(params);
+                let oldBid: any = oldBids.pop();
+                if (!oldBid) {
+                    throw new MessageException('Missing old bid.');
+                }
+                oldBid = oldBid.toJSON();
 
-        // remove buyers lockedoutputs
-        let selectedOutputs = this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, bid.BidDatas);
-        selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
+                // Update the bid in the database with new action.
+                const tmpBidCreateRequest: BidCreateRequest = await this.bidFactory.getModel(bidMessage, listingItem.id, bidder, oldBid);
+                const bidUpdateRequest: BidUpdateRequest = {
+                    listing_item_id: tmpBidCreateRequest.listing_item_id,
+                    action: BidMessageType.MPA_REJECT,
+                    bidder: tmpBidCreateRequest.bidder,
+                    bidDatas: tmpBidCreateRequest.bidDatas
+                } as BidUpdateRequest;
+                const bidModel = await this.bidService.update(oldBid.id, bidUpdateRequest);
+                const bid = bidModel.toJSON();
 
-        await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
-        const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
+                // remove buyers lockedoutputs
+                let selectedOutputs = this.getValueFromBidDatas(BidDataValue.BUYER_OUTPUTS, bid.BidDatas);
+                selectedOutputs = selectedOutputs[0] === '[' ? JSON.parse(selectedOutputs) : selectedOutputs;
 
-        if (success) {
-            return actionMessage;
-        } else {
-            throw new MessageException('Failed to unlock the locked outputs.');
-        }
+                await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
+                const success = await this.lockedOutputService.unlockOutputs(selectedOutputs);
 
-        // todo: return Bid
+                if (success) {
+                    return SmsgMessageStatus.PROCESSED;
+                } else {
+                    throw new MessageException('Failed to unlock the locked outputs.');
+                }
+
+            })
+            .catch(reason => {
+                return SmsgMessageStatus.WAITING;
+            });
     }
 
     /**
@@ -991,21 +1113,6 @@ export class BidActionService {
         return createdBid;
     }
 
-    private configureEventListeners(): void {
-        this.eventEmitter.on(Events.BidReceivedEvent, async (event) => {
-            await this.processBidReceivedEvent(event);
-        });
-        this.eventEmitter.on(Events.AcceptBidReceivedEvent, async (event) => {
-            await this.processAcceptBidReceivedEvent(event);
-        });
-        this.eventEmitter.on(Events.CancelBidReceivedEvent, async (event) => {
-            await this.processCancelBidReceivedEvent(event);
-        });
-        this.eventEmitter.on(Events.RejectBidReceivedEvent, async (event) => {
-            await this.processRejectBidReceivedEvent(event);
-        });
-    }
-
     /**
      * get seller from listingitems MP_ITEM_ADD ActionMessage
      * todo:  refactor
@@ -1021,5 +1128,64 @@ export class BidActionService {
         throw new MessageException('Buyer not found for ListingItem.');
     }
 
+    private configureEventListeners(): void {
+        this.log.info('Configuring EventListeners ');
 
+        this.eventEmitter.on(Events.BidReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
+            await this.processBidReceivedEvent(event)
+                .then(async status => {
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                })
+                .catch(async reason => {
+                    this.log.error('ERROR: BidReceivedMessage processing failed.', reason);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
+                });
+        });
+        this.eventEmitter.on(Events.AcceptBidReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
+            await this.processAcceptBidReceivedEvent(event)
+                .then(async status => {
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                })
+                .catch(async reason => {
+                    this.log.error('ERROR: BidAcceptMessage processing failed.', reason);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
+                });
+        });
+        this.eventEmitter.on(Events.CancelBidReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
+            await this.processCancelBidReceivedEvent(event)
+                .then(async status => {
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                })
+                .catch(async reason => {
+                    this.log.error('ERROR: BidCancelMessage processing failed.', reason);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
+                });
+        });
+        this.eventEmitter.on(Events.RejectBidReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
+            await this.processRejectBidReceivedEvent(event)
+                .then(async status => {
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                })
+                .catch(async reason => {
+                    this.log.error('ERROR: BidRejectMessage processing failed.', reason);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
+                });
+
+        });
+    }
+
+    /**
+     * Convenience util to correct unwanted precision errors in numbers.
+     * (particularly after number arithmetic)
+     *
+     * @param {number} n
+     * @returns {number}
+     */
+    private correctNumberDecimals(n: number): number {
+        return Number.parseFloat( n.toFixed(8) );
+    }
 }

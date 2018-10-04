@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -25,8 +29,8 @@ export class ShoppingCartService {
         return this.shoppingCartRepo.findAll();
     }
 
-    public async findAllByProfile(searchParam: number): Promise<Bookshelf.Collection<ShoppingCart>> {
-        return this.shoppingCartRepo.findAllByProfile(searchParam);
+    public async findAllByProfileId(profileId: number): Promise<Bookshelf.Collection<ShoppingCart>> {
+        return this.shoppingCartRepo.findAllByProfileId(profileId);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ShoppingCart> {

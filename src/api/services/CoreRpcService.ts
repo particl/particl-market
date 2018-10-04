@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -21,6 +25,7 @@ export class CoreRpcService {
 
     private DEFAULT_MAINNET_PORT = 51735;
     private DEFAULT_TESTNET_PORT = 51935;
+    private DEFAULT_REGTEST_PORT = 19792;
     private DEFAULT_HOSTNAME = 'localhost';
     // DEFAULT_USERNAME & DEFAULT_PASSWORD in CoreCookieService
 
@@ -143,8 +148,13 @@ export class CoreRpcService {
      * @param {string} account
      * @returns {Promise<any>}
      */
-    public async addMultiSigAddress(nrequired: number, keys: string[], account: string): Promise<any> {
-        const params: any[] = [nrequired, keys, account];
+    public async addMultiSigAddress(nrequired: number, keys: string[], account?: string): Promise<any> {
+        const params: any[] = [];
+        params.push(nrequired);
+        params.push(keys);
+        if (account) {
+            params.push(account);
+        }
         this.log.debug('params: ', params);
         return await this.call('addmultisigaddress', params);
     }
@@ -178,6 +188,20 @@ export class CoreRpcService {
             params.push(outputs);
         }
         return await this.call('signrawtransactionwithwallet', params);
+    }
+
+    /**
+     * ﻿combinerawtransaction ["hexstring",...]
+     *
+     * Combine multiple partially signed transactions into one transaction.
+     * The combined transaction may be another partially signed transaction or a fully signed transaction
+     *
+     * @param {string} hexstring
+     * @param {any[]} outputs
+     * @returns {Promise<any>}
+     */
+    public async combineRawTransaction(hexstrings: string[]): Promise<any> {
+        return await this.call('combinerawtransaction', [hexstrings]);
     }
 
     /**
@@ -312,6 +336,16 @@ export class CoreRpcService {
     }
 
     /**
+     * ﻿Get the current block number
+     *
+     * @param {string} account
+     * @returns {Promise<any>}
+     */
+    public async getBlockCount(): Promise<number> {
+        return await this.call('getblockcount', []);
+    }
+
+    /**
      * ﻿Reveals the private key corresponding to 'address'.
      *
      * @param {string} address
@@ -320,17 +354,6 @@ export class CoreRpcService {
     public async dumpPrivKey(address: string): Promise<string> {
         const params: any[] = [address];
         return await this.call('dumpprivkey', params);
-    }
-
-    /**
-     * ﻿Return information about the given particl address.
-     *
-     * @param {string} address
-     * @returns {Promise<string>}
-     */
-    public async validateAddress(address: string): Promise<any> {
-        const params: any[] = [address];
-        return await this.call('validateaddress', params);
     }
 
     public async call(method: string, params: any[] = [], logCall: boolean = true): Promise<any> {
@@ -347,7 +370,8 @@ export class CoreRpcService {
         const options = this.getOptions();
 
         if (logCall) {
-            this.log.debug('call: ' + method + ' ' + params.toString().replace(new RegExp(',', 'g'), ' '));
+            // TODO: handle [object Object]
+            this.log.debug('call: ' + method + ' ' + JSON.stringify(params).replace(new RegExp(',', 'g'), ' '));
         }
         // this.log.debug('call url:', url);
         // this.log.debug('call postData:', postData);
@@ -411,9 +435,15 @@ export class CoreRpcService {
         // this.log.debug('process.env.TESTNET:', process.env.TESTNET);
 
         const host = (process.env.RPCHOSTNAME ? process.env.RPCHOSTNAME : this.DEFAULT_HOSTNAME);
-        const port = (Environment.isTestnet() ?
-            (process.env.TESTNET_PORT ? process.env.TESTNET_PORT : this.DEFAULT_TESTNET_PORT) :
-            (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT));
+        const port = process.env.RPC_PORT ?
+            process.env.RPC_PORT :
+            (Environment.isRegtest() ?
+                (process.env.REGTEST_PORT ? process.env.REGTEST_PORT : this.DEFAULT_REGTEST_PORT) :
+                (Environment.isTestnet() ?
+                    (process.env.TESTNET_PORT ? process.env.TESTNET_PORT : this.DEFAULT_TESTNET_PORT) :
+                    (process.env.MAINNET_PORT ? process.env.MAINNET_PORT : this.DEFAULT_MAINNET_PORT)
+                )
+            );
         return 'http://' + host + ':' + port;
     }
 

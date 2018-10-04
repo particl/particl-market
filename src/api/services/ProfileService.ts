@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -13,11 +17,11 @@ import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { CoreRpcService } from './CoreRpcService';
 import { ShoppingCartService } from './ShoppingCartService';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
-import { AddressUpdateRequest } from '../requests/AddressUpdateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { CryptocurrencyAddressUpdateRequest } from '../requests/CryptocurrencyAddressUpdateRequest';
 import { ShoppingCartCreateRequest } from '../requests/ShoppingCartCreateRequest';
-import {MessageException} from '../exceptions/MessageException';
+import { SettingCreateRequest } from '../requests/SettingCreateRequest';
+import { SettingService } from './SettingService';
 
 export class ProfileService {
 
@@ -27,8 +31,9 @@ export class ProfileService {
         @inject(Types.Service) @named(Targets.Service.AddressService) public addressService: AddressService,
         @inject(Types.Service) @named(Targets.Service.CryptocurrencyAddressService) public cryptocurrencyAddressService: CryptocurrencyAddressService,
         @inject(Types.Service) @named(Targets.Service.ShoppingCartService) public shoppingCartService: ShoppingCartService,
-        @inject(Types.Repository) @named(Targets.Repository.ProfileRepository) public profileRepo: ProfileRepository,
+        @inject(Types.Service) @named(Targets.Service.SettingService) public settingService: SettingService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) public coreRpcService: CoreRpcService,
+        @inject(Types.Repository) @named(Targets.Repository.ProfileRepository) public profileRepo: ProfileRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
@@ -58,11 +63,19 @@ export class ProfileService {
 
     public async findOneByName(name: string, withRelated: boolean = true): Promise<Profile> {
         const profile = await this.profileRepo.findOneByName(name, withRelated);
+        if (profile === null) {
+            this.log.warn(`Profile with the name=${name} was not found!`);
+            throw new NotFoundException(name);
+        }
         return profile;
     }
 
-    public async findOneByAddress(name: string, withRelated: boolean = true): Promise<Profile> {
-        const profile = await this.profileRepo.findOneByAddress(name, withRelated);
+    public async findOneByAddress(address: string, withRelated: boolean = true): Promise<Profile> {
+        const profile = await this.profileRepo.findOneByAddress(address, withRelated);
+        if (profile === null) {
+            this.log.warn(`Profile with the address=${address} was not found!`);
+            throw new NotFoundException(address);
+        }
         return profile;
     }
 
@@ -79,6 +92,9 @@ export class ProfileService {
         delete body.shippingAddresses;
         const cryptocurrencyAddresses = body.cryptocurrencyAddresses || [];
         delete body.cryptocurrencyAddresses;
+        const settings = body.settings || [];
+        delete body.settings;
+
         // If the request body was valid we will create the profile
         const profile = await this.profileRepo.create(body);
         // then create related models
@@ -90,6 +106,11 @@ export class ProfileService {
         for (const cryptoAddress of cryptocurrencyAddresses) {
             cryptoAddress.profile_id = profile.Id;
             await this.cryptocurrencyAddressService.create(cryptoAddress as CryptocurrencyAddressCreateRequest);
+        }
+
+        for (const setting of settings) {
+            setting.profile_id = profile.Id;
+            await this.settingService.create(setting as SettingCreateRequest);
         }
 
         const shoppingCartData = {

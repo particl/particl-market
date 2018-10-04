@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -10,6 +14,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemObjectSearchParams } from '../../requests/ListingItemObjectSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
 export class ListingItemObjectSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemObject>> {
 
@@ -35,6 +40,13 @@ export class ListingItemObjectSearchCommand extends BaseCommand implements RpcCo
         return this.listingItemObjectService.search({
             searchString: data.params[0]
         } as ListingItemObjectSearchParams);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length === 0) {
+            throw new MessageException('Missing searchString.');
+        }
+        return data;
     }
 
     public usage(): string {

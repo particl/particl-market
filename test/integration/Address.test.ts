@@ -1,20 +1,21 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { Address } from '../../src/api/models/Address';
-
 import { AddressCreateRequest } from '../../src/api/requests/AddressCreateRequest';
 import { AddressUpdateRequest } from '../../src/api/requests/AddressUpdateRequest';
-
 import { AddressService } from '../../src/api/services/AddressService';
 import { ProfileService } from '../../src/api/services/ProfileService';
-import {AddressType} from '../../src/api/enums/AddressType';
+import { AddressType } from '../../src/api/enums/AddressType';
 
 describe('Address', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

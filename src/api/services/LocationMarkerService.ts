@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -44,7 +48,8 @@ export class LocationMarkerService {
 
         // finally find and return the created locationMarker
         const result = await this.findOne(locationMarker.Id);
-        this.log.debug('locationMarkerService.create: ' + (new Date().getTime() - startTime) + 'ms');
+
+        // this.log.debug('locationMarkerService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return result;
     }
 

@@ -1,106 +1,117 @@
-import { rpc, api } from './lib/api';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import { api } from './lib/api';
 import { BlackBoxTestUtil } from './lib/BlackBoxTestUtil';
-import * as Jimp from 'jimp';
-import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-import { PaymentType } from '../../src/api/enums/PaymentType';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import { Commands } from '../../src/api/commands/CommandEnumType';
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
-import {ObjectHash} from '../../src/core/helpers/ObjectHash';
+import { Logger as LoggerType } from '../../src/core/Logger';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import * as resources from 'resources';
+import { ImageVersions } from '../../src/core/helpers/ImageVersionEnumType';
 
 describe('/publish-image', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ITEMIMAGE_ROOT.commandName;
-    const subCommand = Commands.ITEMIMAGE_ADD.commandName;
 
-    const testDataListingItemTemplate = {
-        profile_id: 0,
-        hash: '',
-        itemInformation: {
-        title: 'item title1',
-        shortDescription: 'item short desc1',
-        longDescription: 'item long desc1',
-            itemCategory: {
-                key: 'cat_high_luxyry_items'
-            }
-        },
-        paymentInformation: {
-            type: PaymentType.SALE
-        }
-    } as ListingItemTemplateCreateRequest;
+    const itemImageCommand = Commands.ITEMIMAGE_ROOT.commandName;
+    const itemImageAddCommand = Commands.ITEMIMAGE_ADD.commandName;
 
-    let createdTemplateId;
-    let itemImageId;
-    let imageVersion;
-    let newFormat;
-    let dataBuffer;
+    let defaultMarket: resources.Market;
+    let defaultProfile: resources.Profile;
+
+    let listingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
-        // profile
-        const defaultProfile = await testUtil.getDefaultProfile();
-        testDataListingItemTemplate.profile_id = defaultProfile.id;
 
-        // set hash
-        testDataListingItemTemplate.hash = ObjectHash.getHash(testDataListingItemTemplate, HashableObjectType.LISTINGITEMTEMPLATE);
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
 
-        // create item template
-        const addListingItemTempRes: any = await testUtil.addData(CreatableModel.LISTINGITEMTEMPLATE, testDataListingItemTemplate);
+        // generate ListingItemTemplate
+        const generateListingItemTemplateParams = new GenerateListingItemTemplateParams([
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
+            true,   // generateItemImages
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
+            true,   // generateMessagingInformation
+            false,  // generateListingItemObjects
+            false,  // generateObjectDatas
+            defaultProfile.id, // profileId
+            false,   // generateListingItem
+            defaultMarket.id  // marketId
+        ]).toParamsArray();
 
-        createdTemplateId = addListingItemTempRes.id;
+        const listingItemTemplates = await testUtil.generateData(
+            CreatableModel.LISTINGITEMTEMPLATE, // what to generate
+            1,                          // how many to generate
+            true,                    // return model
+            generateListingItemTemplateParams   // what kind of data to generate
+        ) as resources.ListingItemTemplate[];
+        listingItemTemplate = listingItemTemplates[0];
 
-        // add item image
-        const addDataRes: any = await rpc(method, [
-            subCommand,
-            createdTemplateId,
-            'TEST-DATA-ID',
-            ImageDataProtocolType.LOCAL,
-            'TEST-ENCODING',
-            ImageProcessing.milkcatSmall
-        ]);
-        addDataRes.expectJson();
-        addDataRes.expectStatusCode(200);
-        const result: any = addDataRes.getBody()['result'];
-        itemImageId = result.ItemImageDatas[0].itemImageId;
-        imageVersion = result.ItemImageDatas[0].imageVersion;
-
-        dataBuffer = new Buffer(result.ItemImageDatas[0]['data'], 'base64');
-        const imageBuffer = await Jimp.read(dataBuffer);
-        newFormat = await imageBuffer.getExtension();
+        const toVersions = [ImageVersions.LARGE, ImageVersions.MEDIUM, ImageVersions.THUMBNAIL];
 
     });
 
-    test('GET  /item-images/:id/:imageVersion        Should publish an item image [1]', async () => {
+    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImageDataContent, version: LARGE', async () => {
+        const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
+        const imageVersion = ImageVersions.LARGE.propName;
         const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
-        expect(res.res.headers['content-disposition']).toBe(`filename=${imageVersion}.${newFormat}`);
         res.expectStatusCode(200);
-        expect(res.error).toBe(null);
-        expect(res.res).toBeDefined();
     });
 
-    test('GET  /item-images/:id/:imageVersion        Should fail to publish an item image because invalid image id', async () => {
-        const imageId = 0;
-        const res = await api('GET', `/api/item-images/${imageId}/${imageVersion}`);
+    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImageDataContent, version: MEDIUM', async () => {
+        const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
+        const imageVersion = ImageVersions.MEDIUM.propName;
+        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
+        res.expectStatusCode(200);
+    });
+
+    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImageDataContent, version: THUMBNAIL', async () => {
+        const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
+        const imageVersion = ImageVersions.THUMBNAIL.propName;
+        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
+        res.expectStatusCode(200);
+    });
+
+    test('GET  /item-images/:itemImageId/:imageVersion        Should load ItemImageDataContent, version: ORIGINAL', async () => {
+        const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
+        const imageVersion = ImageVersions.ORIGINAL.propName;
+        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
+        res.expectStatusCode(200);
+    });
+
+    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImageDataContent because invalid itemImageId', async () => {
+        const itemImageId = 0;
+        const imageVersion = ImageVersions.LARGE.propName;
+
+        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
         res.expectStatusCode(404);
-        expect(res.error).not.toBeNull();
-        expect(res.res).toBeUndefined();
+        expect(res.error.error.message).toBe('Entity with identifier ' + itemImageId + ' does not exist');
     });
 
-    test('GET  /item-images/:id/:imageVersion        Should fail to publish an item image because invalid imageVersion', async () => {
-        const version = 'test';
-        const res = await api('GET', `/api/item-images/${itemImageId}/${version}`);
+    test('GET  /item-images/:itemImageId/:imageVersion        Should fail to load ItemImageDataContent invalid imageVersion', async () => {
+        const itemImageId = listingItemTemplate.ItemInformation.ItemImages[0].id;
+        const imageVersion = 'INVALID_IMAGE:VERSION';
+        const res = await api('GET', `/api/item-images/${itemImageId}/${imageVersion}`);
         res.expectStatusCode(404);
-        expect(res.error).not.toBeNull();
-        expect(res.res).toBeUndefined();
+        // TODO: why is the error object different here than in the previous test, FIX
+        expect(res.error.error).toBe('Image Not found');
     });
 
-    test('POST  /item-images/template/:id        Should publish an item image [2]', async () => {
-        expect.assertions(24); // 4 [basic expects] + 4 [image types] * 5 [expects in the loop]
+    test('POST  /item-images/template/:listingItemTemplateId        Should POST new ItemImage', async () => {
+        expect.assertions(14); // 2 [basic expects] + 4 [image types] * 3 [expects in the loop]
 
         const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
-        const res: any = await api('POST', `/api/item-images/template/${createdTemplateId}`, {
+        const res: any = await api('POST', `/api/item-images/template/${listingItemTemplate.id}`, {
             headers: {
                 'Authorization': auth,
                 'Content-Type': 'multipart/form-data'
@@ -116,36 +127,28 @@ describe('/publish-image', () => {
             }
         });
 
-        expect(res.error).toBe(null);
         res.expectStatusCode(200);
-        expect(res.res).toBeDefined();
-        expect(res.res.body).toBeDefined();
+        const result: resources.ItemImage[] = res.getBody();
+        expect(result).toBeDefined();
 
         // For each created image fetch it and check everything matches
-        //  (except the image data itself because that's modified during the storage process and therefore difficult to validate)
-        for ( const i in res.res.body ) {
-            if ( i ) {
-                const imgset = res.res.body[i];
-                for ( const j in imgset.ItemImageDatas ) {
-                    if ( j ) {
-                        const imgImageDatas = imgset.ItemImageDatas[j];
-                        const imageRes = await api('GET', `/api/item-images/${imgset.id}/${imgImageDatas.imageVersion}`);
-                        expect(imageRes).toBeDefined();
-                        expect(imageRes.error).toBe(null);
-                        imageRes.expectStatusCode(200);
-                        expect(imageRes.res).toBeDefined();
-                        expect(imageRes.res.body).toBeDefined();
-                    }
-                }
+        // (except the image data itself because that's modified during the storage process and therefore difficult to validate)
+        for (const itemImage of result) {
+            for (const itemImageData of itemImage.ItemImageDatas) {
+
+                const imageRes = await api('GET', `/api/item-images/${itemImage.id}/${itemImageData.imageVersion}`);
+                imageRes.expectStatusCode(200);
+                expect(imageRes.res).toBeDefined();
+                expect(imageRes.res.body).toBeDefined();
             }
         }
     });
 
-    test('POST  /item-images/template/:id        Should publish an item image [3]', async () => {
-        expect.assertions(44); // 4 [basic expects] + 2 [images] * 4 [image types] * 5 [expects in the loop]
+    test('POST  /item-images/template/:listingItemTemplateId        Should POST two new ItemImages at the same time', async () => {
+        expect.assertions(26); // 2 [basic expects] + 2 [images] * 4 [image types] * 3 [expects in the loop]
 
         const auth = 'Basic ' + new Buffer(process.env.RPCUSER + ':' + process.env.RPCPASSWORD).toString('base64');
-        const res: any = await api('POST', `/api/item-images/template/${createdTemplateId}`, {
+        const res: any = await api('POST', `/api/item-images/template/${listingItemTemplate.id}`, {
             headers: {
                 'Authorization': auth,
                 'Content-Type': 'multipart/form-data'
@@ -168,27 +171,20 @@ describe('/publish-image', () => {
             }
         });
 
-        expect(res.error).toBe(null);
         res.expectStatusCode(200);
-        expect(res.res).toBeDefined();
-        expect(res.res.body).toBeDefined();
+
+        const result: resources.ItemImage[] = res.getBody();
+        expect(result).toBeDefined();
 
         // For each created image fetch it and check everything matches
-        //  (except the image data itself because that's modified during the storage process and therefore difficult to validate)
-        for ( const i in res.res.body ) {
-            if ( i ) {
-                const imgset = res.res.body[i];
-                for ( const j in imgset.ItemImageDatas ) {
-                    if ( j ) {
-                        const imgImageDatas = imgset.ItemImageDatas[j];
-                        const imageRes = await api('GET', `/api/item-images/${imgset.id}/${imgImageDatas.imageVersion}`);
-                        expect(imageRes).toBeDefined();
-                        expect(imageRes.error).toBe(null);
-                        imageRes.expectStatusCode(200);
-                        expect(imageRes.res).toBeDefined();
-                        expect(imageRes.res.body).toBeDefined();
-                    }
-                }
+        // (except the image data itself because that's modified during the storage process and therefore difficult to validate)
+        for (const itemImage of result) {
+            for (const itemImageData of itemImage.ItemImageDatas) {
+
+                const imageRes = await api('GET', `/api/item-images/${itemImage.id}/${itemImageData.imageVersion}`);
+                imageRes.expectStatusCode(200);
+                expect(imageRes.res).toBeDefined();
+                expect(imageRes.res.body).toBeDefined();
             }
         }
     });

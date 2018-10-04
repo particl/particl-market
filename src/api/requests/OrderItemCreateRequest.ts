@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { IsEnum, IsNotEmpty } from 'class-validator';
 import { RequestBody } from '../../core/api/RequestBody';
 import { OrderItemObjectCreateRequest } from './OrderItemObjectCreateRequest';
@@ -12,14 +16,14 @@ export class OrderItemCreateRequest extends RequestBody {
     @IsNotEmpty()
     public itemHash: string;
 
-    @IsNotEmpty()
-    public bid_id: number;
-
     @IsEnum(OrderStatus)
     @IsNotEmpty()
     public status: OrderStatus;
 
     public orderItemObjects: OrderItemObjectCreateRequest[];
+
+    @IsNotEmpty()
+    public bid_id: number;
 
     @IsNotEmpty()
     public order_id: number;

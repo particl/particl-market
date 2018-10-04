@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -13,7 +17,7 @@ import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
 import { NotFoundException } from '../../exceptions/NotFoundException';
-import {AddressType} from '../../enums/AddressType';
+import { AddressType } from '../../enums/AddressType';
 
 export class AddressAddCommand extends BaseCommand implements RpcCommandInterface<Address> {
     public log: LoggerType;
@@ -29,9 +33,9 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
     /**
      * data.params[]:
      *  [0]: profileId
-     *  [1]: firstName
-     *  [2]: lastName
-     *  [3]: title
+     *  [1]: title
+     *  [2]: firstName
+     *  [3]: lastName
      *  [4]: addressLine1
      *  [5]: addressLine2
      *  [6]: city
@@ -46,9 +50,8 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<Address> {
-        this.log.debug('Attempting to create address');
 
-        this.log.debug('data.params:', JSON.stringify(data.params, null, 2));
+        // TODO: validate that there are correct amount of params
 
         // If countryCode is country, convert to countryCode.
         // If countryCode is country code, validate, and possibly throw error.
@@ -65,9 +68,9 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
 
         const newAddress = {
             profile_id: data.params[0],
-            firstName: data.params[1],
-            lastName: data.params[2],
-            title: data.params[3],
+            title: data.params[1],
+            firstName: data.params[2],
+            lastName: data.params[3],
             addressLine1: data.params[4],
             addressLine2: data.params[5],
             city: data.params[6],
@@ -82,11 +85,14 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
         return await this.addressService.create(newAddress);
     }
 
-    // TODO: title should be after profileId
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        //
+        return data;
+    }
 
     // tslint:disable:max-line-length
     public usage(): string {
-        return this.getName() + ' <profileId> <firstName> <lastName> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) [<zip>] ';
+        return this.getName() + ' <profileId> <firstName> <lastName> <title> <addressLine1> <addressLine2> <city> <state> (<countryName>|<countryCode>) <zip> ';
     }
     // tslint:enable:max-line-length
 
@@ -94,9 +100,9 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
         return this.usage() + ' -  ' + this.description() + '\n'
             + '    <profileId>              - Numeric - The ID of the profile we want to associate \n'
             + '                                this address with. \n'
+            + '    <title>                  - String - A short identifier for the address. \n'
             + '    <firstName>              - String - First Name of user. \n'
             + '    <lastName>               - String - Last Name of user. \n'
-            + '    <title>                  - String - A short identifier for the address. \n'
             + '    <addressLine1>           - String - The first line of the address. \n'
             + '    <addressLine2>           - String - The second line of the address. \n'
             + '    <city>                   - String - The city of the address. \n'
@@ -111,6 +117,6 @@ export class AddressAddCommand extends BaseCommand implements RpcCommandInterfac
     }
 
     public example(): string {
-        return 'address ' + this.getName() + ' 1 \'Johnny\' \'Deep\' myLocation \'123 Fake St\' \'\' Springfield NT \'United States\' 90701';
+        return 'address ' + this.getName() + ' 1 myLocation \'Johnny\' \'Deep\' \'123 Fake St\' \'\' Springfield NT \'United States\' 90701';
     }
 }

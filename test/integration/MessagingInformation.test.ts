@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -6,22 +11,16 @@ import { TestDataService } from '../../src/api/services/TestDataService';
 import { ProfileService } from '../../src/api/services/ProfileService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { MessagingInformationService } from '../../src/api/services/MessagingInformationService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { MessagingInformation } from '../../src/api/models/MessagingInformation';
-import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-
 import { MessagingProtocolType } from '../../src/api/enums/MessagingProtocolType';
-
 import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
 import { MessagingInformationUpdateRequest } from '../../src/api/requests/MessagingInformationUpdateRequest';
-import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import {GenerateListingItemParams} from '../../src/api/requests/params/GenerateListingItemParams';
-import {TestDataGenerateRequest} from '../../src/api/requests/TestDataGenerateRequest';
-import {GenerateListingItemTemplateParams} from '../../src/api/requests/params/GenerateListingItemTemplateParams';
-import {CreatableModel} from '../../src/api/enums/CreatableModel';
+import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
+import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
+import { GenerateListingItemTemplateParams } from '../../src/api/requests/params/GenerateListingItemTemplateParams';
+import { CreatableModel } from '../../src/api/enums/CreatableModel';
 import * as resources from 'resources';
 
 describe('MessagingInformation', () => {

@@ -1,104 +1,89 @@
-import { rpc, api } from '../lib/api';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
-import { ListingItem, Profile } from 'resources';
-import { GenerateProfileParams } from '../../../src/api/requests/params/GenerateProfileParams';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import * as resources from 'resources';
 
 describe('FavoriteListCommand', () => {
 
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.FAVORITE_ROOT.commandName;
-    const subCommand = Commands.FAVORITE_LIST.commandName;
 
-    let defaultProfile;
-    let defaultMarketId;
+    const favoriteCommand = Commands.FAVORITE_ROOT.commandName;
+    const favoriteListCommand = Commands.FAVORITE_LIST.commandName;
 
-    let createdListingItemIdOne;
-    let createdListingItemIdTwo;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
 
-    let createdProfileId;
+    let listingItem1: resources.ListingItem;
+    let listingItem2: resources.ListingItem;
 
     beforeAll(async () => {
 
         // clean up the db, first removes all data and then seeds the db with default data
         await testUtil.cleanDb();
 
-        // fetch default profile
-        const profile = await testUtil.getDefaultProfile();
-        defaultProfile = profile;
-
-        // fetch default market
-        const defaultMarket = await testUtil.getDefaultMarket();
-        defaultMarketId = defaultMarket.id;
+        defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
 
         const generateListingItemParams = new GenerateListingItemParams([
-            false,   // generateItemInformation
-            false,   // generateShippingDestinations
+            true,   // generateItemInformation
+            true,   // generateShippingDestinations
             false,   // generateItemImages
-            false,   // generatePaymentInformation
-            false,   // generateEscrow
-            false,   // generateItemPrice
+            true,   // generatePaymentInformation
+            true,   // generateEscrow
+            true,   // generateItemPrice
             false,   // generateMessagingInformation
             false    // generateListingItemObjects
         ]).toParamsArray();
 
-        // create two items and store their id's for testing
+        // create two items
         const listingItems = await testUtil.generateData(
             CreatableModel.LISTINGITEM,         // what to generate
             2,                          // how many to generate
             true,                    // return model
             generateListingItemParams           // what kind of data to generate
-        ) as ListingItem[];
+        ) as resources.ListingItem[];
 
-        // store id's for testing
-        createdListingItemIdOne = listingItems[0].id;
-        createdListingItemIdTwo = listingItems[1].id;
-
-        // create a second profile
-        const generateProfileParams = new GenerateProfileParams([
-            true,   // generateShippingAddresses
-            true   // generateCryptocurrencyAddresses
-        ]).toParamsArray();
-
-        const profiles = await testUtil.generateData(
-            CreatableModel.PROFILE,             // what to generate
-            1,                          // how many to generate
-            true,                    // return model
-            generateProfileParams               // what kind of data to generate
-        ) as Profile[];
-        createdProfileId = profiles[0].id;
+        listingItem1 = listingItems[0];
+        listingItem2 = listingItems[1];
 
     });
 
-    test('Should return empty favorite list', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, createdProfileId]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-
+    test('Should return empty FavoriteItem list', async () => {
+        const res: any = await testUtil.rpc(favoriteCommand, [favoriteListCommand, defaultProfile.id]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.FavoriteItem[] = res.getBody()['result'];
         expect(result).toHaveLength(0);
     });
 
-    test('Should return one favorite list by profile id with default related = true', async () => {
+    test('Should return one FavoriteItem by profileId', async () => {
 
         // add favorite item
-        await rpc(method, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, createdListingItemIdOne]);
+        await testUtil.rpc(favoriteCommand, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, listingItem1.id]);
 
         // get the favorite list
-        const getDataRes: any = await rpc(method, [subCommand, defaultProfile.id]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
+        const res: any = await testUtil.rpc(favoriteCommand, [favoriteListCommand, defaultProfile.id]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.FavoriteItem[] = res.getBody()['result'];
 
         expect(result.length).toBe(1);
         expect(result[0].profileId).toBe(defaultProfile.id);
-        expect(result[0].listingItemId).toBe(createdListingItemIdOne);
+        expect(result[0].listingItemId).toBe(listingItem1.id);
         expect(result[0].Profile).toBeDefined();
         expect(result[0].Profile.id).toBe(defaultProfile.id);
         expect(result[0].ListingItem).toBeDefined();
-        expect(result[0].ListingItem.id).toBe(createdListingItemIdOne);
+        expect(result[0].ListingItem.id).toBe(listingItem1.id);
 
         expect(result[0].ListingItem.Bids).toBeDefined();
         expect(result[0].ListingItem.FlaggedItem).toBeDefined();
@@ -109,24 +94,24 @@ describe('FavoriteListCommand', () => {
         expect(result[0].ListingItem.PaymentInformation).toBeDefined();
     });
 
-    test('Should return one favorite list by profile name', async () => {
+    test('Should return FavoriteItem list by profileName', async () => {
 
         // add favorite item
-        await rpc(method, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, createdListingItemIdOne]);
+        await testUtil.rpc(favoriteCommand, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, listingItem1.id]);
 
         // get the favorite list
-        const getDataRes: any = await rpc(method, [subCommand, defaultProfile.name]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
+        const res: any = await testUtil.rpc(favoriteCommand, [favoriteListCommand, defaultProfile.name]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.FavoriteItem[] = res.getBody()['result'];
 
         expect(result.length).toBe(1);
         expect(result[0].profileId).toBe(defaultProfile.id);
-        expect(result[0].listingItemId).toBe(createdListingItemIdOne);
+        expect(result[0].listingItemId).toBe(listingItem1.id);
         expect(result[0].Profile).toBeDefined();
         expect(result[0].Profile.id).toBe(defaultProfile.id);
         expect(result[0].ListingItem).toBeDefined();
-        expect(result[0].ListingItem.id).toBe(createdListingItemIdOne);
+        expect(result[0].ListingItem.id).toBe(listingItem1.id);
 
         expect(result[0].ListingItem.Bids).toBeDefined();
         expect(result[0].ListingItem.FlaggedItem).toBeDefined();
@@ -137,42 +122,42 @@ describe('FavoriteListCommand', () => {
         expect(result[0].ListingItem.PaymentInformation).toBeDefined();
     });
 
-    test('Should fail to get favorite list because invalid profile name', async () => {
-        const profileName = 'INVALID PROFILE NAME';
-        const getDataRes: any = await rpc(method, [subCommand, profileName]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(404);
-        expect(getDataRes.error.error.success).toBe(false);
-        expect(getDataRes.error.error.message).toBe(`Profile with the name = ${profileName} was not found!`);
+    test('Should fail to get FavoriteItem list because invalid profileName', async () => {
+        const invalidProfileName = 'INVALID-PROFILE-NAME';
+        const res: any = await testUtil.rpc(favoriteCommand, [favoriteListCommand, invalidProfileName]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Entity with identifier ${invalidProfileName} does not exist`);
     });
 
-    test('Should fail to get favorite list because invalid profile id', async () => {
-        const getDataRes: any = await rpc(method, [subCommand, createdProfileId]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
-
-        expect(result).toHaveLength(0);
+    test('Should fail to get FavoriteItem list because invalid profileId', async () => {
+        const invalidProfileId = 0;
+        const res: any = await testUtil.rpc(favoriteCommand, [favoriteListCommand, invalidProfileId]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.success).toBe(false);
+        expect(res.error.error.message).toBe(`Entity with identifier ${invalidProfileId} does not exist`);
     });
 
-    test('Should return two favorite lists by profile id', async () => {
+    test('Should return two FavoriteItems by profileId', async () => {
 
         // add favorite item
-        await rpc(method, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, createdListingItemIdTwo]);
+        await testUtil.rpc(favoriteCommand, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, listingItem2.id]);
 
         // get the favorite list
-        const getDataRes: any = await rpc(method, [subCommand, defaultProfile.id]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
+        const res: any = await testUtil.rpc(favoriteCommand, [favoriteListCommand, defaultProfile.id]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.FavoriteItem[] = res.getBody()['result'];
 
         expect(result.length).toBe(2);
         expect(result[0].profileId).toBe(defaultProfile.id);
-        expect(result[0].listingItemId).toBe(createdListingItemIdOne);
+        expect(result[0].listingItemId).toBe(listingItem1.id);
         expect(result[0].Profile).toBeDefined();
         expect(result[0].Profile.id).toBe(defaultProfile.id);
         expect(result[0].ListingItem).toBeDefined();
-        expect(result[0].ListingItem.id).toBe(createdListingItemIdOne);
+        expect(result[0].ListingItem.id).toBe(listingItem1.id);
         expect(result[0].ListingItem.Bids).toBeDefined();
         expect(result[0].ListingItem.FlaggedItem).toBeDefined();
         expect(result[0].ListingItem.ItemInformation).toBeDefined();
@@ -182,11 +167,11 @@ describe('FavoriteListCommand', () => {
         expect(result[0].ListingItem.PaymentInformation).toBeDefined();
 
         expect(result[1].profileId).toBe(defaultProfile.id);
-        expect(result[1].listingItemId).toBe(createdListingItemIdTwo);
+        expect(result[1].listingItemId).toBe(listingItem2.id);
         expect(result[1].Profile).toBeDefined();
         expect(result[1].Profile.id).toBe(defaultProfile.id);
         expect(result[1].ListingItem).toBeDefined();
-        expect(result[1].ListingItem.id).toBe(createdListingItemIdTwo);
+        expect(result[1].ListingItem.id).toBe(listingItem2.id);
         expect(result[1].ListingItem.Bids).toBeDefined();
         expect(result[1].ListingItem.FlaggedItem).toBeDefined();
         expect(result[1].ListingItem.ItemInformation).toBeDefined();
@@ -197,25 +182,25 @@ describe('FavoriteListCommand', () => {
 
     });
 
-    test('Should return two favorite lists by profile name without related', async () => {
+    test('Should return two FavoriteItems by profileName without related', async () => {
 
         // add favorite item
-        await rpc(method, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, createdListingItemIdTwo]);
+        await testUtil.rpc(favoriteCommand, [Commands.FAVORITE_ADD.commandName, defaultProfile.id, listingItem2.id]);
 
         // get the favorite list
-        const getDataRes: any = await rpc(method, [subCommand, defaultProfile.name, false]);
-        getDataRes.expectJson();
-        getDataRes.expectStatusCode(200);
-        const result: any = getDataRes.getBody()['result'];
+        const res: any = await testUtil.rpc(favoriteCommand, [favoriteListCommand, defaultProfile.name, false]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.FavoriteItem[] = res.getBody()['result'];
 
         expect(result.length).toBe(2);
         expect(result[0].profileId).toBe(defaultProfile.id);
-        expect(result[0].listingItemId).toBe(createdListingItemIdOne);
+        expect(result[0].listingItemId).toBe(listingItem1.id);
         expect(result[0].Profile).not.toBeDefined();
         expect(result[0].ListingItem).not.toBeDefined();
 
         expect(result[1].profileId).toBe(defaultProfile.id);
-        expect(result[1].listingItemId).toBe(createdListingItemIdTwo);
+        expect(result[1].listingItemId).toBe(listingItem2.id);
 
         expect(result[1].Profile).not.toBeDefined();
         expect(result[1].ListingItem).not.toBeDefined();

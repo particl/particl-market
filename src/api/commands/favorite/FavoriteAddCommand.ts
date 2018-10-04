@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -8,11 +12,10 @@ import { ProfileService } from '../../services/ProfileService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { FavoriteItem } from '../../models/FavoriteItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { FavoriteSearchParams } from '../../requests/FavoriteSearchParams';
-import { NotFoundException } from '../../exceptions/NotFoundException';
 import { FavoriteItemCreateRequest } from '../../requests/FavoriteItemCreateRequest';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { MessageException } from '../../exceptions/MessageException';
 
 /**
  * Command for adding an item to your favorites, identified by ID or hash.
@@ -34,10 +37,9 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
     /**
      *
      * data.params[]:
-     *  [0]: profile_id or null
+     *  [0]: profile_id
      *  [1]: item_id or hash
      *
-     * when data.params[0] is null then use default profile
      * when data.params[1] is number then findById, else findOneByHash
      *
      * @param data
@@ -45,18 +47,59 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<FavoriteItem> {
-        const favoriteParams = await this.getSearchParams(data);
-        // Check if favorite Item already exist
-        let favoriteItem = await this.favoriteItemService.search({profileId: favoriteParams[0], itemId: favoriteParams[1] } as FavoriteSearchParams);
-
-        // favorite item not already exist then create
-        if (favoriteItem === null) {
-            favoriteItem = await this.favoriteItemService.create({
-                profile_id: favoriteParams[0],
-                listing_item_id: favoriteParams[1]
+        return await this.favoriteItemService.create({
+                profile_id: data.params[0],
+                listing_item_id: data.params[1]
             } as FavoriteItemCreateRequest);
+    }
+
+    /**
+     * validate that profile and item exists, replace possible hash with id
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 2) {
+            throw new MessageException('Missing parameters.');
         }
-        return favoriteItem;
+
+        const profileId = data.params[0];
+        let itemId = data.params[1];
+
+        if (profileId && typeof profileId === 'string') {
+            throw new MessageException('profileId cant be a string.');
+        } else {
+            // make sure profile with the id exists
+            await this.profileService.findOne(profileId);   // throws if not found
+        }
+
+        // if item hash is in the params, fetch the id
+        if (itemId && typeof itemId === 'string') {
+            const listingItemModel = await this.listingItemService.findOneByHash(itemId);
+            const listingItem = listingItemModel.toJSON();
+            itemId = listingItem.id;
+        } else {
+            // else make sure the the item with the id exists, throws if not
+            const item = await this.listingItemService.findOne(itemId);
+        }
+
+        return await this.favoriteItemService.findOneByProfileIdAndListingItemId(profileId, itemId) // throws if not found
+            .catch(reason => {
+                // great, not found, so we can continue and create it
+                // return RpcRequest with the correct data to be passed to execute
+            })
+            .then(value => {
+                if (value) {
+                    throw new MessageException('FavoriteItem allready exists.');
+                } else {
+                    data.params[0] = profileId;
+                    data.params[1] = itemId;
+                    return data;
+                }
+            });
+
     }
 
     public usage(): string {
@@ -79,38 +122,5 @@ export class FavoriteAddCommand extends BaseCommand implements RpcCommandInterfa
 
     public example(): string {
         return 'favorite ' + this.getName() + ' 1 1 b90cee25-036b-4dca-8b17-0187ff325dbb ';
-    }
-
-    /**
-     * TODO: NOTE: This function may be duplicated between commands.
-     * data.params[]:
-     *  [0]: item_id or hash
-     *  [1]: profile_id or null
-     *
-     * when data.params[0] is number then findById, else findOneByHash
-     *
-     */
-    private async getSearchParams(data: any): Promise<any> {
-        let profileId = data.params[0];
-        let itemId = data.params[1] || 0;
-
-        // if item hash is in the params
-        if (itemId && typeof itemId === 'string') {
-            const listingItem = await this.listingItemService.findOneByHash(data.params[1]);
-            itemId = listingItem.id;
-        }
-        // find listing item by id
-        const item = await this.listingItemService.findOne(itemId);
-
-        // if profile id not found in the params then find default profile
-        if (!profileId || typeof profileId !== 'number') {
-            const profile = await this.profileService.findOneByName('DEFAULT');
-            profileId = profile.id;
-        }
-        if (item === null) {
-            this.log.warn(`ListingItem with the id=${itemId} was not found!`);
-            throw new NotFoundException(itemId);
-        }
-        return [profileId, item.id];
     }
 }

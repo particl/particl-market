@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
@@ -39,7 +43,7 @@ export class MessagingInformationService {
     public async create( @request(MessagingInformationCreateRequest) body: MessagingInformationCreateRequest): Promise<MessagingInformation> {
         const startTime = new Date().getTime();
 
-        this.log.debug('messagingInformationService.create, body: ', JSON.stringify(body, null, 2));
+        // this.log.debug('messagingInformationService.create, body: ', JSON.stringify(body, null, 2));
 
         // todo: could this be annotated in MessagingInformationCreateRequest?
         if (body.listing_item_id == null && body.listing_item_template_id == null) {
@@ -52,7 +56,7 @@ export class MessagingInformationService {
         // finally find and return the created messagingInformation
         const newMessagingInformation = await this.findOne(messagingInformation.Id);
 
-        this.log.debug('messagingInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        // this.log.debug('messagingInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
         return newMessagingInformation;
     }
 

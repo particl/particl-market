@@ -1,3 +1,8 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -10,19 +15,15 @@ import { LocationMarkerService } from '../../src/api/services/LocationMarkerServ
 import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
 import { ItemImageService } from '../../src/api/services/ItemImageService';
 import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ItemInformation } from '../../src/api/models/ItemInformation';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-
 import { ItemInformationCreateRequest } from '../../src/api/requests/ItemInformationCreateRequest';
 import { ItemInformationUpdateRequest } from '../../src/api/requests/ItemInformationUpdateRequest';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
 

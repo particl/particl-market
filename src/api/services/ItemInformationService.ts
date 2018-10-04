@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
@@ -61,7 +65,6 @@ export class ItemInformationService {
     @validate()
     public async create( @request(ItemInformationCreateRequest) data: ItemInformationCreateRequest): Promise<ItemInformation> {
         const startTime = new Date().getTime();
-        this.log.debug('--------------------------------------------------');
 
         const body = JSON.parse(JSON.stringify(data));
 
@@ -107,8 +110,7 @@ export class ItemInformationService {
 
         // finally find and return the created itemInformation
         const result = await this.findOne(itemInformation.Id);
-        this.log.debug('itemInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
-        this.log.debug('--------------------------------------------------');
+        // this.log.debug('itemInformationService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         return result;
     }
@@ -203,21 +205,15 @@ export class ItemInformationService {
      * @returns {Promise<ItemCategory>}
      */
     private async getOrCreateItemCategory(itemCategory: ItemCategoryUpdateRequest): Promise<ItemCategory> {
-        const startTime = new Date().getTime();
-
         let result;
         if (itemCategory.key) {
-            this.log.debug('findOneByKey');
             result = await this.itemCategoryService.findOneByKey(itemCategory.key);
         } else if (itemCategory.id) {
-            this.log.debug('findOne');
             result = await this.itemCategoryService.findOne(itemCategory.id);
         } else {
-            this.log.debug('create');
             result = await this.itemCategoryService.create(itemCategory);
         }
 
-        this.log.debug('itemInformationService.getOrCreateItemCategory: ' + (new Date().getTime() - startTime) + 'ms');
         return result;
     }
 

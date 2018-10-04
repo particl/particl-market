@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
@@ -25,7 +29,7 @@ export class ShoppingCartRootCommand extends BaseCommand implements RpcCommandIn
     }
 
     public usage(): string {
-        return this.getName() + ' (list|get|add|update|remove|clear|search)  -  ' + this.description();
+        return this.getName() + ' (list|get|add|update|remove|clear)  -  ' + this.description();
     }
 
     public description(): string {

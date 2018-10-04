@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { Profile } from './Profile';
@@ -5,20 +9,22 @@ import { ShoppingCartItem } from './ShoppingCartItem';
 
 export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
 
+    public static RELATIONS = [
+        'Profile',
+        'ShoppingCartItems'
+    ];
+
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ShoppingCart> {
         if (withRelated) {
             return await ShoppingCart.where<ShoppingCart>({ id: value }).fetch({
-                withRelated: [
-                    'Profile',
-                    'ShoppingCartItem'
-                ]
+                withRelated: this.RELATIONS
             });
         } else {
             return await ShoppingCart.where<ShoppingCart>({ id: value }).fetch();
         }
     }
 
-    public static async fetchAllByProfile(value: number): Promise<Collection<ShoppingCart>> {
+    public static async fetchAllByProfileId(value: number): Promise<Collection<ShoppingCart>> {
         const shoppingCart = ShoppingCart.forge<Model<ShoppingCart>>()
             .query(qb => {
                 qb.where('profile_id', '=', value);
@@ -45,7 +51,7 @@ export class ShoppingCart extends Bookshelf.Model<ShoppingCart> {
         return this.belongsTo(Profile, 'profile_id', 'id');
     }
 
-    public ShoppingCartItem(): Collection<ShoppingCartItem> {
+    public ShoppingCartItems(): Collection<ShoppingCartItem> {
         return this.hasMany(ShoppingCartItem, 'shopping_cart_id', 'id');
     }
 }

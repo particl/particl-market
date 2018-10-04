@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as listingItemTemplateBasic1 from '../../testdata/model/listingItemTemplateBasic1.json';
 import * as listingItemTemplateBasic2 from '../../testdata/model/listingItemTemplateBasic2.json';
 import * as listingItemTemplateBasic3 from '../../testdata/model/listingItemTemplateBasic3.json';
@@ -36,7 +40,7 @@ describe('ObjectHash', () => {
         expect.assertions(1);
         const itemImageData = listingItemTemplateBasic1.ItemInformation.ItemImages[0].ItemImageDatas[0];
         const itemImageHash = ObjectHash.getHash(itemImageData, HashableObjectType.ITEMIMAGE);
-        expect(itemImageHash).toBe('ed06cccab6f1dd1004ec21429058a72efa0beb6e9ba3606b16450e928bdb3e14');
+        expect(itemImageHash).toBe('a92d346ba2a6c1850f1d04d88f3b0fe75cfafbb4acc6ad08a11a7bba8f18793a');
     });
 
     test('Should return different hashes for objects that have different values', async () => {

@@ -1,24 +1,29 @@
-import { rpc, api } from '../lib/api';
-import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
-import { ListingItemTemplateCreateRequest } from '../../../src/api/requests/ListingItemTemplateCreateRequest';
-import { PaymentType } from '../../../src/api/enums/PaymentType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
-import {GenerateListingItemTemplateParams} from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-import {ListingItemTemplate} from '../../../src/api/models/ListingItemTemplate';
-import {GenerateListingItemParams} from '../../../src/api/requests/params/GenerateListingItemParams';
-import {ListingItem} from '../../../src/api/models/ListingItem';
+import { ListingItemTemplate } from '../../../src/api/models/ListingItemTemplate';
+import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
+import { ListingItem } from '../../../src/api/models/ListingItem';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import * as resources from 'resources';
 
 describe('ShippingDestinationListCommand', () => {
 
-    const testUtil = new BlackBoxTestUtil();
-    const method = Commands.SHIPPINGDESTINATION_ROOT.commandName;
-    const subCommand = Commands.SHIPPINGDESTINATION_LIST.commandName;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
-    let createdListingItemTemplateId;
-    let createdListingItemId;
+    const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new BlackBoxTestUtil();
+
+    const shippingDestinationCommand = Commands.SHIPPINGDESTINATION_ROOT.commandName;
+    const shippingDestinationListCommand = Commands.SHIPPINGDESTINATION_LIST.commandName;
+
+    let createdListingItem: resources.ListingItem;
+    let createdListingItemTemplate: resources.ListingItemTemplate;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -30,7 +35,7 @@ describe('ShippingDestinationListCommand', () => {
             true,                                   // return model
             new GenerateListingItemParams().toParamsArray()     // all true -> generate everything
         ) as ListingItemTemplate[];
-        createdListingItemTemplateId = listingItemTemplates[0].id;
+        createdListingItemTemplate = listingItemTemplates[0];
 
         // create listing item with shipping destinations (1-5) and store its id for testing
         const listingItems = await testUtil.generateData(
@@ -39,37 +44,51 @@ describe('ShippingDestinationListCommand', () => {
             true,                                    // return model
             new GenerateListingItemParams().toParamsArray()     // all true -> generate everything
         ) as ListingItem[];
-        createdListingItemId = listingItems[0].id;
+        createdListingItem = listingItems[0];
     });
 
-    test('Should list shipping destinations for template', async () => {
-        const response: any = await rpc(method, [subCommand, 'template', createdListingItemTemplateId]);
-        response.expectJson();
-        response.expectStatusCode(200);
-        const result: any = response.getBody()['result'];
+    test('Should list ShippingDestinations for ListingItemTemplate', async () => {
+        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationListCommand,
+            'template',
+            createdListingItemTemplate.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
         expect(result.length).toBeGreaterThan(0);
     });
 
-    test('Should list shipping destinations for item', async () => {
-        const response: any = await rpc(method, [subCommand, 'item', createdListingItemId]);
-        response.expectJson();
-        response.expectStatusCode(200);
-        const result: any = response.getBody()['result'];
+    test('Should list ShippingDestinations for ListingItem', async () => {
+        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationListCommand,
+            'item',
+            createdListingItem.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: any = res.getBody()['result'];
         expect(result.length).toBeGreaterThan(0);
     });
 
-    test('Should fail to list shipping destination for unexisting template', async () => {
-        const response: any = await rpc(method, [subCommand, 'template', createdListingItemTemplateId + 1000]);
-
-        response.expectJson();
-        response.expectStatusCode(404);
+    test('Should fail to list ShippingDestinations for nonexisting ListingItemTemplate', async () => {
+        const invalidId = 0;
+        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationListCommand,
+            'template',
+            invalidId
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Entity with identifier 0 does not exist');
     });
 
-    test('Should fail to list shipping destination for unexisting item', async () => {
-        const response: any = await rpc(method, [subCommand, 'item', createdListingItemId + 1000]);
-
-        response.expectJson();
-        response.expectStatusCode(404);
+    test('Should fail to list ShippingDestinations for nonexisting ListingItem', async () => {
+        const invalidId = 0;
+        const res: any = await testUtil.rpc(shippingDestinationCommand, [shippingDestinationListCommand,
+            'item',
+            invalidId
+        ]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Entity with identifier 0 does not exist');
     });
 
 });

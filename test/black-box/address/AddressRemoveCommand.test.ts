@@ -1,13 +1,28 @@
-import { rpc, api } from '../lib/api';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import * as _ from 'lodash';
+import { Logger as LoggerType } from '../../../src/core/Logger';
+import * as resources from 'resources';
 
 describe('AddressRemoveCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ADDRESS_ROOT.commandName;
-    const subCommand = Commands.ADDRESS_REMOVE.commandName;
-    let defaultProfileId;
+
+    const addressCommand = Commands.ADDRESS_ROOT.commandName;
+    const addressRemoveCommand = Commands.ADDRESS_REMOVE.commandName;
+    const addressAddCommand = Commands.ADDRESS_ADD.commandName;
+
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let createdAddress: resources.Address;
 
     const testData = {
         firstName: 'Johnny',
@@ -21,50 +36,51 @@ describe('AddressRemoveCommand', () => {
         zipCode: '85001'
     };
 
-    let defaultProfile;
-    let addressId = 0;
-
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        // get default profile and market
         defaultProfile = await testUtil.getDefaultProfile();
-        defaultProfileId = defaultProfile.id;
-    });
+        defaultMarket = await testUtil.getDefaultMarket();
 
-    test('Should fail because we want to create an invalid address id', async () => {
-        const res = await rpc(method, [subCommand, addressId]);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
-
-    test('Should remove address RPC', async () => {
         // add address
-        const res = await rpc(method, [Commands.ADDRESS_ADD.commandName,
-            defaultProfileId,
-        testData.firstName, testData.lastName, testData.title,
-        testData.addressLine1, testData.addressLine2,
-        testData.city, testData.state, testData.country, testData.zipCode]);
+        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
+            defaultProfile.id,
+            testData.title,
+            testData.firstName,
+            testData.lastName,
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+            testData.state,
+            testData.country,
+            testData.zipCode
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        addressId = result.id;
+        createdAddress = res.getBody()['result'];
 
-        // delete address
-        const addRes = await rpc(method, [subCommand, addressId]);
-        addRes.expectJson();
-        addRes.expectStatusCode(200);
     });
 
-    test('Should fail to remove because address already been removed', async () => {
+    test('Should fail because we want to remove an invalid address id', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressRemoveCommand, 0]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Entity with identifier 0 does not exist`);
+    });
+
+    test('Should remove Address', async () => {
+        const res = await testUtil.rpc(addressCommand, [addressRemoveCommand, createdAddress.id]);
+        res.expectJson();
+        res.expectStatusCode(200);
+    });
+
+    test('Should fail to remove Address because it was already removed', async () => {
         // remove address
-        const res = await rpc(method, [subCommand, addressId]);
+        const res = await testUtil.rpc(addressCommand, [addressRemoveCommand, createdAddress.id]);
         res.expectJson();
         res.expectStatusCode(404);
+        expect(res.error.error.message).toBe(`Entity with identifier ${createdAddress.id} does not exist`);
     });
 
-    test('Should not contain the removed address in address list', async () => {
-        // get list of already created address
-        const res = await rpc(method, [Commands.ADDRESS_LIST.commandName, addressId]);
-        res.expectJson();
-        res.expectStatusCode(404);
-    });
 });

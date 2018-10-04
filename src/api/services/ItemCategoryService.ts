@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
@@ -5,6 +9,7 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
+import { MessageException } from '../exceptions/MessageException';
 import { ItemCategoryRepository } from '../repositories/ItemCategoryRepository';
 import { ItemCategory } from '../models/ItemCategory';
 import { ItemCategoryCreateRequest } from '../requests/ItemCategoryCreateRequest';
@@ -83,8 +88,9 @@ export class ItemCategoryService {
         itemCategory.Name = body.name;
         itemCategory.Description = body.description;
 
-        // need to set this to null, otherwise it won't get updated
-        // itemCategory.parent_item_category_id = body.parentItemCategoryId === undefined ? null : body.parent_item_category_id;
+        if (body.parent_item_category_id) {
+            itemCategory.set('parentItemCategoryId', body.parent_item_category_id);
+        }
 
         // update itemCategory record
         const updatedItemCategory = await this.itemCategoryRepo.update(id, itemCategory.toJSON(), patching);
@@ -150,9 +156,31 @@ export class ItemCategoryService {
         } else {
             // search the children for a match
             const childCategories = rootCategory.ChildItemCategories;
-            return _.find(childCategories, (childCategory) => {
+            const found = _.find(childCategories, (childCategory) => {
                 return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);
             });
+            if (found) {
+                return found;
+            } else {
+                throw new NotFoundException(keyOrName);
+            }
         }
+    }
+
+    /**
+     * function to return category id
+     *
+     * @param data
+     * @returns {Promise<number>}
+     */
+    public async getCategoryIdByKey(parentItemCategory: any): Promise<number> {
+        let parentItemCategoryId;
+        if (typeof parentItemCategory === 'number') {
+            parentItemCategoryId = parentItemCategory;
+        } else { // get category id by key
+            parentItemCategory = await this.findOneByKey(parentItemCategory);
+            parentItemCategoryId = parentItemCategory.id;
+        }
+        return parentItemCategoryId;
     }
 }

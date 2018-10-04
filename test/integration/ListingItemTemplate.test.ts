@@ -1,18 +1,18 @@
-import { app } from '../../src/app';
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
+import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import * as _ from 'lodash';
-
 import { TestUtil } from './lib/TestUtil';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
 import { MessageException } from '../../src/api/exceptions/MessageException';
-
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
 import { ListingItem } from '../../src/api/models/ListingItem';
-
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { ProfileService } from '../../src/api/services/ProfileService';
@@ -32,29 +32,16 @@ import { ListingItemService } from '../../src/api/services/ListingItemService';
 import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemObjectService } from '../../src/api/services/ListingItemObjectService';
 import { ListingItemObjectDataService } from '../../src/api/services/ListingItemObjectDataService';
-
 import { ListingItemTemplateCreateRequest } from '../../src/api/requests/ListingItemTemplateCreateRequest';
-import { ListingItemTemplateUpdateRequest } from '../../src/api/requests/ListingItemTemplateUpdateRequest';
-import { ListingItemCreateRequest } from '../../src/api/requests/ListingItemCreateRequest';
 import { ListingItemObjectCreateRequest } from '../../src/api/requests/ListingItemObjectCreateRequest';
 import { MessagingInformationCreateRequest } from '../../src/api/requests/MessagingInformationCreateRequest';
 import { PaymentInformationCreateRequest } from '../../src/api/requests/PaymentInformationCreateRequest';
 import { ItemInformationCreateRequest } from '../../src/api/requests/ItemInformationCreateRequest';
-
-import * as listingItemCreateRequestBasic1 from '../testdata/createrequest/listingItemCreateRequestBasic1.json';
-import * as listingItemCreateRequestBasic2 from '../testdata/createrequest/listingItemCreateRequestBasic2.json';
-import * as listingItemUpdateRequestBasic1 from '../testdata/updaterequest/listingItemUpdateRequestBasic1.json';
-
 import * as listingItemTemplateCreateRequestBasic1 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic1.json';
 import * as listingItemTemplateCreateRequestBasic2 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic2.json';
 import * as listingItemTemplateCreateRequestBasic3 from '../testdata/createrequest/listingItemTemplateCreateRequestBasic3.json';
 import * as listingItemTemplateUpdateRequestBasic1 from '../testdata/updaterequest/listingItemTemplateUpdateRequestBasic1.json';
-
 import * as resources from 'resources';
-import { HashableObjectType } from '../../src/api/enums/HashableObjectType';
-import { ObjectHash } from '../../src/core/helpers/ObjectHash';
-import { CustomConfig } from '../../src/config/CustomConfig';
-import { App } from '../../src/core/App';
 
 describe('ListingItemTemplate', async () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
@@ -365,7 +352,7 @@ describe('ListingItemTemplate', async () => {
     // -------------------------------
     // TESTS
     // -------------------------------
-    test('Should throw ValidationException because we want to create a empty listing item template', async () => {
+    test('Should throw ValidationException because we want to create a empty ListingItemTemplate', async () => {
         expect.assertions(1);
         await listingItemTemplateService.create({} as ListingItemTemplateCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
@@ -428,7 +415,11 @@ describe('ListingItemTemplate', async () => {
 
         testDataToSave.profile_id = defaultProfile.id;
 
-        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave);
+        const listingItemTemplateModel: ListingItemTemplate = await listingItemTemplateService.create(testDataToSave)
+            .catch(reason => {
+                log.error('REASON:', JSON.stringify(reason, null, 2));
+                return {} as ListingItemTemplate;
+            });
         createdListingItemTemplate2 = listingItemTemplateModel.toJSON();
 
         expectListingItemTemplateFromCreateRequest(createdListingItemTemplate2, testDataToSave);
@@ -513,9 +504,13 @@ describe('ListingItemTemplate', async () => {
         createdListingItemTemplate3 = listingItemTemplate.toJSON();
 
         // create ListingItem with relation to ListingItemTemplate
-        testDataToSave.listing_item_template_id = listingItemTemplate.Id;
+        testDataToSave.listing_item_template_id = createdListingItemTemplate3.id;
         testDataToSave.market_id = defaultMarket.id;
         testDataToSave.seller = defaultProfile.address;
+        testDataToSave.expiryTime = 4;
+        testDataToSave.postedAt = new Date().getTime();
+        testDataToSave.expiredAt = new Date().getTime();
+        testDataToSave.receivedAt = new Date().getTime();
 
         log.debug('testDataToSave:', JSON.stringify(testDataToSave, null, 2));
 
@@ -523,7 +518,7 @@ describe('ListingItemTemplate', async () => {
         createdListingItem1 = listingItemModel.toJSON();
 
         expectListingItemFromCreateRequest(createdListingItem1, testDataToSave);
-        expect(createdListingItem1.ListingItemTemplate.id).toBe(listingItemTemplate.Id);
+        expect(createdListingItem1.ListingItemTemplate.id).toBe(createdListingItemTemplate3.id);
     });
 
     test('Should not delete ListingItemTemplate having relation to ListingItem', async () => {

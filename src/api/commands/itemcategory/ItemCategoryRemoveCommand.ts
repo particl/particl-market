@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -11,6 +15,9 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { SearchOrder } from '../../enums/SearchOrder';
+import * as _ from 'lodash';
+import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
 
 export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -36,21 +43,54 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
-        const categoryId = data.params[0];
-        const isDelete = await this.isDoable(categoryId);
-        if (isDelete) {
-            // check listingItemTemplate related with category
-            const listingItemTemplates = await this.listingItemTemplateService.search({
-                page: 1, pageLimit: 10, order: 'ASC', category: categoryId, profileId: 0
-            } as ListingItemTemplateSearchParams);
-            if (listingItemTemplates.toJSON().length > 0) {
-                // not be delete its a associated with listingItemTemplate
-                throw new MessageException(`Category associated with listing-item-template can't be delete. id= ${categoryId}`);
-            }
-            return await this.itemCategoryService.destroy(categoryId);
-        } else {
-            throw new MessageException(`category can't be delete. id= ${categoryId}`);
+
+        if (!data.params[0]) {
+            throw new MessageException('Missing categoryId.');
         }
+        const categoryId = data.params[0];
+
+        await this.itemCategoryService.findOne(categoryId)
+            .then(value => {
+                const itemCategory = value.toJSON();
+                if (itemCategory.key) {
+                    throw new MessageException('Default Category cant be removed.');
+                }
+            })
+            .catch(reason => {
+                throw new MessageException('Invalid categoryId.');
+            });
+
+        // check listingItemTemplate related with category
+        await this.listingItemTemplateService.search({
+            page: 0,
+            pageLimit: 10,
+            order: SearchOrder.ASC,
+            category: categoryId
+        } as ListingItemTemplateSearchParams)
+            .then(values => {
+                const listingItemTemplates = values.toJSON();
+                if (listingItemTemplates.length > 0) {
+                    throw new MessageException(`Category associated with ListingItemTemplate can't be deleted. id= ${categoryId}`);
+                }
+            });
+
+        // check listingItem related with category
+        await this.listingItemService.search({
+            page: 0,
+            pageLimit: 10,
+            order: SearchOrder.ASC,
+            category: categoryId
+        } as ListingItemSearchParams)
+            .then(values => {
+                this.log.debug('values:', JSON.stringify(values, null, 2));
+                const listingItems = values.toJSON();
+                if (listingItems.length > 0) {
+                    throw new MessageException(`Category associated with ListingItem can't be deleted. id= ${categoryId}`);
+                }
+            });
+
+
+        return await this.itemCategoryService.destroy(categoryId);
     }
 
     public usage(): string {
@@ -69,27 +109,5 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
 
     public example(): string {
         return 'category ' + this.getName() + ' 81 ';
-    }
-
-    /**
-     * function to check category is default, check category is not associated with listing-item
-     *
-     * @param data
-     * @returns {Promise<boolean>}
-     */
-    private async isDoable(categoryId: number): Promise<boolean> {
-        const itemCategory = await this.itemCategoryService.findOne(categoryId);
-        // check category has key
-        if (itemCategory.Key != null) {
-            // not be update/delete its a default category
-            throw new MessageException(`Default category can't be update or delete. id= ${categoryId}`);
-        }
-        // check listingItem realted with category id
-        const listingItem = await this.listingItemService.findByCategory(categoryId);
-        if (listingItem.toJSON().length > 0) {
-            // not be update/delete its a related with listing-items
-            throw new MessageException(`Category related with listing-items can't be update or delete. id= ${categoryId}`);
-        }
-        return true;
     }
 }

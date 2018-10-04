@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as SocketIO from 'socket.io';
 import * as http from 'http';
 import { Logger } from './Logger';
@@ -40,7 +44,7 @@ export class SocketIoServer {
 
             // listen to messages for cli
             this.eventEmitter.on('cli', (event) => {
-                this.log.debug('message for cli', JSON.stringify(event, null, 2));
+                // this.log.debug('message for cli', JSON.stringify(event, null, 2));
                 client.emit('cli', event);
             });
 

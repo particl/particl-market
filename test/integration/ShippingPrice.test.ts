@@ -1,27 +1,26 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
-
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ShippingPriceService } from '../../src/api/services/ShippingPriceService';
 import { ProfileService } from '../../src/api/services/ProfileService';
-
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
 import { EscrowService } from '../../src/api/services/EscrowService';
 import { ItemPriceService } from '../../src/api/services/ItemPriceService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ShippingPrice } from '../../src/api/models/ShippingPrice';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
 import { ShippingPriceCreateRequest } from '../../src/api/requests/ShippingPriceCreateRequest';
 import { ShippingPriceUpdateRequest } from '../../src/api/requests/ShippingPriceUpdateRequest';
-
 import { PaymentType } from '../../src/api/enums/PaymentType';
 import { Currency } from '../../src/api/enums/Currency';
 

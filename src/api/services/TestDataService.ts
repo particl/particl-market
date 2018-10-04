@@ -1,5 +1,8 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Bookshelf as Database } from '../../config/Database';
-import { Collection } from 'bookshelf';
 import * as Bookshelf from 'bookshelf';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../core/api/Validate';
@@ -24,7 +27,6 @@ import { ItemCategory } from '../models/ItemCategory';
 import { FavoriteItem } from '../models/FavoriteItem';
 import { PaymentInformation } from '../models/PaymentInformation';
 import { ListingItemTemplate } from '../models/ListingItemTemplate';
-
 import { ListingItemService } from './ListingItemService';
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { DefaultItemCategoryService } from './DefaultItemCategoryService';
@@ -36,18 +38,15 @@ import { ItemCategoryService } from './ItemCategoryService';
 import { FavoriteItemService } from './FavoriteItemService';
 import { ItemInformationService } from './ItemInformationService';
 import { BidService } from './BidService';
+import { ProposalService } from './ProposalService';
 import { PaymentInformationService } from './PaymentInformationService';
 import { ItemImageService } from './ItemImageService';
 import { ActionMessageService } from './ActionMessageService';
-
 import { TestDataGenerateRequest } from '../requests/TestDataGenerateRequest';
 import { ProfileCreateRequest } from '../requests/ProfileCreateRequest';
-import { Address } from '../models/Address';
-import { CryptocurrencyAddress } from '../models/CryptocurrencyAddress';
 import { ItemInformation } from '../models/ItemInformation';
 import { Bid } from '../models/Bid';
 import { ItemImage } from '../models/ItemImage';
-
 import { MessageInfoCreateRequest } from '../requests/MessageInfoCreateRequest';
 import { MessageEscrowCreateRequest } from '../requests/MessageEscrowCreateRequest';
 import { MessageDataCreateRequest } from '../requests/MessageDataCreateRequest';
@@ -66,27 +65,37 @@ import { GenerateListingItemTemplateParams } from '../requests/params/GenerateLi
 import { GenerateListingItemParams } from '../requests/params/GenerateListingItemParams';
 import { GenerateProfileParams } from '../requests/params/GenerateProfileParams';
 import { GenerateBidParams } from '../requests/params/GenerateBidParams';
+import { GenerateProposalParams } from '../requests/params/GenerateProposalParams';
 import { ImageProcessing } from '../../core/helpers/ImageProcessing';
 import { BidMessageType } from '../enums/BidMessageType';
-import { SearchOrder } from '../enums/SearchOrder';
 import { AddressCreateRequest } from '../requests/AddressCreateRequest';
 import { CryptocurrencyAddressCreateRequest } from '../requests/CryptocurrencyAddressCreateRequest';
 import { ActionMessageCreateRequest } from '../requests/ActionMessageCreateRequest';
 import { BidDataCreateRequest } from '../requests/BidDataCreateRequest';
 import { AddressType } from '../enums/AddressType';
-import { ListingItemMessageType } from '../enums/ListingItemMessageType';
 import { ActionMessage } from '../models/ActionMessage';
 import { CoreRpcService } from './CoreRpcService';
 import { GenerateOrderParams } from '../requests/params/GenerateOrderParams';
 import { OrderCreateRequest } from '../requests/OrderCreateRequest';
-import { OrderItemCreateRequest } from '../requests/OrderItemCreateRequest';
 import * as resources from 'resources';
-import { OrderStatus } from '../enums/OrderStatus';
-import { OrderItemObjectCreateRequest } from '../requests/OrderItemObjectCreateRequest';
 import { OrderService } from './OrderService';
 import { OrderFactory } from '../factories/OrderFactory';
+import { ProposalCreateRequest } from '../requests/ProposalCreateRequest';
+import { ProposalOptionCreateRequest } from '../requests/ProposalOptionCreateRequest';
 import { ItemPriceCreateRequest } from '../requests/ItemPriceCreateRequest';
 import { EscrowCreateRequest } from '../requests/EscrowCreateRequest';
+import { ProposalType } from '../enums/ProposalType';
+import { VoteCreateRequest } from '../requests/VoteCreateRequest';
+import { VoteService } from './VoteService';
+import { VoteActionService } from './VoteActionService';
+import { ProposalResultService } from './ProposalResultService';
+import { ProposalOptionResultService } from './ProposalOptionResultService';
+import { ProposalActionService } from './ProposalActionService';
+import {ItemCategoryUpdateRequest} from '../requests/ItemCategoryUpdateRequest';
+import {BidDataValue} from '../enums/BidDataValue';
+import {SettingCreateRequest} from '../requests/SettingCreateRequest';
+import {ItemVote} from '../enums/ItemVote';
+import {Proposal} from '../models/Proposal';
 
 export class TestDataService {
 
@@ -106,6 +115,12 @@ export class TestDataService {
         @inject(Types.Service) @named(Targets.Service.ItemInformationService) private itemInformationService: ItemInformationService,
         @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService,
+        @inject(Types.Service) @named(Targets.Service.ProposalService) private proposalService: ProposalService,
+        @inject(Types.Service) @named(Targets.Service.ProposalActionService) private proposalActionService: ProposalActionService,
+        @inject(Types.Service) @named(Targets.Service.ProposalResultService) private proposalResultService: ProposalResultService,
+        @inject(Types.Service) @named(Targets.Service.ProposalOptionResultService) private proposalOptionResultService: ProposalOptionResultService,
+        @inject(Types.Service) @named(Targets.Service.VoteService) private voteService: VoteService,
+        @inject(Types.Service) @named(Targets.Service.VoteActionService) private voteActionService: VoteActionService,
         @inject(Types.Service) @named(Targets.Service.ItemImageService) private itemImageService: ItemImageService,
         @inject(Types.Service) @named(Targets.Service.PaymentInformationService) private paymentInformationService: PaymentInformationService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) private actionMessageService: ActionMessageService,
@@ -133,7 +148,6 @@ export class TestDataService {
             await this.defaultProfileService.seedDefaultProfile();
             await this.defaultMarketService.seedDefaultMarket();
             this.log.info('cleanup & default seeds done.');
-
             return;
         }
     }
@@ -223,6 +237,10 @@ export class TestDataService {
                 const generateParams = new GenerateOrderParams(body.generateParams);
                 return await this.generateOrders(body.amount, body.withRelated, generateParams);
             }
+            case CreatableModel.PROPOSAL: {
+                const generateParams = new GenerateProposalParams(body.generateParams);
+                return await this.generateProposals(body.amount, body.withRelated, generateParams);
+            }
             default: {
                 throw new MessageException('Not implemented');
             }
@@ -250,6 +268,7 @@ export class TestDataService {
             'order_items',
             'orders',
             'bid_datas',
+            'locked_outputs',
             'bids',
             'location_markers',
             'item_locations',
@@ -278,11 +297,17 @@ export class TestDataService {
             'users',        // todo: not needed
             'price_ticker', // todo: price_tickers
             'flagged_items',
-            'currency_prices'
+            'currency_prices',
+            'proposal_option_results',
+            'proposal_results',
+            'proposal_options',
+            'proposals',
+            'votes',
+            'smsg_messages'
         ];
 
         for (const table of tablesToClean) {
-            // this.log.debug('cleaning table: ', table);
+            this.log.debug('cleaning table: ', table);
             await Database.knex.select().from(table).del();
         }
         return;
@@ -303,6 +328,9 @@ export class TestDataService {
         const items: resources.ListingItemTemplate[] = [];
         for (let i = amount; i > 0; i--) {
             const listingItemTemplateCreateRequest = await this.generateListingItemTemplateData(generateParams);
+
+            // this.log.debug('listingItemTemplateCreateRequest:', JSON.stringify(listingItemTemplateCreateRequest, null, 2));
+
             let listingItemTemplateModel = await this.listingItemTemplateService.create(listingItemTemplateCreateRequest);
             let result = listingItemTemplateModel.toJSON();
 
@@ -318,23 +346,6 @@ export class TestDataService {
                     market = marketModel.toJSON();
                 }
 
-                // add ActionMessage
-                const actionMessages = [{
-                    action: ListingItemMessageType.MP_ITEM_ADD,
-                    objects: [{
-                        dataId: 'seller',
-                        dataValue: result.Profile.address
-                    }],
-                    data: {
-                        msgid: 'testdatanotsorandommsgidfrom_generateListingItems',
-                        version: '0300',
-                        received: new Date().toISOString(),
-                        sent: new Date().toISOString(),
-                        from: result.Profile.address,
-                        to: market.address
-                    }
-                }];
-
                 const listingItemCreateRequest = {
                     seller: result.Profile.address,
                     market_id: market.id,
@@ -343,15 +354,21 @@ export class TestDataService {
                     paymentInformation: listingItemTemplateCreateRequest.paymentInformation,
                     messagingInformation: listingItemTemplateCreateRequest.messagingInformation,
                     listingItemObjects: listingItemTemplateCreateRequest.listingItemObjects,
-                    actionMessages
+                    expiryTime: 10,
+                    postedAt: new Date().getTime(),
+                    expiredAt: new Date().getTime() + 60 * 1000 * 60 * 24 * 10,
+                    receivedAt: new Date().getTime()
                 } as ListingItemCreateRequest;
+
 
                 const listingItemModel = await this.listingItemService.create(listingItemCreateRequest);
                 const listingItem = listingItemModel.toJSON();
+                // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
 
                 // fetch new relation
                 listingItemTemplateModel = await this.listingItemTemplateService.findOne(result.id);
                 result = listingItemTemplateModel.toJSON();
+
             }
             items.push(result);
         }
@@ -376,23 +393,6 @@ export class TestDataService {
             // const fromAddress = await this.coreRpcService.getNewAddress();
             const marketModel = await this.marketService.getDefault();
             const market = marketModel.toJSON();
-
-            // add ActionMessage
-            listingItemCreateRequest.actionMessages = [{
-                action: ListingItemMessageType.MP_ITEM_ADD,
-                objects: [{
-                    dataId: 'seller',
-                    dataValue: listingItemCreateRequest.seller
-                }],
-                data: {
-                    msgid: 'testdatanotsorandommsgidfrom_generateListingItems',
-                    version: '0300',
-                    received: new Date().toISOString(),
-                    sent: new Date().toISOString(),
-                    from: listingItemCreateRequest.seller,
-                    to: market.address
-                }
-            }];
 
             this.log.debug('create listingitem start');
             const savedListingItemModel = await this.listingItemService.create(listingItemCreateRequest);
@@ -482,7 +482,28 @@ export class TestDataService {
         const action = generateParams.action ? generateParams.action : BidMessageType.MPA_BID;
 
         // TODO: generate biddatas
-        const bidDatas: BidDataCreateRequest[] = [];
+        const bidDatas = [
+            {dataId: 'size', dataValue: 'XL'},
+            {dataId: 'color', dataValue: 'pink'},
+            {dataId: BidDataValue.BUYER_OUTPUTS, dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0b\"' +
+                ',\"vout\":1,\"amount\":1.52497491}]'},
+            {dataId: BidDataValue.BUYER_PUBKEY, dataValue: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d90'},
+            {dataId: BidDataValue.BUYER_CHANGE_ADDRESS, dataValue: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb4'},
+            {dataId: BidDataValue.BUYER_CHANGE_AMOUNT, dataValue: 96.52477491},
+            {dataId: BidDataValue.BUYER_RELEASE_ADDRESS, dataValue: 'pbofM9onECpn76EosG1GLpyTcQCrfcLhb5'},
+            {dataId: BidDataValue.SELLER_PUBKEY, dataValue: '021e3ccb8a295d6aca9cf2836587f24b1c2ce14b217fe85b1672ee133e2a5d6d91'},
+            {dataId: BidDataValue.SELLER_OUTPUTS, dataValue: '[{\"txid\":\"d39a1f90b7fd204bbdbaa49847c0615202c5624bc73634cd83d831e4a226ee0a\"' +
+                ',\"vout\":1,\"amount\":1.52497491}]'},
+            {dataId: 'ship.title', dataValue: 'title'},
+            {dataId: 'ship.firstName', dataValue: 'asdf'},
+            {dataId: 'ship.lastName', dataValue: 'asdf'},
+            {dataId: 'ship.addressLine1', dataValue: 'asdf'},
+            {dataId: 'ship.addressLine2', dataValue: 'asdf'},
+            {dataId: 'ship.city', dataValue: 'asdf'},
+            {dataId: 'ship.state', dataValue: ''},
+            {dataId: 'ship.zipCode', dataValue: '1234'},
+            {dataId: 'ship.country', dataValue: 'FI'}
+        ] as BidDataCreateRequest[];
 
         const bidCreateRequest = {
             action,
@@ -512,55 +533,12 @@ export class TestDataService {
 
         this.log.debug('generateOrders, generateParams: ', generateParams);
 
-        // const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams();
-        // const listingItemGenerateParams = new GenerateListingItemParams();
-        const bidGenerateParams = new GenerateBidParams();
-
-        // let listingItemTemplate: resources.ListingItemTemplate;
-        // let listingItem: resources.ListingItem;
-
-/*
-        // generate template
-        if (generateParams.generateListingItemTemplate) {
-            const listingItemTemplates = await this.generateListingItemTemplates(1, true, listingItemTemplateGenerateParams);
-            listingItemTemplate = listingItemTemplates[0];
-
-            this.log.debug('templates generated:', listingItemTemplates.length);
-            this.log.debug('listingItemTemplates[0].id:', listingItemTemplates[0].id);
-            this.log.debug('listingItemTemplates[0].hash:', listingItemTemplates[0].hash);
-
-            // set the hash for listing item generation
-            listingItemGenerateParams.listingItemTemplateHash = listingItemTemplates[0].hash;
-        } else {
-            listingItemTemplate = {} as resources.ListingItemTemplate;
-        }
-
-        // generate listingitem
-        if (generateParams.generateListingItem) {
-
-            // set the seller for listing item generation
-            listingItemGenerateParams.seller = generateParams.listingItemSeller ? generateParams.listingItemSeller : null;
-
-            this.log.debug('listingItemGenerateParams:', listingItemGenerateParams);
-
-            const listingItems = await this.generateListingItems(1, true, listingItemGenerateParams);
-            listingItem = listingItems[0];
-
-            this.log.debug('listingItems generated:', listingItems.length);
-            this.log.debug('listingItem.id:', listingItem.id);
-            this.log.debug('listingItem.hash:', listingItem.hash);
-
-            // set the hash for bid generation
-            bidGenerateParams.listingItemHash = listingItem.hash;
-        } else {
-            listingItem = {} as resources.ListingItem;
-        }
-*/
         let bid: resources.Bid;
 
         // generate bid
         if (generateParams.generateBid) {
 
+            const bidGenerateParams = new GenerateBidParams();
             bidGenerateParams.generateListingItemTemplate = generateParams.generateListingItemTemplate;
             bidGenerateParams.generateListingItem = generateParams.generateListingItem;
             bidGenerateParams.action = BidMessageType.MPA_ACCEPT;
@@ -572,37 +550,19 @@ export class TestDataService {
             this.log.debug('bids generated:', bids.length);
             this.log.debug('bid.id:', bid.id);
 
-            // set the bid_id for order generation
-            generateParams.bidId = bid.id;
         } else {
-            bid = {} as resources.Bid;
+            const bidModel = await this.bidService.findOne(generateParams.bidId);
+            bid = bidModel.toJSON();
         }
 
-        this.log.debug('bid:', JSON.stringify(bid, null, 2));
-
-        // wtf why are the objects allready?
-        const listingItemTemplateModel = await this.listingItemTemplateService.findOne(bid.ListingItem.ListingItemTemplate.id);
-        const listingItemModel = await this.listingItemService.findOne(bid.ListingItem.id);
-
-        const listingItemTemplate: resources.ListingItemTemplate = listingItemTemplateModel.toJSON();
-        const listingItem: resources.ListingItem = listingItemModel.toJSON();
-
-
-        this.log.debug('bid.ListingItem.ListingItemTemplate.id:', bid.ListingItem.ListingItemTemplate.id);
-        this.log.debug('listingItemTemplate.id:', listingItemTemplate.id);
-        this.log.debug('listingItem.id:', listingItem.id);
-        this.log.debug('listingItem.seller:', listingItem.seller);
-        this.log.debug('bid.bidder:', bid.bidder);
-        // this.log.debug('listingItemTemplate:', JSON.stringify(listingItemTemplate, null, 2));
-        // this.log.debug('listingItem:', JSON.stringify(listingItem, null, 2));
-
+        // set the bid_id for order generation
+        generateParams.bidId = bid.id;
 
         const items: resources.Order[] = [];
         for (let i = amount; i > 0; i--) {
             const orderCreateRequest = await this.generateOrderData(generateParams);
 
-
-            this.log.debug('orderCreateRequest:', JSON.stringify(orderCreateRequest, null, 2));
+            // this.log.debug('orderCreateRequest:', JSON.stringify(orderCreateRequest, null, 2));
 
             const savedOrderModel = await this.orderService.create(orderCreateRequest);
             const result = savedOrderModel.toJSON();
@@ -621,6 +581,9 @@ export class TestDataService {
         // then generate ordercreaterequest with some orderitems and orderitemobjects
         const orderCreateRequest = await this.orderFactory.getModelFromBid(bid);
 
+        if (!generateParams.generateOrderItem) {
+            orderCreateRequest.orderItems = [];
+        }
         return orderCreateRequest;
     }
 
@@ -636,6 +599,167 @@ export class TestDataService {
         } as OrderItemCreateRequest;
     }
     */
+
+    // -------------------
+    // Proposals
+    private async generateProposals(
+        amount: number, withRelated: boolean = true,
+        generateParams: GenerateProposalParams): Promise<resources.Proposal[]> {
+
+        this.log.debug('generateProposals, generateParams: ', generateParams);
+
+        /*
+        TODO: add template and item generation
+
+        const listingItemTemplateGenerateParams = new GenerateListingItemTemplateParams();
+        const listingItemGenerateParams = new GenerateListingItemParams();
+
+        let listingItemTemplate: resources.ListingItemTemplate;
+        let listingItem: resources.ListingItem;
+
+        // generate template
+        if (generateParams.generateListingItemTemplate) {
+            const listingItemTemplates = await this.generateListingItemTemplates(1, true, listingItemTemplateGenerateParams);
+            listingItemTemplate = listingItemTemplates[0];
+
+            this.log.debug('templates generated:', listingItemTemplates.length);
+            this.log.debug('listingItemTemplates[0].id:', listingItemTemplates[0].id);
+            this.log.debug('listingItemTemplates[0].hash:', listingItemTemplates[0].hash);
+
+            // set the hash for listing item generation
+            listingItemGenerateParams.listingItemTemplateHash = listingItemTemplates[0].hash;
+        }
+
+        // generate item
+        if (generateParams.generateListingItem) {
+
+            // set the seller for listing item generation
+            listingItemGenerateParams.seller = generateParams.listingItemSeller ? generateParams.listingItemSeller : null;
+
+            this.log.debug('listingItemGenerateParams:', listingItemGenerateParams);
+
+            const listingItems = await this.generateListingItems(1, true, listingItemGenerateParams);
+            listingItem = listingItems[0];
+
+            this.log.debug('listingItems generated:', listingItems.length);
+            this.log.debug('listingItem.id:', listingItem.id);
+            this.log.debug('listingItem.hash:', listingItem.hash);
+
+            // set the hash for bid generation
+            generateParams.listingItemHash = listingItem.hash;
+        }
+        // TODO: proposalHash is not set to listingitem
+         */
+
+        const items: resources.Proposal[] = [];
+        for (let i = amount; i > 0; i--) {
+            const proposalCreateRequest = await this.generateProposalData(generateParams);
+            let proposalModel = await this.proposalService.create(proposalCreateRequest);
+            let proposal: resources.Proposal = proposalModel.toJSON();
+
+            if (generateParams.voteCount > 0) {
+                const votes = await this.generateVotesForProposal(generateParams.voteCount, proposal);
+            }
+
+            // create and update ProposalResult
+            let proposalResult = await this.proposalService.createProposalResult(proposal);
+            proposalResult = await this.proposalService.recalculateProposalResult(proposal);
+            // this.log.debug('updated proposalResult: ', JSON.stringify(proposalResult, null, 2));
+
+            proposalModel = await this.proposalService.findOne(proposal.id);
+            proposal = proposalModel.toJSON();
+            items.push(proposal);
+        }
+
+        return this.generateResponse(items, withRelated);
+    }
+
+    private async generateVotesForProposal(amount: number, proposal: resources.Proposal): Promise<resources.Vote[]> {
+
+        const items: resources.Vote[] = [];
+        for (let i = amount; i > 0; i--) {
+            const randomBoolean: boolean = Math.random() >= 0.5;
+            const voter = Faker.finance.bitcoinAddress(); // await this.coreRpcService.getNewAddress();
+            const block = _.random(proposal.blockStart, proposal.blockEnd);
+            const proposalOptionId = proposal.ProposalOptions[randomBoolean ? 0 : 1].id;
+
+            const voteCreateRequest = {
+                proposal_option_id: proposalOptionId,
+                voter,
+                block,
+                weight: 1
+            } as VoteCreateRequest;
+
+            const voteModel = await this.voteService.create(voteCreateRequest);
+            const vote: resources.Vote = voteModel.toJSON();
+            this.log.debug('proposal.id : ' + proposal.id + ' : created vote: ' + vote.voter + ' : '
+                + vote.ProposalOption.optionId + ' : ' + vote.ProposalOption.description);
+            items.push(vote);
+        }
+        return items;
+    }
+
+    private async generateProposalData(generateParams: GenerateProposalParams): Promise<ProposalCreateRequest> {
+
+        let submitter;
+        if (!generateParams.submitter) {
+            const defaultProfile = await this.profileService.getDefault();
+            const profile = defaultProfile.toJSON();
+            submitter = profile.address;
+        } else {
+            submitter = generateParams.submitter;
+        }
+
+        const type = generateParams.listingItemHash ? ProposalType.ITEM_VOTE : ProposalType.PUBLIC_VOTE;
+        const title = generateParams.listingItemHash ? generateParams.listingItemHash : Faker.lorem.words(4);
+        const item = generateParams.listingItemHash ? generateParams.listingItemHash : null;
+        const description = generateParams.listingItemHash ? 'ILLEGAL ITEM' : Faker.lorem.words(40);
+
+        const currentblock: number = await this.coreRpcService.getBlockCount();
+        const blockStart = generateParams.generatePastProposal
+            ? _.random(1, (currentblock / 2), false)
+            : _.random(currentblock + 100, currentblock + 1000, false);
+
+        const blockEnd = generateParams.generatePastProposal
+            ? _.random((currentblock / 2) + 100, currentblock - 1000, false)
+            : _.random(currentblock + 1001, currentblock + 2000, false);
+
+        // this.log.debug('generateParams.generatePastProposal: ', generateParams.generatePastProposal);
+        // this.log.debug('currentblock: ', currentblock);
+        // this.log.debug('blockStart: ', blockStart);
+        // this.log.debug('blockEnd: ', blockEnd);
+
+        const proposalCreateRequest = {
+            submitter,
+            blockStart,
+            blockEnd,
+            type,
+            item,
+            title,
+            description,
+            expiryTime: 4,
+            postedAt: new Date().getTime(),
+            expiredAt: new Date().getTime() + 100000000,
+            receivedAt: new Date().getTime()
+        } as ProposalCreateRequest;
+
+        const options: ProposalOptionCreateRequest[] = [];
+        options.push({
+            optionId: 0,
+            description: ItemVote.KEEP.toString()
+        } as ProposalOptionCreateRequest);
+
+        options.push({
+            optionId: 1,
+            description: ItemVote.REMOVE.toString()
+        } as ProposalOptionCreateRequest);
+
+        // TODO: Generate a random number of proposal options, or a number specified in the generateParams
+        proposalCreateRequest.options = options;
+
+        // this.log.debug('proposalCreateRequest: ', JSON.stringify(proposalCreateRequest, null, 2));
+        return proposalCreateRequest;
+    }
 
     // -------------------
     // profiles
@@ -666,17 +790,17 @@ export class TestDataService {
         const name = 'TEST-' + Faker.name.firstName();
         const address = await this.coreRpcService.getNewAddress();
 
-        this.log.debug('generateParams.generateShippingAddresses: ', generateParams.generateShippingAddresses);
-        this.log.debug('generateParams.generateCryptocurrencyAddresses: ', generateParams.generateCryptocurrencyAddresses);
         const profile = await this.generateAddressesData(_.random(1, 5));
         const shippingAddresses = generateParams.generateShippingAddresses ? profile : [];
         const cryptocurrencyAddresses = generateParams.generateCryptocurrencyAddresses ? await this.generateCryptocurrencyAddressesData(_.random(1, 5)) : [];
+        const settings = generateParams.generateSettings ? await this.generateSettings(_.random(1, 5)) : [];
 
         return {
             name,
             address,
             shippingAddresses,
-            cryptocurrencyAddresses
+            cryptocurrencyAddresses,
+            settings
         } as ProfileCreateRequest;
     }
 
@@ -710,6 +834,23 @@ export class TestDataService {
         return cryptoAddresses;
     }
 
+    private async generateSettings(amount: number): Promise<SettingCreateRequest[]> {
+        const settings: any[] = [];
+        for (let i = amount; i > 0; i--) {
+            settings.push({
+                key: Faker.random.word(),
+                value: Faker.random.word()
+            });
+        }
+        return settings;
+    }
+
+    /**
+     * TODO: create a Proposal
+     *
+     * @param {GenerateListingItemParams} generateParams
+     * @returns {Promise<ListingItemCreateRequest>}
+     */
     private async generateListingItemData(generateParams: GenerateListingItemParams): Promise<ListingItemCreateRequest> {
 
         // get default profile
@@ -734,7 +875,11 @@ export class TestDataService {
             paymentInformation,
             messagingInformation,
             listingItemObjects,
-            market_id: defaultMarket.id
+            market_id: defaultMarket.id,
+            expiryTime: 4,
+            postedAt: new Date().getTime(),
+            expiredAt: new Date().getTime() + 100000000,
+            receivedAt: new Date().getTime()
         } as ListingItemCreateRequest;
 
         // fetch listingItemTemplate if hash was given and set the listing_item_template_id
@@ -789,13 +934,18 @@ export class TestDataService {
             ? this.generateItemImagesData(_.random(1, 5))
             : [];
 
+        const itemCategory = {} as ItemCategoryUpdateRequest;
+        if (generateParams.categoryId) {
+            itemCategory.id = generateParams.categoryId;
+        } else {
+            itemCategory.key = this.randomCategoryKey();
+        }
+
         const itemInformation = {
             title: Faker.commerce.productName(),
             shortDescription: Faker.commerce.productAdjective() + ' ' + Faker.commerce.product(),
             longDescription: Faker.lorem.paragraph(),
-            itemCategory: {
-                key: this.randomCategoryKey()
-            },
+            itemCategory,
             itemLocation: {
                 region: Faker.random.arrayElement(Object.getOwnPropertyNames(ShippingCountries.countryCodeList)),
                 address: Faker.address.streetAddress(),

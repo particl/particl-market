@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { Logger as LoggerType } from '../../../core/Logger';
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
@@ -43,12 +47,34 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
         const orderItemModel = await this.orderItemService.findOne(data.params[0]);
         const orderItem = orderItemModel.toJSON();
 
-        const valid = [
+        return this.escrowActionService.release({
+            orderItem,
+            memo: data.params[1],
+            action: EscrowMessageType.MPA_RELEASE
+        } as EscrowRequest);
+    }
+
+    /**
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 2) {
+            throw new MessageException('Missing params.');
+        }
+
+        const orderItemModel = await this.orderItemService.findOne(data.params[0]);
+        const orderItem = orderItemModel.toJSON();
+
+        const validOrderStatuses = [
             OrderStatus.ESCROW_LOCKED,
             OrderStatus.SHIPPING
         ];
+
         // check if in the right state.
-        if (valid.indexOf(orderItem.status) === -1) {
+        if (validOrderStatuses.indexOf(orderItem.status) === -1) {
             this.log.error('Order is in invalid state');
             throw new MessageException('Order is in invalid state');
         }
@@ -83,11 +109,7 @@ export class EscrowReleaseCommand extends BaseCommand implements RpcCommandInter
             throw new MessageException('EscrowRatio not found!');
         }
 
-        return this.escrowActionService.release({
-            orderItem,
-            memo: data.params[1],
-            action: EscrowMessageType.MPA_RELEASE
-        } as EscrowRequest);
+        return data;
     }
 
     public usage(): string {

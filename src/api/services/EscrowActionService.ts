@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets, Events } from '../../constants';
@@ -32,26 +36,28 @@ import { OrderItemService } from './OrderItemService';
 import { OrderSearchParams } from '../requests/OrderSearchParams';
 import { LockedOutputService } from './LockedOutputService';
 import { BidDataValue } from '../enums/BidDataValue';
-
+import { SmsgMessageStatus } from '../enums/SmsgMessageStatus';
+import { SmsgMessageService } from './SmsgMessageService';
 
 export class EscrowActionService {
 
     public log: LoggerType;
 
     constructor(
-        @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
-        @inject(Types.Service) @named(Targets.Service.EscrowService) public escrowService: EscrowService,
-        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
-        @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.OrderService) public orderService: OrderService,
-        @inject(Types.Service) @named(Targets.Service.OrderItemService) public orderItemService: OrderItemService,
-        @inject(Types.Service) @named(Targets.Service.OrderItemObjectService) public orderItemObjectService: OrderItemObjectService,
+        @inject(Types.Service) @named(Targets.Service.ActionMessageService) private actionMessageService: ActionMessageService,
+        @inject(Types.Service) @named(Targets.Service.EscrowService) private escrowService: EscrowService,
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.SmsgService) private smsgService: SmsgService,
+        @inject(Types.Service) @named(Targets.Service.OrderService) private orderService: OrderService,
+        @inject(Types.Service) @named(Targets.Service.OrderItemService) private orderItemService: OrderItemService,
+        @inject(Types.Service) @named(Targets.Service.OrderItemObjectService) private orderItemObjectService: OrderItemObjectService,
         @inject(Types.Service) @named(Targets.Service.CoreRpcService) private coreRpcService: CoreRpcService,
         @inject(Types.Service) @named(Targets.Service.LockedOutputService) private lockedOutputService: LockedOutputService,
+        @inject(Types.Service) @named(Targets.Service.SmsgMessageService) private smsgMessageService: SmsgMessageService,
         @inject(Types.Factory) @named(Targets.Factory.EscrowFactory) private escrowFactory: EscrowFactory,
         @inject(Types.Factory) @named(Targets.Factory.OrderFactory) private orderFactory: OrderFactory,
-        @inject(Types.Core) @named(Core.Events) public eventEmitter: EventEmitter,
-        @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
+        @inject(Types.Core) @named(Core.Events) private eventEmitter: EventEmitter,
+        @inject(Types.Core) @named(Core.Logger) private Logger: typeof LoggerType
     ) {
         this.log = new Logger(__filename);
         this.configureEventListeners();
@@ -233,7 +239,7 @@ export class EscrowActionService {
      * @param {MarketplaceEvent} event
      * @returns {Promise<module:resources.Order>}
      */
-    private async processLockEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.Order> {
+    private async processLockEscrowReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         // TODO: EscrowMessage should contain Order.hash to identify the item in case there are two different Orders
         // with the same item for same buyer. Currently, buyer can only bid once for an item, but this might not be the case always.
@@ -247,47 +253,53 @@ export class EscrowActionService {
         const listingItemHash = escrowMessage.item;
 
         // find the ListingItem
-        const listingItemModel = await this.listingItemService.findOneByHash(listingItemHash);
-        const listingItem = listingItemModel.toJSON();
+        return await this.listingItemService.findOneByHash(escrowMessage.item)
+            .then(async listingItemModel => {
 
-        const seller = listingItem.seller;
-        const buyer = listingItem.seller === event.smsgMessage.from ? event.smsgMessage.to : event.smsgMessage.from;
+                const listingItem = listingItemModel.toJSON();
 
-        // save ActionMessage
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-        const actionMessage = actionMessageModel.toJSON();
+                const seller = listingItem.seller;
+                const buyer = listingItem.seller === event.smsgMessage.from ? event.smsgMessage.to : event.smsgMessage.from;
 
-        // find the Order, using buyer, seller and Order.OrderItem.itemHash
-        const order: resources.Order = await this.findOrder(listingItemHash, buyer, seller);
-        const orderItem = _.find(order.OrderItems, (o: resources.OrderItem) => {
-            return o.itemHash === listingItemHash;
-        });
+                // save ActionMessage
+                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+                const actionMessage = actionMessageModel.toJSON();
 
-        if (orderItem) {
+                // find the Order, using buyer, seller and Order.OrderItem.itemHash
+                const order: resources.Order = await this.findOrder(listingItemHash, buyer, seller);
+                const orderItem = _.find(order.OrderItems, (o: resources.OrderItem) => {
+                    return o.itemHash === listingItemHash;
+                });
 
-            // update rawtx
-            const rawtx = escrowMessage.escrow.rawtx;
-            const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
-            this.log.info('processLock(), rawtx:', JSON.stringify(updatedRawTx, null, 2));
+                if (orderItem) {
 
-            const updatedOrderItem = await this.updateOrderItemStatus(orderItem, OrderStatus.ESCROW_LOCKED);
+                    // update rawtx
+                    const rawtx = escrowMessage.escrow.rawtx;
+                    const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
+                    this.log.info('processLock(), rawtx:', JSON.stringify(updatedRawTx, null, 2));
 
-            // remove the sellers locked outputs
-            const selectedOutputs = this.getValueFromOrderItemObjects(BidDataValue.SELLER_OUTPUTS, orderItem.OrderItemObjects);
-            await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
+                    const updatedOrderItem = await this.updateOrderItemStatus(orderItem, OrderStatus.ESCROW_LOCKED);
 
-            // TODO: do whatever else needs to be done
+                    // remove the sellers locked outputs
+                    const selectedOutputs = this.getValueFromOrderItemObjects(BidDataValue.SELLER_OUTPUTS, orderItem.OrderItemObjects);
+                    await this.lockedOutputService.destroyLockedOutputs(selectedOutputs);
 
+                    return SmsgMessageStatus.PROCESSED;
 
-        } else {
-            this.log.error('OrderItem not found for EscrowMessage.');
-            throw new MessageException('OrderItem not found for EscrowMessage.');
-        }
+                } else {
+                    this.log.error('OrderItem not found for EscrowMessage.');
+                    throw new MessageException('OrderItem not found for EscrowMessage.');
+                }
 
-        return order;
+            })
+            .catch(reason => {
+                // ListingItem not found
+                return SmsgMessageStatus.WAITING;
+            });
+
     }
 
-    private async processReleaseEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.Order> {
+    private async processReleaseEscrowReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         const message = event.marketplaceMessage;
         if (!message.mpaction) {   // ACTIONEVENT
@@ -298,82 +310,98 @@ export class EscrowActionService {
         const listingItemHash = escrowMessage.item;
 
         // find the ListingItem
-        const listingItemModel = await this.listingItemService.findOneByHash(listingItemHash);
-        const listingItem: resources.ListingItem = listingItemModel.toJSON();
+        return await this.listingItemService.findOneByHash(escrowMessage.item)
+            .then(async listingItemModel => {
 
-        const seller = listingItem.seller;
-        const buyer = listingItem.seller === event.smsgMessage.from ? event.smsgMessage.to : event.smsgMessage.from;
-        const isMyListingItem = !!listingItem.ListingItemTemplate;
+                const listingItem: resources.ListingItem = listingItemModel.toJSON();
 
-        // save ActionMessage
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-        const actionMessage = actionMessageModel.toJSON();
+                const seller = listingItem.seller;
+                const buyer = listingItem.seller === event.smsgMessage.from ? event.smsgMessage.to : event.smsgMessage.from;
+                const isMyListingItem = !!listingItem.ListingItemTemplate;
 
-        // find the Order, using buyer, seller and Order.OrderItem.itemHash
-        const order: resources.Order = await this.findOrder(listingItemHash, buyer, seller);
-        const orderItem = _.find(order.OrderItems, (o: resources.OrderItem) => {
-            return o.itemHash === listingItemHash;
-        });
+                // save ActionMessage
+                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+                const actionMessage = actionMessageModel.toJSON();
 
-        if (orderItem) {
+                // find the Order, using buyer, seller and Order.OrderItem.itemHash
+                const order: resources.Order = await this.findOrder(listingItemHash, buyer, seller);
+                const orderItem = _.find(order.OrderItems, (o: resources.OrderItem) => {
+                    return o.itemHash === listingItemHash;
+                });
 
-            // update rawtx
-            const rawtx = escrowMessage.escrow.rawtx;
-            const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
+                if (orderItem) {
 
-
-            const newOrderStatus = isMyListingItem ? OrderStatus.COMPLETE : OrderStatus.SHIPPING;
-            const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
-
-            // TODO: do whatever else needs to be done
+                    // update rawtx
+                    const rawtx = escrowMessage.escrow.rawtx;
+                    const updatedRawTx = await this.updateRawTxOrderItemObject(orderItem.OrderItemObjects, rawtx);
 
 
-        } else {
-            this.log.error('OrderItem not found for EscrowMessage.');
-            throw new MessageException('OrderItem not found for EscrowMessage.');
-        }
+                    const newOrderStatus = isMyListingItem ? OrderStatus.COMPLETE : OrderStatus.SHIPPING;
+                    const updatedOrderItem = await this.updateOrderItemStatus(orderItem, newOrderStatus);
 
-        return order;
+                    return SmsgMessageStatus.PROCESSED;
+
+                } else {
+                    this.log.error('OrderItem not found for EscrowMessage.');
+                    throw new MessageException('OrderItem not found for EscrowMessage.');
+                }
+            })
+            .catch(reason => {
+                // ListingItem not found
+                return SmsgMessageStatus.WAITING;
+            });
+
     }
 
-    private async processRequestRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
+    private async processRequestRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         // find the ListingItem
         const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
+        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
-        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
-        const listingItem = listingItemModel.toJSON();
+        // find the ListingItem
+        return await this.listingItemService.findOneByHash(message.mpaction.item)
+            .then(async listingItemModel => {
+                const listingItem = listingItemModel.toJSON();
 
-        // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-        const actionMessage = actionMessageModel.toJSON();
+                // first save it
+                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+                const actionMessage = actionMessageModel.toJSON();
 
-        // todo: update order
-        // TODO: do whatever else needs to be done
-
-        return actionMessage;
+                // todo: update order
+                return SmsgMessageStatus.PROCESSED;
+            })
+            .catch(reason => {
+                // ListingItem not found
+                return SmsgMessageStatus.WAITING;
+            });
     }
 
-    private async processRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<resources.ActionMessage> {
+    private async processRefundEscrowReceivedEvent(event: MarketplaceEvent): Promise<SmsgMessageStatus> {
 
         // find the ListingItem
         const message = event.marketplaceMessage;
-        if (!message.mpaction) {   // ACTIONEVENT
+        if (!message.mpaction || !message.mpaction.item) {   // ACTIONEVENT
             throw new MessageException('Missing mpaction.');
         }
-        const listingItemModel = await this.listingItemService.findOneByHash(message.mpaction.item);
-        const listingItem = listingItemModel.toJSON();
 
-        // first save it
-        const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
-        const actionMessage = actionMessageModel.toJSON();
+        // find the ListingItem
+        return await this.listingItemService.findOneByHash(message.mpaction.item)
+            .then(async listingItemModel => {
+                const listingItem = listingItemModel.toJSON();
 
-        // todo: update order
-        // TODO: do whatever else needs to be done
+                // first save it
+                const actionMessageModel = await this.actionMessageService.createFromMarketplaceEvent(event, listingItem);
+                const actionMessage = actionMessageModel.toJSON();
 
-        return actionMessage;
+                // todo: update order
+                return SmsgMessageStatus.PROCESSED;
+            })
+            .catch(reason => {
+                // ListingItem not found
+                return SmsgMessageStatus.WAITING;
+            });
     }
 
     /**
@@ -412,7 +440,7 @@ export class EscrowActionService {
         const buyerEscrowPubAddressPublicKey = this.getValueFromOrderItemObjects(BidDataValue.BUYER_PUBKEY, orderItem.OrderItemObjects);
         const sellerEscrowPubAddressPublicKey = this.getValueFromOrderItemObjects(BidDataValue.SELLER_PUBKEY, orderItem.OrderItemObjects);
         const pubkeys = [sellerEscrowPubAddressPublicKey, buyerEscrowPubAddressPublicKey].sort();
-        // todo: does the order of the pubkeys matter and how?
+        // todo: does the order of the pubkeys matter?
 
         this.log.debug('createRawTx(), rawtx:', rawtx);
         this.log.debug('createRawTx(), pubkeys:', pubkeys);
@@ -455,7 +483,7 @@ export class EscrowActionService {
 
                 // TODO: This requires user interaction, so should be elsewhere possibly?
                 // TODO: Save TXID somewhere maybe??!
-                const response = await this.coreRpcService.sendRawTransaction(signedForLock.hex);
+                const response = await this.coreRpcService.sendRawTransaction(signedForLock); // .hex);
 
                 this.log.debug('createRawTx(), response:', JSON.stringify(response, null, 2));
                 return response;
@@ -464,6 +492,7 @@ export class EscrowActionService {
 
                 if (OrderStatus.ESCROW_LOCKED === orderItem.status && isMyListingItem) {
                     // seller sends the first MPA_RELEASE, OrderStatus.ESCROW_LOCKED
+                    // this.log.debug('createRawTx(), orderItem:', JSON.stringify(orderItem, null, 2));
 
                     const buyerReleaseAddress = this.getValueFromOrderItemObjects(BidDataValue.BUYER_RELEASE_ADDRESS, orderItem.OrderItemObjects);
                     this.log.debug('createRawTx(), buyerReleaseAddress:', buyerReleaseAddress);
@@ -501,11 +530,13 @@ export class EscrowActionService {
                     // TODO: Make sure this is the correct vout !!!
                     // TODO: loop through the vouts and check the value, but what if theres multiple outputs with same value?
                     const txInputs: Output[] = [{txid, vout: 0}];
+                    this.log.debug('===============================================================================');
+                    this.log.debug('createRawTx(), txInputs:', JSON.stringify(txInputs, null, 2));
+                    this.log.debug('createRawTx(), txout: ', JSON.stringify(txout, null, 2));
+
                     rawtx = await this.coreRpcService.createRawTransaction(txInputs, txout);
                     const signed = await this.signRawTx(rawtx, false);
 
-                    this.log.debug('createRawTx(), txInputs: ', JSON.stringify(txInputs, null, 2));
-                    this.log.debug('createRawTx(), txout: ', JSON.stringify(txout, null, 2));
                     this.log.debug('createRawTx(), rawtx: ', JSON.stringify(rawtx, null, 2));
                     this.log.debug('createRawTx(), signed: ', JSON.stringify(signed, null, 2));
 
@@ -514,10 +545,10 @@ export class EscrowActionService {
                 } else if (OrderStatus.SHIPPING === orderItem.status && !isMyListingItem) {
                     // buyer sends the MPA_RELEASE, OrderStatus.SHIPPING
 
-                    const signed = await this.signRawTx(rawtx, true);
-                    this.log.debug('createRawTx(), signed: ', JSON.stringify(signed, null, 2));
+                    const completeRawTx = await this.signRawTx(rawtx, true);
+                    this.log.debug('createRawTx(), completeRawTx: ', JSON.stringify(completeRawTx, null, 2));
 
-                    const txid =  await this.coreRpcService.sendRawTransaction(signed.hex);
+                    const txid =  await this.coreRpcService.sendRawTransaction(completeRawTx);
                     this.log.debug('createRawTx(), response:', JSON.stringify(txid, null, 2));
                     return txid;
 
@@ -530,21 +561,6 @@ export class EscrowActionService {
         }
     }
 
-    private configureEventListeners(): void {
-        this.eventEmitter.on(Events.LockEscrowReceivedEvent, async (event) => {
-            await this.processLockEscrowReceivedEvent(event);
-        });
-        this.eventEmitter.on(Events.ReleaseEscrowReceivedEvent, async (event) => {
-            await this.processReleaseEscrowReceivedEvent(event);
-        });
-        this.eventEmitter.on(Events.RequestRefundEscrowReceivedEvent, async (event) => {
-            await this.processRequestRefundEscrowReceivedEvent(event);
-        });
-        this.eventEmitter.on(Events.RefundEscrowReceivedEvent, async (event) => {
-            await this.processRefundEscrowReceivedEvent(event);
-        });
-    }
-
     /**
      * signs rawtx and ignores errors in case tx shouldnt be complete yet.
      *
@@ -552,27 +568,54 @@ export class EscrowActionService {
      * @param {boolean} shouldBeComplete
      * @returns {Promise<any>}
      */
-    private async signRawTx(rawtx: string, shouldBeComplete?: boolean): Promise<any> {
+    private async signRawTx(rawtx: string, shouldBeComplete: boolean): Promise<any> {
 
         this.log.debug('signRawTx(): signing rawtx, shouldBeComplete:', shouldBeComplete);
 
         // This requires user interaction, so should be elsewhere possibly?
         // TODO: Verify that the transaction has the correct values! Very important!!! TODO TODO TODO
-        const signed = await this.coreRpcService.signRawTransaction(rawtx);
 
-        const ignoreErrors = [
-            'Unable to sign input, invalid stack size (possibly missing key)',
-            'Operation not valid with the current stack size'
-        ];
+        // 0.16.x
+        // const signed = await this.coreRpcService.signRawTransaction(rawtx);
+        // 0.17++
+        const signed = await this.coreRpcService.signRawTransactionWithWallet(rawtx);
+        this.log.info('===========================================================================');
+        this.log.info('signed: ', JSON.stringify(signed, null, 2));
+        this.log.info('===========================================================================');
 
-        if (!signed
-            || signed.errors
-            && (!shouldBeComplete && ignoreErrors.indexOf(signed.errors[0].error) === -1)) {
-            this.log.error('Error signing transaction' + signed ? ': ' + signed.errors[0].error : '');
-            this.log.error('signed: ', JSON.stringify(signed, null, 2));
-            throw new MessageException('Error signing transaction' + signed ? ': ' + signed.error : '');
+        if (shouldBeComplete) {
+            // rawtx_complete =  buyer.combinerawtransaction(rawtx_with_buyer_sig, rawtx_with_seller_sig)
+            const completeRawTx = await this.coreRpcService.combineRawTransaction([signed.hex, rawtx]);
+            this.log.info('===========================================================================');
+            this.log.info('completeRawTx: ', JSON.stringify(completeRawTx, null, 2));
+            this.log.info('===========================================================================');
+
+            // const decodedTx = await this.coreRpcService.decodeRawTransaction(completeRawTx);
+            // this.log.debug('createRawTx(), completeRawTx decoded:', JSON.stringify(decodedTx, null, 2));
+
+            return completeRawTx;
+
+        } else {
+
+            const ignoreErrors = [
+                'Unable to sign input, invalid stack size (possibly missing key)',
+                'Operation not valid with the current stack size',
+                'Signature must be zero for failed CHECK(MULTI)SIG operation'
+            ];
+
+            if (!signed
+                || signed.errors
+                && (!shouldBeComplete && ignoreErrors.indexOf(signed.errors[0].error) === -1)) {
+                this.log.error('Error signing transaction' + signed.errors ? ': ' + signed.errors[0].error : '');
+                this.log.error('signed: ', JSON.stringify(signed, null, 2));
+                throw new MessageException('Error signing transaction' + signed.errors ? ': ' + signed.error : '');
+            }
+
+            this.log.debug('signRawTx(): signed:', JSON.stringify(signed, null, 2));
+            return signed;
         }
 
+/*
         if (shouldBeComplete) {
             if (!signed.complete) {
                 this.log.error('Transaction should be complete at this stage.', JSON.stringify(signed, null, 2));
@@ -586,6 +629,7 @@ export class EscrowActionService {
         this.log.debug('signRawTx(): signed:', JSON.stringify(signed, null, 2));
 
         return signed;
+*/
     }
 
     /**
@@ -645,4 +689,54 @@ export class EscrowActionService {
         // this.log.debug('updatedOrderItem:', JSON.stringify(updatedOrderItem, null, 2));
         return updatedOrderItem;
     }
+
+    private configureEventListeners(): void {
+        this.log.info('Configuring EventListeners ');
+
+        this.eventEmitter.on(Events.LockEscrowReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
+            await this.processLockEscrowReceivedEvent(event)
+                .then(async status => {
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                })
+                .catch(async reason => {
+                    this.log.error('ERROR: EscrowLockMessage processing failed.', reason);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
+                });
+        });
+        this.eventEmitter.on(Events.ReleaseEscrowReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
+            await this.processReleaseEscrowReceivedEvent(event)
+                .then(async status => {
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                })
+                .catch(async reason => {
+                    this.log.error('ERROR: EscrowReleaseMessage processing failed.', reason);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
+                });
+        });
+        this.eventEmitter.on(Events.RequestRefundEscrowReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
+            await this.processRequestRefundEscrowReceivedEvent(event)
+                .then(async status => {
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                })
+                .catch(async reason => {
+                    this.log.error('ERROR: EscrowRequestRefundMessage processing failed.', reason);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
+                });
+        });
+        this.eventEmitter.on(Events.RefundEscrowReceivedEvent, async (event) => {
+            this.log.debug('Received event:', JSON.stringify(event, null, 2));
+            await this.processRefundEscrowReceivedEvent(event)
+                .then(async status => {
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, status);
+                })
+                .catch(async reason => {
+                    this.log.error('ERROR: EscrowRefundMessage processing failed.', reason);
+                    await this.smsgMessageService.updateSmsgMessageStatus(event.smsgMessage, SmsgMessageStatus.PROCESSING_FAILED);
+                });
+        });
+    }
+
 }

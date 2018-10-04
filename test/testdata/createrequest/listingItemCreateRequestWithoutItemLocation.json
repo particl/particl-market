@@ -1,6 +1,9 @@
 {
     "seller": "THIS SHOULD BE CHANGED",
     "hash": "hash1",
+    "postedAt": "2018-03-31T04:00:00+0200",
+    "expiryTime": "1",
+    "expiredAt": "2100-04-01T04:00:00+0200",
     "itemInformation": {
         "title": "Big Soft Gloves",
         "shortDescription": "Ergonomic Tuna asdf",

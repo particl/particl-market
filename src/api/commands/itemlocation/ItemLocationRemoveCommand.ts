@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
@@ -35,7 +39,7 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
 
         // ItemLocation cannot be removed if there's a ListingItem related to ItemInformations ItemLocation. (the item has allready been posted)
         if (itemInformation.listingItemId) {
-            throw new MessageException('ItemLocation cannot be removed because the item has allready been posted!');
+            throw new MessageException('ItemLocation cannot be removed because the ListingItem has allready been posted!');
         } else {
             return this.itemLocationService.destroy(itemInformation.ItemLocation.id);
         }
@@ -51,7 +55,7 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
     }
 
     public description(): string {
-        return 'Remove and destroy an item location associated with  listingItemTemplateId.';
+        return 'Remove and destroy an item location associated with listingItemTemplateId.';
     }
 
     /*
@@ -62,14 +66,14 @@ export class ItemLocationRemoveCommand extends BaseCommand implements RpcCommand
         const listingItemTemplate = await this.listingItemTemplateService.findOne(data.params[0]);
 
         // find the related ItemInformation
-        const ItemInformation = listingItemTemplate.related('ItemInformation').toJSON();
+        const itemInformation = listingItemTemplate.related('ItemInformation').toJSON();
 
         // Through exception if ItemInformation or ItemLocation does not exist
-        if (_.size(ItemInformation) === 0 || _.size(ItemInformation.ItemLocation) === 0) {
-            this.log.warn(`Item Information or Item Location with the listing template id=${data.params[0]} was not found!`);
-            throw new MessageException(`Item Information or Item Location with the listing template id=${data.params[0]} was not found!`);
+        if (_.size(itemInformation) === 0 || _.size(itemInformation.ItemLocation) === 0) {
+            this.log.warn(`ItemInformation or ItemLocation with the listingItemTemplateId=${data.params[0]} was not found!`);
+            throw new MessageException(`ItemInformation or ItemLocation with the listingItemTemplateId=${data.params[0]} was not found!`);
         }
 
-        return ItemInformation;
+        return itemInformation;
     }
 }

@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2018, The Particl Market developers
+// Distributed under the GPL software license, see the accompanying
+// file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
+
 import * as Bookshelf from 'bookshelf';
 import * as _ from 'lodash';
 import { inject, named } from 'inversify';
@@ -57,7 +61,7 @@ export class ItemImageService {
      * @returns {Promise<ItemImage>}
      */
     @validate()
-    public async createFile(imageFile: any, listingItemTemplate: ListingItemTemplate): Promise<ItemImage> {
+    public async createFromFile(imageFile: any, listingItemTemplate: ListingItemTemplate): Promise<ItemImage> {
         // TODO: how am i supposed to know what imageFile contains? add type to it
 
         // Read the file data in
