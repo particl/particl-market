@@ -39,11 +39,12 @@ describe('Happy Vote Flow', () => {
     let proposalNode1: resources.Proposal;
     let proposalNode2: resources.Proposal;
 
-
     let currentBlock: number;
     const estimateFee = false;
     const proposalTitle = Faker.lorem.words();
     const proposalDescription = Faker.lorem.paragraph();
+
+    let sent = true;
 
     beforeAll(async () => {
 
@@ -97,11 +98,17 @@ describe('Happy Vote Flow', () => {
         response.expectStatusCode(200);
 
         const result: any = response.getBody()['result'];
+        sent = result.result === 'Sent.';
+        if (!sent) {
+            log.debug(JSON.stringify(result, null, 2));
+        }
         expect(result.result).toEqual('Sent.');
 
     });
 
     test('Receive Proposal on node1', async () => {
+
+        expect(sent).toEqual(true);
 
         log.debug('========================================================================================');
         log.debug('Node1 RECEIVES MP_PROPOSAL_ADD');
@@ -129,6 +136,8 @@ describe('Happy Vote Flow', () => {
     }, 600000); // timeout to 600s
 
     test('Receive Proposal on node2', async () => {
+
+        expect(sent).toEqual(true);
 
         log.debug('========================================================================================');
         log.debug('Node2 RECEIVES MP_PROPOSAL_ADD');
@@ -161,6 +170,8 @@ describe('Happy Vote Flow', () => {
 
     test('Post Vote1 from node1', async () => {
 
+        expect(sent).toEqual(true);
+
         log.debug('========================================================================================');
         log.debug('Node1 POSTS MP_VOTE_ADD (default profile)');
         log.debug('========================================================================================');
@@ -186,6 +197,8 @@ describe('Happy Vote Flow', () => {
     });
 
     test('Receive Vote1 on node1', async () => {
+
+        expect(sent).toEqual(true);
 
         log.debug('========================================================================================');
         log.debug('Node1 RECEIVES MP_VOTE_ADD (confirm with: vote get)');
@@ -214,6 +227,8 @@ describe('Happy Vote Flow', () => {
 
     test('Receive Vote1 on node2', async () => {
 
+        expect(sent).toEqual(true);
+
         log.debug('========================================================================================');
         log.debug('Node2 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
         log.debug('========================================================================================');
@@ -237,6 +252,8 @@ describe('Happy Vote Flow', () => {
     });
 
     test('Post Vote2 from node2', async () => {
+
+        expect(sent).toEqual(true);
 
         log.debug('========================================================================================');
         log.debug('Node2 POSTS MP_VOTE_ADD (default profile)');
@@ -262,6 +279,8 @@ describe('Happy Vote Flow', () => {
     });
 
     test('Receive Vote2 on node2', async () => {
+
+        expect(sent).toEqual(true);
 
         log.debug('========================================================================================');
         log.debug('Node2 RECEIVES MP_VOTE_ADD (confirm with: vote get)');
@@ -289,6 +308,8 @@ describe('Happy Vote Flow', () => {
     });
 
     test('Receive Vote2 on node1', async () => {
+
+        expect(sent).toEqual(true);
 
         log.debug('========================================================================================');
         log.debug('Node1 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');
@@ -319,6 +340,8 @@ describe('Happy Vote Flow', () => {
 
     test('Post Vote2 again from node2 changing the vote optionId', async () => {
 
+        expect(sent).toEqual(true);
+
         log.debug('========================================================================================');
         log.debug('Node2 POSTS MP_VOTE_ADD (default profile)');
         log.debug('========================================================================================');
@@ -337,6 +360,8 @@ describe('Happy Vote Flow', () => {
     });
 
     test('Receive Vote2 on node2 again', async () => {
+
+        expect(sent).toEqual(true);
 
         log.debug('========================================================================================');
         log.debug('Node2 RECEIVES MP_VOTE_ADD (confirm with: proposal result)');

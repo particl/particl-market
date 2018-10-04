@@ -5,11 +5,11 @@ services:
     build:
       context: ./
     volumes:
-      - .:/app/
-      - ./yarn.lock:/app/yarn.lock
-      - ./data/app1_dist:/app/dist
-      - ./data/app1:/app/data
-      - ./data/app1_node_modules:/app/node_modules
+      - .:/app/:delegated
+#      - ./yarn.lock:/app/yarn.lock
+#      - ./data/app1_dist:/app/dist
+      - ./data/app1:/app/data:delegated
+      - ./data/app1_node_modules:/app/node_modules:delegated
     ports:
       - 3100:3100
     command: bin/entrypoint.sh
@@ -33,11 +33,11 @@ services:
     build:
       context: ./
     volumes:
-      - .:/app/
-      - ./yarn.lock:/app/yarn.lock
-      - ./data/app2_dist:/app/dist
-      - ./data/app2:/app/data
-      - ./data/app2_node_modules:/app/node_modules
+      - .:/app/:delegated
+#      - ./yarn.lock:/app/yarn.lock
+#      - ./data/app2_dist:/app/dist
+      - ./data/app2:/app/data:delegated
+      - ./data/app2_node_modules:/app/node_modules:delegated
     ports:
       - 3200:3200
     command: bin/entrypoint.sh
@@ -64,8 +64,8 @@ services:
       context: ../particl-desktop
       dockerfile: Dockerfile
     volumes:
-      - ../particl-desktop/:/app/
-      - ./data/gui1_node_modules:/app/node_modules
+      - ../particl-desktop/:/app/:delegated
+      - ./data/gui1_node_modules:/app/node_modules:delegated
     ports:
       - 4300:4200
     command: bin/entrypoint.sh
@@ -87,8 +87,8 @@ services:
      context: ../particl-desktop
      dockerfile: Dockerfile
     volumes:
-      - ../particl-desktop/:/app/
-      - ./data/gui2_node_modules:/app/node_modules
+      - ../particl-desktop/:/app/:delegated
+      - ./data/gui2_node_modules:/app/node_modules:delegated
     ports:
       - 4400:4200
     command: bin/entrypoint.sh
@@ -106,7 +106,7 @@ services:
   particld1:
     image: ludx/particl:0.17.0.1 # master # 0.16.2.0
     volumes:
-      - ./data/particl1:/root/.particl
+      - ./data/particl1:/root/.particl:delegated
     ports:
       - 52935:51935
       - 52936:51936
@@ -140,7 +140,7 @@ services:
   particld2:
     image: ludx/particl:0.17.0.1 # master # 0.16.2.0
     volumes:
-      - ./data/particl2:/root/.particl
+      - ./data/particl2:/root/.particl:delegated
     ports:
       - 53935:51935
       - 53936:51936
