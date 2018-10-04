@@ -15,8 +15,6 @@ import { AddressAddCommand } from '../commands/address/AddressAddCommand';
 import { AddressUpdateCommand } from '../commands/address/AddressUpdateCommand';
 import { AddressRemoveCommand } from '../commands/address/AddressRemoveCommand';
 
-import { AdminCommand } from '../commands/admin/AdminCommand';
-
 import { BidRootCommand } from '../commands/bid/BidRootCommand';
 import { BidSearchCommand } from '../commands/bid/BidSearchCommand';
 import { BidAcceptCommand } from '../commands/bid/BidAcceptCommand';
@@ -32,8 +30,10 @@ import { DaemonRootCommand } from '../commands/daemon/DaemonRootCommand';
 
 import { DataAddCommand } from '../commands/data/DataAddCommand';
 import { DataCleanCommand } from '../commands/data/DataCleanCommand';
-import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
 import { DataRootCommand } from '../commands/data/DataRootCommand';
+import { DataGenerateCommand } from '../commands/data/DataGenerateCommand';
+
+import { AdminCommand } from '../commands/admin/AdminCommand';
 
 import { EscrowRootCommand } from '../commands/escrow/EscrowRootCommand';
 import { EscrowAddCommand } from '../commands/escrow/EscrowAddCommand';
@@ -150,7 +150,6 @@ import { SettingRemoveCommand } from '../commands/setting/SettingRemoveCommand';
 import { SettingSetCommand } from '../commands/setting/SettingSetCommand';
 import { SettingRootCommand } from '../commands/setting/SettingRootCommand';
 
-
 // tslint:disable:array-type
 // tslint:disable:max-line-length
 export class RpcCommandFactory {
@@ -167,6 +166,13 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.bid.BidCancelCommand) private bidCancelCommand: BidCancelCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidRejectCommand) private bidRejectCommand: BidRejectCommand,
         @inject(Types.Command) @named(Targets.Command.bid.BidSendCommand) private bidSendCommand: BidSendCommand,
+
+        @inject(Types.Command) @named(Targets.Command.admin.AdminCommand) private adminCommand: AdminCommand,
+
+        @inject(Types.Command) @named(Targets.Command.data.DataAddCommand) private dataAddCommand: DataAddCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
+        @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
 
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowRootCommand) private escrowRootCommand: EscrowRootCommand,
         @inject(Types.Command) @named(Targets.Command.escrow.EscrowAddCommand) private escrowAddCommand: EscrowAddCommand,
@@ -249,11 +255,6 @@ export class RpcCommandFactory {
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationAddCommand) private shippingDestinationAddCommand: ShippingDestinationAddCommand,
         @inject(Types.Command) @named(Targets.Command.shippingdestination.ShippingDestinationRemoveCommand) private shippingDestinationRemoveCommand: ShippingDestinationRemoveCommand,
 
-        @inject(Types.Command) @named(Targets.Command.data.DataAddCommand) private dataAddCommand: DataAddCommand,
-        @inject(Types.Command) @named(Targets.Command.data.DataCleanCommand) private dataCleanCommand: DataCleanCommand,
-        @inject(Types.Command) @named(Targets.Command.data.DataGenerateCommand) private dataGenerateCommand: DataGenerateCommand,
-        @inject(Types.Command) @named(Targets.Command.data.DataRootCommand) private dataRootCommand: DataRootCommand,
-
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectRootCommand) private listingItemObjectRootCommand: ListingItemObjectRootCommand,
         @inject(Types.Command) @named(Targets.Command.listingitemobject.ListingItemObjectSearchCommand) private listingItemObjectSearchCommand: ListingItemObjectSearchCommand,
 
@@ -311,6 +312,13 @@ export class RpcCommandFactory {
         this.commands.push(bidCancelCommand);
         this.commands.push(bidRejectCommand);
         this.commands.push(bidSendCommand);
+
+        this.commands.push(adminCommand);
+
+        this.commands.push(dataAddCommand);
+        this.commands.push(dataCleanCommand);
+        this.commands.push(dataGenerateCommand);
+        this.commands.push(dataRootCommand);
 
         this.commands.push(escrowRootCommand);
         this.commands.push(escrowAddCommand);
@@ -392,11 +400,6 @@ export class RpcCommandFactory {
         this.commands.push(shippingDestinationListCommand);
         this.commands.push(shippingDestinationAddCommand);
         this.commands.push(shippingDestinationRemoveCommand);
-
-        this.commands.push(dataAddCommand);
-        this.commands.push(dataCleanCommand);
-        this.commands.push(dataGenerateCommand);
-        this.commands.push(dataRootCommand);
 
         this.commands.push(listingItemObjectRootCommand);
         this.commands.push(listingItemObjectSearchCommand);

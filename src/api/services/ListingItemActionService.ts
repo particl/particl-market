@@ -78,7 +78,7 @@ export class ListingItemActionService {
      * post a ListingItem based on a given ListingItem as ListingItemMessage
      *
      * @param data
-     * @returns {Promise<void>}
+     * @returns {Promise<SmsgSendResponse>}
      */
     @validate()
     public async post( @request(ListingItemTemplatePostRequest) data: ListingItemTemplatePostRequest): Promise<SmsgSendResponse> {
