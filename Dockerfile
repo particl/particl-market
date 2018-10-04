@@ -1,9 +1,8 @@
-FROM mhart/alpine-node:8.9.0
+FROM mhart/alpine-node:9.6.1
 
-RUN apk add --no-cache make gcc g++ python git
+RUN apk add --no-cache make gcc g++ python git build-base openssl-dev curl bash
 RUN apk add --no-cache vips-dev fftw-dev --repository https://dl-3.alpinelinux.org/alpine/edge/testing/
-RUN npm install -g
-RUN npm install -g -s --no-progress wait-port yarn ts-node typescript
+RUN npm install --global -s --no-progress wait-port yarn ts-node tslint typescript
 
 RUN mkdir -p /app/data/database
 WORKDIR /app/

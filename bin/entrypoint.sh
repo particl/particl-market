@@ -1,10 +1,12 @@
 #!/bin/sh
 
-#set -e
-yarn install
-# rm -rf data/database/marketplace.db
-# rm -rf data/database/marketplace-test.db
-# npm run db:migrate
-# cp -rf data/database/marketplace.db data/database/marketplace-test.db
+echo "NODE:"
+node --version
+echo "NPM:"
+npm --version
+echo "YARN:"
+yarn --version
+ls -al /app
+yarn install --check-files
 bin/ci-create-build-version.sh
-npm run serve
+yarn serve

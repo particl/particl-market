@@ -3,27 +3,25 @@ version: '3.6'
 services:
   app1:
     volumes:
-      - app1-sync1:/app:nocopy
-      - app1-sync2:/app/dist:nocopy
-      - app1-sync3:/app/data:nocopy
-      - app1-sync4:/app/node_modules:nocopy
+      - app1-root-sync:/app:nocopy
+      - app1-appdata-sync:/app/data:nocopy
+      - app1-nodemodules-sync:/app/node_modules:nocopy
   app2:
     volumes:
-      - app2-sync1:/app:nocopy
-      - app2-sync2:/app/dist:nocopy
-      - app2-sync3:/app/data:nocopy
-      - app2-sync4:/app/node_modules:nocopy
+      - app2-root-sync:/app:nocopy
+      - app2-appdata-sync:/app/data:nocopy
+      - app2-nodemodules-sync:/app/node_modules:nocopy
 
 volumes:
-  app1-sync1:
+  app1-root-sync:
     external: true
-  app1-sync2:
+  app1-appdata-sync:
     external: true
-  app1-sync3:
+  app1-nodemodules-sync:
     external: true
-  app2-sync1:
+  app2-root-sync:
     external: true
-  app2-sync2:
+  app2-appdata-sync:
     external: true
-  app2-sync3:
+  app2-nodemodules-sync:
     external: true
