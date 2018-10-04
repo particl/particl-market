@@ -6,16 +6,19 @@ import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { ProposalOption } from './ProposalOption';
 import { ProposalResult } from './ProposalResult';
-import { ListingItem } from './ListingItem';
 import { ProposalSearchParams } from '../requests/ProposalSearchParams';
+import { FlaggedItem } from './FlaggedItem';
+import {FavoriteItem} from './FavoriteItem';
 
 export class Proposal extends Bookshelf.Model<Proposal> {
 
     public static RELATIONS = [
         'ProposalOptions',
         // 'ProposalOptions.Votes',
-        'ProposalResult',
-        'ListingItem'
+        'ProposalResults',
+        'ProposalResults.ProposalOptionResults',
+        'ProposalResults.ProposalOptionResults.ProposalOption',
+        'FlaggedItem'
     ];
 
     /**
@@ -84,6 +87,16 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         }
     }
 
+    public static async fetchByItemHash(value: string, withRelated: boolean = true): Promise<Proposal> {
+        if (withRelated) {
+            return await Proposal.where<Proposal>({ item: value }).fetch({
+                withRelated: this.RELATIONS
+            });
+        } else {
+            return await Proposal.where<Proposal>({ item: value }).fetch();
+        }
+    }
+
     public get tableName(): string { return 'proposals'; }
     public get hasTimestamps(): boolean { return true; }
 
@@ -102,6 +115,9 @@ export class Proposal extends Bookshelf.Model<Proposal> {
     public get Hash(): string { return this.get('hash'); }
     public set Hash(value: string) { this.set('hash', value); }
 
+    public get Item(): string { return this.get('item'); }
+    public set Item(value: string) { this.set('item', value); }
+
     public get Type(): string { return this.get('type'); }
     public set Type(value: string) { this.set('type', value); }
 
@@ -110,6 +126,18 @@ export class Proposal extends Bookshelf.Model<Proposal> {
 
     public get Description(): string { return this.get('description'); }
     public set Description(value: string) { this.set('description', value); }
+
+    public get ExpiryTime(): number { return this.get('expiryTime'); }
+    public set ExpiryTime(value: number) { this.set('expiryTime', value); }
+
+    public get PostedAt(): number { return this.get('postedAt'); }
+    public set PostedAt(value: number) { this.set('postedAt', value); }
+
+    public get ExpiredAt(): number { return this.get('expiredAt'); }
+    public set ExpiredAt(value: number) { this.set('expiredAt', value); }
+
+    public get ReceivedAt(): number { return this.get('receivedAt'); }
+    public set ReceivedAt(value: number) { this.set('receivedAt', value); }
 
     public get CreatedAt(): Date { return this.get('createdAt'); }
     public set CreatedAt(value: Date) { this.set('createdAt', value); }
@@ -121,12 +149,12 @@ export class Proposal extends Bookshelf.Model<Proposal> {
         return this.hasMany(ProposalOption, 'proposal_id', 'id');
     }
 
-    public ProposalResult(): ProposalResult {
-       return this.hasOne(ProposalResult);
+    public ProposalResults(): Collection<ProposalResult> {
+        return this.hasMany(ProposalResult, 'proposal_id', 'id');
     }
 
-    public ListingItem(): ListingItem {
-        return this.hasOne(ListingItem);
+    public FlaggedItem(): FlaggedItem {
+        return this.hasOne(FlaggedItem);
     }
 
 }

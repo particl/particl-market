@@ -6,7 +6,7 @@ import { Bookshelf } from '../../config/Database';
 import { Collection, Model } from 'bookshelf';
 import { Proposal } from './Proposal';
 import { ProposalOptionResult } from './ProposalOptionResult';
-
+import {SearchOrder} from '../enums/SearchOrder';
 
 export class ProposalResult extends Bookshelf.Model<ProposalResult> {
 
@@ -30,10 +30,11 @@ export class ProposalResult extends Bookshelf.Model<ProposalResult> {
     public static async fetchByProposalHash(hash: string, withRelated: boolean = true): Promise<Collection<ProposalResult>> {
         const proposalResultCollection = ProposalResult.forge<Model<ProposalResult>>()
             .query(qb => {
-                qb.innerJoin('proposals', 'proposals.id', 'proposal_results.proposal_id');
+                qb.join('proposals', 'proposal_results.proposal_id', 'proposals.id');
                 qb.where('proposals.hash', '=', hash);
             })
-            .orderBy('proposals.id', 'ASC');
+            .orderBy('id', SearchOrder.DESC);
+
 
         if (withRelated) {
             return await proposalResultCollection.fetchAll({

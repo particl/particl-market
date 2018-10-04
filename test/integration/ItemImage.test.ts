@@ -2,32 +2,21 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
-
 import { TestDataService } from '../../src/api/services/TestDataService';
 import { ItemImageService } from '../../src/api/services/ItemImageService';
-import { MarketService } from '../../src/api/services/MarketService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
-import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ItemImage } from '../../src/api/models/ItemImage';
-import { ListingItem } from '../../src/api/models/ListingItem';
-
 import { ImageDataProtocolType } from '../../src/api/enums/ImageDataProtocolType';
-
 import { ItemImageCreateRequest } from '../../src/api/requests/ItemImageCreateRequest';
 import { ItemImageUpdateRequest } from '../../src/api/requests/ItemImageUpdateRequest';
-
 import { ImageProcessing } from '../../src/core/helpers/ImageProcessing';
-import { ImageTriplet } from '../../src/core/helpers/ImageTriplet';
-
-import piexif = require('piexifjs');
 import { TestDataGenerateRequest } from '../../src/api/requests/TestDataGenerateRequest';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';
 import { CreatableModel } from '../../src/api/enums/CreatableModel';
@@ -121,7 +110,7 @@ describe('ItemImage', () => {
         );
     });
 
-    test('Should create a new item image', async () => {
+    test('Should create a new ItemImage', async () => {
 
         // add the required data to testData
         testData.item_information_id = createdListingItem.ItemInformation.id;
@@ -146,14 +135,14 @@ describe('ItemImage', () => {
         // TODO: When non-BASE64 resizing is implemented check image sizes.
     });
 
-    test('Should throw ValidationException because we want to create a empty item image', async () => {
+    test('Should throw ValidationException because we want to create a empty ItemImage', async () => {
         expect.assertions(1);
         await itemImageService.create({} as ItemImageCreateRequest).catch(e =>
             expect(e).toEqual(new ValidationException('Request body is not valid', []))
         );
     });
 
-    test('Should list item images with our new create one', async () => {
+    test('Should list ItemImages with our new create one', async () => {
         const itemImageCollection = await itemImageService.findAll();
         const itemImage = itemImageCollection.toJSON();
         expect(itemImage.length).toBe(1);
@@ -162,7 +151,7 @@ describe('ItemImage', () => {
         expect(result.ItemImageDatas).toBe(undefined); // doesnt fetch related
     });
 
-    test('Should return one item image', async () => {
+    test('Should return one ItemImage', async () => {
         const itemImageModel: ItemImage = await itemImageService.findOne(createdImageId);
         const result = itemImageModel.toJSON();
 
@@ -208,7 +197,7 @@ describe('ItemImage', () => {
         // TODO: check images sizes
     });
 
-    test('Should delete the item image', async () => {
+    test('Should delete the ItemImage', async () => {
         expect.assertions(7);
 
         // find the listing item

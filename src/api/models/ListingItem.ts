@@ -17,8 +17,11 @@ import { Market } from './Market';
 import { ShoppingCartItem } from './ShoppingCartItem';
 import { ActionMessage } from './ActionMessage';
 import { Proposal } from './Proposal';
+import { Logger as LoggerType } from '../../core/Logger';
 
 export class ListingItem extends Bookshelf.Model<ListingItem> {
+
+    public static log: LoggerType = new LoggerType(__filename);
 
     public static RELATIONS = [
         'ItemInformation',
@@ -52,11 +55,11 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
         'Bids.OrderItem.Order',
         'Market',
         'FlaggedItem',
+        'FlaggedItem.Proposal',
+        'FlaggedItem.Proposal.ProposalOptions',
+        // 'FlaggedItem.Proposal.ProposalResults',
         'ListingItemTemplate',
-        'ListingItemTemplate.Profile',
-        'Proposal',
-        'Proposal.ProposalOptions',
-        'Proposal.ProposalResult'
+        'ListingItemTemplate.Profile'
     ];
 
     public static async fetchById(value: number, withRelated: boolean = true): Promise<ListingItem> {
@@ -110,17 +113,21 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     }
 
     public static async searchBy(options: ListingItemSearchParams, withRelated: boolean = false): Promise<Collection<ListingItem>> {
+
         const listingCollection = ListingItem.forge<Model<ListingItem>>()
             .query(qb => {
                 // ignore expired items
                 qb.where('expired_at', '>', Date.now());
+
                 // search by itemHash
                 if (options.itemHash && typeof options.itemHash === 'string' && options.itemHash !== '*') {
                     qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                     qb.where('listing_item_templates.hash', '=', options.itemHash);
+
+                    ListingItem.log.debug('...search by itemHash: ', options.itemHash);
                 }
 
-                // search by buyer [TODO: SQL error here for ambiguous column]
+                // search by buyer
                 let joinedBids = false;
                 if (options.buyer && typeof options.buyer === 'string' && options.buyer !== '*') {
                     if (!joinedBids) {
@@ -128,23 +135,33 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                         joinedBids = true;
                     }
                     qb.where('bids.bidder', '=', options.buyer);
+                    ListingItem.log.debug('...search by buyer: ', options.buyer);
                 }
+
                 // search by seller
                 if (options.seller && typeof options.seller === 'string' && options.seller !== '*') {
                     qb.where('listing_items.seller', '=', options.seller);
+                    ListingItem.log.debug('...search by seller: ', options.seller);
                 }
 
-                if (typeof options.category === 'number') {
-                    qb.where('item_informations.item_category_id', '=', options.category);
-                } else if (options.category && typeof options.category === 'string') {
-                    qb.where('item_categories.key', '=', options.category);
+                qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id');
+
+                if (options.category && typeof options.category === 'number') {
                     qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
+                    qb.where('item_categories.id', '=', options.category);
+                    ListingItem.log.debug('...search by category.id: ', options.category);
+                } else if (options.category && typeof options.category === 'string') {
+                    qb.innerJoin('item_categories', 'item_categories.id', 'item_informations.item_category_id');
+                    qb.where('item_categories.key', '=', options.category);
+                    ListingItem.log.debug('...search by category.key: ', options.category);
                 }
 
                 // search by profile
                 if (typeof options.profileId === 'number') {
                     qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                     qb.where('listing_item_templates.profile_id', '=', options.profileId);
+                    ListingItem.log.debug('...search by profileId: ', options.profileId);
+
                 } else if (options.profileId === 'OWN') { // ListingItems belonging to any profile
                     qb.innerJoin('listing_item_templates', 'listing_item_templates.id', 'listing_items.listing_item_template_id');
                 }
@@ -154,23 +171,27 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
                     qb.innerJoin('payment_informations', 'payment_informations.listing_item_id', 'listing_items.id');
                     qb.innerJoin('item_prices', 'payment_informations.id', 'item_prices.payment_information_id');
                     qb.whereBetween('item_prices.base_price', [options.minPrice, options.maxPrice]);
+                    ListingItem.log.debug('...search by price: ', [options.minPrice, options.maxPrice]);
                 }
-
-                qb.innerJoin('item_informations', 'item_informations.listing_item_id', 'listing_items.id');
 
                 // search by item location (country)
                 if (options.country && typeof options.country === 'string') {
                     qb.innerJoin('item_locations', 'item_informations.id', 'item_locations.item_information_id');
                     qb.where('item_locations.region', options.country);
+                    ListingItem.log.debug('...search by location: ', options.country);
                 }
 
                 // search by shipping destination
                 if (options.shippingDestination && typeof options.shippingDestination === 'string') {
                     qb.innerJoin('shipping_destinations', 'item_informations.id', 'shipping_destinations.item_information_id');
                     qb.where('shipping_destinations.country', options.shippingDestination);
+                    ListingItem.log.debug('...search by shippingDestination: ', options.shippingDestination);
                 }
 
-                qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
+                if (options.searchString) {
+                    qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
+                }
+
                 if (options.withBids) {
                     if (!joinedBids) { // Don't want to join twice or we'll get errors.
                         qb.innerJoin('bids', 'bids.listing_item_id', 'listing_items.id');
@@ -182,12 +203,13 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
             .orderBy('updated_at', options.order)
             .query({
                 limit: options.pageLimit,
-                offset: (options.page - 1) * options.pageLimit
+                offset: options.page * options.pageLimit
             });
 
         if (withRelated) {
             return await listingCollection.fetchAll({
                 withRelated: this.RELATIONS
+                // debug: true
             });
         } else {
             return await listingCollection.fetchAll();
@@ -210,11 +232,14 @@ export class ListingItem extends Bookshelf.Model<ListingItem> {
     public get ExpiryTime(): number { return this.get('expiryTime'); }
     public set ExpiryTime(value: number) { this.set('expiryTime', value); }
 
-    public get PostedAt(): Date { return this.get('postedAt'); }
-    public set PostedAt(value: Date) { this.set('postedAt', value); }
+    public get PostedAt(): number { return this.get('postedAt'); }
+    public set PostedAt(value: number) { this.set('postedAt', value); }
 
-    public get ExpiredAt(): Date { return this.get('expiredAt'); }
-    public set ExpiredAt(value: Date) { this.set('expiredAt', value); }
+    public get ExpiredAt(): number { return this.get('expiredAt'); }
+    public set ExpiredAt(value: number) { this.set('expiredAt', value); }
+
+    public get ReceivedAt(): number { return this.get('receivedAt'); }
+    public set ReceivedAt(value: number) { this.set('receivedAt', value); }
 
     public get UpdatedAt(): Date { return this.get('updatedAt'); }
     public set UpdatedAt(value: Date) { this.set('updatedAt', value); }

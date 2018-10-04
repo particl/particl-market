@@ -177,7 +177,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "ORIGINAL",
                         "dataId": "http://evert.com",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 11,
                         "updatedAt": 1520294532691,
                         "createdAt": 1520294532691
@@ -188,7 +190,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "LARGE",
                         "dataId": "http://evert.com",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 11,
                         "updatedAt": 1520294532696,
                         "createdAt": 1520294532696
@@ -199,7 +203,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "MEDIUM",
                         "dataId": "http://evert.com",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 11,
                         "updatedAt": 1520294532704,
                         "createdAt": 1520294532704
@@ -210,7 +216,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "THUMBNAIL",
                         "dataId": "http://evert.com",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 11,
                         "updatedAt": 1520294532710,
                         "createdAt": 1520294532710
@@ -230,7 +238,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "ORIGINAL",
                         "dataId": "https://lauretta.com",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 12,
                         "updatedAt": 1520294532855,
                         "createdAt": 1520294532855
@@ -241,7 +251,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "LARGE",
                         "dataId": "https://lauretta.com",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 12,
                         "updatedAt": 1520294532861,
                         "createdAt": 1520294532861
@@ -252,7 +264,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "MEDIUM",
                         "dataId": "https://lauretta.com",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 12,
                         "updatedAt": 1520294532868,
                         "createdAt": 1520294532868
@@ -263,7 +277,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "THUMBNAIL",
                         "dataId": "https://lauretta.com",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 12,
                         "updatedAt": 1520294532874,
                         "createdAt": 1520294532874
@@ -283,7 +299,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "ORIGINAL",
                         "dataId": "http://estella.net",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 13,
                         "updatedAt": 1520294533011,
                         "createdAt": 1520294533011
@@ -294,7 +312,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "LARGE",
                         "dataId": "http://estella.net",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 13,
                         "updatedAt": 1520294533018,
                         "createdAt": 1520294533018
@@ -305,7 +325,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "MEDIUM",
                         "dataId": "http://estella.net",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 13,
                         "updatedAt": 1520294533025,
                         "createdAt": 1520294533025
@@ -316,7 +338,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "THUMBNAIL",
                         "dataId": "http://estella.net",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 13,
                         "updatedAt": 1520294533031,
                         "createdAt": 1520294533031
@@ -336,7 +360,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "ORIGINAL",
                         "dataId": "http://xander.com",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 14,
                         "updatedAt": 1520294533166,
                         "createdAt": 1520294533166
@@ -347,7 +373,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "LARGE",
                         "dataId": "http://xander.com",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 14,
                         "updatedAt": 1520294533175,
                         "createdAt": 1520294533175
@@ -358,7 +386,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "MEDIUM",
                         "dataId": "http://xander.com",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 14,
                         "updatedAt": 1520294533185,
                         "createdAt": 1520294533185
@@ -369,7 +399,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "THUMBNAIL",
                         "dataId": "http://xander.com",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 14,
                         "updatedAt": 1520294533191,
                         "createdAt": 1520294533191
@@ -389,7 +421,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "ORIGINAL",
                         "dataId": "http://jesse.info",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 15,
                         "updatedAt": 1520294533344,
                         "createdAt": 1520294533344
@@ -400,7 +434,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "LARGE",
                         "dataId": "http://jesse.info",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 15,
                         "updatedAt": 1520294533349,
                         "createdAt": 1520294533349
@@ -411,7 +447,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "MEDIUM",
                         "dataId": "http://jesse.info",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 15,
                         "updatedAt": 1520294533357,
                         "createdAt": 1520294533357
@@ -422,7 +460,9 @@
                         "encoding": "BASE64",
                         "imageVersion": "THUMBNAIL",
                         "dataId": "http://jesse.info",
-                        "data": "REMOVED",
+                        "ItemImageDataContent": {
+                            "data": "REMOVED"
+                        },
                         "itemImageId": 15,
                         "updatedAt": 1520294533362,
                         "createdAt": 1520294533362

@@ -12,12 +12,15 @@ import { FlaggedItemRepository } from '../repositories/FlaggedItemRepository';
 import { FlaggedItem } from '../models/FlaggedItem';
 import { FlaggedItemCreateRequest } from '../requests/FlaggedItemCreateRequest';
 import { FlaggedItemUpdateRequest } from '../requests/FlaggedItemUpdateRequest';
+import * as resources from 'resources';
+import { ListingItemService } from './ListingItemService';
 
 export class FlaggedItemService {
 
     public log: LoggerType;
 
     constructor(
+        @inject(Types.Service) @named(Targets.Service.ListingItemService) public listingItemService: ListingItemService,
         @inject(Types.Repository) @named(Targets.Repository.FlaggedItemRepository) public flaggedItemRepo: FlaggedItemRepository,
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType
     ) {
@@ -55,7 +58,7 @@ export class FlaggedItemService {
         const flaggedItem = await this.findOne(id, false);
 
         // set new values
-        flaggedItem.ListingItemId = body.listingItemId;
+        flaggedItem.Reason = body.reason;
 
         // update flaggedItem record
         const updatedFlaggedItem = await this.flaggedItemRepo.update(id, flaggedItem.toJSON());

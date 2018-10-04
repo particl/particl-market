@@ -15,6 +15,9 @@ import { MessageException } from '../../exceptions/MessageException';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
 import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { SearchOrder } from '../../enums/SearchOrder';
+import * as _ from 'lodash';
+import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
 
 export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommandInterface<void> {
 
@@ -40,16 +43,53 @@ export class ItemCategoryRemoveCommand extends BaseCommand implements RpcCommand
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<void> {
+
+        if (!data.params[0]) {
+            throw new MessageException('Missing categoryId.');
+        }
         const categoryId = data.params[0];
 
+        await this.itemCategoryService.findOne(categoryId)
+            .then(value => {
+                const itemCategory = value.toJSON();
+                if (itemCategory.key) {
+                    throw new MessageException('Default Category cant be removed.');
+                }
+            })
+            .catch(reason => {
+                throw new MessageException('Invalid categoryId.');
+            });
+
         // check listingItemTemplate related with category
-        const listingItemTemplates = await this.listingItemTemplateService.search({
-            page: 1, pageLimit: 10, order: 'ASC', category: categoryId, profileId: 0
-        } as ListingItemTemplateSearchParams);
-        if (listingItemTemplates.toJSON().length > 0) {
-            // not be delete its a associated with listingItemTemplate
-            throw new MessageException(`Category associated with listing-item-template can't be delete. id= ${categoryId}`);
-        }
+        await this.listingItemTemplateService.search({
+            page: 0,
+            pageLimit: 10,
+            order: SearchOrder.ASC,
+            category: categoryId
+        } as ListingItemTemplateSearchParams)
+            .then(values => {
+                const listingItemTemplates = values.toJSON();
+                if (listingItemTemplates.length > 0) {
+                    throw new MessageException(`Category associated with ListingItemTemplate can't be deleted. id= ${categoryId}`);
+                }
+            });
+
+        // check listingItem related with category
+        await this.listingItemService.search({
+            page: 0,
+            pageLimit: 10,
+            order: SearchOrder.ASC,
+            category: categoryId
+        } as ListingItemSearchParams)
+            .then(values => {
+                this.log.debug('values:', JSON.stringify(values, null, 2));
+                const listingItems = values.toJSON();
+                if (listingItems.length > 0) {
+                    throw new MessageException(`Category associated with ListingItem can't be deleted. id= ${categoryId}`);
+                }
+            });
+
+
         return await this.itemCategoryService.destroy(categoryId);
     }
 

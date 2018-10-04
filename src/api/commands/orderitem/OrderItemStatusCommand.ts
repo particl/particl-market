@@ -12,13 +12,12 @@ import { RpcRequest } from '../../requests/RpcRequest';
 import { ListingItem } from '../../models/ListingItem';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemSearchParams } from '../../requests/ListingItemSearchParams';
-import { ListingItemSearchType } from '../../enums/ListingItemSearchType';
-import { ShippingCountries } from '../../../core/helpers/ShippingCountries';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { MessageException } from '../../exceptions/MessageException';
 import { SearchOrder } from '../../enums/SearchOrder';
 import { OrderItemStatus } from '../../../core/helpers/OrderItemStatus';
+import * as resources from 'resources';
 
 export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInterface<OrderItemStatus[]> {
 
@@ -43,59 +42,15 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<OrderItemStatus[]> {
-        let itemHash = data.params[0];
-        let buyer = data.params[1];
-        let seller = data.params[2];
+        const itemHash = data.params[0];
+        const buyer = data.params[1];
+        const seller = data.params[2];
 
-        // Check that all args required are present.
-        // This is a defense against the impossible.
-        // Also gives default values to the fields, which is importamt later.
-        if (seller) {
-            // If seller, must have buyer
-            if (!buyer) {
-                // Failure
-                // Supplied seller but no buyer
-                throw new MessageException('Somehow you managed to supply a seller but not a buyer. This shouldn\t be possible.');
-            } else if (!itemHash) {
-                // Failure
-                // Supplied buyer and seller but not itemHash
-                throw new MessageException('Somehow you managed to supply a seller but not a itemHash. This shouldn\t be possible.');
-            }
-            // Success
-        } else {
-            seller = '';
-            if (buyer) {
-                if (!itemHash) {
-                    // Failure
-                    // Supplied buyer and seller but not itemHash
-                    throw new MessageException('Somehow you managed to supply a seller but not a itemHash. This shouldn\t be possible.');
-                }
-                // Success
-            } else {
-                buyer = '';
-                if (!itemHash) {
-                    // Success
-                    itemHash = '';
-                }
-                // Success
-            }
-        }
+        const type = 'ALL';         // todo: use * instead of ALL
+        const profileId = 'ALL';    // todo: use * instead of ALL
 
-        if (typeof itemHash !== 'string' && itemHash !== '*') {
-            throw new MessageException('Value needs to be a string or wildcard *. Got <${itemHash}> instead.');
-        }
-
-        if (typeof buyer !== 'string' && buyer !== '*') {
-            throw new MessageException('Value needs to be a string or wildcard *. Got <${buyer}> instead.');
-        }
-
-        if (typeof seller !== 'string' && seller !== '*') {
-            throw new MessageException('Value needs to be a string or wildcard *. Got <${seller}> instead.');
-        }
-
-        const type = 'ALL';
-        const profileId = 'ALL';
-        const orderItems: Bookshelf.Collection<ListingItem> = await this.listingItemService.search({
+        // search for listingitem(s) with certain seller and having bids from certain buyer
+        const listingItemsModel: Bookshelf.Collection<ListingItem> = await this.listingItemService.search({
             itemHash,
             buyer,
             seller,
@@ -103,31 +58,68 @@ export class OrderItemStatusCommand extends BaseCommand implements RpcCommandInt
             type,
             profileId,
             searchString: '',
-            page: 1,
+            page: 0,
             pageLimit: 100,
             withBids: true
         } as ListingItemSearchParams, true);
-        const orderItemsJson = orderItems.toJSON();
+        const listingItems = listingItemsModel.toJSON();
+
+        // this.log.debug('listingItems:', JSON.stringify(listingItems, null, 2));
+
         // Extract status details from the orderItems, since that's what we want to return to the userd
         const orderItemStatuses: OrderItemStatus[] = [];
-        for (const orderItem of orderItemsJson) {
-            delete(orderItem.ItemInformation.ItemImages);
-            const listingItemHash = orderItem.hash;
-            const tmpSeller = orderItem.seller;
-
-            for (const i in orderItem.Bids) {
-                if (i) {
-                    const tmpBuyer = orderItem.Bids[i].bidder;
-                    if (!buyer || buyer === '*' || tmpBuyer === buyer) {
-                        const bidType = orderItem.Bids[i].action;
-                        const orderStatus = orderItem.Bids[i].OrderItem.status;
-                        const orderItemStatus = new OrderItemStatus(listingItemHash, bidType, orderStatus, tmpBuyer, tmpSeller);
-                        orderItemStatuses.push(orderItemStatus);
-                    }
+        for (const listingItem of listingItems) {
+            for (const bid of listingItem.Bids) {
+                if (!buyer || buyer === '*' || bid.bidder === buyer) {
+                    const orderItemStatus = new OrderItemStatus(listingItem.hash, bid.action, bid.OrderItem.status, bid.bidder, listingItem.seller);
+                    orderItemStatuses.push(orderItemStatus);
                 }
             }
         }
+        this.log.debug('orderItemStatuses:', JSON.stringify(orderItemStatuses, null, 2));
+
         return orderItemStatuses;
+    }
+
+    /**
+     *  [0]: itemhash | *, string
+     *  [1]: buyer | *, string
+     *  [2]: seller | *, string
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            data.params[0] = '*';
+        }
+
+        if (data.params.length < 2) {
+            data.params[1] = '*';
+        }
+
+        if (data.params.length < 3) {
+            data.params[2] = '*';
+        }
+
+        const itemHash = data.params[0];
+        const buyer = data.params[1];
+        const seller = data.params[2];
+
+        if (typeof itemHash !== 'string') {
+            throw new MessageException('itemHash should be a string.');
+        }
+
+        if (typeof buyer !== 'string') {
+            throw new MessageException('buyer should be a string.');
+        }
+
+        if (typeof seller !== 'string') {
+            throw new MessageException('seller should be a string.');
+        }
+
+        return data;
     }
 
     // tslint:disable:max-line-length

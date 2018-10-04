@@ -2,27 +2,23 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
 import { TestUtil } from './lib/TestUtil';
 import { TestDataService } from '../../src/api/services/TestDataService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { ShippingDestination } from '../../src/api/models/ShippingDestination';
 import { ShippingAvailability } from '../../src/api/enums/ShippingAvailability';
-
 import { ItemLocationService } from '../../src/api/services/ItemLocationService';
 import { LocationMarkerService } from '../../src/api/services/LocationMarkerService';
 import { ShippingDestinationService } from '../../src/api/services/ShippingDestinationService';
 import { ItemImageService } from '../../src/api/services/ItemImageService';
 import { ItemInformationService } from '../../src/api/services/ItemInformationService';
-
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { ListingItemService } from '../../src/api/services/ListingItemService';
-
 import { ShippingDestinationCreateRequest } from '../../src/api/requests/ShippingDestinationCreateRequest';
 import { ShippingDestinationUpdateRequest } from '../../src/api/requests/ShippingDestinationUpdateRequest';
 import { GenerateListingItemParams } from '../../src/api/requests/params/GenerateListingItemParams';

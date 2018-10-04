@@ -10,10 +10,11 @@ declare module 'resources' {
         optionId: number;
         description: string;
         hash: string;
-        createdAt: Date;
-        updatedAt: Date;
         Proposal: Proposal;
         Votes: Vote[];
+
+        createdAt: Date;
+        updatedAt: Date;
     }
 
 }

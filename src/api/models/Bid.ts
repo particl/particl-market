@@ -12,8 +12,7 @@ import { BidMessageType } from '../enums/BidMessageType';
 import { SearchOrder } from '../enums/SearchOrder';
 import { Address } from './Address';
 import { OrderItem } from './OrderItem';
-import {OrderStatus} from '../enums/OrderStatus';
-import {Logger} from '../../core/Logger';
+import { OrderStatus } from '../enums/OrderStatus';
 
 export class Bid extends Bookshelf.Model<Bid> {
 
@@ -40,12 +39,9 @@ export class Bid extends Bookshelf.Model<Bid> {
 
     public static async search(options: BidSearchParams, withRelated: boolean = true): Promise<Collection<Bid>> {
 
-        const log = new Logger(__filename);
         options.ordering = options.ordering ? options.ordering : SearchOrder.ASC;
         options.page = options.page ? options.page : 0;
         options.pageLimit = options.pageLimit ? options.pageLimit : 10;
-
-        log.debug('options:', JSON.stringify(options, null, 2));
 
         const bidCollection = Bid.forge<Model<Bid>>()
             .query( qb => {
@@ -86,7 +82,7 @@ export class Bid extends Bookshelf.Model<Bid> {
             .orderBy('bids.updated_at', options.ordering)
             .query({
                 limit: options.pageLimit,
-                offset: (options.page - 1) * options.pageLimit
+                offset: options.page * options.pageLimit
             });
 
         if (withRelated) {

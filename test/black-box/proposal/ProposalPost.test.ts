@@ -2,11 +2,10 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
-import { Profile } from '../../../src/api/models/Profile';
 import * as Faker from 'faker';
 import * as resources from 'resources';
 
@@ -14,16 +13,14 @@ describe('ProposalPostCommand', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 100 * process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-
     const testUtil = new BlackBoxTestUtil();
 
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalPostCommand = Commands.PROPOSAL_POST.commandName;
     const proposalListCommand = Commands.PROPOSAL_LIST.commandName;
-    const proposalGetCommand = Commands.PROPOSAL_GET.commandName;
     const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
-    let defaultProfile: Profile;
+    let defaultProfile: resources.Profile;
     let currentBlock;
     let createdProposalHash;
 
@@ -33,7 +30,7 @@ describe('ProposalPostCommand', () => {
     let blockEnd;
     let estimateFee = true;
 
-    const options = [];
+    const options: string[] = [];
     options.push('optionA1');
     options.push('optionB2');
 
@@ -41,11 +38,10 @@ describe('ProposalPostCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // TODO: defaultProfile might not be the correct one
         defaultProfile = await testUtil.getDefaultProfile();
 
         // get current block
-        const currentBlockRes: any = await rpc(daemonCommand, ['getblockcount']);
+        const currentBlockRes: any = await testUtil.rpc(daemonCommand, ['getblockcount']);
         currentBlockRes.expectStatusCode(200);
         currentBlock = currentBlockRes.getBody()['result'];
         log.debug('currentBlock:', currentBlock);
@@ -56,57 +52,60 @@ describe('ProposalPostCommand', () => {
     });
 
     test('Should fail to post a Proposal because it has too few args (0)', async () => {
-
-        // <profileId> <proposalTitle> <proposalDescription> <blockStart> <blockEnd> <option1Description> <option2Description> [optionNDescription...]
-        const response: any = await testUtil.rpc(proposalCommand, [proposalPostCommand]);
-        response.expectJson();
-        response.expectStatusCode(404);
+        const res: any = await testUtil.rpc(proposalCommand, [proposalPostCommand]);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Expected more params.');
     });
 
     test('Should fail to post a Proposal because it has too few args (1)', async () => {
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id
         ]);
-        response.expectJson();
-        response.expectStatusCode(404);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Expected more params.');
     });
 
     test('Should fail to post a Proposal because it has too few args (2)', async () => {
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
             title
         ]);
-        response.expectJson();
-        response.expectStatusCode(404);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Expected more params.');
     });
 
     test('Should fail to post a Proposal because it has too few args (3)', async () => {
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
             title,
             description
         ]);
-        response.expectJson();
-        response.expectStatusCode(404);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Expected more params.');
     });
 
     test('Should fail to post a Proposal because it has too few args (4)', async () => {
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
             title,
             description,
             blockStart
         ]);
-        response.expectJson();
-        response.expectStatusCode(404);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Expected more params.');
     });
 
     test('Should fail to post a Proposal because it has too few args (5)', async () => {
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
             title,
@@ -114,12 +113,13 @@ describe('ProposalPostCommand', () => {
             blockStart,
             blockEnd
         ]);
-        response.expectJson();
-        response.expectStatusCode(404);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Expected more params.');
     });
 
     test('Should fail to post a Proposal because it has too few args (6)', async () => {
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
             title,
@@ -128,12 +128,13 @@ describe('ProposalPostCommand', () => {
             blockEnd,
             estimateFee
         ]);
-        response.expectJson();
-        response.expectStatusCode(404);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Expected more params.');
     });
 
     test('Should fail to post a Proposal because it has too few args (7)', async () => {
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
             title,
@@ -143,14 +144,15 @@ describe('ProposalPostCommand', () => {
             estimateFee,
             options[0]
         ]);
-        response.expectJson();
-        response.expectStatusCode(404);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Expected more params.');
     });
 
     test('Should fail to post a Proposal because it has an invalid (string) arg (profileId)', async () => {
 
         const invalidProfileId = 'invalid profile id';
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             invalidProfileId,
             title,
@@ -161,14 +163,15 @@ describe('ProposalPostCommand', () => {
             options[0],
             options[1]
         ]);
-        response.expectJson();
-        response.expectStatusCode(404);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('profileId needs to be a number.');
     });
 
     test('Should fail to post a Proposal because it has an invalid (non-existent) arg (profileId)', async () => {
 
         const invalidProfileId = 9999999999999999;
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             invalidProfileId,
             title,
@@ -179,14 +182,15 @@ describe('ProposalPostCommand', () => {
             options[0],
             options[1]
         ]);
-        response.expectJson();
-        response.expectStatusCode(404);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('Profile not found.');
     });
 
     test('Should fail to post a Proposal because it has an invalid arg (blockStart)', async () => {
 
         const invalidBlockStart = 'Invalid blockStart';
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
             title,
@@ -197,14 +201,15 @@ describe('ProposalPostCommand', () => {
             options[0],
             options[1]
         ]);
-        response.expectJson();
-        response.expectStatusCode(404);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('blockStart needs to be a number.');
     });
 
     test('Should fail to post a Proposal because it has an invalid arg (blockEnd)', async () => {
 
         const invalidBlockEnd = 'Invalid blockEnd';
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
             title,
@@ -215,12 +220,13 @@ describe('ProposalPostCommand', () => {
             options[0],
             options[1]
         ]);
-        response.expectJson();
-        response.expectStatusCode(404);
+        res.expectJson();
+        res.expectStatusCode(404);
+        expect(res.error.error.message).toBe('blockEnd needs to be a number.');
     });
 
     test('Should estimate Proposal posting fee', async () => {
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
             title,
@@ -231,10 +237,10 @@ describe('ProposalPostCommand', () => {
             options[0],
             options[1]
         ]);
-        response.expectJson();
-        response.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: any = response.getBody()['result'];
+        const result: any = res.getBody()['result'];
 
         log.debug('estimate fee result:', JSON.stringify(result));
         expect(result.result).toEqual('Not Sent.');
@@ -242,7 +248,7 @@ describe('ProposalPostCommand', () => {
 
     test('Should post a Proposal', async () => {
         estimateFee = false;
-        const response: any = await testUtil.rpc(proposalCommand, [
+        const res: any = await testUtil.rpc(proposalCommand, [
             proposalPostCommand,
             defaultProfile.id,
             title,
@@ -253,25 +259,25 @@ describe('ProposalPostCommand', () => {
             options[0],
             options[1]
         ]);
-        response.expectJson();
-        response.expectStatusCode(200);
+        res.expectJson();
+        res.expectStatusCode(200);
 
-        const result: any = response.getBody()['result'];
+        const result: any = res.getBody()['result'];
         expect(result.result).toEqual('Sent.');
     });
 
     test('Should receive the posted Proposal', async () => {
 
-        const response = await testUtil.rpcWaitFor(proposalCommand,
+        const res = await testUtil.rpcWaitFor(proposalCommand,
             [proposalListCommand, '*', '*'],
             30 * 60, // maxSeconds
             200, // waitForStatusCode
             '[0].title', // property name
             title
         );
-        response.expectJson();
-        response.expectStatusCode(200);
-        const result: resources.Proposal = response.getBody()['result'][0];
+        res.expectJson();
+        res.expectStatusCode(200);
+        const result: resources.Proposal = res.getBody()['result'][0];
 
         expect(result.title).toBe(title);
         expect(result.description).toBe(description);

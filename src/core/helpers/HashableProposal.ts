@@ -17,6 +17,7 @@ export class HashableProposal {
     public title: string;
     public description: string;
     public options: string;
+    public item: string;
 
     constructor(hashThis: ProposalCreateRequest) {
         const input = JSON.parse(JSON.stringify(hashThis));
@@ -28,6 +29,7 @@ export class HashableProposal {
             this.type = input.type;
             this.title = input.title;
             this.description = input.description;
+            this.item = input.item;
 
             this.options = '';
 

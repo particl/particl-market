@@ -9,6 +9,7 @@ declare module 'resources' {
         voter: string;
         block: number;
         weight: number;
+        ProposalOption: ProposalOption;
         createdAt: Date;
         updatedAt: Date;
     }

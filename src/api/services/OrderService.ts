@@ -72,6 +72,7 @@ export class OrderService {
 
     @validate()
     public async create( @request(OrderCreateRequest) data: OrderCreateRequest): Promise<Order> {
+        const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('OrderCreateRequest: ', JSON.stringify(body, null, 2));
@@ -79,16 +80,10 @@ export class OrderService {
         // you need at least one order item to create an order
         body.hash = ObjectHash.getHash(body, HashableObjectType.ORDER_CREATEREQUEST);
 
-        const orderItemCreateRequests = body.orderItems;
+        const orderItemCreateRequests = body.orderItems || [];
         delete body.orderItems;
         const addressCreateRequest = body.address;
         delete body.address;
-
-        // make sure we have at least one orderItem
-        if (_.isEmpty(orderItemCreateRequests)) {
-            this.log.error('Order does not contain orderItems.');
-            throw new MessageException('Order does not contain orderItems.');
-        }
 
         // shipping address
         if (_.isEmpty(addressCreateRequest)) {
@@ -130,6 +125,9 @@ export class OrderService {
 
         // finally find and return the created order
         const newOrder = await this.findOne(order.id);
+
+        this.log.debug('orderService.create: ' + (new Date().getTime() - startTime) + 'ms');
+
         return newOrder;
     }
 

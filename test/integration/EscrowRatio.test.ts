@@ -2,6 +2,7 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import * from 'jest';
 import { app } from '../../src/app';
 import { Logger as LoggerType } from '../../src/core/Logger';
 import { Types, Core, Targets } from '../../src/constants';
@@ -12,20 +13,15 @@ import { ProfileService } from '../../src/api/services/ProfileService';
 import { ListingItemTemplateService } from '../../src/api/services/ListingItemTemplateService';
 import { PaymentInformationService } from '../../src/api/services/PaymentInformationService';
 import { EscrowService } from '../../src/api/services/EscrowService';
-
 import { ValidationException } from '../../src/api/exceptions/ValidationException';
 import { NotFoundException } from '../../src/api/exceptions/NotFoundException';
-
 import { EscrowRatio } from '../../src/api/models/EscrowRatio';
 import { ListingItemTemplate } from '../../src/api/models/ListingItemTemplate';
-
 import { EscrowType } from '../../src/api/enums/EscrowType';
 import { PaymentType } from '../../src/api/enums/PaymentType';
-
 import { EscrowRatioCreateRequest } from '../../src/api/requests/EscrowRatioCreateRequest';
 import { EscrowRatioUpdateRequest } from '../../src/api/requests/EscrowRatioUpdateRequest';
 import { TestDataCreateRequest } from '../../src/api/requests/TestDataCreateRequest';
-import { PaymentInformation } from '../../src/api/models/PaymentInformation';
 
 describe('EscrowRatio', () => {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;

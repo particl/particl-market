@@ -2,19 +2,21 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
-import { Currency } from '../../../src/api/enums/Currency';
-import { CryptocurrencyAddressType } from '../../../src/api/enums/CryptocurrencyAddressType';
-import { PaymentType } from '../../../src/api/enums/PaymentType';
-import { EscrowType } from '../../../src/api/enums/EscrowType';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
-describe('ItemLocationRemoveCommand', () => {
+describe('ItemLocationAddCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
-    const method = Commands.ITEMLOCATION_ROOT.commandName;
-    const subCommand = Commands.ITEMLOCATION_ADD.commandName;
+
+    const itemLocationCommand = Commands.ITEMLOCATION_ROOT.commandName;
+    const itemLocationAddCommand = Commands.ITEMLOCATION_ADD.commandName;
 
     const testDataListingItemTemplate = {
         profile_id: 0,
@@ -31,7 +33,7 @@ describe('ItemLocationRemoveCommand', () => {
     let createdTemplateId;
     // let createdItemLocation;
 
-    const testData = [subCommand, 0, 'CN', 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
+    const testData = [itemLocationAddCommand, 0, 'CN', 'USA', 'TITLE', 'TEST DESCRIPTION', 25.7, 22.77];
 
     beforeAll(async () => {
         await testUtil.cleanDb();
@@ -46,7 +48,7 @@ describe('ItemLocationRemoveCommand', () => {
     });
 
     test('Should not create ItemLocation without country', async () => {
-        const addDataRes: any = await rpc(method, [subCommand]);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, [itemLocationAddCommand]);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
@@ -56,7 +58,7 @@ describe('ItemLocationRemoveCommand', () => {
     test('Should create ItemLocation', async () => {
         // Add Item Location
         testData[1] = createdTemplateId;
-        const addDataRes: any = await rpc(method, testData);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, testData);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(200);
         const result: any = addDataRes.getBody()['result'];
@@ -72,11 +74,11 @@ describe('ItemLocationRemoveCommand', () => {
 
     test('Should create ItemLocation if ItemLocation already exist for listingItemtemplate', async () => {
         // Add Item Location
-        const addDataRes: any = await rpc(method, testData);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, testData);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe(`ItemLocation with the listing template id=${testData[1]} is already exist`);
+        expect(addDataRes.error.error.message).toBe(`ItemLocation with the listingItemTemplateId=${testData[1]} already exists`);
     });
 
     test('Should create ItemLocation if ItemInformation not exist', async () => {
@@ -86,10 +88,10 @@ describe('ItemLocationRemoveCommand', () => {
         createdTemplateId = addListingItemTempRes.id;
         testData[1] = createdTemplateId;
         // Add Item Location
-        const addDataRes: any = await rpc(method, testData);
+        const addDataRes: any = await testUtil.rpc(itemLocationCommand, testData);
         addDataRes.expectJson();
         addDataRes.expectStatusCode(404);
         expect(addDataRes.error.error.success).toBe(false);
-        expect(addDataRes.error.error.message).toBe(`ItemInformation with the listing template id=${testData[1]} was not found!`);
+        expect(addDataRes.error.error.message).toBe(`ItemInformation with the listingItemTemplateId=${testData[1]} was not found!`);
     });
 });

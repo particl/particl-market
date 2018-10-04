@@ -53,8 +53,7 @@ export class ListingItemObjectService {
      */
     @validate()
     public async search(
-        @request(ListingItemObjectSearchParams) options: ListingItemObjectSearchParams
-        ): Promise<Bookshelf.Collection<ListingItemObject>> {
+        @request(ListingItemObjectSearchParams) options: ListingItemObjectSearchParams): Promise<Bookshelf.Collection<ListingItemObject>> {
         return this.listingItemObjectRepo.search(options);
     }
 

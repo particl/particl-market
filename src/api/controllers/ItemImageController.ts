@@ -2,15 +2,16 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import {inject, named} from 'inversify';
-import {controller, httpGet, httpPost, httpPut, httpDelete, response, requestBody, requestParam, request} from 'inversify-express-utils';
-import {Types, Core, Targets} from '../../constants';
-import {app} from '../../app';
-import {ItemImageService} from '../services/ItemImageService';
-import {ItemImageHttpUploadService} from '../services/ItemImageHttpUploadService';
-import {Logger as LoggerType} from '../../core/Logger';
-import {ImagePostUploadRequest} from '../requests/ImagePostUploadRequest';
+import { inject, named } from 'inversify';
+import { controller, httpGet, httpPost, httpPut, httpDelete, response, requestBody, requestParam, request } from 'inversify-express-utils';
+import { Types, Core, Targets } from '../../constants';
+import { app } from '../../app';
+import { ItemImageService } from '../services/ItemImageService';
+import { ItemImageHttpUploadService } from '../services/ItemImageHttpUploadService';
+import { Logger as LoggerType } from '../../core/Logger';
+import { ImagePostUploadRequest } from '../requests/ImagePostUploadRequest';
 import * as _ from 'lodash';
+import * as resources from 'resources';
 
 // Get middlewares
 const restApi = app.IoC.getNamed<interfaces.Middleware>(Types.Middleware, Targets.Middleware.AuthenticateMiddleware);
@@ -29,10 +30,10 @@ export class ItemImageController {
 
     @httpPost('/template/:templateId')
     public async create(@response() res: myExpress.Response, @requestParam('templateId') templateId: string,
-                        @requestBody() body: any, @request() req: any): Promise<any> {
+                        @requestBody() body: any, @request() req: any): Promise<resources.ItemImage[]> {
+
         return this.itemImageHttpUploadService.httpPostImageUpload(new ImagePostUploadRequest({
-            result: res,
-            id: templateId,
+            listingItemTemplateId: templateId,
             requestBody: body,
             request: req
         }));

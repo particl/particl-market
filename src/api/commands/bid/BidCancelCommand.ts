@@ -8,7 +8,6 @@ import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
 import * as resources from 'resources';
-
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemService } from '../../services/ListingItemService';
@@ -17,6 +16,7 @@ import { Commands} from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
 import { BidActionService } from '../../services/BidActionService';
 import { SmsgSendResponse } from '../../responses/SmsgSendResponse';
+import { BidService } from '../../services/BidService';
 
 export class BidCancelCommand extends BaseCommand implements RpcCommandInterface<SmsgSendResponse> {
 
@@ -25,6 +25,7 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
     constructor(
         @inject(Types.Core) @named(Core.Logger) public Logger: typeof LoggerType,
         @inject(Types.Service) @named(Targets.Service.ListingItemService) private listingItemService: ListingItemService,
+        @inject(Types.Service) @named(Targets.Service.BidService) private bidService: BidService,
         @inject(Types.Service) @named(Targets.Service.BidActionService) private bidActionService: BidActionService
     ) {
         super(Commands.BID_CANCEL);
@@ -33,36 +34,52 @@ export class BidCancelCommand extends BaseCommand implements RpcCommandInterface
 
     /**
      * data.params[]:
-     * [0]: itemhash, string
-     * [1]: bidId
+     * [0]: bidId
      *
      * @param data
      * @returns {Promise<Bookshelf<Bid>}
      */
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<SmsgSendResponse> {
-        if (data.params.length < 2) {
-            this.log.error('Requires two args');
-            throw new MessageException('Requires two args');
+        const bidId = data.params[0];
+        const bid: resources.Bid = await this.bidService.findOne(bidId)
+            .then(value => {
+                return value.toJSON();
+            });
+
+        return this.bidActionService.cancel(bid);
+    }
+
+    /**
+     * data.params[]:
+     * [0]: bidId
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        if (data.params.length < 1) {
+            throw new MessageException('Missing bidId.');
         }
-        const itemHash = data.params[0];
-        const bidId = data.params[1];
 
-        // find listingItem by hash
-        const listingItemModel = await this.listingItemService.findOneByHash(itemHash);
-        const listingItem = listingItemModel.toJSON();
-
-        // find the bid
-        const bids: resources.Bid[] = listingItem.Bids;
-        const bidToCancel = _.find(bids, (bid) => {
-            return bid.id === bidId;
-        });
-
-        if (!bidToCancel) {
-            throw new MessageException('Bid not found.');
+        if (typeof data.params[0] !== 'number') {
+            throw new MessageException('bidId should be a number.');
         }
 
-        return this.bidActionService.cancel(listingItem, bidToCancel);
+        const bidId = data.params[0];
+        const bid: resources.Bid = await this.bidService.findOne(bidId)
+            .then(value => {
+                return value.toJSON();
+            });
+
+        // make sure ListingItem exists
+        if (_.isEmpty(bid.ListingItem)) {
+            this.log.error('ListingItem not found.');
+            throw new MessageException('ListingItem not found.');
+        }
+
+        return data;
     }
 
     public usage(): string {

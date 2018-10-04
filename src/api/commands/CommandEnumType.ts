@@ -72,10 +72,9 @@ export class CommandEnumType extends Enum<Command> {
         [this.ITEMIMAGE_LIST, this.ITEMIMAGE_ADD, this.ITEMIMAGE_REMOVE], EnvironmentType.ALL);
 
     public ITEMINFORMATION_GET: Command    = new Command('iteminformationget', 'get', false);
-    public ITEMINFORMATION_ADD: Command     = new Command('iteminformationadd', 'add', false);
     public ITEMINFORMATION_UPDATE: Command  = new Command('iteminformationupdate', 'update', false);
     public ITEMINFORMATION_ROOT: Command    = new Command('iteminformation', 'information', true,
-        [this.ITEMINFORMATION_GET, this.ITEMINFORMATION_ADD, this.ITEMINFORMATION_UPDATE], EnvironmentType.ALL);
+        [this.ITEMINFORMATION_GET, this.ITEMINFORMATION_UPDATE], EnvironmentType.ALL);
 
     public TEMPLATE_SEARCH: Command         = new Command('templatesearch', 'search', false);
     public TEMPLATE_GET: Command            = new Command('templateget', 'get', false);
@@ -170,6 +169,17 @@ export class CommandEnumType extends Enum<Command> {
     public VOTE_LIST: Command         = new Command('votelist', 'list', false);
     public VOTE_ROOT: Command           = new Command('vote', 'vote', true,
         [this.VOTE_POST, this.VOTE_GET, this.VOTE_LIST], EnvironmentType.ALL);
+
+    public SETTING_REMOVE: Command         = new Command('settingremove', 'remove', false);
+    public SETTING_GET: Command         = new Command('settingget', 'get', false);
+    public SETTING_LIST: Command         = new Command('settinglist', 'list', false);
+    public SETTING_SET: Command           = new Command('settingset', 'set', false);
+    public SETTING_ROOT: Command           = new Command('setting', 'setting', true,
+        [this.SETTING_REMOVE, this.SETTING_GET, this.SETTING_LIST, this.SETTING_SET], EnvironmentType.ALL);
+
+    public SMSG_SEARCH: Command      = new Command('smsgsearch', 'search', false);
+    public SMSG_ROOT: Command        = new Command('smsg', 'smsg', true,
+        [this.SMSG_SEARCH], EnvironmentType.ALL);
 
     constructor() {
         super();

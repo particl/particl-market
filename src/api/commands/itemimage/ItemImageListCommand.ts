@@ -41,6 +41,12 @@ export class ItemImageListCommand extends BaseCommand implements RpcCommandInter
         if ( data.params.length !== 2 ) {
             throw new MessageException('Invalid number of args. Expected 2, got <' + data.params.length + '>.');
         }
+
+        if (typeof data.params[1] !== 'number') {
+            this.log.error('Second arg must be numeric.');
+            throw new MessageException('Second arg must be numeric.');
+        }
+
         const idType = data.params[0];
         if ( idType === 'template' ) {
             const listingItemTemplateId = data.params[1];

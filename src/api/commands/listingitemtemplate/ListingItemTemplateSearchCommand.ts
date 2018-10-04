@@ -14,6 +14,7 @@ import { RpcCommandInterface } from '../RpcCommandInterface';
 import { ListingItemTemplateSearchParams } from '../../requests/ListingItemTemplateSearchParams';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class ListingItemTemplateSearchCommand extends BaseCommand implements RpcCommandInterface<Bookshelf.Collection<ListingItemTemplate>> {
 
@@ -29,7 +30,7 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
 
     /**
      * data.params[]:
-     *  [0]: page, number
+     *  [0]: page, number, 0-based
      *  [1]: pageLimit, number
      *  [2]: order, SearchOrder
      *  [3]: profile id
@@ -42,13 +43,24 @@ export class ListingItemTemplateSearchCommand extends BaseCommand implements Rpc
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<ListingItemTemplate>> {
         return await this.listingItemTemplateService.search({
-            page: data.params[0] || 1,
+            page: data.params[0] || 0,
             pageLimit: data.params[1] || 10,
             order: data.params[2] || 'ASC',
             profileId: data.params[3],
             category: data.params[4],
             searchString: data.params[5] || ''
         } as ListingItemTemplateSearchParams);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 4) {
+            throw new MessageException('Missing parameters.');
+        }
+        // TODO:
+        // - is order valid?
+        // - profile exists?
+        // - category exists?
+        return data;
     }
 
     public usage(): string {

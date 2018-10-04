@@ -53,10 +53,12 @@ export const Targets = {
         ProposalOption: 'ProposalOption',
         ProposalOptionResult: 'ProposalOptionResult',
         ProposalResult: 'ProposalResult',
+        Setting: 'Setting',
         ShippingDestination: 'ShippingDestination',
         ShippingPrice: 'ShippingPrice',
         ShoppingCart: 'ShoppingCart',
         ShoppingCartItem: 'ShoppingCartItem',
+        SmsgMessage: 'SmsgMessage',
         User: 'User',
         Vote: 'Vote'
     },
@@ -100,10 +102,12 @@ export const Targets = {
         ProposalOptionResultRepository: 'ProposalOptionResultRepository',
         ProposalRepository: 'ProposalRepository',
         ProposalResultRepository: 'ProposalResultRepository',
+        SettingRepository: 'SettingRepository',
         ShippingDestinationRepository: 'ShippingDestinationRepository',
         ShippingPriceRepository: 'ShippingPriceRepository',
         ShoppingCartItemRepository: 'ShoppingCartItemRepository',
         ShoppingCartRepository: 'ShoppingCartRepository',
+        SmsgMessageRepository: 'SmsgMessageRepository',
         UserRepository: 'UserRepository',
         VoteRepository: 'VoteRepository'
     },
@@ -113,7 +117,6 @@ export const Targets = {
         BidActionService: 'BidActionService',
         BidDataService: 'BidDataService',
         BidService: 'BidService',
-        CategoryIsDoableService: 'CategoryIsDoableService',
         CoreCookieService: 'CoreCookieService',
         CoreRpcService: 'CoreRpcService',
         CryptocurrencyAddressService: 'CryptocurrencyAddressService',
@@ -158,10 +161,12 @@ export const Targets = {
         ProposalOptionService: 'ProposalOptionService',
         ProposalResultService: 'ProposalResultService',
         ProposalService: 'ProposalService',
+        SettingService: 'SettingService',
         ShippingDestinationService: 'ShippingDestinationService',
         ShippingPriceService: 'ShippingPriceService',
         ShoppingCartItemService: 'ShoppingCartItemService',
         ShoppingCartService: 'ShoppingCartService',
+        SmsgMessageService: 'SmsgMessageService',
         SmsgService: 'SmsgService',
         TestDataService: 'TestDataService',
         UserService: 'UserService',
@@ -234,7 +239,6 @@ export const Targets = {
             ItemImageRootCommand: 'ItemImageRootCommand'
         },
         iteminformation: {
-            ItemInformationAddCommand: 'ItemInformationAddCommand',
             ItemInformationGetCommand: 'ItemInformationGetCommand',
             ItemInformationRootCommand: 'ItemInformationRootCommand',
             ItemInformationUpdateCommand: 'ItemInformationUpdateCommand'
@@ -303,6 +307,13 @@ export const Targets = {
             ProposalRootCommand: 'ProposalRootCommand'
         },
         RpcCommandInterface: 'RpcCommandInterface',
+        setting: {
+            SettingGetCommand: 'SettingGetCommand',
+            SettingListCommand: 'SettingListCommand',
+            SettingRemoveCommand: 'SettingRemoveCommand',
+            SettingRootCommand: 'SettingRootCommand',
+            SettingSetCommand: 'SettingSetCommand'
+        },
         shippingdestination: {
             ShippingDestinationAddCommand: 'ShippingDestinationAddCommand',
             ShippingDestinationListCommand: 'ShippingDestinationListCommand',
@@ -324,6 +335,10 @@ export const Targets = {
             ShoppingCartItemRemoveCommand: 'ShoppingCartItemRemoveCommand',
             ShoppingCartItemRootCommand: 'ShoppingCartItemRootCommand'
         },
+        smsg: {
+            SmsgRootCommand: 'SmsgRootCommand',
+            SmsgSearchCommand: 'SmsgSearchCommand'
+        },
         vote: {
             VoteGetCommand: 'VoteGetCommand',
             VoteListCommand: 'VoteListCommand',
@@ -342,21 +357,14 @@ export const Targets = {
         OrderFactory: 'OrderFactory',
         ProposalFactory: 'ProposalFactory',
         RpcCommandFactory: 'RpcCommandFactory',
+        SmsgMessageFactory: 'SmsgMessageFactory',
         VoteFactory: 'VoteFactory'
     },
     MessageProcessor:     {
-        deprecated: {
-            AcceptBidMessageProcessor: 'AcceptBidMessageProcessor',
-            BidMessageProcessor: 'BidMessageProcessor',
-            CancelBidMessageProcessor: 'CancelBidMessageProcessor',
-            ListingItemMessageProcessor: 'ListingItemMessageProcessor',
-            RejectBidMessageProcessor: 'RejectBidMessageProcessor',
-            TestMessageProcessor: 'TestMessageProcessor',
-            UpdateListingItemMessageProcessor: 'UpdateListingItemMessageProcessor'
-        },
         ExpiredListingItemProcessor: 'ExpiredListingItemProcessor',
         MessageProcessor: 'MessageProcessor',
-        MessageProcessorInterface: 'MessageProcessorInterface'
+        MessageProcessorInterface: 'MessageProcessorInterface',
+        SmsgMessageProcessor: 'SmsgMessageProcessor'
     },
     Middleware:     {
         AuthenticateMiddleware: 'AuthenticateMiddleware',

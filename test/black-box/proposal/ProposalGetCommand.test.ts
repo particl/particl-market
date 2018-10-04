@@ -3,27 +3,25 @@
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
 // tslint:disable:max-line-length
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { Logger as LoggerType } from '../../../src/core/Logger';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
-import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
 import * as resources from 'resources';
 import { GenerateProposalParams } from '../../../src/api/requests/params/GenerateProposalParams';
 import { Proposal } from '../../../src/api/models/Proposal';
-import { Profile } from '../../../src/api/models/Profile';
 // tslint:enable:max-line-length
 
-describe('ListingItemSearchCommand', () => {
+describe('ProposalGetCommand', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-
     const testUtil = new BlackBoxTestUtil();
+
     const proposalCommand = Commands.PROPOSAL_ROOT.commandName;
     const proposalGetCommand = Commands.PROPOSAL_GET.commandName;
-    const daemonCommand = Commands.DAEMON_ROOT.commandName;
 
     let defaultProfile: resources.Profile;
     let createdProposal: resources.Proposal;
@@ -31,7 +29,6 @@ describe('ListingItemSearchCommand', () => {
     beforeAll(async () => {
         await testUtil.cleanDb();
 
-        // TODO: defaultProfile might not be the correct one
         defaultProfile = await testUtil.getDefaultProfile();
 
         // Generate a proposal
@@ -42,7 +39,7 @@ describe('ListingItemSearchCommand', () => {
             false // generatePastProposal = false;
         ]).toParamsArray();
 
-        // create listing item for testing
+        // create Proposal for testing
         const proposals = await testUtil.generateData(
             CreatableModel.PROPOSAL,     // what to generate
             1,                           // how many to generate
@@ -53,14 +50,12 @@ describe('ListingItemSearchCommand', () => {
 
     });
 
-    test('Should get the proposal', async () => {
-        const res: any = await rpc(proposalCommand, [proposalGetCommand, createdProposal.hash]);
+    test('Should get the Proposal', async () => {
+        const res: any = await  testUtil.rpc(proposalCommand, [proposalGetCommand, createdProposal.hash]);
         res.expectJson();
         res.expectStatusCode(200);
 
         const result: any = res.getBody()['result'];
-
-        log.debug('result:', JSON.stringify(result, null, 2));
         expect(result.submitter).toBe(createdProposal.submitter);
         expect(result.blockStart).toBe(createdProposal.blockStart);
         expect(result.blockEnd).toBe(createdProposal.blockEnd);

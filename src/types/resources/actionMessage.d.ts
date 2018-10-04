@@ -11,6 +11,7 @@ declare module 'resources' {
         accepted: boolean;
         MessageData: MessageData;
         MessageInfo: MessageInfo;
+        MessageValues: MessageValue[];
         MessageObjects: MessageObject[];
         MessageEscrow: MessageEscrow;
         createdAt: Date;

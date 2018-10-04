@@ -19,7 +19,6 @@ import { ItemInformationService } from './ItemInformationService';
 import { CryptocurrencyAddressService } from './CryptocurrencyAddressService';
 import { MarketService } from './MarketService';
 import { ListingItemSearchParams } from '../requests/ListingItemSearchParams';
-
 import { ItemInformationCreateRequest } from '../requests/ItemInformationCreateRequest';
 import { ItemInformationUpdateRequest } from '../requests/ItemInformationUpdateRequest';
 import { PaymentInformationCreateRequest } from '../requests/PaymentInformationCreateRequest';
@@ -28,13 +27,10 @@ import { MessagingInformationCreateRequest } from '../requests/MessagingInformat
 import { MessagingInformationUpdateRequest } from '../requests/MessagingInformationUpdateRequest';
 import { ListingItemObjectCreateRequest } from '../requests/ListingItemObjectCreateRequest';
 import { ListingItemObjectUpdateRequest } from '../requests/ListingItemObjectUpdateRequest';
-
 import { ListingItemTemplateService } from './ListingItemTemplateService';
 import { ListingItemFactory } from '../factories/ListingItemFactory';
 import { SmsgService } from './SmsgService';
-import { FlaggedItem } from '../models/FlaggedItem';
 import { ListingItemObjectService } from './ListingItemObjectService';
-import { FlaggedItemService } from './FlaggedItemService';
 import { EventEmitter } from 'events';
 import { ObjectHash } from '../../core/helpers/ObjectHash';
 import { HashableObjectType } from '../enums/HashableObjectType';
@@ -55,7 +51,6 @@ export class ListingItemService {
         @inject(Types.Service) @named(Targets.Service.ListingItemTemplateService) public listingItemTemplateService: ListingItemTemplateService,
         @inject(Types.Service) @named(Targets.Service.ListingItemObjectService) public listingItemObjectService: ListingItemObjectService,
         @inject(Types.Service) @named(Targets.Service.SmsgService) public smsgService: SmsgService,
-        @inject(Types.Service) @named(Targets.Service.FlaggedItemService) public flaggedItemService: FlaggedItemService,
         @inject(Types.Service) @named(Targets.Service.ActionMessageService) public actionMessageService: ActionMessageService,
         @inject(Types.Service) @named(Targets.Service.ProposalService) public proposalService: ProposalService,
         @inject(Types.Factory) @named(Targets.Factory.ListingItemFactory) private listingItemFactory: ListingItemFactory,
@@ -72,13 +67,6 @@ export class ListingItemService {
 
     public async findExpired(): Promise<Bookshelf.Collection<ListingItem>> {
         return await this.listingItemRepo.findExpired();
-    }
-
-
-    // TODO: we have search, remove this
-    public async findByCategory(categoryId: number): Promise<Bookshelf.Collection<ListingItem>> {
-        this.log.debug('find by category:', categoryId);
-        return await this.listingItemRepo.findByCategory(categoryId);
     }
 
     public async findOne(id: number, withRelated: boolean = true): Promise<ListingItem> {
@@ -117,6 +105,8 @@ export class ListingItemService {
                         withRelated: boolean = true): Promise<Bookshelf.Collection<ListingItem>> {
         // if valid params
         // todo: check whether category is string or number, if string, try to find the Category by key
+
+        this.log.debug('search(), options: ', JSON.stringify(options, null, 2));
         return await this.listingItemRepo.search(options, withRelated);
     }
 
@@ -127,7 +117,7 @@ export class ListingItemService {
      */
     @validate()
     public async create( @request(ListingItemCreateRequest) data: ListingItemCreateRequest): Promise<ListingItem> {
-        const startTime = new Date().getTime();
+        // const startTime = new Date().getTime();
 
         const body = JSON.parse(JSON.stringify(data));
         // this.log.debug('create ListingItem, body: ', JSON.stringify(body, null, 2));
@@ -147,6 +137,8 @@ export class ListingItemService {
         const actionMessages = body.actionMessages || [];
         delete body.actionMessages;
 
+        // this.log.debug('body:', JSON.stringify(body, null, 2));
+
         // If the request body was valid we will create the listingItem
         const listingItemModel = await this.listingItemRepo.create(body);
         const listingItem = listingItemModel.toJSON();
@@ -164,7 +156,6 @@ export class ListingItemService {
 
         for (const msgInfo of messagingInformation) {
             msgInfo.listing_item_id = listingItem.id;
-            // this.log.debug('listingItemService.create, msgInfo: ', JSON.stringify(msgInfo, null, 2));
             await this.messagingInformationService.create(msgInfo as MessagingInformationCreateRequest)
                 .catch(reason => {
                     this.log.error('Error:', JSON.stringify(reason, null, 2));
@@ -180,8 +171,6 @@ export class ListingItemService {
                 });
         }
 
-        // this.log.debug('create actionMessages:', JSON.stringify(actionMessages, null, 2));
-
         // create actionMessages, only used to create testdata
         for (const actionMessage of actionMessages) {
             actionMessage.listing_item_id = listingItem.id;
@@ -194,7 +183,7 @@ export class ListingItemService {
         // finally find and return the created listingItem
         const result = await this.findOne(listingItem.id);
 
-        this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
+        // this.log.debug('listingItemService.create: ' + (new Date().getTime() - startTime) + 'ms');
 
         return result;
 
@@ -219,6 +208,11 @@ export class ListingItemService {
 
         // set new values
         listingItem.Hash = body.hash;
+        listingItem.Seller = body.seller;
+        listingItem.ExpiryTime = body.expiryTime;
+        listingItem.PostedAt = body.postedAt;
+        listingItem.ExpiredAt = body.expiredAt;
+        listingItem.ReceivedAt = body.receivedAt;
 
         // and update the ListingItem record
         const updatedListingItem = await this.listingItemRepo.update(id, listingItem.toJSON());
@@ -324,46 +318,20 @@ export class ListingItemService {
 
     public async updateListingItemTemplateRelation(id: number): Promise<ListingItem> {
 
-        this.log.debug('updating ListingItem relation to possible ListingItemTemplate.');
-
         let listingItem = await this.findOne(id, false);
         const templateId = await this.listingItemTemplateService.findOneByHash(listingItem.Hash)
             .then(value => {
                 const template = value.toJSON();
-                this.log.debug('found ListingItemTemplate with matching hash, id:', template.id);
+                // this.log.debug('found ListingItemTemplate with matching hash, id:', template.id);
                 return template.id;
             })
             .catch(reason => {
-                this.log.debug('matching ListingItemTemplate for ListingItem not found.');
+                // this.log.debug('matching ListingItemTemplate for ListingItem not found.');
             });
 
         if (templateId) {
+            this.log.debug('updating ListingItem relation to ListingItemTemplate.');
             listingItem.set('listingItemTemplateId', templateId);
-            await this.listingItemRepo.update(id, listingItem.toJSON());
-        }
-
-        listingItem = await this.findOne(id);
-
-        return listingItem;
-    }
-
-    public async updateProposalRelation(id: number, proposalHash: string): Promise<ListingItem> {
-
-        this.log.debug('updating ListingItem relation to Proposal.');
-
-        let listingItem = await this.findOne(id, false);
-        const proposalId = await this.proposalService.findOneByHash(proposalHash)
-            .then(value => {
-                const proposal = value.toJSON();
-                this.log.debug('found Proposal with matching hash, id:', proposal.id);
-                return proposal.id;
-            })
-            .catch(reason => {
-                this.log.debug('matching Proposal for ListingItem not found.');
-            });
-
-        if (proposalId) {
-            listingItem.set('proposalId', proposalId);
             await this.listingItemRepo.update(id, listingItem.toJSON());
         }
 
@@ -383,20 +351,20 @@ export class ListingItemService {
             throw new NotFoundException('Item listing does not exist. id = ' + id);
         }
         const listingItem = listingItemModel.toJSON();
-        this.log.debug('delete listingItem:', listingItem.id);
 
         await this.listingItemRepo.destroy(id);
 
         // remove related CryptocurrencyAddress if it exists
         if (listingItem.PaymentInformation && listingItem.PaymentInformation.ItemPrice
             && listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress) {
-            this.log.debug('delete listingItem cryptocurrencyaddress:', listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress.id);
             await this.cryptocurrencyAddressService.destroy(listingItem.PaymentInformation.ItemPrice.CryptocurrencyAddress.id);
         }
     }
 
     /**
      * delete expired listing items
+     *
+     * @returns {Promise<void>}
      */
     public async deleteExpiredListingItems(): Promise<void> {
        const listingItemsModel = await this.findExpired();
@@ -408,20 +376,9 @@ export class ListingItemService {
        }
     }
 
-
-    /**
-     * check if ListingItem already Flagged
-     *
-     * @param {ListingItem} listingItem
-     * @returns {Promise<boolean>}
-     */
-    public async isItemFlagged(listingItem: ListingItem): Promise<boolean> {
-        const flaggedItem = listingItem.related('FlaggedItem').toJSON();
-        return _.size(flaggedItem) !== 0;
-    }
-
     /**
      * check if object is exist in a array
+     * todo: this is utility function, does not belong here
      *
      * @param {string[]} objectArray
      * @param {string} fieldName

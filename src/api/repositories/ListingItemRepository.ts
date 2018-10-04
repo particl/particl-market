@@ -61,13 +61,10 @@ export class ListingItemRepository {
     }
 
     public async create(data: any): Promise<ListingItem> {
-        const startTime = new Date().getTime();
         const listingItem = this.ListingItemModel.forge<ListingItem>(data);
         try {
             const listingItemCreated = await listingItem.save();
             const result = this.ListingItemModel.fetchById(listingItemCreated.id);
-
-            this.log.debug('listingItemRepository.create: ' + (new Date().getTime() - startTime) + 'ms');
             return result;
         } catch (error) {
             this.log.error(error);

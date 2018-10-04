@@ -2,61 +2,71 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
+import {Logger as LoggerType} from '../../../src/core/Logger';
+import * as resources from 'resources';
 
 describe('ShoppingCartGetCommand', () => {
+
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
+
+    const log: LoggerType = new LoggerType(__filename);
     const testUtil = new BlackBoxTestUtil();
 
-    const method = Commands.SHOPPINGCART_ROOT.commandName;
-    const subCommand = Commands.SHOPPINGCART_GET.commandName;
+    const shoppingCartCommand = Commands.SHOPPINGCART_ROOT.commandName;
+    const shoppingCartGetCommand = Commands.SHOPPINGCART_GET.commandName;
 
-    let defaultShoppingCart;
-    let defaultProfile;
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
+    let defaultShoppingCart: resources.ShoppingCart;
+    let secondShoppingCart: resources.ShoppingCart;
 
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        // get default profile and market
         defaultProfile = await testUtil.getDefaultProfile();
+        defaultMarket = await testUtil.getDefaultMarket();
         defaultShoppingCart = defaultProfile.ShoppingCart[0];
+
+        // add a second shopping cart
+        const shoppingName = 'TEST-CART-NAME';
+        const res = await testUtil.rpc(shoppingCartCommand, [Commands.SHOPPINGCART_ADD.commandName,
+            shoppingName,
+            defaultProfile.id
+        ]);
+        res.expectJson();
+        res.expectStatusCode(200);
+        secondShoppingCart = res.getBody()['result'];
+
     });
 
     test('Should get a default ShoppingCart', async () => {
-        const res = await rpc(method, [subCommand, defaultShoppingCart.id]);
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartGetCommand, defaultShoppingCart.id]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.name).toBe('DEFAULT');
+        const result: resources.ShoppingCart = res.getBody()['result'];
+        expect(result.name).toBe(defaultShoppingCart.name);
+        expect(result.Profile.id).toBe(defaultProfile.id);
     });
 
-    test('Should get newly created ShoppingCart', async () => {
-        // add new shopping cart
-        const shoppingName = 'new cart';
-        const resAdd = await rpc(method, [Commands.SHOPPINGCART_ADD.commandName, shoppingName, defaultProfile.id]);
-        resAdd.expectJson();
-        resAdd.expectStatusCode(200);
-        const resultAdd: any = resAdd.getBody()['result'];
-
-        const res = await rpc(method, [subCommand, resultAdd.id]);
+    test('Should get the second ShoppingCart', async () => {
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartGetCommand, secondShoppingCart.id]);
         res.expectJson();
         res.expectStatusCode(200);
-        const result: any = res.getBody()['result'];
-        expect(result.name).toBe(shoppingName);
-        expect(result.profileId).toBe(defaultProfile.id);
-        defaultShoppingCart = result;
+        const result: resources.ShoppingCart = res.getBody()['result'];
+        expect(result.name).toBe(secondShoppingCart.name);
+        expect(result.Profile.id).toBe(defaultProfile.id);
     });
 
-
-    test('Should not get ShoppingCart when identifier not exist', async () => {
-        const resRemove = await rpc(method, [Commands.SHOPPINGCART_REMOVE.commandName, defaultShoppingCart.id]);
-        resRemove.expectJson();
-        resRemove.expectStatusCode(200);
-
-        const res = await rpc(method, [subCommand, defaultShoppingCart.id]);
+    test('Should fail to get ShoppingCart with invalidId', async () => {
+        const invalidId = 0;
+        const res = await testUtil.rpc(shoppingCartCommand, [shoppingCartGetCommand, invalidId]);
         res.expectJson();
         res.expectStatusCode(404);
-        expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe(`Entity with identifier ${defaultShoppingCart.id} does not exist`);
+        expect(res.error.error.message).toBe(`Entity with identifier ${invalidId} does not exist`);
     });
 
 });

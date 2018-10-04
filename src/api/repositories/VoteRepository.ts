@@ -30,8 +30,8 @@ export class VoteRepository {
         return this.VoteModel.fetchById(id, withRelated);
     }
 
-    public async findOneByVoterAndProposal(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {
-        return this.VoteModel.fetchByVoterAndProposal(voter, proposalId, withRelated);
+    public async findOneByVoterAndProposalId(voter: string, proposalId: number, withRelated: boolean = true): Promise<Vote> {
+        return this.VoteModel.fetchByVoterAndProposalId(voter, proposalId, withRelated);
     }
 
     public async create(data: any): Promise<Vote> {

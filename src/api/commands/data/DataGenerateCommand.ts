@@ -13,6 +13,7 @@ import { TestDataGenerateRequest } from '../../requests/TestDataGenerateRequest'
 import { RpcCommandInterface } from '../RpcCommandInterface';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class DataGenerateCommand extends BaseCommand implements RpcCommandInterface<any> {
 
@@ -50,6 +51,16 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
         } as TestDataGenerateRequest);
     }
 
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MessageException('Missing model.');
+        }
+        if (data.params.length < 2) {
+            throw new MessageException('Missing json.');
+        }
+        return data;
+    }
+
     public usage(): string {
         return this.getName() + ' <model> [<amount> [<withRelated>]] ';
     }
@@ -60,7 +71,7 @@ export class DataGenerateCommand extends BaseCommand implements RpcCommandInterf
             + '                                |favoriteitem|iteminformation|bid|paymentinformation|itemimage} \n'
             + '                                - The type of data we want to generate. \n'
             + '    <amount>                 - [optional] Numeric - The number of objects we want to generate. \n'
-            + '    <withRelated>            - [optional] Boolean - Whether we want to include all sub objects in the generated data. ';
+            + '    <withRelated>            - [optional] Boolean - Whether to return full objects or just id. ';
     }
 
     public description(): string {

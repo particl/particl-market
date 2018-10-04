@@ -156,9 +156,14 @@ export class ItemCategoryService {
         } else {
             // search the children for a match
             const childCategories = rootCategory.ChildItemCategories;
-            return _.find(childCategories, (childCategory) => {
+            const found = _.find(childCategories, (childCategory) => {
                 return (childCategory['key'] === keyOrName || childCategory['name'] === keyOrName);
             });
+            if (found) {
+                return found;
+            } else {
+                throw new NotFoundException(keyOrName);
+            }
         }
     }
 

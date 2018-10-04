@@ -2,11 +2,13 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
+import { OrderStatus } from '../../api/enums/OrderStatus';
+
 declare module 'resources' {
 
     interface OrderItem {
         id: number;
-        status: string;
+        status: OrderStatus;
         itemHash: string;
         Bid: Bid;
         OrderItemObjects: OrderItemObject[];

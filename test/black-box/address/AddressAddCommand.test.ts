@@ -2,19 +2,26 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { ShippingCountries } from '../../../src/core/helpers/ShippingCountries';
 import { AddressType } from '../../../src/api/enums/AddressType';
+import * as resources from 'resources';
+import { Logger as LoggerType } from '../../../src/core/Logger';
 
 describe('AddressAddCommand', () => {
 
-    const testUtil = new BlackBoxTestUtil();
-    const addressCommand = Commands.ADDRESS_ROOT.commandName;
-    const addCommand = Commands.ADDRESS_ADD.commandName;
+    jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
-    let defaultProfileId;
+    const log: LoggerType = new LoggerType(__filename);
+    const testUtil = new BlackBoxTestUtil();
+
+    const addressCommand = Commands.ADDRESS_ROOT.commandName;
+    const addressAddCommand = Commands.ADDRESS_ADD.commandName;
+
+    let defaultProfile: resources.Profile;
+    let defaultMarket: resources.Market;
 
     const testData = {
         title: 'Work',
@@ -29,23 +36,27 @@ describe('AddressAddCommand', () => {
         type: AddressType.SHIPPING_OWN
     };
 
-    let defaultProfile;
-
     beforeAll(async () => {
         await testUtil.cleanDb();
+
+        // get default profile and market
         defaultProfile = await testUtil.getDefaultProfile();
-        defaultProfileId = defaultProfile.id;
+        defaultMarket = await testUtil.getDefaultMarket();
     });
 
     test('Should create a new Address for Profile', async () => {
-
-        const res = await testUtil.rpc(addressCommand, [addCommand,
-            defaultProfileId,
+        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
+            defaultProfile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
-            testData.addressLine1, testData.addressLine2,
-            testData.city, testData.state, testData.country, testData.zipCode]);
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+            testData.state,
+            testData.country,
+            testData.zipCode
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -62,7 +73,7 @@ describe('AddressAddCommand', () => {
     });
 
     test('Should fail because we want to create an empty Address without required fields', async () => {
-        const res = await testUtil.rpc(addressCommand, [addCommand,
+        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
             testData.title,
             testData.firstName,
             testData.lastName,
@@ -79,12 +90,13 @@ describe('AddressAddCommand', () => {
     });
 
     test('Should fail to create Address because state is null', async () => {
-        const res = await testUtil.rpc(addressCommand, [addCommand,
-            defaultProfileId,
+        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
+            defaultProfile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
-            testData.addressLine1, testData.addressLine2,
+            testData.addressLine1,
+            testData.addressLine2,
             testData.city,
             null,
             testData.country,
@@ -98,13 +110,18 @@ describe('AddressAddCommand', () => {
     });
 
     test('Should fail to create Address because state is undefined', async () => {
-        const res = await testUtil.rpc(addressCommand, [addCommand,
-            defaultProfileId,
+        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
+            defaultProfile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
-            testData.addressLine1, testData.addressLine2,
-            testData.city, undefined, testData.country, testData.zipCode]);
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+            undefined,
+            testData.country,
+            testData.zipCode
+        ]);
         res.expectJson();
         res.expectStatusCode(400);
         expect(res.error.error.success).toBe(false);
@@ -113,14 +130,18 @@ describe('AddressAddCommand', () => {
     });
 
     test('Should create a new Address with blank state', async () => {
-
-        const res = await testUtil.rpc(addressCommand, [addCommand,
-            defaultProfileId,
+        const res = await testUtil.rpc(addressCommand, [addressAddCommand,
+            defaultProfile.id,
             testData.title,
             testData.firstName,
             testData.lastName,
-            testData.addressLine1, testData.addressLine2,
-            testData.city, '', testData.country, testData.zipCode]);
+            testData.addressLine1,
+            testData.addressLine2,
+            testData.city,
+            '',
+            testData.country,
+            testData.zipCode
+        ]);
         res.expectJson();
         res.expectStatusCode(200);
 
@@ -136,5 +157,4 @@ describe('AddressAddCommand', () => {
         expect(result.zipCode).toBe(testData.zipCode);
     });
 
-    // todo: why are we just testing the state here, I'd expect the country field to cause more trouble
 });

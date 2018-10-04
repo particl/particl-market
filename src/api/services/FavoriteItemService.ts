@@ -8,12 +8,10 @@ import { Logger as LoggerType } from '../../core/Logger';
 import { Types, Core, Targets } from '../../constants';
 import { validate, request } from '../../core/api/Validate';
 import { NotFoundException } from '../exceptions/NotFoundException';
-import { MessageException } from '../exceptions/MessageException';
 import { FavoriteItemRepository } from '../repositories/FavoriteItemRepository';
 import { FavoriteItem } from '../models/FavoriteItem';
 import { FavoriteItemCreateRequest } from '../requests/FavoriteItemCreateRequest';
 import { FavoriteItemUpdateRequest } from '../requests/FavoriteItemUpdateRequest';
-import { FavoriteSearchParams } from '../requests/FavoriteSearchParams';
 import { ListingItemService } from './ListingItemService';
 import { ProfileService } from './ProfileService';
 
@@ -44,17 +42,20 @@ export class FavoriteItemService {
     }
 
     /**
-     * search favorite item using given FavoriteSearchParams
+     * search favorite item by profileId and itemId
      *
-     * @param options
-     * @returns {Promise<FavoriteItem> }
+     * @param {number} profileId
+     * @param {number} itemId
+     * @param {boolean} withRelated
+     * @returns {Promise<FavoriteItem>}
      */
-
-    @validate()
-    public async search(
-        @request(FavoriteSearchParams) options: FavoriteSearchParams): Promise<FavoriteItem> {
-        const searchParams = await this.checkSearchByItemHashOrProfileName(options);
-        return this.favoriteItemRepo.search(searchParams);
+    public async findOneByProfileIdAndListingItemId(profileId: number, itemId: number, withRelated: boolean = true): Promise<FavoriteItem> {
+        const favoriteItem = await this.favoriteItemRepo.findOneByProfileIdAndListingItemId(profileId, itemId, withRelated);
+        if (favoriteItem === null) {
+            this.log.warn(`FavoriteItem with the profileId=${profileId} or listingItemId=${itemId} was not found!`);
+            throw new NotFoundException(profileId + ' or ' + itemId);
+        }
+        return favoriteItem;
     }
 
     /**
@@ -64,8 +65,8 @@ export class FavoriteItemService {
      * @param withRelated
      * @returns {Promise<Bookshelf.Collection<FavoriteItem>> }
      */
-    public async findFavoritesByProfileId(profileId: number, withRelated: boolean): Promise<Bookshelf.Collection<FavoriteItem>> {
-        return this.favoriteItemRepo.findFavoritesByProfileId(profileId, withRelated);
+    public async findAllByProfileId(profileId: number, withRelated: boolean): Promise<Bookshelf.Collection<FavoriteItem>> {
+        return this.favoriteItemRepo.findAllByProfileId(profileId, withRelated);
     }
 
 
@@ -97,62 +98,4 @@ export class FavoriteItemService {
         await this.favoriteItemRepo.destroy(id);
     }
 
-    /**
-     * data.params[]:
-     *  [0]: item_id or hash
-     *  [1]: profile_id or null
-     *
-     * when data.params[0] is number then findById, else findOneByHash
-     *
-     */
-    public async getSearchParams(data: any): Promise<any> {
-        let profileId = data.params[0];
-        let itemId = data.params[1] || 0;
-
-        // if item hash is in the params
-        if (itemId && typeof itemId === 'string') {
-            const listingItem = await this.listingItemService.findOneByHash(data.params[1]);
-            itemId = listingItem.id;
-        }
-        // find listing item by id
-        const item = await this.listingItemService.findOne(itemId);
-
-        // if profile id not found in the params then find default profile
-        if (!profileId || typeof profileId !== 'number') {
-            const profile = await this.profileService.findOneByName('DEFAULT');
-            profileId = profile.id;
-        }
-        if (item === null) {
-            this.log.warn(`ListingItem with the id=${itemId} was not found!`);
-            throw new NotFoundException(itemId);
-        }
-        return [profileId, item.id];
-    }
-
-    /**
-     * search favorite item using given FavoriteSearchParams
-     * when itemId is string then find by item hash
-     * when profileId is string then find by profile name
-     *
-     * @param options
-     * @returns {Promise<FavoriteSearchParams> }
-     */
-    private async checkSearchByItemHashOrProfileName(options: FavoriteSearchParams): Promise<FavoriteSearchParams> {
-
-        // if options.itemId is string then find by hash
-        if (typeof options.itemId === 'string') {
-            const listingItem = await this.listingItemService.findOneByHash(options.itemId);
-            options.itemId = listingItem.id;
-        }
-        // if options.profileId is string then find by profile name
-        if (typeof options.profileId === 'string') {
-            const profile = await this.profileService.findOneByName(options.profileId);
-            if (profile === null) {
-                throw new MessageException(`Profile not found for the given name = ${options.profileId}`);
-            }
-            options.profileId = profile.id;
-        }
-
-        return options;
-    }
 }

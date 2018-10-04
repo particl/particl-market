@@ -2,27 +2,25 @@
 // Distributed under the GPL software license, see the accompanying
 // file COPYING or https://github.com/particl/particl-market/blob/develop/LICENSE
 
-import { rpc, api } from '../lib/api';
+import * from 'jest';
 import { BlackBoxTestUtil } from '../lib/BlackBoxTestUtil';
 import { Commands } from '../../../src/api/commands/CommandEnumType';
 import { CreatableModel } from '../../../src/api/enums/CreatableModel';
 import { GenerateListingItemTemplateParams } from '../../../src/api/requests/params/GenerateListingItemTemplateParams';
-
 import * as resources from 'resources';
 import { ObjectHash } from '../../../src/core/helpers/ObjectHash';
 import { HashableObjectType } from '../../../src/api/enums/HashableObjectType';
 import { Logger as LoggerType } from '../../../src/core/Logger';
-import { SearchOrder } from '../../../src/api/enums/SearchOrder';
 import { GenerateListingItemParams } from '../../../src/api/requests/params/GenerateListingItemParams';
 import { ListingItemSearchParams } from '../../../src/api/requests/ListingItemSearchParams';
 import * as _ from 'lodash';
 import { ShippingAvailability } from '../../../src/api/enums/ShippingAvailability';
 
 describe('ListingItemSearchCommand', () => {
+
     jasmine.DEFAULT_TIMEOUT_INTERVAL = process.env.JASMINE_TIMEOUT;
 
     const log: LoggerType = new LoggerType(__filename);
-
     const testUtil = new BlackBoxTestUtil();
 
     const itemCommand = Commands.ITEM_ROOT.commandName;
@@ -106,23 +104,9 @@ describe('ListingItemSearchCommand', () => {
     });
 
     test('Should fail to search ListingItems if type is invalid', async () => {
-/*
-     *  [0]: page, number
-     *  [1]: pageLimit, number
-     *  [2]: order, SearchOrder
-     *  [3]: category, number|string, if string, try to find using key, can be null
-     *  [4]: type (FLAGGED | PENDING | LISTED | IN_ESCROW | SHIPPED | SOLD | EXPIRED | ALL)
-     *  [5]: profileId, (NUMBER | OWN | ALL | *)
-     *  [6]: minPrice, number to search item basePrice between 2 range
-     *  [7]: maxPrice, number to search item basePrice between 2 range
-     *  [8]: country, string, can be null
-     *  [9]: shippingDestination, string, can be null
-     *  [10]: searchString, string, can be null
-     *  [11]: withRelated, boolean
- */
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.type = 'INVALID';
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(404);
 
@@ -135,7 +119,7 @@ describe('ListingItemSearchCommand', () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = 'INVALID';
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
@@ -147,7 +131,7 @@ describe('ListingItemSearchCommand', () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = 'OWN';
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -160,7 +144,7 @@ describe('ListingItemSearchCommand', () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = 'ALL';
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -173,7 +157,7 @@ describe('ListingItemSearchCommand', () => {
     test('Should search ALL ListingItems when profileId is empty, since default is ALL', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -188,7 +172,7 @@ describe('ListingItemSearchCommand', () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -204,7 +188,7 @@ describe('ListingItemSearchCommand', () => {
         params.profileId = '*';
         params.pageLimit = 1;
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -214,14 +198,14 @@ describe('ListingItemSearchCommand', () => {
 
     });
 
-    test('Should search the second ListingItem using pagination and setting page to 2 wuth pageLimit set to 1', async () => {
+    test('Should search the second ListingItem using pagination and setting page to 1 with pageLimit set to 1', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
         params.pageLimit = 1;
-        params.page = 2;
+        params.page = 1;
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -235,9 +219,9 @@ describe('ListingItemSearchCommand', () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
         params.pageLimit = 1;
-        params.page = 3;
+        params.page = 2;
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -255,7 +239,7 @@ describe('ListingItemSearchCommand', () => {
             === createdListingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.key
             ? 2 : 1;
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -270,13 +254,17 @@ describe('ListingItemSearchCommand', () => {
         params.category = createdListingItem.ItemInformation.ItemCategory.id;
 
         const itemCount = createdListingItem.ItemInformation.ItemCategory.id
-        === createdListingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.id
+            === createdListingItemTemplate.ListingItems[0].ItemInformation.ItemCategory.id
             ? 2 : 1;
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
+
+        // log.debug('params:', JSON.stringify(params, null, 2));
+        // log.debug('result[0].ItemInformation.ItemCategory.id:', result[0].ItemInformation.ItemCategory.id);
+        // log.debug('result:', JSON.stringify(result, null, 2));
 
         expect(result.length).toBe(itemCount);
         expect(result[0].ItemInformation.ItemCategory.id).toBe(params.category);
@@ -287,7 +275,7 @@ describe('ListingItemSearchCommand', () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.searchString = createdListingItem.ItemInformation.title.substr(0, 10);
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -310,7 +298,7 @@ describe('ListingItemSearchCommand', () => {
             ? createdListingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
             : createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -322,7 +310,7 @@ describe('ListingItemSearchCommand', () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.minPrice = createdListingItem.PaymentInformation.ItemPrice.basePrice
-        < createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
+            < createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice
             ? createdListingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
             : createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
 
@@ -331,7 +319,7 @@ describe('ListingItemSearchCommand', () => {
             ? createdListingItem.PaymentInformation.ItemPrice.basePrice + 0.0001
             : createdListingItemTemplate.ListingItems[0].PaymentInformation.ItemPrice.basePrice + 0.0001;
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -345,7 +333,7 @@ describe('ListingItemSearchCommand', () => {
         params.minPrice = 1000.0001;
         params.maxPrice = 1000.0002;
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -359,7 +347,7 @@ describe('ListingItemSearchCommand', () => {
         params.profileId = '*';
         params.withRelated = false;
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -384,7 +372,7 @@ describe('ListingItemSearchCommand', () => {
         === createdListingItemTemplate.ListingItems[0].ItemInformation.ItemLocation.region
             ? 2 : 1;
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -394,7 +382,7 @@ describe('ListingItemSearchCommand', () => {
 
     });
 
-    test('Should search listing item by shippingDestination', async () => {
+    test('Should search ListingItem by ShippingDestination', async () => {
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
         params.profileId = '*';
 
@@ -403,7 +391,6 @@ describe('ListingItemSearchCommand', () => {
             return o.shippingAvailability === ShippingAvailability.SHIPS;
         });
 
-        log.debug('shippingDestinationsThatShip:', JSON.stringify(shippingDestinationsThatShip, null, 2));
         params.shippingDestination = shippingDestinationsThatShip[0].country;
 
         const shippingDestinationsForItem2: resources.ShippingDestination[] = createdListingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations;
@@ -414,7 +401,7 @@ describe('ListingItemSearchCommand', () => {
 
         const itemCount = 1 + shippingDestinationsThatShipToTheSamePlace.length;
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -423,7 +410,7 @@ describe('ListingItemSearchCommand', () => {
         expect(result[0].ItemInformation.ShippingDestinations[0].country).toBe(params.shippingDestination);
     });
 
-    test('Should search listing item by shippingDestination, min-maxPrice and searchString', async () => {
+    test('Should search ListingItem by ShippingDestination, min-maxPrice and searchString', async () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
 
@@ -432,7 +419,6 @@ describe('ListingItemSearchCommand', () => {
             return o.shippingAvailability === ShippingAvailability.SHIPS;
         });
 
-        log.debug('shippingDestinationsThatShip:', JSON.stringify(shippingDestinationsThatShip, null, 2));
         params.shippingDestination = shippingDestinationsThatShip[0].country;
 
         const shippingDestinationsForItem2: resources.ShippingDestination[] = createdListingItemTemplate.ListingItems[0].ItemInformation.ShippingDestinations;
@@ -455,7 +441,7 @@ describe('ListingItemSearchCommand', () => {
 
         params.searchString = createdListingItem.ItemInformation.title.substr(0, 10);
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];
@@ -468,7 +454,7 @@ describe('ListingItemSearchCommand', () => {
 
         const params = new ListingItemSearchParams(defaultListingItemSearchParams.toParamsArray());
 
-        const res = await rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
+        const res = await testUtil.rpc(itemCommand, [itemSearchCommand].concat(params.toParamsArray()));
         res.expectJson();
         res.expectStatusCode(200);
         const result: any = res.getBody()['result'];

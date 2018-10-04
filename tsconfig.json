@@ -4,6 +4,7 @@
         "module": "commonjs",
         "pretty": true,
         "sourceMap": true,
+        "inlineSources": true,
         "outDir": "dist",
         "importHelpers": true,
         "strict": true,

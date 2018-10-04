@@ -89,9 +89,10 @@ export class ListingItemTemplate extends Bookshelf.Model<ListingItemTemplate> {
                     qb.where('item_informations.title', 'LIKE', '%' + options.searchString + '%');
                 }
             })
-            .orderBy('item_informations.title', options.order).query({
+            .orderBy('updated_at', options.order)
+            .query({
                 limit: options.pageLimit,
-                offset: (options.page - 1) * options.pageLimit
+                offset: options.page * options.pageLimit
             });
 
         if (withRelated) {
