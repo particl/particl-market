@@ -6,12 +6,14 @@ import { inject, named } from 'inversify';
 import { validate, request } from '../../../core/api/Validate';
 import { Logger as LoggerType } from '../../../core/Logger';
 import { Types, Core, Targets } from '../../../constants';
-import { TestDataService } from '../../services/TestDataService';
 import { RpcRequest } from '../../requests/RpcRequest';
 import { RpcCommandInterface } from '../RpcCommandInterface';
-import { TestDataCreateRequest } from '../../requests/TestDataCreateRequest';
 import { Commands } from '../CommandEnumType';
 import { BaseCommand } from '../BaseCommand';
+import { RpcCommandFactory } from '../../factories/RpcCommandFactory';
+import {TestDataService} from '../../services/TestDataService';
+import {TestDataCreateRequest} from '../../requests/TestDataCreateRequest';
+import {MessageException} from '../../exceptions/MessageException';
 
 export class DataAddCommand extends BaseCommand implements RpcCommandInterface<any> {
 
@@ -31,17 +33,27 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
      *  [1]: json
      *  [2]: withRelated, return full objects or just id's
      *
-     * @param {RpcRequest} data
-     * @returns {Promise<any>}
+     * @param data
+     * @param rpcCommandFactory
      */
     @validate()
-    public async execute( @request(RpcRequest) data: RpcRequest): Promise<any> {
+    public async execute( @request(RpcRequest) data: RpcRequest, rpcCommandFactory: RpcCommandFactory): Promise<any> {
         const withRelated = data.params[2] ? data.params[2] : true;
         return await this.testDataService.create({
             model: data.params[0],
             data: JSON.parse(data.params[1]),
             withRelated
         } as TestDataCreateRequest);
+    }
+
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+        if (data.params.length < 1) {
+            throw new MessageException('Missing model.');
+        }
+        if (data.params.length < 2) {
+            throw new MessageException('Missing json.');
+        }
+        return data;
     }
 
     public usage(): string {
@@ -53,8 +65,8 @@ export class DataAddCommand extends BaseCommand implements RpcCommandInterface<a
             + '    <model>                  - ENUM{listingitemtemplate|listingitem|profile|itemcategory \n'
             + '                                |favoriteitem|iteminformation|bid|paymentinformation|itemimage} \n'
             + '                                - The type of data we want to generate. \n'
-            + '    <json>                   - String - [TODO] \n'
-            + '    <withRelated>            - [optional] Boolean - [TODO] ';
+            + '    <json>                   - String - json for the object to add. \n'
+            + '    <withRelated>            - [optional] Boolean - Whether to return full objects or just id. ';
     }
 
     public description(): string {

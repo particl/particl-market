@@ -45,6 +45,8 @@ describe('DataAddCommand', () => {
         listing_item_id: 33
     };
 
+    // TODO: missing negative tests
+
     test('Should create test data for Profile', async () => {
         const res = await testUtil.rpc(dataCommand, [dataAddCommand, CreatableModel.PROFILE, JSON.stringify(testProfileData)]);
         res.expectJson();

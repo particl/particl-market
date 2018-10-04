@@ -568,6 +568,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(result.voter).toBe(voterProfileNode2.address);
         expect(result.ProposalOption.optionId).toBe(proposalNode1.ProposalOptions[1].optionId);
 
+        voteNode2 = result;
     });
 
     test('Receive Vote2 on node1', async () => {
@@ -577,6 +578,7 @@ describe('Happy ListingItem Vote Flow', () => {
         expect(proposalNode1).toBeDefined();
         expect(proposalNode2).toBeDefined();
         expect(voteNode1).toBeDefined();
+        expect(voteNode2).toBeDefined();
         expect(proposalResultNode1).toBeDefined();
 
         log.debug('========================================================================================');

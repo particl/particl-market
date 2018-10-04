@@ -192,11 +192,11 @@ describe('BidSendCommand', () => {
     });
 
     test('Should throw exception for invalid profile', async () => {
-
+        const invalidProfileId = 0;
         const bidSendCommandParams = [
             bidSendCommand,
             listingItem1.hash,
-            7,
+            invalidProfileId,
             defaultProfile.ShippingAddresses[0].id,
             'colour',
             'black',
@@ -208,7 +208,7 @@ describe('BidSendCommand', () => {
         res.expectJson();
         res.expectStatusCode(404);
         expect(res.error.error.success).toBe(false);
-        expect(res.error.error.message).toBe('No correct profile id.');
+        expect(res.error.error.message).toBe('Profile not found.');
     });
 
     test('Should find Bid after posting', async () => {

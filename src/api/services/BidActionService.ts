@@ -351,14 +351,18 @@ export class BidActionService {
     /**
      * Accept a Bid
      *
-     * @param {module:resources.ListingItem} listingItem
      * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async accept(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
+    public async accept(bid: resources.Bid): Promise<SmsgSendResponse> {
 
         // previous bids action needs to be MPA_BID
         if (bid.action === BidMessageType.MPA_BID) {
+
+            const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
+                .then(value => {
+                    return value.toJSON();
+                });
 
             // todo: create order before biddatas so order hash can be added to biddata in generateBidDatasForMPA_ACCEPT
             // generate bidDatas for MPA_ACCEPT
@@ -667,13 +671,17 @@ export class BidActionService {
     /**
      * Cancel a Bid
      *
-     * @param {module:resources.ListingItem} listingItem
      * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async cancel(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
+    public async cancel(bid: resources.Bid): Promise<SmsgSendResponse> {
 
         if (bid.action === BidMessageType.MPA_BID) {
+
+            const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
+                .then(value => {
+                    return value.toJSON();
+                });
 
             // create the bid cancel message
             const bidMessage: BidMessage = await this.bidFactory.getMessage(BidMessageType.MPA_CANCEL, listingItem.hash);
@@ -718,13 +726,18 @@ export class BidActionService {
      * Reject a Bid
      * todo: add the bid as param, so we know whose bid we are rejecting. now supports just one bidder.
      *
-     * @param {module:resources.ListingItem} listingItem
      * @param {module:resources.Bid} bid
      * @returns {Promise<SmsgSendResponse>}
      */
-    public async reject(listingItem: resources.ListingItem, bid: resources.Bid): Promise<SmsgSendResponse> {
+    public async reject(bid: resources.Bid): Promise<SmsgSendResponse> {
 
         if (bid.action === BidMessageType.MPA_BID) {
+
+            const listingItem = await this.listingItemService.findOne(bid.ListingItem.id, true)
+                .then(value => {
+                    return value.toJSON();
+                });
+
             // fetch the seller profile
             const sellerProfileModel: Profile = await this.profileService.findOneByAddress(listingItem.seller);
             if (!sellerProfileModel) {

@@ -50,7 +50,7 @@ export class VotePostCommand extends BaseCommand implements RpcCommandInterface<
 
         const profileId = data.params.shift();
         const proposalHash = data.params.shift();
-        // TODO: for now we'll say this is optionId, but it may not be. May need to change it later to be something else like hash
+        // TODO: for now we'll use optionId, we may need to change it later to be something else like hash
         const proposalOptionId = data.params.shift();
 
         const proposalModel = await this.proposalService.findOneByHash(proposalHash)

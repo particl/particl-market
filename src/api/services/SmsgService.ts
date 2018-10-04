@@ -73,16 +73,19 @@ export class SmsgService {
      * "error": "Message is too long, 5392 > 4096"
      * }
      *
-     * @param {string} profileAddress
-     * @param {string} marketAddress
+     * @param {string} fromAddress
+     * @param {string} toAddress
      * @param {MarketplaceMessage} message
      * @param {boolean} paidMessage
      * @param {number} daysRetention
      * @param {boolean} estimateFee
      * @returns {Promise<any>}
      */
-    public async smsgSend(fromAddress: string, toAddress: string, message: MarketplaceMessage,
-                          paidMessage: boolean = true, daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10),
+    public async smsgSend(fromAddress: string,
+                          toAddress: string,
+                          message: MarketplaceMessage,
+                          paidMessage: boolean = true,
+                          daysRetention: number = parseInt(process.env.PAID_MESSAGE_RETENTION_DAYS, 10),
                           estimateFee: boolean = false): Promise<SmsgSendResponse> {
 
         this.log.debug('smsgSend, from: ' + fromAddress + ', to: ' + toAddress);

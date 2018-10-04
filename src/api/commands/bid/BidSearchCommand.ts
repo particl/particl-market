@@ -53,32 +53,14 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     @validate()
     public async execute( @request(RpcRequest) data: RpcRequest): Promise<Bookshelf.Collection<Bid>> {
 
-        // todo: function to get and validate each paramater: const page = this.getPage(data.params)
-        data.params[0] = data.params[0] ? data.params[0] : 0;
-        if (typeof data.params[0] !== 'number') {
-            throw new MessageException('parameter page should be a number.');
-        }
         const page = data.params[0];
-
-        data.params[1] = data.params[1] ? data.params[1] : this.DEFAULT_PAGE_LIMIT;
-        if (typeof data.params[0] !== 'number') {
-            throw new MessageException('parameter pageLimit should be a number.');
-        }
         const pageLimit = data.params[1];
-
-        let ordering: SearchOrder;
-        if (data.params[2] === 'DESC') {
-            ordering = SearchOrder.DESC;
-        } else {
-            ordering = SearchOrder.ASC;
-        }
-
-        const listingItemHash = data.params[3] !== '*' ? data.params[3] : undefined;
-        const status: BidMessageType | OrderStatus | undefined = data.params[4] ? this.getStatus(data.params[4]) : undefined;
-        const searchString = data.params[5] ? (data.params[5] !== '*' ? data.params[5] : undefined) : undefined;
+        const ordering = data.params[2];
+        const listingItemHash = data.params[3];
+        const status = data.params[4];
+        const searchString = data.params[5];
 
         // TODO: ordering is by createdAt, but perhaps updatedAt would be better
-        // TODO: add and set publishedAt to seller publish time
         // TODO: also maybe we should add support for bid expiry at some point
 
         if (data.params[6]) {
@@ -106,14 +88,47 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
 
         this.log.debug('bidSearchParams', bidSearchParams);
 
-        if (!_.includes([
-                SearchOrder.ASC,
-                SearchOrder.DESC
-            ], bidSearchParams.ordering)) {
-            throw new MessageException('Invalid SearchOrder: ' + bidSearchParams.ordering);
+        return await this.bidService.search(bidSearchParams);
+    }
+
+    /**
+     *
+     * data.params[]:
+     *  [0]: page, number, optional
+     *  [1]: pageLimit, number, default=10, optional
+     *  [2]: ordering ASC/DESC, orders by createdAt, optional
+     *  [3]: ListingItem hash, string, * for all, optional
+     *  [4]: status/action, ENUM{MPA_BID, MPA_ACCEPT, MPA_REJECT, MPA_CANCEL}
+     *       or ENUM{AWAITING_ESCROW, ESCROW_LOCKED, SHIPPING, COMPLETE}, * for all, optional
+     *  [5]: searchString, string, * for anything, optional
+     *  [6...]: bidder: particl address, optional
+     *
+     * @param {RpcRequest} data
+     * @returns {Promise<RpcRequest>}
+     */
+    public async validate(data: RpcRequest): Promise<RpcRequest> {
+
+        data.params[0] = data.params[0] ? data.params[0] : 0;
+        if (typeof data.params[0] !== 'number') {
+            throw new MessageException('parameter page should be a number.');
         }
 
-        return await this.bidService.search(bidSearchParams);
+        data.params[1] = data.params[1] ? data.params[1] : this.DEFAULT_PAGE_LIMIT;
+        if (typeof data.params[0] !== 'number') {
+            throw new MessageException('parameter pageLimit should be a number.');
+        }
+
+        if (data.params[2] === 'ASC') {
+            data.params[2] = SearchOrder.ASC;
+        } else {
+            data.params[2] = SearchOrder.DESC;
+        }
+
+        data.params[3] = data.params[3] !== '*' ? data.params[3] : undefined;
+        data.params[4] = data.params[4] ? this.getStatus(data.params[4]) : undefined;
+        data.params[5] = data.params[5] ? (data.params[5] !== '*' ? data.params[5] : undefined) : undefined;
+
+        return data;
     }
 
     public usage(): string {
@@ -141,7 +156,7 @@ export class BidSearchCommand extends BaseCommand implements RpcCommandInterface
     }
 
     public description(): string {
-            return 'Search bids by itemhash, bid status, or bidder address';
+            return 'Search Bids by item hash, bid status, or bidder address';
     }
 
     public example(): string {

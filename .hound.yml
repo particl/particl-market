@@ -1,0 +1,33 @@
+
+fail_on_violations: true
+
+rubocop:
+    enabled: false
+reek:
+    enabled: false
+eslint:
+    enabled: false
+tslint:
+    enabled: true
+    config_file: tslint.json
+jshint:
+    enabled: false
+scss:
+    enabled: false
+sass-lint:
+    enabled: false
+flake8:
+    enabled: false
+swiftlint:
+    enabled: false
+shellcheck:
+    enabled: true
+credo:
+    enabled: false
+coffeescript:
+    enabled: false
+haml:
+    enabled: false
+golint:
+    enabled: false
+

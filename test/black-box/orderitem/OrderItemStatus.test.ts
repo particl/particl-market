@@ -362,7 +362,6 @@ myOrderItems:  0=[[
 
         const bidAcceptCommandParams = [
             bidAcceptCommand,
-            bidOnSellerNode.ListingItem.hash,
             bidOnSellerNode.id
         ];
 

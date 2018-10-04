@@ -404,7 +404,6 @@ describe('Happy Buy Flow', () => {
 
         const bidAcceptCommandParams = [
             bidAcceptCommand,
-            bidOnSellerNode.ListingItem.hash,
             bidOnSellerNode.id
         ];
 
