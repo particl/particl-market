@@ -69,6 +69,10 @@ export class Environment {
         return this.isTruthy(process.env.TESTNET) || this.isAlpha();
     }
 
+    public static isRegtest(): boolean {
+        return this.isTruthy(process.env.REGTEST);
+    }
+
     public static isTruthy(bool: string): boolean {
         try {
             return bool.toLowerCase() === 'true';
