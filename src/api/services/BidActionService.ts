@@ -322,7 +322,7 @@ export class BidActionService {
 
         if (utxoIdxs.length) {
             selectedOutputsSum = 0;
-            utxoIdxs.forEach( utxoIdx => {
+            for (const utxoIdx of utxoIdxs) {
                 const utxo: any = unspentOutputs[utxoIdx];
                 selectedOutputs.push({
                     txid: utxo.txid,
@@ -330,7 +330,7 @@ export class BidActionService {
                     amount: utxo.amount
                 });
                 selectedOutputsSum += utxo.amount;
-            });
+            }
         }
 
         selectedOutputsChangeAmount = +(selectedOutputsSum - adjustedRequiredAmount).toFixed(8);

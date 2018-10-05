@@ -4524,6 +4524,11 @@ mem@^1.1.0:
   dependencies:
     mimic-fn "^1.0.0"
 
+memoize-decorator@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/memoize-decorator/-/memoize-decorator-1.0.2.tgz#605a41715c4171db192a90098b00ab8d6e1102f5"
+  integrity sha1-YFpBcVxBcdsZKpAJiwCrjW4RAvU=
+
 meow@^3.7.0:
   version "3.7.0"
   resolved "https://registry.yarnpkg.com/meow/-/meow-3.7.0.tgz#72cb668b425228290abbfa856892587308a801fb"
@@ -6847,6 +6852,14 @@ tslib@^1.8.0, tslib@^1.8.1:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.9.0.tgz#e37a86fda8cbbaf23a057f473c9f4dc64e5fc2e8"
   integrity sha512-f/qGG2tUkrISBlQZEjEqoZ3B2+npJjIf04H1wuAv9iA8i04Icp+61KRXxFdha22670NJopsZCIjhC3SnjPRKrQ==
 
+tslint-clean-code@^0.2.7:
+  version "0.2.7"
+  resolved "https://registry.yarnpkg.com/tslint-clean-code/-/tslint-clean-code-0.2.7.tgz#11ab8712cd117df9a8a4cc571d3e931651014677"
+  integrity sha512-CZacujiA99oR76SOHxlG+OJz6vwa9/UdF73LKff0Ux6TqMoLqVhBHCxPqu8f+9qxnxXLAbEuXXO1SwlH7qpm1g==
+  dependencies:
+    memoize-decorator "^1.0.2"
+    tsutils "2.7.1"
+
 tslint@5.11.0:
   version "5.11.0"
   resolved "https://registry.yarnpkg.com/tslint/-/tslint-5.11.0.tgz#98f30c02eae3cde7006201e4c33cb08b48581eed"
@@ -6864,6 +6877,13 @@ tslint@5.11.0:
     semver "^5.3.0"
     tslib "^1.8.0"
     tsutils "^2.27.2"
+
+tsutils@2.7.1:
+  version "2.7.1"
+  resolved "https://registry.yarnpkg.com/tsutils/-/tsutils-2.7.1.tgz#411a0e9466525a2b2869260a55620d7292155e24"
+  integrity sha1-QRoOlGZSWisoaSYKVWINcpIVXiQ=
+  dependencies:
+    tslib "^1.7.1"
 
 tsutils@^2.27.2:
   version "2.29.0"

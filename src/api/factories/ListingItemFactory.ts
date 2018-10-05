@@ -360,16 +360,16 @@ export class ListingItemFactory {
 
     private async getMessageInformationShippingDestinations(shippingDestinations: resources.ShippingDestination[]): Promise<string[]> {
         const shippingDesArray: string[] = [];
-        shippingDestinations.forEach((value) => {
-            switch (value.shippingAvailability) {
+        for (const destination of shippingDestinations) {
+            switch (destination.shippingAvailability) {
                 case ShippingAvailability.SHIPS:
-                    shippingDesArray.push(value.country);
+                    shippingDesArray.push(destination.country);
                     break;
                 case ShippingAvailability.DOES_NOT_SHIP:
-                    shippingDesArray.push('-' + value.country);
+                    shippingDesArray.push('-' + destination.country);
                     break;
             }
-        });
+        }
         return shippingDesArray;
     }
 
@@ -446,24 +446,24 @@ export class ListingItemFactory {
         }];
     }
 
-    private async getMessageMessaging(messagingInformation: resources.MessagingInformation[]): Promise<object[]> {
+    private async getMessageMessaging(messagingInformations: resources.MessagingInformation[]): Promise<object[]> {
         const messageArray: object[] = [];
-        messagingInformation.forEach((value) => {
+        for (const info of messagingInformations) {
             messageArray.push({
-                protocol: value.protocol,
-                public_key: value.publicKey
+                protocol: info.protocol,
+                public_key: info.publicKey
             });
-        });
+        }
         return messageArray;
     }
 
     // objects fields
     private async getMessageObjects(listingItemObjects: resources.ListingItemObject[]): Promise<any> {
         const objectArray: object[] = [];
-        listingItemObjects.forEach(async (value) => {
-            const objectValue = await this.getObjectArray(value);
+        for (const lio of listingItemObjects) {
+            const objectValue = await this.getObjectArray(lio);
             objectArray.push(objectValue);
-        });
+        }
         return objectArray;
     }
 
@@ -488,18 +488,18 @@ export class ListingItemFactory {
 
     private async getObjectDataTable(objectDatas: resources.ListingItemObjectData[]): Promise<any> {
         const objectDataArray: object[] = [];
-        objectDatas.forEach((objectValue) => {
+        for (const objectValue of objectDatas) {
             objectDataArray.push({
                 key: objectValue.key,
                 value: objectValue.value
             });
-        });
+        }
         return objectDataArray;
     }
 
     private async getObjectDataOptions(objectDatas: resources.ListingItemObjectData[]): Promise<any> {
         const objectDataArray: object[] = [];
-        objectDatas.forEach(async (objectValue) => {
+        for (const objectValue of objectDatas) {
             objectDataArray.push({
                 name: objectValue.key,
                 value: objectValue.value
@@ -509,7 +509,7 @@ export class ListingItemFactory {
                 //     300000000
                 // ]
             });
-        });
+        }
         return objectDataArray;
     }
 

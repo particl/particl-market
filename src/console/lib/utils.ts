@@ -142,6 +142,14 @@ export const askProperties = async (name: string): Promise<any[]> => {
             properties.push(property);
         }
     }
+    for (const property of properties) {
+        const types = property.type.replace(/[()]/g, '').split(' ');
+        property.type = {
+            script: types[1],
+            database: types[0]
+        };
+    }
+    /*
     properties.map(p => {
         const types = p.type.replace(/[()]/g, '').split(' ');
         p.type = {
@@ -150,6 +158,7 @@ export const askProperties = async (name: string): Promise<any[]> => {
         };
         return p;
     });
+    */
     console.log('');
     return properties;
 };
