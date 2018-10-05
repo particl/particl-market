@@ -95,12 +95,10 @@ export class MessageProcessor implements MessageProcessorInterface {
                     // this.log.debug('SENDING: ', eventType);
 
                     // send event to the eventTypes processor
-                    this.eventEmitter.emit(eventType, {
-                        smsgMessage,
-                        marketplaceMessage
-                    });
+                    this.eventEmitter.emit(eventType, marketplaceEvent);
 
                     // send event to cli
+                    // todo: send marketplaceEvent
                     this.eventEmitter.emit(Events.Cli, {
                         message: eventType,
                         data: marketplaceMessage

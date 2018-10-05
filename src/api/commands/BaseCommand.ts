@@ -19,22 +19,6 @@ export class BaseCommand {
         this.commands = Commands;
     }
 
-    public getName(): string {
-        return this.command.commandName;
-    }
-
-    public getCommand(): Command {
-        return this.command;
-    }
-
-    /**
-     * returns the child Commands of this command
-     * @returns {Command[]}
-     */
-    public getChildCommands(): Command[] {
-        return this.command.childCommands;
-    }
-
     /**
      * execute the next command in data.params
      *
@@ -42,7 +26,7 @@ export class BaseCommand {
      * @param data
      * @returns {Promise<Bookshelf.Model<any>>}
      */
-    public async executeNext(request: RpcRequest, commandFactory: RpcCommandFactory): Promise<any> {
+    public async executeNext(request: RpcRequest, commandFactory: RpcCommandFactory): Promise<BaseCommand> {
         const commandName = request.params.shift();
         // find a matching command from current commands childCommands
         const commandType = _.find(this.getChildCommands(), command => command.commandName === commandName);
@@ -56,6 +40,14 @@ export class BaseCommand {
         } else {
             throw new NotFoundException('Unknown subcommand: ' + commandName + '\n');
         }
+    }
+
+    /**
+     * returns the child Commands of this command
+     * @returns {Command[]}
+     */
+    public getChildCommands(): Command[] {
+        return this.command.childCommands;
     }
 
     public async validate(data: RpcRequest): Promise<RpcRequest> {
@@ -76,6 +68,14 @@ export class BaseCommand {
 
     public example(): any {
         return null;
+    }
+
+    public getName(): string {
+        return this.command.commandName;
+    }
+
+    public getCommand(): Command {
+        return this.command;
     }
 
 }

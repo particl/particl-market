@@ -782,7 +782,11 @@ export class TestDataService {
         if (withRelated) {
             return items;
         } else {
-            return await items.map(item => item.id);
+            const itemIds: number[] = [];
+            for (const item of items) {
+                itemIds.push(item.id);
+            }
+            return itemIds;
         }
     }
 
