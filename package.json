@@ -67,7 +67,7 @@
   "dependencies": {
     "basic-auth": "^2.0.0",
     "body-parser": "^1.17.2",
-    "bookshelf": "^0.10.3",
+    "bookshelf": "^0.10.4",
     "bookshelf-camelcase": "^1.1.4",
     "chalk": "^2.0.1",
     "class-validator": "^0.8.5",
